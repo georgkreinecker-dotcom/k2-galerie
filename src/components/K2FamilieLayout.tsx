@@ -711,21 +711,6 @@ function FamilieNav() {
       {!isMeineFamilieHome ? (
         <FamilieBackButton style={{ color: t.text, marginRight: '0.25rem' }} />
       ) : null}
-      {isMeineFamilieHome && (
-        <span
-          className="meta"
-          style={{
-            fontSize: '0.78rem',
-            color: t.muted,
-            marginRight: '0.15rem',
-            maxWidth: 280,
-            lineHeight: 1.35,
-          }}
-          title="Stammbaum, Events & Kalender, Geschichte und Gedenkort: große Schaltflächen auf dieser Seite unter „Was möchtest du tun?“"
-        >
-          Weitere Bereiche ↓ Startseite
-        </span>
-      )}
       {navItems.map(({ to, label, activePrefixes }) => {
         const isStart = to === familieRoutes.meineFamilie
         const isExactMatchNav =
