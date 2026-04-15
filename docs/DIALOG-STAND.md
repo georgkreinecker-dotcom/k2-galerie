@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 15.04.26 – **K2 Familie nach QR: kurz Laden → „Speicher nicht erreichbar“** – sehr wahrscheinlich **Supabase-Gateway JWT** (Standard `verify_jwt = true`): mit **publishable Key** (`sb_publishable_…`) → 401, oft **ohne brauchbares CORS** → Safari: `fetch` wirft (**`reason: network`**). **Fix im Repo:** `supabase/config.toml` → **`[functions.familie] verify_jwt = false`** + **`supabase functions deploy familie`** (oder Dashboard: JWT-Verify aus). Doku: `docs/K2-FAMILIE-SUPABASE-EINBAU.md`. **Commit:** **`9117d07e`** ✅ GitHub
+**Letzter Stand:** 15.04.26 – **K2 Familie nach QR: kurz Laden → „Speicher nicht erreichbar“** – sehr wahrscheinlich **Supabase-Gateway JWT** (Standard `verify_jwt = true`): mit **publishable Key** (`sb_publishable_…`) → 401, oft **ohne brauchbares CORS** → Safari: `fetch` wirft (**`reason: network`**). **Fix im Repo:** `supabase/config.toml` → **`[functions.familie] verify_jwt = false`** + **`supabase functions deploy familie`** (oder Dashboard: JWT-Verify aus). Doku: `docs/K2-FAMILIE-SUPABASE-EINBAU.md`. **Commit:** **`a9b7a8bf`** ✅ GitHub
 
 **Was wir JETZT tun:** Edge **familie** mit neuer Config deployen → Handy erneut testen.
 
