@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 15.04.26 – **K2 Familie Nav:** Hinweistext **„Weitere Bereiche ↓ Startseite“** auf **Meine Familie** entfernt. **Commit:** **`d4a19bb9`** ✅ GitHub
+
+---
+
 **Letzter Stand:** 15.04.26 – **K2 Familie Teilen / PWA öffnete Galerie:** Ursache: Standard-**`manifest.json`** mit **`start_url: /galerie`** und Root **`/`** → **Entdecken**. **Fix:** (1) **`index.html`**: kleines Script **vor React** – bei Familie-Pfaden **`manifest-k2-familie.json`** + Icons/Titel wie `applyK2FamiliePwaBranding`. (2) Kurze Teilen-URL **`/familie`** → **`/projects/k2-familie/meine-familie`** (**Vercel redirect** + **React-Route** für lokal). (3) **`isK2FamiliePublicPath`**: `/familie` zählt. **Commit:** **`73697c40`** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Vercel **Ready:** Teilen-Test mit **`…/familie`**; PWA: **„Zum Home-Bildschirm“** auf einer **K2-Familie-Seite** (nicht von `/galerie`).
