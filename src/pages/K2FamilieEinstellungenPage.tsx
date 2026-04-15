@@ -613,21 +613,16 @@ export default function K2FamilieEinstellungenPage() {
           }}
         >
           <h2 style={{ margin: '0 0 0.45rem', fontSize: '1.05rem', fontWeight: 700, color: a.text, fontFamily: a.fontHeading }}>
-            Handbuch &amp; Präsentation
+            Handbuch
           </h2>
           <p style={{ margin: '0 0 0.65rem', fontSize: '0.88rem', color: a.muted, lineHeight: 1.5 }}>
-            Nur Kurzlinks – ausführliche Inhalte öffnen sich in der jeweiligen Ansicht.
+            Kurzlink – ausführliche Inhalte öffnen sich in der Handbuch-Ansicht.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
             <Link to={R.benutzerHandbuch} title="Nutzerhandbuch K2 Familie" style={iconLink} aria-label="Handbuch öffnen">
               📚
             </Link>
-            <Link to={R.familiePraesentationsmappe} title="Präsentationsmappe K2 Familie" style={iconLink} aria-label="Präsentationsmappe öffnen">
-              🗂️
-            </Link>
-            <span style={{ fontSize: '0.82rem', color: a.muted }}>
-              📚 Handbuch · 🗂️ Präsentationsmappe
-            </span>
+            <span style={{ fontSize: '0.82rem', color: a.muted }}>📚 Benutzerhandbuch</span>
           </div>
         </div>
 

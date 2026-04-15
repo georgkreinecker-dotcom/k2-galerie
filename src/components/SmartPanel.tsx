@@ -1294,16 +1294,6 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                         🗂️ Doku & Entwicklung (alle K2-FAMILIE-*.md)
                       </Link>
                     )}
-                    {onNavigate ? (
-                      <span role="button" tabIndex={0} onClick={() => onNavigate('k2-familie-praesentationsmappe')} onKeyDown={e => e.key === 'Enter' && onNavigate('k2-familie-praesentationsmappe')}
-                        style={{ display: 'block', padding: '0.5rem 0.7rem', background: 'rgba(13,148,136,0.08)', border: '1px solid rgba(13,148,136,0.3)', borderRadius: '8px', color: '#14b8a6', fontWeight: 500, fontSize: '0.82rem', cursor: 'pointer', fontFamily: 'inherit' }}>
-                        🗺️ Präsentationsmappe
-                      </span>
-                    ) : (
-                      <Link to={PROJECT_ROUTES['k2-familie'].familiePraesentationsmappe} style={{ display: 'block', padding: '0.5rem 0.7rem', background: 'rgba(13,148,136,0.08)', border: '1px solid rgba(13,148,136,0.3)', borderRadius: '8px', color: '#14b8a6', fontWeight: 500, fontSize: '0.82rem', textDecoration: 'none', fontFamily: 'inherit' }}>
-                        🗺️ Präsentationsmappe
-                      </Link>
-                    )}
                   </>
                 )}
                 {mappe.id === 'notizen' && (

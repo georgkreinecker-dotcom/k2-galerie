@@ -52,9 +52,8 @@ const C = {
   btnEventsKalender: 'linear-gradient(135deg, #d97706 0%, #14b8a6 100%)',
   btnGeschichte: 'linear-gradient(135deg, #6d28d9 0%, #a78bfa 100%)',
   btnGedenkort: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
-  /** Einstellungen-Hub: Zugang, Ansicht, Sicherung, Lizenz, Handbuch & Präsentationsmappe */
+  /** Einstellungen-Hub: Zugang, Ansicht, Lizenz, Handbuch (Sicherung nur unter Einstellungen) */
   btnEinstellungen: 'linear-gradient(135deg, #312e81 0%, #4f46e5 55%, #6366f1 100%)',
-  btnSicherung: 'linear-gradient(135deg, #991b1b 0%, #dc2626 45%, #f87171 100%)',
 }
 
 const actionBtnBase: CSSProperties = {
@@ -105,7 +104,6 @@ export default function K2FamilieHomePage() {
   const isLeser = effRolle === 'leser'
   const kannStruktur = capabilities.canEditStrukturUndStammdaten
   const kannInstanz = capabilities.canManageFamilienInstanz
-  const showSicherungKachel = capabilities.canExportSicherung
   const [musterLoaded, setMusterLoaded] = useState(false)
   const [persoenlicheNummerEingabe, setPersoenlicheNummerEingabe] = useState('')
   /** Wenn „Du“ schon gesetzt, Sitzung aber nicht: erneut Code eingeben (sonst keine Leiste). */
@@ -997,27 +995,14 @@ export default function K2FamilieHomePage() {
                 }}
                 title={
                   isInhaber
-                    ? 'Zugang &amp; Name, Stammbaum-Ansicht, Sicherung, Lizenz, Handbuch und Präsentationsmappe'
+                    ? 'Zugang &amp; Name, Stammbaum-Ansicht, Lizenz, Handbuch – Sicherung bei Bedarf dort'
                     : isBearbeiter
-                      ? 'Rolle, Ansicht, Sicherung kopieren, Handbuch'
+                      ? 'Rolle, Ansicht, Handbuch'
                       : 'Rolle und persönliche Einstellungen'
                 }
               >
                 ⚙️ {isLeser ? 'Einstellungen' : 'Einstellungen &amp; Verwaltung'}
               </Link>
-              {showSicherungKachel ? (
-                <Link
-                  to={familieR.sicherung}
-                  className="btn k2-familie-action-btn"
-                  style={{
-                    ...actionBtnBase,
-                    background: C.btnSicherung,
-                    boxShadow: '0 8px 28px rgba(153, 27, 27, 0.35)',
-                  }}
-                >
-                  💾 Sicherung
-                </Link>
-              ) : null}
             </div>
           </section>
 

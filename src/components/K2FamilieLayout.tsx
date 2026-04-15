@@ -31,6 +31,7 @@ import { isK2FamilieApfLocalhost, resolveApfMeineFamilieTenantId } from '../conf
 import { isK2FamilieNurMitgliedEinstiegModus } from '../utils/familieIdentitaet'
 import { isFamilieEinladungNurZugangAnsicht } from '../utils/familieEinladungPending'
 import { loadEinstellungen, loadPersonen } from '../utils/familieStorage'
+import { loadIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
 
 /** Gleicher String wie `K2_FAMILIE_SESSION_UPDATED` in `familieStorage.ts` — hier als Literal, damit kein Laufzeit-ReferenceError (z. B. HMR). */
 const FAMILIE_SESSION_UPDATED_EVENT = 'k2-familie-einstellungen-updated'
@@ -38,7 +39,29 @@ const FAMILIE_SESSION_UPDATED_EVENT = 'k2-familie-einstellungen-updated'
 const t = adminTheme
 const FAMILIE_NAV_BORDER = 'rgba(181, 74, 30, 0.14)'
 
-function FamilieTenantToolbar() {
+/** Oben: Familienwahl + Rolle – Nutzer kann einklappen; Standard: zu bei bestätigter Identität (siehe Leselogik). */
+const LS_FAMILIE_LEISTE_EINGEKLAPPT = 'k2-familie-layout-familie-rolle-leiste-eingeklappt'
+
+function readFamilieLeisteEingeklappt(tenantId: string): boolean {
+  try {
+    const v = localStorage.getItem(LS_FAMILIE_LEISTE_EINGEKLAPPT)
+    if (v === '1') return true
+    if (v === '0') return false
+  } catch {
+    /* ignore */
+  }
+  return loadIdentitaetBestaetigt(tenantId) != null
+}
+
+function saveFamilieLeisteEingeklappt(eingeklappt: boolean): void {
+  try {
+    localStorage.setItem(LS_FAMILIE_LEISTE_EINGEKLAPPT, eingeklappt ? '1' : '0')
+  } catch {
+    /* ignore */
+  }
+}
+
+function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
   const navigate = useNavigate()
   const familieRoutesNav = PROJECT_ROUTES['k2-familie']
   const {
@@ -102,6 +125,8 @@ function FamilieTenantToolbar() {
 
   /** Volle Liste: bei nur einer Familie Toolbar ausblenden. Eingeschränkte Auswahl (Muster / APf-Stamm) zeigt immer eine Zeile. */
   if (!eingeschraenkteAuswahl && tenantList.length <= 1) return null
+
+  if (collapsed) return null
 
   const selectValue = eingeschraenkteAuswahl
     ? displayIds.includes(currentTenantId)
@@ -310,116 +335,16 @@ function FamilieTenantToolbar() {
   )
 }
 
-function FamilieRolleLeiste() {
-  const { rolle, setRolle, capabilities, inhaberArbeitsansicht, setInhaberArbeitsansicht } = useFamilieRolle()
+function FamilieRolleLeisteHinweise() {
+  const { rolle, setRolle, capabilities } = useFamilieRolle()
   const eff = capabilities.rolle
   const gewaehlt = capabilities.rolleGewaehlt ?? rolle
   const ia = capabilities.inhaberArbeitsansicht
-  const isInhaberMitReduzierterAnsicht =
-    gewaehlt === 'inhaber' && ia != null && ia !== 'voll'
-  const showInhaberAnsichtSteuerung = rolle === 'inhaber' && ia != null
   const showFremdeInhaberHinweis =
     rolle !== eff && !(rolle === 'inhaber' && ia != null && ia !== 'voll')
   const rolleEinstellungenHash = `${PROJECT_ROUTES['k2-familie'].einstellungen}#k2-familie-rolle-wahl`
-  const inhaberAnsichtHash = `${PROJECT_ROUTES['k2-familie'].einstellungen}#k2-familie-inhaber-ansicht`
   return (
     <div className="k2-familie-no-print">
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          gap: '0.5rem 1rem',
-          padding: '0.45rem 1rem',
-          background: t.bgElevated,
-          borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
-        }}
-      >
-        <span className="meta" style={{ color: t.muted, fontSize: '0.82rem' }}>
-          Deine Rolle:
-        </span>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem', minWidth: '7.5rem' }}>
-          <strong
-            style={{
-              fontSize: '0.9rem',
-              fontWeight: 700,
-              color: t.text,
-              fontFamily: t.fontHeading,
-            }}
-          >
-            {isInhaberMitReduzierterAnsicht ? (
-              <>
-                {K2_FAMILIE_ROLLEN_LABELS.inhaber}
-                <span style={{ fontWeight: 500, color: t.muted }}> · Ansicht: {K2_FAMILIE_ROLLEN_LABELS[eff]}</span>
-              </>
-            ) : (
-              K2_FAMILIE_ROLLEN_LABELS[eff]
-            )}
-          </strong>
-        </div>
-        <span
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.45rem',
-            color: t.text,
-            fontSize: '0.84rem',
-            flex: '1 1 220px',
-            lineHeight: 1.35,
-          }}
-        >
-          <span
-            aria-hidden
-            style={{
-              width: 10,
-              height: 10,
-              borderRadius: '50%',
-              background: K2_FAMILIE_ROLLEN_AMPEL[eff],
-              flexShrink: 0,
-              boxShadow: '0 0 0 1px rgba(0,0,0,0.06)',
-            }}
-          />
-          {K2_FAMILIE_ROLLEN_EINZEILER[eff]}
-        </span>
-        {showInhaberAnsichtSteuerung && (
-          <label
-            style={{
-              display: 'inline-flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              gap: '0.35rem 0.5rem',
-              fontSize: '0.8rem',
-              color: t.muted,
-            }}
-          >
-            <span>Arbeitsansicht (für dich gespeichert):</span>
-            <select
-              aria-label="Arbeitsansicht als Inhaber:in"
-              value={inhaberArbeitsansicht}
-              onChange={(e) => setInhaberArbeitsansicht(e.target.value as K2FamilieInhaberArbeitsansicht)}
-              style={{
-                background: '#fffefb',
-                border: '1px solid rgba(181, 74, 30, 0.28)',
-                borderRadius: t.radius,
-                color: t.text,
-                padding: '0.3rem 0.5rem',
-                fontSize: '0.82rem',
-                fontFamily: 'inherit',
-                maxWidth: 280,
-              }}
-            >
-              {K2_FAMILIE_INHABER_ANSICHT.map((a) => (
-                <option key={a} value={a}>
-                  {K2_FAMILIE_INHABER_ANSICHT_LABELS[a]}
-                </option>
-              ))}
-            </select>
-            <Link to={inhaberAnsichtHash} style={{ color: t.accent, fontWeight: 600 }}>
-              Erklärung
-            </Link>
-          </label>
-        )}
-      </div>
       {showFremdeInhaberHinweis && (
         <div
           role="status"
@@ -482,6 +407,255 @@ function FamilieRolleLeiste() {
   )
 }
 
+function FamilieRolleLeisteHaupt({ onEinklappen }: { onEinklappen?: () => void }) {
+  const { rolle, capabilities, inhaberArbeitsansicht, setInhaberArbeitsansicht } = useFamilieRolle()
+  const eff = capabilities.rolle
+  const gewaehlt = capabilities.rolleGewaehlt ?? rolle
+  const ia = capabilities.inhaberArbeitsansicht
+  const isInhaberMitReduzierterAnsicht =
+    gewaehlt === 'inhaber' && ia != null && ia !== 'voll'
+  const showInhaberAnsichtSteuerung = rolle === 'inhaber' && ia != null
+  const inhaberAnsichtHash = `${PROJECT_ROUTES['k2-familie'].einstellungen}#k2-familie-inhaber-ansicht`
+  return (
+    <div
+      className="k2-familie-no-print"
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        gap: '0.5rem 1rem',
+        padding: '0.45rem 1rem',
+        background: t.bgElevated,
+        borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
+      }}
+    >
+      <span className="meta" style={{ color: t.muted, fontSize: '0.82rem' }}>
+        Deine Rolle:
+      </span>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem', minWidth: '7.5rem' }}>
+        <strong
+          style={{
+            fontSize: '0.9rem',
+            fontWeight: 700,
+            color: t.text,
+            fontFamily: t.fontHeading,
+          }}
+        >
+          {isInhaberMitReduzierterAnsicht ? (
+            <>
+              {K2_FAMILIE_ROLLEN_LABELS.inhaber}
+              <span style={{ fontWeight: 500, color: t.muted }}> · Ansicht: {K2_FAMILIE_ROLLEN_LABELS[eff]}</span>
+            </>
+          ) : (
+            K2_FAMILIE_ROLLEN_LABELS[eff]
+          )}
+        </strong>
+      </div>
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.45rem',
+          color: t.text,
+          fontSize: '0.84rem',
+          flex: '1 1 180px',
+          lineHeight: 1.35,
+        }}
+      >
+        <span
+          aria-hidden
+          style={{
+            width: 10,
+            height: 10,
+            borderRadius: '50%',
+            background: K2_FAMILIE_ROLLEN_AMPEL[eff],
+            flexShrink: 0,
+            boxShadow: '0 0 0 1px rgba(0,0,0,0.06)',
+          }}
+        />
+        {K2_FAMILIE_ROLLEN_EINZEILER[eff]}
+      </span>
+      {showInhaberAnsichtSteuerung && (
+        <label
+          style={{
+            display: 'inline-flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: '0.35rem 0.5rem',
+            fontSize: '0.8rem',
+            color: t.muted,
+          }}
+        >
+          <span>Arbeitsansicht (für dich gespeichert):</span>
+          <select
+            aria-label="Arbeitsansicht als Inhaber:in"
+            value={inhaberArbeitsansicht}
+            onChange={(e) => setInhaberArbeitsansicht(e.target.value as K2FamilieInhaberArbeitsansicht)}
+            style={{
+              background: '#fffefb',
+              border: '1px solid rgba(181, 74, 30, 0.28)',
+              borderRadius: t.radius,
+              color: t.text,
+              padding: '0.3rem 0.5rem',
+              fontSize: '0.82rem',
+              fontFamily: 'inherit',
+              maxWidth: 280,
+            }}
+          >
+            {K2_FAMILIE_INHABER_ANSICHT.map((a) => (
+              <option key={a} value={a}>
+                {K2_FAMILIE_INHABER_ANSICHT_LABELS[a]}
+              </option>
+            ))}
+          </select>
+          <Link to={inhaberAnsichtHash} style={{ color: t.accent, fontWeight: 600 }}>
+            Erklärung
+          </Link>
+        </label>
+      )}
+      {onEinklappen ? (
+        <button
+          type="button"
+          onClick={onEinklappen}
+          aria-expanded={true}
+          style={{
+            marginLeft: 'auto',
+            padding: '0.35rem 0.75rem',
+            fontSize: '0.8rem',
+            fontFamily: 'inherit',
+            fontWeight: 600,
+            borderRadius: t.radius,
+            border: `1px solid rgba(181, 74, 30, 0.35)`,
+            background: '#fffefb',
+            color: t.accent,
+            cursor: 'pointer',
+            flexShrink: 0,
+          }}
+        >
+          Einklappen
+        </button>
+      ) : null}
+    </div>
+  )
+}
+
+function FamilieRolleLeisteKompakt({ onOeffnen }: { onOeffnen: () => void }) {
+  const { rolle, capabilities } = useFamilieRolle()
+  const { currentTenantId, familieStorageRevision } = useFamilieTenant()
+  const eff = capabilities.rolle
+  const gewaehlt = capabilities.rolleGewaehlt ?? rolle
+  const ia = capabilities.inhaberArbeitsansicht
+  const isInhaberMitReduzierterAnsicht =
+    gewaehlt === 'inhaber' && ia != null && ia !== 'voll'
+  const kurz =
+    isInhaberMitReduzierterAnsicht
+      ? `${K2_FAMILIE_ROLLEN_LABELS.inhaber} · ${K2_FAMILIE_ROLLEN_LABELS[eff]}`
+      : K2_FAMILIE_ROLLEN_LABELS[eff]
+  const famName = getFamilieTenantDisplayName(currentTenantId, 'Standard')
+  return (
+    <div
+      key={familieStorageRevision}
+      className="k2-familie-no-print"
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '0.5rem 0.75rem',
+        padding: '0.45rem 1rem',
+        background: t.bgCard,
+        borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
+        fontFamily: t.fontBody,
+      }}
+    >
+      <p style={{ margin: 0, fontSize: '0.84rem', color: t.text, lineHeight: 1.35, flex: '1 1 200px' }}>
+        <strong style={{ fontWeight: 700 }}>{famName}</strong>
+        <span style={{ color: t.muted }}> · </span>
+        <span style={{ color: t.muted }}>Rolle: </span>
+        {kurz}
+      </p>
+      <button
+        type="button"
+        onClick={onOeffnen}
+        aria-expanded={false}
+        style={{
+          padding: '0.4rem 0.85rem',
+          fontSize: '0.84rem',
+          fontFamily: 'inherit',
+          fontWeight: 700,
+          borderRadius: t.radius,
+          border: '1px solid rgba(181, 74, 30, 0.4)',
+          background: '#b54a1e',
+          color: '#fff',
+          cursor: 'pointer',
+          flexShrink: 0,
+        }}
+      >
+        Familie & Rolle öffnen
+      </button>
+    </div>
+  )
+}
+
+function FamilieTenantRolleCollapsibleSection() {
+  const { currentTenantId, tenantList } = useFamilieTenant()
+  const nurMuster = isFamilieNurMusterSession()
+  const apfStammId = !nurMuster && isK2FamilieApfLocalhost() ? resolveApfMeineFamilieTenantId() : null
+  const apfNurStamm = apfStammId != null
+  const eingeschraenkteAuswahl = nurMuster || apfNurStamm
+  /** Wie FamilieTenantToolbar: Hinweis „echte Familie fehlt“ – darf nicht hinter kompakter Leiste verschwinden. */
+  const zeigeNurHuberPlaceholder =
+    !eingeschraenkteAuswahl && tenantList.length === 1 && tenantList[0] === FAMILIE_HUBER_TENANT_ID
+
+  const [eingeklappt, setEingeklappt] = useState(() => readFamilieLeisteEingeklappt(currentTenantId))
+
+  useEffect(() => {
+    setEingeklappt(readFamilieLeisteEingeklappt(currentTenantId))
+  }, [currentTenantId])
+
+  const oeffnen = () => {
+    setEingeklappt(false)
+    saveFamilieLeisteEingeklappt(false)
+  }
+  const einklappen = () => {
+    setEingeklappt(true)
+    saveFamilieLeisteEingeklappt(true)
+  }
+
+  if (zeigeNurHuberPlaceholder) {
+    return (
+      <>
+        <FamilieTenantToolbar />
+        <FamilieRolleLeisteHaupt />
+        <FamilieRolleLeisteHinweise />
+      </>
+    )
+  }
+
+  return (
+    <>
+      {eingeklappt ? (
+        <FamilieRolleLeisteKompakt onOeffnen={oeffnen} />
+      ) : (
+        <>
+          <FamilieTenantToolbar />
+          <FamilieRolleLeisteHaupt onEinklappen={einklappen} />
+        </>
+      )}
+      <FamilieRolleLeisteHinweise />
+    </>
+  )
+}
+
+function FamilieRolleLeiste() {
+  return (
+    <>
+      <FamilieRolleLeisteHaupt />
+      <FamilieRolleLeisteHinweise />
+    </>
+  )
+}
+
 const familieRoutes = PROJECT_ROUTES['k2-familie']
 
 type FamilieNavItem = {
@@ -506,26 +680,18 @@ const FAMILIE_NAV: FamilieNavItem[] = [
   { to: familieRoutes.einstellungen, label: 'Einstellungen' },
 ]
 
-/** Nur auf /meine-familie: Stammbaum–Gedenkort sitzen als Kacheln auf der Seite – oben nicht noch einmal. */
+/** Nur auf /meine-familie: Kern unten als Kacheln – oben nur Meine Familie + Handbuch (kein Zurück, keine Mappe/Sicherung in Zeile 1). */
 const FAMILIE_NAV_MEINE_FAMILIE_HOME: FamilieNavItem[] = [
   { to: familieRoutes.meineFamilie, label: 'Meine Familie' },
   { to: familieRoutes.benutzerHandbuch, label: 'Handbuch' },
-  { to: familieRoutes.familiePraesentationsmappe, label: 'Präsentationsmappe' },
-  { to: familieRoutes.sicherung, label: 'Sicherung' },
 ]
 
 function FamilieNav() {
   const loc = useLocation()
   const path = loc.pathname
-  const { capabilities } = useFamilieRolle()
   const isMeineFamilieHome =
     path === familieRoutes.meineFamilie || path === `${familieRoutes.meineFamilie}/`
-  /** Auf der Startseite: „Sicherung“ nur, wenn Export erlaubt (Leser / eingeschränkte Sitzung: weniger Klicks). */
-  const navItems = isMeineFamilieHome
-    ? capabilities.canExportSicherung
-      ? FAMILIE_NAV_MEINE_FAMILIE_HOME
-      : FAMILIE_NAV_MEINE_FAMILIE_HOME.filter((i) => i.to !== familieRoutes.sicherung)
-    : FAMILIE_NAV
+  const navItems = isMeineFamilieHome ? FAMILIE_NAV_MEINE_FAMILIE_HOME : FAMILIE_NAV
 
   return (
     <nav
@@ -542,7 +708,9 @@ function FamilieNav() {
         marginBottom: 0,
       }}
     >
-      <FamilieBackButton style={{ color: t.text, marginRight: '0.25rem' }} />
+      {!isMeineFamilieHome ? (
+        <FamilieBackButton style={{ color: t.text, marginRight: '0.25rem' }} />
+      ) : null}
       {isMeineFamilieHome && (
         <span
           className="meta"
@@ -646,8 +814,14 @@ function FamilieLayoutInner() {
           ) : (
             <>
               <FamilieNav />
-              <FamilieTenantToolbar />
-              <FamilieRolleLeiste />
+              {!isFamilieNurMusterSession() ? (
+                <FamilieTenantRolleCollapsibleSection />
+              ) : (
+                <>
+                  <FamilieTenantToolbar />
+                  <FamilieRolleLeiste />
+                </>
+              )}
             </>
           )}
           <main id="k2-familie-main" className="k2-familie-main">

@@ -43,10 +43,7 @@ export const k2FamilieLeitGroups: FamilieLeitGroup[] = [
   },
   {
     chapterTitle: 'Lesen & Außenauftritt',
-    sections: [
-      { id: 'fam-handbuch', label: 'Benutzerhandbuch', to: R.benutzerHandbuch },
-      { id: 'fam-praes', label: 'Präsentationsmappe', to: R.familiePraesentationsmappe },
-    ],
+    sections: [{ id: 'fam-handbuch', label: 'Benutzerhandbuch', to: R.benutzerHandbuch }],
   },
   {
     chapterTitle: 'K2 Familien Marketing',
