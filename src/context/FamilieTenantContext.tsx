@@ -5,6 +5,7 @@
 
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react'
 import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
+import { K2_FAMILIE_EINLADUNG_PENDING_EVENT } from '../utils/familieEinladungPending'
 import { K2_FAMILIE_DEFAULT_TENANT, isValidFamilieTenantId, K2_FAMILIE_SESSION_UPDATED } from '../utils/familieStorage'
 import { isFamilieNurMusterSession } from '../utils/familieMusterSession'
 
@@ -151,6 +152,13 @@ export function FamilieTenantProvider({ children }: { children: ReactNode }) {
     const onSession = () => bumpFamilieStorageRevision()
     window.addEventListener(K2_FAMILIE_SESSION_UPDATED, onSession)
     return () => window.removeEventListener(K2_FAMILIE_SESSION_UPDATED, onSession)
+  }, [bumpFamilieStorageRevision])
+
+  /** Einladungs-Pending in sessionStorage → Layout/Home: Nur-Zugang-Modus neu berechnen. */
+  useEffect(() => {
+    const onPending = () => bumpFamilieStorageRevision()
+    window.addEventListener(K2_FAMILIE_EINLADUNG_PENDING_EVENT, onPending)
+    return () => window.removeEventListener(K2_FAMILIE_EINLADUNG_PENDING_EVENT, onPending)
   }, [bumpFamilieStorageRevision])
 
   /** Anderes Tab/Fenster schreibt k2-familie-* in localStorage → gleicher Browser, Daten neu. */

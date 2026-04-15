@@ -16,6 +16,7 @@ import { getFamilieLoadHinweisFuerNutzer, loadFamilieFromSupabase } from '../uti
 import {
   clearFamilieEinladungPending,
   getFamilieEinladungPending,
+  isFamilieEinladungPersonalCodeOffen,
   K2_FAMILIE_EINLADUNG_PENDING_EVENT,
 } from '../utils/familieEinladungPending'
 import {
@@ -85,6 +86,7 @@ function computeErsteSchritteAmpel(
 export default function K2FamilieHomePage() {
   const a = adminTheme
   const navigate = useNavigate()
+  const location = useLocation()
   const familieR = PROJECT_ROUTES['k2-familie']
   const {
     currentTenantId,
@@ -133,9 +135,20 @@ export default function K2FamilieHomePage() {
   const welcomeImage = content.welcomeImage || ''
 
   /** Volle Seite erst nach Einrichtung – vermeidet Verwechslung mit Musterfamilie in Leisten/Dropdown. */
+  const einladungPersonalCodeOffen = useMemo(
+    () => isFamilieEinladungPersonalCodeOffen(currentTenantId),
+    [currentTenantId, location.search, familieStorageRevision],
+  )
   const nurMitgliedEinstieg = useMemo(
-    () => isK2FamilieNurMitgliedEinstiegModus(rolleGewaehlt, currentTenantId, einstAmpel, personen),
-    [rolleGewaehlt, currentTenantId, einstAmpel, personen],
+    () =>
+      isK2FamilieNurMitgliedEinstiegModus(
+        rolleGewaehlt,
+        currentTenantId,
+        einstAmpel,
+        personen,
+        einladungPersonalCodeOffen,
+      ),
+    [rolleGewaehlt, currentTenantId, einstAmpel, personen, einladungPersonalCodeOffen],
   )
 
   const ichName = useMemo(() => {

@@ -127,12 +127,15 @@ export function getFamilieEffectiveCapabilities(
  * - Inhaber:in: volle Leiste bei Erst-Einrichtung ohne „Du“ oder ohne Code auf der Karte; **nicht** solange
  *   „Du“ + Code auf der Karte existieren, die Sitzung den Code aber noch nicht bestätigt hat (gleiche kompakte
  *   Ansicht wie bei anderen Rollen – kein Familien-Dropdown hinter dem Zugangs-Dialog).
+ * - Einladungs-QR (?m=): ohne „Du“ trotzdem kompakt, solange `einladungPersonalCodeOffen` (URL/Pending) – nicht
+ *   die volle Homepage beim Mobil-Scan (Default-Rolle ist inhaber).
  */
 export function isK2FamilieNurMitgliedEinstiegModus(
   rolle: K2FamilieRolle,
   tenantId: string,
   einst: K2FamilieEinstellungen,
   personen: K2FamiliePerson[],
+  einladungPersonalCodeOffen = false,
 ): boolean {
   const ich = einst.ichBinPersonId?.trim()
   const codeAufDuKarte = ich
@@ -142,7 +145,9 @@ export function isK2FamilieNurMitgliedEinstiegModus(
   const wartetAufPersoenlicheCodeBestaetigung = Boolean(ich && codeAufDuKarte && !sessionBestaetigtFuerIch)
 
   if (rolle === 'inhaber') {
-    return wartetAufPersoenlicheCodeBestaetigung
+    if (wartetAufPersoenlicheCodeBestaetigung) return true
+    if (!ich && einladungPersonalCodeOffen) return true
+    return false
   }
   if (!ich) return true
   if (!codeAufDuKarte) return false

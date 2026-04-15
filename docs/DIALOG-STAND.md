@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 15.04.26 – **K2 Familie Mobil-Scan Einladungs-QR: nur Anmelde-/Zugangs-Fokus** – Ursache: Default-Rolle **Inhaber** + noch kein „Du“ → `nurMitgliedEinstieg` war **false** → volle Homepage. **Fix:** `isFamilieEinladungPersonalCodeOffen` (URL `?m=` / Pending); `isK2FamilieNurMitgliedEinstiegModus` 5. Parameter; Layout + HomePage + `FamilieTenantContext` (Event → Revision). Tests `familieEinladungPending`, `familieIdentitaet`. **Commit:** *(folgt nach Push)*
+
+**Was wir JETZT tun:** Nach Deploy: Einladungs-QR mit `?m=` am Handy scannen → bis Code bestätigt: **kompakte** Kopfzeile „Persönlicher Zugang“, keine volle Meine-Familie-Homepage.
+
+---
+
 **Letzter Stand:** 15.04.26 – **K2 Familie Mobil Inhaber: volle Leiste und Code-Banner zugleich** – Ursache: `isK2FamilieNurMitgliedEinstiegModus` schloss **Inhaber:in** vom kompakten „Nur-Zugang“-Modus aus. **Fix:** Wie Leser/Bearbeiter: **kompakt**, wenn auf der „Du“-Karte **Code da** und die Sitzung den persönlichen Code **noch nicht bestätigt** hat; **volle Oberfläche** nur ohne Du/Code (Erst-Einrichtung). Tests `familieIdentitaet.test.ts`. **Commit:** **`50b6dec3`** ✅ GitHub
 
 **Was wir JETZT tun:** Wenn Vercel **Ready**: am Handy **Stand-Badge tippen** → K2 Familie: bis **Bestätigen** nur schmale Kopfzeile + Zugang; danach normale Navigation. Bei **Keine Verbindung zum Server**: WLAN prüfen, ggf. **Daten vom Server laden**.

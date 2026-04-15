@@ -119,6 +119,10 @@ describe('isK2FamilieNurMitgliedEinstiegModus', () => {
     expect(isK2FamilieNurMitgliedEinstiegModus('inhaber', TID, {}, [])).toBe(false)
   })
 
+  it('Inhaber ohne Du, Einladungs-QR offen: kompakt (Mobil-Scan, nicht ganze Homepage)', () => {
+    expect(isK2FamilieNurMitgliedEinstiegModus('inhaber', TID, {}, [], true)).toBe(true)
+  })
+
   it('Inhaber mit Du, ohne Code auf Karte: volle Oberfläche', () => {
     expect(isK2FamilieNurMitgliedEinstiegModus('inhaber', TID, { ichBinPersonId: 'p1' }, [person('p1')])).toBe(false)
   })

@@ -3,6 +3,7 @@ import {
   K2_FAMILIE_EINLADUNG_PENDING_KEY,
   clearFamilieEinladungPending,
   getFamilieEinladungPending,
+  isFamilieEinladungPersonalCodeOffen,
   setFamilieEinladungPending,
 } from '../utils/familieEinladungPending'
 
@@ -25,5 +26,35 @@ describe('familieEinladungPending', () => {
     setFamilieEinladungPending({ t: 'bad', tenantInvalid: true })
     const p = getFamilieEinladungPending()
     expect(p?.tenantInvalid).toBe(true)
+  })
+})
+
+describe('isFamilieEinladungPersonalCodeOffen', () => {
+  const TID = 'familie-einladung-test'
+
+  beforeEach(() => {
+    sessionStorage.removeItem(K2_FAMILIE_EINLADUNG_PENDING_KEY)
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', '/')
+    }
+  })
+
+  it('true: Pending mit persönlichem Code und passendem Tenant', () => {
+    setFamilieEinladungPending({ t: TID, m: 'AB12' })
+    expect(isFamilieEinladungPersonalCodeOffen(TID)).toBe(true)
+  })
+
+  it('true: tenantInvalid (manuelle Korrektur)', () => {
+    setFamilieEinladungPending({ t: 'bad', tenantInvalid: true })
+    expect(isFamilieEinladungPersonalCodeOffen(TID)).toBe(true)
+  })
+
+  it('false: weder URL noch Pending', () => {
+    expect(isFamilieEinladungPersonalCodeOffen(TID)).toBe(false)
+  })
+
+  it('true: ?m= und ?t= passen zum aktuellen Tenant', () => {
+    window.history.replaceState(null, '', `/?m=CD34&t=${encodeURIComponent(TID)}`)
+    expect(isFamilieEinladungPersonalCodeOffen(TID)).toBe(true)
   })
 })

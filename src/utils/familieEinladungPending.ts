@@ -4,6 +4,8 @@
  * „Meine Familie“ kann erneut versuchen und den Code vorbefüllen.
  */
 
+import { trimMitgliedsNummerEingabe } from './familieMitgliedsNummer'
+
 export const K2_FAMILIE_EINLADUNG_PENDING_KEY = 'k2-familie-einladung-pending'
 export const K2_FAMILIE_EINLADUNG_PENDING_EVENT = 'k2-familie-einladung-pending'
 
@@ -72,4 +74,28 @@ export function clearFamilieEinladungPending(): void {
   } catch {
     /* ignore */
   }
+}
+
+/**
+ * Einladungs-QR mit persönlichem Code (m=) oder Pending – noch nicht die volle Inhaber-„Erst-Einrichtung“
+ * zeigen (Default-Rolle ist inhaber; ohne „Du“ wäre sonst die ganze Homepage sichtbar).
+ */
+export function isFamilieEinladungPersonalCodeOffen(tenantId: string): boolean {
+  if (typeof window === 'undefined') return false
+  const p = getFamilieEinladungPending()
+  if (p?.tenantInvalid) return true
+  if (p?.m?.trim()) {
+    const pt = p.t?.trim().toLowerCase()
+    if (!pt || pt === tenantId) return true
+  }
+  try {
+    const sp = new URLSearchParams(window.location.search)
+    const m = trimMitgliedsNummerEingabe(sp.get('m') ?? '')
+    if (!m) return false
+    const tRaw = sp.get('t')?.trim().toLowerCase()
+    if (!tRaw || tRaw === tenantId) return true
+  } catch {
+    /* ignore */
+  }
+  return false
 }
