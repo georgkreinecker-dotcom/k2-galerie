@@ -410,6 +410,8 @@ export default function K2FamilieHomePage() {
         } else {
           clearGerateVertrauen(currentTenantId)
         }
+        /** Wie Einladungs-QR mit Code: gleich zur eigenen Personenkarte, nicht nur Hinweis auf der Startseite. */
+        navigate(`${familieR.personen}/${pid}`, { replace: true })
       } else {
         setRegistrierungHinweis('Speichern ist fehlgeschlagen. Bitte später erneut versuchen.')
       }
