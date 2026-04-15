@@ -19,11 +19,15 @@ import {
   K2_FAMILIE_ROLLEN_LABELS,
 } from '../types/k2FamilieRollen'
 import { adminTheme } from '../config/theme'
-import { getFamilieTenantDisplayName } from '../data/familieHuberMuster'
+import { getFamilieTenantDisplayName, FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
 import FamilieBackButton from './FamilieBackButton'
 import FamilieLeitstrukturPanel from './FamilieLeitstrukturPanel'
 import { FamilieEinladungQuerySync } from './FamilieEinladungQuerySync'
+import { FamilieApfMeineFamilieSync } from './FamilieApfMeineFamilieSync'
+import { FamilieMusterSessionEnforcer } from './FamilieMusterSessionEnforcer'
 import { FamilieCloudAutoSync } from './K2Familie/FamilieCloudAutoSync'
+import { isFamilieNurMusterSession } from '../utils/familieMusterSession'
+import { isK2FamilieApfLocalhost, resolveApfMeineFamilieTenantId } from '../config/k2FamilieApfDefaults'
 
 /** Gleicher String wie `K2_FAMILIE_SESSION_UPDATED` in `familieStorage.ts` — hier als Literal, damit kein Laufzeit-ReferenceError (z. B. HMR). */
 const FAMILIE_SESSION_UPDATED_EVENT = 'k2-familie-einstellungen-updated'
@@ -35,6 +39,16 @@ function FamilieTenantToolbar() {
   const { currentTenantId, tenantList, setCurrentTenantId, addTenant } = useFamilieTenant()
   const { capabilities } = useFamilieRolle()
   const kannInstanz = capabilities.canManageFamilienInstanz
+  const nurMuster = isFamilieNurMusterSession()
+  /** APf localhost: nur erkannte Stammfamilie (Kreinecker) – kein Huber, keine Platzhalter im Dropdown. */
+  const apfStammId = !nurMuster && isK2FamilieApfLocalhost() ? resolveApfMeineFamilieTenantId() : null
+  const apfNurStamm = apfStammId != null
+  const eingeschraenkteAuswahl = nurMuster || apfNurStamm
+  const displayIds = nurMuster
+    ? [FAMILIE_HUBER_TENANT_ID]
+    : apfNurStamm
+      ? [apfStammId!]
+      : tenantList
   /** Dropdown-Labels lesen Anzeigenamen aus dem Speicher — ohne Re-Render bleibt alter Text nach Speichern. */
   const [, setEinstellungenTick] = useState(0)
   useEffect(() => {
@@ -43,8 +57,65 @@ function FamilieTenantToolbar() {
     return () => window.removeEventListener(FAMILIE_SESSION_UPDATED_EVENT, onUpd)
   }, [])
 
-  /** Nach Zusammenführen oft nur noch eine Familie – dann keine redundanten Auswahl-UI. */
-  if (tenantList.length <= 1) return null
+  /** Volle Liste: bei nur einer Familie Toolbar ausblenden. Eingeschränkte Auswahl (Muster / APf-Stamm) zeigt immer eine Zeile. */
+  if (!eingeschraenkteAuswahl && tenantList.length <= 1) return null
+
+  const selectValue = eingeschraenkteAuswahl
+    ? displayIds.includes(currentTenantId)
+      ? currentTenantId
+      : displayIds[0]!
+    : currentTenantId
+
+  const selectStyle = {
+    background: '#fffefb',
+    border: '1px solid rgba(181, 74, 30, 0.28)',
+    borderRadius: t.radius,
+    color: t.text,
+    padding: '0.4rem 0.65rem',
+    fontSize: '0.88rem',
+    fontFamily: 'inherit',
+    minWidth: 160,
+  } as const
+
+  if (eingeschraenkteAuswahl) {
+    const hinweis = nurMuster
+      ? 'Nur Musterfamilie (Demo): In der Liste erscheint nur „Familie Huber“ – keine weiteren Familien oder Platzhalter.'
+      : 'Auf der APf: Hier nur deine Stammfamilie – kein Wechsel zu Muster Huber und keine Platzhalter-Einträge im Dropdown.'
+    return (
+      <div
+        className="k2-familie-tenant-toolbar k2-familie-no-print"
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.5rem',
+          padding: '0.55rem 1rem',
+          background: t.bgCard,
+          borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
+          fontFamily: t.fontBody,
+        }}
+      >
+        <p style={{ margin: 0, fontSize: '0.8rem', color: t.muted, lineHeight: 1.45 }}>{hinweis}</p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem' }}>
+          <span style={{ fontSize: '0.88rem', color: t.muted }} title={nurMuster ? 'Demo-Mandant' : 'Stammfamilie auf diesem Gerät'}>
+            Aktive Familie wählen:
+          </span>
+          <select
+            aria-label="Aktive Familie wählen"
+            title={nurMuster ? 'In der Muster-Sitzung nur Huber.' : 'Auf der APf nur deine Stammfamilie.'}
+            value={selectValue}
+            onChange={(e) => setCurrentTenantId(e.target.value)}
+            style={selectStyle}
+          >
+            {displayIds.map((id) => (
+              <option key={id} value={id}>
+                {getFamilieTenantDisplayName(id, 'Standard')}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div
@@ -68,16 +139,7 @@ function FamilieTenantToolbar() {
         title="Zu welcher Familie soll die App gerade gehören? Umbenennen: Stammbaum oder Einstellungen → Anzeigename."
         value={currentTenantId}
         onChange={(e) => setCurrentTenantId(e.target.value)}
-        style={{
-          background: '#fffefb',
-          border: '1px solid rgba(181, 74, 30, 0.28)',
-          borderRadius: t.radius,
-          color: t.text,
-          padding: '0.4rem 0.65rem',
-          fontSize: '0.88rem',
-          fontFamily: 'inherit',
-          minWidth: 160,
-        }}
+        style={selectStyle}
       >
         {tenantList.map((id) => (
           <option key={id} value={id}>
@@ -396,6 +458,8 @@ export default function K2FamilieLayout() {
     <FamilieTenantProvider>
       <FamilieRolleProvider>
         <FamilieEinladungQuerySync />
+        <FamilieApfMeineFamilieSync />
+        <FamilieMusterSessionEnforcer />
         <FamilieCloudAutoSync />
         <div className="k2-familie-layout-shell">
           <FamilieLeitstrukturPanel />
