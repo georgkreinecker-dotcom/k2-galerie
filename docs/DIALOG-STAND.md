@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 14.04.26 (Abend) – **Session-Ende** – **K2 Familie:** Stammbaum, **FamilieEinladungQuerySync**, Einstellungen, Layout/Verwaltung, `App.css`; Build-Stand-Dateien. **Tests + `npm run build` grün.** **Commit:** **`d2c56339`** ✅ GitHub
+
+**Was wir JETZT tun:** Nach Deploy: Stammbaum/Einladung kurz prüfen; sonst wie geplant K2 Familie (Zusammenführen, Inhaber, Mobil).
+
+---
+
 **Letzter Stand:** 14.04.26 – **K2-Welt Strategie (strategisch, nicht mök2): eigene Seite + Smart-Board-Mappe** – Block aus **Marketing ök2** ausgelagert; **Route** `/projects/k2-galerie/k2-welt-strategie`, **Smart Panel:** Mappe **K2-Welt – Strategie & Portfolio**. **Commit:** **`6f4b7990`** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy: APf → Smart Board → Mappe **K2-Welt**; Inhalt/PDF kurz prüfen.
