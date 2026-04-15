@@ -12,12 +12,14 @@ describe('getFamilieLoadHinweisFuerNutzer', () => {
     expect(t.toLowerCase()).not.toMatch(/wlan.*prüfen/i)
   })
 
-  it('not_configured: eigener Hinweis', () => {
+  it('not_configured: eigener Hinweis, kein Galerie-Produktname', () => {
     const t = getFamilieLoadHinweisFuerNutzer({
       ok: false,
       source: 'local_only',
       reason: 'not_configured',
     })
     expect(t).toContain('Cloud')
+    expect(t).toContain('K2 Familie')
+    expect(t.toLowerCase()).not.toContain('galerie-app')
   })
 })

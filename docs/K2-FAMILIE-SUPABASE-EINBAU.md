@@ -3,6 +3,8 @@
 **Stand:** 05.03.26 – **umgesetzt.**  
 **Zweck:** Übersicht, was sich ändert, wenn K2 Familie (Personen, Momente, Events) wie K2 Galerie über Supabase synchronisiert wird. Gleicher Ansatz wie bei Artworks: Supabase = Quelle, localStorage = Cache, Load mergt mit lokal, Save pusht nach Supabase.
 
+**Hinweis (Edge-Funktion `familie`):** Synchronisiert werden **Personen, Momente, Events** und optional **Einstellungen**. Weitere Bereiche (z. B. Gaben, Beiträge, Zweige, Geschichten) liegen nur in **localStorage**, bis die API dafür erweitert wird – nicht verwechseln mit „alles in der Cloud“.
+
 ---
 
 ## 1. Aktuell (ohne Supabase)

@@ -94,7 +94,7 @@ function withMeta(data: FamilieData, loadMeta: FamilieLoadMeta): FamilieLoadResu
 export function getFamilieLoadHinweisFuerNutzer(loadMeta: FamilieLoadMeta): string {
   if (loadMeta.ok) return ''
   if (loadMeta.reason === 'not_configured') {
-    return 'Cloud ist in dieser Umgebung nicht eingebunden (Supabase fehlt). Bitte die veröffentlichte Galerie-App im Browser öffnen – nur dort ist K2 Familie mit dem Server verbunden.'
+    return 'Cloud ist in dieser Umgebung nicht eingebunden (Supabase fehlt). Bitte K2 Familie in der veröffentlichten Website im Browser öffnen – nur dort ist die Familien-Cloud mit dem Server verbunden.'
   }
   if (loadMeta.reason === 'http') {
     return `Der Server hat nicht geantwortet (Fehler ${String(loadMeta.httpStatus ?? '?')}). Kurz warten und „Daten vom Server laden“ erneut tippen.`
