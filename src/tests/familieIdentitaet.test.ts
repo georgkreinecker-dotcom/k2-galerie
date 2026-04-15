@@ -5,6 +5,10 @@ import {
   isK2FamilieNurMitgliedEinstiegModus,
 } from '../utils/familieIdentitaet'
 import { clearIdentitaetBestaetigt, setIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
+import {
+  clearFamilieFamilienQrKompaktSession,
+  setFamilieFamilienQrKompaktSession,
+} from '../utils/familieEinladungPending'
 import type { K2FamiliePerson } from '../types/k2Familie'
 
 const TID = 'default'
@@ -134,6 +138,12 @@ describe('isK2FamilieNurMitgliedEinstiegModus', () => {
   it('Inhaber mit Du und Code, Sitzung bestätigt: volle Oberfläche', () => {
     setIdentitaetBestaetigt(TID, 'p1')
     expect(isK2FamilieNurMitgliedEinstiegModus('inhaber', TID, { ichBinPersonId: 'p1' }, [p1])).toBe(false)
+  })
+
+  it('Inhaber mit altem Du und Code, Sitzung bestätigt, Familien-QR-Kompakt aktiv: kompakt (Session schlägt Speicher)', () => {
+    setIdentitaetBestaetigt(TID, 'p1')
+    setFamilieFamilienQrKompaktSession(TID)
+    expect(isK2FamilieNurMitgliedEinstiegModus('inhaber', TID, { ichBinPersonId: 'p1' }, [p1])).toBe(true)
   })
 
   it('Leser mit Du und Code, Sitzung offen: kompakt', () => {

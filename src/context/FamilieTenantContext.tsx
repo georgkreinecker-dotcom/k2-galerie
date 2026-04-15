@@ -171,6 +171,15 @@ export function FamilieTenantProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('storage', onStorage)
   }, [bumpFamilieStorageRevision])
 
+  /** Safari: Seite aus bfcache zurück → Session/Einladung neu einlesen (kein Stale-UI mit alter „voller“ Ansicht). */
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) bumpFamilieStorageRevision()
+    }
+    window.addEventListener('pageshow', onPageShow)
+    return () => window.removeEventListener('pageshow', onPageShow)
+  }, [bumpFamilieStorageRevision])
+
   const value: ContextValue = {
     currentTenantId,
     tenantList,

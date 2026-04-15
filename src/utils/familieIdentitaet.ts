@@ -12,6 +12,7 @@ import type {
 } from '../types/k2FamilieRollen'
 import { getFamilieRollenCapabilities } from '../types/k2FamilieRollen'
 import { trimMitgliedsNummerEingabe } from './familieMitgliedsNummer'
+import { isFamilieFamilienQrKompaktSession } from './familieEinladungPending'
 import { loadIdentitaetBestaetigt } from './familieIdentitaetStorage'
 
 /**
@@ -127,15 +128,17 @@ export function getFamilieEffectiveCapabilities(
  * - Inhaber:in: volle Leiste bei Erst-Einrichtung ohne „Du“ oder ohne Code auf der Karte; **nicht** solange
  *   „Du“ + Code auf der Karte existieren, die Sitzung den Code aber noch nicht bestätigt hat (gleiche kompakte
  *   Ansicht wie bei anderen Rollen – kein Familien-Dropdown hinter dem Zugangs-Dialog).
- * - Einladungs-QR (?m=): ohne „Du“ trotzdem kompakt, solange `einladungPersonalCodeOffen` (URL/Pending) – nicht
- *   die volle Homepage beim Mobil-Scan (Default-Rolle ist inhaber).
+ * - Einladungs-QR (persönlich ?m= oder allgemeine Familien-QR ?z= / Session): ohne „Du“ trotzdem kompakt,
+ *   solange `einladungNurZugangAnsicht` – nicht die volle Homepage beim Scan (Default-Rolle ist inhaber).
+ * - **Allgemeine Familien-QR (`k2-familie-familien-qr-kompakt`):** kompakt auch wenn altes „Du“ noch in
+ *   localStorage liegt (Safari / anderes Gerät – alter Speicher darf die Einladungsansicht nicht überschreiben).
  */
 export function isK2FamilieNurMitgliedEinstiegModus(
   rolle: K2FamilieRolle,
   tenantId: string,
   einst: K2FamilieEinstellungen,
   personen: K2FamiliePerson[],
-  einladungPersonalCodeOffen = false,
+  einladungNurZugangAnsicht = false,
 ): boolean {
   const ich = einst.ichBinPersonId?.trim()
   const codeAufDuKarte = ich
@@ -146,7 +149,9 @@ export function isK2FamilieNurMitgliedEinstiegModus(
 
   if (rolle === 'inhaber') {
     if (wartetAufPersoenlicheCodeBestaetigung) return true
-    if (!ich && einladungPersonalCodeOffen) return true
+    /** Nach Scan allgemeiner Familien-QR: Session hat Vorrang vor altem „Du“ im Speicher. */
+    if (isFamilieFamilienQrKompaktSession(tenantId)) return true
+    if (!ich && einladungNurZugangAnsicht) return true
     return false
   }
   if (!ich) return true

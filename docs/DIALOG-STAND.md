@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 15.04.26 – **K2 Familie allgemeine Familien-QR (`t`+`z`): kompakt trotz altem „Du“ / Safari** – Ursache: (1) **Inhaber** mit gespeichertem „Du“ → `nurMitgliedEinstieg` war **false** obwohl Familien-QR-Session aktiv; (2) **Mount-Effect** auf Meine Familie löschte **`k2-familie-familien-qr-kompakt`** sobald irgendein „Du“ existierte → frische Session weg. **Fix:** `isK2FamilieNurMitgliedEinstiegModus`: **`isFamilieFamilienQrKompaktSession(tenantId)`** zählt wie Einladung (vor „voller“ Inhaber-Fläche); Kompakt-Session erst nach **erfolgreichem** Speichern von „Du“ im Zugangsflow leeren + Revision; **`pageshow` `persisted`** in `FamilieTenantContext` → Re-Render nach Safari-bfcache. Test `familieIdentitaet`. **Commit:** *(folgt nach Push)*
+
+**Was wir JETZT tun:** Nach Deploy: allgemeine Familien-QR am Gerät mit **bereits gewähltem „Du“** scannen → **nur** Zugangs-/Anmelde-Fokus bis Bestätigung/Aktion; nicht die volle Homepage.
+
+---
+
 **Letzter Stand:** 15.04.26 – **K2 Familie „Keine Verbindung“ / WLAN-Hinweis** – Technisch: `fetch` zur Supabase-Edge-Function **`familie`** wirft oft (CORS, Safari, Kurzstörung) → **reason `network`**. Bisher pauschal „WLAN prüfen“ – irreführend bei stabilem Netz. **Fix:** neutraler Nutzertext + **`networkDetail`** in Konsole. **Commit:** **`b79a4714`** ✅ GitHub
 
 ---

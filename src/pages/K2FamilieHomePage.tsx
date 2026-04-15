@@ -15,8 +15,9 @@ import { loadEinstellungen, saveEinstellungen, loadPersonen, K2_FAMILIE_SESSION_
 import { getFamilieLoadHinweisFuerNutzer, loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
 import {
   clearFamilieEinladungPending,
+  clearFamilieFamilienQrKompaktSession,
   getFamilieEinladungPending,
-  isFamilieEinladungPersonalCodeOffen,
+  isFamilieEinladungNurZugangAnsicht,
   K2_FAMILIE_EINLADUNG_PENDING_EVENT,
 } from '../utils/familieEinladungPending'
 import {
@@ -135,8 +136,8 @@ export default function K2FamilieHomePage() {
   const welcomeImage = content.welcomeImage || ''
 
   /** Volle Seite erst nach Einrichtung – vermeidet Verwechslung mit Musterfamilie in Leisten/Dropdown. */
-  const einladungPersonalCodeOffen = useMemo(
-    () => isFamilieEinladungPersonalCodeOffen(currentTenantId),
+  const einladungNurZugangAnsicht = useMemo(
+    () => isFamilieEinladungNurZugangAnsicht(currentTenantId),
     [currentTenantId, location.search, familieStorageRevision],
   )
   const nurMitgliedEinstieg = useMemo(
@@ -146,9 +147,9 @@ export default function K2FamilieHomePage() {
         currentTenantId,
         einstAmpel,
         personen,
-        einladungPersonalCodeOffen,
+        einladungNurZugangAnsicht,
       ),
-    [rolleGewaehlt, currentTenantId, einstAmpel, personen, einladungPersonalCodeOffen],
+    [rolleGewaehlt, currentTenantId, einstAmpel, personen, einladungNurZugangAnsicht],
   )
 
   const ichName = useMemo(() => {
@@ -233,6 +234,8 @@ export default function K2FamilieHomePage() {
         if (saveEinstellungen(currentTenantId, { ...einst, ichBinPersonId: pid })) {
           setIdentitaetBestaetigt(currentTenantId, pid)
           clearFamilieEinladungPending()
+          clearFamilieFamilienQrKompaktSession()
+          bumpFamilieStorageRevision()
           navigate(`${familieR.personen}/${pid}`, { replace: true })
           return
         }
@@ -387,6 +390,8 @@ export default function K2FamilieHomePage() {
     if (saveEinstellungen(currentTenantId, { ...einst, ichBinPersonId: pid })) {
       setRegistrierungHinweis('')
       clearFamilieEinladungPending()
+      clearFamilieFamilienQrKompaktSession()
+      bumpFamilieStorageRevision()
       setIdentitaetBestaetigt(currentTenantId, pid)
       if (loadIdentitaetBestaetigt(currentTenantId) !== pid) {
         setRegistrierungHinweis(
