@@ -5,15 +5,22 @@
  */
 
 import { useLayoutEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { K2_FAMILIE_SESSION_UPDATED, loadEinstellungen, loadPersonen, saveEinstellungen } from '../utils/familieStorage'
 import { setIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
 import { findPersonIdByMitgliedsNummer, trimMitgliedsNummerEingabe } from '../utils/familieMitgliedsNummer'
 import { loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
+import {
+  clearFamilieEinladungPending,
+  setFamilieEinladungPending,
+} from '../utils/familieEinladungPending'
+import { clearFamilieNurMusterSession } from '../utils/familieMusterSession'
+import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
 
-const R_PERSONEN = PROJECT_ROUTES['k2-familie'].personen
+const R_FAM = PROJECT_ROUTES['k2-familie']
+const R_PERSONEN = R_FAM.personen
 
 function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms))
@@ -36,6 +43,7 @@ export const K2_FAMILIE_EINSTELLUNGEN_UPDATED = K2_FAMILIE_SESSION_UPDATED
 
 export function FamilieEinladungQuerySync() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const {
     currentTenantId,
@@ -57,14 +65,23 @@ export function FamilieEinladungQuerySync() {
 
     let cancelled = false
 
-    const strip = () => {
+    /**
+     * Einladungs-Parameter aus der URL nehmen.
+     * Bei **Muster-Demo** `t=huber`: `t` stehen lassen – sonst wird die URL „nackt“, `FamilieApfMeineFamilieSync`
+     * beendet die Demo-Sitzung und auf der APf springt die Auswahl auf Kreinecker statt Huber.
+     */
+    const strip = (removeTenantParamToo?: boolean) => {
       const next = new URLSearchParams(searchParams)
-      next.delete('t')
       next.delete('z')
       next.delete('m')
       next.delete('fn')
       next.delete('v')
       next.delete('_')
+      if (removeTenantParamToo || t !== FAMILIE_HUBER_TENANT_ID) {
+        next.delete('t')
+      } else {
+        next.set('t', FAMILIE_HUBER_TENANT_ID)
+      }
       setSearchParams(next, { replace: true })
     }
 
@@ -89,7 +106,8 @@ export function FamilieEinladungQuerySync() {
     ): Promise<string | null> => {
       const mNorm = trimMitgliedsNummerEingabe(mParam ?? '')
       if (!mNorm) return null
-      const delaysMs = [0, 200, 500, 1200, 2000]
+      /** Mobil / schwaches Netz: mehr Versuche und längere Abstände (gesamt bis ~14 s). */
+      const delaysMs = [0, 300, 700, 1400, 2400, 3800, 5500]
       for (let i = 0; i < delaysMs.length; i++) {
         if (i > 0) await sleep(delaysMs[i])
         if (cancelled) return null
@@ -110,8 +128,20 @@ export function FamilieEinladungQuerySync() {
       return null
     }
 
+    /** QR landet manchmal auf Einstellungen/Stammbaum: für manuellen Code immer „Meine Familie“. */
+    const goMeineFamilieIfNeeded = () => {
+      const path = location.pathname.replace(/\/$/, '')
+      const target = R_FAM.meineFamilie.replace(/\/$/, '')
+      if (path !== target) {
+        navigate(R_FAM.meineFamilie, { replace: true })
+      }
+    }
+
     const run = async () => {
       if (t) {
+        if (t !== FAMILIE_HUBER_TENANT_ID) {
+          clearFamilieNurMusterSession()
+        }
         let switched: boolean
         if (tenantList.includes(t)) {
           setCurrentTenantId(t)
@@ -120,7 +150,15 @@ export function FamilieEinladungQuerySync() {
           switched = ensureTenantInListAndSelect(t)
         }
         if (!switched) {
-          strip()
+          setFamilieEinladungPending({
+            t,
+            z,
+            ...(m ? { m } : {}),
+            fn,
+            tenantInvalid: true,
+          })
+          strip(true)
+          goMeineFamilieIfNeeded()
           return
         }
         /** Einladung: `z` gilt für alle (Gäste brauchen die Nummer im Speicher, nicht nur Inhaber:innen). */
@@ -138,7 +176,13 @@ export function FamilieEinladungQuerySync() {
         let pidFromM: string | null = null
         if (m) pidFromM = await applyPersoenlicheMitgliedsNummerWithRetries(t, m)
         strip()
-        if (pidFromM) navigate(`${R_PERSONEN}/${pidFromM}`, { replace: true })
+        if (pidFromM) {
+          clearFamilieEinladungPending()
+          navigate(`${R_PERSONEN}/${pidFromM}`, { replace: true })
+        } else if (m) {
+          setFamilieEinladungPending({ t, z, m, fn })
+          goMeineFamilieIfNeeded()
+        }
         return
       }
       if (!t && z) {
@@ -154,14 +198,26 @@ export function FamilieEinladungQuerySync() {
         let pidFromM: string | null = null
         if (m) pidFromM = await applyPersoenlicheMitgliedsNummerWithRetries(currentTenantId, m)
         strip()
-        if (pidFromM) navigate(`${R_PERSONEN}/${pidFromM}`, { replace: true })
+        if (pidFromM) {
+          clearFamilieEinladungPending()
+          navigate(`${R_PERSONEN}/${pidFromM}`, { replace: true })
+        } else if (m) {
+          setFamilieEinladungPending({ z, m, fn })
+          goMeineFamilieIfNeeded()
+        }
         return
       }
       if (!t && !z && m) {
         if (cancelled) return
         const pidFromM = await applyPersoenlicheMitgliedsNummerWithRetries(currentTenantId, m)
         strip()
-        if (pidFromM) navigate(`${R_PERSONEN}/${pidFromM}`, { replace: true })
+        if (pidFromM) {
+          clearFamilieEinladungPending()
+          navigate(`${R_PERSONEN}/${pidFromM}`, { replace: true })
+        } else {
+          setFamilieEinladungPending({ m, fn })
+          goMeineFamilieIfNeeded()
+        }
         return
       }
       if (!t && !z && !m && fn) {
@@ -186,6 +242,8 @@ export function FamilieEinladungQuerySync() {
     currentTenantId,
     bumpFamilieStorageRevision,
     navigate,
+    location.pathname,
+    location.search,
   ])
 
   return null

@@ -1,6 +1,6 @@
 /**
  * /projects/k2-familie → „Meine Familie“ (täglicher Einstieg). Query (?t=, ?z=, optional ?m=) erhalten.
- * Umschauen (Musterfamilie): Route **einstieg** oder Flyer **willkommen** mit ?t=huber.
+ * Umschauen (Musterfamilie): **meine-familie** oder Flyer **willkommen** mit ?t=huber.
  */
 
 import { Navigate, useLocation } from 'react-router-dom'

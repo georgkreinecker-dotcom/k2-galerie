@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 15.04.26 – **K2 Familie Musterfamilie:** Nach „Weiter zur Übersicht“ / Einladungs-Strip sprang die Auswahl auf **Kreinecker** statt **Huber** – **`strip()` in `FamilieEinladungQuerySync`** entfernte `t=huber`. **Fix:** Bei **`t=huber`** bleibt `t` in der URL; bei ungültigem Tenant **`strip(true)`**. Sidebar **Musterfamilie** + Flyer-Link direkt **`meine-familie?t=huber`** (keine Zwischenseite nötig). **Commit:** *(folgt nach Push)*
+
+**Was wir JETZT tun:** Nach Deploy: Musterfamilie in der Sidebar → **Familie Huber** bleibt; URL zeigt weiter `?t=huber`.
+
+---
+
 **Letzter Stand:** 14.04.26 (Abend) – **Session-Ende** – **K2 Familie:** Stammbaum, **FamilieEinladungQuerySync**, Einstellungen, Layout/Verwaltung, `App.css`; Build-Stand-Dateien. **Tests + `npm run build` grün.** **Commit:** **`d2c56339`** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy: Stammbaum/Einladung kurz prüfen; sonst wie geplant K2 Familie (Zusammenführen, Inhaber, Mobil).

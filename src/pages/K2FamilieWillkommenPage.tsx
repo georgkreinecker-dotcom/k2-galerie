@@ -7,15 +7,15 @@
 
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useLayoutEffect } from 'react'
-import { AGB_ROUTE, PLATFORM_ROUTES, PROJECT_ROUTES } from '../config/navigation'
+import { PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
+import { setFamilieNurMusterSession } from '../utils/familieMusterSession'
 
 const BG = 'linear-gradient(160deg, #042f2e 0%, #0f172a 48%, #134e4a 100%)'
 const CARD = 'rgba(15, 23, 42, 0.55)'
 const TEXT = '#f0f9ff'
 const MUTED = 'rgba(240,249,255,0.78)'
 const ACCENT = '#2dd4bf'
-const ACCENT_HOVER = '#5eead4'
 
 export default function K2FamilieWillkommenPage() {
   const R = PROJECT_ROUTES['k2-familie']
@@ -29,7 +29,11 @@ export default function K2FamilieWillkommenPage() {
     /** Wie Meine Familie / Einladungs-QR: Anzeigename für Geräte ohne gemeinsamen Speicher — nicht verwerfen. */
     const fnRaw = searchParams.get('fn')?.trim()
     const fn = fnRaw ? fnRaw.slice(0, 240) : ''
-    if (!t && !z) return
+    /** Auch nur ?m= (ältere Links) oder nur ?fn= weiterreichen – sonst bleibt der Scan auf der Marketing-Seite ohne Layout-Sync. */
+    if (!t && !z && !m && !fn) {
+      setFamilieNurMusterSession(true)
+      return
+    }
     const next = new URLSearchParams()
     if (t) next.set('t', t)
     if (z) next.set('z', z)
@@ -73,7 +77,7 @@ export default function K2FamilieWillkommenPage() {
           <p style={{ fontWeight: 700, marginBottom: '0.85rem', color: ACCENT }}>Ein Klick weiter</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
             <Link
-              to={`${R.einstieg}?t=huber`}
+              to={`${R.meineFamilie}?t=huber`}
               style={{
                 display: 'block',
                 textAlign: 'center',
@@ -88,37 +92,8 @@ export default function K2FamilieWillkommenPage() {
             >
               Weiter zum Familien-Einstieg
             </Link>
-            <Link
-              to={R.stammbaum}
-              style={{
-                display: 'block',
-                textAlign: 'center',
-                padding: '0.75rem 1rem',
-                borderRadius: 12,
-                border: `1px solid ${ACCENT}88`,
-                color: ACCENT_HOVER,
-                fontWeight: 600,
-                textDecoration: 'none',
-              }}
-            >
-              Direkt zum Stammbaum
-            </Link>
-            <Link
-              to={`${R.uebersicht}#k2-familie-lizenz-bruecke`}
-              style={{ color: MUTED, fontSize: '0.95rem', textAlign: 'center', textDecoration: 'underline', textUnderlineOffset: 3 }}
-            >
-              Leitbild, Vision & Lizenz – Kurzüberblick
-            </Link>
           </div>
         </div>
-
-        <p style={{ fontSize: '0.92rem', color: MUTED, lineHeight: 1.55 }}>
-          <Link to={R.benutzerHandbuch} style={{ color: ACCENT_HOVER, fontWeight: 600 }}>Handbuch K2 Familie</Link>
-          {' · '}
-          <Link to={AGB_ROUTE} style={{ color: MUTED }}>AGB</Link>
-          {' · '}
-          <Link to={PLATFORM_ROUTES.projects} style={{ color: MUTED }}>Alle Projekte</Link>
-        </p>
       </main>
 
       <footer
