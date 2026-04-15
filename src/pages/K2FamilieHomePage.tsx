@@ -346,7 +346,9 @@ export default function K2FamilieHomePage() {
       }
       if (result.personen.length === 0) {
         setRegistrierungHinweis(
-          'Vom Server sind noch keine Personen für diese Familie da. Prüfen: richtige Familie aktiv? Hat die Inhaber:in am Mac gespeichert und mit der Cloud abgeglichen?',
+          (result.loadMeta.serverPersonenCount ?? 0) === 0
+            ? 'In der Cloud sind für diese Familie noch keine Personen. Prüfen: dieselbe Familie wie am Mac (QR/URL)? Inhaber:in am Mac Personen angelegt und mit der Cloud abgeglichen?'
+            : 'Die Daten konnten nach dem Laden nicht im Gerätespeicher abgelegt werden (z. B. Speicher voll). Seite kurz neu öffnen oder Speicherplatz freigeben, dann „Daten vom Server laden“ erneut tippen.',
         )
       }
     } finally {
@@ -369,47 +371,50 @@ export default function K2FamilieHomePage() {
         setRegistrierungHinweis(getFamilieLoadHinweisFuerNutzer(result.loadMeta))
         return
       }
-    } finally {
-      setFamilieCloudSyncBusy(false)
-    }
-    const personenAktuell = loadPersonen(currentTenantId)
-    if (personenAktuell.length === 0) {
-      setRegistrierungHinweis(
-        'Es sind noch keine Personen für diese Familie geladen. WLAN prüfen, „Daten vom Server laden“ erneut tippen oder warten, bis die Inhaber:in Personen angelegt und synchronisiert hat.',
-      )
-      return
-    }
-    const pid = findPersonIdByMitgliedsNummer(personenAktuell, raw)
-    if (!pid) {
-      setRegistrierungHinweis(
-        'Keine Person mit diesem Code in dieser Familie. Persönlicher Code (z. B. AB12), nicht die Familien-Zugangsnummer (KF-…). Sonst Schreibweise prüfen oder Administrator fragen.',
-      )
-      return
-    }
-    const einst = loadEinstellungen(currentTenantId)
-    if (saveEinstellungen(currentTenantId, { ...einst, ichBinPersonId: pid })) {
-      setRegistrierungHinweis('')
-      clearFamilieEinladungPending()
-      clearFamilieFamilienQrKompaktSession()
-      bumpFamilieStorageRevision()
-      setIdentitaetBestaetigt(currentTenantId, pid)
-      if (loadIdentitaetBestaetigt(currentTenantId) !== pid) {
+      /** Gemergte Liste aus dem Ladevorgang – nicht nur loadPersonen(): Speichern nach Cloud-Laden kann auf dem Gerät fehlschlagen (Quota), die Server-Antwort ist trotzdem gültig. */
+      const personenAktuell = result.personen.length > 0 ? result.personen : loadPersonen(currentTenantId)
+      if (personenAktuell.length === 0) {
         setRegistrierungHinweis(
-          'Die Bestätigung konnte nicht gespeichert werden (z. B. strenger Privatmodus). Bitte normalen Tab nutzen oder Speicher prüfen.',
+          (result.loadMeta.serverPersonenCount ?? 0) === 0
+            ? 'Es sind noch keine Personen für diese Familie da. Prüfen: gleiche Familie wie am Mac (QR/URL)? Inhaber:in am Mac Personen angelegt und mit der Cloud abgeglichen?'
+            : 'Die Personenliste konnte auf diesem Gerät nicht gespeichert werden (z. B. Speicher voll). Seite neu öffnen oder Speicher freigeben, dann erneut „Bestätigen“.',
         )
         return
       }
-      setPersoenlicheNummerEingabe('')
-      setRegistrierungErfolg(
-        '✓ Du bist eingerichtet. Persönlicher QR und Familien-Zugang findest du unter Einstellungen & Verwaltung – den Code kannst du auf deiner Personenkarte ändern.',
-      )
-      if (merkGeraetIdentitaet) {
-        void saveGerateVertrauen(currentTenantId, pid, raw)
-      } else {
-        clearGerateVertrauen(currentTenantId)
+      const pid = findPersonIdByMitgliedsNummer(personenAktuell, raw)
+      if (!pid) {
+        setRegistrierungHinweis(
+          'Keine Person mit diesem Code in dieser Familie. Persönlicher Code (z. B. AB12), nicht die Familien-Zugangsnummer (KF-…). Sonst Schreibweise prüfen oder Administrator fragen.',
+        )
+        return
       }
-    } else {
-      setRegistrierungHinweis('Speichern ist fehlgeschlagen. Bitte später erneut versuchen.')
+      const einst = loadEinstellungen(currentTenantId)
+      if (saveEinstellungen(currentTenantId, { ...einst, ichBinPersonId: pid })) {
+        setRegistrierungHinweis('')
+        clearFamilieEinladungPending()
+        clearFamilieFamilienQrKompaktSession()
+        bumpFamilieStorageRevision()
+        setIdentitaetBestaetigt(currentTenantId, pid)
+        if (loadIdentitaetBestaetigt(currentTenantId) !== pid) {
+          setRegistrierungHinweis(
+            'Die Bestätigung konnte nicht gespeichert werden (z. B. strenger Privatmodus). Bitte normalen Tab nutzen oder Speicher prüfen.',
+          )
+          return
+        }
+        setPersoenlicheNummerEingabe('')
+        setRegistrierungErfolg(
+          '✓ Du bist eingerichtet. Persönlicher QR und Familien-Zugang findest du unter Einstellungen & Verwaltung – den Code kannst du auf deiner Personenkarte ändern.',
+        )
+        if (merkGeraetIdentitaet) {
+          void saveGerateVertrauen(currentTenantId, pid, raw)
+        } else {
+          clearGerateVertrauen(currentTenantId)
+        }
+      } else {
+        setRegistrierungHinweis('Speichern ist fehlgeschlagen. Bitte später erneut versuchen.')
+      }
+    } finally {
+      setFamilieCloudSyncBusy(false)
     }
   }
 

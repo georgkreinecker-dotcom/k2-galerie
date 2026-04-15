@@ -46,6 +46,32 @@ function getCorsHeaders(req: Request): Record<string, string> {
 const TABLE = 'k2_familie_data'
 const TYPES = ['personen', 'momente', 'events'] as const
 
+/** PostgREST / Supabase-Fehler lesbar machen (500-Body + Logs). */
+function serializeDbError(e: unknown): Record<string, string | undefined> {
+  if (e && typeof e === 'object' && 'message' in e) {
+    const x = e as { message?: string; details?: string; hint?: string; code?: string }
+    return {
+      message: String(x.message ?? e),
+      details: x.details,
+      hint: x.hint,
+      code: x.code,
+    }
+  }
+  return { message: e instanceof Error ? e.message : String(e) }
+}
+
+/** Edge Functions: Service Role umgeht RLS-Probleme; Fallback Anon (wie bisher). */
+function createSupabaseServerClient() {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
+  const key = serviceKey || anonKey
+  if (!supabaseUrl || !key) {
+    throw new Error('Supabase env fehlt (SUPABASE_URL oder SERVICE_ROLE/ANON_KEY)')
+  }
+  return createClient(supabaseUrl, key)
+}
+
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req)
   if (req.method === 'OPTIONS') {
@@ -53,13 +79,29 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')
-    if (!supabaseUrl || !supabaseKey) throw new Error('Supabase env fehlt')
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    const supabase = createSupabaseServerClient()
 
     if (req.method === 'GET') {
       const url = new URL(req.url)
+      /** Diagnose: GET …/familie?health=1 → immer 200, zeigt DB-/Env-Status (keine Secrets). */
+      if (url.searchParams.get('health') === '1') {
+        const hasUrl = !!Deno.env.get('SUPABASE_URL')
+        const hasService = !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+        const hasAnon = !!Deno.env.get('SUPABASE_ANON_KEY')
+        const { error: probeErr } = await supabase.from(TABLE).select('tenant_id').limit(1)
+        return new Response(
+          JSON.stringify({
+            ok: !probeErr,
+            hasSupabaseUrl: hasUrl,
+            hasServiceRoleKey: hasService,
+            hasAnonKey: hasAnon,
+            table: TABLE,
+            probe: probeErr ? serializeDbError(probeErr) : { message: 'select ok' },
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 },
+        )
+      }
+
       const tenantId = url.searchParams.get('tenantId') || 'default'
       const { data: rows, error } = await supabase
         .from(TABLE)
@@ -90,7 +132,16 @@ serve(async (req) => {
     }
 
     if (req.method === 'POST') {
-      const body = await req.json()
+      let body: Record<string, unknown>
+      try {
+        const raw = await req.text()
+        body = raw ? (JSON.parse(raw) as Record<string, unknown>) : {}
+      } catch {
+        return new Response(JSON.stringify({ error: { message: 'Body ist kein gültiges JSON' } }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        })
+      }
       const tenantId = body?.tenantId || body?.tenant_id || 'default'
       const now = new Date().toISOString()
       const toUpsert: { tenant_id: string; data_type: string; payload: unknown; updated_at: string }[] = []
@@ -148,10 +199,11 @@ serve(async (req) => {
       status: 405,
     })
   } catch (e) {
-    console.error('Familie API Error:', e)
-    return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : String(e) }),
-      { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' }, status: 500 }
-    )
+    const err = serializeDbError(e)
+    console.error('Familie API Error:', err.message, err.details ?? '', err.hint ?? '')
+    return new Response(JSON.stringify({ error: err }), {
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
+      status: 500,
+    })
   }
 })

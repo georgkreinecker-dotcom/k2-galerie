@@ -72,6 +72,8 @@ export type FamilieLoadMeta = {
   httpStatus?: number
   /** Kurztext aus catch (z. B. Failed to fetch) – nur Konsole/Diagnose, nicht als vollen Dump anzeigen */
   networkDetail?: string
+  /** Nur bei ok: Personen aus der Server-Antwort vor Merge (für klare Nutzerhinweise). */
+  serverPersonenCount?: number
 }
 
 export type FamilieLoadResult = FamilieData & { loadMeta: FamilieLoadMeta }
@@ -136,7 +138,13 @@ export async function loadFamilieFromSupabase(tenantId: string): Promise<Familie
     }
     if (!res) throw lastNetworkErr ?? new Error('fetch leer')
     if (!res.ok) {
-      console.warn('loadFamilieFromSupabase HTTP', res.status)
+      let errBody = ''
+      try {
+        errBody = await res.clone().text()
+      } catch {
+        /* ignore */
+      }
+      console.warn('loadFamilieFromSupabase HTTP', res.status, errBody.slice(0, 800))
       return withMeta(localSnapshot(tenantId), {
         ok: false,
         source: 'local_only',
@@ -165,10 +173,18 @@ export async function loadFamilieFromSupabase(tenantId: string): Promise<Familie
     const localPersonen = loadPersonen(tenantId)
     const localMomente = loadMomente(tenantId)
     const localEvents = loadEvents(tenantId)
+    const serverPersonenCount = serverPersonen.length
     const mergedPersonen = mergeById(serverPersonen as K2FamiliePerson[], localPersonen)
     const mergedMomente = mergeById(serverMomente as K2FamilieMoment[], localMomente)
     const mergedEvents = mergeById(serverEvents as K2FamilieEvent[], localEvents)
-    if (mergedPersonen.length >= localPersonen.length) savePersonen(tenantId, mergedPersonen, { allowReduce: true })
+    if (mergedPersonen.length >= localPersonen.length) {
+      const okSave = savePersonen(tenantId, mergedPersonen, { allowReduce: true })
+      if (!okSave && mergedPersonen.length > 0) {
+        console.warn(
+          'loadFamilieFromSupabase: Personen nach Merge nicht im lokalen Speicher (z. B. Speicher voll) – UI nutzt trotzdem die geladene Liste.',
+        )
+      }
+    }
     if (mergedMomente.length >= localMomente.length) saveMomente(tenantId, mergedMomente, { allowReduce: true })
     if (mergedEvents.length >= localEvents.length) saveEvents(tenantId, mergedEvents, { allowReduce: true })
     if (serverEinst) {
@@ -177,7 +193,7 @@ export async function loadFamilieFromSupabase(tenantId: string): Promise<Familie
     }
     return withMeta(
       { personen: mergedPersonen, momente: mergedMomente, events: mergedEvents },
-      { ok: true, source: 'server' },
+      { ok: true, source: 'server', serverPersonenCount },
     )
   } catch (e) {
     const networkDetail = e instanceof Error ? e.message : String(e)
@@ -210,7 +226,16 @@ export async function saveFamilieToSupabase(tenantId: string, payload: FamilieDa
           : {}),
       }),
     })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    if (!res.ok) {
+      let errBody = ''
+      try {
+        errBody = await res.clone().text()
+      } catch {
+        /* ignore */
+      }
+      console.warn('saveFamilieToSupabase HTTP', res.status, errBody.slice(0, 800))
+      throw new Error(`HTTP ${res.status}`)
+    }
     return true
   } catch (e) {
     console.warn('saveFamilieToSupabase fehlgeschlagen:', e)
