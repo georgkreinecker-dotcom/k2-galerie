@@ -1,5 +1,15 @@
 # Dialog-Stand
 
+**Letzter Stand:** 15.04.26 – **K2 Familie Teilen / PWA öffnete Galerie:** Ursache: Standard-**`manifest.json`** mit **`start_url: /galerie`** und Root **`/`** → **Entdecken**. **Fix:** (1) **`index.html`**: kleines Script **vor React** – bei Familie-Pfaden **`manifest-k2-familie.json`** + Icons/Titel wie `applyK2FamiliePwaBranding`. (2) Kurze Teilen-URL **`/familie`** → **`/projects/k2-familie/meine-familie`** (**Vercel redirect** + **React-Route** für lokal). (3) **`isK2FamiliePublicPath`**: `/familie` zählt. **Commit:** **`73697c40`** ✅ GitHub
+
+**Was wir JETZT tun:** Nach Vercel **Ready:** Teilen-Test mit **`…/familie`**; PWA: **„Zum Home-Bildschirm“** auf einer **K2-Familie-Seite** (nicht von `/galerie`).
+
+---
+
+**Letzter Stand:** 15.04.26 – **K2 Familie Startseite / erste Zeile:** **Zurück** auf „Meine Familie“ ausgeblendet; **Nav** dort nur noch **Meine Familie** + **Handbuch** (keine Präsentationsmappe, keine Sicherung in Zeile 1); **Kachel „Sicherung“** unter „Was möchtest du tun?“ entfernt (Sicherung bleibt unter **Einstellungen**). Einstellungen: Block nur noch **Handbuch**; Leitstruktur ohne Mappe; SmartPanel K2 Familie ohne Mappe-Link. **Commit:** **`a8d3ad14`** ✅ GitHub
+
+---
+
 **Letzter Stand:** 15.04.26 – **K2 Familie: Nach „Bestätigen“ persönlicher Code → Sprung zur Personenkarte** – wie Einladungs-QR mit `m`: **`navigate(…/personen/{pid}, { replace: true })`** nach erfolgreicher Sitzung. **Commit:** **`c0e3a468`** ✅ GitHub
 
 ---
