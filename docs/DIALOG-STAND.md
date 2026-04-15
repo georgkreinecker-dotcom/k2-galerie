@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 15.04.26 – **K2 Familie: gelber Cloud-Hinweis / „Daten vom Server laden“** – `loadFamilieFromSupabase` schlug mit **`reason: network`** fehl (fetch wirft). **Client:** `apikey`-Header wie Supabase-Standard, **bis zu 3 Versuche** mit kurzer Pause (Kaltstart/Kurzstörung). **Edge `familie`:** CORS **`www`** + alle **`https://k2-galerie*.vercel.app`** – sonst blockiert der Browser die Antwort. **Wichtig:** CORS-Änderung erst nach **`supabase functions deploy familie`** auf dem Projekt live. **Commit:** **`b2b359a1`** ✅ GitHub
+
+**Was wir JETZT tun:** Nach Vercel Ready: Mobil **„Daten vom Server laden“**; wenn nötig Edge deploy; bei weiterem Fehler Konsole `loadFamilieFromSupabase fehlgeschlagen` prüfen.
+
+---
+
 **Letzter Stand:** 15.04.26 – **Vercel Build: fehlende Exporte `familieEinladungPending`** – `a6c0ab19` hatte **Imports** in `K2FamilieHomePage` / `familieIdentitaet` / Layout, aber **`src/utils/familieEinladungPending.ts`** (Session `k2-familie-familien-qr-kompakt`, `isFamilieEinladungNurZugangAnsicht`, Anpassungen `isFamilieEinladungPersonalCodeOffen`) war **nicht mit committed** → `tsc` auf GitHub rot. **Fix:** Datei + **`FamilieEinladungQuerySync`** (setzt Kompakt bei `t+z` ohne `m`) + **`K2FamilieLayout`** (`isFamilieEinladungNurZugangAnsicht`) + Tests; **Build** grün. **Commit:** **`30d42b33`** ✅ GitHub
 
 **Was wir JETZT tun:** Vercel **Ready** → erneut deployen; Stand-Badge prüfen; Familien-QR `t+z` kurz testen.
