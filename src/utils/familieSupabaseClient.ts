@@ -56,6 +56,8 @@ export type FamilieLoadMeta = {
   source: 'server' | 'local_only'
   reason?: 'not_configured' | 'network' | 'http' | 'parse'
   httpStatus?: number
+  /** Kurztext aus catch (z. B. Failed to fetch) – nur Konsole/Diagnose, nicht als vollen Dump anzeigen */
+  networkDetail?: string
 }
 
 export type FamilieLoadResult = FamilieData & { loadMeta: FamilieLoadMeta }
@@ -84,7 +86,8 @@ export function getFamilieLoadHinweisFuerNutzer(loadMeta: FamilieLoadMeta): stri
   if (loadMeta.reason === 'parse') {
     return 'Die Server-Antwort war unlesbar. Bitte „Daten vom Server laden“ erneut tippen.'
   }
-  return 'Keine Verbindung zum Server (WLAN oder Mobilfunk prüfen). Dann „Daten vom Server laden“ erneut tippen.'
+  // reason === 'network': fetch wirft (CORS, Timeout, SSL, Safari „Load failed“ …) – nicht dasselbe wie „WLAN schlecht“.
+  return 'Der Familien-Cloud-Speicher ist gerade nicht erreichbar. Das muss nicht an Ihrem Netz liegen – oft Kurzstörung, Browser-Schutz oder der Dienst antwortet nicht. „Daten vom Server laden“ erneut tippen oder kurz warten.'
 }
 
 /**
@@ -152,11 +155,13 @@ export async function loadFamilieFromSupabase(tenantId: string): Promise<Familie
       { ok: true, source: 'server' },
     )
   } catch (e) {
-    console.warn('loadFamilieFromSupabase fehlgeschlagen:', e)
+    const networkDetail = e instanceof Error ? e.message : String(e)
+    console.warn('loadFamilieFromSupabase fehlgeschlagen:', e, networkDetail)
     return withMeta(localSnapshot(tenantId), {
       ok: false,
       source: 'local_only',
       reason: 'network',
+      networkDetail,
     })
   }
 }
