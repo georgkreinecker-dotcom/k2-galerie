@@ -1,6 +1,12 @@
 # Dialog-Stand
 
-**Letzter Stand:** 15.04.26 – **K2 Familie Vertrauen / privater Familienraum – überall notiert** – Eine Linie: **privater Raum + Zugang nur mit persönlicher ID** in **K2-Familie-Handbuch** (`09-VERTRAUEN-PRIVATER-FAMILIENRAUM.md`), **Benutzerhandbuch** (`16-K2-FAMILIE-VERTRAUEN-PRIVATER-RAUM.md`, Index 11), **AGB** (Absatz K2 Familie), **interne Docs** (Grundbotschaft, Datenschutz, Zugang/Rollen), **K2Team-Handbuch** (17/18). App: `K2FamilieBenutzerHandbuchPage`, `BenutzerHandbuchPage` DOCUMENTS. Tests + Build grün. **Commits:** Inhalt **`1a3a77d3`**, DIALOG-STAND **`40c4c4a1`** ✅ GitHub
+**Letzter Stand:** 15.04.26 – **K2 Familie Mobil Inhaber: volle Leiste und Code-Banner zugleich** – Ursache: `isK2FamilieNurMitgliedEinstiegModus` schloss **Inhaber:in** vom kompakten „Nur-Zugang“-Modus aus. **Fix:** Wie Leser/Bearbeiter: **kompakt**, wenn auf der „Du“-Karte **Code da** und die Sitzung den persönlichen Code **noch nicht bestätigt** hat; **volle Oberfläche** nur ohne Du/Code (Erst-Einrichtung). Tests `familieIdentitaet.test.ts`. **Commit:** **`50b6dec3`** ✅ GitHub
+
+**Was wir JETZT tun:** Wenn Vercel **Ready**: am Handy **Stand-Badge tippen** → K2 Familie: bis **Bestätigen** nur schmale Kopfzeile + Zugang; danach normale Navigation. Bei **Keine Verbindung zum Server**: WLAN prüfen, ggf. **Daten vom Server laden**.
+
+---
+
+**Letzter Stand:** 15.04.26 – **K2 Familie Vertrauen / privater Familienraum – überall notiert** – Eine Linie: **privater Raum + Zugang nur mit persönlicher ID** in **K2-Familie-Handbuch** (`09-VERTRAUEN-PRIVATER-FAMILIENRAUM.md`), **Benutzerhandbuch** (`16-K2-FAMILIE-VERTRAUEN-PRIVATER-RAUM.md`, Index 11), **AGB** (Absatz K2 Familie), **interne Docs** (Grundbotschaft, Datenschutz, Zugang/Rollen), **K2Team-Handbuch** (17/18). App: `K2FamilieBenutzerHandbuchPage`, `BenutzerHandbuchPage` DOCUMENTS. Tests + Build grün. **Commits:** Inhalt **`1a3a77d3`**, DIALOG-STAND **`40c4c4a1`** ✅ GitHub *(Folge: Hash-Zeile **`48f5e1bb`*)*
 
 **Was wir JETZT tun:** Nach Deploy: Handbuch-Kapitel 9/11 kurz in der App öffnen; AGB-Absatz optisch prüfen.
 
