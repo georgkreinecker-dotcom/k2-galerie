@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 15.04.26 – **K2 Familie Supabase: Tabelle `k2_familie_data` fehlte remote (PGRST205 / 500)** – **Ein-Befehl-Lösung:** Im Projektordner (Supabase CLI eingeloggt, `supabase link` zum Projekt): **`npm run familie:db:apply`** führt `docs/sql/supabase-k2-familie-tabelle-einmal.sql` per **`supabase db query --linked`** aus (Tabelle + CHECK inkl. `einstellungen` + RLS + `NOTIFY pgrst`). Alternativ: gleicher SQL-Block im **Dashboard → SQL Editor**. Migration **`014_k2_familie_data_ensure.sql`** + **`012`/`013`** ins Repo. **Commit:** **`054e7857`** ✅ GitHub
+
+**Was wir JETZT tun:** Auf dem Mac **einmal** `npm run familie:db:apply` (oder SQL im Dashboard) → danach Health: `…/functions/v1/familie?health=1` mit Anon-Key → **`ok`**.
+
+---
+
 **Letzter Stand:** 15.04.26 – **K2 Familie nach QR: kurz Laden → „Speicher nicht erreichbar“** – sehr wahrscheinlich **Supabase-Gateway JWT** (Standard `verify_jwt = true`): mit **publishable Key** (`sb_publishable_…`) → 401, oft **ohne brauchbares CORS** → Safari: `fetch` wirft (**`reason: network`**). **Fix im Repo:** `supabase/config.toml` → **`[functions.familie] verify_jwt = false`** + **`supabase functions deploy familie`** (oder Dashboard: JWT-Verify aus). Doku: `docs/K2-FAMILIE-SUPABASE-EINBAU.md`. **Commit:** **`a9b7a8bf`** ✅ GitHub
 
 **Was wir JETZT tun:** Edge **familie** mit neuer Config deployen → Handy erneut testen.
