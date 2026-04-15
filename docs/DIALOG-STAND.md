@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 15.04.26 – **K2 Familie PWA öffnete Galerie:** Ursache: **`index.html`** hatte **zuerst** `<link rel="manifest" href="/manifest.json">` mit **`start_url: /galerie`** – Safari konnte das **vor** dem Umschalten-Skript für K2 Familie cachen → Icon richtig, Start weiter Galerie. **Fix:** kein statisches Manifest mehr; **synchron** per Skript nur **`manifest-k2-familie.json`** auf Familie-Pfaden einfügen. **Nach Deploy:** altes Home-Bildschirm-Icon **entfernen**, Seite **`/familie`** öffnen, **neu** „Zum Home-Bildschirm“. **Tests + Build** grün.
+
+---
+
 **Letzter Stand:** 15.04.26 – **K2 Familie Kurz-URL `/familie` für Icon / PWA:** SPA rendert **Meine Familie** unter **`/familie`** ohne Sprung zur langen URL; **`manifest-k2-familie.json`** mit **`start_url: /familie`**, eigenes **`id`** + Familie-Icons; Nav/APf/SmartPanel auf Kurz-URL; Vercel-Redirect **`/familie` → lang** entfernt. **Tests + Build** grün. **Commit:** **`2fccdef7`** ✅ GitHub
 
 **Was wir JETZT tun:** Vercel **Ready** → **`…/familie`** im Browser öffnen → **Zum Home-Bildschirm** testen; Adresszeile bleibt **`/familie`**.
