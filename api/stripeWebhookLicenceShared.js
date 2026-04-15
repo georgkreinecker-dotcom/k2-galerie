@@ -50,7 +50,13 @@ export function rowsFromCheckoutSession(session, baseUrl) {
     amountTotal,
     empfehlerId,
   )
-  const galerieUrl = buildGalerieUrl(baseUrl, tenantId)
+  const b = String(baseUrl || '').replace(/\/$/, '')
+  const isFamilieLicence = licenceType === 'familie_monat' || licenceType === 'familie_jahr'
+  const galerieUrl = isFamilieLicence
+    ? b
+      ? `${b}/projects/k2-familie/meine-familie`
+      : null
+    : buildGalerieUrl(baseUrl, tenantId)
 
   const licenceInsert = {
     email: customerEmail,

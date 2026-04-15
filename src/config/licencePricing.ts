@@ -20,3 +20,20 @@ export const LIZENZPREISE = {
     priceEur: 35,
   },
 } as const
+
+/**
+ * K2 Familie – eigene Lizenzpreise; Checkout über dieselbe `/api/create-checkout`-Kette wie K2 Galerie (Stripe).
+ * `licenceType`: `familie_monat` | `familie_jahr`
+ */
+export const K2_FAMILIE_LIZENZPREISE = {
+  familie_monat: {
+    name: 'K2 Familie Monatslizenz',
+    price: '10 €/Monat (Abo)',
+    priceEur: 10,
+  },
+  familie_jahr: {
+    name: 'K2 Familie Jahreslizenz',
+    price: '100 €/Jahr (einmalig)',
+    priceEur: 100,
+  },
+} as const

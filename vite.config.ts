@@ -794,7 +794,14 @@ const devCreateCheckoutMiddleware = () => {
         const lt = typeof body.licenceType === 'string' ? body.licenceType.trim() : ''
         const email = typeof body.email === 'string' ? body.email.trim() : ''
         const name = typeof body.name === 'string' ? body.name.trim() : ''
-        const licenceOk = ['basic', 'pro', 'proplus', 'propplus'].includes(lt)
+        const licenceOk = [
+          'basic',
+          'pro',
+          'proplus',
+          'propplus',
+          'familie_monat',
+          'familie_jahr',
+        ].includes(lt)
         if (!licenceOk || !email || !name) {
           res.writeHead(400, { 'Content-Type': 'application/json' })
           res.end(
@@ -842,7 +849,8 @@ const devCreateCheckoutMiddleware = () => {
             res.end(
               JSON.stringify({
                 error: 'Fehlende Angaben',
-                hint: 'licenceType (basic|pro|proplus|propplus), email und name sind Pflicht.',
+                hint:
+                  'licenceType (basic|pro|proplus|propplus|familie_monat|familie_jahr), email und name sind Pflicht.',
               }),
             )
             return

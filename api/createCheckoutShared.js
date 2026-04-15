@@ -6,6 +6,8 @@ import Stripe from 'stripe'
 import {
   STRIPE_CHECKOUT_LICENCE_TYPES,
   STRIPE_LICENCE_PRICE_CENTS,
+  STRIPE_FAMILIE_CHECKOUT_TYPES,
+  STRIPE_FAMILIE_LICENCE_PRICE_CENTS,
 } from './stripePriceCents.js'
 
 export const PRICE_CENTS = STRIPE_LICENCE_PRICE_CENTS
@@ -23,6 +25,19 @@ export function generateTenantId(email) {
   return `galerie-${slug}-${rand}`
 }
 
+export function generateFamilieTenantId(email) {
+  const slug = (email || '')
+    .trim()
+    .toLowerCase()
+    .split('@')[0]
+    .replace(/[^a-z0-9]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 40) || 'familie'
+  const rand = Math.random().toString(36).slice(2, 8)
+  return `familie-${slug}-${rand}`
+}
+
 /**
  * @param {{ licenceType: string, email: string, name: string, empfehlerId?: string, secretKey: string, baseUrl: string }} opts
  * @returns {Promise<{ url: string }>}
@@ -30,17 +45,101 @@ export function generateTenantId(email) {
 export async function createStripeCheckoutSession(opts) {
   const { licenceType, email, name, empfehlerId, secretKey, baseUrl } = opts
   const lt = typeof licenceType === 'string' ? licenceType.trim() : ''
+  const b = baseUrl.replace(/\/$/, '')
+
+  if (!email?.trim() || !name?.trim()) {
+    const err = new Error('Fehlende Angaben')
+    err.code = 'VALIDATION'
+    throw err
+  }
+
+  const empMeta =
+    empfehlerId && empfehlerId.trim() ? { empfehlerId: empfehlerId.trim().substring(0, 100) } : {}
+
+  if (STRIPE_FAMILIE_CHECKOUT_TYPES.includes(lt)) {
+    const tenantId = generateFamilieTenantId(email)
+    const successUrl = `${b}/lizenz-erfolg?session_id={CHECKOUT_SESSION_ID}`
+    const cancelUrl = `${b}/projects/k2-familie/lizenz-erwerben`
+    const stripe = new Stripe(secretKey)
+    const metaBase = {
+      licenceType: lt,
+      customerName: (name || '').trim().substring(0, 200),
+      tenantId,
+      productLine: 'k2_familie',
+      ...empMeta,
+    }
+
+    if (lt === 'familie_jahr') {
+      const session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: 'eur',
+              product_data: {
+                name: 'K2 Familie – Jahreslizenz',
+                description: '100 € einmalig pro Jahr',
+              },
+              unit_amount: STRIPE_FAMILIE_LICENCE_PRICE_CENTS.familie_jahr,
+            },
+            quantity: 1,
+          },
+        ],
+        customer_email: email.trim(),
+        metadata: metaBase,
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+      })
+      return { url: session.url }
+    }
+
+    if (lt === 'familie_monat') {
+      const session = await stripe.checkout.sessions.create({
+        mode: 'subscription',
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: 'eur',
+              product_data: {
+                name: 'K2 Familie – Monatslizenz',
+                description: '10 € pro Monat (Abo)',
+              },
+              unit_amount: STRIPE_FAMILIE_LICENCE_PRICE_CENTS.familie_monat,
+              recurring: { interval: 'month' },
+            },
+            quantity: 1,
+          },
+        ],
+        customer_email: email.trim(),
+        metadata: metaBase,
+        subscription_data: {
+          metadata: {
+            tenantId,
+            licenceType: 'familie_monat',
+            productLine: 'k2_familie',
+            ...empMeta,
+          },
+        },
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+      })
+      return { url: session.url }
+    }
+  }
+
   const priceCents =
-    lt && STRIPE_CHECKOUT_LICENCE_TYPES.includes(lt) ? PRICE_CENTS[lt] : undefined
-  if (!priceCents || !email || !name) {
+    lt && STRIPE_CHECKOUT_LICENCE_TYPES.includes(lt) ? STRIPE_LICENCE_PRICE_CENTS[lt] : undefined
+  if (!priceCents) {
     const err = new Error('Fehlende Angaben')
     err.code = 'VALIDATION'
     throw err
   }
 
   const tenantId = generateTenantId(email)
-  const successUrl = `${baseUrl.replace(/\/$/, '')}/lizenz-erfolg?session_id={CHECKOUT_SESSION_ID}`
-  const cancelUrl = `${baseUrl.replace(/\/$/, '')}/projects/k2-galerie/lizenz-kaufen`
+  const successUrl = `${b}/lizenz-erfolg?session_id={CHECKOUT_SESSION_ID}`
+  const cancelUrl = `${b}/projects/k2-galerie/lizenz-kaufen`
 
   const stripe = new Stripe(secretKey)
   const productLabel =
@@ -80,7 +179,7 @@ export async function createStripeCheckoutSession(opts) {
       licenceType: lt,
       customerName: (name || '').trim().substring(0, 200),
       tenantId,
-      ...(empfehlerId && empfehlerId.trim() ? { empfehlerId: empfehlerId.trim().substring(0, 100) } : {}),
+      ...empMeta,
     },
     success_url: successUrl,
     cancel_url: cancelUrl,

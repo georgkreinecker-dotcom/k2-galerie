@@ -52,7 +52,8 @@ export default async function handler(req, res) {
     if (err?.code === 'VALIDATION') {
       return res.status(400).json({
         error: 'Fehlende Angaben',
-        hint: 'licenceType (basic|pro|proplus|propplus), email und name sind Pflicht.',
+        hint:
+          'licenceType (basic|pro|proplus|propplus|familie_monat|familie_jahr), email und name sind Pflicht.',
       })
     }
     console.error('create-checkout:', err)
