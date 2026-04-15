@@ -5,6 +5,7 @@
  * Cookies sind oft zwischen diesen Kontexten zuverlässiger als nur localStorage.
  */
 
+import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
 import { K2_FAMILIE_DEFAULT_TENANT, isValidFamilieTenantId } from './familieStorage'
 
 const COOKIE_NAME = 'k2fam_t'
@@ -33,6 +34,25 @@ export function readFamilieTenantCookieBackup(): string | null {
   if (!raw || raw === K2_FAMILIE_DEFAULT_TENANT) return null
   if (!isValidFamilieTenantId(raw)) return null
   return raw.toLowerCase()
+}
+
+/**
+ * Wenn weder Session noch localStorage „aktueller Mandant“ haben: Cookie und Listen-Fallback.
+ * Huber (Demo) nicht vor echter familie-…-ID wählen (PWA/Cookie oft noch huber nach Umschau).
+ */
+export function pickFallbackFamilieTenantId(list: string[], fromCookie: string | null): string {
+  if (fromCookie && list.includes(fromCookie)) {
+    if (fromCookie === FAMILIE_HUBER_TENANT_ID) {
+      const real = list.find((x) => x !== K2_FAMILIE_DEFAULT_TENANT && x !== FAMILIE_HUBER_TENANT_ID)
+      if (real) return real
+    }
+    return fromCookie
+  }
+  const realFirst = list.find((x) => x !== K2_FAMILIE_DEFAULT_TENANT && x !== FAMILIE_HUBER_TENANT_ID)
+  if (realFirst) return realFirst
+  const anyNonDefault = list.find((x) => x !== K2_FAMILIE_DEFAULT_TENANT)
+  if (anyNonDefault) return anyNonDefault
+  return list[0] ?? K2_FAMILIE_DEFAULT_TENANT
 }
 
 export function setFamilieTenantCookieBackup(tenantId: string): void {

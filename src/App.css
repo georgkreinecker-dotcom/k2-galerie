@@ -2378,6 +2378,81 @@ header h1 {
   color: #5c5650;
 }
 
+/* K2 Familie – Handy: greifbare Ziele, Safe Areas, kein Mini-Zoom bei Fokus (iOS) */
+@media (max-width: 768px) {
+  .k2-familie-layout-shell {
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+  }
+  .k2-familie-layout-column {
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+  }
+
+  .k2-familie-nav {
+    padding-left: max(0.75rem, env(safe-area-inset-left));
+    padding-right: max(0.75rem, env(safe-area-inset-right));
+    padding-top: max(0.45rem, env(safe-area-inset-top));
+    row-gap: 0.5rem;
+  }
+
+  .k2-familie-nav .k2-familie-nav-link {
+    min-height: 44px;
+    padding: 0.55rem 1rem !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: rgba(181, 74, 30, 0.18);
+  }
+
+  /* Zurück (FamilieBackButton) – nicht nur Unterstrich-Tap */
+  .k2-familie-nav > button.meta {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.45rem 0.75rem !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .k2-familie-tenant-toolbar select,
+  .k2-familie-tenant-toolbar button,
+  .k2-familie-rolle-leiste select,
+  .k2-familie-rolle-leiste button {
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .k2-familie-rolle-hinweis button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.45rem 0.85rem !important;
+    font-size: 16px;
+  }
+
+  .k2-familie-main {
+    padding-bottom: max(0.35rem, env(safe-area-inset-bottom));
+  }
+
+  .k2-familie-app-footer {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .k2-familie-page input:not([type='checkbox']):not([type='radio']),
+  .k2-familie-page select,
+  .k2-familie-page textarea {
+    font-size: 16px !important;
+  }
+
+  .k2-familie-page .btn {
+    min-height: 48px;
+  }
+}
+
 /* Moment-Karten auf Personen-Seite: weicher, runder */
 .k2-familie-moment-card {
   transition: transform 0.25s ease, box-shadow 0.25s ease;

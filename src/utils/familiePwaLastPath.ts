@@ -61,6 +61,7 @@ export function writeFamiliePwaLastPath(pathname: string, search: string): void 
 
 /**
  * Wenn der Nutzer die App über `/familie` öffnet: Zielroute oder null (dann normale Startseite).
+ * Layout überspringt die Navigation zusätzlich, solange `isK2FamilieNurMitgliedEinstiegModus` – persönlicher Code nur auf Meine Familie.
  */
 export function resolveFamiliePwaResumeTarget(homeSearch: string): string | null {
   if (shouldSkipFamiliePwaResumeFromHome(homeSearch)) return null

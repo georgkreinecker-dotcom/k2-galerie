@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 15.04.26 – **K2 Familie Handy: besser bedienbar + Muster-Überschrift** – **Mobile-CSS** (`App.css` ≤768px): Safe-Area, Nav/Zurück/Toolbar mind. **44–48px** Tap-Ziele, **16px** Inputs (weniger iOS-Zoom), **`100dvh`**. **`K2FamilieLayout`:** Klassen **`k2-familie-rolle-leiste`** / **`k2-familie-rolle-hinweis`**. **Seitentexte:** Wenn Mandant ≠ **huber** aber Titel noch exakt Huber-Seed → **`familyDisplayName`** / Default (`pageTextsFamilie.ts`). Test **`pageTextsFamilieSanitize.test.ts`**. **Tests + Build** grün. **Commit:** _(nach Push eintragen)_
+
+**Was wir JETZT tun:** Vercel **Ready** → am Handy **Navigation, Rolle, Zurück, Formulare** kurz prüfen; bei konkreten Problemen (Stammbaum, Tastatur, …) melden.
+
+---
+
 **Letzter Stand:** 15.04.26 – **K2 Familie PWA: Icon startete immer „Meine Familie“** – `manifest` liefert nur **`/familie`**; iOS/Android merken sich **keine** letzte React-Route. **Fix:** **`familiePwaLastPath.ts`** speichert die letzte K2-Familie-URL; **`K2FamilieLayout`** stellt sie beim Kaltstart auf **`/familie`** per **`useLayoutEffect`** wieder her (vor dem Speichern-Effekt). **Kein** Resume bei Einladungs-Query **`t`/`z`/`m`/`fn`** oder **`getFamilieEinladungPending()`**. Tests **`familiePwaLastPath.test.ts`**. **Build** grün. **Commit:** **`a552cd4e`** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy: z. B. **Stammbaum** öffnen → App schließen → **Icon** → wieder **Stammbaum**.

@@ -5,7 +5,7 @@
  */
 
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
-import { useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { FamilieTenantProvider, useFamilieTenant } from '../context/FamilieTenantContext'
 import { FamilieRolleProvider, useFamilieRolle } from '../context/FamilieRolleContext'
 import { PROJECT_ROUTES } from '../config/navigation'
@@ -365,6 +365,7 @@ function FamilieRolleLeisteHinweise() {
       )}
       {capabilities.rolle === 'leser' && (
         <div
+          className="k2-familie-rolle-hinweis"
           role="status"
           style={{
             padding: '0.35rem 1rem',
@@ -420,7 +421,7 @@ function FamilieRolleLeisteHaupt({ onEinklappen }: { onEinklappen?: () => void }
   const inhaberAnsichtHash = `${PROJECT_ROUTES['k2-familie'].einstellungen}#k2-familie-inhaber-ansicht`
   return (
     <div
-      className="k2-familie-no-print"
+      className="k2-familie-no-print k2-familie-rolle-leiste"
       style={{
         display: 'flex',
         flexWrap: 'wrap',
@@ -557,7 +558,7 @@ function FamilieRolleLeisteKompakt({ onOeffnen }: { onOeffnen: () => void }) {
   return (
     <div
       key={familieStorageRevision}
-      className="k2-familie-no-print"
+      className="k2-familie-no-print k2-familie-rolle-leiste"
       style={{
         display: 'flex',
         flexWrap: 'wrap',
@@ -766,13 +767,33 @@ function FamilieLayoutInner() {
     [rolle, currentTenantId, einst, personen, einladungNurZugangAnsicht],
   )
 
-  /** PWA: Icon startet mit `/familie` – letzte Unterroute wiederherstellen (vor dem Speichern unten). */
+  /** PWA: einmal pro Mount – letzte Unterroute wiederherstellen, aber nicht weg von Meine Familie solange Zugang noch nicht voll (Code-Formular steht nur dort). */
+  const pwaResumeDoneRef = useRef(false)
   useLayoutEffect(() => {
     if (location.pathname !== K2_FAMILIE_APP_SHORT_PATH) return
+    if (pwaResumeDoneRef.current) return
     const target = resolveFamiliePwaResumeTarget(location.search)
-    if (!target) return
+    if (!target) {
+      pwaResumeDoneRef.current = true
+      return
+    }
+    const einstGate = loadEinstellungen(currentTenantId)
+    const personenGate = loadPersonen(currentTenantId)
+    const einladungGate = isFamilieEinladungNurZugangAnsicht(currentTenantId)
+    if (isK2FamilieNurMitgliedEinstiegModus(rolle, currentTenantId, einstGate, personenGate, einladungGate)) {
+      pwaResumeDoneRef.current = true
+      return
+    }
+    pwaResumeDoneRef.current = true
     navigate(target, { replace: true })
-  }, [location.pathname, location.search, navigate])
+  }, [
+    location.pathname,
+    location.search,
+    navigate,
+    currentTenantId,
+    familieStorageRevision,
+    rolle,
+  ])
 
   useEffect(() => {
     writeFamiliePwaLastPath(location.pathname, location.search)

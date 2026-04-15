@@ -8,7 +8,11 @@ import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
 import { K2_FAMILIE_EINLADUNG_PENDING_EVENT } from '../utils/familieEinladungPending'
 import { K2_FAMILIE_DEFAULT_TENANT, isValidFamilieTenantId, K2_FAMILIE_SESSION_UPDATED } from '../utils/familieStorage'
 import { isFamilieNurMusterSession } from '../utils/familieMusterSession'
-import { readFamilieTenantCookieBackup, setFamilieTenantCookieBackup } from '../utils/familieTenantCookieBackup'
+import {
+  pickFallbackFamilieTenantId,
+  readFamilieTenantCookieBackup,
+  setFamilieTenantCookieBackup,
+} from '../utils/familieTenantCookieBackup'
 
 const STORAGE_CURRENT = 'k2-familie-current-tenant'
 const STORAGE_LIST = 'k2-familie-tenant-list'
@@ -65,10 +69,7 @@ function loadCurrent(): string {
     /* ignore */
   }
   const fromCookie = readFamilieTenantCookieBackup()
-  if (fromCookie && list.includes(fromCookie)) return fromCookie
-  const nonDefault = list.find((x) => x !== K2_FAMILIE_DEFAULT_TENANT)
-  if (nonDefault) return nonDefault
-  return list[0] ?? K2_FAMILIE_DEFAULT_TENANT
+  return pickFallbackFamilieTenantId(list, fromCookie)
 }
 
 function persistList(list: string[]) {
