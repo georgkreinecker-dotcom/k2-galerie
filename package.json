@@ -32,6 +32,7 @@
     "capture:pm-event-medien-screenshot": "node scripts/capture-pm-event-medien-screenshot.mjs",
     "capture:pm-einstellungen-screenshot": "node scripts/capture-pm-einstellungen-screenshot.mjs",
     "briefing": "node scripts/agenten-briefing.js",
+    "familie:db:apply": "npx supabase db query -f docs/sql/supabase-k2-familie-tabelle-einmal.sql --linked --yes",
     "sync:texte-oeffentlich": "bash scripts/sync-texte-oeffentliche-spiegel.sh",
     "electron": "electron .",
     "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5175 && electron . --dev\"",
