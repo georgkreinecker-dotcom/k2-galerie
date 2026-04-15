@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 15.04.26 – **K2 Familie „Keine Verbindung“ / WLAN-Hinweis** – Technisch: `fetch` zur Supabase-Edge-Function **`familie`** wirft oft (CORS, Safari, Kurzstörung) → **reason `network`**. Bisher pauschal „WLAN prüfen“ – irreführend bei stabilem Netz. **Fix:** neutraler Nutzertext + **`networkDetail`** in Konsole. **Commit:** **`b79a4714`** ✅ GitHub
+
+---
+
 **Letzter Stand:** 15.04.26 – **K2 Familie Startseite: Hero-Bild nach Speichern** – Ursache Platzhalter: **Data-URL mit `slice(500k)`** zerstört Base64. **Fix:** kein Slice; **`pageHero`** mit **`maxBytes`** wie Werke; bei sehr großen Data-URLs vor Speichern erneut komprimieren; **`setFamilyPageContent`**: `undefined` überschreibt `welcomeImage` nicht. Tests `pageContentFamilie.test.ts`. **Wichtig:** Fix war lokal committed, **`git push` war ausgeblieben** → Vercel zeigte **alten Stand**; Push **`0c07cadc`** nachgeholt ✅ GitHub.
 
 **Was wir JETZT tun:** Vercel **Deployment Ready** abwarten → am Handy **Stand-Badge tippen** oder Seite neu laden. Hero-Foto ggf. **einmal neu speichern** (alte kaputte Data-URL im Speicher). Braunen Hinweis **„Keine Verbindung zum Server“** = echtes Netz/Supabase-Problem (`familieSupabaseClient`), kein Deploy-Thema – WLAN prüfen, **„Daten vom Server laden“** erneut.
