@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 15.04.26 – **K2 Familie Vertrauen / privater Familienraum – überall notiert** – Eine Linie: **privater Raum + Zugang nur mit persönlicher ID** in **K2-Familie-Handbuch** (`09-VERTRAUEN-PRIVATER-FAMILIENRAUM.md`), **Benutzerhandbuch** (`16-K2-FAMILIE-VERTRAUEN-PRIVATER-RAUM.md`, Index 11), **AGB** (Absatz K2 Familie), **interne Docs** (Grundbotschaft, Datenschutz, Zugang/Rollen), **K2Team-Handbuch** (17/18). App: `K2FamilieBenutzerHandbuchPage`, `BenutzerHandbuchPage` DOCUMENTS. Tests + Build grün. **Commit:** **`1a3a77d3`** ✅ GitHub
+**Letzter Stand:** 15.04.26 – **K2 Familie Vertrauen / privater Familienraum – überall notiert** – Eine Linie: **privater Raum + Zugang nur mit persönlicher ID** in **K2-Familie-Handbuch** (`09-VERTRAUEN-PRIVATER-FAMILIENRAUM.md`), **Benutzerhandbuch** (`16-K2-FAMILIE-VERTRAUEN-PRIVATER-RAUM.md`, Index 11), **AGB** (Absatz K2 Familie), **interne Docs** (Grundbotschaft, Datenschutz, Zugang/Rollen), **K2Team-Handbuch** (17/18). App: `K2FamilieBenutzerHandbuchPage`, `BenutzerHandbuchPage` DOCUMENTS. Tests + Build grün. **Commits:** Inhalt **`1a3a77d3`**, DIALOG-STAND **`40c4c4a1`** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy: Handbuch-Kapitel 9/11 kurz in der App öffnen; AGB-Absatz optisch prüfen.
 
