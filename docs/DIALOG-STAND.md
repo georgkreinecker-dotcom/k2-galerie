@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 15.04.26 – **K2 Familie: Familieneinstieg nach persönlichem QR „kaputt“:** `K2FamilieEinstiegPage` setzte in **`useLayoutEffect`** immer **`setFamilieNurMusterSession(true)`** – auch wenn die Seite sofort zu **Meine Familie** weiterleitete (echte Familie aktiv, kein `?t=huber`). Dadurch blieb **Nur-Muster** gesetzt; **`FamilieMusterSessionEnforcer`** zwang **huber** → Nutzer mit echter Familie wirkte **gesperrt / falsche Familie**. **Fix:** Nur-Muster **nur** setzen, wenn die Einstiegsseite wirklich **Huber** zeigt (URL `?t=huber` oder aktueller Mandant **huber**). **Tests + Build** grün.
+**Letzter Stand:** 15.04.26 – **K2 Familie: Familieneinstieg nach persönlichem QR „kaputt“:** `K2FamilieEinstiegPage` setzte in **`useLayoutEffect`** immer **`setFamilieNurMusterSession(true)`** – auch wenn die Seite sofort zu **Meine Familie** weiterleitete (echte Familie aktiv, kein `?t=huber`). Dadurch blieb **Nur-Muster** gesetzt; **`FamilieMusterSessionEnforcer`** zwang **huber** → Nutzer mit echter Familie wirkte **gesperrt / falsche Familie**. **Fix:** Nur-Muster **nur** setzen, wenn die Einstiegsseite wirklich **Huber** zeigt (URL `?t=huber` oder aktueller Mandant **huber**). **Tests + Build** grün. **Commit:** **`98a9c531`** ✅ GitHub
 
 ---
 
