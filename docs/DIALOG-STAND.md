@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 15.04.26 – **K2 Familie Startseite: Hero-Bild nach Speichern** – Ursache Platzhalter: **Data-URL mit `slice(500k)`** zerstört Base64. **Fix:** kein Slice; **`pageHero`** mit **`maxBytes`** wie Werke; bei sehr großen Data-URLs vor Speichern erneut komprimieren; **`setFamilyPageContent`**: `undefined` überschreibt `welcomeImage` nicht. Tests `pageContentFamilie.test.ts`. **Wichtig:** Fix war lokal committed, **`git push` war ausgeblieben** → Vercel zeigte **alten Stand**; Push **`0c07cadc`** nachgeholt ✅ GitHub.
+
+**Was wir JETZT tun:** Vercel **Deployment Ready** abwarten → am Handy **Stand-Badge tippen** oder Seite neu laden. Hero-Foto ggf. **einmal neu speichern** (alte kaputte Data-URL im Speicher). Braunen Hinweis **„Keine Verbindung zum Server“** = echtes Netz/Supabase-Problem (`familieSupabaseClient`), kein Deploy-Thema – WLAN prüfen, **„Daten vom Server laden“** erneut.
+
+---
+
 **Letzter Stand:** 15.04.26 – **K2 Familie Mobil-Scan Einladungs-QR: nur Anmelde-/Zugangs-Fokus** – Ursache: Default-Rolle **Inhaber** + noch kein „Du“ → `nurMitgliedEinstieg` war **false** → volle Homepage. **Fix:** `isFamilieEinladungPersonalCodeOffen` (URL `?m=` / Pending); `isK2FamilieNurMitgliedEinstiegModus` 5. Parameter; Layout + HomePage + `FamilieTenantContext` (Event → Revision). Tests `familieEinladungPending`, `familieIdentitaet`. **Commit:** **`537ac466`** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy: Einladungs-QR mit `?m=` am Handy scannen → bis Code bestätigt: **kompakte** Kopfzeile „Persönlicher Zugang“, keine volle Meine-Familie-Homepage.
