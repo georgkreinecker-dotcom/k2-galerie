@@ -28,11 +28,13 @@ export default function K2FamilieEinstiegPage() {
   const tParam = searchParams.get('t')?.trim().toLowerCase() ?? ''
   const huberDemoFromUrl = tParam === FAMILIE_HUBER_TENANT_ID
   useLayoutEffect(() => {
+    /** Ohne diese Abfrage: Redirect zu „Meine Familie“ würde trotzdem Nur-Muster setzen → Enforcer zwingt huber, echte Familie (persönlicher QR) wirkt „weg“. */
+    if (!huberDemoFromUrl && currentTenantId !== FAMILIE_HUBER_TENANT_ID) return
     setFamilieNurMusterSession(true)
     if (huberDemoFromUrl) {
       ensureTenantInListAndSelect(FAMILIE_HUBER_TENANT_ID)
     }
-  }, [huberDemoFromUrl, ensureTenantInListAndSelect])
+  }, [huberDemoFromUrl, currentTenantId, ensureTenantInListAndSelect])
   const tenantForContent = huberDemoFromUrl ? FAMILIE_HUBER_TENANT_ID : currentTenantId
   const texts = useMemo(() => getFamilieEinstiegTexts(tenantForContent), [tenantForContent])
   const content = useMemo(() => getFamilieEinstiegContent(tenantForContent), [tenantForContent])

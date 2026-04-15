@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 15.04.26 – **K2 Familie: Familieneinstieg nach persönlichem QR „kaputt“:** `K2FamilieEinstiegPage` setzte in **`useLayoutEffect`** immer **`setFamilieNurMusterSession(true)`** – auch wenn die Seite sofort zu **Meine Familie** weiterleitete (echte Familie aktiv, kein `?t=huber`). Dadurch blieb **Nur-Muster** gesetzt; **`FamilieMusterSessionEnforcer`** zwang **huber** → Nutzer mit echter Familie wirkte **gesperrt / falsche Familie**. **Fix:** Nur-Muster **nur** setzen, wenn die Einstiegsseite wirklich **Huber** zeigt (URL `?t=huber` oder aktueller Mandant **huber**). **Tests + Build** grün.
+
+---
+
 **Letzter Stand:** 15.04.26 – **K2 Familie PWA öffnete Galerie:** Ursache: **`index.html`** hatte **zuerst** `<link rel="manifest" href="/manifest.json">` mit **`start_url: /galerie`** – Safari konnte das **vor** dem Umschalten-Skript für K2 Familie cachen → Icon richtig, Start weiter Galerie. **Fix:** kein statisches Manifest mehr; **synchron** per Skript nur **`manifest-k2-familie.json`** auf Familie-Pfaden einfügen. **Nach Deploy:** altes Home-Bildschirm-Icon **entfernen**, Seite **`/familie`** öffnen, **neu** „Zum Home-Bildschirm“. **Tests + Build** grün.
 
 ---
