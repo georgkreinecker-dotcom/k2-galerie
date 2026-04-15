@@ -26,7 +26,8 @@ function hasFamilieEinladungOrMusterQuery(search: string): boolean {
 
 export function FamilieApfMeineFamilieSync() {
   const location = useLocation()
-  const { currentTenantId, ensureTenantInListAndSelect } = useFamilieTenant()
+  const { currentTenantId, ensureTenantInListAndSelect, refreshFromStorage, bumpFamilieStorageRevision } =
+    useFamilieTenant()
 
   useLayoutEffect(() => {
     const path = (location.pathname || '/').replace(/\/$/, '') || '/'
@@ -45,6 +46,8 @@ export function FamilieApfMeineFamilieSync() {
     }
     /** Ohne Query: Demo-Modus verlassen (war zuvor nur auf localhost + mit Kreinecker-ID – Nutzer sahen nur Huber). */
     clearFamilieNurMusterSession()
+    refreshFromStorage()
+    bumpFamilieStorageRevision()
     if (!isK2FamilieApfLocalhost()) return
     const preferred = resolveApfMeineFamilieTenantId()
     if (!preferred) return
@@ -54,7 +57,14 @@ export function FamilieApfMeineFamilieSync() {
     }
     if (currentTenantId === preferred) return
     ensureTenantInListAndSelect(preferred)
-  }, [location.pathname, location.search, currentTenantId, ensureTenantInListAndSelect])
+  }, [
+    location.pathname,
+    location.search,
+    currentTenantId,
+    ensureTenantInListAndSelect,
+    refreshFromStorage,
+    bumpFamilieStorageRevision,
+  ])
 
   return null
 }

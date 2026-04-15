@@ -4,7 +4,7 @@
  * Feste Nav-Leiste: immer ein Klick zur Startseite (Homepage).
  */
 
-import { Outlet, Link, useLocation } from 'react-router-dom'
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { FamilieTenantProvider, useFamilieTenant } from '../context/FamilieTenantContext'
 import { FamilieRolleProvider, useFamilieRolle } from '../context/FamilieRolleContext'
@@ -36,7 +36,15 @@ const t = adminTheme
 const FAMILIE_NAV_BORDER = 'rgba(181, 74, 30, 0.14)'
 
 function FamilieTenantToolbar() {
-  const { currentTenantId, tenantList, setCurrentTenantId, addTenant } = useFamilieTenant()
+  const navigate = useNavigate()
+  const familieRoutesNav = PROJECT_ROUTES['k2-familie']
+  const {
+    currentTenantId,
+    tenantList,
+    setCurrentTenantId,
+    addTenant,
+    familieStorageRevision,
+  } = useFamilieTenant()
   const { capabilities } = useFamilieRolle()
   const kannInstanz = capabilities.canManageFamilienInstanz
   const nurMuster = isFamilieNurMusterSession()
@@ -56,6 +64,38 @@ function FamilieTenantToolbar() {
     window.addEventListener(FAMILIE_SESSION_UPDATED_EVENT, onUpd)
     return () => window.removeEventListener(FAMILIE_SESSION_UPDATED_EVENT, onUpd)
   }, [])
+
+  /** Demo beendet, aber auf dem Gerät nur Huber eingetragen – ohne Banner wäre die Toolbar leer (length ≤ 1). */
+  if (!eingeschraenkteAuswahl && tenantList.length === 1 && tenantList[0] === FAMILIE_HUBER_TENANT_ID) {
+    return (
+      <div
+        key={familieStorageRevision}
+        className="k2-familie-tenant-toolbar k2-familie-no-print"
+        style={{
+          padding: '0.65rem 1rem',
+          background: 'rgba(217, 119, 6, 0.1)',
+          borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
+          fontFamily: t.fontBody,
+        }}
+        role="status"
+      >
+        <p style={{ margin: 0, fontSize: '0.86rem', color: t.text, lineHeight: 1.5, fontWeight: 600 }}>
+          Echte Familie fehlt auf diesem Gerät
+        </p>
+        <p style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', color: t.muted, lineHeight: 1.45 }}>
+          Es ist nur die Musterfamilie Huber in der Liste. Öffne den{' '}
+          <strong style={{ color: t.text }}>Einladungslink oder QR von der Inhaber:in</strong> mit <strong style={{ color: t.text }}>eurer</strong> Familie (Link enthält{' '}
+          <code style={{ fontSize: '0.78rem' }}>?t=…</code> und Zugangscode). Danach erscheint die Familie hier.
+          {kannInstanz && (
+            <>
+              {' '}
+              Oder unter <Link to={familieRoutesNav.einstellungen}>Einstellungen</Link> eine neue Familie anlegen.
+            </>
+          )}
+        </p>
+      </div>
+    )
+  }
 
   /** Volle Liste: bei nur einer Familie Toolbar ausblenden. Eingeschränkte Auswahl (Muster / APf-Stamm) zeigt immer eine Zeile. */
   if (!eingeschraenkteAuswahl && tenantList.length <= 1) return null
@@ -78,9 +118,106 @@ function FamilieTenantToolbar() {
   } as const
 
   if (eingeschraenkteAuswahl) {
-    const hinweis = nurMuster
-      ? 'Nur Musterfamilie (Demo): In der Liste erscheint nur „Familie Huber“ – keine weiteren Familien oder Platzhalter.'
-      : 'Auf der APf: Hier nur deine Stammfamilie – kein Wechsel zu Muster Huber und keine Platzhalter-Einträge im Dropdown.'
+    const hinweisApfStamm =
+      'Auf der APf: Hier nur deine Stammfamilie – kein Wechsel zu Muster Huber und keine Platzhalter-Einträge im Dropdown.'
+
+    if (nurMuster) {
+      return (
+        <div
+          key={familieStorageRevision}
+          className="k2-familie-tenant-toolbar k2-familie-no-print"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.65rem',
+            padding: '0.75rem 1rem',
+            background: t.bgCard,
+            borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
+            fontFamily: t.fontBody,
+          }}
+        >
+          <div
+            style={{
+              border: '2px solid rgba(181, 74, 30, 0.45)',
+              borderRadius: t.radius,
+              padding: '0.75rem 0.9rem',
+              background: '#fffefb',
+            }}
+          >
+            <p style={{ margin: 0, fontSize: '0.92rem', fontWeight: 700, color: t.text, lineHeight: 1.35 }}>
+              Demo-Umschau – nur Musterfamilie Huber wählbar
+            </p>
+            <p style={{ margin: '0.45rem 0 0', fontSize: '0.82rem', color: t.muted, lineHeight: 1.45 }}>
+              So kommst du zu <strong style={{ color: t.text }}>deiner aktiven Familie</strong> (nicht nur Demo):
+            </p>
+            <ol
+              style={{
+                margin: '0.35rem 0 0',
+                paddingLeft: '1.25rem',
+                fontSize: '0.82rem',
+                color: t.text,
+                lineHeight: 1.5,
+              }}
+            >
+              <li>
+                <strong style={{ color: t.text }}>Demo beenden:</strong> Schaltfläche unten – die Seite „Meine Familie“ öffnet sich <strong>ohne</strong> Demo-Zusatz in der Adresse. Danach sind alle Familien auf diesem Gerät wählbar (oder du nutzt den Einladungslink).
+              </li>
+              <li>
+                <strong style={{ color: t.text }}>Einladung der Inhaber:in:</strong> Link oder QR mit <strong>eurer</strong> Familie öffnen (Adresse enthält <code style={{ fontSize: '0.78rem' }}>?t=…</code> und den Zugangscode). Den langen Code <strong>nicht</strong> ins Feld „Dein Code“ tippen – immer den kompletten Link nutzen.
+              </li>
+              {isK2FamilieApfLocalhost() ? (
+                <li>
+                  <strong style={{ color: t.text }}>Nur am Mac (APf):</strong> Nach dem Beenden wird die Stammfamilie ggf. automatisch gewählt, wenn sie in der Liste steht.
+                </li>
+              ) : (
+                <li>
+                  <strong style={{ color: t.text }}>Danach:</strong> Alle Familien, die auf diesem Gerät eingetragen sind, sind wieder wählbar.
+                </li>
+              )}
+            </ol>
+            <button
+              type="button"
+              onClick={() =>
+                navigate({ pathname: familieRoutesNav.meineFamilie, search: '' }, { replace: true })
+              }
+              style={{
+                marginTop: '0.65rem',
+                padding: '0.5rem 1rem',
+                fontSize: '0.88rem',
+                fontWeight: 700,
+                fontFamily: 'inherit',
+                borderRadius: t.radius,
+                border: '1px solid rgba(181, 74, 30, 0.35)',
+                background: '#b54a1e',
+                color: '#fff',
+                cursor: 'pointer',
+              }}
+            >
+              Demo beenden – Familienwahl freischalten
+            </button>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem' }}>
+            <span style={{ fontSize: '0.88rem', color: t.muted }} title="Demo-Mandant">
+              Aktive Familie (Demo):
+            </span>
+            <select
+              aria-label="Aktive Familie wählen"
+              title="In der Muster-Sitzung nur Huber."
+              value={selectValue}
+              onChange={(e) => setCurrentTenantId(e.target.value)}
+              style={selectStyle}
+            >
+              {displayIds.map((id) => (
+                <option key={id} value={id}>
+                  {getFamilieTenantDisplayName(id, 'Standard')}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div
         className="k2-familie-tenant-toolbar k2-familie-no-print"
@@ -94,14 +231,14 @@ function FamilieTenantToolbar() {
           fontFamily: t.fontBody,
         }}
       >
-        <p style={{ margin: 0, fontSize: '0.8rem', color: t.muted, lineHeight: 1.45 }}>{hinweis}</p>
+        <p style={{ margin: 0, fontSize: '0.8rem', color: t.muted, lineHeight: 1.45 }}>{hinweisApfStamm}</p>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem' }}>
-          <span style={{ fontSize: '0.88rem', color: t.muted }} title={nurMuster ? 'Demo-Mandant' : 'Stammfamilie auf diesem Gerät'}>
+          <span style={{ fontSize: '0.88rem', color: t.muted }} title="Stammfamilie auf diesem Gerät">
             Aktive Familie wählen:
           </span>
           <select
             aria-label="Aktive Familie wählen"
-            title={nurMuster ? 'In der Muster-Sitzung nur Huber.' : 'Auf der APf nur deine Stammfamilie.'}
+            title="Auf der APf nur deine Stammfamilie."
             value={selectValue}
             onChange={(e) => setCurrentTenantId(e.target.value)}
             style={selectStyle}
