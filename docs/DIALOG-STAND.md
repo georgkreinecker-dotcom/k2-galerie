@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 15.04.26 – **K2 Familie „Daten vom Server laden“ / Anmeldung mit persönlichem Code** – **Doppelter** `loadFamilieFromSupabase` bei **Bestätigen** entfernt (ein Ladevorgang, `result.personen` nutzen). Hinweise unterscheiden **Cloud leer** (`serverPersonenCount`) vs. **lokal nicht speicherbar**; `ladeFamilieDatenVomServer` analog. Client: `FamilieLoadMeta.serverPersonenCount`; Edge **familie**: robustere **Payload**-Auswertung. **Tests** grün, **Build** grün. **Commit:** **`dd733e15`** ✅ GitHub
+
+**Was wir JETZT tun:** Vercel **Ready** → am Gerät **„Daten vom Server laden“** und **persönlichen Code bestätigen** testen; Edge **familie** bei Bedarf **neu deployen** (`supabase functions deploy familie`), wenn nur Server-Änderung fehlt.
+
+---
+
 **Letzter Stand:** 15.04.26 – **K2 Familie Supabase: Tabelle `k2_familie_data` fehlte remote (PGRST205 / 500)** – **Ein-Befehl-Lösung:** Im Projektordner (Supabase CLI eingeloggt, `supabase link` zum Projekt): **`npm run familie:db:apply`** führt `docs/sql/supabase-k2-familie-tabelle-einmal.sql` per **`supabase db query --linked`** aus (Tabelle + CHECK inkl. `einstellungen` + RLS + `NOTIFY pgrst`). Alternativ: gleicher SQL-Block im **Dashboard → SQL Editor**. Migration **`014_k2_familie_data_ensure.sql`** + **`012`/`013`** ins Repo. **Commit:** **`054e7857`** ✅ GitHub
 
 **Was wir JETZT tun:** Auf dem Mac **einmal** `npm run familie:db:apply` (oder SQL im Dashboard) → danach Health: `…/functions/v1/familie?health=1` mit Anon-Key → **`ok`**.
