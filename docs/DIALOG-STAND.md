@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 15.04.26 – **K2 Familie: Nach „Bestätigen“ persönlicher Code → Sprung zur Personenkarte** – wie Einladungs-QR mit `m`: **`navigate(…/personen/{pid}, { replace: true })`** nach erfolgreicher Sitzung. **Commit:** ``c0e3a468`` ✅ GitHub
+
+---
+
 **Letzter Stand:** 15.04.26 – **K2 Familie „Daten vom Server laden“ / Anmeldung mit persönlichem Code** – **Doppelter** `loadFamilieFromSupabase` bei **Bestätigen** entfernt (ein Ladevorgang, `result.personen` nutzen). Hinweise unterscheiden **Cloud leer** (`serverPersonenCount`) vs. **lokal nicht speicherbar**; `ladeFamilieDatenVomServer` analog. Client: `FamilieLoadMeta.serverPersonenCount`; Edge **familie**: robustere **Payload**-Auswertung. **Tests** grün, **Build** grün. **Commit:** **`dd733e15`** ✅ GitHub
 
 **Was wir JETZT tun:** Vercel **Ready** → am Gerät **„Daten vom Server laden“** und **persönlichen Code bestätigen** testen; Edge **familie** bei Bedarf **neu deployen** (`supabase functions deploy familie`), wenn nur Server-Änderung fehlt.
@@ -130,7 +134,7 @@
 
 ---
 
-**Letzter Stand:** 14.04.26 – **K2 Familie: persönlicher Code + Gerät merken** – Nach einmaliger Bestätigung optional **„Auf diesem Gerät merken“** (Standard an): stabile **Geräte-ID** in `localStorage`, **SHA-256-Fingerabdruck** des Codes (kein Klartext). Beim nächsten Besuch wird die Sitzung wiederhergestellt, solange derselbe Browser + derselbe Code auf der „Du“-Karte – neuer Tab/Session ohne Neuteippen. Wechsel „Du“ oder Code auf der Karte → Vertrauen ungültig. `clearGerateVertrauen` bei `ichBinPersonId`-Wechsel in `saveEinstellungen`. Tests `familieIdentitaetStorage.test.ts`. **Commit:** *(folgt nach Push)*
+**Letzter Stand:** 14.04.26 – **K2 Familie: persönlicher Code + Gerät merken** – Nach einmaliger Bestätigung optional **„Auf diesem Gerät merken“** (Standard an): stabile **Geräte-ID** in `localStorage`, **SHA-256-Fingerabdruck** des Codes (kein Klartext). Beim nächsten Besuch wird die Sitzung wiederhergestellt, solange derselbe Browser + derselbe Code auf der „Du“-Karte – neuer Tab/Session ohne Neuteippen. Wechsel „Du“ oder Code auf der Karte → Vertrauen ungültig. `clearGerateVertrauen` bei `ichBinPersonId`-Wechsel in `saveEinstellungen`. Tests `familieIdentitaetStorage.test.ts`. **Commit:** ``c0e3a468`` ✅ GitHub
 
 **Was wir JETZT tun:** Deploy abwarten → Meine Familie: Code bestätigen mit Häkchen → Tab schließen, neu öffnen → kein gelber Balken (gleicher Browser). Anderes Gerät → wieder eingeben.
 
@@ -158,7 +162,7 @@
 
 **Letzter Stand:** 13.04.26 – **K2 Familie: Rolle + Identität (Sportwagenmodus)** – `getFamilieEffectiveCapabilities` (`familieIdentitaet.ts`): Schreib-Rechte nur, wenn „Du“ gesetzt ist und (kein persönlicher Code auf der Karte **oder** Session-Bestätigung in `familieIdentitaetStorage`). Standard-Rolle **Leser** (`familieRollenStorage`). Vertrauenspfade setzen Bestätigung: Code-Eingabe Meine Familie, `?m=`, Inhaber:in „Du“-Dropdown / Stammbaum. `saveEinstellungen`/`savePersonen` → `K2_FAMILIE_SESSION_UPDATED`; bei Wechsel von `ichBinPersonId` Session-Bestätigung gelöscht. Tests `familieIdentitaet.test.ts`. Doku: `K2-FAMILIE-ZUGANG-UND-ROLLEN-FAMILIENINTERN.md` §3. **Commit:** **`e28ff59b`** ✅ GitHub
 
-**Letzter Stand:** 13.04.26 – **K2 Familie Meine Familie: „Zugang & Name“ für Inhaber:in** – `K2FamilieHomePage` (`kannInstanz`): Einleitung, Untertitel **Familien-Zugang**, Label **Familien-Zugangsnummer** und Hilfetexte durchgängig als **Inhaber:in / Administrator** (du legst die Nummer und Codes fest; Mitglieder/Gäste nutzen QR/Link). Mitglieder ohne Verwaltungsrecht: Texte unverändert. `npm run test` grün. **Commit:** *(folgt nach Push)*
+**Letzter Stand:** 13.04.26 – **K2 Familie Meine Familie: „Zugang & Name“ für Inhaber:in** – `K2FamilieHomePage` (`kannInstanz`): Einleitung, Untertitel **Familien-Zugang**, Label **Familien-Zugangsnummer** und Hilfetexte durchgängig als **Inhaber:in / Administrator** (du legst die Nummer und Codes fest; Mitglieder/Gäste nutzen QR/Link). Mitglieder ohne Verwaltungsrecht: Texte unverändert. `npm run test` grün. **Commit:** ``c0e3a468`` ✅ GitHub
 
 **Letzter Stand:** 13.04.26 – **K2 Familie Zugang: Entscheidung B verbindlich** – Persönliche **Mitgliedsnummer** pro Person (`mitgliedsNummer` an `K2FamiliePerson`), getrennt von der **familienweiten** Zugangsnummer (`mitgliedsNummerAdmin`). Hilfsfunktion `findPersonIdByMitgliedsNummer` in `familieMitgliedsNummer.ts`; Tests `familieMitgliedsNummer.test.ts`. Doku: `K2-FAMILIE-ZUGANG-UND-ROLLEN-FAMILIENINTERN.md`, `K2-FAMILIE-DATENMODELL.md`. **Nächster Schritt:** UI (Eingabe nach Familienlink + Pflege auf Personenkarte). **Commit:** **`b0e4682e`** ✅ GitHub (nach Push)
 
