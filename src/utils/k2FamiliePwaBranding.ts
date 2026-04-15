@@ -10,6 +10,7 @@
  * von `/projects/k2-galerie/...`). Die SPA rendert dieselbe Startseite unter `/familie`
  * und unter `/projects/k2-familie/meine-familie` – ohne Redirect, damit Lesezeichen und
  * „Zum Home-Bildschirm“ die kurze Adresse behalten.
+ * Letzte Unterroute beim Icon-Start: `familiePwaLastPath.ts` + `K2FamilieLayout` (nicht OS-seitig).
  */
 
 /** Kurz-URL für K2 Familie (Manifest start_url, Nav „Meine Familie“). */

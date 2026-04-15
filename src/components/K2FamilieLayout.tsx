@@ -5,7 +5,7 @@
  */
 
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { FamilieTenantProvider, useFamilieTenant } from '../context/FamilieTenantContext'
 import { FamilieRolleProvider, useFamilieRolle } from '../context/FamilieRolleContext'
 import { PROJECT_ROUTES } from '../config/navigation'
@@ -33,6 +33,7 @@ import { isFamilieEinladungNurZugangAnsicht } from '../utils/familieEinladungPen
 import { loadEinstellungen, loadPersonen } from '../utils/familieStorage'
 import { loadIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
 import { isK2FamilieMeineFamilieHomePath, K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
+import { resolveFamiliePwaResumeTarget, writeFamiliePwaLastPath } from '../utils/familiePwaLastPath'
 
 /** Gleicher String wie `K2_FAMILIE_SESSION_UPDATED` in `familieStorage.ts` — hier als Literal, damit kein Laufzeit-ReferenceError (z. B. HMR). */
 const FAMILIE_SESSION_UPDATED_EVENT = 'k2-familie-einstellungen-updated'
@@ -750,6 +751,7 @@ function FamilieNav() {
 
 function FamilieLayoutInner() {
   const location = useLocation()
+  const navigate = useNavigate()
   const { currentTenantId, familieStorageRevision } = useFamilieTenant()
   const { rolle } = useFamilieRolle()
   const einst = useMemo(() => loadEinstellungen(currentTenantId), [currentTenantId, familieStorageRevision])
@@ -763,6 +765,18 @@ function FamilieLayoutInner() {
       isK2FamilieNurMitgliedEinstiegModus(rolle, currentTenantId, einst, personen, einladungNurZugangAnsicht),
     [rolle, currentTenantId, einst, personen, einladungNurZugangAnsicht],
   )
+
+  /** PWA: Icon startet mit `/familie` – letzte Unterroute wiederherstellen (vor dem Speichern unten). */
+  useLayoutEffect(() => {
+    if (location.pathname !== K2_FAMILIE_APP_SHORT_PATH) return
+    const target = resolveFamiliePwaResumeTarget(location.search)
+    if (!target) return
+    navigate(target, { replace: true })
+  }, [location.pathname, location.search, navigate])
+
+  useEffect(() => {
+    writeFamiliePwaLastPath(location.pathname, location.search)
+  }, [location.pathname, location.search])
 
   return (
     <>

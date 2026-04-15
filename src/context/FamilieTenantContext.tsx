@@ -8,6 +8,7 @@ import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
 import { K2_FAMILIE_EINLADUNG_PENDING_EVENT } from '../utils/familieEinladungPending'
 import { K2_FAMILIE_DEFAULT_TENANT, isValidFamilieTenantId, K2_FAMILIE_SESSION_UPDATED } from '../utils/familieStorage'
 import { isFamilieNurMusterSession } from '../utils/familieMusterSession'
+import { readFamilieTenantCookieBackup, setFamilieTenantCookieBackup } from '../utils/familieTenantCookieBackup'
 
 const STORAGE_CURRENT = 'k2-familie-current-tenant'
 const STORAGE_LIST = 'k2-familie-tenant-list'
@@ -15,9 +16,28 @@ const STORAGE_LIST = 'k2-familie-tenant-list'
 function loadList(): string[] {
   try {
     const raw = localStorage.getItem(STORAGE_LIST)
-    if (!raw) return [K2_FAMILIE_DEFAULT_TENANT]
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : [K2_FAMILIE_DEFAULT_TENANT]
+    let list: string[]
+    if (!raw) {
+      list = [K2_FAMILIE_DEFAULT_TENANT]
+    } else {
+      const parsed = JSON.parse(raw)
+      list = Array.isArray(parsed) && parsed.length > 0 ? parsed : [K2_FAMILIE_DEFAULT_TENANT]
+    }
+    /** PWA/neuer Kontext: localStorage leer, Cookie oft noch gesetzt → Familie wieder anbieten. */
+    const c = readFamilieTenantCookieBackup()
+    if (c && !list.includes(c)) {
+      const skipBecauseNurMuster =
+        isFamilieNurMusterSession() && c !== FAMILIE_HUBER_TENANT_ID
+      if (!skipBecauseNurMuster) {
+        list = [...list, c]
+        try {
+          localStorage.setItem(STORAGE_LIST, JSON.stringify(list))
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+    return list
   } catch {
     return [K2_FAMILIE_DEFAULT_TENANT]
   }
@@ -44,6 +64,10 @@ function loadCurrent(): string {
   } catch {
     /* ignore */
   }
+  const fromCookie = readFamilieTenantCookieBackup()
+  if (fromCookie && list.includes(fromCookie)) return fromCookie
+  const nonDefault = list.find((x) => x !== K2_FAMILIE_DEFAULT_TENANT)
+  if (nonDefault) return nonDefault
   return list[0] ?? K2_FAMILIE_DEFAULT_TENANT
 }
 
@@ -66,6 +90,7 @@ function persistCurrent(id: string) {
   } catch (e) {
     console.error('FamilieTenant: aktuellen Tenant (Gerät) speichern fehlgeschlagen', e)
   }
+  setFamilieTenantCookieBackup(id)
 }
 
 type ContextValue = {
