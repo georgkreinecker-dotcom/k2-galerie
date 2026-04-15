@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 15.04.26 – **K2 Familie Vertrauen / privater Familienraum – überall notiert** – Eine Linie: **privater Raum + Zugang nur mit persönlicher ID** in **K2-Familie-Handbuch** (`09-VERTRAUEN-PRIVATER-FAMILIENRAUM.md`), **Benutzerhandbuch** (`16-K2-FAMILIE-VERTRAUEN-PRIVATER-RAUM.md`, Index 11), **AGB** (Absatz K2 Familie), **interne Docs** (Grundbotschaft, Datenschutz, Zugang/Rollen), **K2Team-Handbuch** (17/18). App: `K2FamilieBenutzerHandbuchPage`, `BenutzerHandbuchPage` DOCUMENTS. Tests + Build grün. **Commit:** **`1a3a77d3`** ✅ GitHub
+
+**Was wir JETZT tun:** Nach Deploy: Handbuch-Kapitel 9/11 kurz in der App öffnen; AGB-Absatz optisch prüfen.
+
+---
+
 **Letzter Stand:** 15.04.26 – **K2 Familie Musterfamilie:** Nach „Weiter zur Übersicht“ / Einladungs-Strip sprang die Auswahl auf **Kreinecker** statt **Huber** – **`strip()` in `FamilieEinladungQuerySync`** entfernte `t=huber`. **Fix:** Bei **`t=huber`** bleibt `t` in der URL; bei ungültigem Tenant **`strip(true)`**. Sidebar **Musterfamilie** + Flyer-Link direkt **`meine-familie?t=huber`** (keine Zwischenseite nötig). **Commit:** **`168b049f`** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy: Musterfamilie in der Sidebar → **Familie Huber** bleibt; URL zeigt weiter `?t=huber`.
