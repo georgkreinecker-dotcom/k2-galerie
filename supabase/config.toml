@@ -1,0 +1,8 @@
+# Edge Functions – pro Function (siehe Supabase: Function Configuration)
+#
+# familie: Wird aus dem Browser mit Authorization: Bearer + anon/publishable Key aufgerufen.
+# Standard verify_jwt = true: Das Supabase-Gateway lehnt ungültige/nicht-JWT-Keys ab (401),
+# oft ohne brauchbare CORS-Antwort → Safari meldet „Load failed“ / fetch wirft (wie Netzwerk).
+# Die Function prüft Daten selbst (tenantId, RLS auf k2_familie_data).
+[functions.familie]
+verify_jwt = false

@@ -87,3 +87,13 @@ Nur lokal – kein Sync zwischen Geräten, kein zentraler Stand.
 - **Seiten:** Stammbaum, Person, Events, Kalender – Sync-on-Mount (loadFamilieFromSupabase), danach Anzeige aus localStorage.
 
 **Einmalig nötig:** Migration 006 im Supabase Dashboard ausführen; Edge Function `familie` deployen (Supabase CLI oder Dashboard).
+
+### Edge Function `familie` – JWT am Gateway (wichtig für Handy nach QR-Scan)
+
+Im Repo: `supabase/config.toml` mit **`[functions.familie] verify_jwt = false`**. Ohne das blockiert das Supabase-Gateway Aufrufe mit dem **publishable** Key (`sb_publishable_…`) oder liefert 401, bevor CORS greift – die App zeigt dann **„Cloud-Speicher nicht erreichbar“** (fetch wirft).
+
+**Deploy** (im Projektordner, mit eingeloggtem Supabase-CLI):
+
+`supabase functions deploy familie`
+
+Damit wird die JWT-Einstellung mit ausgerollt. Alternativ im Dashboard unter Edge Functions → `familie` → **„Verify JWT with legacy secret“** deaktivieren (gleiche Wirkung; `config.toml` im Git ist die reproduzierbare Quelle).

@@ -1,8 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 15.04.26 – **K2 Familie: gelber Cloud-Hinweis / „Daten vom Server laden“** – `loadFamilieFromSupabase` schlug mit **`reason: network`** fehl (fetch wirft). **Client:** `apikey`-Header wie Supabase-Standard, **bis zu 3 Versuche** mit kurzer Pause (Kaltstart/Kurzstörung). **Edge `familie`:** CORS **`www`** + alle **`https://k2-galerie*.vercel.app`** – sonst blockiert der Browser die Antwort. **Wichtig:** CORS-Änderung erst nach **`supabase functions deploy familie`** auf dem Projekt live. **Commit:** **`b2b359a1`** ✅ GitHub
+**Letzter Stand:** 15.04.26 – **K2 Familie nach QR: kurz Laden → „Speicher nicht erreichbar“** – sehr wahrscheinlich **Supabase-Gateway JWT** (Standard `verify_jwt = true`): mit **publishable Key** (`sb_publishable_…`) → 401, oft **ohne brauchbares CORS** → Safari: `fetch` wirft (**`reason: network`**). **Fix im Repo:** `supabase/config.toml` → **`[functions.familie] verify_jwt = false`** + **`supabase functions deploy familie`** (oder Dashboard: JWT-Verify aus). Doku: `docs/K2-FAMILIE-SUPABASE-EINBAU.md`. **Commit:** **`9117d07e`** ✅ GitHub
 
-**Was wir JETZT tun:** Nach Vercel Ready: Mobil **„Daten vom Server laden“**; wenn nötig Edge deploy; bei weiterem Fehler Konsole `loadFamilieFromSupabase fehlgeschlagen` prüfen.
+**Was wir JETZT tun:** Edge **familie** mit neuer Config deployen → Handy erneut testen.
 
 ---
 
