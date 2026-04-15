@@ -33,7 +33,8 @@ const DEFAULTS: Record<CompressContext, CompressDefaults> = {
    * So bleibt der Speicher stabil, obwohl die Qualität etwas angehoben ist.
    */
   artwork: { maxWidth: 960, quality: 0.72, maxBytes: 420_000, minQuality: 0.5 },
-  pageHero: { maxWidth: 1920, quality: 0.82 },
+  /** Hero-Flächen: groß genug fürs Display, aber mit Größenbremse – nie Data-URL hart kürzen (kaputt). */
+  pageHero: { maxWidth: 1920, quality: 0.82, maxBytes: 420_000, minQuality: 0.5 },
 }
 
 /**

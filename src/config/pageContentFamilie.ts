@@ -36,7 +36,13 @@ export function setFamilyPageContent(tenantId: string, data: Partial<PageContent
   try {
     const key = getStorageKey(tenantId)
     const prev = getFamilyPageContent(tenantId)
-    const next = { ...prev, ...data }
+    const next: PageContentFamilie = { ...prev }
+    // Nur gesetzte Keys übernehmen – kein welcomeImage: undefined (JSON.stringify würde den Key weglassen
+    // und bei Spread zuvor das Feld mit undefined überschreiben → leeres {} im Speicher = Bild „weg“).
+    for (const k of Object.keys(data) as (keyof PageContentFamilie)[]) {
+      const v = data[k]
+      if (v !== undefined) (next as Record<string, string | undefined>)[k] = v
+    }
     localStorage.setItem(key, JSON.stringify(next))
   } catch (_) {}
 }

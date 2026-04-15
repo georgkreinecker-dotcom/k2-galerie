@@ -59,6 +59,7 @@ export default function K2FamilieStartseiteGestalten() {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'ok' | 'err'>('idle')
   const [saveMsg, setSaveMsg] = useState('')
   const [bildLaden, setBildLaden] = useState(false)
+  const [speichernLauf, setSpeichernLauf] = useState(false)
   const [dropAktiv, setDropAktiv] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -94,18 +95,31 @@ export default function K2FamilieStartseiteGestalten() {
 
   const urlFeldWert = welcomeImage.startsWith('data:image') ? '' : welcomeImage
 
-  const handleSpeichern = () => {
+  const handleSpeichern = async () => {
     setSaveStatus('idle')
     setSaveMsg('')
+    setSpeichernLauf(true)
     try {
       setFamilyPageTexts(currentTenantId, {
         welcomeTitle: welcomeTitle.trim().slice(0, 120),
         welcomeSubtitle: welcomeSubtitle.trim().slice(0, 120),
         introText: introText.trim().slice(0, 8000),
       })
-      const raw = welcomeImage.trim()
-      const img = raw.length > 500_000 ? raw.slice(0, 500_000) : raw
-      setFamilyPageContent(currentTenantId, { welcomeImage: img || undefined })
+      let img = welcomeImage.trim()
+      // Data-URL niemals mit slice kürzen – das zerstört Base64 und zeigt nur Platzhalter.
+      // Sehr große alte Zustände: einmal über pageHero-Komprimierung (maxBytes) in compressImageForStorage.
+      if (img.startsWith('data:image') && img.length > 550_000) {
+        try {
+          img = await compressImageForStorage(img, { context: 'pageHero' })
+          setWelcomeImage(img)
+        } catch {
+          setSaveStatus('err')
+          setSaveMsg('Bild konnte nicht verkleinert werden. Bitte eine andere Datei wählen.')
+          return
+        }
+      }
+      // Immer String übergeben (auch leer = Bild entfernen). Nicht || undefined – sonst JSON leer und Bild weg.
+      setFamilyPageContent(currentTenantId, { welcomeImage: img })
       bumpFamilieStorageRevision()
       if (typeof window !== 'undefined') {
         window.dispatchEvent(
@@ -117,6 +131,8 @@ export default function K2FamilieStartseiteGestalten() {
     } catch {
       setSaveStatus('err')
       setSaveMsg('Speichern ist fehlgeschlagen (z. B. Speicher voll).')
+    } finally {
+      setSpeichernLauf(false)
     }
   }
 
@@ -182,7 +198,12 @@ export default function K2FamilieStartseiteGestalten() {
           inputMode="url"
           placeholder={welcomeImage.startsWith('data:image') ? 'Bild aus Datei aktiv – hier stattdessen eine Web-Adresse eintragen' : 'https://… oder /img/…'}
           value={urlFeldWert}
-          onChange={(e) => setWelcomeImage(e.target.value)}
+          onChange={(e) => {
+            const v = e.target.value
+            // URL-Feld ist bei Data-URL absichtlich leer – leeres onChange nicht als „Bild löschen“ werten
+            if (welcomeImage.startsWith('data:image') && v.trim() === '') return
+            setWelcomeImage(v)
+          }}
           maxLength={2000}
           autoComplete="off"
           aria-label="Adresse Willkommensbild"
@@ -283,7 +304,8 @@ export default function K2FamilieStartseiteGestalten() {
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.65rem', marginTop: '1rem' }}>
         <button
           type="button"
-          onClick={handleSpeichern}
+          onClick={() => void handleSpeichern()}
+          disabled={speichernLauf}
           style={{
             padding: '0.5rem 1.1rem',
             fontSize: '0.95rem',
@@ -291,12 +313,13 @@ export default function K2FamilieStartseiteGestalten() {
             fontFamily: 'inherit',
             borderRadius: a.radius,
             border: 'none',
-            cursor: 'pointer',
+            cursor: speichernLauf ? 'wait' : 'pointer',
+            opacity: speichernLauf ? 0.85 : 1,
             background: '#b54a1e',
             color: '#fff',
           }}
         >
-          Speichern
+          {speichernLauf ? 'Speichern …' : 'Speichern'}
         </button>
         <Link
           to={R.meineFamilie}
