@@ -5,6 +5,7 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import type { CSSProperties, ReactNode } from 'react'
 import { PROJECT_ROUTES, PLATFORM_ROUTES } from '../config/navigation'
+import { K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
 import { navigateFamilieBack } from '../utils/familieNavigateBack'
 
 type Props = {
@@ -33,8 +34,9 @@ export default function FamilieBackButton({ children = '← Zurück', className 
   const isFamilieTop =
     norm === R.home ||
     norm === R.einstieg ||
-    norm === R.meineFamilie
-  const fallback = isFamilieTop ? PLATFORM_ROUTES.projects : R.meineFamilie
+    norm === R.meineFamilie ||
+    norm === K2_FAMILIE_APP_SHORT_PATH
+  const fallback = isFamilieTop ? PLATFORM_ROUTES.projects : K2_FAMILIE_APP_SHORT_PATH
 
   return (
     <button

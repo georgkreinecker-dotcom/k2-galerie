@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useMemo, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 
 const HANDBUCH_DOC_PARAM = 'doc'
 const HANDBUCH_BASE = '/k2team-handbuch'
@@ -360,6 +361,22 @@ export default function K2FamilieHandbuchPage() {
             )}
           </article>
         </div>
+
+        <footer
+          className="no-print"
+          role="contentinfo"
+          style={{
+            marginTop: '2rem',
+            paddingTop: '1rem',
+            borderTop: '1px solid rgba(255,255,255,0.12)',
+            fontSize: '0.72rem',
+            lineHeight: 1.45,
+            color: 'rgba(255,255,255,0.72)',
+          }}
+        >
+          <p style={{ margin: '0 0 0.35rem' }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
+          <p style={{ margin: 0 }}>{PRODUCT_URHEBER_ANWENDUNG}</p>
+        </footer>
       </div>
     </div>
   )

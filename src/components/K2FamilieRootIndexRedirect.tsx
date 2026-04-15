@@ -4,9 +4,9 @@
  */
 
 import { Navigate, useLocation } from 'react-router-dom'
-import { PROJECT_ROUTES } from '../config/navigation'
+import { K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
 
 export function K2FamilieRootIndexRedirect() {
   const { search } = useLocation()
-  return <Navigate to={{ pathname: PROJECT_ROUTES['k2-familie'].meineFamilie, search }} replace />
+  return <Navigate to={{ pathname: K2_FAMILIE_APP_SHORT_PATH, search }} replace />
 }

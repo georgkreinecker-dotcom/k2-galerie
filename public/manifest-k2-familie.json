@@ -1,0 +1,25 @@
+{
+  "id": "k2-familie-pwa",
+  "name": "K2 Familie",
+  "short_name": "K2 Familie",
+  "description": "K2 Familie – Stammbaum, Momente und Erinnerungen gemeinsam pflegen.",
+  "start_url": "/familie",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f5f0ea",
+  "theme_color": "#b54a1e",
+  "icons": [
+    {
+      "src": "/k2-familie-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/k2-familie-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

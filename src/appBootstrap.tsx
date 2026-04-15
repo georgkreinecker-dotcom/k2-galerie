@@ -5,6 +5,7 @@
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App'
+import { applyK2FamiliePwaBranding } from './utils/k2FamiliePwaBranding'
 
 function applyDesignFromStorageSync() {
   try {
@@ -25,6 +26,9 @@ function applyDesignFromStorageSync() {
 
 export function run(): void {
   applyDesignFromStorageSync()
+  if (typeof window !== 'undefined') {
+    applyK2FamiliePwaBranding(window.location.pathname)
+  }
   const rootElement = document.getElementById('root')
   if (!rootElement) {
     throw new Error('Root element nicht gefunden')

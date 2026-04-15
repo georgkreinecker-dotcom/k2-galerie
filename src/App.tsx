@@ -763,8 +763,8 @@ function PrintFooter() {
 function App() {
   const location = useLocation()
 
-  // SEO: Seitentitel und Meta-Beschreibung pro Route (Sichtbarkeit Punkt 1)
-  useEffect(() => {
+  // SEO + PWA-Manifest/Icons: useLayoutEffect, damit „Zum Home-Bildschirm“ nicht kurz die Standard-Galerie-Manifest-URL sieht
+  useLayoutEffect(() => {
     const meta = getPageMeta(location.pathname)
     applyPageMeta(meta)
     applyK2FamiliePwaBranding(location.pathname)
@@ -895,8 +895,10 @@ function App() {
       <Route path={PROJECT_ROUTES.vk2.vollversion} element={<PlatformOnlyRoute><Navigate to="/admin?context=vk2" replace /></PlatformOnlyRoute>} />
       {/* Dynamischer Mandant (Lizenz-URL nach Checkout): /g/:tenantId */}
       <Route path="/g/:tenantId" element={<GalerieTenantPage />} />
-      {/* K2 Familie: kurze Teilen-URL (lokal + Vercel; Manifest-Start in index.html für /familie) */}
-      <Route path="/familie" element={<Navigate to={PROJECT_ROUTES['k2-familie'].meineFamilie} replace />} />
+      {/* K2 Familie: kurze App-URL – gleiche Startseite wie meine-familie, ohne Redirect (Icon/Lesezeichen) */}
+      <Route path="/familie" element={<K2FamilieLayout />}>
+        <Route index element={<K2FamilieHomePage />} />
+      </Route>
       {/* K2 Familie: Marketing-Einstieg (ohne Layout – nur Lesen / CTA, vergleichbar /willkommen bei der Galerie) */}
       <Route path={PROJECT_ROUTES['k2-familie'].willkommen} element={<K2FamilieWillkommenPage />} />
       <Route path={PROJECT_ROUTES['k2-familie'].home} element={<K2FamilieLayout />}>

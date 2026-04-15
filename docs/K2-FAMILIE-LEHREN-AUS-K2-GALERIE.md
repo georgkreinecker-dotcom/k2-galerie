@@ -98,6 +98,16 @@
 
 ---
 
+## 11. Feinschliff: Trennung sichtbar machen (SEO, PWA, Copyright)
+
+| Risiko | Maßnahme |
+|--------|----------|
+| **SEO `getPageMeta`:** Route fällt auf `DEFAULT_META` („K2 Galerie …“) | Jede **öffentliche** K2-Familie-URL in `src/config/seoPageMeta.ts` eintragen – besonders **`/familie`**, **`/k2-familie-handbuch`** (eigener Pfad, nicht unter `/projects/k2-familie/`), alle unter **`/projects/k2-familie/…`**. Test: `src/tests/seoPageMetaK2FamilieTrennung.test.ts`. |
+| **PWA** | Manifest `id` getrennt; Familie-`start_url` Kurzform **`/familie`** (nicht `/galerie`). Siehe `k2FamiliePwaBranding.ts`, `index.html` (Manifest/Icon bei Familien-Pfaden). |
+| **Copyright** | Oberflächen-Seiten: zwei Zeilen aus `tenantConfig` (`PRODUCT_COPYRIGHT_BRAND_ONLY`, `PRODUCT_URHEBER_ANWENDUNG`). Layout `K2FamilieLayout` für eingebettete Routen; **Standalone**-Seiten (z. B. `K2FamilieHandbuchPage`, Willkommen, Viewer) explizit prüfen. |
+
+---
+
 ## Checkliste vor Änderungen an K2 Familie
 
 - [ ] Schreibe ich in den **richtigen Kontext**? Nur `k2-familie-*` Keys.

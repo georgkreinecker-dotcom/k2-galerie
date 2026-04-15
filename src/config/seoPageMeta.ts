@@ -9,7 +9,11 @@ export interface PageMeta {
   description: string
 }
 
-/** Default = Galerie-Seite (K2 Galerie = im Netz aktiv für Google/Besucher). */
+/**
+ * Default = nur für Routen ohne eigenes Meta (überwiegend Galerie/Plattform).
+ * K2-Familie-Routen (/familie, /projects/k2-familie/…) MÜSSEN in ROUTE_META stehen –
+ * niemals DEFAULT_META nutzen (wäre fälschlich „K2 Galerie“ auf der Familien-App).
+ */
 const DEFAULT_META: PageMeta = {
   title: 'K2 Galerie – Kunst & Keramik',
   description: 'K2 Galerie – Entdecke die Verbindung von Malerei und Keramik. Werke von Martina und Georg Kreinecker.',
@@ -30,6 +34,16 @@ const ROUTE_META: { path: string | RegExp; meta: PageMeta }[] = [
   { path: '/projects/k2-galerie/vita/martina', meta: { title: 'Vita Martina – K2 Galerie', description: 'Vita und Werdegang von Martina Kreinecker – K2 Galerie Kunst & Keramik.' } },
   { path: '/projects/k2-galerie/vita/georg', meta: { title: 'Vita Georg – K2 Galerie', description: 'Vita und Werdegang von Georg Kreinecker – K2 Galerie Kunst & Keramik.' } },
   { path: /^\/projects\/vk2\/galerie/, meta: { title: 'VK2 Galerie', description: 'Vereinsgalerie VK2 – für alle Vereinstypen. Kunstvereine = Einstieg. Werke und Veranstaltungen.' } },
+  /** Kurz-URL nur K2 Familie – nie mit /galerie verwechselbar; PWA start_url entspricht dem Manifest. */
+  { path: '/familie', meta: { title: 'K2 Familie', description: 'K2 Familie – Stammbaum, Momente und Erinnerungen gemeinsam pflegen.' } },
+  /** Eigener Pfad (nicht unter /projects/k2-familie/…) – ohne Eintrag: fälschlich DEFAULT_META „K2 Galerie“. */
+  {
+    path: '/k2-familie-handbuch',
+    meta: {
+      title: 'Benutzerhandbuch – K2 Familie',
+      description: 'K2 Familie – Anleitung Personenkarte, Stammbaum, Einstellungen, Rollen und Lizenz.',
+    },
+  },
   { path: '/projects/k2-familie', meta: { title: 'K2 Familie', description: 'K2 Familie – Stammbaum, Momente und Erinnerungen gemeinsam pflegen.' } },
 ]
 

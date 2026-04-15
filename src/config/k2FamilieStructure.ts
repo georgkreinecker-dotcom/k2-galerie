@@ -4,6 +4,7 @@
  */
 
 import { PROJECT_ROUTES } from './navigation'
+import { K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
 
 const R = PROJECT_ROUTES['k2-familie']
 
@@ -21,7 +22,7 @@ export const k2FamilieLeitGroups: FamilieLeitGroup[] = [
     sections: [
       { id: 'fam-willkommen', label: 'Einstiegsseite (Flyer/QR)', to: R.willkommen },
       { id: 'fam-einstieg', label: 'Musterfamilie (Umschauen)', to: `${R.meineFamilie}?t=huber` },
-      { id: 'fam-home', label: 'Meine Familie', to: R.meineFamilie },
+      { id: 'fam-home', label: 'Meine Familie', to: K2_FAMILIE_APP_SHORT_PATH },
       { id: 'fam-uebersicht', label: 'Projekt & Leitbild', to: `${R.uebersicht}#k2-familie-lizenz-bruecke` },
     ],
   },

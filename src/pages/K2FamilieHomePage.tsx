@@ -116,6 +116,8 @@ export default function K2FamilieHomePage() {
   const [registrierungErfolg, setRegistrierungErfolg] = useState('')
   /** Mobil/erstes Gerät: Personen kommen erst nach Cloud-Sync – einmaliger Lade-Button + Spinner. */
   const [familieCloudSyncBusy, setFamilieCloudSyncBusy] = useState(false)
+  /** Willkommens-Hero: Tippen öffnet Vollbild (Overlay oben darf Touches nicht blockieren). */
+  const [heroBildVollbild, setHeroBildVollbild] = useState(false)
 
   const einstAmpel = useMemo(() => loadEinstellungen(currentTenantId), [currentTenantId, familieStorageRevision])
   const ichBinPersonId = einstAmpel.ichBinPersonId ?? ''
@@ -427,6 +429,20 @@ export default function K2FamilieHomePage() {
   const needsIdentitaetSessionBanner = Boolean(
     ichIdSession && codeAufDuKarteSession && loadIdentitaetBestaetigt(currentTenantId) !== ichIdSession,
   )
+
+  useEffect(() => {
+    if (!heroBildVollbild) return
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setHeroBildVollbild(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = prevOverflow
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [heroBildVollbild])
 
   return (
     <div className="mission-wrapper">
@@ -797,13 +813,37 @@ export default function K2FamilieHomePage() {
         {/* Hero: lebendig, mit sanftem Verlauf */}
         <div className="k2-familie-hero" style={{ position: 'relative', width: '100%', height: 'clamp(260px, 44vh, 420px)', overflow: 'hidden', borderRadius: '0 0 28px 28px' }}>
           {welcomeImage ? (
-            <img src={welcomeImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            <button
+              type="button"
+              aria-label="Willkommensbild vergrößern"
+              onClick={() => setHeroBildVollbild(true)}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                padding: 0,
+                margin: 0,
+                border: 'none',
+                background: 'transparent',
+                cursor: 'zoom-in',
+                display: 'block',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              <img
+                src={welcomeImage}
+                alt=""
+                draggable={false}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', pointerEvents: 'none' }}
+              />
+            </button>
           ) : (
             <div style={{ width: '100%', height: '100%', background: 'linear-gradient(145deg, rgba(13,148,136,0.5) 0%, rgba(234,88,12,0.15) 40%, rgba(15,20,25,0.92) 100%)' }} />
           )}
-          <div style={{ position: 'absolute', inset: 0, background: C.heroOverlay }} />
+          <div style={{ position: 'absolute', inset: 0, background: C.heroOverlay, pointerEvents: 'none' }} />
           <div className="k2-familie-hero-shine" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.04) 45%, transparent 55%)', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: 'clamp(1.5rem, 4vw, 2.25rem) clamp(1.25rem, 5vw, 2.5rem)' }}>
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: 'clamp(1.5rem, 4vw, 2.25rem) clamp(1.25rem, 5vw, 2.5rem)', pointerEvents: 'none' }}>
             <p style={{ margin: '0 0 0.35rem', fontSize: '0.82rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.88)', fontWeight: 600 }}>
               {texts.welcomeSubtitle}
             </p>
@@ -1127,6 +1167,70 @@ export default function K2FamilieHomePage() {
           </>
         ) : null}
       </div>
+
+      {heroBildVollbild && welcomeImage ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Willkommensbild groß"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 20000,
+            background: 'rgba(0,0,0,0.94)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 'max(0.5rem, env(safe-area-inset-top)) max(0.5rem, env(safe-area-inset-right)) max(0.5rem, env(safe-area-inset-bottom)) max(0.5rem, env(safe-area-inset-left))',
+            boxSizing: 'border-box',
+          }}
+          onClick={() => setHeroBildVollbild(false)}
+        >
+          <button
+            type="button"
+            aria-label="Schließen"
+            onClick={(e) => {
+              e.stopPropagation()
+              setHeroBildVollbild(false)
+            }}
+            style={{
+              position: 'absolute',
+              top: 'max(10px, env(safe-area-inset-top))',
+              right: 'max(10px, env(safe-area-inset-right))',
+              zIndex: 1,
+              minWidth: 44,
+              minHeight: 44,
+              borderRadius: 999,
+              border: '1px solid rgba(255,255,255,0.35)',
+              background: 'rgba(0,0,0,0.55)',
+              color: '#fff',
+              fontSize: '1.25rem',
+              lineHeight: 1,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+            }}
+          >
+            ✕
+          </button>
+          <img
+            src={welcomeImage}
+            alt=""
+            draggable={false}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '100%',
+              maxHeight: 'min(92vh, 100%)',
+              width: 'auto',
+              height: 'auto',
+              objectFit: 'contain',
+            }}
+          />
+          <p style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)', textAlign: 'center' }}>
+            Tippen außerhalb des Bildes oder ✕ zum Schließen
+          </p>
+        </div>
+      ) : null}
     </div>
   )
 }

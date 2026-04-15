@@ -32,6 +32,7 @@ import { isK2FamilieNurMitgliedEinstiegModus } from '../utils/familieIdentitaet'
 import { isFamilieEinladungNurZugangAnsicht } from '../utils/familieEinladungPending'
 import { loadEinstellungen, loadPersonen } from '../utils/familieStorage'
 import { loadIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
+import { isK2FamilieMeineFamilieHomePath, K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
 
 /** Gleicher String wie `K2_FAMILIE_SESSION_UPDATED` in `familieStorage.ts` — hier als Literal, damit kein Laufzeit-ReferenceError (z. B. HMR). */
 const FAMILIE_SESSION_UPDATED_EVENT = 'k2-familie-einstellungen-updated'
@@ -206,7 +207,7 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
             <button
               type="button"
               onClick={() =>
-                navigate({ pathname: familieRoutesNav.meineFamilie, search: '' }, { replace: true })
+                navigate({ pathname: K2_FAMILIE_APP_SHORT_PATH, search: '' }, { replace: true })
               }
               style={{
                 marginTop: '0.65rem',
@@ -667,7 +668,7 @@ type FamilieNavItem = {
 
 /** Volle Leiste auf allen Unterseiten. Auf „Meine Familie“-Start: keine Doppelung zu den großen Kacheln darunter – Kernthemen nur unten, oben kompakt. */
 const FAMILIE_NAV: FamilieNavItem[] = [
-  { to: familieRoutes.meineFamilie, label: 'Meine Familie' },
+  { to: K2_FAMILIE_APP_SHORT_PATH, label: 'Meine Familie' },
   { to: familieRoutes.stammbaum, label: 'Stammbaum' },
   {
     to: familieRoutes.events,
@@ -682,15 +683,14 @@ const FAMILIE_NAV: FamilieNavItem[] = [
 
 /** Nur auf /meine-familie: Kern unten als Kacheln – oben nur Meine Familie + Handbuch (kein Zurück, keine Mappe/Sicherung in Zeile 1). */
 const FAMILIE_NAV_MEINE_FAMILIE_HOME: FamilieNavItem[] = [
-  { to: familieRoutes.meineFamilie, label: 'Meine Familie' },
+  { to: K2_FAMILIE_APP_SHORT_PATH, label: 'Meine Familie' },
   { to: familieRoutes.benutzerHandbuch, label: 'Handbuch' },
 ]
 
 function FamilieNav() {
   const loc = useLocation()
   const path = loc.pathname
-  const isMeineFamilieHome =
-    path === familieRoutes.meineFamilie || path === `${familieRoutes.meineFamilie}/`
+  const isMeineFamilieHome = isK2FamilieMeineFamilieHomePath(path)
   const navItems = isMeineFamilieHome ? FAMILIE_NAV_MEINE_FAMILIE_HOME : FAMILIE_NAV
 
   return (
@@ -712,13 +712,15 @@ function FamilieNav() {
         <FamilieBackButton style={{ color: t.text, marginRight: '0.25rem' }} />
       ) : null}
       {navItems.map(({ to, label, activePrefixes }) => {
-        const isStart = to === familieRoutes.meineFamilie
+        const isStart = to === K2_FAMILIE_APP_SHORT_PATH
         const isExactMatchNav =
           to === familieRoutes.benutzerHandbuch || to === familieRoutes.einstellungen
         const isActive = activePrefixes?.length
           ? activePrefixes.some((p) => path.startsWith(p))
           : isStart || isExactMatchNav
-            ? path === to || path === to + '/'
+            ? isStart
+              ? isK2FamilieMeineFamilieHomePath(path)
+              : path === to || path === to + '/'
             : path.startsWith(to)
         return (
           <Link

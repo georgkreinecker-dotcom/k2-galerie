@@ -11,12 +11,10 @@
 import { useLayoutEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
-import { PROJECT_ROUTES } from '../config/navigation'
 import { isK2FamilieApfLocalhost, resolveApfMeineFamilieTenantId } from '../config/k2FamilieApfDefaults'
 import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
 import { clearFamilieNurMusterSession, setFamilieNurMusterSession } from '../utils/familieMusterSession'
-
-const MEINE_PATH = PROJECT_ROUTES['k2-familie'].meineFamilie.replace(/\/$/, '') || '/'
+import { isK2FamilieMeineFamilieHomePath } from '../utils/k2FamiliePwaBranding'
 
 function hasFamilieEinladungOrMusterQuery(search: string): boolean {
   const sp = new URLSearchParams(search || '')
@@ -30,8 +28,7 @@ export function FamilieApfMeineFamilieSync() {
     useFamilieTenant()
 
   useLayoutEffect(() => {
-    const path = (location.pathname || '/').replace(/\/$/, '') || '/'
-    if (path !== MEINE_PATH) return
+    if (!isK2FamilieMeineFamilieHomePath(location.pathname || '/')) return
     const sp = new URLSearchParams(location.search || '')
     /** Einladungscode/QR: FamilieEinladungQuerySync zuerst – kein Mandantenwechsel hier dazwischen. */
     if (hasFamilieEinladungOrMusterQuery(location.search || '')) {
