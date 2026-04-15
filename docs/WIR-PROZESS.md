@@ -126,6 +126,7 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 
 | Datum | Was ich gelernt habe |
 |---|---|
+| 15.04.26 (Abend) | **Schluss für heute:** K2 Familie am Handy – **ein Scrollbereich** (`k2-familie-main`) statt doppeltem `overflow-y` (mission-wrapper + viewport) nimmt das „Kleben“ auf iOS; **Safe-Area** am Inhalt statt toter Rand-Taps. **Commit `0b44a770`**, Tests + Build grün; **nächster Schritt:** Handy nach Vercel Deploy. |
 | 14.04.26 (Abend) | **Schluss für heute:** **K2-Welt Strategie** gehört **nicht** in mök2 – eigene Seite + Smart-Board-Mappe (`6f4b7990`); danach **K2 Familie**-Rest (Stammbaum, Einladung, Einstellungen, Layout) mit **Tests + Build grün** committed und gepusht – Raum aufgeräumt, GitHub = Referenz. |
 | 13.04.26 (Abend) | **Schluss für heute:** „Wir suchen Familie Kreinecker“ = **sichtbar machen**, welche Familie QR/Link trifft (Anzeigename + `t=`); Session-Ende: Build grün, DIALOG-STAND mit Hash, WIR-PROZESS, **commit + push** – Raum bereit für morgen. |
 | 12.04.26 (Abend) | **Schluss für heute:** K2 Familie braucht dieselbe **Leitstruktur** wie mök2 – **eine** Strukturdatei + Sidebar + gemeinsame Active-Logik mit der oberen Nav; Session-Ende: Tests/Build grün, DIALOG-STAND mit Commit-Hash, WIR-PROZESS, alles pushen – Raum bereit. |
