@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 16.04.26 – **Huber-Leitfaden: Gedenkort-Feinschliff** – Eigener Rundgang-Schritt **Gedenkort** mit **zusätzlichem** Absatz (still/kleiner Moment vs. fester Platz im Jahr; **gut tun** statt Pflicht); **Einstellungen**-Text präziser (Rollen, Orientierung); **MUSTER_HINT** Geschichten/Gedenkort getrennt; **Drehbuch** Phase 3 um zwei Schritte; Test **`gedenkort`**-Schritt. **Tests + build:vercel** grün. **Commit:** _(nach Push)_
+**Letzter Stand:** 16.04.26 – **Huber-Leitfaden: Gedenkort-Feinschliff** – Eigener Rundgang-Schritt **Gedenkort** mit **zusätzlichem** Absatz (still/kleiner Moment vs. fester Platz im Jahr; **gut tun** statt Pflicht); **Einstellungen**-Text präziser (Rollen, Orientierung); **MUSTER_HINT** Geschichten/Gedenkort getrennt; **Drehbuch** Phase 3 um zwei Schritte; Test **`gedenkort`**-Schritt. **Tests + build:vercel** grün. **Commit:** **`1dbc2566`** ✅ GitHub
 
 ---
 
