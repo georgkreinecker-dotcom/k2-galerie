@@ -75,6 +75,22 @@ export default function K2FamilieGeschichtePage() {
     })
   }
 
+  /** Klartext aus Zwischenablage (z. B. Word) – zuverlässig ohne HTML-Rückstände. */
+  const handleContentPaste = useCallback((e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const plain = e.clipboardData.getData('text/plain')
+    if (plain === '') return
+    e.preventDefault()
+    const el = e.currentTarget
+    const start = el.selectionStart
+    const end = el.selectionEnd
+    const insert = plain.replace(/\r\n/g, '\n')
+    setContent((prev) => prev.slice(0, start) + insert + prev.slice(end))
+    const newPos = start + insert.length
+    requestAnimationFrame(() => {
+      el.setSelectionRange(newPos, newPos)
+    })
+  }, [])
+
   const save = () => {
     if (!kannOrganisch) return
     const now = new Date().toISOString()
@@ -223,7 +239,18 @@ export default function K2FamilieGeschichtePage() {
               <p className="meta" style={{ fontSize: '0.8rem', marginBottom: '0.35rem' }}>
                 Gerüst = Markdown-Kapitel als Idee. Steht schon Text darin, wird das Gerüst oben angefügt. Der Daten-Vorschlag hängt unter „Verlauf“ an oder füllt ein leeres Feld.
               </p>
-              <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Text hier eingeben oder Vorschlag erzeugen …" rows={14} disabled={!kannOrganisch} style={{ width: '100%', background: 'rgba(0,0,0,0.25)', border: `1px solid ${C.border}`, borderRadius: 8, color: C.text, padding: '0.6rem', fontFamily: 'inherit', fontSize: '0.95rem', lineHeight: 1.5 }} />
+              <p className="meta" style={{ fontSize: '0.8rem', marginBottom: '0.35rem' }}>
+                Fertigen Text aus Word oder anderer App: hier einfügen (Strg+V / Cmd+V). Es wird <strong style={{ color: C.text }}>Klartext</strong> übernommen – kein Word-Layout; Überschriften z. B. mit <code style={{ fontSize: '0.78rem' }}>## Titel</code> in Markdown.
+              </p>
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                onPaste={handleContentPaste}
+                placeholder="Text hier eingeben, aus Word einfügen oder Vorschlag erzeugen …"
+                rows={14}
+                disabled={!kannOrganisch}
+                style={{ width: '100%', background: 'rgba(0,0,0,0.25)', border: `1px solid ${C.border}`, borderRadius: 8, color: C.text, padding: '0.6rem', fontFamily: 'inherit', fontSize: '0.95rem', lineHeight: 1.5 }}
+              />
             </div>
             <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
               <button type="button" className="btn" disabled={!kannOrganisch} onClick={save} style={{ background: C.accent }}>Speichern</button>
