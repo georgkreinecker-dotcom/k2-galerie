@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 16.04.26 – **Konzept: Plattform-Rundgang ök2 + VK2 (parallel)** – **`docs/KONZEPT-PLATTFORM-RUNDGANG-OEK2-VK2.md`:** gemeinsames **Framework** (Shell, Fokus, Schritte), **ohne Audio-Standard**; getrennte Stränge **Demo ök2** / **Demo VK2**; Hover-Attribute später `data-oek2-demo-hint` / `data-vk2-demo-hint`; Phasen A–E; Eintrag in **`docs/00-INDEX.md`**. Nächster Schritt: **Abnahme Konzept**, dann Shell/Implementierung nach Phasen. **Commit:** **`ca259738`** ✅ auf GitHub
+**Letzter Stand:** 16.04.26 – **Konzept: Plattform-Rundgang ök2 + VK2 (parallel)** – **`docs/KONZEPT-PLATTFORM-RUNDGANG-OEK2-VK2.md`:** gemeinsames **Framework** (Shell, Fokus, Schritte), **ohne Audio-Standard**; getrennte Stränge **Demo ök2** / **Demo VK2**; Hover-Attribute später `data-oek2-demo-hint` / `data-vk2-demo-hint`; Phasen A–E; Eintrag in **`docs/00-INDEX.md`**. Nächster Schritt: **Abnahme Konzept**, dann Shell/Implementierung nach Phasen. **Commit:** **`e3fefab1`** ✅ auf GitHub (Konzeptdatei + 00-INDEX)
 
 ---
 
