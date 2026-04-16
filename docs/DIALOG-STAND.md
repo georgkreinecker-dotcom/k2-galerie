@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 16.04.26 – **K2 Familie Einstiegs-Flyer (Huber) = gleiche Werbelinie** – **`einstiegContentFamilie.ts`:** Titel/Untertitel aus **`PRODUCT_K2_FAMILIE_WERBESLOGAN`** + **`PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ`** (wie `tenantConfig`); Body Musterfamilie unverändert praktisch. **Tests + vite:build** grün. **Commit:** **`f181cbfe`** ✅ GitHub
+
+**Was wir JETZT tun:** Nach Vercel **Ready:** Einstieg **Huber** (`?t=huber`) – Hero kopfliest wie Marketing-Flyer.
+
+---
+
 **Letzter Stand:** 16.04.26 – **K2 Familie Vertriebsunterlagen: Flyer + Produktprospekt** – **`01-FLYER-KURZPROSPEKT-VERKAUFSARGUMENTATION.md`** (Kurzprospekt / Verkaufsargumentation), **`02-PROSPEKT-PRODUKTINFORMATION.md`** (mehr Produktinformation, ableitend); **`00-INDEX.md`** + **README**; **`K2FamiliePraesentationsmappePage`:** zwei Dokumente in der Sidebar, Default Flyer. **Tests + Build** grün. **Commit (Vertriebsunterlagen):** **`501fdddf`** ✅ GitHub
 
 **Was wir JETZT tun:** Route **`/projects/k2-familie/praesentationsmappe`** – Kurzprospekt & Prospekt kurz **lesen/Drucken** prüfen.
