@@ -1,7 +1,10 @@
 /**
  * K2 Familie – Texte für Einstieg B (nur Mandant huber / Musterfamilie).
  * Eigene Keys pro Tenant – kein Teilen mit Marketing-Flyer (A) oder „Meine Familie“-Homepage (C).
+ * Kopf: dieselbe Werbelinie wie tenantConfig (Slogan + Werbebotschaft).
  */
+
+import { PRODUCT_K2_FAMILIE_WERBESLOGAN, PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ } from './tenantConfig'
 
 export interface FamilieEinstiegTexts {
   title: string
@@ -14,10 +17,12 @@ export interface FamilieEinstiegContent {
   heroImage?: string
 }
 
+const SLOGAN_HEADLINE = PRODUCT_K2_FAMILIE_WERBESLOGAN.replace(/\s*\.$/, '')
+
 /** Nur sichtbar bei Mandant „huber“ (Musterfamilie) – Umschauen ohne eigene Daten. */
 const DEFAULT_EINSTIEG_TEXTS: FamilieEinstiegTexts = {
-  title: 'K2 Familie – Musterfamilie zum Umschauen',
-  subtitle: 'Demo: Familie Huber',
+  title: `${SLOGAN_HEADLINE} · Musterfamilie`,
+  subtitle: `${PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ} Demo: Familie Huber.`,
   body:
     'Hier kannst du ohne eigene Daten stöbern: Stammbaum, Kalender und mehr. Eure eigene Familie schaltet ihr frei mit einem Einladungs-Link von einer Inhaber:in oder einem Mitglied – nicht über diese Umschauen-Sitzung. Der echte Familienraum bleibt privat: hinein kommst du nur mit deiner persönlichen ID auf der Karte.',
   ctaLabel: 'Weiter zur Übersicht',
