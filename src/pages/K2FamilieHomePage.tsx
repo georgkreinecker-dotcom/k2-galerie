@@ -35,9 +35,10 @@ import {
 import type { K2FamilieStartpunktTyp } from '../types/k2Familie'
 import { isK2FamilieNurMitgliedEinstiegModus } from '../utils/familieIdentitaet'
 import { seedFamilieHuber, FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
-import { clearFamilieNurMusterSession } from '../utils/familieMusterSession'
+import { clearFamilieNurMusterSession, isFamilieNurMusterSession } from '../utils/familieMusterSession'
 import { useMemo, useState, useEffect, type CSSProperties } from 'react'
 import { adminTheme } from '../config/theme'
+import { PRODUCT_K2_FAMILIE_WERBESLOGAN } from '../config/tenantConfig'
 import { K2_FAMILIE_UI } from '../config/k2FamilieUiColors'
 import { K2_FAMILIE_NAV_LABEL_GESCHICHTE } from '../config/k2FamilieNavLabels'
 
@@ -433,6 +434,7 @@ export default function K2FamilieHomePage() {
   const needsIdentitaetSessionBanner = Boolean(
     ichIdSession && loadIdentitaetBestaetigt(currentTenantId) !== ichIdSession,
   )
+  const isDemoMusterHuber = currentTenantId === FAMILIE_HUBER_TENANT_ID && isFamilieNurMusterSession()
   /** Ohne Personenliste oder ohne gespeicherten Code auf der Karte (lokal) gibt es nichts zum Abgleichen – zuerst Server laden. */
   const identitaetSessionFehlenDatenZumAbgleich = Boolean(
     needsIdentitaetSessionBanner && (personen.length === 0 || !codeAufDuKarteSession),
@@ -487,10 +489,33 @@ export default function K2FamilieHomePage() {
                   fontFamily: a.fontBody,
                 }}
               >
-                <strong>Sitzung nicht bestätigt.</strong> Trage hier deinen persönlichen Code ein (wie auf deiner
-                Karte). Optional: &quot;Auf diesem Gerät merken&quot; – dann musst du auf <strong>diesem</strong>{' '}
-                Browser nicht bei jedem Besuch neu tippen (anderes Gerät = erneut eingeben). Den Code kannst du später
-                auf deiner Personenkarte ändern; dann gilt die Merkung hier nicht mehr.
+                {isDemoMusterHuber ? (
+                  <>
+                    <span
+                      style={{
+                        display: 'block',
+                        marginBottom: '0.4rem',
+                        fontSize: '0.95rem',
+                        fontWeight: 800,
+                        color: '#92400e',
+                        fontFamily: a.fontHeading,
+                      }}
+                    >
+                      {PRODUCT_K2_FAMILIE_WERBESLOGAN}
+                    </span>
+                    <strong>Rolle in der Musterfamilie bestätigen.</strong> Trage den persönlichen Code ein, wie auf der
+                    Demo-Karte – damit deine gewählte Rolle wie bei einer echten Familie gilt. Optional: &quot;Auf diesem
+                    Gerät merken&quot; – dann musst du auf <strong>diesem</strong> Browser nicht bei jedem Besuch neu
+                    tippen (anderes Gerät = erneut eingeben).
+                  </>
+                ) : (
+                  <>
+                    <strong>Sitzung nicht bestätigt.</strong> Trage hier deinen persönlichen Code ein (wie auf deiner
+                    Karte). Optional: &quot;Auf diesem Gerät merken&quot; – dann musst du auf <strong>diesem</strong>{' '}
+                    Browser nicht bei jedem Besuch neu tippen (anderes Gerät = erneut eingeben). Den Code kannst du später
+                    auf deiner Personenkarte ändern; dann gilt die Merkung hier nicht mehr.
+                  </>
+                )}
               </p>
               <div
                 style={{

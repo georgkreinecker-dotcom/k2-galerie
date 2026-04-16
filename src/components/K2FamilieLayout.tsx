@@ -9,7 +9,12 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { FamilieTenantProvider, useFamilieTenant } from '../context/FamilieTenantContext'
 import { FamilieRolleProvider, useFamilieRolle } from '../context/FamilieRolleContext'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
+import {
+  PRODUCT_COPYRIGHT_BRAND_ONLY,
+  PRODUCT_K2_FAMILIE_WERBESLOGAN,
+  PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ,
+  PRODUCT_URHEBER_ANWENDUNG,
+} from '../config/tenantConfig'
 import type { K2FamilieInhaberArbeitsansicht } from '../types/k2FamilieRollen'
 import {
   K2_FAMILIE_INHABER_ANSICHT,
@@ -175,37 +180,23 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
               background: '#fffefb',
             }}
           >
-            <p style={{ margin: 0, fontSize: '0.92rem', fontWeight: 700, color: t.text, lineHeight: 1.35 }}>
-              Demo-Umschau – nur Musterfamilie Huber wählbar
+            <p style={{ margin: 0, fontSize: '1.02rem', fontWeight: 700, color: t.text, lineHeight: 1.35 }}>
+              {PRODUCT_K2_FAMILIE_WERBESLOGAN}
             </p>
-            <p style={{ margin: '0.45rem 0 0', fontSize: '0.82rem', color: t.muted, lineHeight: 1.45 }}>
-              So kommst du zu <strong style={{ color: t.text }}>deiner aktiven Familie</strong> (nicht nur Demo):
+            <p style={{ margin: '0.4rem 0 0', fontSize: '0.82rem', color: t.muted, lineHeight: 1.5 }}>
+              {PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ}
             </p>
-            <ol
-              style={{
-                margin: '0.35rem 0 0',
-                paddingLeft: '1.25rem',
-                fontSize: '0.82rem',
-                color: t.text,
-                lineHeight: 1.5,
-              }}
-            >
-              <li>
-                <strong style={{ color: t.text }}>Demo beenden:</strong> Schaltfläche unten – die Seite „Meine Familie“ öffnet sich <strong>ohne</strong> Demo-Zusatz in der Adresse. Danach sind alle Familien auf diesem Gerät wählbar (oder du nutzt den Einladungslink).
-              </li>
-              <li>
-                <strong style={{ color: t.text }}>Einladung der Inhaber:in:</strong> Link oder QR mit <strong>eurer</strong> Familie öffnen (Adresse enthält <code style={{ fontSize: '0.78rem' }}>?t=…</code> und den Zugangscode). Den langen Code <strong>nicht</strong> ins Feld „Dein Code“ tippen – immer den kompletten Link nutzen.
-              </li>
+            <p style={{ margin: '0.55rem 0 0', fontSize: '0.82rem', color: t.text, lineHeight: 1.5 }}>
+              <strong style={{ color: t.text }}>Musterfamilie Huber</strong> – hier stellst du die App ohne echte Daten
+              aus. Zum Wechsel in <strong>eure</strong> Familie: Einladungslink oder QR der Inhaber:in (Adresse mit{' '}
+              <code style={{ fontSize: '0.78rem' }}>?t=…</code> und Zugang – den kompletten Link öffnen, nicht nur den
+              Code ins Feld tippen).{' '}
               {isK2FamilieApfLocalhost() ? (
-                <li>
-                  <strong style={{ color: t.text }}>Nur am Mac (APf):</strong> Nach dem Beenden wird die Stammfamilie ggf. automatisch gewählt, wenn sie in der Liste steht.
-                </li>
+                <>Am Mac auf der APf kann nach dem Beenden die Stammfamilie automatisch gewählt werden.</>
               ) : (
-                <li>
-                  <strong style={{ color: t.text }}>Danach:</strong> Alle Familien, die auf diesem Gerät eingetragen sind, sind wieder wählbar.
-                </li>
+                <>Mit dem Button unten beendest du die Demo und kannst alle Familien auf diesem Gerät wieder wählen.</>
               )}
-            </ol>
+            </p>
             <button
               type="button"
               onClick={() =>
@@ -224,7 +215,7 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
                 cursor: 'pointer',
               }}
             >
-              Demo beenden – Familienwahl freischalten
+              Demo beenden – zu eurer Familie
             </button>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem' }}>
