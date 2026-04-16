@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 16.04.26 – **Huber-Leitfaden: Texte herzlicher** – Begrüßung, Versprechen, Huber-Schritte und **Sprecher-Drehbuch** mit **Herzlich willkommen**, Dank, Empathie; Drehbuch-PDF **`10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md`** angeglichen. **Build** grün. **Commit:** _(nach Push)_
+**Letzter Stand:** 16.04.26 – **Huber-Leitfaden: Texte herzlicher** – Begrüßung, Versprechen, Huber-Schritte und **Sprecher-Drehbuch** mit **Herzlich willkommen**, Dank, Empathie; Drehbuch-PDF **`10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md`** angeglichen. **Build** grün. **Commit:** **`ca68f9b3`** ✅ GitHub
 
 ---
 
