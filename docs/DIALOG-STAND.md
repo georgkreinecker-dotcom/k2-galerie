@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 16.04.26 – **ök2 Galerie: Rundgang wie K2 Familie – Aufräumen + Fix** – Nach `export default` lag **~600 Zeilen** toter **GalerieEntdeckenGuide**-Code; entfernt, **`GuideAbschlussKarte`** bleibt davor. Zweiter JSX-Block rief noch **`GalerieEntdeckenGuide`** → **`Oek2GalerieLeitfadenModal`** mit **`musterOnly &&`**. **Tests + Build** grün. **Commit:** **`66d85d40`** ✅ GitHub
+**Letzter Stand:** 16.04.26 – **ök2 Galerie: Rundgang wie K2 Familie – Aufräumen + Fix** – Nach `export default` lag **~600 Zeilen** toter **GalerieEntdeckenGuide**-Code; entfernt, **`GuideAbschlussKarte`** bleibt davor. Zweiter JSX-Block: **`Oek2GalerieLeitfadenModal`** + **`musterOnly &&`**. **`Oek2GalerieLeitfadenModal.tsx`** + **`renderLeitfadenMarkdownLite.tsx`** nachgetragen (lokal neu, im Repo gefehlt). **Commits:** **`66d85d40`**, **`52e323ee`** ✅ GitHub
 
 ---
 
