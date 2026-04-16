@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 16.04.26 – **ök2 Galerie: Rundgang wie K2 Familie – Aufräumen + Fix** – Nach `export default` lag **~600 Zeilen** toter **GalerieEntdeckenGuide**-Code; entfernt, **`GuideAbschlussKarte`** bleibt davor. Zweiter JSX-Block rief noch **`GalerieEntdeckenGuide`** → **`Oek2GalerieLeitfadenModal`** mit **`musterOnly &&`**. **Tests + Build** grün. **Commit:** _(nach Push)_
+
+---
+
 **Letzter Stand:** 16.04.26 – **K2 Familie Muster: Toolbar „Leitfaden“ → „Rundgang“** – Sichtbarer Button wie Modal/Chip/Hint (**Rundgang**). **Commit:** **`341b16d5`** ✅ GitHub
 
 ---
@@ -15,9 +19,9 @@
 **Letzter Stand:** 16.04.26 – **Huber-Leitfaden: inhaltlich durchgängig** – Analyse: Startseite **Kacheln** vs **reduzierte Leiste**, **Events/Kalender** = Leiste **zwei** Einträge + **Subnav** unter der Leiste; **Geschichten/Gedenkort** = **zwei** Menüpunkte, Link-Schritt nur Geschichten. Texte in **`FamilieMusterHuberLeitfaden`**, Drehbuch **`10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md`** Phase 3 ergänzt. **Tests** grün. **Commit:** **`5249866e`** ✅ GitHub
 
 ---
-**Was wir JETZT tun:** Bei Bedarf weitere sichtbare Texte **Leitfaden** → **Rundgang** (Doku/Präsentation); sonst nächster inhaltliche Schritt nach Georg.
+**Was wir JETZT tun:** ök2 **Demo-Galerie** (`galerie-oeffentlich`): geführten Rundgang **Sheet** kurz prüfen (Schritte, Fokus, ohne Audio); bei Bedarf Texte nachziehen.
 
-**Einordnung:** Nutzerbegriff **Rundgang** = einheitlich mit Modal und Hinweisen; technische Namen (`data-leitfaden-focus`, Komponente) unverändert.
+**Einordnung:** **Sportwagen:** `renderLeitfadenMarkdownLite` + `familieLeitfadenFocus` – ök2 nutzt dasselbe Muster wie K2 Familie, eigene Schritte in **`Oek2GalerieLeitfadenModal`**.
 
 ---
 

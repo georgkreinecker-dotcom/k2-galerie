@@ -7,6 +7,7 @@ import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTE
 import { buildVitaDocumentHtml } from '../utils/vitaDocument'
 import { getGalerieImages, getPageContentGalerie, mergePageContentGalerieFromServer } from '../config/pageContentGalerie'
 import { GalerieSocialLinks } from '../components/GalerieSocialLinks'
+import { Oek2GalerieLeitfadenModal } from '../components/Oek2GalerieLeitfadenModal'
 import { getPageTexts, cleanK2PageTextsFromVk2, type GaleriePageTexts } from '../config/pageTexts'
 import { appendToHistory } from '../utils/artworkHistory'
 import { readArtworksRawForContext, saveArtworksForContextWithImageStore } from '../utils/artworksStorage'
@@ -3407,7 +3408,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             </span>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '0.65rem', flexShrink: 0, minWidth: 'min(100%, 320px)' }}>
               {renderOek2SpartenKasten()}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+              <div data-leitfaden-focus={musterOnly ? 'admin-hinweis' : undefined} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
               <button
                 type="button"
                 onClick={handleAdminButtonClick}
@@ -3443,6 +3444,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
           >
             <div style={{ width: '100%', maxWidth: 'min(100%, 380px)' }}>
               <div
+                data-leitfaden-focus={musterOnly ? 'admin-hinweis' : undefined}
                 style={{
                   display: 'flex',
                   flexWrap: 'wrap',
@@ -3473,11 +3475,14 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
           </div>
         )}
         {/* Hero Section (K2 / ök2) – Bild zuerst, dann Titel: sofortiger visueller Eindruck */}
-        <header style={{
+        <header
+          data-leitfaden-focus={musterOnly ? 'willkommen' : undefined}
+          style={{
           maxWidth: '1400px',
           margin: '0 auto',
           paddingBottom: 'clamp(2rem, 5vw, 3rem)'
-        }}>
+        }}
+        >
           {/* Bild ganz oben – volle Breite, dominant. SVG-Musterbilder = kein echtes Foto → Text-Hero stattdessen */}
           {displayImages.welcomeImage && !displayImages.welcomeImage.endsWith('.svg') && !displayImages.welcomeImage.startsWith('data:image/svg') && (
             <div style={{
@@ -3784,7 +3789,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
           )}
 
           {/* Kunstschaffende Section */}
-          <section ref={kunstschaffendeRef} id="kunstschaffende" style={{ 
+          <section ref={kunstschaffendeRef} id="kunstschaffende" data-leitfaden-focus={musterOnly ? 'kunstschaffende' : undefined} style={{ 
             marginTop: 'clamp(3rem, 8vw, 5rem)'
           }}>
             <h3 style={{ 
@@ -3962,7 +3967,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
               alignItems: 'stretch'
             }}>
               {/* Tür: In die Galerie – Hauptzugang, einladend. Shop nur als kleiner Hinweis. */}
-              <div style={{
+              <div data-leitfaden-focus={musterOnly ? 'eingang-galerie' : undefined} style={{
                 background: 'rgba(255, 255, 255, 0.08)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.18)',
@@ -4068,7 +4073,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
 
               {/* Tür: Virtueller Rundgang – auch für ök2 anzeigen; ök2: Schriftkontrast (theme.text/muted) */}
               {(
-              <div style={{
+              <div data-leitfaden-focus={musterOnly ? 'virtueller-rundgang' : undefined} style={{
                 background: musterOnly ? 'rgba(0, 0, 0, 0.04)' : 'rgba(255, 255, 255, 0.04)',
                 backdropFilter: 'blur(16px)',
                 border: musterOnly ? `1px solid color-mix(in srgb, ${theme.accent} 30%, transparent)` : '1px solid rgba(255, 255, 255, 0.1)',
@@ -4195,7 +4200,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
 
           {/* Impressum – Schriftfarben aus Theme (lesbar auf hell und dunkel) */}
           {!isPraesentationModus && (
-          <section style={{ 
+          <section data-leitfaden-focus={musterOnly ? 'impressum' : undefined} style={{ 
             marginTop: 'clamp(2rem, 4vw, 2.5rem)',
             paddingTop: 'clamp(1rem, 2vw, 1.5rem)',
             borderTop: `1px solid color-mix(in srgb, ${theme.muted} 35%, transparent)`
@@ -4293,9 +4298,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         </>
         )}
 
-        {/* Guide nur für Fremde (Besucher), nicht wenn User von Admin/APf kommt. ök2: Name kommt aus Entdecken (useEffect musterOnly) – vorher fälschlich nur !musterOnly gerendert → Guide nie sichtbar. */}
-        {isFremder && guideVisible && guideName && !isPraesentationModus && (
-          <GalerieEntdeckenGuide
+        {/* ök2: geführter Rundgang (Sheet wie K2 Familie), ohne Audio – nur Demo-Galerie, nur Fremde */}
+        {musterOnly && isFremder && guideVisible && guideName && !isPraesentationModus && (
+          <Oek2GalerieLeitfadenModal
             name={guideName}
             onDismiss={() => {
               setGuideVisible(false)
@@ -4304,7 +4309,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
           />
         )}
 
-        {isFremder && !guideVisible && guideName && !isPraesentationModus && (
+        {musterOnly && isFremder && !guideVisible && guideName && !isPraesentationModus && (
           <GuideAbschlussKarte name={guideName} />
         )}
 
@@ -4626,187 +4631,6 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
   )
 }
 
-export default GaleriePage
-
-
-// ─── GalerieEntdeckenGuide ────────────────────────────────────────────────────
-// Intelligenter 4-Pfad-Guide: Künstler:in / Gemeinschaft / Atelier / Entdecker
-// Jeder Pfad verzweigt nach "Wie würdest du dich beschreiben?" in eigene Fragen
-// Option A (sprechender Avatar) folgt nach ersten Rückmeldungen
-// ─────────────────────────────────────────────────────────────────────────────
-
-const GUIDE_KEY = 'k2-entdecken-guide-antworten'
-
-type GuidePfad = 'kuenstlerin' | 'gemeinschaft' | 'atelier' | 'entdecker' | ''
-
-interface GuideAntworten {
-  pfad?: GuidePfad
-  // Pfad Künstler:in
-  kunstart?: string
-  erfahrung?: string
-  ziel_kuenstler?: string
-  ausstellungen?: string
-  // Pfad Gemeinschaft
-  verein_groesse?: string
-  verein_ausstellungen?: string
-  verein_wunsch?: string
-  vereinsgalerie?: string
-  // Pfad Atelier/Studio
-  atelier_groesse?: string
-  atelier_bedarf?: string
-  atelier_struktur?: string
-  // Pfad Entdecker
-  entdecker_interesse?: string
-  entdecker_mut?: string
-  entdecker_ziel?: string
-  // Gemeinsam
-  kontakt?: string
-}
-
-function ladeGuideAntworten(): GuideAntworten {
-  try { const v = localStorage.getItem(GUIDE_KEY); if (v) return JSON.parse(v) } catch (_) {}
-  return {}
-}
-function speichereGuideAntworten(a: GuideAntworten) {
-  try { localStorage.setItem(GUIDE_KEY, JSON.stringify(a)) } catch (_) {}
-}
-
-type GuideSchritt =
-  | 'begruessung' | 'weiter'
-  | 'wer_bist_du'
-  | 'kunstart' | 'erfahrung' | 'ziel_kuenstler' | 'ausstellungen'
-  | 'verein_groesse' | 'verein_ausstellungen' | 'verein_wunsch' | 'vereinsgalerie'
-  | 'atelier_groesse' | 'atelier_bedarf' | 'atelier_struktur'
-  | 'entdecker_interesse' | 'entdecker_mut' | 'entdecker_ziel'
-  | 'kontakt'
-
-function naechsterSchritt(schritt: GuideSchritt, _antworten: GuideAntworten): GuideSchritt {
-  switch (schritt) {
-    case 'begruessung': return 'weiter'
-    case 'weiter':      return 'weiter'
-    default:            return 'weiter'
-  }
-}
-
-// Nur noch Begrüßung + ein Schritt „In den Admin“ – keine Datenerhebung, keine Fragen
-const PFAD_REIHENFOLGE: Record<string, GuideSchritt[]> = {
-  kuenstlerin:  ['begruessung', 'weiter'],
-  gemeinschaft: ['begruessung', 'weiter'],
-  atelier:      ['begruessung', 'weiter'],
-  entdecker:    ['begruessung', 'weiter'],
-  '':           ['begruessung', 'weiter'],
-}
-
-function pfadPosition(schritt: GuideSchritt, pfad: GuidePfad): number {
-  const reihe = PFAD_REIHENFOLGE[pfad ?? ''] ?? PFAD_REIHENFOLGE['']
-  const idx = reihe.indexOf(schritt)
-  return idx < 0 ? 0 : idx
-}
-
-function pfadLaenge(_pfad: GuidePfad): number {
-  return 1
-}
-
-// Lesbare Labels für die Antwort-Werte (für dynamischen Abschlusstext)
-const ANTWORT_LABELS: Record<string, string> = {
-  // Kunstart
-  malerei: 'Malerei', keramik: 'Keramik & Skulptur', foto: 'Fotografie', anderes: 'verschiedene Kunstformen',
-  // Erfahrung
-  anfaenger: 'gerade erst begonnen', fortgeschritten: 'mit ersten Erfolgen', etabliert: 'mit Ausstellungserfahrung',
-  // Ziel Künstler:in
-  sichtbarkeit: 'mehr Sichtbarkeit', verkauf: 'Verkauf deiner Werke', auftritt: 'einen professionellen Auftritt',
-  // Ausstellungen
-  mehrmals: 'bereits mehrfach ausgestellt', wenige: 'erste Ausstellungserfahrung', privat: 'bisher privat gezeigt',
-  // Verein Größe
-  klein: 'einer kleinen Gruppe', mittel: 'einem mittelgroßen Verein', gross: 'einem großen Verein',
-  // Verein Wunsch
-  webauftritt: 'gemeinsamen Webauftritt', struktur: 'Ordnung in eure Werke', events: 'professionelle Events',
-  // Verein Galerie
-  ja: 'begeistert von der Idee', besprechen: 'noch abwärend',
-  // Atelier Größe
-  solo: 'als Soloatelier',
-  // Atelier Bedarf
-  web: 'Webauftritt', inventar: 'Werkverzeichnis & Inventar', presse: 'Presse & Dokumente',
-  // Atelier Struktur
-  gemeinsam: 'gemeinsame Plattform', individuell: 'individuelle Lösungen', beides: 'beides',
-  // Entdecker
-  malen: 'Malen & Zeichnen', handwerk: 'Handwerk & Formen', offen: 'noch offen',
-  idee: 'einer Idee im Kopf', versuche: 'ersten Versuchen', fertig: 'schon Fertiges',
-  zeigen: 'etwas zeigen', community: 'Gleichgesinnte finden', professionell: 'professionell werden',
-  // Kontakt
-  email: 'per E-Mail', telefon: 'per Telefon', website: 'über deine Website', galerie: 'direkt über die Galerie',
-}
-
-function baueDynamischenAbschluss(name: string, a: GuideAntworten): string {
-  const pfad = a.pfad ?? ''
-
-  if (pfad === 'kuenstlerin') {
-    const kunst = ANTWORT_LABELS[a.kunstart ?? ''] ?? 'deine Kunst'
-    const erf   = ANTWORT_LABELS[a.erfahrung ?? ''] ?? ''
-    const ziel  = ANTWORT_LABELS[a.ziel_kuenstler ?? ''] ?? ''
-    return [
-      `Danke, ${name}. ✨`,
-      ``,
-      `${kunst}${erf ? `, ${erf}` : ''} –`,
-      `und dein Ziel ist ${ziel || 'ein professioneller Auftritt'}.`,
-      ``,
-      `Deine Galerie, deine Vita und`,
-      `deine Pressemappe sind bereit –`,
-      `wie aus Zauberhand.`,
-    ].join('\n')
-  }
-
-  if (pfad === 'gemeinschaft') {
-    const groesse = ANTWORT_LABELS[a.verein_groesse ?? ''] ?? 'eurer Gemeinschaft'
-    const wunsch  = ANTWORT_LABELS[a.verein_wunsch ?? ''] ?? 'mehr Sichtbarkeit'
-    const vg      = a.vereinsgalerie === 'ja' ? 'Und die gemeinsame Vereinsgalerie –\ndie ist jetzt zum Greifen nah.' : ''
-    return [
-      `Danke, ${name}. ✨`,
-      ``,
-      `Für ${groesse} mit dem Wunsch nach`,
-      `${wunsch} –`,
-      `eine Galerie für alle, jedes Mitglied`,
-      `mit eigenem Profil, alles zusammen.`,
-      vg,
-    ].filter(Boolean).join('\n')
-  }
-
-  if (pfad === 'atelier') {
-    const groesse = ANTWORT_LABELS[a.atelier_groesse ?? ''] ?? 'eurem Atelier'
-    const bedarf  = ANTWORT_LABELS[a.atelier_bedarf ?? ''] ?? 'professionellen Auftritt'
-    const struk   = ANTWORT_LABELS[a.atelier_struktur ?? ''] ?? ''
-    return [
-      `Danke, ${name}. ✨`,
-      ``,
-      `Für ${groesse} –`,
-      `${bedarf}${struk ? ` als ${struk}` : ''}.`,
-      ``,
-      `Eine Studio-Plattform, professionell,`,
-      `bereit zum Starten.`,
-    ].join('\n')
-  }
-
-  if (pfad === 'entdecker') {
-    const interesse = ANTWORT_LABELS[a.entdecker_interesse ?? ''] ?? 'deine Kreativität'
-    const ziel      = ANTWORT_LABELS[a.entdecker_ziel ?? ''] ?? 'etwas zeigen'
-    return [
-      `Wunderbar, ${name}. ✨`,
-      ``,
-      `${interesse} – und der Wunsch,`,
-      `${ziel}.`,
-      ``,
-      `Deine Galerie wartet.`,
-      `Kein Druck, kein Stress.`,
-      `Einfach anfangen.`,
-    ].join('\n')
-  }
-
-  return `Danke, ${name}. ✨\n\nDeine Galerie ist bereit –\nwie aus Zauberhand.`
-}
-
-// ─── GuideAbschlussKarte ──────────────────────────────────────────────────────
-// Erscheint wenn Guide fertig – Nutzer nicht allein lassen
-// ─────────────────────────────────────────────────────────────────────────────
 
 function GuideAbschlussKarte({ name }: { name: string }) {
   const [sichtbar, setSichtbar] = useState(true)
@@ -4838,441 +4662,5 @@ function GuideAbschlussKarte({ name }: { name: string }) {
   )
 }
 
-// ─── ErgebnisKarten ───────────────────────────────────────────────────────────
-// Zeigt nach dem Abschluss das persönliche Paket + die ganze System-Dimension
-// ─────────────────────────────────────────────────────────────────────────────
 
-interface ErgebnisKarte {
-  emoji: string
-  titel: string
-  beschreibung: string
-  status: 'sofort' | 'bereit' | 'mehr' | 'lizenz'
-  statusLabel: string
-  link?: string        // direkte Route zur Seite
-  linkLabel?: string   // Button-Text
-}
-
-function baueKarten(pfad: GuidePfad, a: GuideAntworten, name?: string): { sofort: ErgebnisKarte[]; system: ErgebnisKarte[]; lizenz: ErgebnisKarte } {
-  const lizenzKarte: ErgebnisKarte = {
-    emoji: '💎',
-    titel: pfad === 'gemeinschaft' ? 'Vereinsplattform VK2' : pfad === 'atelier' ? 'Studio-Lizenz' : 'Pro-Galerie',
-    beschreibung: pfad === 'gemeinschaft'
-      ? 'Mitglieder-Profile, gemeinsame Events, Einladungen – ab € 12/Monat'
-      : pfad === 'atelier'
-      ? 'Mehrere Künstler:innen, gemeinsame Verwaltung, Studio-Auftritt – ab € 19/Monat'
-      : pfad === 'entdecker'
-      ? 'Wenn du mehr willst – jederzeit freischaltbar, kein Druck'
-      : 'Werkverzeichnis, Zertifikate, Events & mehr – ab € 9/Monat',
-    status: 'lizenz',
-    statusLabel: 'Wenn du mehr willst →',
-  }
-
-  const vornamePart = name ? `&vorname=${encodeURIComponent(name)}` : ''
-  const pfadPart = `&pfad=${pfad}`
-  const ADMIN = `/admin?context=oeffentlich${vornamePart}${pfadPart}`
-  const GALERIE = '/projects/k2-galerie/galerie-oeffentlich'
-  const VITA = '/projects/k2-galerie/vita/martina'
-  const SHOP = '/projects/k2-galerie/shop'
-
-  if (pfad === 'gemeinschaft') {
-    return {
-      sofort: [
-        { emoji: '🏛️', titel: 'Eure Gemeinschafts-Galerie', beschreibung: 'Alle Werke unter einem Dach – jedes Mitglied mit eigenem Bereich', status: 'sofort', statusLabel: '✅ Sofort da', link: GALERIE, linkLabel: 'Galerie ansehen →' },
-        { emoji: '👤', titel: 'Mitglieder & Stammdaten', beschreibung: 'Namen, Kontakt, Foto – alles an einem Ort verwalten', status: 'bereit', statusLabel: '🔓 Bereit', link: ADMIN + '#stammdaten', linkLabel: 'Einrichten →' },
-        { emoji: '🎟️', titel: 'Events & Einladungen', beschreibung: 'Ausstellungen planen, Einladungen versenden, QR-Code für Gäste', status: 'bereit', statusLabel: '🔓 Bereit', link: ADMIN + '#events', linkLabel: 'Events öffnen →' },
-      ],
-      system: [
-        { emoji: '📄', titel: 'Presse & Dokumente', beschreibung: 'Pressemappe, Vita – für den Verein und jedes Mitglied', status: 'mehr', statusLabel: '📦 Im System', link: VITA, linkLabel: 'Dokumente →' },
-        { emoji: '📱', titel: 'Auf jedem Gerät', beschreibung: 'Mac, Handy, Tablet – QR-Code für Besucher, immer aktuell', status: 'mehr', statusLabel: '📦 Im System' },
-        { emoji: '🗂️', titel: 'Werkverzeichnis', beschreibung: 'Alle Werke mit Preis, Zertifikat, Provenienz', status: 'mehr', statusLabel: '📦 Im System', link: ADMIN + '#werke', linkLabel: 'Werke →' },
-        { emoji: '💰', titel: 'Kassa & Verkauf', beschreibung: 'Verkauf direkt in der Galerie – Beleg, Kassa, Übersicht', status: 'mehr', statusLabel: '📦 Im System', link: SHOP, linkLabel: 'Kassa →' },
-      ],
-      lizenz: lizenzKarte,
-    }
-  }
-
-  if (pfad === 'atelier') {
-    const gemeinsam = a.atelier_struktur === 'gemeinsam' || a.atelier_struktur === 'beides'
-    return {
-      sofort: [
-        { emoji: '🏢', titel: gemeinsam ? 'Studio-Galerie für alle' : 'Individuelle Galerien', beschreibung: gemeinsam ? 'Eine gemeinsame Plattform, jede:r mit eigenem Profil' : 'Jede:r hat die eigene Galerie – unabhängig, professionell', status: 'sofort', statusLabel: '✅ Sofort da', link: GALERIE, linkLabel: 'Galerie ansehen →' },
-        { emoji: '📦', titel: 'Werkverzeichnis & Inventar', beschreibung: 'Alle Werke erfasst – mit Preis, Status, Provenienz, Zertifikat', status: 'bereit', statusLabel: '🔓 Bereit', link: ADMIN + '#werke', linkLabel: 'Werke verwalten →' },
-        { emoji: '📄', titel: 'Presse & Dokumente', beschreibung: 'Pressemappe, Vita – mit einem Klick drucken', status: 'bereit', statusLabel: '🔓 Bereit', link: VITA, linkLabel: 'Dokumente →' },
-      ],
-      system: [
-        { emoji: '🎟️', titel: 'Events & Ausstellungen', beschreibung: 'Events planen, Einladungen versenden, Gästeliste, QR-Code', status: 'mehr', statusLabel: '📦 Im System', link: ADMIN + '#events', linkLabel: 'Events →' },
-        { emoji: '📱', titel: 'Auf jedem Gerät', beschreibung: 'Mac, Handy, Tablet – QR-Code für Besucher, immer aktuell', status: 'mehr', statusLabel: '📦 Im System' },
-        { emoji: '🔒', titel: 'Datenschutz & Kontrolle', beschreibung: 'Wer sieht was – öffentlich, nur Studio-intern oder privat', status: 'mehr', statusLabel: '📦 Im System', link: ADMIN, linkLabel: 'Einstellungen →' },
-        { emoji: '💰', titel: 'Kassa & Verkauf', beschreibung: 'Verkauf direkt in der Galerie – Beleg, Kassa, Übersicht', status: 'mehr', statusLabel: '📦 Im System', link: SHOP, linkLabel: 'Kassa →' },
-      ],
-      lizenz: lizenzKarte,
-    }
-  }
-
-  if (pfad === 'entdecker') {
-    return {
-      sofort: [
-        { emoji: '🎨', titel: 'Deine Galerie', beschreibung: 'Ein Platz für alles was du schaffst – so wie du es willst', status: 'sofort', statusLabel: '✅ Sofort da', link: GALERIE, linkLabel: 'Galerie ansehen →' },
-        { emoji: '📱', titel: 'Auf jedem Gerät', beschreibung: 'Zeig deinen QR-Code – andere sehen deine Galerie sofort', status: 'bereit', statusLabel: '🔓 Bereit', link: ADMIN, linkLabel: 'Admin öffnen →' },
-      ],
-      system: [
-        { emoji: '📄', titel: 'Vita & Dokumente', beschreibung: 'Wenn du sie brauchst – ein Klick und alles ist bereit', status: 'mehr', statusLabel: '📦 Wartet auf dich', link: VITA, linkLabel: 'Dokumente →' },
-        { emoji: '🎟️', titel: 'Events & Einladungen', beschreibung: 'Wenn du mal ausstellen willst – das System kann das', status: 'mehr', statusLabel: '📦 Wartet auf dich', link: ADMIN + '#events', linkLabel: 'Events →' },
-        { emoji: '🗂️', titel: 'Werkverzeichnis', beschreibung: 'Alle Werke sauber erfasst – wenn du bereit bist', status: 'mehr', statusLabel: '📦 Wartet auf dich', link: ADMIN + '#werke', linkLabel: 'Werke →' },
-      ],
-      lizenz: lizenzKarte,
-    }
-  }
-
-  // Pfad Künstler:in
-  const ziel = a.ziel_kuenstler ?? ''
-  const erfahrung = a.erfahrung ?? ''
-  return {
-    sofort: [
-      { emoji: '🎨', titel: 'Deine Galerie', beschreibung: 'Professionell, sofort fertig – auf jedem Gerät sichtbar', status: 'sofort', statusLabel: '✅ Sofort da', link: GALERIE, linkLabel: 'Galerie ansehen →' },
-      { emoji: '📄', titel: 'Deine Vita', beschreibung: erfahrung === 'etabliert' ? 'Mit Ausstellungs-Geschichte, Referenzen, Presse' : 'Dein künstlerischer Weg – ein Klick und druckfertig', status: 'bereit', statusLabel: '🔓 Bereit', link: VITA, linkLabel: 'Vita öffnen →' },
-      { emoji: '📰', titel: 'Deine Pressemappe', beschreibung: 'Mit deinen Angaben vorbefüllt – für Galerien, Medien, Veranstalter', status: 'bereit', statusLabel: '🔓 Bereit', link: ADMIN + '#dokumente', linkLabel: 'Pressemappe →' },
-    ],
-    system: [
-      { emoji: '🗂️', titel: 'Werkverzeichnis', beschreibung: ziel === 'verkauf' ? 'Alle Werke mit Preis, Status, Zertifikat – Verkauf sofort möglich' : 'Alle Werke erfasst – mit Preis, Provenienz, Zertifikat', status: 'mehr', statusLabel: '📦 Im System', link: ADMIN + '#werke', linkLabel: 'Werke →' },
-      { emoji: '🎟️', titel: 'Events & Einladungen', beschreibung: 'Ausstellungen planen, Einladungen versenden, QR-Code für Gäste', status: 'mehr', statusLabel: '📦 Im System', link: ADMIN + '#events', linkLabel: 'Events →' },
-      { emoji: '💰', titel: 'Kassa & Verkauf', beschreibung: 'Verkauf direkt in der Galerie – Beleg, Kassa, Übersicht', status: 'mehr', statusLabel: '📦 Im System', link: SHOP, linkLabel: 'Kassa →' },
-      { emoji: '🔒', titel: 'Du entscheidest', beschreibung: 'Wer sieht was – öffentlich, nur für Interessenten oder privat', status: 'mehr', statusLabel: '📦 Im System', link: ADMIN, linkLabel: 'Einstellungen →' },
-    ],
-    lizenz: lizenzKarte,
-  }
-}
-
-function ErgebnisKarten({ pfad, antworten, name, onWeiter, onFuehrung }: { pfad: GuidePfad; antworten: GuideAntworten; name?: string; onWeiter: () => void; onFuehrung: () => void }) {
-  const karten = baueKarten(pfad, antworten, name)
-
-  const statusFarbe = (s: ErgebnisKarte['status']) => {
-    if (s === 'sofort') return { bg: 'rgba(134,239,172,0.12)', border: 'rgba(134,239,172,0.35)', badge: '#86efac' }
-    if (s === 'bereit') return { bg: 'rgba(255,140,66,0.1)', border: 'rgba(255,140,66,0.3)', badge: '#ff8c42' }
-    if (s === 'mehr')   return { bg: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.1)', badge: 'rgba(255,255,255,0.35)' }
-    return { bg: 'rgba(251,191,36,0.08)', border: 'rgba(251,191,36,0.25)', badge: '#fbbf24' }
-  }
-
-  // Alle Karten als kompakte Info-Zeilen (kein Button, nur wohin es geht)
-  const alleKarten = [...karten.sofort, ...karten.system]
-
-  return (
-    <div style={{ marginTop: '0.5rem' }}>
-
-      {/* Kompakte Info-Liste: was dich erwartet */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.35rem', marginBottom: '1rem' }}>
-        {alleKarten.map((k, i) => {
-          const iconBg =
-            k.status === 'sofort' ? 'rgba(134,239,172,0.18)' :
-            k.status === 'bereit' ? 'rgba(255,140,66,0.18)' :
-            'rgba(255,255,255,0.07)'
-          const iconBorder =
-            k.status === 'sofort' ? 'rgba(134,239,172,0.4)' :
-            k.status === 'bereit' ? 'rgba(255,140,66,0.4)' :
-            'rgba(255,255,255,0.12)'
-          return (
-            <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', padding: '0.5rem 0.6rem', background: 'rgba(255,255,255,0.04)', border: `1px solid ${iconBorder}`, borderRadius: '9px' }}>
-              <span style={{ fontSize: '1.15rem', flexShrink: 0, lineHeight: 1, padding: '0.2rem', background: iconBg, borderRadius: '6px' }}>{k.emoji}</span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#fff8f0', lineHeight: 1.2 }}>{k.titel}</div>
-                <div style={{ fontSize: '0.69rem', color: 'rgba(255,255,255,0.38)', lineHeight: 1.35, marginTop: '0.15rem' }}>{k.beschreibung}</div>
-              </div>
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Die zwei Wege – klar und einfach */}
-      <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem' }}>
-        <button type="button" onClick={onWeiter}
-          style={{ width: '100%', padding: '0.9rem', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem', fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(255,140,66,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-          🚀 Los – bring mich in die Zentrale
-        </button>
-        <button type="button" onClick={onFuehrung}
-          style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,140,66,0.08)', border: '1px solid rgba(255,140,66,0.28)', borderRadius: '12px', color: '#ff8c42', fontWeight: 600, cursor: 'pointer', fontSize: '0.88rem', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-          🤝 Führ mich Schritt für Schritt
-        </button>
-        <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.25)', textAlign: 'center' as const, marginTop: '-0.1rem' }}>
-          Der Assistent erklärt dir alles – einen Bereich nach dem anderen
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: () => void }) {
-  const navigate = useNavigate()
-  const [schritt, setSchritt] = useState<GuideSchritt>('begruessung')
-  const [antworten, setAntworten] = useState<GuideAntworten>(ladeGuideAntworten)
-  const [textIdx, setTextIdx] = useState(0)
-  const [sichtbar, setSichtbar] = useState(true)
-
-  // Beim Start: Guide-Flow-State zurücksetzen (kein veralteter ök2/VK2-Admin-Balken-Kontext von früher)
-  useEffect(() => {
-    beendeGuideFlow()
-  }, [])
-
-  const pfad = (antworten.pfad ?? '') as GuidePfad
-
-  const texte: Record<GuideSchritt, string> = {
-    begruessung:   `Willkommen, ${name}! 👋\nSchau dich ruhig um –\ndas hier könnte bald deine Galerie sein.\nUnten kannst du direkt in den Admin.`,
-    weiter:        `Schau dich um – oder klick unten,\num in den Admin zu gehen.`,
-    wer_bist_du:   `Wie würdest du dich beschreiben?\nDas hilft mir dir genau das Richtige zu zeigen.`,
-    // Pfad Künstler:in
-    kunstart:      `Schön! Was ist deine Kunst?\nWähle was am besten passt –\ndu kannst es später verfeinern.`,
-    erfahrung:     `Und wie weit bist du schon auf deinem Weg?\nEhrlich – es gibt keine falsche Antwort.`,
-    ziel_kuenstler:`Was ist gerade dein wichtigstes Ziel?`,
-    ausstellungen: `Hast du deine Werke\nschon einmal öffentlich gezeigt?`,
-    // Pfad Gemeinschaft
-    verein_groesse:      `Wie viele aktive Mitglieder\nhat eure Gemeinschaft ungefähr?`,
-    verein_ausstellungen:`Zeigt ihr als Gruppe eure Werke?\nAusstellungen, Events, Märkte?`,
-    verein_wunsch:       `Was wäre für eure Gemeinschaft\nam wertvollsten?\nWas fehlt euch noch?`,
-    vereinsgalerie:      `Wäre eine gemeinsame Galerie interessant –\nwo jedes Mitglied eigene Werke zeigt,\naber alle unter einem Dach zusammen?`,
-    // Pfad Atelier/Studio
-    atelier_groesse:  `Wie viele Künstler:innen\narbeiten in eurem Atelier?`,
-    atelier_bedarf:   `Was braucht ihr am meisten?\nWas fehlt euch im professionellen Alltag?`,
-    atelier_struktur: `Möchtet ihr eine gemeinsame Plattform –\noder eher individuelle Lösungen\npro Person?`,
-    // Pfad Entdecker
-    entdecker_interesse: `Was zieht dich an?\nWomit fängst du am liebsten an?`,
-    entdecker_mut:       `Sehr gut, ${name}! 🌱\nHast du schon etwas gemacht –\noder ist es noch eine Idee?`,
-    entdecker_ziel:      `Was wäre dein erster kleiner Schritt\nden du dir vorstellen könntest?`,
-    // Gemeinsam
-    kontakt:    `Letzte Frage –\nwie sollen Interessierte\ndich am liebsten erreichen?`,
-  }
-
-  type Opt = { emoji: string; label: string; wert: string }
-  const optionen: Partial<Record<GuideSchritt, Opt[]>> = {
-    weiter: [{ emoji: '🚀', label: 'In den Admin →', wert: 'admin' }],
-    wer_bist_du: [
-      { emoji: '🎨', label: 'Ich bin Künstler:in', wert: 'kuenstlerin' },
-      { emoji: '🏛️', label: 'Ich bin Teil einer Gemeinschaft', wert: 'gemeinschaft' },
-      { emoji: '🏢', label: 'Ich betreibe ein Atelier/Studio', wert: 'atelier' },
-      { emoji: '🌱', label: 'Ich entdecke gerade erst', wert: 'entdecker' },
-    ],
-    kunstart: [
-      { emoji: '🖌️', label: 'Malerei / Zeichnung', wert: 'malerei' },
-      { emoji: '🏺', label: 'Keramik / Skulptur', wert: 'keramik' },
-      { emoji: '📷', label: 'Fotografie / Digital', wert: 'foto' },
-      { emoji: '✏️', label: 'Mehreres / Anderes', wert: 'anderes' },
-    ],
-    erfahrung: [
-      { emoji: '🌱', label: 'Erste Schritte', wert: 'anfaenger' },
-      { emoji: '🌿', label: 'Einige Jahre, erste Erfolge', wert: 'fortgeschritten' },
-      { emoji: '⭐', label: 'Ausstellungen & Anerkennung', wert: 'etabliert' },
-    ],
-    ziel_kuenstler: [
-      { emoji: '👁️', label: 'Mehr gesehen werden', wert: 'sichtbarkeit' },
-      { emoji: '🤝', label: 'Werke verkaufen', wert: 'verkauf' },
-      { emoji: '📄', label: 'Professioneller Auftritt', wert: 'auftritt' },
-    ],
-    ausstellungen: [
-      { emoji: '🏛️', label: 'Ja, mehrmals', wert: 'mehrmals' },
-      { emoji: '🌱', label: 'Einmal oder zweimal', wert: 'wenige' },
-      { emoji: '🏠', label: 'Noch nicht – nur privat', wert: 'privat' },
-    ],
-    verein_groesse: [
-      { emoji: '👥', label: 'Bis 10 Personen', wert: 'klein' },
-      { emoji: '👨‍👩‍👧‍👦', label: '10 bis 50 Personen', wert: 'mittel' },
-      { emoji: '🏛️', label: 'Mehr als 50', wert: 'gross' },
-    ],
-    verein_ausstellungen: [
-      { emoji: '✅', label: 'Ja, regelmäßig', wert: 'regelmaessig' },
-      { emoji: '🌱', label: 'Manchmal, unregelmäßig', wert: 'selten' },
-      { emoji: '💡', label: 'Noch nicht – aber wir wollen', wert: 'geplant' },
-    ],
-    verein_wunsch: [
-      { emoji: '📣', label: 'Mehr Sichtbarkeit für uns alle', wert: 'sichtbarkeit' },
-      { emoji: '🗂️', label: 'Ordnung in unsere Werke', wert: 'struktur' },
-      { emoji: '🌐', label: 'Gemeinsamer Webauftritt', wert: 'webauftritt' },
-      { emoji: '🎟️', label: 'Professionelle Events', wert: 'events' },
-    ],
-    vereinsgalerie: [
-      { emoji: '✨', label: 'Ja – das klingt perfekt!', wert: 'ja' },
-      { emoji: '💬', label: 'Ich müsste das erst besprechen', wert: 'besprechen' },
-      { emoji: '🤔', label: 'Eher nicht – anderes gesucht', wert: 'nein' },
-    ],
-    atelier_groesse: [
-      { emoji: '👤', label: 'Nur ich allein', wert: 'solo' },
-      { emoji: '👥', label: '2 bis 5 Künstler:innen', wert: 'klein' },
-      { emoji: '🏢', label: 'Mehr als 5', wert: 'gross' },
-    ],
-    atelier_bedarf: [
-      { emoji: '🌐', label: 'Professioneller Webauftritt', wert: 'web' },
-      { emoji: '📦', label: 'Werkverzeichnis & Inventar', wert: 'inventar' },
-      { emoji: '🎟️', label: 'Events & Ausstellungen', wert: 'events' },
-      { emoji: '📄', label: 'Presse & Dokumente', wert: 'presse' },
-    ],
-    atelier_struktur: [
-      { emoji: '🤝', label: 'Gemeinsame Plattform für alle', wert: 'gemeinsam' },
-      { emoji: '👤', label: 'Individuell pro Person', wert: 'individuell' },
-      { emoji: '🔀', label: 'Beides wäre ideal', wert: 'beides' },
-    ],
-    entdecker_interesse: [
-      { emoji: '🖌️', label: 'Malen / Zeichnen', wert: 'malen' },
-      { emoji: '📷', label: 'Fotografieren', wert: 'foto' },
-      { emoji: '🏺', label: 'Handwerk / Formen', wert: 'handwerk' },
-      { emoji: '✨', label: 'Ich weiß noch nicht', wert: 'offen' },
-    ],
-    entdecker_mut: [
-      { emoji: '💡', label: 'Noch eine Idee', wert: 'idee' },
-      { emoji: '🌱', label: 'Erste Versuche', wert: 'versuche' },
-      { emoji: '🎨', label: 'Schon etwas Fertiges', wert: 'fertig' },
-    ],
-    entdecker_ziel: [
-      { emoji: '👁️', label: 'Etwas zeigen', wert: 'zeigen' },
-      { emoji: '🤝', label: 'Gleichgesinnte finden', wert: 'community' },
-      { emoji: '📄', label: 'Professionell werden', wert: 'professionell' },
-    ],
-    kontakt: [
-      { emoji: '📧', label: 'Per E-Mail', wert: 'email' },
-      { emoji: '📱', label: 'Per Telefon', wert: 'telefon' },
-      { emoji: '🌐', label: 'Über meine Website', wert: 'website' },
-      { emoji: '💬', label: 'Direkt über die Galerie', wert: 'galerie' },
-    ],
-  }
-
-  const volltext = texte[schritt] ?? ''
-
-  useEffect(() => { setTextIdx(0) }, [schritt])
-  useEffect(() => {
-    if (textIdx >= volltext.length) return
-    const t = setTimeout(() => setTextIdx(i => i + 1), 18)
-    return () => clearTimeout(t)
-  }, [textIdx, volltext])
-
-  const istFertig = textIdx >= volltext.length
-
-  // Nur Begrüßung auto-weiter zu „weiter“; dort muss geklickt werden
-  const STOPP_SCHRITTE: GuideSchritt[] = ['weiter']
-  useEffect(() => {
-    if (!istFertig) return
-    if (STOPP_SCHRITTE.includes(schritt)) return
-    const t = setTimeout(() => setSchritt(naechsterSchritt(schritt, antworten)), 800)
-    return () => clearTimeout(t)
-  }, [istFertig, schritt])
-
-  const weiterNachAuswahl = (wert: string) => {
-    // Einziger Schritt mit Aktion: „In den Admin“ – keine Datenerhebung
-    if (schritt === 'weiter' && wert === 'admin') {
-      geheZuAdmin()
-      return
-    }
-    let key: keyof GuideAntworten = schritt as keyof GuideAntworten
-    const neu: GuideAntworten = { ...antworten, [key]: wert }
-    if (schritt === 'wer_bist_du') {
-      neu.pfad = wert as GuidePfad
-    }
-    setAntworten(neu)
-    speichereGuideAntworten(neu)
-    if (schritt === 'kontakt') {
-      setTimeout(() => {
-        const vornamePart = name ? `&vorname=${encodeURIComponent(name)}` : ''
-        const pfadPart = neu.pfad ? `&pfad=${neu.pfad}` : ''
-        const adminUrl = `/admin?context=oeffentlich${vornamePart}${pfadPart}`
-        // Im iframe (APf-Desktop): im gleichen Frame bleiben, nicht neuer Tab – Nutzer arbeitet weiter in der APf
-        if (window.self !== window.top) navigate(adminUrl + '&embedded=1')
-        else navigate(adminUrl)
-      }, 800)
-      setSichtbar(false)
-      return
-    }
-    setSchritt(naechsterSchritt(schritt, neu))
-  }
-
-  const schliessen = () => { setSichtbar(false); setTimeout(onDismiss, 350) }
-
-  // Alle Wege führen in den Admin – mit Vorname + Pfad damit das Banner ihn willkommen heißt
-  const geheZuAdmin = (assistent = false) => {
-    setSichtbar(false)
-    const vornamePart = name ? `&vorname=${encodeURIComponent(name)}` : ''
-    const pfadPart = antworten.pfad ? `&pfad=${antworten.pfad}` : ''
-    const assistentPart = assistent ? '&assistent=1' : ''
-    const adminUrl = `/admin?context=oeffentlich${vornamePart}${pfadPart}${assistentPart}`
-    setTimeout(() => {
-      // Im iframe (APf-Desktop): im gleichen Frame bleiben, nicht neuer Tab – Nutzer arbeitet weiter in der APf
-      if (window.self !== window.top) navigate(adminUrl + '&embedded=1')
-      else navigate(adminUrl)
-    }, 300)
-  }
-
-
-  if (!sichtbar) return null
-
-  const aktuelleOptionen = optionen[schritt] ?? []
-  const fortschritt = pfadPosition(schritt, pfad)
-  const gesamtSchritte = pfadLaenge(pfad)
-  const showFortschritt = true
-  const istVereinsPfad = pfad === 'gemeinschaft'
-  const guideLabel = istVereinsPfad ? 'Dein Vereins-Guide' : 'Dein Galerie-Guide'
-
-  const avatarGrad =
-    pfad === 'gemeinschaft' ? 'linear-gradient(135deg, #1e5cb5, #42a4ff)' :
-    pfad === 'atelier'      ? 'linear-gradient(135deg, #1e7b5c, #42ffb5)' :
-    pfad === 'entdecker'    ? 'linear-gradient(135deg, #7b5ce0, #c084fc)' :
-                              'linear-gradient(135deg, #b54a1e, #ff8c42)'
-  const avatarEmoji =
-    pfad === 'gemeinschaft' ? '🏛️' :
-    pfad === 'atelier'      ? '🏢' :
-    pfad === 'entdecker'    ? '🌱' : '👨‍🎨'
-
-  return (
-    <div style={{ position: 'fixed', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)', zIndex: 10000, width: 'min(440px, calc(100vw - 2rem))', animation: 'guideEin 0.4s ease', transition: 'width 0.3s ease', display: 'flex', flexDirection: 'column' as const }}>
-      <style>{`
-        @keyframes guideEin { from{opacity:0;transform:translateX(-50%) translateY(14px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-      `}</style>
-
-      <div style={{ background: 'rgba(14,8,4,0.97)', border: '1px solid rgba(255,140,66,0.35)', borderRadius: '20px', padding: '1.25rem', boxShadow: '0 16px 56px rgba(0,0,0,0.55)', backdropFilter: 'blur(16px)' }}>
-
-        {/* Fortschritts-Balken – Fragen-Phase */}
-        {showFortschritt && (
-          <div style={{ display: 'flex', gap: '0.3rem', marginBottom: '1rem' }}>
-            {Array.from({ length: gesamtSchritte }).map((_, i) => (
-              <div key={i} style={{ flex: 1, height: 3, borderRadius: 2, background: i < fortschritt ? (istVereinsPfad ? '#42a4ff' : '#ff8c42') : i === fortschritt ? (istVereinsPfad ? 'rgba(66,164,255,0.5)' : 'rgba(255,140,66,0.5)') : 'rgba(255,255,255,0.1)', transition: 'all 0.3s' }} />
-            ))}
-          </div>
-        )}
-
-        {/* Avatar + Text */}
-          <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'flex-start', marginBottom: aktuelleOptionen.length > 0 ? '1rem' : 0 }}>
-          <div style={{ width: 46, height: 46, borderRadius: '50%', background: avatarGrad, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', flexShrink: 0, boxShadow: '0 4px 14px rgba(255,140,66,0.3)', transition: 'background 0.5s' }}>
-            {avatarEmoji}
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '0.65rem', color: istVereinsPfad ? 'rgba(66,164,255,0.6)' : 'rgba(255,140,66,0.5)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' as const, marginBottom: '0.25rem' }}>{guideLabel}</div>
-            <div style={{ fontSize: '0.93rem', color: '#fff8f0', lineHeight: 1.65, whiteSpace: 'pre-line' as const, minHeight: '2.8rem' }}>
-              {volltext.slice(0, textIdx)}
-              {!istFertig && <span style={{ animation: 'blink 0.7s infinite', display: 'inline-block', marginLeft: 1 }}>▌</span>}
-            </div>
-          </div>
-          <button type="button" onClick={schliessen} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.18)', cursor: 'pointer', fontSize: '1rem', padding: '0.1rem 0.3rem', flexShrink: 0 }} title="Überspringen">✕</button>
-        </div>
-
-        {/* Auswahl-Buttons */}
-        {istFertig && aktuelleOptionen.length > 0 && (
-          <div style={{ display: 'grid', gridTemplateColumns: aktuelleOptionen.length === 3 ? '1fr 1fr 1fr' : '1fr 1fr', gap: '0.45rem' }}>
-            {aktuelleOptionen.map((opt: Opt) => (
-              <button key={opt.wert} type="button"
-                onClick={() => weiterNachAuswahl(opt.wert)}
-                style={{ padding: '0.6rem 0.4rem', background: istVereinsPfad ? 'rgba(66,164,255,0.07)' : 'rgba(255,140,66,0.07)', border: istVereinsPfad ? '1px solid rgba(66,164,255,0.22)' : '1px solid rgba(255,140,66,0.22)', borderRadius: '10px', color: '#fff8f0', cursor: 'pointer', fontSize: '0.8rem', display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: '0.18rem', transition: 'all 0.15s', fontFamily: 'inherit' }}
-                onMouseEnter={e => { e.currentTarget.style.background = istVereinsPfad ? 'rgba(66,164,255,0.18)' : 'rgba(255,140,66,0.18)'; e.currentTarget.style.borderColor = istVereinsPfad ? 'rgba(66,164,255,0.5)' : 'rgba(255,140,66,0.5)' }}
-                onMouseLeave={e => { e.currentTarget.style.background = istVereinsPfad ? 'rgba(66,164,255,0.07)' : 'rgba(255,140,66,0.07)'; e.currentTarget.style.borderColor = istVereinsPfad ? 'rgba(66,164,255,0.22)' : 'rgba(255,140,66,0.22)' }}
-              >
-                <span style={{ fontSize: '1.15rem' }}>{opt.emoji}</span>
-                <span style={{ lineHeight: 1.3, textAlign: 'center' as const }}>{opt.label}</span>
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Begrüßung: automatisch weiter – kein Button */}
-
-        {/* Vorhang entfernt – Flow geht direkt weiter */}
-
-        {/* Abschluss entfernt – nahtloser Flow über Vorhang direkt in Tour */}
-
-
-      </div>
-    </div>
-  )
-}
+export default GaleriePage
