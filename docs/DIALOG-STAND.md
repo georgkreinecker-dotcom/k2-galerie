@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 16.04.26 – **K2 Familie Vertriebsunterlagen: Flyer + Produktprospekt** – **`01-FLYER-KURZPROSPEKT-VERKAUFSARGUMENTATION.md`** (Kurzprospekt / Verkaufsargumentation), **`02-PROSPEKT-PRODUKTINFORMATION.md`** (mehr Produktinformation, ableitend); **`00-INDEX.md`** + **README**; **`K2FamiliePraesentationsmappePage`:** zwei Dokumente in der Sidebar, Default Flyer. **Tests + Build** grün. **Commit:** nach Push **`git log -1 --oneline`** (Branch **main**).
+
+**Was wir JETZT tun:** Route **`/projects/k2-familie/praesentationsmappe`** – Kurzprospekt & Prospekt kurz **lesen/Drucken** prüfen.
+
+---
+
 **Letzter Stand:** 16.04.26 – **K2 Familie Cloud/Mobil & Geschichten** – **`familieSupabaseClient`:** **`fetchFamilieWithTimeout`** (~20 s) für GET/POST gegen hängende Requests. **Start:** Vollbild-Willkommen – Tipp auf Bild schließt Overlay, Touch/Overscroll am Overlay; Text angepasst. **Einladungs-Sync:** kürzeres Retry-**`delaysMs`**. **Geschichte:** `isGeschichteInArbeit` / Typ; Test **`familieGeschichteStatus.test.ts`**. **Tests + Build** grün. **Commit:** **`64db1248`** ✅ GitHub
 
 ---
