@@ -4,10 +4,11 @@
  */
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { adminTheme } from '../config/theme'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
+import { isK2FamilieMeineFamilieHomePath, K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
+import { scrollLeitfadenFocusIntoView, setLeitfadenFocusOnDocument } from '../utils/familieLeitfadenFocus'
 import { K2_FAMILIE_NAV_LABEL_GESCHICHTE } from '../config/k2FamilieNavLabels'
 import { isK2FamilieApfLocalhost } from '../config/k2FamilieApfDefaults'
 import { useFamilieMusterDemoHint } from '../context/FamilieMusterDemoHintContext'
@@ -81,6 +82,10 @@ export type FamilieMusterLeitfadenStep = {
   text: string
   linkTo?: string
   linkLabel?: string
+  /** Kurzer Sprechertext (Drehbuch Vertriebsmappe) – optional Vorlesen wie Hover-Hinweise. */
+  sprecherDrehbuch?: string
+  /** UI-Fokus: `data-leitfaden-focus` + html-Attribut für Outline. */
+  focusKey?: string
 }
 
 export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
@@ -90,7 +95,9 @@ export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
     stimmung: 'Eine digitale Heimat für Beziehungen und Erinnerungen – unter eurer Kontrolle.',
     text:
       'Schön, dass du da bist. **K2 Familie** ist der geschützte Raum für Stammbaum, gemeinsame Momente und würdevolle Erinnerung – **bewusst getrennt** von Galerie, öffentlicher Demo und Vereinswelten.\n\n' +
-      'Im **nächsten Schritt** steht unser **Versprechen** in Kurzform – aus dem Verkaufskern, verständlich erklärt. Danach öffnen wir die **Demo-Familie Huber**: erfundene Daten, zum Ausprobieren und Spüren, wie die App wirkt.',
+      'Im **nächsten Schritt** steht unser **Versprechen** in Kurzform – aus dem Verkaufskern, verständlich erklärt. Danach öffnen wir die **Musterfamilie Huber**: erfundene Daten, zum Ausprobieren und Spüren, wie die App wirkt.',
+    sprecherDrehbuch:
+      'Wir starten mit zwei kurzen Karten – erst K2 Familie als Produkt, dann unser Versprechen in fünf Punkten. Danach schauen wir in eine Demo-Familie mit erfundenen Daten, nur damit Sie die App spüren – ohne echte Angaben zu riskieren. Wenn Sie möchten, klicken wir gemeinsam auf Weiter – ich erkläre parallel, was Sie sehen.',
   },
   {
     id: 'verkaufsversprechen',
@@ -103,14 +110,18 @@ export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
       '**Erinnerung & Tiefe:** Momente, Kalender, Geschichten, **Gedenkort** – alles im gleichen respektvollen Produktgedanken.\n\n' +
       '**Zukunftssicherheit:** **Genom** – Familiendaten werden **nicht** kommerziell verwertet; das ist für uns **dauerhaft** ausgeschlossen.\n\n' +
       'Ausführlich und zum Mitgeben: Vertriebsmappe **K2 Familie** in der App. Jetzt geht es in die **Huber-Demo**.',
+    sprecherDrehbuch:
+      'Das hier ist keine Werbeliste zum Auswendiglernen – es sind die fünf Säulen, auf denen wir Vertrauen aufbauen. Vertrauen: Beziehungen leiten wir nur aus den Karten ab. Ruhe: eigene Schlüssel, eigene Instanz – nichts wird mit Galerie, Demo oder Vereinsdaten vermischt. Mitgestaltung: Rollen und Einladungen regeln Sie in der Familie. Erinnerung und Tiefe: Momente, Kalender, Geschichten, Gedenkort – alles im gleichen respektvollen Rahmen. Zukunftssicherheit: Genom – Familiendaten werden nicht kommerziell verwertet, das ist dauerhaft ausgeschlossen. Jetzt wechseln wir in die Familie Huber – komplett erfunden, nur zum Ausprobieren.',
   },
   {
     id: 'einordnung',
     titel: 'Willkommen bei den Hubers',
     stimmung: 'Jetzt wird’s konkret – Spielwiese, kein echtes Familienbuch.',
     text:
-      'Du bist in einer **Demo** mit erfundenen Daten – die Familie Huber gibt es nur zum Ausprobieren. ' +
+      'Du bist in einer **Demo** mit erfundenen Daten – die **Musterfamilie Huber** gibt es nur zum Ausprobieren. ' +
       'Noch **kein** geschützter Raum für echte Angaben – dafür kannst du in Ruhe klicken und schauen, wie sich die App anfühlt.',
+    sprecherDrehbuch:
+      'Alles, was Sie jetzt sehen, ist Spielwiese. Wenn Sie später Ihre Familie anlegen, ist das Ihr geschützter Raum – andere Welten berühren das nicht.',
   },
   {
     id: 'home',
@@ -120,6 +131,9 @@ export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
       'Startseite mit Willkommensbereich und Überblick. Wenn ihr **eure** Familie anlegt, wird das **euer** täglicher Einstieg.',
     linkTo: K2_FAMILIE_APP_SHORT_PATH,
     linkLabel: 'Diese Seite gleich öffnen',
+    sprecherDrehbuch:
+      'Meine Familie – Ihr späterer Einstieg mit Willkommensbereich und Überblick. Wenn Sie Ihre Familie anlegen, wird das Ihr täglicher Einstieg.',
+    focusKey: 'home',
   },
   {
     id: 'stammbaum',
@@ -129,6 +143,9 @@ export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
       'Beziehungen und Generationen – in der Demo mit Beispielpersonen, damit du das Prinzip siehst.',
     linkTo: R.stammbaum,
     linkLabel: 'Stammbaum ansehen',
+    sprecherDrehbuch:
+      'Stammbaum: Beziehungen und Generationen – in der Demo mit Beispielpersonen, damit Sie das Prinzip sehen.',
+    focusKey: 'stammbaum',
   },
   {
     id: 'events-kalender',
@@ -138,6 +155,9 @@ export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
       'Kalender und Events mit Beispielinhalten – ein Gefühl dafür, wie ihr später plant und erinnert.',
     linkTo: R.events,
     linkLabel: 'Zu den Events',
+    sprecherDrehbuch:
+      'Events und Kalender – Termine und Jahr im Blick. In der Demo mit Beispielinhalten. Die Kalender-Ansicht erreichen Sie auch über die obere Menüleiste.',
+    focusKey: 'events',
   },
   {
     id: 'geschichte',
@@ -147,6 +167,9 @@ export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
       'Gemeinsame Texte und Gedenkort – in der Musterfamilie zum Durchblättern und Ausprobieren.',
     linkTo: R.geschichte,
     linkLabel: 'Geschichten ansehen',
+    sprecherDrehbuch:
+      'Geschichte und Gedenkort – gemeinsame Texte und Orte der Erinnerung, in der Musterfamilie zum Durchblättern und Ausprobieren.',
+    focusKey: 'geschichte',
   },
   {
     id: 'einstellungen',
@@ -156,6 +179,9 @@ export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
       'In einer **echten** Familie liegen Zugang und Einladungen hier. In der Demo nur zum Orientieren – ohne echte Daten.',
     linkTo: R.einstellungen,
     linkLabel: 'Einstellungen öffnen',
+    sprecherDrehbuch:
+      'Einstellungen – später liegen Zugang, Rollen und Einladungen hier. In der Demo nur zum Orientieren – ohne echte Daten.',
+    focusKey: 'einstellungen',
   },
   {
     id: 'entscheid',
@@ -163,6 +189,9 @@ export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
     stimmung: 'Wenn es dir gefällt – euer Raum wartet.',
     text:
       'Demo beenden und mit Einladung oder neuer Familie **euren** geschützten Raum starten – dann sind es **eure** Daten.',
+    sprecherDrehbuch:
+      'Wenn es Ihnen zusagt, geht der Weg über Lizenz und Einladung – dann sind es Ihre Daten in Ihrem Mandanten. Die Demo können Sie jederzeit wieder öffnen – sie überschreibt nichts. Kein Druck – eine Einladung zur Klärung reicht.',
+    focusKey: 'demo-ende',
   },
 ]
 
@@ -219,12 +248,31 @@ function LeitfadenKeyframes() {
       .k2-familie-muster-leitfaden-step-body {
         animation: k2FamilieLeitfadenStepCross 0.28s ease-out forwards;
       }
+      html[data-k2-familie-leitfaden-focus] [data-leitfaden-focus] {
+        transition: outline 0.35s ease, box-shadow 0.35s ease;
+      }
+      html[data-k2-familie-leitfaden-focus="home"] [data-leitfaden-focus="home"],
+      html[data-k2-familie-leitfaden-focus="stammbaum"] [data-leitfaden-focus="stammbaum"],
+      html[data-k2-familie-leitfaden-focus="events"] [data-leitfaden-focus="events"],
+      html[data-k2-familie-leitfaden-focus="kalender"] [data-leitfaden-focus="kalender"],
+      html[data-k2-familie-leitfaden-focus="geschichte"] [data-leitfaden-focus="geschichte"],
+      html[data-k2-familie-leitfaden-focus="gedenkort"] [data-leitfaden-focus="gedenkort"],
+      html[data-k2-familie-leitfaden-focus="einstellungen"] [data-leitfaden-focus="einstellungen"],
+      html[data-k2-familie-leitfaden-focus="handbuch"] [data-leitfaden-focus="handbuch"],
+      html[data-k2-familie-leitfaden-focus="leitfaden"] [data-leitfaden-focus="leitfaden"],
+      html[data-k2-familie-leitfaden-focus="demo-ende"] [data-leitfaden-focus="demo-ende"] {
+        outline: 3px solid rgba(94, 234, 212, 0.92);
+        outline-offset: 3px;
+        border-radius: 12px;
+        box-shadow: 0 0 0 4px rgba(94, 234, 212, 0.12);
+      }
     `}</style>
   )
 }
 
 export function FamilieMusterHuberLeitfadenModal({ open, onOpenChange, onAbgeschlossen }: Props) {
   const navigate = useNavigate()
+  const location = useLocation()
   const sheetRef = useRef<HTMLDivElement | null>(null)
   const [schritt, setSchritt] = useState(0)
   const [bounds, setBounds] = useState<FamilieLeitfadenPanelBounds | null>(null)
@@ -436,6 +484,39 @@ export function FamilieMusterHuberLeitfadenModal({ open, onOpenChange, onAbgesch
     schliessenUndMerken()
     navigate({ pathname: K2_FAMILIE_APP_SHORT_PATH, search: '' }, { replace: true })
   }, [navigate, schliessenUndMerken])
+
+  /** Proaktiv: passende Seite öffnen, Fokus markieren, in den Blick scrollen (interaktiver Rundgang). */
+  useEffect(() => {
+    if (!open || minimized) {
+      setLeitfadenFocusOnDocument(null)
+      return
+    }
+    const step = FAMILIE_MUSTER_LEITFADEN_SCHRITTE[schritt]
+    if (!step) {
+      setLeitfadenFocusOnDocument(null)
+      return
+    }
+
+    const linkTo = step.linkTo
+    if (linkTo) {
+      let needNav = true
+      if (linkTo === K2_FAMILIE_APP_SHORT_PATH) {
+        needNav = !isK2FamilieMeineFamilieHomePath(location.pathname)
+      } else {
+        const p = (location.pathname || '/').replace(/\/$/, '') || '/'
+        const l = linkTo.replace(/\/$/, '') || '/'
+        needNav = p !== l && !p.startsWith(`${l}/`)
+      }
+      if (needNav) navigate(linkTo)
+    }
+
+    setLeitfadenFocusOnDocument(step.focusKey ?? null)
+    scrollLeitfadenFocusIntoView(step.focusKey)
+
+    return () => {
+      setLeitfadenFocusOnDocument(null)
+    }
+  }, [open, minimized, schritt, location.pathname, navigate])
 
   if (!open) return null
 
@@ -659,19 +740,24 @@ function LeitfadenSheetInner({
   const speechAvail = isFamilieMusterHintSpeechAvailable()
   const [speechOn, setSpeechOn] = useState(() => getFamilieMusterHintSpeechEnabled())
 
+  /** Hover hat Vorrang; sonst Sprechertext aus Drehbuch pro Schritt. */
   useEffect(() => {
-    if (!speechOn || !hoverHint) {
+    if (!speechOn) {
       cancelFamilieMusterHintSpeech()
       return
     }
+    cancelFamilieMusterHintSpeech()
+    const text = hoverHint ?? s.sprecherDrehbuch
+    if (!text) return
+    const delay = hoverHint ? 380 : 520
     const id = window.setTimeout(() => {
-      speakFamilieMusterHintText(hoverHint)
-    }, 380)
+      speakFamilieMusterHintText(text)
+    }, delay)
     return () => {
       window.clearTimeout(id)
       cancelFamilieMusterHintSpeech()
     }
-  }, [hoverHint, speechOn])
+  }, [speechOn, hoverHint, schritt, s.sprecherDrehbuch, s.id])
 
   useEffect(() => {
     return () => {
@@ -709,7 +795,7 @@ function LeitfadenSheetInner({
               <p style={{ margin: 0, fontSize: '0.82rem', fontWeight: 800, letterSpacing: '0.04em', color: '#b54a1e', fontFamily: t.fontHeading }}>
                 {s.id === 'begruessung' || s.id === 'verkaufsversprechen'
                   ? 'K2 Familie · Begrüßung & Versprechen'
-                  : 'Rundgang · Familie Huber'}
+                  : 'Rundgang · Musterfamilie Huber'}
               </p>
               <div
                 style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}
@@ -862,6 +948,7 @@ function LeitfadenSheetInner({
             }}
           >
             Der dunkle Hintergrund blockiert die Maus nicht – du kannst die Navigation und Kacheln anfahren (Hover-Hinweise).
+            Pro Schritt führt der Rundgang zur passenden Ansicht und markiert die Stelle – optional Vorlesen wie beim Drehbuch.
             Rundgang aus dem Weg: <strong style={{ color: t.text }}>▼</strong> oder <strong style={{ color: t.text }}>Escape</strong>.
           </p>
 
@@ -895,10 +982,10 @@ function LeitfadenSheetInner({
                     setFamilieMusterHintSpeechEnabled(v)
                     if (!v) cancelFamilieMusterHintSpeech()
                   }}
-                  aria-label="Hinweis per Sprachausgabe vorlesen"
+                  aria-label="Hinweise und Schritt-Sprechertext per Sprachausgabe vorlesen"
                   style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#b54a1e' }}
                 />
-                Hinweis vorlesen
+                Hinweis & Schritte vorlesen
               </label>
               <p style={{ margin: '0.25rem 0 0', fontSize: '0.68rem', color: t.muted, lineHeight: 1.35 }}>
                 Nutzt die Sprachausgabe des Browsers (Deutsch). Am Mac sind dafür keine extra Systemeinstellungen nötig – Checkbox an,

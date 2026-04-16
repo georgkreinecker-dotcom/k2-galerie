@@ -1,5 +1,17 @@
 # Dialog-Stand
 
+**Letzter Stand:** 16.04.26 – **Huber-Leitfaden interaktiv: Drehbuch-Sprecher + Fokus** – Pro Schritt **`sprecherDrehbuch`** (Vertriebsprospekt/Drehbuch-Linie); **`focusKey`** + **`familieLeitfadenFocus.ts`**: Navigation, Scroll, **`data-leitfaden-focus`** auf Nav/Home; TTS: Hover zuerst, sonst Drehbuch. **Tests + Build** grün. **Commit:** _(nach Push)_
+
+**Was wir JETZT tun:** Muster **`?t=huber`** – Leitfaden öffnen: Schritte durchklicken → **Vorlesen**, **Fokus-Rahmen**, ggf. **minimieren** und weiter in der App.
+
+**Einordnung:** Ein geführter Rundgang wie im **10-HUBER-MUSTER-RUNDGANG-DREHBUCH** – proaktiv erklären, nicht nur Text im Panel.
+
+---
+
+**Letzter Stand:** 16.04.26 – **Musterfamilie Huber: Seed = Inhaber + „Du“ Stefan** – **`seedFamilieHuber`:** nach Personen/Events/Momente **`inhaberPersonId`** und **`ichBinPersonId`** auf **`stefan`** (`FAMILIE_HUBER_INHABER_PERSON_ID`), Merge mit bestehenden Einstellungen; passt zu Leiste „Inhaber Stefan Huber / Besucher-Perspektive“. **Build** grün. **Commit:** _(nach Push)_
+
+---
+
 **Letzter Stand:** 16.04.26 – **Huber-Leitfaden: Begrüßung + Verkaufsversprechen + Drehbuch** – Zwei neue Schritte vor der Huber-Demo (**Begrüßung K2 Familie**, **Mini-Präsentation Versprechen** aus Kurzprospekt); Kopfzeile dynamisch; Text **`\n\n`** als echte Absätze (`div`+`p`); APf-Tipp nur bei **`einordnung`**. Neu: **`public/k2-familie-praesentation/10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md`**, Index + **K2FamiliePraesentationsmappePage** (10 Kapitel). **Commit:** **`021eb441`** ✅ GitHub
 
 ---
@@ -17,10 +29,6 @@
 ---
 
 **Letzter Stand:** 16.04.26 – **Build grün: Einladung pid + Leitfaden Resize-ARIA** – **`FamilieEinladungQuerySync`:** zweite `findPersonIdByMitgliedsNummer`-Zuweisung ohne `?? undefined` (TS: `string | undefined` konsistent). **`FamilieMusterHuberLeitfaden`:** ungültiges **`aria-orientation="both"`** am Größen-Ziehpunkt entfernt (Separator erlaubt nur horizontal/vertical). **Tests + Build** grün. **Commit:** **`54672fda`** ✅ GitHub
-
-**Was wir JETZT tun:** Muster **`?t=huber`:** ersten **drei** Leitfaden-Schritte (Begrüßung, Versprechen, Huber) **lesen**; Vertriebsmappe **Drehbuch**-Kapitel **drucken**; bei Bedarf Hover/Sprache wie bisher prüfen.
-
-**Einordnung:** Verkaufskern und Ton wie **Flyer Kurzprospekt** – keine neue Marketing-Linie, nur Einordnung im Rundgang.
 
 ---
 

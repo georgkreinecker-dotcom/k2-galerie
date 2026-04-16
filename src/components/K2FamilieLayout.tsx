@@ -26,7 +26,7 @@ import { FamilieEinladungQuerySync } from './FamilieEinladungQuerySync'
 import { FamilieApfMeineFamilieSync } from './FamilieApfMeineFamilieSync'
 import { FamilieMusterSessionEnforcer } from './FamilieMusterSessionEnforcer'
 import { FamilieCloudAutoSync } from './K2Familie/FamilieCloudAutoSync'
-import { isFamilieNurMusterSession } from '../utils/familieMusterSession'
+import { isFamilieNurMusterSession, K2_FAMILIE_OPEN_MUSTER_LEITFADEN_EVENT } from '../utils/familieMusterSession'
 import { isK2FamilieApfLocalhost, resolveApfMeineFamilieTenantId } from '../config/k2FamilieApfDefaults'
 import {
   FamilieMusterHuberLeitfadenModal,
@@ -93,6 +93,12 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
     if (!nurMuster) return
     if (!readMusterLeitfadenAbgeschlossen()) setMusterLeitfadenOpen(true)
   }, [nurMuster])
+  useEffect(() => {
+    if (!nurMuster) return
+    const onOpen = () => setMusterLeitfadenOpen(true)
+    window.addEventListener(K2_FAMILIE_OPEN_MUSTER_LEITFADEN_EVENT, onOpen)
+    return () => window.removeEventListener(K2_FAMILIE_OPEN_MUSTER_LEITFADEN_EVENT, onOpen)
+  }, [nurMuster])
   /** APf localhost: nur erkannte Stammfamilie (Kreinecker) – kein Huber, keine Platzhalter im Dropdown. */
   const apfStammId = !nurMuster && isK2FamilieApfLocalhost() ? resolveApfMeineFamilieTenantId() : null
   const apfNurStamm = apfStammId != null
@@ -124,20 +130,22 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
         }}
         role="status"
       >
-        <p style={{ margin: 0, fontSize: '0.86rem', color: t.text, lineHeight: 1.5, fontWeight: 600 }}>
-          Echte Familie fehlt auf diesem Gerät
-        </p>
-        <p style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', color: t.muted, lineHeight: 1.45 }}>
-          Es ist nur die Musterfamilie Huber in der Liste. Öffne den{' '}
-          <strong style={{ color: t.text }}>Einladungslink oder QR von der Inhaber:in</strong> mit <strong style={{ color: t.text }}>eurer</strong> Familie (Link enthält{' '}
-          <code style={{ fontSize: '0.78rem' }}>?t=…</code> und Zugangscode). Danach erscheint die Familie hier.
-          {kannInstanz && (
-            <>
-              {' '}
-              Oder unter <Link to={familieRoutesNav.einstellungen}>Einstellungen</Link> eine neue Familie anlegen.
-            </>
-          )}
-        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem' }}>
+          <span
+            style={{ fontSize: '0.88rem', fontWeight: 600, color: t.text }}
+            title="Echte Familie: Einladung oder QR der Inhaber:in"
+          >
+            Nur Musterfamilie
+          </span>
+          {kannInstanz ? (
+            <Link
+              to={familieRoutesNav.einstellungen}
+              style={{ fontSize: '0.86rem', fontWeight: 600, color: '#b54a1e', textDecoration: 'none' }}
+            >
+              Neue Familie
+            </Link>
+          ) : null}
+        </div>
       </div>
     )
   }
@@ -165,9 +173,6 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
   } as const
 
   if (eingeschraenkteAuswahl) {
-    const hinweisApfStamm =
-      'Auf der APf: Hier nur deine Stammfamilie – kein Wechsel zu Muster Huber und keine Platzhalter-Einträge im Dropdown.'
-
     if (nurMuster) {
       const btnBase = {
         padding: '0.5rem 1rem',
@@ -189,76 +194,48 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
             className="k2-familie-tenant-toolbar k2-familie-no-print"
             style={{
               display: 'flex',
-              flexDirection: 'column',
+              flexWrap: 'wrap',
+              alignItems: 'center',
               gap: '0.65rem',
-              padding: '0.75rem 1rem',
+              padding: '0.55rem 1rem',
               background: t.bgCard,
               borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
               fontFamily: t.fontBody,
             }}
           >
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.55rem',
-              }}
-            >
-              <p style={{ margin: 0, fontSize: '0.9rem', color: t.text, lineHeight: 1.5 }}>
-                <strong style={{ color: t.text }}>Musterfamilie Huber</strong>{' '}
-                <span style={{ color: t.muted }}>
-                  – Demo mit Beispieldaten. Der Leitfaden führt dich durch die App; danach entscheidest du, ob du eine
-                  eigene Familie starten möchtest.
-                </span>
-              </p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem' }}>
-                <button
-                  type="button"
-                  onClick={() => setMusterLeitfadenOpen(true)}
-                  data-muster-hint={MUSTER_HINT_TOOLBAR_LEITFADEN_BUTTON}
-                  style={{
-                    ...btnBase,
-                    border: '1px solid rgba(181, 74, 30, 0.45)',
-                    background: '#fffefb',
-                    color: '#b54a1e',
-                  }}
-                >
-                  Leitfaden: App entdecken
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    navigate({ pathname: K2_FAMILIE_APP_SHORT_PATH, search: '' }, { replace: true })
-                  }
-                  data-muster-hint={MUSTER_HINT_TOOLBAR_DEMO_ENDE}
-                  style={{
-                    ...btnBase,
-                    border: '1px solid rgba(181, 74, 30, 0.35)',
-                    background: '#b54a1e',
-                    color: '#fff',
-                  }}
-                >
-                  Demo beenden – zu eurer Familie
-                </button>
-              </div>
-              <p style={{ margin: 0, fontSize: '0.78rem', color: t.muted, lineHeight: 1.45 }}>
-                Mit echter Familie: Einladungslink oder QR der Inhaber:in öffnen (Adresse mit{' '}
-                <code style={{ fontSize: '0.74rem' }}>?t=…</code>
-                ).{kannInstanz ? (
-                  <>
-                    {' '}
-                    Oder unter <Link to={familieRoutesNav.einstellungen}>Einstellungen</Link> eine neue Familie anlegen.
-                  </>
-                ) : null}
-              </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem' }}>
+              <button
+                type="button"
+                onClick={() => setMusterLeitfadenOpen(true)}
+                data-leitfaden-focus="leitfaden"
+                data-muster-hint={MUSTER_HINT_TOOLBAR_LEITFADEN_BUTTON}
+                style={{
+                  ...btnBase,
+                  border: '1px solid rgba(181, 74, 30, 0.45)',
+                  background: '#fffefb',
+                  color: '#b54a1e',
+                }}
+              >
+                Leitfaden
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate({ pathname: K2_FAMILIE_APP_SHORT_PATH, search: '' }, { replace: true })}
+                data-leitfaden-focus="demo-ende"
+                data-muster-hint={MUSTER_HINT_TOOLBAR_DEMO_ENDE}
+                style={{
+                  ...btnBase,
+                  border: '1px solid rgba(181, 74, 30, 0.35)',
+                  background: '#b54a1e',
+                  color: '#fff',
+                }}
+              >
+                Demo beenden
+              </button>
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem' }}>
-              <span style={{ fontSize: '0.88rem', color: t.muted }} title="Demo-Mandant">
-                Aktive Familie (Demo):
-              </span>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem', marginLeft: 'auto' }}>
               <select
-                aria-label="Aktive Familie wählen"
-                title="In der Muster-Sitzung nur Huber."
+                aria-label="Musterfamilie Huber wählen"
                 data-muster-hint={MUSTER_HINT_TOOLBAR_FAMILIE}
                 value={selectValue}
                 onChange={(e) => setCurrentTenantId(e.target.value)}
@@ -281,19 +258,17 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
         className="k2-familie-tenant-toolbar k2-familie-no-print"
         style={{
           display: 'flex',
-          flexDirection: 'column',
-          gap: '0.5rem',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: '0.65rem',
           padding: '0.55rem 1rem',
           background: t.bgCard,
           borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
           fontFamily: t.fontBody,
         }}
       >
-        <p style={{ margin: 0, fontSize: '0.8rem', color: t.muted, lineHeight: 1.45 }}>{hinweisApfStamm}</p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem' }}>
-          <span style={{ fontSize: '0.88rem', color: t.muted }} title="Stammfamilie auf diesem Gerät">
-            Aktive Familie wählen:
-          </span>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem' }}>
+          <span style={{ fontSize: '0.88rem', color: t.muted }}>Familie</span>
           <select
             aria-label="Aktive Familie wählen"
             title="Auf der APf nur deine Stammfamilie."
@@ -326,8 +301,8 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
         fontFamily: t.fontBody,
       }}
     >
-      <span style={{ fontSize: '0.88rem', color: t.muted }} title="Hier wechselst du zwischen Familien auf diesem Gerät – kein Umbenennen.">
-        Aktive Familie wählen:
+      <span style={{ fontSize: '0.88rem', color: t.muted }} title="Zwischen Familien auf diesem Gerät wechseln">
+        Familie
       </span>
       <select
         aria-label="Aktive Familie wählen"
@@ -447,6 +422,60 @@ function FamilieRolleLeisteHaupt({ onEinklappen }: { onEinklappen?: () => void }
     gewaehlt === 'inhaber' && ia != null && ia !== 'voll'
   const showInhaberAnsichtSteuerung = rolle === 'inhaber' && ia != null
   const inhaberAnsichtHash = `${PROJECT_ROUTES['k2-familie'].einstellungen}#k2-familie-inhaber-ansicht`
+
+  if (isFamilieNurMusterSession()) {
+    return (
+      <div
+        className="k2-familie-no-print k2-familie-rolle-leiste"
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: '0.5rem 1rem',
+          padding: '0.45rem 1rem',
+          background: t.bgElevated,
+          borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
+        }}
+      >
+        <p
+          style={{
+            margin: 0,
+            flex: '1 1 220px',
+            fontSize: '0.84rem',
+            color: t.text,
+            lineHeight: 1.45,
+          }}
+        >
+          <strong style={{ fontWeight: 700 }}>Musterfamilie Huber:</strong>{' '}
+          Inhaber ist <strong style={{ fontWeight: 700 }}>Stefan Huber</strong>. Als Besucher:in übernimmst du seine
+          Perspektive – die Ansichten entsprechen seinem Konto.
+        </p>
+        {onEinklappen ? (
+          <button
+            type="button"
+            onClick={onEinklappen}
+            aria-expanded={true}
+            style={{
+              marginLeft: 'auto',
+              padding: '0.35rem 0.75rem',
+              fontSize: '0.8rem',
+              fontFamily: 'inherit',
+              fontWeight: 600,
+              borderRadius: t.radius,
+              border: `1px solid rgba(181, 74, 30, 0.35)`,
+              background: '#fffefb',
+              color: t.accent,
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
+          >
+            Einklappen
+          </button>
+        ) : null}
+      </div>
+    )
+  }
+
   return (
     <div
       className="k2-familie-no-print k2-familie-rolle-leiste"
@@ -600,10 +629,22 @@ function FamilieRolleLeisteKompakt({ onOeffnen }: { onOeffnen: () => void }) {
       }}
     >
       <p style={{ margin: 0, fontSize: '0.84rem', color: t.text, lineHeight: 1.35, flex: '1 1 200px' }}>
-        <strong style={{ fontWeight: 700 }}>{famName}</strong>
-        <span style={{ color: t.muted }}> · </span>
-        <span style={{ color: t.muted }}>Rolle: </span>
-        {kurz}
+        {isFamilieNurMusterSession() ? (
+          <>
+            <strong style={{ fontWeight: 700 }}>{famName}</strong>
+            <span style={{ color: t.muted }}> · </span>
+            <span style={{ color: t.muted }}>
+              Inhaber Stefan Huber – du siehst die Ansichten wie er.
+            </span>
+          </>
+        ) : (
+          <>
+            <strong style={{ fontWeight: 700 }}>{famName}</strong>
+            <span style={{ color: t.muted }}> · </span>
+            <span style={{ color: t.muted }}>Rolle: </span>
+            {kurz}
+          </>
+        )}
       </p>
       <button
         type="button"
@@ -696,7 +737,7 @@ type FamilieNavItem = {
   activePrefixes?: readonly string[]
 }
 
-/** Volle Leiste auf allen Unterseiten. Auf „Meine Familie“-Start: keine Doppelung zu den großen Kacheln darunter – Kernthemen nur unten, oben kompakt. */
+/** Volle Leiste auf allen Unterseiten. Auf „Meine Familie“-Start: oben Meine Familie, Handbuch, Einstellungen – Stammbaum/Events usw. bleiben als Kacheln. */
 const FAMILIE_NAV: FamilieNavItem[] = [
   { to: K2_FAMILIE_APP_SHORT_PATH, label: 'Meine Familie' },
   { to: familieRoutes.stammbaum, label: 'Stammbaum' },
@@ -708,17 +749,38 @@ const FAMILIE_NAV: FamilieNavItem[] = [
   { to: familieRoutes.einstellungen, label: 'Einstellungen' },
 ]
 
-/** Nur auf /meine-familie: Kern unten als Kacheln – oben nur Meine Familie + Handbuch (kein Zurück, keine Mappe/Sicherung in Zeile 1). */
-const FAMILIE_NAV_MEINE_FAMILIE_HOME: FamilieNavItem[] = [
-  { to: K2_FAMILIE_APP_SHORT_PATH, label: 'Meine Familie' },
-  { to: familieRoutes.benutzerHandbuch, label: 'Handbuch' },
-]
+/** Interaktiver Muster-Leitfaden: Fokus-Highlight (`data-leitfaden-focus` auf html). */
+function familieNavLeitfadenFocusForTo(to: string): string | undefined {
+  if (to === K2_FAMILIE_APP_SHORT_PATH) return 'home'
+  if (to === familieRoutes.stammbaum) return 'stammbaum'
+  if (to === familieRoutes.events) return 'events'
+  if (to === familieRoutes.kalender) return 'kalender'
+  if (to === familieRoutes.geschichte) return 'geschichte'
+  if (to === familieRoutes.gedenkort) return 'gedenkort'
+  if (to === familieRoutes.einstellungen) return 'einstellungen'
+  if (to === familieRoutes.benutzerHandbuch) return 'handbuch'
+  return undefined
+}
 
 function FamilieNav() {
   const loc = useLocation()
   const path = loc.pathname
+  const { capabilities } = useFamilieRolle()
   const isMeineFamilieHome = isK2FamilieMeineFamilieHomePath(path)
-  const navItems = isMeineFamilieHome ? FAMILIE_NAV_MEINE_FAMILIE_HOME : FAMILIE_NAV
+  const isLeser = capabilities.rolle === 'leser'
+  const navItems = useMemo((): FamilieNavItem[] => {
+    if (isMeineFamilieHome) {
+      return [
+        { to: K2_FAMILIE_APP_SHORT_PATH, label: 'Meine Familie' },
+        { to: familieRoutes.benutzerHandbuch, label: 'Handbuch' },
+        {
+          to: familieRoutes.einstellungen,
+          label: isLeser ? 'Einstellungen' : 'Einstellungen & Verwaltung',
+        },
+      ]
+    }
+    return FAMILIE_NAV
+  }, [isMeineFamilieHome, isLeser])
 
   return (
     <nav
@@ -751,11 +813,13 @@ function FamilieNav() {
             : path.startsWith(to)
         const navMuster = isFamilieNurMusterSession()
         const musterHint = navMuster ? musterHintForFamilieNavLink(to) : undefined
+        const leitfadenFocus = familieNavLeitfadenFocusForTo(to)
         return (
           <Link
             key={to}
             to={to}
             {...(musterHint ? { 'data-muster-hint': musterHint } : {})}
+            {...(leitfadenFocus ? { 'data-leitfaden-focus': leitfadenFocus } : {})}
             className={isActive ? 'k2-familie-nav-link k2-familie-nav-link--active' : 'k2-familie-nav-link'}
             style={{
               padding: '0.45rem 0.85rem',

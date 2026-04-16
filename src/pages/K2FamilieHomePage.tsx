@@ -41,7 +41,6 @@ import {
   MUSTER_HINT_HOME_KACHEL_EVENTS_KALENDER,
   MUSTER_HINT_HOME_KACHEL_GEDENKORT,
   MUSTER_HINT_HOME_KACHEL_GESCHICHTE,
-  MUSTER_HINT_HOME_KACHEL_EINSTELLUNGEN,
   MUSTER_HINT_HOME_KACHEL_STAMMBAUM,
   MUSTER_HINT_HOME_STAMMDATEN,
 } from '../config/familieMusterDemoHints'
@@ -61,8 +60,6 @@ const C = {
   btnEventsKalender: 'linear-gradient(135deg, #d97706 0%, #14b8a6 100%)',
   btnGeschichte: 'linear-gradient(135deg, #6d28d9 0%, #a78bfa 100%)',
   btnGedenkort: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
-  /** Einstellungen-Hub: Zugang, Ansicht, Lizenz, Handbuch (Sicherung nur unter Einstellungen) */
-  btnEinstellungen: 'linear-gradient(135deg, #312e81 0%, #4f46e5 55%, #6366f1 100%)',
 }
 
 const actionBtnBase: CSSProperties = {
@@ -889,12 +886,15 @@ export default function K2FamilieHomePage() {
           }}
         >
           <div style={{ maxWidth: 920, margin: '0 auto' }}>
+          {!isDemoMusterHuber ? (
           <p style={{ margin: '0 0 1.15rem', fontSize: '0.98rem', lineHeight: 1.6, color: a.muted }}>
             {introForRole}
           </p>
+          ) : null}
 
-          {/* Ampel: volle erste Einrichtung nur Inhaber:in; Leser/Bearbeiter eine kurze Zeile */}
+          {/* Ampel: Inhaber:in – außer Huber-Demo (dort kein Block; Einstieg schrittweise im Leitfaden). */}
           {isInhaber ? (
+            isDemoMusterHuber ? null : (
             <div
               style={{
                 marginBottom: '1.25rem',
@@ -934,7 +934,8 @@ export default function K2FamilieHomePage() {
                 </p>
               )}
             </div>
-          ) : (
+            )
+          ) : isDemoMusterHuber ? null : (
             <div
               style={{
                 marginBottom: '1.1rem',
@@ -959,17 +960,22 @@ export default function K2FamilieHomePage() {
             </div>
           )}
 
-          <section style={{ marginBottom: '1.35rem' }}>
+          <section
+            style={{ marginBottom: '1.35rem' }}
+            {...(isDemoMusterHuber ? { 'data-leitfaden-focus': 'home' } : {})}
+          >
             <h2 style={{ margin: '0 0 0.35rem', fontSize: '1.35rem', fontWeight: 700, color: a.text, fontFamily: a.fontHeading }}>
               {isLeser ? 'Wohin geht’s?' : 'Was möchtest du tun?'}
             </h2>
+            {!isDemoMusterHuber ? (
             <p style={{ margin: '0 0 0.65rem', fontSize: '0.88rem', lineHeight: 1.55, color: a.muted }}>
               {isInhaber
                 ? 'Hier groß und klar zum Tippen – dieselben Bereiche erreichst du zusätzlich in der oberen Menüleiste, wenn du schon auf einer anderen Seite bist.'
                 : isLeser
                   ? 'Die wichtigsten Einstiege – ohne Ballast. Mehr findest du in der Menüleiste oben.'
-                  : 'Kernbereiche zum Bearbeiten und Lesen – Details und Verwaltung in der Menüleiste oder unter Einstellungen.'}
+                  : 'Kernbereiche zum Bearbeiten und Lesen – Verwaltung und Details in der oberen Menüleiste (Einstellungen).'}
             </p>
+            ) : null}
             <div
               className="k2-familie-action-grid"
               style={{
@@ -1059,99 +1065,8 @@ export default function K2FamilieHomePage() {
               >
                 🕯️ Gedenkort
               </Link>
-              <Link
-                to={familieR.einstellungen}
-                className="btn k2-familie-action-btn"
-                {...musterHintProps(MUSTER_HINT_HOME_KACHEL_EINSTELLUNGEN)}
-                style={{
-                  ...actionBtnBase,
-                  background: C.btnEinstellungen,
-                  boxShadow: '0 8px 28px rgba(79, 70, 229, 0.42)',
-                }}
-                title={
-                  isInhaber
-                    ? 'Zugang &amp; Name, Stammbaum-Ansicht, Lizenz, Handbuch – Sicherung bei Bedarf dort'
-                    : isBearbeiter
-                      ? 'Rolle, Ansicht, Handbuch'
-                      : 'Rolle und persönliche Einstellungen'
-                }
-              >
-                ⚙️ {isLeser ? 'Einstellungen' : 'Einstellungen &amp; Verwaltung'}
-              </Link>
             </div>
           </section>
-
-          <div
-            style={{
-              marginBottom: '1.25rem',
-              padding: '1rem 1.15rem',
-              borderRadius: a.radius,
-              background: a.bgCard,
-              boxShadow: a.shadow,
-              border: '1px solid rgba(181, 74, 30, 0.12)',
-              borderLeft: `4px solid ${a.accent}`,
-            }}
-          >
-            <h2 style={{ margin: '0 0 0.35rem', fontSize: '1.05rem', fontWeight: 700, color: a.text, fontFamily: a.fontHeading }}>
-              Verwaltung &amp; Zugang
-            </h2>
-            <p style={{ margin: '0 0 0.65rem', fontSize: '0.9rem', lineHeight: 1.55, color: a.muted }}>
-              {kannInstanz ? (
-                <>
-                  Familien-Zugangsnummer, QR, Einladungslink, Anzeigename und Stammbaum-Ansicht (Startpunkt, Partner, „Du“) liegen unter{' '}
-                  <strong style={{ color: a.text }}>Einstellungen &amp; Verwaltung</strong> — nicht hier, damit „Meine Familie“ dem täglichen Erlebnis dient.
-                </>
-              ) : isLeser ? (
-                <>
-                  <strong style={{ color: a.text }}>Kurz:</strong> Zugang und Stammbaum richtet die Inhaber:in unter Einstellungen ein.
-                </>
-              ) : (
-                <>
-                  <strong style={{ color: a.text }}>Kurz:</strong> Zugang und Stammbaum-Ansicht sind unter Einstellungen gebündelt.
-                </>
-              )}
-            </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1rem', alignItems: 'center' }}>
-              <Link
-                to={`${familieR.einstellungen}#k2-familie-zugang-name`}
-                style={{
-                  display: 'inline-block',
-                  padding: '0.45rem 0.65rem',
-                  fontSize: '0.9rem',
-                  fontWeight: 600,
-                  borderRadius: a.radius,
-                  border: '1px solid rgba(181, 74, 30, 0.35)',
-                  background: a.accentSoft,
-                  color: a.accent,
-                  textDecoration: 'none',
-                  fontFamily: 'inherit',
-                }}
-              >
-                Zugang &amp; Name
-              </Link>
-              <Link
-                to={`${familieR.einstellungen}#k2-familie-ansicht-einstellungen`}
-                style={{
-                  display: 'inline-block',
-                  padding: '0.45rem 0.65rem',
-                  fontSize: '0.9rem',
-                  fontWeight: 600,
-                  borderRadius: a.radius,
-                  border: '1px solid rgba(181, 74, 30, 0.35)',
-                  background: a.bgElevated,
-                  color: a.accent,
-                  textDecoration: 'none',
-                  fontFamily: 'inherit',
-                }}
-              >
-                Stammbaum-Ansicht
-              </Link>
-              <Link to={familieR.einstellungen} style={{ fontSize: '0.88rem', color: a.muted, fontWeight: 600 }}>
-                Alle Einstellungen →
-              </Link>
-            </div>
-          </div>
-
 
           {!tenantList.includes(FAMILIE_HUBER_TENANT_ID) && kannInstanz && !istEchteFamilieTenantAktiv && (
             <div
@@ -1191,7 +1106,7 @@ export default function K2FamilieHomePage() {
               </button>
               {musterLoaded && (
                 <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: a.muted }}>
-                  Familie Huber geladen. Oben in der Leiste ist die aktuelle Familie sichtbar (mehrere Mandanten: dort wechseln).
+                  Musterfamilie Huber geladen. Oben in der Leiste ist die aktuelle Familie sichtbar (mehrere Mandanten: dort wechseln).
                 </p>
               )}
             </div>
