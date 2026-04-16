@@ -146,12 +146,12 @@ export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
   leitfadenStep({
     id: 'events-kalender',
     titel: 'Events & Kalender',
-    stimmung: 'Gemeinsam im Jahr.',
+    stimmung: 'Zwei Ansichten – ein Thema: Termine.',
     body:
-      'Im **Kalender** steht, **was wann** bei euch anliegt – **Alltagstermine** und **Tage**, die ihr **gemeinsam** plant.\n\n' +
-      '**Über die Menüleiste oben** kommt ihr **von jeder Seite** wieder zu **Kalender und Events**.',
+      '**Ein** Thema, **zwei** Seiten: Unter **Events verwalten** tragt ihr **Termine** ein und **bearbeitet** sie. Unter **Kalender-Ansicht** seht ihr **das Jahr** im **Monatsraster** – **dieselben** Termine, **anders** dargestellt.\n\n' +
+      '**Zwischen** beiden wechselt ihr mit den **beiden Buttons** direkt **unter der Menüleiste** – **auf beiden** Seiten gleich. **Die Menüleiste oben** bringt euch **von jeder Seite** **hierher**.',
     linkTo: R.events,
-    linkLabel: 'Zu den Events',
+    linkLabel: 'Zu Events verwalten',
     focusKey: 'events',
   }),
   leitfadenStep({

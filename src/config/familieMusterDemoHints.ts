@@ -15,10 +15,10 @@ export const MUSTER_HINT_NAV_STAMMBAUM =
   'Stammbaum: Personen, Beziehungen und Generationen – in der Demo mit Beispieldaten.'
 
 export const MUSTER_HINT_NAV_EVENTS =
-  'Events: Termine und Einladungen – später für eure Familie, hier zum Ansehen.'
+  'Events verwalten: Termine anlegen und bearbeiten – Kalender-Ansicht zeigt dasselbe im Monatsraster (Button daneben).'
 
 export const MUSTER_HINT_NAV_KALENDER =
-  'Kalender: Jahr und Monat im Überblick – zusammen mit Events gedacht.'
+  'Kalender-Ansicht: Jahr und Monat im Raster – Events verwalten ist ein Klick daneben, keine zweite Welt.'
 
 export const MUSTER_HINT_NAV_GESCHICHTE =
   'Geschichten & Gedenkort: gemeinsame Texte und Erinnerungsorte.'

@@ -1,11 +1,15 @@
 # Dialog-Stand
 
-**Letzter Stand:** 16.04.26 – **K2 Familie Huber: existenziell statt Produktvergleich** – Leitfaden + **`10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md`:** kein **Galerie**/**Demo**/**Verein**-Vergleich; Kern **Zugehörigkeit, gemeinsame Zeit, Erinnerung, Grenzen, Genom**; Formulierungen **Beispiel** statt „Demo“ wo sichtbar; Toolbar + **`MUSTER_HINT_TOOLBAR_DEMO_ENDE`** angepasst. **Tests + Build** grün. **Commit:** **`16b346cb`** ✅ GitHub
+**Letzter Stand:** 16.04.26 – **Huber-Leitfaden: Events & Kalender erklärt** – Schritt **`events-kalender`**: **ein Thema, zwei Seiten** wie Subnav (**Events verwalten** / **Kalender-Ansicht**); Button **„Zu Events verwalten“**; Nav-Hover **`MUSTER_HINT_NAV_*`** angeglichen. **Tests + Build** grün. **Commit:** _(nach Push eintragen)_
 
 ---
-**Was wir JETZT tun:** Muster **`?t=huber`** – Leitfaden lesen: wirkt **Menschen-Thema** statt Feature-Liste?
+**Was wir JETZT tun:** Muster **`?t=huber`** – Leitfaden-Schritt **Events & Kalender** + Seite Events/Kalender: **zwei Buttons** = **keine zwei Welten**.
 
-**Einordnung:** Georg: Es geht um **was Familien im Kern bewegt** – nicht um „was K2 Familie alles kann“.
+**Einordnung:** Verwirrung kam von **Kalender** im Text vs. nur **Events-Link** – jetzt **gleiche Begriffe** wie in der Oberfläche. **Weiter:** Huber-Leitfaden soll **Menschen-Thema** wirken, nicht nur Feature-Liste.
+
+---
+
+**Letzter Stand:** 16.04.26 – **K2 Familie Huber: existenziell statt Produktvergleich** – Leitfaden + **`10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md`:** kein **Galerie**/**Demo**/**Verein**-Vergleich; Kern **Zugehörigkeit, gemeinsame Zeit, Erinnerung, Grenzen, Genom**; Formulierungen **Beispiel** statt „Demo“ wo sichtbar; Toolbar + **`MUSTER_HINT_TOOLBAR_DEMO_ENDE`** angepasst. **Tests + Build** grün. **Commit:** **`16b346cb`** ✅ GitHub
 
 ---
 
