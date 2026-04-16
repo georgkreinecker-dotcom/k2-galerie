@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 16.04.26 – **K2 Familie Nav:** Button/Leiste **Geschichte** → **Geschichten 😉** (Nav, Start-Kachel, Leitstruktur); Konstante **`k2FamilieNavLabels.ts`**. **Tests** grün. **Commit:** **`f3443248`** ✅ GitHub
+
+---
+
 **Letzter Stand:** 16.04.26 – **K2 Familie Geschichte: Text aus Word einfügen** – Hinweis unter dem Inhaltsfeld (Klartext, Markdown für Überschriften); Paste nutzt **text/plain**. Handbuch **06-EVENTS-GESCHICHTE…** ergänzt. **Tests** grün. **Commit:** **`52139a02`** ✅ GitHub
 
 ---
