@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 16.04.26 – **K2 Familie Muster: Toolbar „Leitfaden“ → „Rundgang“** – Sichtbarer Button wie Modal/Chip/Hint (**Rundgang**). **Commit:** **`341b16d5`** ✅ GitHub
+
+---
+
 **Letzter Stand:** 16.04.26 – **Huber-Leitfaden: Gedenkort-Feinschliff** – Eigener Rundgang-Schritt **Gedenkort** mit **zusätzlichem** Absatz (still/kleiner Moment vs. fester Platz im Jahr; **gut tun** statt Pflicht); **Einstellungen**-Text präziser (Rollen, Orientierung); **MUSTER_HINT** Geschichten/Gedenkort getrennt; **Drehbuch** Phase 3 um zwei Schritte; Test **`gedenkort`**-Schritt. **Tests + build:vercel** grün. **Commit:** **`1dbc2566`** ✅ GitHub
 
 ---
@@ -11,9 +15,9 @@
 **Letzter Stand:** 16.04.26 – **Huber-Leitfaden: inhaltlich durchgängig** – Analyse: Startseite **Kacheln** vs **reduzierte Leiste**, **Events/Kalender** = Leiste **zwei** Einträge + **Subnav** unter der Leiste; **Geschichten/Gedenkort** = **zwei** Menüpunkte, Link-Schritt nur Geschichten. Texte in **`FamilieMusterHuberLeitfaden`**, Drehbuch **`10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md`** Phase 3 ergänzt. **Tests** grün. **Commit:** **`5249866e`** ✅ GitHub
 
 ---
-**Was wir JETZT tun:** Muster **`?t=huber`** – Rundgang **Gedenkort**-Schritt lesen (Feinschliff); optional **Vercel** nach Deploy.
+**Was wir JETZT tun:** Bei Bedarf weitere sichtbare Texte **Leitfaden** → **Rundgang** (Doku/Präsentation); sonst nächster inhaltliche Schritt nach Georg.
 
-**Einordnung:** **Geschichten** = Erzählen; **Gedenkort** = still, würdig, ohne Druck – im Leitfaden **eigener** Schritt.
+**Einordnung:** Nutzerbegriff **Rundgang** = einheitlich mit Modal und Hinweisen; technische Namen (`data-leitfaden-focus`, Komponente) unverändert.
 
 ---
 
