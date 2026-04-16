@@ -3,9 +3,16 @@
  * Route: /projects/k2-familie/events
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import '../App.css'
-import { loadEvents, saveEvents, loadPersonen } from '../utils/familieStorage'
+import { loadEvents, saveEvents, loadPersonen, loadEinstellungen } from '../utils/familieStorage'
+import {
+  filterPersonenFuerFamilienEventTeilnehmer,
+  sortPersonenFuerFamilienEventTeilnehmer,
+  type FamilieTeilnehmerGruppe,
+  type FamilieTeilnehmerSortierung,
+} from '../utils/familieEventTeilnehmerAuswahl'
+import { groupPersonenNachVerwandtschaftFuerEvent } from '../utils/familieEventVerwandtschaftKategorie'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
 import type { K2FamilieEvent } from '../types/k2Familie'
@@ -25,11 +32,39 @@ export default function K2FamilieEventsPage() {
   const [date, setDate] = useState('')
   const [participantIds, setParticipantIds] = useState<string[]>([])
   const [note, setNote] = useState('')
+  const [teilnehmerGruppe, setTeilnehmerGruppe] = useState<FamilieTeilnehmerGruppe>('alle')
+  const [teilnehmerSortierung, setTeilnehmerSortierung] = useState<FamilieTeilnehmerSortierung>('name')
 
   useEffect(() => {
     setEvents(loadEvents(currentTenantId))
     setPersonen(loadPersonen(currentTenantId))
   }, [currentTenantId, familieStorageRevision])
+
+  const ichBinPersonId = useMemo(
+    () => loadEinstellungen(currentTenantId).ichBinPersonId,
+    [currentTenantId, familieStorageRevision]
+  )
+
+  const ichBinPerson = useMemo(
+    () => (ichBinPersonId ? personen.find((p) => p.id === ichBinPersonId) : undefined),
+    [personen, ichBinPersonId]
+  )
+  const elternAnzahl = (ichBinPerson?.parentIds ?? []).filter(Boolean).length
+
+  const teilnehmerGefiltert = useMemo(
+    () => filterPersonenFuerFamilienEventTeilnehmer(personen, ichBinPersonId, teilnehmerGruppe),
+    [personen, ichBinPersonId, teilnehmerGruppe]
+  )
+
+  const teilnehmerListe = useMemo(
+    () => sortPersonenFuerFamilienEventTeilnehmer(teilnehmerGefiltert, ichBinPersonId, teilnehmerSortierung),
+    [teilnehmerGefiltert, ichBinPersonId, teilnehmerSortierung]
+  )
+
+  const teilnehmerVerwandtschaftGruppen = useMemo(() => {
+    if (teilnehmerSortierung !== 'verwandtschaft') return null
+    return groupPersonenNachVerwandtschaftFuerEvent(teilnehmerGefiltert, ichBinPersonId)
+  }, [teilnehmerGefiltert, ichBinPersonId, teilnehmerSortierung])
 
   const getPersonName = (personId: string) => personen.find((p) => p.id === personId)?.name ?? personId
 
@@ -40,6 +75,8 @@ export default function K2FamilieEventsPage() {
     setDate('')
     setParticipantIds([])
     setNote('')
+    setTeilnehmerGruppe('alle')
+    setTeilnehmerSortierung('name')
   }
   const openEdit = (e: K2FamilieEvent) => {
     if (!kannOrganisch) return
@@ -48,6 +85,8 @@ export default function K2FamilieEventsPage() {
     setDate(e.date)
     setParticipantIds([...e.participantIds])
     setNote(e.note ?? '')
+    setTeilnehmerGruppe('alle')
+    setTeilnehmerSortierung('name')
   }
   const save = () => {
     if (!kannOrganisch) return
@@ -131,14 +170,114 @@ export default function K2FamilieEventsPage() {
             <div className="field" style={{ marginTop: '0.5rem' }}><label className="meta">Datum</label><input type="date" value={date} onChange={(e) => setDate(e.target.value)} disabled={!kannOrganisch} /></div>
             <div className="field" style={{ marginTop: '0.5rem' }}>
               <label className="meta">Teilnehmer (aus Familie)</label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.35rem' }}>
-                {personen.map((p) => (
-                  <label key={p.id} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer', fontSize: '0.9rem' }}>
-                    <input type="checkbox" checked={participantIds.includes(p.id)} onChange={() => toggleParticipant(p.id)} disabled={!kannOrganisch} />
-                    <span>{p.name}</span>
-                  </label>
+              <p className="meta" style={{ margin: '0.25rem 0 0.5rem', lineHeight: 1.45 }}>
+                Mütterliche und väterliche Seite richten sich nach der Reihenfolge der Eltern auf deiner Karte: erster Eintrag = mütterliche Seite, zweiter = väterliche – unabhängig von Biologie.
+              </p>
+              {!ichBinPersonId?.trim() && (
+                <p className="meta" style={{ margin: '0 0 0.5rem', color: '#8b4513' }}>
+                  Ohne „Das bin ich“ in den Einstellungen sind Filter und Sortierung nach Verwandtschaft eingeschränkt; es werden alle Personen angezeigt.
+                </p>
+              )}
+              {ichBinPersonId && elternAnzahl < 2 && teilnehmerGruppe === 'vaterlich' && (
+                <p className="meta" style={{ margin: '0 0 0.5rem', color: '#8b4513' }}>
+                  Für die väterliche Seite braucht deine Karte zwei Eltern. Bis dahin siehst du hier alle Personen.
+                </p>
+              )}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <span className="meta" style={{ marginRight: '0.25rem' }}>Anzeige:</span>
+                {(
+                  [
+                    { id: 'alle' as const, label: 'Alle' },
+                    { id: 'muetterlich' as const, label: 'Mütterliche Seite' },
+                    { id: 'vaterlich' as const, label: 'Väterliche Seite' },
+                  ] as const
+                ).map(({ id, label }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    className={teilnehmerGruppe === id ? 'btn' : 'btn-outline'}
+                    style={{ fontSize: '0.85rem', padding: '0.25rem 0.5rem' }}
+                    disabled={!kannOrganisch}
+                    onClick={() => setTeilnehmerGruppe(id)}
+                  >
+                    {label}
+                  </button>
                 ))}
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <span className="meta" style={{ marginRight: '0.25rem' }}>Sortierung:</span>
+                {(
+                  [
+                    { id: 'name' as const, label: 'Nach Namen' },
+                    { id: 'verwandtschaft' as const, label: 'Nach Verwandtschaft' },
+                  ] as const
+                ).map(({ id, label }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    className={teilnehmerSortierung === id ? 'btn' : 'btn-outline'}
+                    style={{ fontSize: '0.85rem', padding: '0.25rem 0.5rem' }}
+                    disabled={!kannOrganisch}
+                    onClick={() => setTeilnehmerSortierung(id)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              {teilnehmerSortierung === 'verwandtschaft' && (
+                <p className="meta" style={{ margin: '0 0 0.5rem', lineHeight: 1.45 }}>
+                  Gruppen wie Geschwister, Onkel/Tanten, Cousinen/Cousins, Neffen/Nichten – aus den Kartenbeziehungen; innerhalb jeder Gruppe alphabetisch.
+                </p>
+              )}
+              <div style={{ marginTop: '0.35rem' }}>
+                {teilnehmerSortierung === 'verwandtschaft' &&
+                teilnehmerVerwandtschaftGruppen &&
+                teilnehmerVerwandtschaftGruppen.length > 0 ? (
+                  teilnehmerVerwandtschaftGruppen.map((gr) => (
+                    <div key={gr.id} style={{ marginBottom: '0.85rem' }}>
+                      <div
+                        className="meta"
+                        style={{
+                          fontWeight: 600,
+                          color: '#1c1a18',
+                          marginBottom: '0.35rem',
+                          fontSize: '0.88rem',
+                        }}
+                      >
+                        {gr.titel}
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        {gr.personen.map((p) => (
+                          <label
+                            key={p.id}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer', fontSize: '0.9rem' }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={participantIds.includes(p.id)}
+                              onChange={() => toggleParticipant(p.id)}
+                              disabled={!kannOrganisch}
+                            />
+                            <span>{p.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    {teilnehmerListe.map((p) => (
+                      <label key={p.id} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer', fontSize: '0.9rem' }}>
+                        <input type="checkbox" checked={participantIds.includes(p.id)} onChange={() => toggleParticipant(p.id)} disabled={!kannOrganisch} />
+                        <span>{p.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
                 {personen.length === 0 && <span className="meta">Zuerst Personen im Stammbaum anlegen.</span>}
+                {personen.length > 0 && teilnehmerListe.length === 0 && (
+                  <span className="meta">Keine Personen in diesem Filter – andere Anzeige wählen.</span>
+                )}
               </div>
             </div>
             <div className="field" style={{ marginTop: '0.5rem' }}><label className="meta">Notiz (optional)</label><textarea value={note} onChange={(e) => setNote(e.target.value)} style={{ minHeight: 60 }} placeholder="Ort, Hinweise …" disabled={!kannOrganisch} /></div>
