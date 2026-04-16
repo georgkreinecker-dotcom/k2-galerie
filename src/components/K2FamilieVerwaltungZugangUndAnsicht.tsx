@@ -8,7 +8,7 @@ import { useMemo, useState, useEffect, useRef, useCallback } from 'react'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { adminTheme } from '../config/theme'
-import { APP_BASE_URL } from '../config/externalUrls'
+import { APP_BASE_URL_SHAREABLE } from '../config/externalUrls'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
@@ -147,7 +147,7 @@ export default function K2FamilieVerwaltungZugangUndAnsicht() {
   const familieEinladungsUrlCanonical = useMemo(() => {
     const z = mitgliedsNummer.trim()
     if (!z) return ''
-    const base = new URL(`${APP_BASE_URL}${familieR.meineFamilie}`)
+    const base = new URL(`${APP_BASE_URL_SHAREABLE}${familieR.meineFamilie}`)
     base.searchParams.set('t', currentTenantId)
     base.searchParams.set('z', z)
     const fn = familienAnzeigenameFuerEinladung
@@ -164,7 +164,7 @@ export default function K2FamilieVerwaltungZugangUndAnsicht() {
     const z = mitgliedsNummer.trim()
     const m = persoenlicheMitgliedsNummerAufKarte
     if (!z || !m) return ''
-    const base = new URL(`${APP_BASE_URL}${familieR.meineFamilie}`)
+    const base = new URL(`${APP_BASE_URL_SHAREABLE}${familieR.meineFamilie}`)
     base.searchParams.set('t', currentTenantId)
     base.searchParams.set('z', z)
     base.searchParams.set('m', m)

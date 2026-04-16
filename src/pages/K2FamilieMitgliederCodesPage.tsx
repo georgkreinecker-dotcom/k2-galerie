@@ -10,7 +10,7 @@ import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { adminTheme } from '../config/theme'
-import { APP_BASE_URL } from '../config/externalUrls'
+import { APP_BASE_URL_SHAREABLE } from '../config/externalUrls'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
 import { loadEinstellungen, loadPersonen, savePersonen } from '../utils/familieStorage'
@@ -30,7 +30,7 @@ function buildPersonalEinladungsUrl(
   mitgliedsNummer: string,
   versionTs: number,
 ): string {
-  const base = new URL(`${APP_BASE_URL}${R.meineFamilie}`)
+  const base = new URL(`${APP_BASE_URL_SHAREABLE}${R.meineFamilie}`)
   base.searchParams.set('t', tenantId)
   base.searchParams.set('z', familienZ)
   base.searchParams.set('m', mitgliedsNummer)
@@ -43,7 +43,7 @@ function buildShortEinladungsUrlForPrint(
   familienZ: string,
   mitgliedsNummer: string,
 ): string {
-  const base = new URL(`${APP_BASE_URL}${R.meineFamilie}`)
+  const base = new URL(`${APP_BASE_URL_SHAREABLE}${R.meineFamilie}`)
   base.searchParams.set('t', tenantId)
   base.searchParams.set('z', familienZ)
   base.searchParams.set('m', mitgliedsNummer)

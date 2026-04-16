@@ -672,11 +672,8 @@ type FamilieNavItem = {
 const FAMILIE_NAV: FamilieNavItem[] = [
   { to: K2_FAMILIE_APP_SHORT_PATH, label: 'Meine Familie' },
   { to: familieRoutes.stammbaum, label: 'Stammbaum' },
-  {
-    to: familieRoutes.events,
-    label: 'Events & Kalender',
-    activePrefixes: [familieRoutes.events, familieRoutes.kalender],
-  },
+  { to: familieRoutes.events, label: 'Events' },
+  { to: familieRoutes.kalender, label: 'Kalender' },
   { to: familieRoutes.geschichte, label: 'Geschichte' },
   { to: familieRoutes.gedenkort, label: 'Gedenkort' },
   /** Zugang, Sicherung, Lizenz, Kurzlinks Handbuch & Präsentation */

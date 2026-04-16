@@ -16,6 +16,8 @@ import { groupPersonenNachVerwandtschaftFuerEvent } from '../utils/familieEventV
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
 import type { K2FamilieEvent } from '../types/k2Familie'
+import { K2FamilieEventKalenderSubnav } from '../components/K2FamilieEventKalenderSubnav'
+import { todayIsoLocal } from '../utils/familieKalenderDatum'
 
 function generateEventId(): string {
   return 'event-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9)
@@ -129,7 +131,34 @@ export default function K2FamilieEventsPage() {
     setParticipantIds((prev) => (prev.includes(personId) ? prev.filter((id) => id !== personId) : [...prev, personId]))
   }
 
-  const sortedEvents = [...events].sort((a, b) => a.date.localeCompare(b.date))
+  const heute = todayIsoLocal()
+  const kommend = useMemo(
+    () => [...events].filter((e) => e.date >= heute).sort((a, b) => a.date.localeCompare(b.date)),
+    [events, heute]
+  )
+  const archiv = useMemo(
+    () => [...events].filter((e) => e.date < heute).sort((a, b) => b.date.localeCompare(a.date)),
+    [events, heute]
+  )
+
+  const renderEventCard = (ev: K2FamilieEvent, i: number) => (
+    <li key={ev.id} className="card familie-card-enter" style={{ marginBottom: '0.75rem', animationDelay: `${i * 0.05}s` }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+        <div>
+          <h2 style={{ margin: 0, fontSize: '1rem' }}>{ev.title}</h2>
+          <span className="meta" style={{ marginLeft: '0.5rem' }}>{ev.date}</span>
+          {ev.participantIds.length > 0 && (
+            <p className="meta" style={{ margin: '0.35rem 0 0' }}>{ev.participantIds.map((id) => getPersonName(id)).join(', ')}</p>
+          )}
+          {ev.note && <p style={{ margin: '0.25rem 0 0' }}>{ev.note}</p>}
+        </div>
+        <div className="card-actions" style={{ display: 'flex', gap: '0.35rem' }}>
+          <button type="button" className="btn" disabled={!kannOrganisch} onClick={() => openEdit(ev)}>Bearbeiten</button>
+          <button type="button" className="btn-outline danger" disabled={!kannOrganisch} onClick={() => remove(ev.id)}>Löschen</button>
+        </div>
+      </div>
+    </li>
+  )
 
   return (
     <div className="mission-wrapper">
@@ -141,27 +170,30 @@ export default function K2FamilieEventsPage() {
           </div>
         </header>
 
-        {sortedEvents.length > 0 && (
-          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 1rem' }}>
-            {sortedEvents.map((ev, i) => (
-              <li key={ev.id} className="card familie-card-enter" style={{ marginBottom: '0.75rem', animationDelay: `${i * 0.05}s` }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-                  <div>
-                    <h2 style={{ margin: 0, fontSize: '1rem' }}>{ev.title}</h2>
-                    <span className="meta" style={{ marginLeft: '0.5rem' }}>{ev.date}</span>
-                    {ev.participantIds.length > 0 && (
-                      <p className="meta" style={{ margin: '0.35rem 0 0' }}>{ev.participantIds.map((id) => getPersonName(id)).join(', ')}</p>
-                    )}
-                    {ev.note && <p style={{ margin: '0.25rem 0 0' }}>{ev.note}</p>}
-                  </div>
-                  <div className="card-actions" style={{ display: 'flex', gap: '0.35rem' }}>
-                    <button type="button" className="btn" disabled={!kannOrganisch} onClick={() => openEdit(ev)}>Bearbeiten</button>
-                    <button type="button" className="btn-outline danger" disabled={!kannOrganisch} onClick={() => remove(ev.id)}>Löschen</button>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
+        <K2FamilieEventKalenderSubnav />
+
+        {kommend.length > 0 && (
+          <>
+            <h2 style={{ fontSize: '1rem', margin: '0 0 0.5rem', color: '#1c1a18' }}>Demnächst</h2>
+            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 1rem' }}>
+              {kommend.map((ev, i) => renderEventCard(ev, i))}
+            </ul>
+          </>
+        )}
+
+        {archiv.length > 0 && (
+          <details className="card" style={{ padding: '1rem', marginBottom: '1rem' }}>
+            <summary style={{ cursor: 'pointer', fontWeight: 600, color: '#1c1a18' }}>
+              Archiv (vergangene Events){archiv.length > 0 ? ` – ${archiv.length}` : ''}
+            </summary>
+            <ul style={{ listStyle: 'none', padding: 0, margin: '0.75rem 0 0' }}>
+              {archiv.map((ev, i) => renderEventCard(ev, kommend.length + i))}
+            </ul>
+          </details>
+        )}
+
+        {events.length === 0 && (
+          <p className="meta" style={{ margin: '0 0 1rem' }}>Noch keine Events – unten ein neues anlegen oder die Kalender-Ansicht öffnen.</p>
         )}
 
         {editingId ? (
