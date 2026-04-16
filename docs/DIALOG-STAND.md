@@ -1,6 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 16.04.26 – **Konzept: Plattform-Rundgang ök2 + VK2 (parallel)** – **`docs/KONZEPT-PLATTFORM-RUNDGANG-OEK2-VK2.md`:** gemeinsames **Framework** (Shell, Fokus, Schritte), **ohne Audio-Standard**; getrennte Stränge **Demo ök2** / **Demo VK2**; Hover-Attribute später `data-oek2-demo-hint` / `data-vk2-demo-hint`; Phasen A–E; Eintrag in **`docs/00-INDEX.md`**. Nächster Schritt: **Abnahme Konzept**, dann Shell/Implementierung nach Phasen. **Commit:** **`e3fefab1`** ✅ auf GitHub (Konzeptdatei + 00-INDEX)
+**Letzter Stand:** 16.04.26 – **Plattform-Rundgang: VK2-Sheet + ök2-Schritte (nur Guide)** – **`Vk2GalerieLeitfadenModal`** wie ök2-Sheet; Schritte **`vk2GalerieLeitfadenSteps`** / **`oek2GalerieLeitfadenSteps`**; Fokus **`data-oek2-` / `data-vk2-leitfaden-focus`** in **`familieLeitfadenFocus`**; **`Vk2GaleriePage`**: Rundgang nur Plattform ohne Admin/Vorschau; Test **`vk2GalerieLeitfadenSteps.test.ts`**. Keine K2-Familie-Entdecken/Layout-Änderungen in diesem Commit (liegen noch lokal). **Tests + Build** grün. **Commit:** **`2449b3f7`** ✅ auf GitHub
+
+---
+
+**Letzter Stand:** 16.04.26 – **Konzept: Plattform-Rundgang ök2 + VK2 (parallel)** – **`docs/KONZEPT-PLATTFORM-RUNDGANG-OEK2-VK2.md`:** gemeinsames **Framework** (Shell, Fokus, Schritte), **ohne Audio-Standard**; getrennte Stränge **Demo ök2** / **Demo VK2**; Hover-Attribute später `data-oek2-demo-hint` / `data-vk2-demo-hint`; Phasen A–E; Eintrag in **`docs/00-INDEX.md`**. **Commit:** **`e3fefab1`** ✅ auf GitHub (Konzeptdatei + 00-INDEX)
 
 ---
 
@@ -27,9 +31,9 @@
 **Letzter Stand:** 16.04.26 – **Huber-Leitfaden: inhaltlich durchgängig** – Analyse: Startseite **Kacheln** vs **reduzierte Leiste**, **Events/Kalender** = Leiste **zwei** Einträge + **Subnav** unter der Leiste; **Geschichten/Gedenkort** = **zwei** Menüpunkte, Link-Schritt nur Geschichten. Texte in **`FamilieMusterHuberLeitfaden`**, Drehbuch **`10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md`** Phase 3 ergänzt. **Tests** grün. **Commit:** **`5249866e`** ✅ GitHub
 
 ---
-**Was wir JETZT tun:** **Konzept** in **`KONZEPT-PLATTFORM-RUNDGANG-OEK2-VK2.md`** lesen und **abnehmen** (oder Anpassungen nennen). Optional: Vercel ök2 kurz gegenprüfen (kein Vollbanner, Rundgang-Sheet).
+**Was wir JETZT tun:** Optional: **VK2-Galerie** auf **Plattform-Host** ohne `?vorschau=1` / ohne Admin – **Rundgang**, Fokus-Highlights, Schließen kurz prüfen. Offen lokal (nicht im Commit **`2449b3f7`**): Entdecken/K2-Familie-Layout/Präsentationsmappe – separat committen oder verwerfen.
 
-**Einordnung:** **Eine Plattform-Idee**, **zwei Demos** (ök2 / VK2): gleiche technische Schale, **getrennte** Inhalte und Keys; K2-Familie-Rundgang = Referenz für Shell/Fokus, **nicht** 1:1 kopieren; **VK2** Rundgang-Sheet folgt nach Abnahme (Phasen B–E in der Konzept-Datei).
+**Einordnung:** Plattform-Rundgang **nur Guide** (Sheet, Schritte, Session/Keys für Bounds) – **keine** Galerie-Logik geändert. Konzept **`KONZEPT-PLATTFORM-RUNDGANG-OEK2-VK2.md`** weiterhin Referenz für nächste Phasen (Hover-Hints …).
 
 ---
 
