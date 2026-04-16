@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 16.04.26 – **K2 Familie Muster: Hover funktioniert mit offenem Leitfaden** – Ursache: Vollbild-Backdrop fing die Maus ab. **Fix:** Backdrop **`pointer-events: none`**, Panel **`pointer-events: auto`**; **Escape** global für Minimieren; Kurztext im Panel. **Commit:** _(nach Push)_
+**Letzter Stand:** 16.04.26 – **K2 Familie Muster: Hover funktioniert mit offenem Leitfaden** – Ursache: Vollbild-Backdrop fing die Maus ab. **Fix:** Backdrop **`pointer-events: none`**, Panel **`pointer-events: auto`**; **Escape** global für Minimieren; Kurztext im Panel. **Commit:** **`145e5c54`** ✅ GitHub
 
 ---
 
