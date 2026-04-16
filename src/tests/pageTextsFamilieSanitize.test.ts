@@ -32,6 +32,6 @@ describe('getFamilyPageTexts – Huber-Muster nicht unter fremder tenantId', () 
       'k2-familie-huber-page-texts',
       JSON.stringify({ welcomeTitle: 'Familie Huber' }),
     )
-    expect(getFamilyPageTexts('huber').welcomeTitle).toBe('Familie Huber')
+    expect(getFamilyPageTexts('huber').welcomeTitle).toBe('Musterfamilie Huber')
   })
 })

@@ -84,7 +84,7 @@ export default function K2FamilieStartPage() {
           <button type="button" className="btn" onClick={handleLoadMusterfamilie} style={{ background: 'rgba(20,184,166,0.25)', border: '1px solid rgba(20,184,166,0.6)', color: '#14b8a6' }}>
             → Musterfamilie Huber laden und anzeigen
           </button>
-          {seedDone && <p className="meta" style={{ marginTop: '0.5rem', color: 'rgba(20,184,166,0.9)' }}>Familie Huber geladen. Du siehst jetzt die Startseite der Familie Huber.</p>}
+          {seedDone && <p className="meta" style={{ marginTop: '0.5rem', color: 'rgba(20,184,166,0.9)' }}>Musterfamilie Huber geladen. Du siehst jetzt die Startseite der Musterfamilie Huber.</p>}
         </div>
 
         <div className="card">

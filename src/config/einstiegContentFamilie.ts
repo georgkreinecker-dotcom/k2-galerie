@@ -22,7 +22,7 @@ const SLOGAN_HEADLINE = PRODUCT_K2_FAMILIE_WERBESLOGAN.replace(/\s*\.$/, '')
 /** Nur sichtbar bei Mandant „huber“ (Musterfamilie) – Umschauen ohne eigene Daten. */
 const DEFAULT_EINSTIEG_TEXTS: FamilieEinstiegTexts = {
   title: `${SLOGAN_HEADLINE} · Musterfamilie`,
-  subtitle: `${PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ} Demo: Familie Huber.`,
+  subtitle: `${PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ} Demo: Musterfamilie Huber.`,
   body:
     'Hier kannst du ohne eigene Daten stöbern: Stammbaum, Kalender und mehr. Eure eigene Familie schaltet ihr frei mit einem Einladungs-Link von einer Inhaber:in oder einem Mitglied – nicht über diese Umschauen-Sitzung. Der echte Familienraum bleibt privat: hinein kommst du nur mit deiner persönlichen ID auf der Karte.',
   ctaLabel: 'Weiter zur Übersicht',

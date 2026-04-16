@@ -1,6 +1,6 @@
 /**
  * Route „Meine Familie“ ohne Einladungs-/Demo-Query: **Muster-Sitzung beenden** (überall),
- * damit wieder alle Mandanten wählbar sind – nicht nur „Familie Huber“.
+ * damit wieder alle Mandanten wählbar sind – nicht nur „Musterfamilie Huber“.
  *
  * Zusätzlich nur auf **localhost (APf)**: Stammfamilie Kreinecker aus VITE/Anzeigename wählen.
  *

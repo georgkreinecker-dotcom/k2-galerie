@@ -21,10 +21,10 @@ export const MUSTER_HINT_NAV_KALENDER =
   'Kalender-Ansicht: Jahr und Monat im Raster – Events verwalten ist ein Klick daneben, keine zweite Welt.'
 
 export const MUSTER_HINT_NAV_GESCHICHTE =
-  'Geschichten & Gedenkort: gemeinsame Texte und Erinnerungsorte.'
+  'Geschichten: längere Texte und Familiengeschichte – sammeln, ordnen, bei Bedarf drucken.'
 
 export const MUSTER_HINT_NAV_GEDENKORT =
-  'Gedenkort: Ort oder Raum der Erinnerung – in der Demo zum Durchklicken.'
+  'Gedenkort: für die, die euch vorausgegangen sind – Blume, Kerze, stiller Text oder Foto, würdig und zurückhaltend.'
 
 export const MUSTER_HINT_NAV_EINSTELLUNGEN =
   'Einstellungen: Zugang, Rolle, Lizenz – in echter Familie zentral, in der Demo nur Orientierung.'

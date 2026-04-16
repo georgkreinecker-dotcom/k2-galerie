@@ -46,6 +46,7 @@
 
 - **Startseite:** große **Kacheln** zu Stammbaum, Events & Kalender, Geschichten, Gedenkort; die **volle Menüleiste** mit allen Punkten kommt, sobald man **in einen Bereich** gewechselt hat.
 - **Events vs. Kalender:** in der Leiste **zwei** Einträge, **ein** Terminbestand; **unter** der Leiste auf Events/Kalender-Seite noch **Events verwalten** / **Kalender-Ansicht** zum schnellen Wechsel der **Ansicht**.
+- **Geschichten** und **Gedenkort:** im Leitfaden **zwei** eigene Schritte – **Erzählen** einerseits, **stillen Gedenkort** andererseits („Die uns vorausgegangen sind“).
 - Stammbaum, ein Event – **kurz**, je nach Aufmerksamkeit.
 
 [SEITENUMBRUCH]

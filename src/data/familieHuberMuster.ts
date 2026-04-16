@@ -6,12 +6,21 @@
  */
 
 import type { K2FamiliePerson, K2FamilieEvent, K2FamilieMoment } from '../types/k2Familie'
-import { savePersonen, saveEvents, saveMomente, loadEinstellungen } from '../utils/familieStorage'
+import {
+  savePersonen,
+  saveEvents,
+  saveMomente,
+  loadEinstellungen,
+  saveEinstellungen,
+} from '../utils/familieStorage'
 import { assignMissingMitgliedsNummern } from '../utils/familieMitgliedsNummer'
 import { setFamilyPageTexts } from '../config/pageTextsFamilie'
 import { setFamilyPageContent } from '../config/pageContentFamilie'
 
 export const FAMILIE_HUBER_TENANT_ID = 'huber'
+
+/** Muster-Demo: Inhaber und „Du“ = Stefan Huber (Personen-ID), konsistent zur UI-Leiste. */
+export const FAMILIE_HUBER_INHABER_PERSON_ID = 'stefan'
 
 /**
  * Anzeigename für Tenant im Dropdown und Überschriften.
@@ -21,7 +30,7 @@ export const FAMILIE_HUBER_TENANT_ID = 'huber'
 export function getFamilieTenantDisplayName(tenantId: string, defaultLabel: string = 'Standard'): string {
   const stored = loadEinstellungen(tenantId).familyDisplayName?.trim()
   if (stored) return stored
-  if (tenantId === FAMILIE_HUBER_TENANT_ID) return 'Familie Huber'
+  if (tenantId === FAMILIE_HUBER_TENANT_ID) return 'Musterfamilie Huber'
   if (tenantId === 'default') return defaultLabel
   if (/^familie-\d+$/.test(tenantId)) return 'Neue Familie (Name unten eintragen)'
   return tenantId
@@ -141,8 +150,19 @@ export function seedFamilieHuber(): boolean {
   if (!saveEvents(tenantId, events, { allowReduce: true })) return false
   if (!saveMomente(tenantId, momente, { allowReduce: true })) return false
 
+  const einstPrev = loadEinstellungen(tenantId)
+  if (
+    !saveEinstellungen(tenantId, {
+      ...einstPrev,
+      inhaberPersonId: FAMILIE_HUBER_INHABER_PERSON_ID,
+      ichBinPersonId: FAMILIE_HUBER_INHABER_PERSON_ID,
+    })
+  ) {
+    return false
+  }
+
   setFamilyPageTexts(tenantId, {
-    welcomeTitle: 'Familie Huber',
+    welcomeTitle: 'Musterfamilie Huber',
     welcomeSubtitle: 'Vier Generationen – bunt und verbunden',
     introText: 'Paul und Antonia, ihre vier Kinder, sechs Enkelkinder und drei Urenkel. Eine Tochter lebt mit ihrer Lebenspartnerin Sophie und dem adoptierten Sohn Leon. Ein Jahr voller Feste, Geburtstage und gemeinsamer Momente.',
     buttonStammbaum: 'Stammbaum ansehen',

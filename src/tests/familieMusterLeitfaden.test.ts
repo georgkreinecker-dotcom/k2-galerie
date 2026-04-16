@@ -14,6 +14,7 @@ describe('FamilieMusterHuberLeitfaden', () => {
     expect(FAMILIE_MUSTER_LEITFADEN_SCHRITTE[0]?.id).toBe('begruessung')
     expect(FAMILIE_MUSTER_LEITFADEN_SCHRITTE[1]?.id).toBe('verkaufsversprechen')
     expect(FAMILIE_MUSTER_LEITFADEN_SCHRITTE[2]?.id).toBe('einordnung')
+    expect(FAMILIE_MUSTER_LEITFADEN_SCHRITTE.some((s) => s.id === 'gedenkort')).toBe(true)
     expect(FAMILIE_MUSTER_LEITFADEN_SCHRITTE[FAMILIE_MUSTER_LEITFADEN_SCHRITTE.length - 1]?.id).toBe('entscheid')
   })
 

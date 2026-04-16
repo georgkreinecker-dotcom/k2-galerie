@@ -28,3 +28,14 @@ export function isFamilieNurMusterSession(): boolean {
 export function clearFamilieNurMusterSession(): void {
   setFamilieNurMusterSession(false)
 }
+
+/** Layout (`K2FamilieLayout`) hört zu und öffnet den Huber-Leitfaden – z. B. Startseite „Leitfaden jetzt öffnen“. */
+export const K2_FAMILIE_OPEN_MUSTER_LEITFADEN_EVENT = 'k2-familie-open-muster-leitfaden'
+
+export function dispatchOpenMusterLeitfaden(): void {
+  try {
+    window.dispatchEvent(new CustomEvent(K2_FAMILIE_OPEN_MUSTER_LEITFADEN_EVENT))
+  } catch {
+    /* ignore */
+  }
+}

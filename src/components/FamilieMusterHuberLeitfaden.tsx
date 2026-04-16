@@ -123,7 +123,7 @@ export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
     titel: 'Bei den Hubers',
     stimmung: 'Ausgedacht – nur zum Ankommen in der Oberfläche.',
     body:
-      '**Alles hier ist Beispiel** – zum Durchklicken und Spüren. Wenn ihr **euren** Raum anlegt, ist das **euer** geschützter Familienraum – **nur** für euch gedacht.',
+      '**Alles hier ist Beispiel** – zum Durchklicken und Spüren. Wenn ihr **euren** Raum anlegt, ist das **euer** geschützter Familienraum – **nur** für euch gedacht, **in eurem** Tempo.',
   }),
   leitfadenStep({
     id: 'home',
@@ -159,20 +159,34 @@ export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
   }),
   leitfadenStep({
     id: 'geschichte',
-    titel: `${K2_FAMILIE_NAV_LABEL_GESCHICHTE} & Gedenkort`,
-    stimmung: 'Erzählen und Gedenken.',
+    titel: K2_FAMILIE_NAV_LABEL_GESCHICHTE,
+    stimmung: 'Erzählen, was bleiben soll.',
     body:
-      '**Geschichten** und **Gedenkort** sind in der **vollen** Menüleiste **zwei** **eigene** Punkte – **zwei** Einstiege. **Geschichten** = **Texte**; **Gedenkort** = **Ort** oder **Raum** der Erinnerung.\n\n' +
-      '**Dieser** Schritt öffnet **Geschichten**; **Gedenkort** erreicht ihr **oben** in der Leiste oder von **Meine Familie** aus **über die Kachel**.',
+      '**Geschichten** sind **eure** längeren Texte – **Familiengeschichte**, **Momente**, **was ihr teilen** oder **festhalten** wollt. Hier **ordnet** ihr sie und **druckt** bei Bedarf – **ohne** Zeitdruck.\n\n' +
+      '**Gedenkort** ist **der andere** Menüpunkt **daneben** in der **vollen** Leiste: **still** und **würdig** – dafür gibt es **gleich den nächsten Schritt** im Rundgang.',
     linkTo: R.geschichte,
     linkLabel: 'Zu Geschichten',
     focusKey: 'geschichte',
   }),
   leitfadenStep({
+    id: 'gedenkort',
+    titel: 'Gedenkort',
+    stimmung: 'Die uns vorausgegangen sind.',
+    body:
+      '**Hier** geht es **nicht** um **Alltag** und **Termine** – **sondern** um einen **Ort** der **Ruhe** und des **Respekts**. **Unter** der Überschrift **„Die uns vorausgegangen sind“** **erscheinen** die **Menschen**, die ihr im **Stammbaum** als **verstorben** führt.\n\n' +
+      '**Wer** möchte, kann **Blume**, **Kerze**, **einen kurzen Text** oder **ein Foto** hinterlegen – **für alle** in der **Familie** sichtbar oder **nur unter euch**, **wie** ihr es **braucht**.\n\n' +
+      '**Kein** Druck und **keine** Bewertung – **nur** Raum für **Erinnerung**, **so** wie **ihr** sie **euch** vorstellt.\n\n' +
+      '**Für** manche **Familien** ist das ein **kleiner** stiller **Moment**, **für** andere ein **fester** Platz im **Jahr** – **beides** ist **richtig**. **Was** ihr **hier** **tut**, **soll** **euch** **gut** **tun** – **mehr** braucht es **nicht**.',
+    linkTo: R.gedenkort,
+    linkLabel: 'Zum Gedenkort',
+    focusKey: 'gedenkort',
+  }),
+  leitfadenStep({
     id: 'einstellungen',
     titel: 'Einstellungen',
     stimmung: 'Wer darf was – bei euch.',
-    body: '**Einstellungen:** Einladungen und Rollen. In diesem Beispiel **ohne** echte Daten.',
+    body:
+      '**Einstellungen:** Einladungen, Rollen und **wer** was **darf** – zentral für **euren** echten Raum. In diesem Beispiel **ohne** echte Daten, **nur** zur **Orientierung**.',
     linkTo: R.einstellungen,
     linkLabel: 'Einstellungen öffnen',
     focusKey: 'einstellungen',
