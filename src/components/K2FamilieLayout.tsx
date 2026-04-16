@@ -216,7 +216,7 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
                   color: '#b54a1e',
                 }}
               >
-                Leitfaden
+                Rundgang
               </button>
               <button
                 type="button"
