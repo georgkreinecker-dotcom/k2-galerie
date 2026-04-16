@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 16.04.26 – **Huber-Leitfaden: Begrüßung + Verkaufsversprechen + Drehbuch** – Zwei neue Schritte vor der Huber-Demo (**Begrüßung K2 Familie**, **Mini-Präsentation Versprechen** aus Kurzprospekt); Kopfzeile dynamisch; Text **`\n\n`** als echte Absätze (`div`+`p`); APf-Tipp nur bei **`einordnung`**. Neu: **`public/k2-familie-praesentation/10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md`**, Index + **K2FamiliePraesentationsmappePage** (10 Kapitel). **Commit:** _(nach Push)_
+**Letzter Stand:** 16.04.26 – **Huber-Leitfaden: Begrüßung + Verkaufsversprechen + Drehbuch** – Zwei neue Schritte vor der Huber-Demo (**Begrüßung K2 Familie**, **Mini-Präsentation Versprechen** aus Kurzprospekt); Kopfzeile dynamisch; Text **`\n\n`** als echte Absätze (`div`+`p`); APf-Tipp nur bei **`einordnung`**. Neu: **`public/k2-familie-praesentation/10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md`**, Index + **K2FamiliePraesentationsmappePage** (10 Kapitel). **Commit:** **`021eb441`** ✅ GitHub
 
 ---
 
