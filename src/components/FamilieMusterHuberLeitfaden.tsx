@@ -82,117 +82,101 @@ export type FamilieMusterLeitfadenStep = {
   text: string
   linkTo?: string
   linkLabel?: string
-  /** Kurzer Sprechertext (Drehbuch Vertriebsmappe) – optional Vorlesen wie Hover-Hinweise. */
+  /** Gleicher Inhalt wie `text` – eine Quelle für Anzeige und Vorlesen (kein A/B-Text). */
   sprecherDrehbuch?: string
   /** UI-Fokus: `data-leitfaden-focus` + html-Attribut für Outline. */
   focusKey?: string
 }
 
+/** Ein Leitfaden-Schritt: `body` wird für Anzeige und Vorlesen identisch gesetzt. */
+function leitfadenStep(
+  base: Omit<FamilieMusterLeitfadenStep, 'text' | 'sprecherDrehbuch'> & { body: string },
+): FamilieMusterLeitfadenStep {
+  const { body, ...rest } = base
+  return { ...rest, text: body, sprecherDrehbuch: body }
+}
+
 export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
-  {
+  leitfadenStep({
     id: 'begruessung',
     titel: 'Herzlich willkommen bei K2 Familie',
-    stimmung: 'Wir freuen uns, dass du dich die Zeit nimmst – Familie, Erinnerung und Vertrauen gehören zusammen.',
-    text:
-      '**Herzlich willkommen** – schön, dass du da bist. **K2 Familie** ist gedacht als geschützter Raum für Beziehungen, gemeinsame Momente und würdevolle Erinnerung – **bewusst getrennt** von Galerie, öffentlicher Demo und Vereinswelten, damit ihr in Ruhe **eure** Geschichte pflegen könnt.\n\n' +
-      'Im **nächsten Schritt** halten wir unser **Versprechen** in wenigen klaren Sätzen fest – verständlich, ohne Schnörkel. Danach öffnen wir die **Musterfamilie Huber**: frei erfundene Beispiele, nur damit du spüren kannst, wie sich die App anfühlt – ganz ohne Druck.',
-    sprecherDrehbuch:
-      'Herzlich willkommen – es freut uns wirklich, dass Sie sich die Zeit nehmen. Wir beginnen mit zwei kurzen Karten: zuerst, was K2 Familie für uns bedeutet, dann unser Versprechen in fünf herzlichen, klaren Punkten. Danach schauen wir gemeinsam in eine Demo-Familie mit erfundenen Daten – nur damit Sie die App spüren können, ohne sensible Angaben zu zeigen. Wenn Sie möchten, gehen wir Schritt für Schritt weiter; ich begleite Sie mit Erklärungen, was Sie sehen.',
-  },
-  {
+    stimmung: 'Geschützter Raum für Familie – getrennt von Galerie, Demo und Verein.',
+    body:
+      '**K2 Familie** ist der geschützte Raum für Beziehungen, gemeinsame Momente und Erinnerung – **getrennt** von Galerie, öffentlicher Demo und Vereinswelten.\n\n' +
+      '**Genom:** Familiendaten werden nicht kommerziell verwertet – dauerhaft ausgeschlossen.\n\n' +
+      '**Musterfamilie Huber:** nur Beispieldaten.',
+  }),
+  leitfadenStep({
     id: 'verkaufsversprechen',
-    titel: 'Unser Versprechen an euch',
-    stimmung: 'Fünf Säulen – weil wir wissen, worauf es in Familien ankommt.',
-    text:
-      '**Vertrauen:** Beziehungen ergeben sich **nur aus den Karten** in der App – eine nachvollziehbare Wahrheit, kein Raten und kein Vermischen mit anderen Welten.\n\n' +
-      '**Ruhe:** **Eigene Schlüssel**, eigene Instanz – keine Vermischung mit Galerie-, Demo- oder Vereinsdaten.\n\n' +
-      '**Mitgestaltung:** Rollen, Einladungen, persönliche Zugänge – **familienintern** geregelt, klar wer was darf.\n\n' +
-      '**Erinnerung & Tiefe:** Momente, Kalender, Geschichten, **Gedenkort** – alles im gleichen respektvollen Produktgedanken.\n\n' +
-      '**Zukunftssicherheit:** **Genom** – Familiendaten werden **nicht** kommerziell verwertet; das ist für uns **dauerhaft** ausgeschlossen.\n\n' +
-      'Mehr zum Mitnehmen findet ihr in der Vertriebsmappe **K2 Familie** in der App. Als Nächstes: die **Huber-Demo** – zum Wohlfühlen und Ausprobieren.',
-    sprecherDrehbuch:
-      'Das hier ist kein Katalog zum Auswendiglernen – es sind fünf Säulen, mit denen wir ehrlich Vertrauen aufbauen wollen. Vertrauen: Beziehungen leiten wir nur aus den Karten ab – keine Vermutungen, keine zweite Wahrheit. Ruhe: eigene Schlüssel, eigene Instanz – nichts wird mit Galerie, Demo oder Vereinsdaten vermischt. Mitgestaltung: Rollen und Einladungen entscheiden Sie in Ihrer Familie. Erinnerung und Tiefe: Momente, Kalender, Geschichten, Gedenkort – alles in einem respektvollen Rahmen. Zukunftssicherheit beim Genom: Familiendaten werden bei uns nicht kommerziell verwertet – das ist dauerhaft ausgeschlossen. Wenn das für Sie stimmig klingt, gehen wir jetzt in die Familie Huber – komplett erfunden, nur damit Sie in Ruhe klicken und sich ein Bild machen können.',
-  },
-  {
+    titel: 'Was K2 Familie euch bietet',
+    stimmung: 'Vertrauen, Ruhe, Mitgestaltung, Erinnerung, Genom – in Kurzform.',
+    body:
+      '**Vertrauen:** Beziehungen nur aus den **Karten** in der App – keine Vermutungen, keine Vermischung mit anderen Welten.\n\n' +
+      '**Ruhe:** Eigene Instanz, eigene Schlüssel – nichts gemeinsam mit Galerie-, Demo- oder Vereinsdaten.\n\n' +
+      '**Mitgestaltung:** Rollen, Einladungen, Zugänge – in der Familie geregelt.\n\n' +
+      '**Erinnerung:** Momente, Kalender, Geschichten, **Gedenkort**.\n\n' +
+      '**Genom:** keine kommerzielle Verwertung der Familiendaten.',
+  }),
+  leitfadenStep({
     id: 'einordnung',
     titel: 'Herzlich willkommen bei den Hubers',
-    stimmung: 'Hier dürft ihr neugierig sein – es ist eine liebevoll gebaute Spielwiese.',
-    text:
-      'Du bist jetzt in einer **Demo** mit erfundenen Daten – die **Musterfamilie Huber** gibt es nur zum Ausprobieren und Ankommen. ' +
-      'Hier geht es noch nicht um **echte** Familiengeheimnisse – dafür habt ihr später euren eigenen, geschützten Raum. **Jetzt** könnt ihr in Ruhe klicken und spüren, ob sich das für euch gut anfühlt.',
-    sprecherDrehbuch:
-      'Herzlich willkommen in der Familie Huber – alles, was Sie hier sehen, ist bewusst erfunden: eine warme Spielwiese. Wenn Sie später Ihre eigene Familie anlegen, wird das Ihr geschützter Raum – getrennt von Galerie, Demo und Verein, damit Sie sich dort zu Hause fühlen können.',
-  },
-  {
+    stimmung: 'Nur Beispieldaten – eure echte Familie kommt später.',
+    body:
+      '**Musterfamilie Huber:** erfundene Daten, nur zum Ansehen. **Eure** Familie später: eigener geschützter Raum – wieder getrennt von Galerie, Demo und Verein.',
+  }),
+  leitfadenStep({
     id: 'home',
     titel: 'Meine Familie',
-    stimmung: 'So könnte euer „Zuhause“ in der App aussehen – einladend und übersichtlich.',
-    text:
-      'Hier beginnt der Alltag mit einem Willkommensbereich und Überblick. Wenn ihr **eure** Familie anlegt, wird das **euer** vertrauter Einstieg – der Ort, an dem ihr euch gegenseitig willkommen heißt.',
+    stimmung: 'Einstieg und Überblick.',
+    body: '**Meine Familie:** Willkommensbereich und Überblick – **euer** späterer täglicher Einstieg.',
     linkTo: K2_FAMILIE_APP_SHORT_PATH,
     linkLabel: 'Diese Seite gleich öffnen',
-    sprecherDrehbuch:
-      '„Meine Familie“ – so könnte Ihr späterer Einstieg aussehen: ein Willkommensbereich und ein klarer Überblick. Wenn Sie Ihre Familie anlegen, wird das der Ort, an dem Sie sich jeden Tag willkommen fühlen – ruhig, übersichtlich, Ihr Raum.',
     focusKey: 'home',
-  },
-  {
+  }),
+  leitfadenStep({
     id: 'stammbaum',
     titel: 'Stammbaum',
-    stimmung: 'Generationen sichtbar machen – mit Respekt vor jeder Verbindung.',
-    text:
-      'Hier werden Beziehungen und Generationen sichtbar – in der Demo mit Beispielpersonen, damit du siehst, wie sanft und klar das gemeint ist.',
+    stimmung: 'Beziehungen und Generationen sichtbar.',
+    body: '**Stammbaum:** Beziehungen und Generationen – in der Demo mit Beispielpersonen.',
     linkTo: R.stammbaum,
     linkLabel: 'Stammbaum ansehen',
-    sprecherDrehbuch:
-      'Der Stammbaum: Generationen und Verbindungen werden sichtbar – in der Demo mit Beispielpersonen, damit Sie das Gefühl bekommen: nicht technisch kalt, sondern ein Bild, das zu Familie passt.',
     focusKey: 'stammbaum',
-  },
-  {
+  }),
+  leitfadenStep({
     id: 'events-kalender',
     titel: 'Events & Kalender',
-    stimmung: 'Gemeinsame Termine – damit nichts Wichtiges untergeht.',
-    text:
-      'Kalender und Events mit Beispielinhalten – damit ihr ein Gefühl bekommt, wie ihr später zusammen plant, erinnert und einander im Blick behaltet.',
+    stimmung: 'Gemeinsame Termine im Blick.',
+    body: '**Kalender & Events:** gemeinsame Termine; die Ansicht erreicht ihr auch über die **Menüleiste oben**.',
     linkTo: R.events,
     linkLabel: 'Zu den Events',
-    sprecherDrehbuch:
-      'Events und Kalender: gemeinsame Termine und das Jahr im Blick – in der Demo mit Beispielen, damit Sie spüren, wie leicht sich Planung anfühlen kann. Die Kalender-Ansicht erreichen Sie auch über die obere Menüleiste.',
     focusKey: 'events',
-  },
-  {
+  }),
+  leitfadenStep({
     id: 'geschichte',
     titel: `${K2_FAMILIE_NAV_LABEL_GESCHICHTE} & Gedenkort`,
-    stimmung: 'Wo Worte und Erinnerung einen Platz haben, der zählt.',
-    text:
-      'Geschichten und Gedenkort – Raum für gemeinsame Texte und für Orte der Erinnerung. In der Musterfamilie könnt ihr in Ruhe blättern und ausprobieren, wie sich das anfühlt.',
+    stimmung: 'Texte und Orte der Erinnerung.',
+    body: '**Geschichten & Gedenkort:** gemeinsame Texte und Orte der Erinnerung.',
     linkTo: R.geschichte,
     linkLabel: 'Geschichten ansehen',
-    sprecherDrehbuch:
-      'Geschichten und Gedenkort – hier haben gemeinsame Texte und würdevolle Erinnerung ihren Platz. In der Musterfamilie können Sie in Ruhe lesen und ausprobieren – ohne Zeitdruck, einfach um das Gefühl mitzunehmen.',
     focusKey: 'geschichte',
-  },
-  {
+  }),
+  leitfadenStep({
     id: 'einstellungen',
     titel: 'Einstellungen',
-    stimmung: 'Transparenz und Sicherheit – wer darf was, bleibt bei euch.',
-    text:
-      'In einer **echten** Familie liegen Zugang, Rollen und Einladungen hier – übersichtlich und verständlich. In der Demo nur zum Orientieren, **ohne** echte Daten, damit ihr wisst: später seid ihr die, die entscheidet.',
+    stimmung: 'Zugang, Rollen, Einladungen.',
+    body: '**Einstellungen:** Zugang, Rollen, Einladungen. In der Demo ohne echte Daten.',
     linkTo: R.einstellungen,
     linkLabel: 'Einstellungen öffnen',
-    sprecherDrehbuch:
-      'Einstellungen: hier regeln Sie später, wer einlädt, wer mitliest, wer mitgestaltet – alles an einem Ort, verständlich gehalten. In der Demo ist das nur ein Orientierungsblick, ohne echte Daten – damit Sie sich sicher fühlen, bevor es ernst wird.',
     focusKey: 'einstellungen',
-  },
-  {
+  }),
+  leitfadenStep({
     id: 'entscheid',
-    titel: 'Wenn es euch berührt',
-    stimmung: 'Kein Druck – nur die offene Tür zu eurem Raum.',
-    text:
-      'Wenn euch das Gefühl passt: Demo beenden und mit Einladung oder neuer Familie **euren** geschützten Raum starten – dann sind es **eure** Daten und **eure** Geschichte. Ihr entscheidet in Ruhe.',
-    sprecherDrehbuch:
-      'Wenn Sie sich hier wohlgefühlt haben: Der Weg zu Ihrer eigenen Familie geht über Lizenz und Einladung – dann sind es Ihre Daten in Ihrem geschützten Mandanten. Die Demo können Sie jederzeit wieder öffnen; sie überschreibt nichts und drängt nicht. Wir möchten keine schnelle Unterschrift – eine Einladung zum Gespräch und zur Klärung reicht uns völlig. Danke, dass Sie sich die Zeit genommen haben.',
+    titel: 'Eure Familie',
+    stimmung: 'Kein Druck.',
+    body:
+      '**Eure** Familie: Lizenz und Einladung – dann **eure** Daten in **eurem** geschützten Bereich. Demo jederzeit wieder offen, überschreibt nichts.',
     focusKey: 'demo-ende',
-  },
+  }),
 ]
 
 function renderLeitfadenInline(markdownLite: string): ReactNode {

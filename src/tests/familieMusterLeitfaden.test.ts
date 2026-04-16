@@ -17,6 +17,12 @@ describe('FamilieMusterHuberLeitfaden', () => {
     expect(FAMILIE_MUSTER_LEITFADEN_SCHRITTE[FAMILIE_MUSTER_LEITFADEN_SCHRITTE.length - 1]?.id).toBe('entscheid')
   })
 
+  it('Anzeige und Vorlesen: text und sprecherDrehbuch sind dieselbe Quelle', () => {
+    for (const s of FAMILIE_MUSTER_LEITFADEN_SCHRITTE) {
+      expect(s.text).toBe(s.sprecherDrehbuch)
+    }
+  })
+
   it('clampFamilieLeitfadenBounds: Mindestbreite und Rand', () => {
     const c = clampFamilieLeitfadenBounds({ left: 4, top: 4, width: 100, height: 100 })
     expect(c.width).toBeGreaterThanOrEqual(280)

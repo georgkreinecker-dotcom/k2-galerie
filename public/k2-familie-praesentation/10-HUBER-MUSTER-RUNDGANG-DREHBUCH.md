@@ -2,7 +2,7 @@
 
 **Zweck:** Gespräche, Screen-Sharing und Piloten – **dieselbe** inhaltliche Linie wie im interaktiven Rundgang in der App (Schritte **Begrüßung**, **Versprechen**, dann **Demo Huber**). Quelle Verkaufskern: [01-FLYER-KURZPROSPEKT-VERKAUFSARGUMENTATION.md](01-FLYER-KURZPROSPEKT-VERKAUFSARGUMENTATION.md), Abschnitt „Das Versprechen“.
 
-**Tonalität:** Herzlich, einladend, mit echtem Interesse an den Menschen am anderen Ende – sachlich, aber nicht kühl. Kein Ranking gegen Konkurrenz – **Positionierung** statt Abwertung. **Empathie:** Zeit und Aufmerksamkeit wertschätzen.
+**Tonalität:** Warm und klar. **Inhalt vor Prozess:** was die App **ist** und **bietet** – nicht erklären, *dass* man etwas erklärt. In der App sind **Anzeige und Vorlesen** derselbe Text.
 
 [SEITENUMBRUCH]
 
@@ -10,12 +10,8 @@
 
 **Einstieg**
 
-- Kurz nachfragen, ob Bildschirm oder Handy gut zu sehen ist – und **Danke sagen**, dass sie sich die Zeit nehmen.
-- **Satz:** „**Herzlich willkommen** – es freut uns wirklich, dass Sie da sind. Wir beginnen mit zwei kurzen Karten: zuerst **K2 Familie** mit Herz und Haltung, dann unser **Versprechen** in fünf klaren Punkten. Danach schauen wir in eine **Demo-Familie** mit erfundenen Daten – nur damit Sie die App **spüren** können, ohne sensible Angaben zu zeigen.“
-
-**Übergang**
-
-- **Satz:** „Wenn Sie möchten, gehen wir **Schritt für Schritt** weiter – ich begleite Sie und sage, was Sie sehen. Kein Stress.“
+- Kurz nachfragen, ob Bildschirm oder Handy gut zu sehen ist.
+- **Kernaussage (wie in der App):** **K2 Familie** ist der geschützte Raum für Beziehungen, gemeinsame Momente und Erinnerung – **getrennt** von Galerie, öffentlicher Demo und Vereinswelten. **Genom:** Familiendaten werden nicht kommerziell verwertet – dauerhaft ausgeschlossen. **Musterfamilie Huber:** nur Beispieldaten.
 
 [SEITENUMBRUCH]
 
@@ -23,19 +19,19 @@
 
 **Rahmen**
 
-- **Satz:** „Das hier ist kein Katalog zum Auswendiglernen – es sind **fünf Säulen**, mit denen wir **ehrlich Vertrauen** aufbauen wollen. Alles steht auch in der Vertriebsmappe und im Handbuch – **eine** Aussage überall.“
+- Kein „Wir erklären euch jetzt …“ – direkt die Substanz (wie im Leitfaden-Schritt **Was K2 Familie euch bietet**).
 
-**Die fünf Punkte – jeweils ein Satz, langsamer als Fließtext**
+**Die fünf Punkte – jeweils ein Satz**
 
-1. **Vertrauen:** „Beziehungen leiten wir **nur aus den Karten** ab – keine Vermutungen, keine zweite Wahrheit.“
-2. **Ruhe:** „**Eigene Schlüssel**, eigene Instanz – nichts wird mit Galerie-, Demo- oder Vereinsdaten vermischt.“
-3. **Mitgestaltung:** „**Rollen und Einladungen** regeln Sie in der Familie – wer lesen, wer mitgestalten darf.“
-4. **Erinnerung & Tiefe:** „Momente, Kalender, Geschichten, **Gedenkort** – alles im gleichen respektvollen Rahmen.“
-5. **Zukunftssicherheit:** „**Genom:** Familiendaten werden **nicht** kommerziell verwertet – das ist bei uns **dauerhaft** ausgeschlossen.“
+1. **Vertrauen:** Beziehungen nur aus den **Karten** – keine Vermutungen, keine Vermischung mit anderen Welten.
+2. **Ruhe:** Eigene Instanz, eigene Schlüssel – nichts gemeinsam mit Galerie-, Demo- oder Vereinsdaten.
+3. **Mitgestaltung:** Rollen, Einladungen, Zugänge – in der Familie geregelt.
+4. **Erinnerung:** Momente, Kalender, Geschichten, **Gedenkort**.
+5. **Genom:** keine kommerzielle Verwertung der Familiendaten.
 
 **Brücke zur Demo**
 
-- **Satz:** „Wenn das für Sie **stimmig** klingt, gehen wir jetzt in die **Familie Huber** – komplett erfunden, eine **warme Spielwiese**. So können Sie in Ruhe klicken und sich ein Bild machen.“
+- **Musterfamilie Huber:** erfundene Daten, nur zum Ansehen.
 
 [SEITENUMBRUCH]
 
@@ -43,7 +39,7 @@
 
 **Einordnung**
 
-- **Satz:** „**Herzlich willkommen** in der Familie Huber – alles hier ist bewusst erfunden: eine liebevolle **Spielwiese**. Wenn Sie später **Ihre** Familie anlegen, wird das **Ihr** geschützter Raum – getrennt von Galerie, Demo und Verein, damit Sie sich **zu Hause** fühlen können.“
+- **Satz (wie in der App):** **Musterfamilie Huber:** erfundene Daten, nur zum Ansehen. **Ihre** Familie später: eigener geschützter Raum – wieder getrennt von Galerie, Demo und Verein.
 
 **Optional live**
 
@@ -55,8 +51,8 @@
 
 **Leitfaden in der App führen**
 
-- Pro Schritt **eine** Kernaussage, dann **Weiter** – nicht alle Texte vorlesen.
-- Hover-Hinweise nutzen: „Wenn Sie die Maus auf die Kacheln bewegen, sehen Sie Kurztexte – optional mit **Vorlesen**.“
+- Pro Schritt **derselbe** kurze Text auf dem Bildschirm und bei **Vorlesen** (kein zweiter Sprechertext).
+- Hover-Hinweise optional mit **Vorlesen** – haben Vorrang vor dem Leitfaden-Satz.
 
 [SEITENUMBRUCH]
 
@@ -64,11 +60,11 @@
 
 **Entscheid**
 
-- **Satz:** „Wenn Sie sich **wohlgefühlt** haben: Der Weg zu Ihrer eigenen Familie geht über **Lizenz und Einladung** – dann sind es **Ihre** Daten in **Ihrem** geschützten Mandanten. Die Demo können Sie jederzeit wieder öffnen; sie überschreibt nichts und **drängt** nicht.“
+- **Satz (wie in der App):** **Ihre** Familie: Lizenz und Einladung – dann **Ihre** Daten in **Ihrem** geschützten Bereich. Demo jederzeit wieder offen, überschreibt nichts.
 
 **Kein Druck**
 
-- Kein „Jetzt sofort unterschreiben“ – **Einladung zur Klärung** reicht; ein **Danke** fürs Zuhören wirkt sympathisch.
+- Kein „Jetzt sofort unterschreiben“ – **Einladung zur Klärung** reicht.
 
 [SEITENUMBRUCH]
 

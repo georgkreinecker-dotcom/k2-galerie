@@ -36,15 +36,20 @@ export function isFamilieMusterHintSpeechAvailable(): boolean {
   return typeof window !== 'undefined' && typeof window.speechSynthesis !== 'undefined'
 }
 
+/** Markdown-Fettdruck **…** für die Stimme entfernen (Anzeige kann fetten, Vorlesen nicht). */
+export function stripBoldMarkersForSpeech(text: string): string {
+  return text.replace(/\*\*(.+?)\*\*/g, '$1')
+}
+
 /**
  * Vorherige Ausgabe abbrechen und den Text vorlesen.
- * Leerzeichen normalisieren; Sprache de-DE.
+ * **…** wird nicht mitgesprochen; Leerzeichen normalisiert; Sprache de-DE.
  */
 export function speakFamilieMusterHintText(text: string): void {
   if (typeof window === 'undefined') return
   const syn = window.speechSynthesis
   if (!syn) return
-  const clean = text.replace(/\s+/g, ' ').trim()
+  const clean = stripBoldMarkersForSpeech(text).replace(/\s+/g, ' ').trim()
   if (!clean) return
   try {
     syn.cancel()
