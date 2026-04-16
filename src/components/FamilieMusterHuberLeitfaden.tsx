@@ -250,6 +250,16 @@ export function FamilieMusterHuberLeitfadenModal({ open, onOpenChange, onAbgesch
     }
   }, [])
 
+  /** Escape auch wenn Backdrop pointer-events: none (Muster-Hover-Hinweise unter dem Overlay). */
+  useEffect(() => {
+    if (!open || minimized) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') minimize()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, minimized, minimize])
+
   const restoreFromMinimized = useCallback(() => {
     setMinimized(false)
     try {
@@ -485,10 +495,8 @@ export function FamilieMusterHuberLeitfadenModal({ open, onOpenChange, onAbgesch
           alignItems: 'stretch',
           padding: 0,
           fontFamily: t.fontBody,
-        }}
-        onClick={minimize}
-        onKeyDown={(e) => {
-          if (e.key === 'Escape') minimize()
+          /** Durchlässig: Nav/Kacheln darunter bleiben per Hover für data-muster-hint erreichbar. */
+          pointerEvents: 'none',
         }}
       >
         {bounds === null ? (
@@ -811,6 +819,19 @@ function LeitfadenSheetInner({
             })}
           </div>
 
+          <p
+            style={{
+              margin: 0,
+              padding: '0 1rem 0.5rem',
+              fontSize: '0.68rem',
+              color: t.muted,
+              lineHeight: 1.35,
+            }}
+          >
+            Der dunkle Hintergrund blockiert die Maus nicht – du kannst die Navigation und Kacheln anfahren (Hover-Hinweise).
+            Rundgang aus dem Weg: <strong style={{ color: t.text }}>▼</strong> oder <strong style={{ color: t.text }}>Escape</strong>.
+          </p>
+
           {speechAvail ? (
             <div
               onPointerDown={(e) => e.stopPropagation()}
@@ -847,7 +868,8 @@ function LeitfadenSheetInner({
                 Hinweis vorlesen
               </label>
               <p style={{ margin: '0.25rem 0 0', fontSize: '0.68rem', color: t.muted, lineHeight: 1.35 }}>
-                Nutzt die Sprachausgabe des Browsers (Deutsch). Einmal einschalten hilft auf manchen Geräten mit der Freigabe.
+                Nutzt die Sprachausgabe des Browsers (Deutsch). Am Mac sind dafür keine extra Systemeinstellungen nötig – Checkbox an,
+                Lautstärke prüfen. Safari braucht manchmal einmal die Checkbox als Klick, dann klappt’s.
               </p>
             </div>
           ) : null}
