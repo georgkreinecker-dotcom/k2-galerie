@@ -12,9 +12,10 @@ import { loadEinstellungen, loadZweige } from '../utils/familieStorage'
 import { exportK2FamilieToGedcom } from '../utils/familieGedcom'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
+import { K2_FAMILIE_UI } from '../config/k2FamilieUiColors'
 
-const ACCENT = '#14b8a6'
-const MUTED = 'rgba(255,255,255,0.65)'
+const ACCENT = K2_FAMILIE_UI.accent
+const MUTED = K2_FAMILIE_UI.textSoft
 const STARTPUNKT_LABELS: Record<string, string> = { ich: 'Bei mir', eltern: 'Bei meinen Eltern', grosseltern: 'Bei meinen Großeltern' }
 
 export default function K2FamilieSicherungPage() {

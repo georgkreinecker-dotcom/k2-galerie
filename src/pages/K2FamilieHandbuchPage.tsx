@@ -302,7 +302,7 @@ export default function K2FamilieHandbuchPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', alignItems: 'flex-start' }}>
               <button type="button" onClick={() => window.print()} className="btn small-btn" style={{ background: '#0d9488', color: '#fff', border: 'none', cursor: 'pointer' }} title="Seite drucken – im Druckdialog A4 wählen">🖨️ Drucken (A4)</button>
               {isLeseFassungDruck && (
-                <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)' }}>Im Druckdialog: Format <strong>A4</strong> wählen</span>
+                <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.85)' }}>Im Druckdialog: Format <strong>A4</strong> wählen</span>
               )}
             </div>
           </div>
@@ -337,7 +337,7 @@ export default function K2FamilieHandbuchPage() {
 
           <article style={isLeseFassungDruck ? undefined : { background: 'rgba(13,148,136,0.06)', padding: '1.5rem 2rem', borderRadius: 12, border: '1px solid rgba(13,148,136,0.2)', minHeight: 400 }}>
             {loading ? (
-              <div style={{ textAlign: 'center', padding: '2rem', color: 'rgba(255,255,255,0.6)' }}>Lade Dokument...</div>
+              <div style={{ textAlign: 'center', padding: '2rem', color: 'rgba(255,255,255,0.88)' }}>Lade Dokument...</div>
             ) : isLeseFassungDruck && lesefassungData ? (
               <div className="projekt-zusammenfassung-lesefassung">
                 <div>{renderMarkdown(lesefassungData.content, { allowHtml: true })}</div>
@@ -371,7 +371,7 @@ export default function K2FamilieHandbuchPage() {
             borderTop: '1px solid rgba(255,255,255,0.12)',
             fontSize: '0.72rem',
             lineHeight: 1.45,
-            color: 'rgba(255,255,255,0.72)',
+            color: 'rgba(255,255,255,0.9)',
           }}
         >
           <p style={{ margin: '0 0 0.35rem' }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>

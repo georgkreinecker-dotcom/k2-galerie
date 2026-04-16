@@ -2283,9 +2283,9 @@ header h1 {
   box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.35);
 }
 .k2-familie-page .familie-toolbar .btn-outline {
-  background: rgba(13, 148, 136, 0.2);
-  border: 1px solid rgba(13, 148, 136, 0.5);
-  color: #14b8a6;
+  background: rgba(13, 148, 136, 0.22) !important;
+  border: 1px solid rgba(13, 148, 136, 0.55) !important;
+  color: #5eead4 !important;
   padding: 0.5rem 1rem;
   border-radius: 999px;
   font-weight: 600;
@@ -2296,16 +2296,81 @@ header h1 {
 .k2-familie-page .familie-toolbar .btn-outline:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(13, 148, 136, 0.25);
+  color: #ccfbf1 !important;
 }
 .k2-familie-page .card-actions .btn-outline.danger {
-  background: rgba(180, 0, 0, 0.15);
-  border-color: rgba(248, 113, 113, 0.4);
-  color: #f87171;
+  background: rgba(127, 29, 29, 0.35) !important;
+  border-color: rgba(248, 113, 113, 0.55) !important;
+  color: #fecaca !important;
 }
 .k2-familie-page .field input,
 .k2-familie-page .field select,
 .k2-familie-page .field textarea {
   border-color: rgba(13, 148, 136, 0.35);
+}
+
+/* K2 Familie: Lesekontrast (Meta, Platzhalter, Outline-Buttons auf dunklem Grund) */
+.k2-familie-page {
+  --k2-familie-readable-muted: rgba(255, 255, 255, 0.92);
+  --k2-familie-placeholder: rgba(226, 232, 240, 0.82);
+}
+
+.k2-familie-page .meta,
+.k2-familie-page label.meta {
+  color: var(--k2-familie-readable-muted) !important;
+}
+
+.k2-familie-page input::placeholder,
+.k2-familie-page textarea::placeholder {
+  color: var(--k2-familie-placeholder) !important;
+  opacity: 1;
+}
+
+/* Outline-Buttons: dunkler Hintergrund + helle Schrift (nicht weiß auf hellgrau) */
+.k2-familie-page button.btn-outline,
+.k2-familie-page a.btn-outline {
+  background: rgba(15, 23, 42, 0.55) !important;
+  border: 1px solid rgba(20, 184, 166, 0.55) !important;
+  color: #f1f5f9 !important;
+  box-shadow: none !important;
+}
+
+.k2-familie-page button.btn-outline:hover:not(:disabled),
+.k2-familie-page a.btn-outline:hover {
+  background: rgba(20, 184, 166, 0.22) !important;
+  border-color: rgba(20, 184, 166, 0.9) !important;
+  color: #ffffff !important;
+}
+
+.k2-familie-page button.btn-outline:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.k2-familie-page .btn-outline.danger {
+  background: rgba(127, 29, 29, 0.35) !important;
+  border-color: rgba(248, 113, 113, 0.55) !important;
+  color: #fecaca !important;
+}
+
+.k2-familie-page .btn-outline.danger:hover:not(:disabled) {
+  background: rgba(185, 28, 28, 0.45) !important;
+  border-color: #f87171 !important;
+  color: #ffffff !important;
+}
+
+/* Sekundärer Outline-Button in Petrol (z. B. „Vorschlag aus Events“) */
+.k2-familie-page button.btn-outline.k2-familie-btn-outline--accent,
+.k2-familie-page a.btn-outline.k2-familie-btn-outline--accent {
+  background: rgba(13, 148, 136, 0.22) !important;
+  border-color: rgba(20, 184, 166, 0.75) !important;
+  color: #5eead4 !important;
+}
+
+.k2-familie-page button.btn-outline.k2-familie-btn-outline--accent:hover:not(:disabled) {
+  background: rgba(20, 184, 166, 0.3) !important;
+  border-color: #2dd4bf !important;
+  color: #ecfdf5 !important;
 }
 
 /* Nav-Links: heller Admin-Stil (terra); aktiver Link bleibt lesbar */

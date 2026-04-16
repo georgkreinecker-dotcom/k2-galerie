@@ -12,13 +12,7 @@ import { loadPersonen, savePersonen, saveEinstellungen, loadEinstellungen } from
 import { buildGrundstrukturPersonen } from '../utils/grundstrukturBuild'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
-
-const C = {
-  text: '#f0f6ff',
-  textSoft: 'rgba(255,255,255,0.78)',
-  accent: '#14b8a6',
-  border: 'rgba(13,148,136,0.35)',
-}
+import { K2_FAMILIE_UI as C } from '../config/k2FamilieUiColors'
 
 const STEPS = 5
 

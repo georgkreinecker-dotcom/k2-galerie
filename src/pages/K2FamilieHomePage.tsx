@@ -38,12 +38,11 @@ import { seedFamilieHuber, FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberM
 import { clearFamilieNurMusterSession } from '../utils/familieMusterSession'
 import { useMemo, useState, useEffect, type CSSProperties } from 'react'
 import { adminTheme } from '../config/theme'
+import { K2_FAMILIE_UI } from '../config/k2FamilieUiColors'
+
 const C = {
-  text: '#f0f6ff',
-  textSoft: 'rgba(255,255,255,0.78)',
-  accent: '#14b8a6',
+  ...K2_FAMILIE_UI,
   accentHover: '#2dd4bf',
-  border: 'rgba(13,148,136,0.35)',
   heroOverlay: 'linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(15,20,25,0.55) 55%, rgba(15,20,25,0.88) 100%)',
   btnStammdaten: 'linear-gradient(135deg, #0e7490 0%, #14b8a6 100%)',
   btnStammbaum: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
@@ -1226,7 +1225,7 @@ export default function K2FamilieHomePage() {
               objectFit: 'contain',
             }}
           />
-          <p style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)', textAlign: 'center' }}>
+          <p style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: 'rgba(255,255,255,0.9)', textAlign: 'center' }}>
             Tippen außerhalb des Bildes oder ✕ zum Schließen
           </p>
         </div>

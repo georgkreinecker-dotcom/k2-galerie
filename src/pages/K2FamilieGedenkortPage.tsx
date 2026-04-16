@@ -14,6 +14,7 @@ import { getAktuellesPersonenFoto } from '../utils/familiePersonFotos'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
 import type { K2FamilieGabe } from '../types/k2Familie'
+import { K2_FAMILIE_UI } from '../config/k2FamilieUiColors'
 
 const GEDENKORT_USER_KEY = 'k2-familie-gedenkort-user-id'
 
@@ -47,10 +48,10 @@ function gabeIcon(type: K2FamilieGabe['type']): string {
 }
 
 const C = {
-  text: 'rgba(255,255,255,0.92)',
-  textSoft: 'rgba(255,255,255,0.6)',
-  accent: '#14b8a6',
-  border: 'rgba(13,148,136,0.35)',
+  text: K2_FAMILIE_UI.textMuted,
+  textSoft: K2_FAMILIE_UI.textSoft,
+  accent: K2_FAMILIE_UI.accent,
+  border: K2_FAMILIE_UI.border,
 }
 
 export default function K2FamilieGedenkortPage() {

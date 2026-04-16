@@ -11,13 +11,11 @@ import { getFamilieEinstiegContent, getFamilieEinstiegTexts } from '../config/ei
 import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
 import { setFamilieNurMusterSession } from '../utils/familieMusterSession'
 import '../App.css'
+import { K2_FAMILIE_UI } from '../config/k2FamilieUiColors'
 
 const C = {
-  text: '#f0f6ff',
-  textSoft: 'rgba(255,255,255,0.78)',
-  accent: '#14b8a6',
+  ...K2_FAMILIE_UI,
   accentHover: '#2dd4bf',
-  border: 'rgba(13,148,136,0.35)',
   heroOverlay: 'linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(15,20,25,0.75) 55%, rgba(15,20,25,0.96) 100%)',
 }
 

@@ -14,7 +14,7 @@ import { setFamilieNurMusterSession } from '../utils/familieMusterSession'
 const BG = 'linear-gradient(160deg, #042f2e 0%, #0f172a 48%, #134e4a 100%)'
 const CARD = 'rgba(15, 23, 42, 0.55)'
 const TEXT = '#f0f9ff'
-const MUTED = 'rgba(240,249,255,0.78)'
+const MUTED = 'rgba(240,249,255,0.9)'
 const ACCENT = '#2dd4bf'
 
 export default function K2FamilieWillkommenPage() {
@@ -100,7 +100,7 @@ export default function K2FamilieWillkommenPage() {
         style={{
           padding: '1.25rem clamp(1rem, 4vw, 2rem) 2rem',
           fontSize: '0.78rem',
-          color: 'rgba(240,249,255,0.6)',
+          color: 'rgba(240,249,255,0.82)',
           lineHeight: 1.5,
           textAlign: 'center',
           borderTop: '1px solid rgba(45,212,191,0.12)',
