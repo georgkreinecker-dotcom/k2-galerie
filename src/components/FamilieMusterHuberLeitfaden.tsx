@@ -11,6 +11,13 @@ import { K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
 import { K2_FAMILIE_NAV_LABEL_GESCHICHTE } from '../config/k2FamilieNavLabels'
 import { isK2FamilieApfLocalhost } from '../config/k2FamilieApfDefaults'
 import { useFamilieMusterDemoHint } from '../context/FamilieMusterDemoHintContext'
+import {
+  cancelFamilieMusterHintSpeech,
+  getFamilieMusterHintSpeechEnabled,
+  isFamilieMusterHintSpeechAvailable,
+  setFamilieMusterHintSpeechEnabled,
+  speakFamilieMusterHintText,
+} from '../utils/familieMusterHintSpeech'
 
 const t = adminTheme
 const R = PROJECT_ROUTES['k2-familie']
@@ -610,6 +617,29 @@ function LeitfadenSheetInner({
 }: LeitfadenSheetInnerProps) {
   const musterHint = useFamilieMusterDemoHint()
   const hoverHint = musterHint?.hoverHint ?? null
+  const speechAvail = isFamilieMusterHintSpeechAvailable()
+  const [speechOn, setSpeechOn] = useState(() => getFamilieMusterHintSpeechEnabled())
+
+  useEffect(() => {
+    if (!speechOn || !hoverHint) {
+      cancelFamilieMusterHintSpeech()
+      return
+    }
+    const id = window.setTimeout(() => {
+      speakFamilieMusterHintText(hoverHint)
+    }, 380)
+    return () => {
+      window.clearTimeout(id)
+      cancelFamilieMusterHintSpeech()
+    }
+  }, [hoverHint, speechOn])
+
+  useEffect(() => {
+    return () => {
+      cancelFamilieMusterHintSpeech()
+    }
+  }, [])
+
   return (
     <>
           {/* Griff + Kopf – ziehbar */}
@@ -780,6 +810,47 @@ function LeitfadenSheetInner({
               )
             })}
           </div>
+
+          {speechAvail ? (
+            <div
+              onPointerDown={(e) => e.stopPropagation()}
+              style={{
+                padding: '0 1rem 0.5rem',
+                borderBottom: '1px solid rgba(181, 74, 30, 0.06)',
+                background: 'rgba(250, 248, 244, 0.95)',
+              }}
+            >
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  cursor: 'pointer',
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  color: t.text,
+                  userSelect: 'none',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={speechOn}
+                  onChange={(e) => {
+                    const v = e.target.checked
+                    setSpeechOn(v)
+                    setFamilieMusterHintSpeechEnabled(v)
+                    if (!v) cancelFamilieMusterHintSpeech()
+                  }}
+                  aria-label="Hinweis per Sprachausgabe vorlesen"
+                  style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#b54a1e' }}
+                />
+                Hinweis vorlesen
+              </label>
+              <p style={{ margin: '0.25rem 0 0', fontSize: '0.68rem', color: t.muted, lineHeight: 1.35 }}>
+                Nutzt die Sprachausgabe des Browsers (Deutsch). Einmal einschalten hilft auf manchen Geräten mit der Freigabe.
+              </p>
+            </div>
+          ) : null}
 
           {hoverHint ? (
             <div

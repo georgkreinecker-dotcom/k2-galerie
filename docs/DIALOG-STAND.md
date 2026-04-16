@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 16.04.26 – **K2 Familie Muster: Hover-Hinweis + Sprachausgabe** – Im Huber-Leitfaden: optional **„Hinweis vorlesen“** (`sessionStorage` `k2-familie-muster-hint-sprache`), **`speechSynthesis`** deutsch (`familieMusterHintSpeech.ts`), kurze Verzögerung beim Wechsel; aus wenn Checkbox aus. **Tests + Build** grün. **Commit:** _(nach Push)_
+
+---
+
 **Letzter Stand:** 16.04.26 – **Build grün: Einladung pid + Leitfaden Resize-ARIA** – **`FamilieEinladungQuerySync`:** zweite `findPersonIdByMitgliedsNummer`-Zuweisung ohne `?? undefined` (TS: `string | undefined` konsistent). **`FamilieMusterHuberLeitfaden`:** ungültiges **`aria-orientation="both"`** am Größen-Ziehpunkt entfernt (Separator erlaubt nur horizontal/vertical). **Tests + Build** grün. **Commit:** **`54672fda`** ✅ GitHub
 
 **Was wir JETZT tun:** Muster **`?t=huber`:** Huber-Leitfaden **bleibt beim Navigieren offen**, **Hover-Hilfen** (`data-muster-hint`) kurz prüfen; bei Bedarf weitere Felder mit Hinweisen versehen.
