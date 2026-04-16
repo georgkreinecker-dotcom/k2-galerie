@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 16.04.26 – **K2 Familie Vertriebsunterlagen: Flyer + Produktprospekt** – **`01-FLYER-KURZPROSPEKT-VERKAUFSARGUMENTATION.md`** (Kurzprospekt / Verkaufsargumentation), **`02-PROSPEKT-PRODUKTINFORMATION.md`** (mehr Produktinformation, ableitend); **`00-INDEX.md`** + **README**; **`K2FamiliePraesentationsmappePage`:** zwei Dokumente in der Sidebar, Default Flyer. **Tests + Build** grün. **Commit:** nach Push **`git log -1 --oneline`** (Branch **main**).
+**Letzter Stand:** 16.04.26 – **K2 Familie Vertriebsunterlagen: Flyer + Produktprospekt** – **`01-FLYER-KURZPROSPEKT-VERKAUFSARGUMENTATION.md`** (Kurzprospekt / Verkaufsargumentation), **`02-PROSPEKT-PRODUKTINFORMATION.md`** (mehr Produktinformation, ableitend); **`00-INDEX.md`** + **README**; **`K2FamiliePraesentationsmappePage`:** zwei Dokumente in der Sidebar, Default Flyer. **Tests + Build** grün. **Commit (Vertriebsunterlagen):** **`501fdddf`** ✅ GitHub
 
 **Was wir JETZT tun:** Route **`/projects/k2-familie/praesentationsmappe`** – Kurzprospekt & Prospekt kurz **lesen/Drucken** prüfen.
 
