@@ -226,6 +226,11 @@ export interface K2FamilieGeschichte {
   abDatum: string
   /** Redigierter Fließtext (zusammenfassende Geschichte). */
   content: string
+  /**
+   * `entwurf` = in Arbeit (Register „In Arbeit“). `fertig` oder fehlend = fertige Geschichte.
+   * Fehlend bei älteren Daten: gilt als fertig.
+   */
+  status?: 'fertig' | 'entwurf'
   createdAt?: string
   updatedAt?: string
 }

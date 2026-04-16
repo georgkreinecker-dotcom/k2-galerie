@@ -29,6 +29,19 @@ function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms))
 }
 
+/** Mobil/WLAN: fetch ohne Timeout kann Minuten hängen – UI wirkt „endlos“. */
+const FAMILIE_FETCH_TIMEOUT_MS = 20000
+
+async function fetchFamilieWithTimeout(url: string, init: Omit<RequestInit, 'signal'>): Promise<Response> {
+  const ctrl = new AbortController()
+  const t = setTimeout(() => ctrl.abort(), FAMILIE_FETCH_TIMEOUT_MS)
+  try {
+    return await fetch(url, { ...init, signal: ctrl.signal })
+  } finally {
+    clearTimeout(t)
+  }
+}
+
 function getUpdated(item: { updatedAt?: string; createdAt?: string }): number {
   const u = item?.updatedAt ? new Date(item.updatedAt).getTime() : 0
   const c = item?.createdAt ? new Date(item.createdAt).getTime() : 0
@@ -126,7 +139,7 @@ export async function loadFamilieFromSupabase(tenantId: string): Promise<Familie
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       if (attempt > 0) await sleep(350 * attempt)
       try {
-        res = await fetch(url, {
+        res = await fetchFamilieWithTimeout(url, {
           method: 'GET',
           headers: familieApiHeaders(),
         })
@@ -213,7 +226,7 @@ export async function loadFamilieFromSupabase(tenantId: string): Promise<Familie
 export async function saveFamilieToSupabase(tenantId: string, payload: FamilieData): Promise<boolean> {
   if (!isSupabaseConfigured() || !FAMILIE_API_URL) return false
   try {
-    const res = await fetch(FAMILIE_API_URL, {
+    const res = await fetchFamilieWithTimeout(FAMILIE_API_URL, {
       method: 'POST',
       headers: familieApiHeaders(),
       body: JSON.stringify({

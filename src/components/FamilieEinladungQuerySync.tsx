@@ -107,8 +107,8 @@ export function FamilieEinladungQuerySync() {
     ): Promise<string | null> => {
       const mNorm = trimMitgliedsNummerEingabe(mParam ?? '')
       if (!mNorm) return null
-      /** Mobil / schwaches Netz: mehr Versuche und längere Abstände (gesamt bis ~14 s). */
-      const delaysMs = [0, 300, 700, 1400, 2400, 3800, 5500]
+      /** Mobil / schwaches Netz: mehrere Versuche; jeder fetch hat Timeout (familieSupabaseClient). */
+      const delaysMs = [0, 300, 700, 1400, 2400]
       for (let i = 0; i < delaysMs.length; i++) {
         if (i > 0) await sleep(delaysMs[i])
         if (cancelled) return null

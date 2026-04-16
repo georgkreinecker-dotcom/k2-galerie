@@ -350,6 +350,9 @@ export default function K2FamilieHomePage() {
             ? 'In der Cloud sind für diese Familie noch keine Personen. Prüfen: dieselbe Familie wie am Mac (QR/URL)? Inhaber:in am Mac Personen angelegt und mit der Cloud abgeglichen?'
             : 'Die Daten konnten nach dem Laden nicht im Gerätespeicher abgelegt werden (z. B. Speicher voll). Seite kurz neu öffnen oder Speicherplatz freigeben, dann „Daten vom Server laden“ erneut tippen.',
         )
+      } else {
+        setIdentitaetSessionHinweis('')
+        setIdentitaetSessionOk('')
       }
     } finally {
       setFamilieCloudSyncBusy(false)
@@ -426,8 +429,13 @@ export default function K2FamilieHomePage() {
   const ichIdSession = ichBinPersonId?.trim()
   const ichPersonFuerSession = ichIdSession ? personen.find((p) => p.id === ichIdSession) : undefined
   const codeAufDuKarteSession = trimMitgliedsNummerEingabe(ichPersonFuerSession?.mitgliedsNummer ?? '')
+  /** Sitzung offen: sobald „Du“ gesetzt, aber nicht bestätigt – auch auf neuem Gerät ohne lokale Personen/Code. */
   const needsIdentitaetSessionBanner = Boolean(
-    ichIdSession && codeAufDuKarteSession && loadIdentitaetBestaetigt(currentTenantId) !== ichIdSession,
+    ichIdSession && loadIdentitaetBestaetigt(currentTenantId) !== ichIdSession,
+  )
+  /** Ohne Personenliste oder ohne gespeicherten Code auf der Karte (lokal) gibt es nichts zum Abgleichen – zuerst Server laden. */
+  const identitaetSessionFehlenDatenZumAbgleich = Boolean(
+    needsIdentitaetSessionBanner && (personen.length === 0 || !codeAufDuKarteSession),
   )
 
   useEffect(() => {
@@ -1184,6 +1192,9 @@ export default function K2FamilieHomePage() {
             justifyContent: 'center',
             padding: 'max(0.5rem, env(safe-area-inset-top)) max(0.5rem, env(safe-area-inset-right)) max(0.5rem, env(safe-area-inset-bottom)) max(0.5rem, env(safe-area-inset-left))',
             boxSizing: 'border-box',
+            touchAction: 'manipulation',
+            overscrollBehavior: 'contain',
+            WebkitOverflowScrolling: 'touch',
           }}
           onClick={() => setHeroBildVollbild(false)}
         >
@@ -1217,17 +1228,17 @@ export default function K2FamilieHomePage() {
             src={welcomeImage}
             alt=""
             draggable={false}
-            onClick={(e) => e.stopPropagation()}
             style={{
               maxWidth: '100%',
               maxHeight: 'min(92vh, 100%)',
               width: 'auto',
               height: 'auto',
               objectFit: 'contain',
+              cursor: 'pointer',
             }}
           />
           <p style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: 'rgba(255,255,255,0.9)', textAlign: 'center' }}>
-            Tippen außerhalb des Bildes oder ✕ zum Schließen
+            Tippen auf das Bild, daneben oder ✕ zum Schließen
           </p>
         </div>
       ) : null}

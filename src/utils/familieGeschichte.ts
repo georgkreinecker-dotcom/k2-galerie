@@ -3,7 +3,12 @@
  * Ein Standard: eine Funktion, viele Aufrufer (Sportwagenmodus).
  */
 
-import type { K2FamilieEvent, K2FamilieMoment, K2FamiliePerson } from '../types/k2Familie'
+import type { K2FamilieEvent, K2FamilieGeschichte, K2FamilieMoment, K2FamiliePerson } from '../types/k2Familie'
+
+/** `entwurf` = noch in Arbeit; ohne Status oder `fertig` = fertige Geschichte (Register). */
+export function isGeschichteInArbeit(g: K2FamilieGeschichte): boolean {
+  return g.status === 'entwurf'
+}
 
 type Eintrag = { date: string; type: 'event' | 'moment'; title: string; detail?: string; personName?: string }
 
