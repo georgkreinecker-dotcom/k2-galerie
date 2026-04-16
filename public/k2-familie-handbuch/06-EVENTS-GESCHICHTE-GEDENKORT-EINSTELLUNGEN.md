@@ -32,6 +32,10 @@ Neben **Stammbaum** und **Personenkarten** finden Sie in K2 Familie weitere Bere
 
 **So geht’s:** **Neue Geschichte anlegen** → **Ab Datum** wählen (ab diesem Tag fließen Events/Momente in den Vorschlag ein) → optional **Vorschlag aus Events & Momente erzeugen** → Text **bearbeiten** und **speichern**. Titel ist optional.
 
+**Register:** Oben auf der Seite sehen Sie **Fertig** und **In Arbeit** – jede gespeicherte Geschichte steht in einem der beiden Bereiche. Beim Speichern wählen Sie den **Status**; **Entwürfe** können Sie mit **Als fertig** schnell abschließen, ohne den Editor zu öffnen. Ältere Einträge ohne Status gelten als **fertig**.
+
+**Drucken:** Pro Geschichte gibt es **Drucken** (Register und Editor). Es öffnet den Druckdialog des Browsers – dort können Sie **Als PDF speichern** wählen. Im Editor drucken Sie den **aktuellen Stand** (auch vor dem Speichern).
+
 **Text aus Word:** Sie können einen fertigen Text aus Word (oder einer anderen App) **markieren** und ins Feld **einfügen** (Strg+V bzw. Cmd+V). Es wird **reiner Text** übernommen – das Layout aus Word (Fett, Kursiv, Schriftart) wird nicht automatisch mit übernommen. Überschriften und Hervorhebungen können Sie im Feld mit **Markdown** setzen (z. B. `## Zwischenüberschrift`, `**fett**`).
 
 **Wer darf:** wie bei Events – **organische** Bearbeitung durch Bearbeiter:innen und Inhaber:innen (siehe Rollen-Kapitel).
