@@ -7,6 +7,7 @@
 import { isSupabaseConfigured } from './supabaseClient'
 import type { K2FamiliePerson, K2FamilieMoment, K2FamilieEvent, K2FamilieEinstellungen } from '../types/k2Familie'
 import { loadPersonen, loadMomente, loadEvents, loadEinstellungen, savePersonen, saveMomente, saveEvents, saveEinstellungen } from './familieStorage'
+import { ergaenzeMitgliedsNummerAusServerListe } from './familieMitgliedsNummer'
 
 let SUPABASE_URL = ''
 let SUPABASE_ANON = ''
@@ -187,7 +188,10 @@ export async function loadFamilieFromSupabase(tenantId: string): Promise<Familie
     const localMomente = loadMomente(tenantId)
     const localEvents = loadEvents(tenantId)
     const serverPersonenCount = serverPersonen.length
-    const mergedPersonen = mergeById(serverPersonen as K2FamiliePerson[], localPersonen)
+    const serverPersonenTyped = serverPersonen as K2FamiliePerson[]
+    const mergedRaw = mergeById(serverPersonenTyped, localPersonen)
+    /** Merge kann neuere lokale Kopie ohne persönlichen Code behalten, obwohl die Cloud den Code hat → Anmeldung auf fremdem Gerät. */
+    const mergedPersonen = ergaenzeMitgliedsNummerAusServerListe(serverPersonenTyped, mergedRaw)
     const mergedMomente = mergeById(serverMomente as K2FamilieMoment[], localMomente)
     const mergedEvents = mergeById(serverEvents as K2FamilieEvent[], localEvents)
     if (mergedPersonen.length >= localPersonen.length) {

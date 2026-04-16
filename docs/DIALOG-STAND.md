@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 15.04.26 – **K2 Familie: Anmeldung mit persönlichem Code auf fremdem Handy** – **`loadFamilieFromSupabase`:** nach **`mergeById`** wird **`ergaenzeMitgliedsNummerAusServerListe`** aufgerufen (war schon in `familieMitgliedsNummer` dokumentiert, fehlte im Lade-Pfad). **Grund:** neuere lokale Kopie ohne Code konnte den Server-Eintrag mit Code überschreiben → **`findPersonIdByMitgliedsNummer`** fand niemanden. **`npm run test`** grün; **`tsc --noEmit`** grün. **Commit:** _(nach Push eintragen)_
+
+**Was wir JETZT tun:** Auf **Vercel** nach Deploy: fremdes Gerät / privates Fenster → Familie laden → **persönlichen Code** eingeben → Person muss zuordenbar sein.
+
+---
+
 **Letzter Stand:** 16.04.26 – **K2 Familie Demo „Meine Familie“ werbegerecht** – **`K2FamilieLayout`** (Nur-Muster): **`PRODUCT_K2_FAMILIE_WERBESLOGAN`** + **`PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ`**, kompakter Text Musterfamilie Huber / Einladung / Button **„Demo beenden – zu eurer Familie“**. **`K2FamilieHomePage`:** bei **huber + Nur-Muster-Sitzung** gelber Block: Slogan + **„Rolle in der Musterfamilie bestätigen“** statt „Sitzung nicht bestätigt“; echte Familien unverändert. **Tests** grün; **`tsc -b`** grün. **Commit:** **`a917100a`** ✅ GitHub
 
 **Was wir JETZT tun:** Vercel **Ready** → Demo **`/familie`** bzw. **`?t=huber`** – Toolbar + Code-Banner kurz **ansehen**.
