@@ -1130,31 +1130,85 @@ export default function K2FamilieStammbaumPage() {
             className="no-print"
             style={{
               display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
+              flexDirection: 'column',
               gap: '0.5rem',
-              marginBottom: '0.75rem',
-              padding: '0.5rem 0.65rem',
-              borderRadius: 8,
-              background: `linear-gradient(95deg, ${STAMMBAUM_BEREICH_STIL.karten.softBg} 0%, rgba(15,23,42,0.35) 100%)`,
+              marginBottom: '0.85rem',
+              padding: '0.85rem 1rem 0.95rem',
+              borderRadius: 10,
+              background: `linear-gradient(115deg, ${STAMMBAUM_BEREICH_STIL.karten.softBg} 0%, rgba(15,23,42,0.5) 55%, rgba(15,23,42,0.28) 100%)`,
               border: `1px solid ${STAMMBAUM_BEREICH_STIL.karten.stripeSubtle}`,
-              borderLeft: `4px solid ${STAMMBAUM_BEREICH_STIL.karten.stripe}`,
+              borderLeft: `6px solid ${STAMMBAUM_BEREICH_STIL.karten.stripe}`,
+              boxShadow:
+                '0 0 0 1px rgba(45, 212, 191, 0.12), 0 6px 22px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255,255,255,0.06)',
             }}
           >
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer', margin: 0 }}>
-              <input
-                type="checkbox"
-                checked={nurMeinFamilienzweig}
-                onChange={(e) => setNurMeinFamilienzweigPersist(e.target.checked)}
-                aria-label="Kartenliste auf meinen Familienzweig einschränken (du, Partner, eure Nachkommen; ohne Geschwister-Äste)"
-              />
-              <span style={{ fontSize: '1rem', marginRight: '0.15rem' }} aria-hidden>
+            <div
+              style={{
+                fontSize: '0.68rem',
+                fontWeight: 700,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                color: 'rgba(45, 212, 191, 0.98)',
+              }}
+            >
+              Schlüssel für die Kartenliste
+            </div>
+            <label
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                gap: '0.5rem',
+                cursor: 'pointer',
+                margin: 0,
+              }}
+            >
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minWidth: 44,
+                  minHeight: 44,
+                  flexShrink: 0,
+                  borderRadius: 10,
+                  background: 'rgba(45, 212, 191, 0.18)',
+                  border: '1px solid rgba(45, 212, 191, 0.42)',
+                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
+                }}
+                aria-hidden
+              >
+                <input
+                  type="checkbox"
+                  checked={nurMeinFamilienzweig}
+                  onChange={(e) => setNurMeinFamilienzweigPersist(e.target.checked)}
+                  aria-label="Kartenliste auf meinen Familienzweig einschränken (du, Partner, eure Nachkommen; ohne Geschwister-Äste)"
+                  style={{
+                    width: 22,
+                    height: 22,
+                    margin: 0,
+                    accentColor: '#2dd4bf',
+                    cursor: 'pointer',
+                  }}
+                />
+              </span>
+              <span style={{ fontSize: '1.15rem', marginRight: '0.1rem' }} aria-hidden>
                 {STAMMBAUM_BEREICH_STIL.karten.symbol}
               </span>
-              <span style={{ color: 'rgba(255,255,255,0.96)', fontSize: '0.92rem', fontWeight: 600 }}>Nur mein Zweig in der Liste</span>
+              <span style={{ color: 'rgba(255,255,255,0.98)', fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.25 }}>
+                Nur mein Zweig in der Liste
+              </span>
               <StammbaumBereichInfoIcon text={NUR_MEIN_ZWEIG_INFO} />
             </label>
-            <span style={{ fontSize: '0.82rem', maxWidth: '38rem', lineHeight: 1.45, color: 'rgba(226, 232, 240, 0.92)' }}>
+            <span
+              style={{
+                fontSize: '0.84rem',
+                maxWidth: '42rem',
+                lineHeight: 1.5,
+                color: 'rgba(226, 232, 240, 0.93)',
+                paddingLeft: '0.1rem',
+              }}
+            >
               <strong style={{ color: 'rgba(255,255,255,0.96)' }}>Ein</strong>: nur du, Partner und eure Kinder-Linie (Geschwister mit eigenen Familien sind ausgeblendet).{' '}
               <strong style={{ color: 'rgba(255,255,255,0.96)' }}>Aus</strong>: <strong>alle</strong> Personen der Familie – auch andere Äste.
             </span>
