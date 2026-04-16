@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 16.04.26 – **K2 Familie Huber: existenziell statt Produktvergleich** – Leitfaden + **`10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md`:** kein **Galerie**/**Demo**/**Verein**-Vergleich; Kern **Zugehörigkeit, gemeinsame Zeit, Erinnerung, Grenzen, Genom**; Formulierungen **Beispiel** statt „Demo“ wo sichtbar; Toolbar + **`MUSTER_HINT_TOOLBAR_DEMO_ENDE`** angepasst. **Tests + Build** grün. **Commit:** PENDING_FIRST_PUSH
+**Letzter Stand:** 16.04.26 – **K2 Familie Huber: existenziell statt Produktvergleich** – Leitfaden + **`10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md`:** kein **Galerie**/**Demo**/**Verein**-Vergleich; Kern **Zugehörigkeit, gemeinsame Zeit, Erinnerung, Grenzen, Genom**; Formulierungen **Beispiel** statt „Demo“ wo sichtbar; Toolbar + **`MUSTER_HINT_TOOLBAR_DEMO_ENDE`** angepasst. **Tests + Build** grün. **Commit:** **`16b346cb`** ✅ GitHub
 
 ---
 **Was wir JETZT tun:** Muster **`?t=huber`** – Leitfaden lesen: wirkt **Menschen-Thema** statt Feature-Liste?
