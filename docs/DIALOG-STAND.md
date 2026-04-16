@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 16.04.26 – **Konzept: Plattform-Rundgang ök2 + VK2 (parallel)** – **`docs/KONZEPT-PLATTFORM-RUNDGANG-OEK2-VK2.md`:** gemeinsames **Framework** (Shell, Fokus, Schritte), **ohne Audio-Standard**; getrennte Stränge **Demo ök2** / **Demo VK2**; Hover-Attribute später `data-oek2-demo-hint` / `data-vk2-demo-hint`; Phasen A–E; Eintrag in **`docs/00-INDEX.md`**. Nächster Schritt: **Abnahme Konzept**, dann Shell/Implementierung nach Phasen.
+
+---
+
 **Letzter Stand:** 16.04.26 – **ök2 Galerie: alter Fremden-Vollbanner weg** – **`showOek2FremdeOrientierungsBanner`** + großer grauer/grüner Block (Muster, CD, Sparten, **Mit mir in den Admin**) entfernt; Führung über **`Oek2GalerieLeitfadenModal`**. Ein **Sparten-Kasten** oben für **`musterOnly && !isGalerieUser`**, **Galerie teilen** wieder ohne Banner-Bedingung, Admin-Zeile ohne `showOek2…`. **Tests + Build** grün. **Commit:** **`06761ba8`** ✅ auf GitHub
 
 ---
@@ -23,9 +27,9 @@
 **Letzter Stand:** 16.04.26 – **Huber-Leitfaden: inhaltlich durchgängig** – Analyse: Startseite **Kacheln** vs **reduzierte Leiste**, **Events/Kalender** = Leiste **zwei** Einträge + **Subnav** unter der Leiste; **Geschichten/Gedenkort** = **zwei** Menüpunkte, Link-Schritt nur Geschichten. Texte in **`FamilieMusterHuberLeitfaden`**, Drehbuch **`10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md`** Phase 3 ergänzt. **Tests** grün. **Commit:** **`5249866e`** ✅ GitHub
 
 ---
-**Was wir JETZT tun:** Auf **Vercel** ök2 **Demo-Galerie** öffnen: kein alter **Vollbanner** mehr, nur **Sparten-Kasten** + **Rundgang-Sheet** – kurz gegenprüfen.
+**Was wir JETZT tun:** **Konzept** in **`KONZEPT-PLATTFORM-RUNDGANG-OEK2-VK2.md`** lesen und **abnehmen** (oder Anpassungen nennen). Optional: Vercel ök2 kurz gegenprüfen (kein Vollbanner, Rundgang-Sheet).
 
-**Einordnung:** **Sportwagen:** `renderLeitfadenMarkdownLite` + `familieLeitfadenFocus` – ök2 nutzt dasselbe Muster wie K2 Familie, eigene Schritte in **`Oek2GalerieLeitfadenModal`**.
+**Einordnung:** **Eine Plattform-Idee**, **zwei Demos** (ök2 / VK2): gleiche technische Schale, **getrennte** Inhalte und Keys; K2-Familie-Rundgang = Referenz für Shell/Fokus, **nicht** 1:1 kopieren; **VK2** Rundgang-Sheet folgt nach Abnahme (Phasen B–E in der Konzept-Datei).
 
 ---
 
