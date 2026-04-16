@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 16.04.26 (Abend) – **Session-Ende:** Entdecken (Weg K2 Familie), K2-Familie Muster-Nav, Präsentationsmappe Einstiegsadressen, Vertrieb-Doku – **Tests + Build** grün, **Commit:** _(nach Push)_ ✅ GitHub. **Morgen:** Plattform **VK2-Rundgang** auf Vercel kurz prüfen.
+**Letzter Stand:** 16.04.26 (Abend) – **Session-Ende:** Entdecken (Weg K2 Familie), K2-Familie Muster-Nav, Präsentationsmappe Einstiegsadressen, Vertrieb-Doku – **Tests + Build** grün, **Commit:** **`8655bd5c`** ✅ GitHub. **Morgen:** Plattform **VK2-Rundgang** auf Vercel kurz prüfen.
 
 ---
 
