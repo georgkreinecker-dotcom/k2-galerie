@@ -51,6 +51,19 @@ export const PRODUCT_KERN_EIGENER_ORT = 'Eigener Ort statt Miete bei anderen.'
 export const PRODUCT_POSITIONING_SWEET_SPOT = 'Zu klein für die Großen, zu komplex für die Kleinen – genau unser Platz.'
 
 /**
+ * K2 Familie – Werbelinie (eigenes Produkt, nicht K2 Galerie).
+ * Slogan + Werbebotschaft in einem Satz; Deckblätter, Vertrieb.
+ */
+export const PRODUCT_K2_FAMILIE_WERBESLOGAN = 'Dein privater Familienraum.'
+
+/** Werbebotschaft in einem Satz (Zusatz zum Slogan). */
+export const PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ =
+  'K2 Familie gibt eurer Familie einen geschützten digitalen Raum für Beziehungen, Stammbaum und gemeinsame Geschichten.'
+
+/** Deckblatt / Druck: Slogan + Werbebotschaft hintereinander. */
+export const PRODUCT_K2_FAMILIE_WERBELINIE_DECKBLATT = `${PRODUCT_K2_FAMILIE_WERBESLOGAN} ${PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ}`
+
+/**
  * Event-Bogen Rückseite (Spalte rechts): kurz und klar, was **ök2** ist.
  * Nur Marketing/Demo – keine K2-Stammdaten. Absätze durch Leerzeile getrennt.
  * Inhalt abstimmen mit: PRODUCT_ZIELGRUPPE, PRODUKT-VISION (Leitbotschaft, Zielgruppe),
