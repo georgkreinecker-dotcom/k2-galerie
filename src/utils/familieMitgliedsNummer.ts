@@ -78,6 +78,32 @@ export function findPersonIdByMitgliedsNummer(
 }
 
 /**
+ * Nach mergeById(Server, Local) kann die neuere lokale Kopie ohne persönlichen Code gewinnen,
+ * obwohl die Cloud den Code hat → Anmeldung mit Code auf fremdem Gerät findet keine Person.
+ * Übernimmt `mitgliedsNummer` aus der Server-Liste, wenn die gemergte Person keinen Code hat.
+ */
+export function ergaenzeMitgliedsNummerAusServerListe(
+  serverPersonen: K2FamiliePerson[],
+  mergedPersonen: K2FamiliePerson[]
+): K2FamiliePerson[] {
+  const byId = new Map<string, K2FamiliePerson>()
+  for (const s of serverPersonen) {
+    if (s?.id) byId.set(s.id, s)
+  }
+  return mergedPersonen.map((p) => {
+    if (!p?.id) return p
+    const server = byId.get(p.id)
+    if (!server) return p
+    const localCode = trimMitgliedsNummerEingabe(p.mitgliedsNummer)
+    const serverCode = trimMitgliedsNummerEingabe(server.mitgliedsNummer)
+    if (!localCode && serverCode) {
+      return { ...p, mitgliedsNummer: server.mitgliedsNummer }
+    }
+    return p
+  })
+}
+
+/**
  * Eingabe gegen den auf der Karte gespeicherten persönlichen Code (ohne zweite Liste zu durchsuchen).
  * Gleiche Normalisierung wie findPersonIdByMitgliedsNummer.
  */

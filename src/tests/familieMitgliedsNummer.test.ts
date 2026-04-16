@@ -3,6 +3,7 @@ import type { K2FamiliePerson } from '../types/k2Familie'
 import {
   assignMissingMitgliedsNummern,
   buildMitgliederCodesZweigGruppen,
+  ergaenzeMitgliedsNummerAusServerListe,
   findPersonIdByMitgliedsNummer,
   mitgliedsNummernImGebrauch,
   normalizeMitgliedsNummerInput,
@@ -53,6 +54,20 @@ describe('familieMitgliedsNummer', () => {
     const personen = [p('a', '1')]
     expect(findPersonIdByMitgliedsNummer(personen, '')).toBe(null)
     expect(findPersonIdByMitgliedsNummer(personen, '2')).toBe(null)
+  })
+
+  it('ergaenzeMitgliedsNummerAusServerListe: gemergte Kopie ohne Code, Server hat Code (fremdes Gerät)', () => {
+    const server = [p('x', 'AB12')]
+    const mergedOhneCode = [p('x', undefined)]
+    const out = ergaenzeMitgliedsNummerAusServerListe(server, mergedOhneCode)
+    expect(findPersonIdByMitgliedsNummer(out, 'ab12')).toBe('x')
+  })
+
+  it('ergaenzeMitgliedsNummerAusServerListe: lokaler Code bleibt, kein Überschreiben vom Server', () => {
+    const server = [p('x', 'AB12')]
+    const merged = [p('x', 'CD34')]
+    const out = ergaenzeMitgliedsNummerAusServerListe(server, merged)
+    expect(out[0].mitgliedsNummer).toBe('CD34')
   })
 
   it('persoenlicherCodePasstZuKarte: case-insensitive, trim', () => {
