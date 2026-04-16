@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 16.04.26 – **K2 Familie Geschichte: Text aus Word einfügen** – Hinweis unter dem Inhaltsfeld (Klartext, Markdown für Überschriften); Paste nutzt **text/plain**. Handbuch **06-EVENTS-GESCHICHTE…** ergänzt. **Tests** grün. **Commit:** **`52139a02`** ✅ GitHub
+
+---
+
 **Letzter Stand:** 15.04.26 – **K2 Familie Handy: Scroll hängt nicht mehr, Ränder tippbar** – **Ursache:** doppeltes Scrollen (`.mission-wrapper` + `.viewport`) und Padding außerhalb des Scrollbereichs → iOS wirkte „klebrig“, Rand wirkte tot. **Fix** (`App.css` ≤768px): Shell/Spalte **`100dvh`**, **`overflow: hidden`**; nur **`k2-familie-main`** scrollt (`overflow-y: auto`, Touch/Overscroll); **`mission-wrapper`** ohne eigenes Scroll-Padding, Inhalt mit **Safe-Area**; **Print:** Shell/Main wieder **`height: auto` / `overflow: visible`**. **Tests + Build** grün. **Commit:** **`0b44a770`** ✅ GitHub
 
 **Was wir JETZT tun:** **Sessionende 15.04.** – Nächster Schritt wenn du wieder da bist: Vercel **Ready** → am Handy **Scroll + Rand** kurz **testen** (Stammbaum); bei Problemen konkrete Seite.
