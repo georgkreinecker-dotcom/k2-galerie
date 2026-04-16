@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 16.04.26 – **ök2 Galerie: alter Fremden-Vollbanner weg** – **`showOek2FremdeOrientierungsBanner`** + großer grauer/grüner Block (Muster, CD, Sparten, **Mit mir in den Admin**) entfernt; Führung über **`Oek2GalerieLeitfadenModal`**. Ein **Sparten-Kasten** oben für **`musterOnly && !isGalerieUser`**, **Galerie teilen** wieder ohne Banner-Bedingung, Admin-Zeile ohne `showOek2…`. **Tests + Build** grün. **Commit:** **`06761ba8`** ✅ auf GitHub
+
+---
+
 **Letzter Stand:** 16.04.26 – **ök2 Galerie: Rundgang wie K2 Familie – Aufräumen + Fix** – Nach `export default` lag **~600 Zeilen** toter **GalerieEntdeckenGuide**-Code; entfernt, **`GuideAbschlussKarte`** bleibt davor. Zweiter JSX-Block: **`Oek2GalerieLeitfadenModal`** + **`musterOnly &&`**. **`Oek2GalerieLeitfadenModal.tsx`** + **`renderLeitfadenMarkdownLite.tsx`** nachgetragen (lokal neu, im Repo gefehlt). **Commits:** **`66d85d40`**, **`52e323ee`** ✅ GitHub
 
 ---
@@ -19,7 +23,7 @@
 **Letzter Stand:** 16.04.26 – **Huber-Leitfaden: inhaltlich durchgängig** – Analyse: Startseite **Kacheln** vs **reduzierte Leiste**, **Events/Kalender** = Leiste **zwei** Einträge + **Subnav** unter der Leiste; **Geschichten/Gedenkort** = **zwei** Menüpunkte, Link-Schritt nur Geschichten. Texte in **`FamilieMusterHuberLeitfaden`**, Drehbuch **`10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md`** Phase 3 ergänzt. **Tests** grün. **Commit:** **`5249866e`** ✅ GitHub
 
 ---
-**Was wir JETZT tun:** ök2 **Demo-Galerie** (`galerie-oeffentlich`): geführten Rundgang **Sheet** kurz prüfen (Schritte, Fokus, ohne Audio); bei Bedarf Texte nachziehen.
+**Was wir JETZT tun:** Auf **Vercel** ök2 **Demo-Galerie** öffnen: kein alter **Vollbanner** mehr, nur **Sparten-Kasten** + **Rundgang-Sheet** – kurz gegenprüfen.
 
 **Einordnung:** **Sportwagen:** `renderLeitfadenMarkdownLite` + `familieLeitfadenFocus` – ök2 nutzt dasselbe Muster wie K2 Familie, eigene Schritte in **`Oek2GalerieLeitfadenModal`**.
 
