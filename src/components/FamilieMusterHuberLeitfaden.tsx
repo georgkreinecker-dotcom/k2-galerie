@@ -129,9 +129,11 @@ export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
     id: 'home',
     titel: 'Meine Familie',
     stimmung: 'Wo ihr ankommt.',
-    body: '**Meine Familie:** der Einstieg mit Willkommen und Überblick – der Ort, an dem ihr **euren** Alltag in der App beginnt.',
+    body:
+      '**Meine Familie:** der Einstieg mit Willkommen und Überblick – der Ort, an dem ihr **euren** Alltag in der App beginnt.\n\n' +
+      '**Große Kacheln** führen zu **Stammbaum**, **Events & Kalender**, **Geschichten** und **Gedenkort**. Auf **dieser** Startseite zeigt die **Leiste oben** nur **Meine Familie**, **Handbuch** und **Einstellungen** – die **volle Leiste** mit allen Bereichen erscheint, sobald ihr **über eine Kachel** in einen Bereich gewechselt habt (dort findet ihr dieselben Ziele auch als **einzelne** Menüpunkte).',
     linkTo: K2_FAMILIE_APP_SHORT_PATH,
-    linkLabel: 'Diese Seite gleich öffnen',
+    linkLabel: 'Zur Startseite Meine Familie',
     focusKey: 'home',
   }),
   leitfadenStep({
@@ -148,19 +150,22 @@ export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
     titel: 'Events & Kalender',
     stimmung: 'Zwei Ansichten – ein Thema: Termine.',
     body:
-      '**Ein** Thema, **zwei** Seiten: Unter **Events verwalten** tragt ihr **Termine** ein und **bearbeitet** sie. Unter **Kalender-Ansicht** seht ihr **das Jahr** im **Monatsraster** – **dieselben** Termine, **anders** dargestellt.\n\n' +
-      '**Zwischen** beiden wechselt ihr mit den **beiden Buttons** direkt **unter der Menüleiste** – **auf beiden** Seiten gleich. **Die Menüleiste oben** bringt euch **von jeder Seite** **hierher**.',
+      '**Ein** Thema – **Termine**: In der **oberen Menüleiste** (wenn ihr **nicht** mehr auf der Startseite seid) gibt es **zwei** Einträge: **Events** und **Kalender**. **Events** = **Liste** zum **Anlegen** und **Bearbeiten**. **Kalender** = **Jahr** im **Monatsraster** – **dieselben** Termine, **anders** gezeigt.\n\n' +
+      '**Wenn** ihr schon auf der **Events-** oder **Kalender-Seite** seid: **Direkt unter** der Menüleiste gibt es noch **Events verwalten** und **Kalender-Ansicht** – das ist der **schnelle Wechsel** zwischen **Listen-** und **Kalender-Ansicht**, **ohne** ein zweites Thema.\n\n' +
+      'Von **Meine Familie** aus führt **eine** Kachel **„Events & Kalender“** zuerst in die **Event-Übersicht**; den **Kalender** erreicht ihr **oben** über **Kalender** oder mit **Kalender-Ansicht** von der Events-Seite.',
     linkTo: R.events,
-    linkLabel: 'Zu Events verwalten',
+    linkLabel: 'Zu Events – Listenansicht',
     focusKey: 'events',
   }),
   leitfadenStep({
     id: 'geschichte',
     titel: `${K2_FAMILIE_NAV_LABEL_GESCHICHTE} & Gedenkort`,
     stimmung: 'Erzählen und Gedenken.',
-    body: '**Geschichten & Gedenkort:** was ihr **in Worten** und **an Orten** festhalten wollt.',
+    body:
+      '**Geschichten** und **Gedenkort** sind in der **vollen** Menüleiste **zwei** **eigene** Punkte – **zwei** Einstiege. **Geschichten** = **Texte**; **Gedenkort** = **Ort** oder **Raum** der Erinnerung.\n\n' +
+      '**Dieser** Schritt öffnet **Geschichten**; **Gedenkort** erreicht ihr **oben** in der Leiste oder von **Meine Familie** aus **über die Kachel**.',
     linkTo: R.geschichte,
-    linkLabel: 'Geschichten ansehen',
+    linkLabel: 'Zu Geschichten',
     focusKey: 'geschichte',
   }),
   leitfadenStep({

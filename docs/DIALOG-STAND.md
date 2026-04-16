@@ -1,11 +1,11 @@
 # Dialog-Stand
 
-**Letzter Stand:** 16.04.26 – **Huber-Leitfaden: Events & Kalender erklärt** – Schritt **`events-kalender`**: **ein Thema, zwei Seiten** wie Subnav (**Events verwalten** / **Kalender-Ansicht**); Button **„Zu Events verwalten“**; Nav-Hover **`MUSTER_HINT_NAV_*`** angeglichen. **Tests + Build** grün. **Commit:** _(nach Push eintragen)_
+**Letzter Stand:** 16.04.26 – **Huber-Leitfaden: inhaltlich durchgängig** – Analyse: Startseite **Kacheln** vs **reduzierte Leiste**, **Events/Kalender** = Leiste **zwei** Einträge + **Subnav** unter der Leiste; **Geschichten/Gedenkort** = **zwei** Menüpunkte, Link-Schritt nur Geschichten. Texte in **`FamilieMusterHuberLeitfaden`**, Drehbuch **`10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md`** Phase 3 ergänzt. **Tests** grün. **Commit:** _(nach Push)_
 
 ---
-**Was wir JETZT tun:** Muster **`?t=huber`** – Leitfaden-Schritt **Events & Kalender** + Seite Events/Kalender: **zwei Buttons** = **keine zwei Welten**.
+**Was wir JETZT tun:** Muster **`?t=huber`** – Rundgang Schritte **Meine Familie**, **Events & Kalender**, **Geschichten** kurz lesen (kein Widerspruch zur Oberfläche).
 
-**Einordnung:** Verwirrung kam von **Kalender** im Text vs. nur **Events-Link** – jetzt **gleiche Begriffe** wie in der Oberfläche. **Weiter:** Huber-Leitfaden soll **Menschen-Thema** wirken, nicht nur Feature-Liste.
+**Einordnung:** Logische Kette = **erst** erklären **wo** man klickt (Kachel vs volle Leiste), **dann** Termine (Leiste vs Subnav).
 
 ---
 

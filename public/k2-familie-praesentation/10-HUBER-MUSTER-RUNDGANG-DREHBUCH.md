@@ -11,6 +11,7 @@
 **Einstieg**
 
 - Kurz nachfragen, ob Bildschirm oder Handy gut zu sehen ist.
+- **Begrüßung (wie in der App):** **Herzlich willkommen** bei diesem Rundgang – schön, dass ihr dabei seid.
 - **Kernaussage (wie in der App):** Familie im weitesten Sinn – **wer zusammengehört**, **was gemeinsam erlebt wird**, **was festgehalten werden soll**. **Genom:** Familiendaten werden **nicht** kommerziell verwertet – **für immer** ausgeschlossen. **Musterfamilie Huber:** nur erfundene Beispiele zum Hineinschnuppern.
 
 [SEITENUMBRUCH]
@@ -43,7 +44,9 @@
 
 **Optional live**
 
-- Stammbaum, Startseite, ein Event – **kurz**, je nach Aufmerksamkeit.
+- **Startseite:** große **Kacheln** zu Stammbaum, Events & Kalender, Geschichten, Gedenkort; die **volle Menüleiste** mit allen Punkten kommt, sobald man **in einen Bereich** gewechselt hat.
+- **Events vs. Kalender:** in der Leiste **zwei** Einträge, **ein** Terminbestand; **unter** der Leiste auf Events/Kalender-Seite noch **Events verwalten** / **Kalender-Ansicht** zum schnellen Wechsel der **Ansicht**.
+- Stammbaum, ein Event – **kurz**, je nach Aufmerksamkeit.
 
 [SEITENUMBRUCH]
 
