@@ -1,31 +1,24 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import {
-  cancelFamilieMusterHintSpeech,
-  speakFamilieMusterHintText,
+  normalizeGermanSpeechForFamilieMuster,
   stripBoldMarkersForSpeech,
 } from '../utils/familieMusterHintSpeech'
 
 describe('familieMusterHintSpeech', () => {
-  it('stripBoldMarkersForSpeech: **…** wird für TTS entfernt', () => {
-    expect(stripBoldMarkersForSpeech('**K2 Familie** ist gut.')).toBe('K2 Familie ist gut.')
+  it('stripBoldMarkersForSpeech entfernt **…**', () => {
+    expect(stripBoldMarkersForSpeech('**Events** und **Kalender**')).toBe('Events und Kalender')
   })
 
-  it('speakFamilieMusterHintText: leer bricht nicht ab und ruft cancel/speak nicht sinnlos auf', () => {
-    const cancel = vi.fn()
-    const speak = vi.fn()
-    const orig = window.speechSynthesis
-    // @ts-expect-error Test-Mock
-    window.speechSynthesis = { cancel, speak } as SpeechSynthesis
-    speakFamilieMusterHintText('   ')
-    expect(speak).not.toHaveBeenCalled()
-    window.speechSynthesis = orig
+  it('normalizeGermanSpeechForFamilieMuster: Event(s) → Termin(e), & → und', () => {
+    expect(normalizeGermanSpeechForFamilieMuster('Events und Kalender')).toBe('Termine und Kalender')
+    expect(normalizeGermanSpeechForFamilieMuster('Events & Kalender')).toBe('Termine und Kalender')
+    expect(normalizeGermanSpeechForFamilieMuster('Events verwalten')).toBe('Termine verwalten')
+    expect(normalizeGermanSpeechForFamilieMuster('Event-Übersicht')).toBe('Termin-Übersicht')
+    expect(normalizeGermanSpeechForFamilieMuster('Events-Seite')).toBe('Termin-Seite')
+    expect(normalizeGermanSpeechForFamilieMuster('Events- oder Kalender-Seite')).toBe('Termin- oder Kalender-Seite')
   })
 
-  it('cancelFamilieMusterHintSpeech: ohne API bricht nicht ab', () => {
-    const orig = window.speechSynthesis
-    // @ts-expect-error Test
-    window.speechSynthesis = undefined
-    expect(() => cancelFamilieMusterHintSpeech()).not.toThrow()
-    window.speechSynthesis = orig
+  it('Event- am Wortanfang nicht durch einzelnes Event-Replacement zerschneiden', () => {
+    expect(normalizeGermanSpeechForFamilieMuster('Event-Übersicht bleibt')).toBe('Termin-Übersicht bleibt')
   })
 })

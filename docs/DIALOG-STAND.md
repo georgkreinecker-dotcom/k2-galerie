@@ -1,6 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 16.04.26 – **Huber-Leitfaden: inhaltlich durchgängig** – Analyse: Startseite **Kacheln** vs **reduzierte Leiste**, **Events/Kalender** = Leiste **zwei** Einträge + **Subnav** unter der Leiste; **Geschichten/Gedenkort** = **zwei** Menüpunkte, Link-Schritt nur Geschichten. Texte in **`FamilieMusterHuberLeitfaden`**, Drehbuch **`10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md`** Phase 3 ergänzt. **Tests** grün. **Commit:** _(nach Push)_
+**Letzter Stand:** 16.04.26 – **Muster-TTS: „Entor“ = engl. Event(s)** – Im Vorlesetext stand kein „Entor“; deutsche **speechSynthesis**-Stimmen lesen **Event/Events** oft falsch. **Fix:** `normalizeGermanSpeechForFamilieMuster` in **`familieMusterHintSpeech.ts`**: nur für Vorlesen **Event(s)** → **Termin(e)**, Phrasen wie **Events & Kalender** → **Termine und Kalender**, **`&`** → **und**; Tests **`familieMusterHintSpeech.test.ts`**. **Tests + Build** grün. **Commit:** _(nach Push)_
+
+---
+
+**Letzter Stand:** 16.04.26 – **Huber-Leitfaden: inhaltlich durchgängig** – Analyse: Startseite **Kacheln** vs **reduzierte Leiste**, **Events/Kalender** = Leiste **zwei** Einträge + **Subnav** unter der Leiste; **Geschichten/Gedenkort** = **zwei** Menüpunkte, Link-Schritt nur Geschichten. Texte in **`FamilieMusterHuberLeitfaden`**, Drehbuch **`10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md`** Phase 3 ergänzt. **Tests** grün. **Commit:** **`5249866e`** ✅ GitHub
 
 ---
 **Was wir JETZT tun:** Muster **`?t=huber`** – Rundgang Schritte **Meine Familie**, **Events & Kalender**, **Geschichten** kurz lesen (kein Widerspruch zur Oberfläche).
