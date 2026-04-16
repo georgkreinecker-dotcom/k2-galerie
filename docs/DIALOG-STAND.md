@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 16.04.26 – **K2 Familie Cloud/Mobil & Geschichten** – **`familieSupabaseClient`:** **`fetchFamilieWithTimeout`** (~20 s) für GET/POST gegen hängende Requests. **Start:** Vollbild-Willkommen – Tipp auf Bild schließt Overlay, Touch/Overscroll am Overlay; Text angepasst. **Einladungs-Sync:** kürzeres Retry-**`delaysMs`**. **Geschichte:** `isGeschichteInArbeit` / Typ; Test **`familieGeschichteStatus.test.ts`**. **Tests + Build** grün. **Commit:** **`64db1248`** ✅ GitHub
+
+---
+
 **Letzter Stand:** 16.04.26 – **K2 Familie: fertige Geschichten nur Inhaber löscht** – Capability **`canDeleteFertigeGeschichte`** (`effectiveRolle === 'inhaber'`); Bearbeiter:innen: **Löschen** nur bei **Entwürfen**; Register + Editor: Hinweis **PDF sichern**. Handbuch **06-EVENTS-…**, Druck-Rechte-Zeile Bearbeiter. **Tests + Build** grün. **Commit:** **`069df45e`** ✅ GitHub (nach Push)
 
 ---
