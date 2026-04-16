@@ -102,6 +102,7 @@ export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
     titel: 'Herzlich willkommen',
     stimmung: 'Um Zugehörigkeit, Erinnerung und was bleibt – nicht um andere Welten.',
     body:
+      '**Herzlich willkommen** bei diesem Rundgang. Schön, dass ihr dabei seid.\n\n' +
       'Familie, im weitesten Sinn: **wer zusammengehört**, **was ihr gemeinsam erlebt**, **was ihr festhalten wollt** – Freude, Abschied, Alltag.\n\n' +
       '**Eure Daten gehören euch.** In K2 Familie ist das **Genom** festgeschrieben: **keine kommerzielle Verwertung** der Familiendaten – **für immer** ausgeschlossen.\n\n' +
       '**Musterfamilie Huber:** nur erfundene Beispiele, damit ihr **hineinschnuppern** könnt.',
@@ -146,7 +147,9 @@ export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
     id: 'events-kalender',
     titel: 'Events & Kalender',
     stimmung: 'Gemeinsam im Jahr.',
-    body: '**Kalender & Events:** was ansteht und was ihr feiert – auch über die **Menüleiste oben**.',
+    body:
+      'Im **Kalender** steht, **was wann** bei euch anliegt – **Alltagstermine** und **Tage**, die ihr **gemeinsam** plant.\n\n' +
+      '**Über die Menüleiste oben** kommt ihr **von jeder Seite** wieder zu **Kalender und Events**.',
     linkTo: R.events,
     linkLabel: 'Zu den Events',
     focusKey: 'events',
@@ -733,7 +736,7 @@ function LeitfadenSheetInner({
     cancelFamilieMusterHintSpeech()
     const text = hoverHint ?? s.sprecherDrehbuch
     if (!text) return
-    const delay = hoverHint ? 380 : 520
+    const delay = hoverHint ? 400 : s.id === 'begruessung' ? 680 : 560
     const id = window.setTimeout(() => {
       speakFamilieMusterHintText(text)
     }, delay)
