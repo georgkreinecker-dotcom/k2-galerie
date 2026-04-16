@@ -2,6 +2,10 @@
 
 **Zweck:** Einordnung und Verweise – **kein** zweiter Langtext neben dem Kurzprospekt.
 
+## Einstiegsadressen für Prospekte und Postings
+
+- **Eine Quelle:** [public/k2-familie-praesentation/00-EINSTIEGSADRESSEN.md](../public/k2-familie-praesentation/00-EINSTIEGSADRESSEN.md) – Pfade, Voll-URLs, Produktions-Basis; technisch `src/config/externalUrls.ts`.
+
 ## Lesefassung für Druck und Gespräche
 
 - **Eine Quelle für den Text:** [public/k2-familie-praesentation/01-KURZPROSPEKT-VERTIEB.md](../public/k2-familie-praesentation/01-KURZPROSPEKT-VERTIEB.md)

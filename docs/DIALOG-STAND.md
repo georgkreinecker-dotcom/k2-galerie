@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 16.04.26 (Abend) – **Session-Ende:** Entdecken (Weg K2 Familie), K2-Familie Muster-Nav, Präsentationsmappe Einstiegsadressen, Vertrieb-Doku – **Tests + Build** grün, **Commit:** _(nach Push)_ ✅ GitHub. **Morgen:** Plattform **VK2-Rundgang** auf Vercel kurz prüfen.
+
+---
+
 **Letzter Stand:** 16.04.26 – **Plattform-Rundgang: VK2-Sheet + ök2-Schritte (nur Guide)** – **`Vk2GalerieLeitfadenModal`** wie ök2-Sheet; Schritte **`vk2GalerieLeitfadenSteps`** / **`oek2GalerieLeitfadenSteps`**; Fokus **`data-oek2-` / `data-vk2-leitfaden-focus`** in **`familieLeitfadenFocus`**; **`Vk2GaleriePage`**: Rundgang nur Plattform ohne Admin/Vorschau; Test **`vk2GalerieLeitfadenSteps.test.ts`**. Keine K2-Familie-Entdecken/Layout-Änderungen in diesem Commit (liegen noch lokal). **Tests + Build** grün. **Commit:** **`2449b3f7`** ✅ auf GitHub
 
 ---

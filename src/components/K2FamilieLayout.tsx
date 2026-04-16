@@ -767,6 +767,7 @@ function FamilieNav() {
   const path = loc.pathname
   const { capabilities } = useFamilieRolle()
   const isMeineFamilieHome = isK2FamilieMeineFamilieHomePath(path)
+  const nurMusterBesuch = isFamilieNurMusterSession()
   const isLeser = capabilities.rolle === 'leser'
   const navItems = useMemo((): FamilieNavItem[] => {
     if (isMeineFamilieHome) {
@@ -781,6 +782,48 @@ function FamilieNav() {
     }
     return FAMILIE_NAV
   }, [isMeineFamilieHome, isLeser])
+
+  /** Musterfamilie-Start: keine APf-Tabs – nur Inhalt der Startseite. Unterseiten: minimal Zurück + Link zur Musterfamilie. */
+  if (nurMusterBesuch && isMeineFamilieHome) {
+    return null
+  }
+  if (nurMusterBesuch && !isMeineFamilieHome) {
+    return (
+      <nav
+        className="k2-familie-nav k2-familie-no-print"
+        aria-label="K2 Familie"
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '0.5rem',
+          alignItems: 'center',
+          padding: '0.65rem 1rem',
+          background: t.bgDark,
+          borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
+          marginBottom: 0,
+        }}
+      >
+        <FamilieBackButton style={{ color: t.text, marginRight: '0.25rem' }} />
+        <Link
+          to={K2_FAMILIE_APP_SHORT_PATH}
+          className="k2-familie-nav-link"
+          style={{
+            padding: '0.45rem 0.85rem',
+            borderRadius: 999,
+            fontSize: '0.88rem',
+            fontWeight: 600,
+            textDecoration: 'none',
+            color: '#fff',
+            background: t.accent,
+            fontFamily: 'inherit',
+            border: 'none',
+          }}
+        >
+          Zur Musterfamilie
+        </Link>
+      </nav>
+    )
+  }
 
   return (
     <nav
@@ -928,7 +971,7 @@ function FamilieLayoutInner() {
           ) : (
             <>
               <FamilieTenantToolbar />
-              <FamilieRolleLeiste />
+              {!isK2FamilieMeineFamilieHomePath(location.pathname) ? <FamilieRolleLeiste /> : null}
             </>
           )}
         </>
@@ -949,8 +992,8 @@ function FamilieLayoutInner() {
       <FamilieApfMeineFamilieSync />
       <FamilieMusterSessionEnforcer />
       <FamilieCloudAutoSync />
-      <div className="k2-familie-layout-shell">
-        {!nurMitgliedEinstieg ? <FamilieLeitstrukturPanel /> : null}
+      <div className={`k2-familie-layout-shell${nurMuster ? ' k2-familie-layout-shell--nur-muster' : ''}`}>
+        {!nurMitgliedEinstieg && !nurMuster ? <FamilieLeitstrukturPanel /> : null}
         <FamilieMusterDemoHintProvider active={nurMuster} root={musterHintRoot}>
           <div ref={setMusterHintRoot} className="k2-familie-layout-column">
             {columnInner}

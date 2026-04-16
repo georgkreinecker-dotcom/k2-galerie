@@ -2,7 +2,7 @@
  * EntdeckenPage – **Eingangstor** (Georg): Landing für neue Nutzer:innen
  * Route: /entdecken (= OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE in navigation.ts)
  *
- * Hero + Tor-Bild + „Jetzt entdecken“ → 3-Fragen-Flow → persönliche Demo (ök2-Galerie).
+ * Hero + Tor-Bild + „Jetzt entdecken“ → Wegwahl (ök2, VK2 oder K2 Familie) → Demo bzw. Familien-Einstieg.
  * Kein Verkaufsdruck, kein Formular, kein Anmeldeformular.
  * Am Ende: verblüffender Moment – „Das ist deine Galerie."
  */
@@ -13,7 +13,7 @@ import QRCode from 'qrcode'
 import { PROJECT_ROUTES, AGB_ROUTE, BASE_APP_URL, ENTDECKEN_ROUTE } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { prepareFreshOek2VisitorSession } from '../utils/oek2FreshStart'
-import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
+import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_K2_FAMILIE_WERBESLOGAN, PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ } from '../config/tenantConfig'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_LIZENZ_ANFRAGE_BETREFF } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import {
@@ -64,15 +64,23 @@ const T_DEFAULTS = {
 
   weg: 'Wofür interessierst du dich?',
   wegSolo: {
-    emoji: '🖼️',
+    emoji: '💡',
     label: 'Meine eigene Plattform',
-    sub: 'Dein Corporate Design: eine Linie für die Galerie, Einladungen und Druck. Im Mittelpunkt steht Galerie gestalten – Farben, Bilder, Texte – alles andere baut darauf auf.',
+    sub: 'Für deine Ideen und deinen Auftritt im Netz: alles an einem Ort sichtbar machen – professionell, ohne dich in Einzel-Tools zu verzetteln.',
   },
-  wegVerein: { emoji: '🏛️', label: 'Vereinsplattform', sub: 'Gemeinsamer Katalog, Mitglieder, gemeinsame Plattform – eine eigene Welt.' },
-  /** Zeile unter der Weg-Frage: Link Präsentationsmappe + kurzer Erklärungsverweis */
-  wegMappeVorLink: 'Zum Einordnen: In der ',
-  wegMappeLinkLabel: 'Präsentationsmappe',
-  wegMappeNachLink: ' findest du den roten Faden – Lesen, Zeigen, Drucken.',
+  wegVerein: {
+    emoji: '🏛️',
+    label: 'Vereinsplattform',
+    sub: 'Für gemeinsame Interessen und Freizeit: zusammen organisieren, sichtbar werden – eure gemeinsame Welt.',
+  },
+  /** Dritter Weg: eigenes Produkt K2 Familie – kein ök2/VK2, kein prepareFreshOek2VisitorSession */
+  wegFamilie: {
+    emoji: '🏠',
+    label: 'K2 Familie',
+    sub: `${PRODUCT_K2_FAMILIE_WERBESLOGAN} ${PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ}`,
+  },
+  /** Kurzer Hinweis unter der Überschrift – ohne Präsentationsmappe (später ergänzbar) */
+  wegIntro: 'Ein Klick – du siehst sofort, was dich erwartet.',
 
   q3: 'Wie heißt du – oder deine Galerie?',
   q3placeholder: 'Dein Künstlername oder Galeriename',
@@ -618,7 +626,10 @@ export default function EntdeckenPage() {
   const initialQ1 = (() => {
     try {
       const q = new URLSearchParams(window.location.search).get('weg') ?? new URLSearchParams(window.location.search).get('q1') ?? ''
-      return q === 'verein' ? 'verein' : q === 'solo' ? 'solo' : ''
+      if (q === 'verein') return 'verein'
+      if (q === 'solo') return 'solo'
+      if (q === 'familie') return 'familie'
+      return ''
     } catch (_) { return '' }
   })()
   const [step, setStep] = useState<Step>(initialStep)
@@ -723,35 +734,50 @@ export default function EntdeckenPage() {
     navigate(url)
   }
 
-  // ─── Hilfs-Komponente: Auswahl-Karte ────────────────────────────────────────
+  /** K2 Familie: eigener Marketing-Einstieg – keine ök2-Demo-Session leeren */
+  const openK2FamilieFromEntdecken = () => {
+    navigate(PROJECT_ROUTES['k2-familie'].willkommen)
+  }
+
+  // ─── Hilfs-Komponente: Auswahl-Karte (eigene Akzentfarbe + Hover) ────────────
   function ChoiceCard({ emoji, label, sub, selected, onClick, color }: { emoji: string; label: string; sub: string; selected: boolean; onClick: () => void; color?: string }) {
     const c = color ?? accent
+    const [hover, setHover] = useState(false)
+    const border = selected ? c : hover ? `${c}88` : `${c}40`
+    const background = selected ? `${c}1f` : hover ? `${c}16` : `${c}0d`
+    const shadow = selected
+      ? `0 6px 20px ${c}30`
+      : hover
+        ? `0 8px 24px ${c}28`
+        : `0 2px 8px ${c}12`
+    const lift = hover || selected ? 'translateY(-2px)' : 'translateY(0)'
     return (
       <button
         type="button"
         onClick={onClick}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
         style={{
           width: '100%',
           display: 'flex',
           alignItems: 'flex-start',
           gap: '1rem',
           padding: '1.1rem 1.25rem',
-          background: selected ? `${c}12` : bgCard,
-          border: `2px solid ${selected ? c : '#e0d5c5'}`,
+          background,
+          border: `2px solid ${border}`,
           borderRadius: '14px',
           cursor: 'pointer',
           fontFamily: fontBody,
           textAlign: 'left',
           marginBottom: '0.65rem',
-          transition: 'all 0.18s',
-          boxShadow: selected ? `0 4px 16px ${c}22` : '0 1px 4px rgba(0,0,0,0.04)',
+          transition: 'background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease',
+          boxShadow: shadow,
+          transform: lift,
         }}
-        onMouseEnter={e => { if (!selected) { e.currentTarget.style.borderColor = `${c}66`; e.currentTarget.style.background = `${c}06` } }}
-        onMouseLeave={e => { if (!selected) { e.currentTarget.style.borderColor = '#e0d5c5'; e.currentTarget.style.background = bgCard } }}
       >
         <span style={{ fontSize: '1.6rem', lineHeight: 1, flexShrink: 0, marginTop: '0.1rem' }}>{emoji}</span>
         <span>
-          <span style={{ display: 'block', fontWeight: 700, fontSize: '0.98rem', color: selected ? c : text, marginBottom: '0.18rem' }}>{label}</span>
+          <span style={{ display: 'block', fontWeight: 700, fontSize: '0.98rem', color: selected || hover ? c : text, marginBottom: '0.18rem', transition: 'color 0.2s ease' }}>{label}</span>
           <span style={{ fontSize: '0.82rem', color: muted, lineHeight: 1.45 }}>{sub}</span>
         </span>
         {selected && <span style={{ marginLeft: 'auto', color: c, fontSize: '1.2rem', flexShrink: 0, alignSelf: 'center' }}>✓</span>}
@@ -955,21 +981,19 @@ export default function EntdeckenPage() {
               {T.weg}
             </h2>
             <p style={{ fontSize: '0.82rem', color: muted, textAlign: 'center', lineHeight: 1.5, marginBottom: '1.25rem', maxWidth: 500, marginLeft: 'auto', marginRight: 'auto' }}>
-              {T.wegMappeVorLink}
-              <Link
-                to={{
-                  pathname: PROJECT_ROUTES['k2-galerie'].praesentationsmappe,
-                  search: '?context=oeffentlich',
-                }}
-                state={{ returnTo: `${location.pathname}${location.search || ''}` }}
-                style={{ color: accent, fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: '2px' }}
-              >
-                {T.wegMappeLinkLabel}
-              </Link>
-              {T.wegMappeNachLink}
+              {T.wegIntro}
             </p>
-            <ChoiceCard {...T.wegSolo} selected={answers.q1 === 'solo'} onClick={() => { setAnswers(a => ({ ...a, q1: 'solo' })); openByChoice('solo'); }} />
+            <ChoiceCard {...T.wegSolo} selected={answers.q1 === 'solo'} onClick={() => { setAnswers(a => ({ ...a, q1: 'solo' })); openByChoice('solo'); }} color="#c2410c" />
             <ChoiceCard {...T.wegVerein} selected={answers.q1 === 'verein'} onClick={() => { setAnswers(a => ({ ...a, q1: 'verein' })); openByChoice('verein'); }} color="#1e5cb5" />
+            <ChoiceCard
+              {...T.wegFamilie}
+              selected={answers.q1 === 'familie'}
+              onClick={() => {
+                setAnswers(a => ({ ...a, q1: 'familie' }))
+                openK2FamilieFromEntdecken()
+              }}
+              color="#0d9488"
+            />
             <div style={{ marginTop: '1rem' }}>
               <button type="button" onClick={() => setStep('hero')} style={{ padding: '0.7rem 1.25rem', background: 'transparent', color: muted, border: `1px solid #e0d5c5`, borderRadius: '10px', cursor: 'pointer', fontFamily: fontBody, fontSize: '0.9rem' }}>{T.btnBack}</button>
             </div>

@@ -10,6 +10,11 @@ import { PRODUCT_K2_FAMILIE_WERBELINIE_DECKBLATT } from '../config/tenantConfig'
 const DOCUMENTS = [
   { id: '00-index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
   {
+    id: '00-einstiegsadressen',
+    name: 'Einstiegsadressen – Prospekte, Postings, QR',
+    file: '00-EINSTIEGSADRESSEN.md',
+  },
+  {
     id: '01-flyer-kurzprospekt',
     name: 'Flyer – Kurzprospekt Verkaufsargumentation',
     file: '01-FLYER-KURZPROSPEKT-VERKAUFSARGUMENTATION.md',
