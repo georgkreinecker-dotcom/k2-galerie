@@ -433,32 +433,6 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
     return false
   })()
 
-  /**
-   * ök2: grüner Orientierungs-Balken („So könnte dein Auftritt …“) für Fremde vor dem Admin.
-   * Nicht an `k2-admin-context` allein koppeln – der bleibt session-weit gesetzt und hätte den Balken dauerhaft versteckt (Kontext-Vergiftung).
-   * Ausblenden bei interner Herkunft: APf, embedded, fromAdmin, KEY_FROM_ADMIN, k2-oek2-from-apf, Referrer APf/Admin – außer Einstieg über Entdecken (`k2-from-entdecken`), damit der Rückweg aus dem Admin wie der Hineinweg bleibt.
-   */
-  const showOek2FremdeOrientierungsBanner = (() => {
-    if (!musterOnly) return false
-    try {
-      if (fromApf) return false
-      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embedded') === '1') return false
-      // Einstieg „Meine eigene Plattform“ (Entdecken → Muster-Galerie): vor fromAdmin / KEY_FROM_ADMIN prüfen,
-      // sonst ist nach „Galerie ansehen“ vom Admin nur noch der Sparten-Block sichtbar (Orientierungsverlust).
-      if (hasFreshOek2EntrySession()) return true
-      if ((location.state as { fromAdmin?: boolean } | null)?.fromAdmin) return false
-      if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_FROM_ADMIN) === '1') return false
-      if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_OEK2_FROM_APF) === '1') return false
-      {
-        const path = getSameOriginReferrerPath()
-        // Nur eine Quelle: galerieOek2Referrer (nicht zweite, „ältere“ Referrer-Regel parallel pflegen).
-        if (path && isReferrerIndicatingApfStyleSession(path)) return false
-      }
-      return true
-    } catch (_) {}
-    return false
-  })()
-
   /** Fremde: Direktaufruf von galerie-oeffentlich → zuerst Entdecken. Von Entdecken (Klick „Meine eigene Plattform“) → nie zurück; Flag nicht löschen, damit nach ro5/Crash/Reload der Zugang bleibt (Referrer ist oft leer). */
   useEffect(() => {
     if (!musterOnly || typeof window === 'undefined') return
@@ -2700,7 +2674,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
     return () => window.removeEventListener('keydown', onKey)
   }, [isPraesentationModus, exitPraesentationModus, plakatOverlayUrl])
 
-  /** ök2: Sparten-Liste (FOCUS_DIRECTIONS) – ein Kasten, zwei Einbauorte (großer Fremden-Balken + Fallback). */
+  /** ök2: Sparten-Liste (FOCUS_DIRECTIONS) – ein Kasten oberhalb des Hero (Rundgang-Texte im Sheet). */
   const renderOek2SpartenKasten = () => (
     <div
       role="note"
@@ -2891,8 +2865,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             <span>{displayGalleryName} – {(galerieTexts.kunstschaffendeHeading === 'Unsere Mitglieder' && !vk2 ? 'Die Kunstschaffenden' : galerieTexts.kunstschaffendeHeading) || (vk2 ? 'Unsere Mitglieder' : 'Die Kunstschaffenden')}</span>
           </div>
         )}
-        {/* Galerie teilen (fixed) – nicht parallel zum ök2-Fremden-Banner (sonst doppelt + „teilen“ vor dem Verständnis) */}
-        {typeof navigator !== 'undefined' && !showOek2FremdeOrientierungsBanner && !isPraesentationModus && (
+        {/* Galerie teilen (fixed) – ök2: kein alter Vollbanner mehr; Rundgang = Oek2GalerieLeitfadenModal */}
+        {typeof navigator !== 'undefined' && !isPraesentationModus && (
         <div ref={sharePopoverContainerRef} style={{ position: 'relative' }}>
         <button
           type="button"
@@ -3369,10 +3343,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
           </header>
         ) : (
         <>
-        {/*
-          ök2 Muster: Sparten-Guide nur für echte Fremde (grüner Balken). APf / embedded / fromAdmin: kein Sparten-Kasten oben – Georg arbeitet, kein „altes Guide-Fenster“.
-        */}
-        {musterOnly && !showOek2FremdeOrientierungsBanner && !isGalerieUser && !isPraesentationModus && (
+        {/* ök2 Muster: ein Sparten-Kasten für alle (kein zweiter großer Fremden-Balken – der ist durch den Sheet-Rundgang ersetzt) */}
+        {musterOnly && !isGalerieUser && !isPraesentationModus && (
           <div
             style={{
               margin: '0 auto',
@@ -3386,52 +3358,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             {renderOek2SpartenKasten()}
           </div>
         )}
-        {/* ök2 Fremden-Einstieg: ein Banner – Text | Sparten | Admin (nicht bei APf/embedded/fromAdmin). */}
-        {showOek2FremdeOrientierungsBanner && !isPraesentationModus && (
-          <div style={{
-            margin: 'clamp(0.75rem, 2vw, 1rem)',
-            padding: 'clamp(0.75rem, 1.8vw, 1rem) clamp(1rem, 2.5vw, 1.5rem)',
-            background: 'rgba(107, 144, 128, 0.12)',
-            border: '1px solid rgba(107, 144, 128, 0.35)',
-            borderRadius: '12px',
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-            gap: '1rem',
-            flexWrap: 'wrap',
-            maxWidth: '1400px',
-            marginLeft: 'auto',
-            marginRight: 'auto',
-          }}>
-            <span style={{ color: 'var(--k2-text)', fontSize: 'clamp(0.88rem, 2vw, 0.98rem)', lineHeight: 1.45, flex: '1 1 280px', minWidth: 0 }}>
-              Das hier ist ein <strong style={{ fontWeight: 700 }}>Muster zum Anschauen</strong> – noch nicht dein eigener Auftritt. <strong style={{ fontWeight: 700 }}>Corporate Design</strong> heißt: dieselbe Linie aus Farben, Bildern und Texten – auf der Website, bei Einladungen und beim Druck. <strong style={{ fontWeight: 700 }}>Galerie gestalten</strong> ist der Ort, an dem du das alles machen kannst. <strong style={{ fontWeight: 700 }}>Nimm dir Zeit, schau dich um</strong> – und wähle die <strong style={{ fontWeight: 700 }}>Plattform</strong> zu deinen Themen. <strong style={{ fontWeight: 700 }}>Hier</strong> siehst du die <strong style={{ fontWeight: 700 }}>Sparten</strong> – später legst du unter <strong style={{ fontWeight: 700 }}>Einstellungen</strong> deinen <strong style={{ fontWeight: 700 }}>Mein Weg</strong> fest.
-            </span>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '0.65rem', flexShrink: 0, minWidth: 'min(100%, 320px)' }}>
-              {renderOek2SpartenKasten()}
-              <div data-leitfaden-focus={musterOnly ? 'admin-hinweis' : undefined} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-              <button
-                type="button"
-                onClick={handleAdminButtonClick}
-                style={{
-                  padding: '0.5rem 1rem',
-                  background: 'var(--k2-accent)',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '10px',
-                  fontWeight: 600,
-                  fontSize: '0.9rem',
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                }}
-              >
-                Mit mir in den Admin →
-              </button>
-              </div>
-            </div>
-          </div>
-        )}
-        {/* ök2 intern/APf: optional „Admin“-Zeile nur wenn kein fixer Admin-Button oben – kein CD-Button (Design über Admin / Mein Bereich). */}
-        {musterOnly && !showOek2FremdeOrientierungsBanner && !showAdminEntryOnGalerie && !isPraesentationModus && (
+        {/* ök2: „Mit mir in den Admin“ wenn kein fixer Admin-Button (z. B. Fremde per Link) – früher im Fremden-Banner, jetzt schlank darunter */}
+        {musterOnly && !showAdminEntryOnGalerie && !isPraesentationModus && (
           <div
             style={{
               margin: 'clamp(0.75rem, 2vw, 1rem)',
