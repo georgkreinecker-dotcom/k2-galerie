@@ -2,15 +2,24 @@
 
 export const LEITFADEN_FOCUS_DATA_ATTR = 'data-leitfaden-focus'
 export const HTML_LEITFADEN_FOCUS_ATTR = 'data-k2-familie-leitfaden-focus'
+/** ök2 Demo-Galerie: gleiche `data-leitfaden-focus`-Ziele, eigenes html-Attribut für Outline-CSS. */
+export const HTML_OEK2_LEITFADEN_FOCUS_ATTR = 'data-oek2-leitfaden-focus'
+/** VK2 Vereinsgalerie-Rundgang (Plattform): gleiche Ziele, eigenes html-Attribut für Outline-CSS. */
+export const HTML_VK2_LEITFADEN_FOCUS_ATTR = 'data-vk2-leitfaden-focus'
 
-export function setLeitfadenFocusOnDocument(focusKey: string | null | undefined): void {
+export function setLeitfadenFocusOnDocument(
+  focusKey: string | null | undefined,
+  htmlAttr: string = HTML_LEITFADEN_FOCUS_ATTR,
+): void {
   if (typeof document === 'undefined') return
   const el = document.documentElement
+  el.removeAttribute(HTML_LEITFADEN_FOCUS_ATTR)
+  el.removeAttribute(HTML_OEK2_LEITFADEN_FOCUS_ATTR)
+  el.removeAttribute(HTML_VK2_LEITFADEN_FOCUS_ATTR)
   if (!focusKey) {
-    el.removeAttribute(HTML_LEITFADEN_FOCUS_ATTR)
     return
   }
-  el.setAttribute(HTML_LEITFADEN_FOCUS_ATTR, focusKey)
+  el.setAttribute(htmlAttr, focusKey)
 }
 
 export function scrollLeitfadenFocusIntoView(focusKey: string | null | undefined): void {

@@ -2,7 +2,13 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, BASE_APP_URL, ENTDECKEN_ROUTE, flyerEventBogenUrl } from '../config/navigation'
-import { initVk2DemoStammdatenIfEmpty, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, type Vk2Stammdaten } from '../config/tenantConfig'
+import {
+  initVk2DemoStammdatenIfEmpty,
+  isPlatformInstance,
+  PRODUCT_COPYRIGHT_BRAND_ONLY,
+  PRODUCT_URHEBER_ANWENDUNG,
+  type Vk2Stammdaten,
+} from '../config/tenantConfig'
 import { getPageTexts } from '../config/pageTexts'
 import { loadEvents } from '../utils/eventsStorage'
 import { getPageContentGalerie, getVk2SafeDisplayImageUrl } from '../config/pageContentGalerie'
@@ -12,6 +18,7 @@ import { isAdminUnlocked } from '../utils/adminUnlockStorage'
 import { formatEventTerminKomplett } from '../utils/eventTerminFormat'
 import { eventPlakatMoreInfoTitle } from '../utils/eventPlakatTooltip'
 import { reportPublicGalleryVisit } from '../utils/reportPublicGalleryVisit'
+import { Vk2GalerieLeitfadenModal } from '../components/Vk2GalerieLeitfadenModal'
 import '../App.css'
 
 function normalizeSocialUrl(value?: string): string | undefined {
@@ -54,6 +61,23 @@ const VK2_VERCEL_BASE = BASE_APP_URL
 const Vk2GaleriePage: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
+  const fromAdminTab = !!(location.state as { fromAdminTab?: string } | null)?.fromAdminTab
+  const isVk2VorschauUrl = useMemo(
+    () => new URLSearchParams(location.search).get('vorschau') === '1',
+    [location.search],
+  )
+  /** Nur Plattform, nicht Admin-Vorschau – reine Guide-Schicht, keine App-Logik. */
+  const showVk2LeitfadenUi = isPlatformInstance() && !fromAdminTab && !isVk2VorschauUrl
+  const vk2TourName = useMemo(() => {
+    try {
+      const v = new URLSearchParams(location.search).get('vorname')
+      if (v?.trim()) return v.trim()
+    } catch {
+      /* ignore */
+    }
+    return 'Besucher'
+  }, [location.search])
+  const [vk2TourOpen, setVk2TourOpen] = useState(false)
   const [plakatOverlayUrl, setPlakatOverlayUrl] = useState<string | null>(null)
   const openVk2EventA3Plakat = useCallback((eventId: unknown) => {
     const eid = eventId != null && String(eventId).trim() !== '' ? String(eventId).trim() : ''
@@ -225,6 +249,26 @@ const Vk2GaleriePage: React.FC = () => {
               {vereinsName}
             </span>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              {showVk2LeitfadenUi ? (
+                <button
+                  type="button"
+                  onClick={() => setVk2TourOpen(true)}
+                  style={{
+                    background: 'rgba(192, 86, 42, 0.1)',
+                    color: C.accent,
+                    border: `1px solid rgba(192, 86, 42, 0.35)`,
+                    borderRadius: 8,
+                    padding: '0.28rem 0.65rem',
+                    fontSize: '0.78rem',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    fontFamily: 'system-ui, sans-serif',
+                  }}
+                  title="Geführter Rundgang durch die Beispiel-Seite"
+                >
+                  Rundgang
+                </button>
+              ) : null}
               <button
                 onClick={() => navigate(PROJECT_ROUTES.vk2.mitgliedLogin)}
                 style={{ background: '#f0f4ff', color: '#3b5bdb', border: '1px solid #c5d0fa', borderRadius: 8, padding: '0.28rem 0.7rem', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600, fontFamily: 'system-ui, sans-serif' }}
@@ -253,7 +297,9 @@ const Vk2GaleriePage: React.FC = () => {
           navigate('/mein-bereich?context=vk2&vorname=Verein&pfad=gemeinschaft')
         }
         return (
-          <div style={{
+          <div
+            {...(showVk2LeitfadenUi ? { 'data-leitfaden-focus': 'admin-hinweis' as const } : {})}
+            style={{
             margin: 'clamp(0.75rem, 2vw, 1rem) clamp(1rem, 4vw, 2rem)',
             padding: 'clamp(0.65rem, 1.5vw, 0.9rem) clamp(1rem, 2.5vw, 1.25rem)',
             background: 'rgba(30, 92, 181, 0.08)',
@@ -264,7 +310,8 @@ const Vk2GaleriePage: React.FC = () => {
             justifyContent: 'space-between',
             gap: '1rem',
             flexWrap: 'wrap',
-          }}>
+          }}
+          >
             <span style={{ color: C.text, fontSize: 'clamp(0.88rem, 2vw, 0.98rem)', lineHeight: 1.45, flex: '1 1 260px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.35rem' }}>
               So könnte eure Vereinsgalerie aussehen. Schau dich um.
               <button
@@ -311,7 +358,10 @@ const Vk2GaleriePage: React.FC = () => {
       })()}
 
       {/* ── HERO: Foto mit Titel-Overlay ── */}
-      <div style={{ position: 'relative', width: '100%', height: 'clamp(320px, 52vh, 540px)', overflow: 'hidden' }}>
+      <div
+        {...(showVk2LeitfadenUi ? { 'data-leitfaden-focus': 'willkommen' as const } : {})}
+        style={{ position: 'relative', width: '100%', height: 'clamp(320px, 52vh, 540px)', overflow: 'hidden' }}
+      >
         {welcomeImage ? (
           <img src={welcomeImage} alt={heroTitle} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: 'translateZ(0)', backfaceVisibility: 'hidden' }} />
         ) : (
@@ -329,7 +379,10 @@ const Vk2GaleriePage: React.FC = () => {
       </div>
 
       {/* ── EINGANGSKARTEN ── */}
-      <div style={{ padding: '1.75rem clamp(1.25rem, 5vw, 3rem)', background: C.bg }}>
+      <div
+        {...(showVk2LeitfadenUi ? { 'data-leitfaden-focus': 'eingangskarten' as const } : {})}
+        style={{ padding: '1.75rem clamp(1.25rem, 5vw, 3rem)', background: C.bg }}
+      >
         <Vk2Eingangskarten stammdaten={stammdaten} welcomeImage={welcomeImage} />
       </div>
 
@@ -337,7 +390,10 @@ const Vk2GaleriePage: React.FC = () => {
       <div style={{ height: 1, background: C.border, margin: '0 clamp(1.25rem, 5vw, 3rem)' }} />
 
       {/* Kurzer Intro-Text – Einstieg nur über die Karten (ein Klick pro Ziel) */}
-      <div style={{ padding: '0 clamp(1.25rem, 5vw, 3rem)', maxWidth: 720 }}>
+      <div
+        {...(showVk2LeitfadenUi ? { 'data-leitfaden-focus': 'gemeinschaft' as const } : {})}
+        style={{ padding: '0 clamp(1.25rem, 5vw, 3rem)', maxWidth: 720 }}
+      >
         <p style={{ margin: 0, color: C.textMid, fontSize: '1.05rem', lineHeight: 1.75, fontWeight: 400 }}>
           {introText}
         </p>
@@ -441,7 +497,10 @@ const Vk2GaleriePage: React.FC = () => {
       </div>
 
       {/* Impressum – gleiche Struktur wie GaleriePage (section, grid 1fr auto, links Brand + Vereinsdaten, rechts QR) */}
-      <footer style={{ marginTop: '1rem', paddingTop: 'clamp(1rem, 2vw, 1.5rem)', borderTop: `1px solid ${C.border}`, background: '#f2ede6', fontFamily: 'system-ui, sans-serif' }}>
+      <footer
+        {...(showVk2LeitfadenUi ? { 'data-leitfaden-focus': 'impressum' as const } : {})}
+        style={{ marginTop: '1rem', paddingTop: 'clamp(1rem, 2vw, 1.5rem)', borderTop: `1px solid ${C.border}`, background: '#f2ede6', fontFamily: 'system-ui, sans-serif' }}
+      >
         <div style={{ maxWidth: '1000px', margin: '0 auto', fontSize: 'clamp(0.75rem, 1.8vw, 0.85rem)', color: C.textMid, lineHeight: '1.5' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 'clamp(2rem, 4vw, 3rem)', alignItems: 'flex-start' }}>
             {/* Linke Seite: Impressum Brand + Vereinsdaten (wie GaleriePage links, mit Platz für Mandant) */}
@@ -529,6 +588,10 @@ const Vk2GaleriePage: React.FC = () => {
             }}
           />
         </div>
+      ) : null}
+
+      {vk2TourOpen && showVk2LeitfadenUi ? (
+        <Vk2GalerieLeitfadenModal name={vk2TourName} onDismiss={() => setVk2TourOpen(false)} />
       ) : null}
 
     </div>
