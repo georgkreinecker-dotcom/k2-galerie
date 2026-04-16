@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 16.04.26 – **Huber-Leitfaden: Texte herzlicher** – Begrüßung, Versprechen, Huber-Schritte und **Sprecher-Drehbuch** mit **Herzlich willkommen**, Dank, Empathie; Drehbuch-PDF **`10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md`** angeglichen. **Build** grün. **Commit:** _(nach Push)_
+
+---
+
 **Letzter Stand:** 16.04.26 – **Huber-Leitfaden interaktiv: Drehbuch-Sprecher + Fokus** – Pro Schritt **`sprecherDrehbuch`** (Vertriebsprospekt/Drehbuch-Linie); **`focusKey`** + **`familieLeitfadenFocus.ts`**: Navigation, Scroll, **`data-leitfaden-focus`** auf Nav/Home; TTS: Hover zuerst, sonst Drehbuch. **Tests + Build** grün. **Commit:** **`c09d4eac`** ✅ GitHub
 
 **Was wir JETZT tun:** Muster **`?t=huber`** – Leitfaden öffnen: Schritte durchklicken → **Vorlesen**, **Fokus-Rahmen**, ggf. **minimieren** und weiter in der App.

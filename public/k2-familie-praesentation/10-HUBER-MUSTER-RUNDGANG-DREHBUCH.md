@@ -2,7 +2,7 @@
 
 **Zweck:** Gespräche, Screen-Sharing und Piloten – **dieselbe** inhaltliche Linie wie im interaktiven Rundgang in der App (Schritte **Begrüßung**, **Versprechen**, dann **Demo Huber**). Quelle Verkaufskern: [01-FLYER-KURZPROSPEKT-VERKAUFSARGUMENTATION.md](01-FLYER-KURZPROSPEKT-VERKAUFSARGUMENTATION.md), Abschnitt „Das Versprechen“.
 
-**Tonalität:** Warm, sachlich, ohne Druck. Kein Ranking gegen Konkurrenz im Gespräch – **Positionierung** statt Abwertung.
+**Tonalität:** Herzlich, einladend, mit echtem Interesse an den Menschen am anderen Ende – sachlich, aber nicht kühl. Kein Ranking gegen Konkurrenz – **Positionierung** statt Abwertung. **Empathie:** Zeit und Aufmerksamkeit wertschätzen.
 
 [SEITENUMBRUCH]
 
@@ -10,12 +10,12 @@
 
 **Einstieg**
 
-- Kurz nachfragen, ob Bildschirm oder Handy gut zu sehen ist.
-- **Satz:** „Wir starten mit zwei kurzen Karten – erst **K2 Familie** als Produkt, dann unser **Versprechen** in fünf Punkten. Danach schauen wir in eine **Demo-Familie** mit erfundenen Daten, nur damit Sie die App spüren – ohne echte Angaben zu riskieren.“
+- Kurz nachfragen, ob Bildschirm oder Handy gut zu sehen ist – und **Danke sagen**, dass sie sich die Zeit nehmen.
+- **Satz:** „**Herzlich willkommen** – es freut uns wirklich, dass Sie da sind. Wir beginnen mit zwei kurzen Karten: zuerst **K2 Familie** mit Herz und Haltung, dann unser **Versprechen** in fünf klaren Punkten. Danach schauen wir in eine **Demo-Familie** mit erfundenen Daten – nur damit Sie die App **spüren** können, ohne sensible Angaben zu zeigen.“
 
 **Übergang**
 
-- **Satz:** „Wenn Sie möchten, klicken wir gemeinsam auf **Weiter** – ich erkläre parallel, was Sie sehen.“
+- **Satz:** „Wenn Sie möchten, gehen wir **Schritt für Schritt** weiter – ich begleite Sie und sage, was Sie sehen. Kein Stress.“
 
 [SEITENUMBRUCH]
 
@@ -23,7 +23,7 @@
 
 **Rahmen**
 
-- **Satz:** „Das hier ist keine Werbeliste zum Auswendiglernen – es sind die fünf Säulen, auf denen wir **Vertrauen** aufbauen. Alles steht auch in der Vertriebsmappe und im Handbuch – **eine** Aussage überall.“
+- **Satz:** „Das hier ist kein Katalog zum Auswendiglernen – es sind **fünf Säulen**, mit denen wir **ehrlich Vertrauen** aufbauen wollen. Alles steht auch in der Vertriebsmappe und im Handbuch – **eine** Aussage überall.“
 
 **Die fünf Punkte – jeweils ein Satz, langsamer als Fließtext**
 
@@ -35,7 +35,7 @@
 
 **Brücke zur Demo**
 
-- **Satz:** „Jetzt wechseln wir in die **Familie Huber** – komplett erfunden, nur zum Ausprobieren. So können Sie klicken, ohne sensible Daten zu zeigen.“
+- **Satz:** „Wenn das für Sie **stimmig** klingt, gehen wir jetzt in die **Familie Huber** – komplett erfunden, eine **warme Spielwiese**. So können Sie in Ruhe klicken und sich ein Bild machen.“
 
 [SEITENUMBRUCH]
 
@@ -43,7 +43,7 @@
 
 **Einordnung**
 
-- **Satz:** „Alles, was Sie jetzt sehen, ist **Spielwiese**. Wenn Sie später **Ihre** Familie anlegen, ist das **Ihr** geschützter Raum – andere Welten berühren das nicht.“
+- **Satz:** „**Herzlich willkommen** in der Familie Huber – alles hier ist bewusst erfunden: eine liebevolle **Spielwiese**. Wenn Sie später **Ihre** Familie anlegen, wird das **Ihr** geschützter Raum – getrennt von Galerie, Demo und Verein, damit Sie sich **zu Hause** fühlen können.“
 
 **Optional live**
 
@@ -64,11 +64,11 @@
 
 **Entscheid**
 
-- **Satz:** „Wenn es Ihnen zusagt, geht der Weg über **Lizenz und Einladung** – dann sind es **Ihre** Daten in **Ihrem** Mandanten. Die Demo können Sie jederzeit wieder öffnen – sie überschreibt nichts.“
+- **Satz:** „Wenn Sie sich **wohlgefühlt** haben: Der Weg zu Ihrer eigenen Familie geht über **Lizenz und Einladung** – dann sind es **Ihre** Daten in **Ihrem** geschützten Mandanten. Die Demo können Sie jederzeit wieder öffnen; sie überschreibt nichts und **drängt** nicht.“
 
 **Kein Druck**
 
-- Kein „Jetzt sofort unterschreiben“ – **Einladung zur Klärung** reicht.
+- Kein „Jetzt sofort unterschreiben“ – **Einladung zur Klärung** reicht; ein **Danke** fürs Zuhören wirkt sympathisch.
 
 [SEITENUMBRUCH]
 
