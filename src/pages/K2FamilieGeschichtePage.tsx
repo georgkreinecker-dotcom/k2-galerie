@@ -77,12 +77,16 @@ function renderGeschichteDruckInhalt(text: string): ReactNode {
   return <>{out}</>
 }
 
-type GeschichtenDruckSnapshot = {
-  title: string
-  abDatum: string
-  statusLabel: string
-  content: string
-}
+/** Einzelblatt oder Sammeldruck aller gespeicherten Geschichten (Register). */
+type GeschichtenDruckSnapshot =
+  | {
+      mode: 'einzel'
+      title: string
+      abDatum: string
+      statusLabel: string
+      content: string
+    }
+  | { mode: 'alle'; items: K2FamilieGeschichte[] }
 
 export default function K2FamilieGeschichtePage() {
   const { currentTenantId } = useFamilieTenant()
@@ -114,6 +118,7 @@ export default function K2FamilieGeschichtePage() {
 
   const druckGeschichte = useCallback((g: K2FamilieGeschichte) => {
     setDruckSnapshot({
+      mode: 'einzel',
       title: g.title?.trim() || `Geschichte ab ${g.abDatum}`,
       abDatum: g.abDatum,
       statusLabel: isGeschichteInArbeit(g) ? 'In Arbeit' : 'Fertig',
@@ -122,8 +127,17 @@ export default function K2FamilieGeschichtePage() {
     requestAnimationFrame(() => requestAnimationFrame(() => window.print()))
   }, [])
 
+  /** Alle gespeicherten Geschichten (älteste zuerst) – für Archiv / alte Einträge ohne Status mit dabei. */
+  const druckAlleAusRegister = useCallback(() => {
+    const items = [...geschichten].sort((a, b) => a.abDatum.localeCompare(b.abDatum))
+    if (items.length === 0) return
+    setDruckSnapshot({ mode: 'alle', items })
+    requestAnimationFrame(() => requestAnimationFrame(() => window.print()))
+  }, [geschichten])
+
   const druckAktuellerEditor = useCallback(() => {
     setDruckSnapshot({
+      mode: 'einzel',
       title: title.trim() || (abDatum ? `Geschichte ab ${abDatum}` : 'Neue Geschichte'),
       abDatum: abDatum || '—',
       statusLabel: saveStatus === 'entwurf' ? 'In Arbeit' : 'Fertig',
@@ -333,6 +347,16 @@ export default function K2FamilieGeschichtePage() {
             </p>
           ) : (
             <>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center', marginBottom: '1rem' }}>
+                <button
+                  type="button"
+                  className="btn-outline"
+                  onClick={druckAlleAusRegister}
+                  title="Alle gespeicherten Geschichten chronologisch drucken (älteste zuerst) – inkl. Entwürfe und ältere Einträge"
+                >
+                  🖨️ Alle Geschichten drucken
+                </button>
+              </div>
               <h3 style={{ fontSize: '0.92rem', color: C.text, margin: '0 0 0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <span style={{ color: '#34d399' }}>●</span> Fertig
                 <span className="meta" style={{ fontSize: '0.8rem' }}>({fertigListe.length})</span>
@@ -419,6 +443,9 @@ export default function K2FamilieGeschichtePage() {
                           )}
                         </div>
                         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                          <button type="button" className="btn-outline" onClick={() => druckGeschichte(g)} title="Drucken oder als PDF speichern">
+                            🖨️ Drucken
+                          </button>
                           <button type="button" className="btn" disabled={!kannOrganisch} onClick={() => openEdit(g)} style={{ background: C.accent, margin: 0 }}>
                             Bearbeiten
                           </button>
@@ -569,20 +596,57 @@ export default function K2FamilieGeschichtePage() {
 
       {druckSnapshot ? (
         <div className="k2-familie-geschichte-druck-blatt" aria-hidden="true">
-          <p style={{ fontSize: '9pt', color: '#5c5650', margin: 0 }}>K2 Familie · Zusammenfassende Geschichte</p>
-          <h1 style={{ fontSize: '16pt', margin: '0.35rem 0 0.4rem', color: '#0f766e' }}>{druckSnapshot.title}</h1>
-          <p style={{ fontSize: '10pt', color: '#5c5650', margin: '0 0 0.5rem' }}>
-            Ab Datum: {druckSnapshot.abDatum} · Status: {druckSnapshot.statusLabel}
-          </p>
-          <hr style={{ border: 'none', borderTop: '1px solid #e0ddd8', margin: '0.5rem 0 0.75rem' }} />
-          <div style={{ fontSize: '10.5pt' }}>
-            {druckSnapshot.content.trim() ? renderGeschichteDruckInhalt(druckSnapshot.content) : <p style={{ color: '#5c5650', margin: 0 }}>(Kein Text)</p>}
-          </div>
-          <div className="geschichte-druck-fuss">
-            <p style={{ margin: '0 0 0.2rem' }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
-            <p style={{ margin: 0, color: '#666' }}>{PRODUCT_URHEBER_ANWENDUNG}</p>
-          </div>
-          <div className="seitenfuss" />
+          {druckSnapshot.mode === 'einzel' ? (
+            <>
+              <p style={{ fontSize: '9pt', color: '#5c5650', margin: 0 }}>K2 Familie · Zusammenfassende Geschichte</p>
+              <h1 style={{ fontSize: '16pt', margin: '0.35rem 0 0.4rem', color: '#0f766e' }}>{druckSnapshot.title}</h1>
+              <p style={{ fontSize: '10pt', color: '#5c5650', margin: '0 0 0.5rem' }}>
+                Ab Datum: {druckSnapshot.abDatum} · Status: {druckSnapshot.statusLabel}
+              </p>
+              <hr style={{ border: 'none', borderTop: '1px solid #e0ddd8', margin: '0.5rem 0 0.75rem' }} />
+              <div style={{ fontSize: '10.5pt' }}>
+                {druckSnapshot.content.trim() ? renderGeschichteDruckInhalt(druckSnapshot.content) : <p style={{ color: '#5c5650', margin: 0 }}>(Kein Text)</p>}
+              </div>
+              <div className="geschichte-druck-fuss">
+                <p style={{ margin: '0 0 0.2rem' }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
+                <p style={{ margin: 0, color: '#666' }}>{PRODUCT_URHEBER_ANWENDUNG}</p>
+              </div>
+              <div className="seitenfuss" />
+            </>
+          ) : (
+            <>
+              <p style={{ fontSize: '9pt', color: '#5c5650', margin: 0 }}>K2 Familie · Zusammenfassende Geschichte</p>
+              <h1 style={{ fontSize: '16pt', margin: '0.35rem 0 0.35rem', color: '#0f766e' }}>Alle Geschichten aus dem Register</h1>
+              <p style={{ fontSize: '10pt', color: '#5c5650', margin: '0 0 0.75rem' }}>
+                {druckSnapshot.items.length} {druckSnapshot.items.length === 1 ? 'Eintrag' : 'Einträge'} · Reihenfolge: älteste zuerst
+              </p>
+              <hr style={{ border: 'none', borderTop: '1px solid #e0ddd8', margin: '0 0 0.75rem' }} />
+              {druckSnapshot.items.map((g, i) => (
+                <section
+                  key={g.id}
+                  style={{
+                    pageBreakBefore: i > 0 ? 'always' : 'auto',
+                    marginBottom: i < druckSnapshot.items.length - 1 ? '0' : '0.5rem',
+                  }}
+                >
+                  <h2 style={{ fontSize: '14pt', margin: '0 0 0.25rem', color: '#0f766e', pageBreakAfter: 'avoid' }}>
+                    {g.title?.trim() || `Geschichte ab ${g.abDatum}`}
+                  </h2>
+                  <p style={{ fontSize: '10pt', color: '#5c5650', margin: '0 0 0.5rem' }}>
+                    Ab Datum: {g.abDatum} · Status: {isGeschichteInArbeit(g) ? 'In Arbeit' : 'Fertig'}
+                  </p>
+                  <div style={{ fontSize: '10.5pt' }}>
+                    {g.content.trim() ? renderGeschichteDruckInhalt(g.content) : <p style={{ color: '#5c5650', margin: 0 }}>(Kein Text)</p>}
+                  </div>
+                </section>
+              ))}
+              <div className="geschichte-druck-fuss">
+                <p style={{ margin: '0 0 0.2rem' }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
+                <p style={{ margin: 0, color: '#666' }}>{PRODUCT_URHEBER_ANWENDUNG}</p>
+              </div>
+              <div className="seitenfuss" />
+            </>
+          )}
         </div>
       ) : null}
     </div>

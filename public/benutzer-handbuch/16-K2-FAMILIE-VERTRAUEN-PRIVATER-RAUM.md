@@ -17,3 +17,5 @@
 ## Mehr Lesestoff
 
 Im **Benutzerhandbuch K2 Familie** in der App gibt es dazu ein eigenes Kapitel **Vertrauen: privater Familienraum** mit etwas mehr Hintergrund. Die Kapitel **Rolle Inhaber:in**, **Bearbeiter und Leser** und **Lizenz** bauen darauf auf.
+
+**Zusammenfassende Geschichte** (Chronik aus Events und Momenten): Im **Register** können Sie jede Geschichte **einzeln drucken** (fertig und **in Arbeit**), alle **auf einmal** mit **Alle Geschichten drucken** – chronologisch, für Papier oder **PDF** über den Browser. Schritt-für-Schritt: gleiches Handbuch, Kapitel **Events, Geschichte, Gedenkort und Einstellungen**.

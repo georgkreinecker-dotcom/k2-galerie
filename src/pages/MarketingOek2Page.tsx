@@ -1688,6 +1688,9 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.78)' }}>
           In der App: Projekt K2 Familie → <Link to={`${PROJECT_ROUTES['k2-familie'].uebersicht}#k2-familie-lizenz-bruecke`} style={{ color: '#5ffbf1', textDecoration: 'none', fontWeight: 600 }}>Leitbild &amp; Vision</Link> (Kurzblock zur Abgrenzung).
         </p>
+        <p style={{ marginTop: '0.65rem', fontSize: '0.88rem', lineHeight: 1.6, color: 'rgba(255,255,255,0.82)' }}>
+          <strong>Produktnutzen (Kurz):</strong> Stammbaum und Personenkarten, Events und Momente, <strong>zusammenfassende Familienchronik</strong> – im Register <strong>einzeln oder gesammelt</strong> drucken bzw. als PDF speichern (Browser-Dialog). Details: K2-Familie-Benutzerhandbuch in der App, Kapitel zu Geschichte und Events.
+        </p>
       </section>
 
       {/* 10b. Lizenzstruktur VK2 (Vereinsplattform) – eigener Bereich, in mök2 festgelegt */}
