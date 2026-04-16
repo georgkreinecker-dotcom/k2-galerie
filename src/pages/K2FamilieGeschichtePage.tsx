@@ -5,8 +5,12 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import '../App.css'
-import { PROJECT_ROUTES } from '../config/navigation'
 import { loadGeschichten, saveGeschichten, loadEvents, loadMomente, loadPersonen } from '../utils/familieStorage'
+import {
+  GESCHICHTE_IDEENBRINGER,
+  GESCHICHTE_LEITPLANKEN,
+  fuelleGeschichteGeruest,
+} from '../config/k2FamilieGeschichteStruktur'
 import { buildGeschichteVorschlag } from '../utils/familieGeschichte'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
@@ -56,7 +60,20 @@ export default function K2FamilieGeschichtePage() {
     const momente = loadMomente(currentTenantId)
     const personen = loadPersonen(currentTenantId)
     const vorschlag = buildGeschichteVorschlag(events, momente, personen, abDatum || '0000-00-00')
-    setContent(vorschlag)
+    setContent((prev) => {
+      const p = prev.trim()
+      if (!p) return vorschlag
+      return `${p}\n\n## Verlauf – Vorschlag aus Events & Momente\n\n${vorschlag}`
+    })
+  }
+
+  const geruestEinfuegen = () => {
+    const geruest = fuelleGeschichteGeruest(abDatum || new Date().toISOString().slice(0, 10), title)
+    setContent((prev) => {
+      const p = prev.trim()
+      if (!p) return geruest
+      return `${geruest}\n\n---\n\n${p}`
+    })
   }
 
   const save = () => {
@@ -104,9 +121,54 @@ export default function K2FamilieGeschichtePage() {
     <div className="mission-wrapper">
       <div className="viewport k2-familie-page" style={{ padding: '1rem 1.25rem', maxWidth: 900, margin: '0 auto' }}>
         <h1 style={{ marginTop: '0.5rem', color: C.text }}>Zusammenfassende Geschichte</h1>
-        <p className="meta" style={{ color: C.textSoft, marginBottom: '1.25rem' }}>
-          Ab einem gewählten Zeitpunkt können Events und Momente als redigierbare Geschichte zusammengefasst werden. Vorschlag erzeugen, dann nach Belieben bearbeiten.
+        <p className="meta" style={{ color: C.textSoft, marginBottom: '1rem' }}>
+          Ab einem gewählten Zeitpunkt können Events und Momente als redigierbare Geschichte zusammengefasst werden. Struktur und Leitplanken helfen beim Schreiben – das Gerüst ist nur eine Idee, du bestimmst den Text.
         </p>
+
+        <section
+          className="card"
+          style={{
+            marginBottom: '1.25rem',
+            padding: '1rem',
+            borderRadius: 12,
+            border: `1px solid ${C.border}`,
+            background: 'rgba(0,0,0,0.2)',
+          }}
+        >
+          <h2 style={{ fontSize: '0.95rem', color: C.accent, margin: '0 0 0.6rem' }}>Leitplanken</h2>
+          <ul style={{ margin: 0, paddingLeft: '1.1rem', color: C.textSoft, fontSize: '0.88rem', lineHeight: 1.55 }}>
+            {GESCHICHTE_LEITPLANKEN.map((l) => (
+              <li key={l.titel} style={{ marginBottom: '0.35rem' }}>
+                <strong style={{ color: C.text }}>{l.titel}:</strong> {l.text}
+              </li>
+            ))}
+          </ul>
+          <h3 style={{ fontSize: '0.88rem', color: C.accent, margin: '0.85rem 0 0.4rem' }}>Ideenbringer</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {GESCHICHTE_IDEENBRINGER.map((block) => (
+              <div key={block.kategorie}>
+                <span style={{ fontSize: '0.8rem', color: C.text }}>{block.kategorie}</span>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginTop: '0.25rem' }}>
+                  {block.stichworte.map((s) => (
+                    <span
+                      key={s}
+                      style={{
+                        fontSize: '0.75rem',
+                        padding: '0.15rem 0.45rem',
+                        borderRadius: 6,
+                        border: `1px solid ${C.border}`,
+                        color: C.textSoft,
+                        background: 'rgba(255,255,255,0.04)',
+                      }}
+                    >
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
 
         {sorted.length > 0 && (
           <section style={{ marginBottom: '1.5rem' }}>
@@ -142,10 +204,26 @@ export default function K2FamilieGeschichtePage() {
               <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="z. B. Unsere Geschichte ab 1990" disabled={!kannOrganisch} style={{ width: '100%', maxWidth: 400, background: 'rgba(0,0,0,0.25)', border: `1px solid ${C.border}`, borderRadius: 8, color: C.text, padding: '0.4rem 0.6rem' }} />
             </div>
             <div className="field" style={{ marginBottom: '0.75rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.25rem' }}>
                 <label className="meta" style={{ color: C.textSoft }}>Inhalt (redigierbar)</label>
-                <button type="button" className="btn-outline" disabled={!kannOrganisch} onClick={generateVorschlag} style={{ borderColor: C.accent, color: C.accent, fontSize: '0.85rem' }}>Vorschlag aus Events &amp; Momente erzeugen</button>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <button
+                    type="button"
+                    className="btn-outline"
+                    disabled={!kannOrganisch}
+                    onClick={geruestEinfuegen}
+                    style={{ borderColor: C.border, color: C.textSoft, fontSize: '0.85rem' }}
+                  >
+                    Struktur-Gerüst einfügen
+                  </button>
+                  <button type="button" className="btn-outline" disabled={!kannOrganisch} onClick={generateVorschlag} style={{ borderColor: C.accent, color: C.accent, fontSize: '0.85rem' }}>
+                    Vorschlag aus Events &amp; Momente
+                  </button>
+                </div>
               </div>
+              <p className="meta" style={{ color: C.textSoft, fontSize: '0.8rem', marginBottom: '0.35rem' }}>
+                Gerüst = Markdown-Kapitel als Idee. Steht schon Text darin, wird das Gerüst oben angefügt. Der Daten-Vorschlag hängt unter „Verlauf“ an oder füllt ein leeres Feld.
+              </p>
               <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Text hier eingeben oder Vorschlag erzeugen …" rows={14} disabled={!kannOrganisch} style={{ width: '100%', background: 'rgba(0,0,0,0.25)', border: `1px solid ${C.border}`, borderRadius: 8, color: C.text, padding: '0.6rem', fontFamily: 'inherit', fontSize: '0.95rem', lineHeight: 1.5 }} />
             </div>
             <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>

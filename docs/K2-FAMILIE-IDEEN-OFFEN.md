@@ -112,6 +112,8 @@
 
 **Konzept-Idee:** Events + Momente nach Datum sortiert ab Zeitpunkt X → entweder (A) automatisch generierter Fließtext-Vorschlag (z. B. „1990: … 1995: …“) oder (B) Timeline mit „Als Geschichte zusammenfassen“-Button; Ergebnis = ein editierbarer Text (neuer Inhaltstyp oder Sektion), der als „Familien-Geschichte“ ab Zeitpunkt X gespeichert und angezeigt wird. Quelle: Georg 16.03.26.
 
+**Struktur, Leitplanken, Ideenbringer (verbindliche Quelle im Code):** `src/config/k2FamilieGeschichteStruktur.ts` – Markdown-Gerüst (Kapitel), Leitplanken (Ton, Wahrheit, Umfang, Menschen), Stichwort-Ideen für Titel, Einleitung, Übergänge, Abschluss. Die Seite „Zusammenfassende Geschichte“ zeigt diese Hilfen und den Button „Struktur-Gerüst einfügen“. Georg 04.26: *Struktur vorgeben als Ideenbringer und Leitplanken.*
+
 ---
 
 ## 11. Partner-Familie gleichrangig (Konzept)
