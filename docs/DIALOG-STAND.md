@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 16.04.26 – **K2 Familie Muster: Hover-Hinweis + Sprachausgabe** – Im Huber-Leitfaden: optional **„Hinweis vorlesen“** (`sessionStorage` `k2-familie-muster-hint-sprache`), **`speechSynthesis`** deutsch (`familieMusterHintSpeech.ts`), kurze Verzögerung beim Wechsel; aus wenn Checkbox aus. **Tests + Build** grün. **Commit:** _(nach Push)_
+**Letzter Stand:** 16.04.26 – **K2 Familie Muster: Hover-Hinweis + Sprachausgabe** – Im Huber-Leitfaden: optional **„Hinweis vorlesen“** (`sessionStorage` `k2-familie-muster-hint-sprache`), **`speechSynthesis`** deutsch (`familieMusterHintSpeech.ts`), kurze Verzögerung beim Wechsel; aus wenn Checkbox aus. **Tests + Build** grün. **Commit:** **`36ecabdb`** ✅ GitHub
 
 ---
 
