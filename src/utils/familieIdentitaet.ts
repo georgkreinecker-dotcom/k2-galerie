@@ -45,9 +45,21 @@ function capabilitiesNurLesen(rolle: K2FamilieRolle): FamilieRollenCapabilities 
     canEditEigenesProfil: false,
     canEditStrukturUndStammdaten: false,
     canEditOrganisches: false,
+    canDeleteFertigeGeschichte: false,
     canExportSicherung: false,
     canRestoreSicherung: false,
     canManageFamilienInstanz: false,
+  }
+}
+
+/** Fertige Geschichten löschen nur, wenn die Person in den Familiendaten als Inhaber:in gilt (nicht nur Arbeitsansicht). */
+function withCanDeleteFertigeGeschichte(
+  caps: FamilieRollenCapabilities,
+  effectiveRolle: K2FamilieRolle,
+): FamilieRollenCapabilities {
+  return {
+    ...caps,
+    canDeleteFertigeGeschichte: effectiveRolle === 'inhaber',
   }
 }
 
@@ -96,9 +108,15 @@ export function getFamilieEffectiveCapabilities(
   /** Erst-Einrichtung ohne „Du“: volle Inhaber-Rechte; Arbeitsansicht erst mit „Du“ wirksam. */
   if (!ich) {
     if (effectiveRolle === 'inhaber') {
-      return mergeCaps(getFamilieRollenCapabilities('inhaber'), rolle, effectiveRolle, inhaberArbeitsansicht)
+      return withCanDeleteFertigeGeschichte(
+        mergeCaps(getFamilieRollenCapabilities('inhaber'), rolle, effectiveRolle, inhaberArbeitsansicht),
+        effectiveRolle,
+      )
     }
-    return mergeCaps(capabilitiesNurLesen(effectiveRolle), rolle, effectiveRolle, inhaberArbeitsansicht)
+    return withCanDeleteFertigeGeschichte(
+      mergeCaps(capabilitiesNurLesen(effectiveRolle), rolle, effectiveRolle, inhaberArbeitsansicht),
+      effectiveRolle,
+    )
   }
 
   const inhaberAnsichtWirksam =
@@ -110,15 +128,24 @@ export function getFamilieEffectiveCapabilities(
   const codeAufKarte = ichPerson ? trimMitgliedsNummerEingabe(ichPerson.mitgliedsNummer) : ''
 
   if (!codeAufKarte) {
-    return mergeCaps(getFamilieRollenCapabilities(rolleForCaps), rolle, effectiveRolle, inhaberArbeitsansicht)
+    return withCanDeleteFertigeGeschichte(
+      mergeCaps(getFamilieRollenCapabilities(rolleForCaps), rolle, effectiveRolle, inhaberArbeitsansicht),
+      effectiveRolle,
+    )
   }
 
   const sessionPid = loadIdentitaetBestaetigt(tenantId)
   if (sessionPid !== ich) {
-    return mergeCaps(capabilitiesNurLesen(rolleForCaps), rolle, effectiveRolle, inhaberArbeitsansicht)
+    return withCanDeleteFertigeGeschichte(
+      mergeCaps(capabilitiesNurLesen(rolleForCaps), rolle, effectiveRolle, inhaberArbeitsansicht),
+      effectiveRolle,
+    )
   }
 
-  return mergeCaps(getFamilieRollenCapabilities(rolleForCaps), rolle, effectiveRolle, inhaberArbeitsansicht)
+  return withCanDeleteFertigeGeschichte(
+    mergeCaps(getFamilieRollenCapabilities(rolleForCaps), rolle, effectiveRolle, inhaberArbeitsansicht),
+    effectiveRolle,
+  )
 }
 
 /**

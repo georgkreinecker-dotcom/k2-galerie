@@ -92,6 +92,7 @@ export default function K2FamilieGeschichtePage() {
   const { currentTenantId } = useFamilieTenant()
   const { capabilities } = useFamilieRolle()
   const kannOrganisch = capabilities.canEditOrganisches
+  const kannFertigeLoeschen = capabilities.canDeleteFertigeGeschichte
   const [geschichten, setGeschichten] = useState<K2FamilieGeschichte[]>(() => loadGeschichten(currentTenantId))
   const [editingId, setEditingId] = useState<string | 'new' | null>(null)
   const [abDatum, setAbDatum] = useState('')
@@ -240,7 +241,10 @@ export default function K2FamilieGeschichtePage() {
 
   const remove = (id: string) => {
     if (!kannOrganisch) return
-    const next = geschichten.filter((g) => g.id !== id)
+    const g = geschichten.find((x) => x.id === id)
+    if (!g) return
+    if (!isGeschichteInArbeit(g) && !kannFertigeLoeschen) return
+    const next = geschichten.filter((x) => x.id !== id)
     if (saveGeschichten(currentTenantId, next)) {
       setGeschichten(next)
       if (editingId === id) setEditingId(null)
@@ -341,6 +345,22 @@ export default function K2FamilieGeschichtePage() {
           <p className="meta" style={{ fontSize: '0.85rem', marginBottom: '1rem' }}>
             Überblick: fertige Geschichten und solche, die noch <strong style={{ color: C.text }}>in Arbeit</strong> sind. Status beim Speichern wählbar; schnell fertig markieren geht bei Entwürfen mit einem Klick.
           </p>
+          {kannOrganisch && !kannFertigeLoeschen && fertigListe.length > 0 ? (
+            <p
+              className="meta"
+              style={{
+                fontSize: '0.82rem',
+                marginBottom: '1rem',
+                padding: '0.65rem 0.75rem',
+                borderRadius: 8,
+                border: `1px solid ${C.border}`,
+                background: 'rgba(251, 191, 36, 0.12)',
+                color: C.textSoft,
+              }}
+            >
+              <strong style={{ color: C.text }}>Hinweis:</strong> Fertige Geschichten kann nur die Inhaber:in löschen. Wichtige Texte bei dir sichern – z. B. mit <strong style={{ color: C.text }}>🖨️ Drucken</strong> und im Dialog „Als PDF speichern“.
+            </p>
+          ) : null}
           {geschichten.length === 0 ? (
             <p className="meta" style={{ margin: 0 }}>
               Noch keine Geschichten – unten <strong style={{ color: C.text }}>Neue Geschichte anlegen</strong>.
@@ -396,7 +416,13 @@ export default function K2FamilieGeschichtePage() {
                           <button type="button" className="btn" disabled={!kannOrganisch} onClick={() => openEdit(g)} style={{ background: C.accent, margin: 0 }}>
                             Bearbeiten
                           </button>
-                          <button type="button" className="btn-outline danger" disabled={!kannOrganisch} onClick={() => remove(g.id)}>
+                          <button
+                            type="button"
+                            className="btn-outline danger"
+                            disabled={!kannOrganisch || !kannFertigeLoeschen}
+                            onClick={() => remove(g.id)}
+                            title={!kannFertigeLoeschen ? 'Nur die Inhaber:in kann fertige Geschichten löschen' : undefined}
+                          >
                             Löschen
                           </button>
                         </div>
@@ -543,6 +569,11 @@ export default function K2FamilieGeschichtePage() {
               <p className="meta" style={{ fontSize: '0.78rem', marginTop: '0.35rem', marginBottom: 0 }}>
                 „In Arbeit“ erscheint im Register unter dem orangen Punkt; „Fertig“ unter dem grünen.
               </p>
+              {saveStatus === 'fertig' && kannOrganisch && !kannFertigeLoeschen ? (
+                <p className="meta" style={{ fontSize: '0.76rem', marginTop: '0.4rem', marginBottom: 0, color: '#fbbf24' }}>
+                  Fertige Geschichten löschen kann nur die Inhaber:in. Wichtigen Text bei dir sichern – z. B. 🖨️ Drucken → PDF.
+                </p>
+              ) : null}
             </div>
             <div className="field" style={{ marginBottom: '0.75rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.25rem' }}>

@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 16.04.26 – **K2 Familie: fertige Geschichten nur Inhaber löscht** – Capability **`canDeleteFertigeGeschichte`** (`effectiveRolle === 'inhaber'`); Bearbeiter:innen: **Löschen** nur bei **Entwürfen**; Register + Editor: Hinweis **PDF sichern**. Handbuch **06-EVENTS-…**, Druck-Rechte-Zeile Bearbeiter. **Tests + Build** grün. **Commit:** **`cb59bc07`** ✅ GitHub (nach Push)
+
+---
+
+**Letzter Stand:** 16.04.26 – **K2 Familie Geschichten: Drucken** – **Drucken** im Register (je Geschichte) und im **Editor** (aktueller Text, auch ungespeichert); verstecktes Druckblatt + `window.print()`, Markdown-Überschriften (#/##/###), Copyright, Seitenzahl; **`App.css`** Print-Hilfe wie Mitglieder-Codes. Handbuch **06-EVENTS-…** ergänzt. **Commit:** **`be09c722`** ✅ GitHub
+
+---
+
 **Letzter Stand:** 16.04.26 – **K2 Familie Nav:** Button/Leiste **Geschichte** → **Geschichten 😉** (Nav, Start-Kachel, Leitstruktur); Konstante **`k2FamilieNavLabels.ts`**. **Tests** grün. **Commit:** **`f3443248`** ✅ GitHub
 
 ---

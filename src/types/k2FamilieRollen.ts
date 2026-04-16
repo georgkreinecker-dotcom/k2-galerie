@@ -65,7 +65,7 @@ export const FAMILIE_DRUCK_RECHTE_ZEILEN: readonly {
     rolle: 'Bearbeiter:in',
     lesen: 'Wie Inhaber:in – alles ansehen.',
     schreiben:
-      'Geschichte, Events, Gedenkort und persönliche Texte auf Karten; kein Stammbaum/Beziehungen ändern, kein Backup einspielen oder neue Familie.',
+      'Geschichte, Events, Gedenkort und persönliche Texte auf Karten; kein Stammbaum/Beziehungen ändern, kein Backup einspielen oder neue Familie. Fertige Geschichten nur die Inhaber:in löscht – wichtige Texte bei sich sichern (z. B. drucken/PDF).',
   },
   {
     rolle: 'Leser:in',
@@ -97,6 +97,11 @@ export interface FamilieRollenCapabilities {
   canEditStrukturUndStammdaten: boolean
   /** Momente, Beiträge, Events, Geschichten, Gaben, Druck-Spalten/Anzeige – Inhaber + Bearbeiter */
   canEditOrganisches: boolean
+  /**
+   * Fertig markierte Geschichten löschen – nur Inhaber:in (Bearbeiter:innen können Entwürfe löschen,
+   * sollten fertige Texte bei sich sichern; siehe Handbuch).
+   */
+  canDeleteFertigeGeschichte: boolean
   /** Sicherungskopie + GEDCOM herunterladen */
   canExportSicherung: boolean
   /** Aus Backup wiederherstellen oder Merge – nur Inhaber:in */
@@ -117,6 +122,7 @@ export function getFamilieRollenCapabilities(rolle: K2FamilieRolle): FamilieRoll
     canEditEigenesProfil: isLeser,
     canEditStrukturUndStammdaten: isInhaber,
     canEditOrganisches: canEdit,
+    canDeleteFertigeGeschichte: isInhaber,
     canExportSicherung: canEdit,
     canRestoreSicherung: isInhaber,
     canManageFamilienInstanz: isInhaber,

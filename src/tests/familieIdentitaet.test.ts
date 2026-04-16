@@ -49,6 +49,7 @@ describe('getFamilieEffectiveCapabilities', () => {
     const caps = getFamilieEffectiveCapabilities('bearbeiter', TID, { ichBinPersonId: 'p1' }, [p])
     expect(caps.canEditFamiliendaten).toBe(true)
     expect(caps.canEditStrukturUndStammdaten).toBe(false)
+    expect(caps.canDeleteFertigeGeschichte).toBe(false)
   })
 
   it('Inhaber mit Du und Code: ohne Session-Bestätigung nur Lesen', () => {
@@ -64,6 +65,7 @@ describe('getFamilieEffectiveCapabilities', () => {
     const caps = getFamilieEffectiveCapabilities('inhaber', TID, { ichBinPersonId: 'p1' }, [p])
     expect(caps.canManageFamilienInstanz).toBe(true)
     expect(caps.canEditStrukturUndStammdaten).toBe(true)
+    expect(caps.canDeleteFertigeGeschichte).toBe(true)
   })
 
   it('falsche Session-Person: keine Schreib-Rechte trotz Inhaber-Rolle', () => {
@@ -92,6 +94,7 @@ describe('getFamilieEffectiveCapabilities', () => {
     expect(caps.canManageFamilienInstanz).toBe(false)
     expect(caps.canEditStrukturUndStammdaten).toBe(false)
     expect(caps.rolle).toBe('bearbeiter')
+    expect(caps.canDeleteFertigeGeschichte).toBe(false)
   })
 
   it('Inhaber mit Du, Arbeitsansicht Leser (ohne Code): Rechte wie Leser:in', () => {
@@ -100,6 +103,7 @@ describe('getFamilieEffectiveCapabilities', () => {
     expect(caps.rolle).toBe('leser')
     expect(caps.canEditStrukturUndStammdaten).toBe(false)
     expect(caps.canManageFamilienInstanz).toBe(false)
+    expect(caps.canDeleteFertigeGeschichte).toBe(true)
     expect(caps.rolleGewaehlt).toBe('inhaber')
     expect(caps.inhaberArbeitsansicht).toBe('leser')
   })

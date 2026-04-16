@@ -44,6 +44,8 @@ Neben **Stammbaum** und **Personenkarten** finden Sie in K2 Familie weitere Bere
 
 **Wer darf:** wie bei Events – **organische** Bearbeitung durch Bearbeiter:innen und Inhaber:innen (siehe Rollen-Kapitel).
 
+**Löschen:** **Fertige** Geschichten kann **nur die Inhaber:in** aus der Liste entfernen. **Entwürfe** („In Arbeit“) dürfen Bearbeiter:innen und Inhaber:innen löschen. Wenn Sie Texte mitgeschrieben haben, die Sie behalten wollen: **rechtzeitig bei sich sichern** – z. B. mit **Drucken** und **Als PDF speichern**.
+
 
 ## 4. **Gedenkort**
 
