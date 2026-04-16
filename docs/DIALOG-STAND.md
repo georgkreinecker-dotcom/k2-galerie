@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 16.04.26 – **Huber-Leitfaden: Begrüßung + Verkaufsversprechen + Drehbuch** – Zwei neue Schritte vor der Huber-Demo (**Begrüßung K2 Familie**, **Mini-Präsentation Versprechen** aus Kurzprospekt); Kopfzeile dynamisch; Text **`\n\n`** als echte Absätze (`div`+`p`); APf-Tipp nur bei **`einordnung`**. Neu: **`public/k2-familie-praesentation/10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md`**, Index + **K2FamiliePraesentationsmappePage** (10 Kapitel). **Commit:** _(nach Push)_
+
+---
+
+**Letzter Stand:** 16.04.26 – **Huber-Leitfaden: „Cannot access uninitialized variable“** – Modul **`t`** + Prop **`t`** im Sheet; **Umbenennung** zu **`familieLeitfadenTheme`** im Modal; **Render-Tests** (`MemoryRouter`) für offen + Session minimiert. **Commit:** _(nach Push)_
+
+---
+
 **Letzter Stand:** 16.04.26 – **K2 Familie Muster: Hover funktioniert mit offenem Leitfaden** – Ursache: Vollbild-Backdrop fing die Maus ab. **Fix:** Backdrop **`pointer-events: none`**, Panel **`pointer-events: auto`**; **Escape** global für Minimieren; Kurztext im Panel. **Commit:** **`145e5c54`** ✅ GitHub
 
 ---
@@ -10,7 +18,9 @@
 
 **Letzter Stand:** 16.04.26 – **Build grün: Einladung pid + Leitfaden Resize-ARIA** – **`FamilieEinladungQuerySync`:** zweite `findPersonIdByMitgliedsNummer`-Zuweisung ohne `?? undefined` (TS: `string | undefined` konsistent). **`FamilieMusterHuberLeitfaden`:** ungültiges **`aria-orientation="both"`** am Größen-Ziehpunkt entfernt (Separator erlaubt nur horizontal/vertical). **Tests + Build** grün. **Commit:** **`54672fda`** ✅ GitHub
 
-**Was wir JETZT tun:** Muster **`?t=huber`:** Huber-Leitfaden **bleibt beim Navigieren offen**, **Hover-Hilfen** (`data-muster-hint`) kurz prüfen; bei Bedarf weitere Felder mit Hinweisen versehen.
+**Was wir JETZT tun:** Muster **`?t=huber`:** ersten **drei** Leitfaden-Schritte (Begrüßung, Versprechen, Huber) **lesen**; Vertriebsmappe **Drehbuch**-Kapitel **drucken**; bei Bedarf Hover/Sprache wie bisher prüfen.
+
+**Einordnung:** Verkaufskern und Ton wie **Flyer Kurzprospekt** – keine neue Marketing-Linie, nur Einordnung im Rundgang.
 
 ---
 

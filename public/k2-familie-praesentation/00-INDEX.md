@@ -1,6 +1,6 @@
 # K2 Familie – Vertriebsunterlagen
 
-Willkommen. Hier liegt die **vollständige Vertriebsmappe** zu **K2 Familie** – **Kurzprospekt**, **Prospekt**, **Produktfeatures**, **FAQ**, **Lizenz/Kündigung/Daten**, **Erste Schritte nach Lizenz**, **Multiplikatoren**, **Wettbewerbseinordnung** und **Rahmen Medien/Erweiterung** – inhaltlich **nur K2 Familie**, klar getrennt von Galerie- und ök2-Werbung.
+Willkommen. Hier liegt die **vollständige Vertriebsmappe** zu **K2 Familie** – **Kurzprospekt**, **Prospekt**, **Produktfeatures**, **FAQ**, **Lizenz/Kündigung/Daten**, **Erste Schritte nach Lizenz**, **Multiplikatoren**, **Wettbewerbseinordnung**, **Rahmen Medien/Erweiterung** und **Huber-Muster-Rundgang – Drehbuch** – inhaltlich **nur K2 Familie**, klar getrennt von Galerie- und ök2-Werbung.
 
 ## Inhaltsverzeichnis – Kurzanleitung
 
@@ -39,5 +39,9 @@ Argumente **ohne** Diffamierung – Positionierung gegenüber großen Plattform-
 9. [Medien und Erweiterung – Rahmen](09-MEDIEN-UND-ERWEITERUNG.md)
 
 Platzhalter für **Screenshots**, **PDF-Zusatz** und **weitere Ausbaustufen** – **Grundgerüst** für die nächste Arbeit.
+
+10. [Huber-Muster-Rundgang – Sprecher-Drehbuch](10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md)
+
+Phasen, Stichworte und Sätze für **Live-Gespräche** und Screen-Sharing – abgestimmt mit dem interaktiven Rundgang in der App und dem **Versprechen** aus dem Kurzprospekt.
 
 Button „Drucken“ in der App – einzelnes Kapitel oder **gesamte Mappe** als PDF.

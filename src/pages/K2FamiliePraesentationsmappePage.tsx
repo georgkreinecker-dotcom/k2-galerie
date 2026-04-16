@@ -34,6 +34,11 @@ const DOCUMENTS = [
   { id: '07-multiplikatoren', name: 'Multiplikatoren und B2B', file: '07-MULTIPLIKATOREN-B2B.md' },
   { id: '08-wettbewerb', name: 'Wettbewerb und Einordnung', file: '08-WETTBEWERB-EINORDNUNG.md' },
   { id: '09-medien', name: 'Medien und Erweiterung', file: '09-MEDIEN-UND-ERWEITERUNG.md' },
+  {
+    id: '10-huber-drehbuch',
+    name: 'Huber-Muster-Rundgang – Drehbuch',
+    file: '10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md',
+  },
 ] as const
 
 const ROUTE_BACK = '/projects/k2-familie/praesentationsmappe'
@@ -52,8 +57,8 @@ export default function K2FamiliePraesentationsmappePage() {
       deckblattSlogan={PRODUCT_K2_FAMILIE_WERBELINIE_DECKBLATT}
       deckblattMainTitle="Vertriebsunterlagen"
       deckblattFooterProduct="K2 Familie"
-      deckblattFooterKind="Neun Kapitel · Inhaltsverzeichnis"
-      deckblattFooterTagline="Flyer · Prospekt · Features · FAQ · Lizenz · Onboarding · B2B · Markt · Medien"
+      deckblattFooterKind="Zehn Kapitel · Inhaltsverzeichnis"
+      deckblattFooterTagline="Flyer · Prospekt · Features · FAQ · Lizenz · Onboarding · B2B · Markt · Medien · Drehbuch"
       footerPreviewLine="K2 Familie – Vertriebsunterlagen · (Seitenzahlen beim Drucken)"
       printCurrentDocPrefix="K2 Familie – Vertriebsunterlagen"
       defaultDocWhenNoParam="01-FLYER-KURZPROSPEKT-VERKAUFSARGUMENTATION.md"

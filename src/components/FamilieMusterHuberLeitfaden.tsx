@@ -19,7 +19,8 @@ import {
   speakFamilieMusterHintText,
 } from '../utils/familieMusterHintSpeech'
 
-const t = adminTheme
+/** Modal-Theme; nicht `t` – gleicher Name wie Prop `t` im Sheet (TDZ/Referenzfehler vermeiden). */
+const familieLeitfadenTheme = adminTheme
 const R = PROJECT_ROUTES['k2-familie']
 
 const LS_LEITFADEN_ABGESCHLOSSEN = 'k2-familie-muster-huber-leitfaden-abgeschlossen'
@@ -84,9 +85,29 @@ export type FamilieMusterLeitfadenStep = {
 
 export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
   {
+    id: 'begruessung',
+    titel: 'Willkommen bei K2 Familie',
+    stimmung: 'Eine digitale Heimat für Beziehungen und Erinnerungen – unter eurer Kontrolle.',
+    text:
+      'Schön, dass du da bist. **K2 Familie** ist der geschützte Raum für Stammbaum, gemeinsame Momente und würdevolle Erinnerung – **bewusst getrennt** von Galerie, öffentlicher Demo und Vereinswelten.\n\n' +
+      'Im **nächsten Schritt** steht unser **Versprechen** in Kurzform – aus dem Verkaufskern, verständlich erklärt. Danach öffnen wir die **Demo-Familie Huber**: erfundene Daten, zum Ausprobieren und Spüren, wie die App wirkt.',
+  },
+  {
+    id: 'verkaufsversprechen',
+    titel: 'Das Versprechen – mini Präsentation',
+    stimmung: 'Fünf Säulen, ein roter Faden: euer Raum, eure Regeln.',
+    text:
+      '**Vertrauen:** Beziehungen ergeben sich **nur aus den Karten** in der App – eine nachvollziehbare Wahrheit, kein Raten und kein Vermischen mit anderen Welten.\n\n' +
+      '**Ruhe:** **Eigene Schlüssel**, eigene Instanz – keine Vermischung mit Galerie-, Demo- oder Vereinsdaten.\n\n' +
+      '**Mitgestaltung:** Rollen, Einladungen, persönliche Zugänge – **familienintern** geregelt, klar wer was darf.\n\n' +
+      '**Erinnerung & Tiefe:** Momente, Kalender, Geschichten, **Gedenkort** – alles im gleichen respektvollen Produktgedanken.\n\n' +
+      '**Zukunftssicherheit:** **Genom** – Familiendaten werden **nicht** kommerziell verwertet; das ist für uns **dauerhaft** ausgeschlossen.\n\n' +
+      'Ausführlich und zum Mitgeben: Vertriebsmappe **K2 Familie** in der App. Jetzt geht es in die **Huber-Demo**.',
+  },
+  {
     id: 'einordnung',
     titel: 'Willkommen bei den Hubers',
-    stimmung: 'Das hier ist Spielwiese, kein echtes Familienbuch.',
+    stimmung: 'Jetzt wird’s konkret – Spielwiese, kein echtes Familienbuch.',
     text:
       'Du bist in einer **Demo** mit erfundenen Daten – die Familie Huber gibt es nur zum Ausprobieren. ' +
       'Noch **kein** geschützter Raum für echte Angaben – dafür kannst du in Ruhe klicken und schauen, wie sich die App anfühlt.',
@@ -145,9 +166,19 @@ export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
   },
 ]
 
-function renderLeitfadenText(markdownLite: string): ReactNode {
+function renderLeitfadenInline(markdownLite: string): ReactNode {
   const parts = markdownLite.split(/\*\*(.+?)\*\*/g)
   return parts.map((chunk, i) => (i % 2 === 1 ? <strong key={i}>{chunk}</strong> : <span key={i}>{chunk}</span>))
+}
+
+/** Absätze bei `\n\n` – jeweils eigenes `<p>` im umgebenden `div` (kein p-in-p). */
+function renderLeitfadenText(markdownLite: string): ReactNode {
+  const paras = markdownLite.split(/\n\n/).filter(Boolean)
+  return paras.map((para, pi) => (
+    <p key={pi} style={{ margin: pi === 0 ? 0 : '0.65rem 0 0' }}>
+      {renderLeitfadenInline(para.trim())}
+    </p>
+  ))
 }
 
 type Props = {
@@ -467,7 +498,7 @@ export function FamilieMusterHuberLeitfadenModal({ open, onOpenChange, onAbgesch
             background: 'linear-gradient(90deg, #fffefb, #faf6f0)',
             color: '#b54a1e',
             cursor: 'pointer',
-            fontFamily: t.fontHeading,
+            fontFamily: familieLeitfadenTheme.fontHeading,
             boxShadow: '0 6px 24px rgba(15, 23, 42, 0.2)',
           }}
         >
@@ -494,7 +525,7 @@ export function FamilieMusterHuberLeitfadenModal({ open, onOpenChange, onAbgesch
           justifyContent: 'flex-end',
           alignItems: 'stretch',
           padding: 0,
-          fontFamily: t.fontBody,
+          fontFamily: familieLeitfadenTheme.fontBody,
           /** Durchlässig: Nav/Kacheln darunter bleiben per Hover für data-muster-hint erreichbar. */
           pointerEvents: 'none',
         }}
@@ -520,7 +551,7 @@ export function FamilieMusterHuberLeitfadenModal({ open, onOpenChange, onAbgesch
               onClick={(e) => e.stopPropagation()}
             >
               <LeitfadenSheetInner
-                t={t}
+                t={familieLeitfadenTheme}
                 schritt={schritt}
                 setSchritt={setSchritt}
                 total={total}
@@ -553,7 +584,7 @@ export function FamilieMusterHuberLeitfadenModal({ open, onOpenChange, onAbgesch
             onClick={(e) => e.stopPropagation()}
           >
             <LeitfadenSheetInner
-              t={t}
+              t={familieLeitfadenTheme}
               schritt={schritt}
               setSchritt={setSchritt}
               total={total}
@@ -676,7 +707,9 @@ function LeitfadenSheetInner({
             />
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', paddingBottom: '0.65rem', flexWrap: 'wrap' }}>
               <p style={{ margin: 0, fontSize: '0.82rem', fontWeight: 800, letterSpacing: '0.04em', color: '#b54a1e', fontFamily: t.fontHeading }}>
-                Rundgang · Familie Huber
+                {s.id === 'begruessung' || s.id === 'verkaufsversprechen'
+                  ? 'K2 Familie · Begrüßung & Versprechen'
+                  : 'Rundgang · Familie Huber'}
               </p>
               <div
                 style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}
@@ -933,7 +966,7 @@ function LeitfadenSheetInner({
                 {s.stimmung}
               </p>
             ) : null}
-            <p style={{ margin: 0, fontSize: '0.94rem', color: t.text, lineHeight: 1.62 }}>{renderLeitfadenText(s.text)}</p>
+            <div style={{ fontSize: '0.94rem', color: t.text, lineHeight: 1.62 }}>{renderLeitfadenText(s.text)}</div>
             {s.linkTo && s.linkLabel ? (
               <p style={{ margin: '0.85rem 0 0' }}>
                 <Link
@@ -954,7 +987,7 @@ function LeitfadenSheetInner({
                 </Link>
               </p>
             ) : null}
-            {isK2FamilieApfLocalhost() && schritt === 0 ? (
+            {isK2FamilieApfLocalhost() && s.id === 'einordnung' ? (
               <p style={{ margin: '0.75rem 0 0', fontSize: '0.8rem', color: t.muted, lineHeight: 1.45 }}>
                 Tipp APf: Nach dem Demo-Ende kann die Stammfamilie automatisch gewählt werden.
               </p>
