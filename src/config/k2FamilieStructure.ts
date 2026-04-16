@@ -5,6 +5,7 @@
 
 import { PROJECT_ROUTES } from './navigation'
 import { K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
+import { K2_FAMILIE_NAV_LABEL_GESCHICHTE } from './k2FamilieNavLabels'
 
 const R = PROJECT_ROUTES['k2-familie']
 
@@ -38,7 +39,7 @@ export const k2FamilieLeitGroups: FamilieLeitGroup[] = [
     sections: [
       { id: 'fam-events', label: 'Events', to: R.events },
       { id: 'fam-kal', label: 'Kalender', to: R.kalender },
-      { id: 'fam-gesch', label: 'Geschichte', to: R.geschichte },
+      { id: 'fam-gesch', label: K2_FAMILIE_NAV_LABEL_GESCHICHTE, to: R.geschichte },
       { id: 'fam-gedenk', label: 'Gedenkort', to: R.gedenkort },
     ],
   },

@@ -33,6 +33,7 @@ import { isFamilieEinladungNurZugangAnsicht } from '../utils/familieEinladungPen
 import { loadEinstellungen, loadPersonen } from '../utils/familieStorage'
 import { loadIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
 import { isK2FamilieMeineFamilieHomePath, K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
+import { K2_FAMILIE_NAV_LABEL_GESCHICHTE } from '../config/k2FamilieNavLabels'
 import { resolveFamiliePwaResumeTarget, writeFamiliePwaLastPath } from '../utils/familiePwaLastPath'
 
 /** Gleicher String wie `K2_FAMILIE_SESSION_UPDATED` in `familieStorage.ts` — hier als Literal, damit kein Laufzeit-ReferenceError (z. B. HMR). */
@@ -674,7 +675,7 @@ const FAMILIE_NAV: FamilieNavItem[] = [
   { to: familieRoutes.stammbaum, label: 'Stammbaum' },
   { to: familieRoutes.events, label: 'Events' },
   { to: familieRoutes.kalender, label: 'Kalender' },
-  { to: familieRoutes.geschichte, label: 'Geschichte' },
+  { to: familieRoutes.geschichte, label: K2_FAMILIE_NAV_LABEL_GESCHICHTE },
   { to: familieRoutes.gedenkort, label: 'Gedenkort' },
   /** Zugang, Sicherung, Lizenz, Kurzlinks Handbuch & Präsentation */
   { to: familieRoutes.einstellungen, label: 'Einstellungen' },

@@ -39,6 +39,7 @@ import { clearFamilieNurMusterSession } from '../utils/familieMusterSession'
 import { useMemo, useState, useEffect, type CSSProperties } from 'react'
 import { adminTheme } from '../config/theme'
 import { K2_FAMILIE_UI } from '../config/k2FamilieUiColors'
+import { K2_FAMILIE_NAV_LABEL_GESCHICHTE } from '../config/k2FamilieNavLabels'
 
 const C = {
   ...K2_FAMILIE_UI,
@@ -1011,7 +1012,7 @@ export default function K2FamilieHomePage() {
                   boxShadow: '0 8px 28px rgba(109, 40, 217, 0.35)',
                 }}
               >
-                📖 Geschichte
+                📖 {K2_FAMILIE_NAV_LABEL_GESCHICHTE}
               </Link>
               <Link
                 to={familieR.gedenkort}
