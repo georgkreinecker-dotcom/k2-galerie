@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 16.04.26 – **K2 Familie Huber-Leitfaden: verschieben, Größe, minimieren** – **`FamilieMusterHuberLeitfaden.tsx`:** Kopfzeile **ziehen** (Position), **rechts unten** Ziehpunkt **Größe**, Buttons **− / +**, bei freiem Panel **Unten** (wieder unten mittig), **▼** **minimiert** zu Chip „Rundgang · Huber“; Klick auf **Hintergrund** oder **Escape** **minimiert** (nicht Demo beenden); **Später** / **Schließen** wie bisher. **Bounds** in **sessionStorage** (`k2-familie-leitfaden-bounds`). Export **`clampFamilieLeitfadenBounds`**, Test ergänzt. **Commit:** _(nach Push eintragen)_ ✅ GitHub
+**Letzter Stand:** 16.04.26 – **K2 Familie Huber-Leitfaden: verschieben, Größe, minimieren** – **`FamilieMusterHuberLeitfaden.tsx`:** Kopfzeile **ziehen** (Position), **rechts unten** Ziehpunkt **Größe**, Buttons **− / +**, bei freiem Panel **Unten** (wieder unten mittig), **▼** **minimiert** zu Chip „Rundgang · Huber“; Klick auf **Hintergrund** oder **Escape** **minimiert** (nicht Demo beenden); **Später** / **Schließen** wie bisher. **Bounds** in **sessionStorage** (`k2-familie-leitfaden-bounds`). Export **`clampFamilieLeitfadenBounds`**, Test ergänzt. **Commit:** **`dcf4dae1`** ✅ GitHub
 
 **Was wir JETZT tun:** Muster-Demo **`?t=huber`** – Leitfaden **verschieben**, **verkleinern/vergrößern**, **minimieren** kurz prüfen.
 
