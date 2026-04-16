@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 16.04.26 – **K2 Familie: fertige Geschichten nur Inhaber löscht** – Capability **`canDeleteFertigeGeschichte`** (`effectiveRolle === 'inhaber'`); Bearbeiter:innen: **Löschen** nur bei **Entwürfen**; Register + Editor: Hinweis **PDF sichern**. Handbuch **06-EVENTS-…**, Druck-Rechte-Zeile Bearbeiter. **Tests + Build** grün. **Commit:** **`cb59bc07`** ✅ GitHub (nach Push)
+**Letzter Stand:** 16.04.26 – **K2 Familie: fertige Geschichten nur Inhaber löscht** – Capability **`canDeleteFertigeGeschichte`** (`effectiveRolle === 'inhaber'`); Bearbeiter:innen: **Löschen** nur bei **Entwürfen**; Register + Editor: Hinweis **PDF sichern**. Handbuch **06-EVENTS-…**, Druck-Rechte-Zeile Bearbeiter. **Tests + Build** grün. **Commit:** **`069df45e`** ✅ GitHub (nach Push)
 
 ---
 
