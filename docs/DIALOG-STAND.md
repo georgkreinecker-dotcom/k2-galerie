@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 16.04.26 – **K2 Familie Demo „Meine Familie“ werbegerecht** – **`K2FamilieLayout`** (Nur-Muster): **`PRODUCT_K2_FAMILIE_WERBESLOGAN`** + **`PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ`**, kompakter Text Musterfamilie Huber / Einladung / Button **„Demo beenden – zu eurer Familie“**. **`K2FamilieHomePage`:** bei **huber + Nur-Muster-Sitzung** gelber Block: Slogan + **„Rolle in der Musterfamilie bestätigen“** statt „Sitzung nicht bestätigt“; echte Familien unverändert. **Tests** grün; **`tsc -b`** grün. **Commit:** **`a917100a`** ✅ GitHub
+
+**Was wir JETZT tun:** Vercel **Ready** → Demo **`/familie`** bzw. **`?t=huber`** – Toolbar + Code-Banner kurz **ansehen**.
+
+---
+
 **Letzter Stand:** 16.04.26 – **K2 Familie Einstiegs-Flyer (Huber) = gleiche Werbelinie** – **`einstiegContentFamilie.ts`:** Titel/Untertitel aus **`PRODUCT_K2_FAMILIE_WERBESLOGAN`** + **`PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ`** (wie `tenantConfig`); Body Musterfamilie unverändert praktisch. **Tests + vite:build** grün. **Commit:** **`f181cbfe`** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Vercel **Ready:** Einstieg **Huber** (`?t=huber`) – Hero kopfliest wie Marketing-Flyer.
