@@ -78,6 +78,18 @@ export function findPersonIdByMitgliedsNummer(
 }
 
 /**
+ * **Erste Aktion eines neuen Mitglieds** (Cod-Registrierung): Nach `loadFamilieFromSupabase`
+ * ist die **gemergte** Personenliste inkl. `ergaenzeMitgliedsNummerAusServerListe` die **einzige**
+ * Quelle für die Zuordnung – nicht Lite, nicht eine ältere lokale Liste allein.
+ */
+export function resolvePersonIdFuerPersoenlichenCodeNachMerge(
+  personenNachCloudMerge: K2FamiliePerson[],
+  eingegeben: string
+): string | null {
+  return findPersonIdByMitgliedsNummer(personenNachCloudMerge, eingegeben)
+}
+
+/**
  * Nach mergeById(Server, Local) kann die neuere lokale Kopie ohne persönlichen Code gewinnen,
  * obwohl die Cloud den Code hat → Anmeldung mit Code auf fremdem Gerät findet keine Person.
  * Übernimmt `mitgliedsNummer` aus der Server-Liste, wenn die gemergte Person keinen Code hat.

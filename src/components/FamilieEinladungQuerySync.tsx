@@ -11,7 +11,7 @@ import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { K2_FAMILIE_SESSION_UPDATED, loadEinstellungen, loadPersonen, saveEinstellungen } from '../utils/familieStorage'
 import { setIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
 import { findPersonIdByMitgliedsNummer, trimMitgliedsNummerEingabe } from '../utils/familieMitgliedsNummer'
-import { loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
+import { fetchFamilieIdentityLite, loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
 import {
   clearFamilieEinladungPending,
   setFamilieEinladungPending,
@@ -97,9 +97,8 @@ export function FamilieEinladungQuerySync() {
     }
 
     /**
-     * Abgleich persönlicher Code: immer zuerst die **gemergte Server-Antwort** nutzen (nicht nur localStorage),
-     * damit ein fehlgeschlagenes savePersonen oder verzögertes Schreiben die Zuordnung nicht bricht.
-     * Danach mehrfach erneut von Supabase laden (Mobil / langsames Netz).
+     * Abgleich persönlicher Code: mehrere **schlanke** Lite-GETs (ohne Foto-Payloads), dann **einmal** Vollladen,
+     * damit lokale Daten vollständig sind. Zuletzt ein Vollladen als Fallback (wie früher mehrere Vollladen).
      */
     const applyPersoenlicheMitgliedsNummerWithRetries = async (
       tenantId: string,
@@ -107,25 +106,33 @@ export function FamilieEinladungQuerySync() {
     ): Promise<string | null> => {
       const mNorm = trimMitgliedsNummerEingabe(mParam ?? '')
       if (!mNorm) return null
-      /** Mobil / schwaches Netz: mehrere Versuche; jeder fetch hat Timeout (familieSupabaseClient). */
+      /** Mobil / schwaches Netz: mehrere Versuche; Lite = wenig Daten pro Versuch. */
       const delaysMs = [0, 300, 700, 1400, 2400]
       for (let i = 0; i < delaysMs.length; i++) {
         if (i > 0) await sleep(delaysMs[i])
         if (cancelled) return null
-        const data = await loadFamilieFromSupabase(tenantId)
-        bumpFamilieStorageRevision()
-        const pid = findPersonIdByMitgliedsNummer(data.personen, mNorm)
-        if (pid) {
-          persistIchBinNachCode(tenantId, pid)
-          return pid
+        const data = await fetchFamilieIdentityLite(tenantId)
+        if (data.loadMeta.ok) {
+          const pid = findPersonIdByMitgliedsNummer(data.personen, mNorm)
+          if (pid) {
+            await loadFamilieFromSupabase(tenantId)
+            bumpFamilieStorageRevision()
+            if (persistIchBinNachCode(tenantId, pid)) return pid
+          }
         }
-        /** Fallback: Speicher, falls Merge schon lokal war */
         const pidLocal = findPersonIdByMitgliedsNummer(loadPersonen(tenantId), mNorm)
         if (pidLocal) {
-          persistIchBinNachCode(tenantId, pidLocal)
-          return pidLocal
+          await loadFamilieFromSupabase(tenantId)
+          bumpFamilieStorageRevision()
+          if (persistIchBinNachCode(tenantId, pidLocal)) return pidLocal
         }
       }
+      if (cancelled) return null
+      const full = await loadFamilieFromSupabase(tenantId)
+      bumpFamilieStorageRevision()
+      let pid = findPersonIdByMitgliedsNummer(full.personen, mNorm)
+      if (!pid) pid = findPersonIdByMitgliedsNummer(loadPersonen(tenantId), mNorm)
+      if (pid && persistIchBinNachCode(tenantId, pid)) return pid
       return null
     }
 

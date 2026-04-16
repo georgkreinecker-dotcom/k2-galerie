@@ -34,6 +34,8 @@ Kurzfassung für den ersten Kontakt: [01-FLYER-KURZPROSPEKT-VERKAUFSARGUMENTATIO
 
 Details und Bedienung: **K2 Familie Benutzerhandbuch** in der App (`public/k2-familie-handbuch/`, Index `00-INDEX.md`).
 
+**Heft 3 – Produktfeatures:** [Produktfeatures – Überblick für Vertrieb](03-K2-FAMILIE-PRODUKTFEATURES.md) (Nutzen im Gespräch, Tabellen, zum Drucken).
+
 [SEITENUMBRUCH]
 
 ## 3. Technik und Architektur (für Anbieter & IT-Einsteiger)
@@ -71,6 +73,12 @@ Vertiefte technische Einstiege: `docs/EINSTIEG-INFORMATIKER-SYSTEM-WARTUNG.md`, 
 | `docs/K2-FAMILIE-LIZENZMODELL-BRUECKE.md` | Lizenz K2 Familie vs. Galerie |
 | `docs/K2-FAMILIE-DATENSOUVERAENITAET.md` | Export, Souveränität |
 | `public/k2-familie-handbuch/00-INDEX.md` | Nutzerhandbuch – Kapitelübersicht |
+
+[SEITENUMBRUCH]
+
+## Vertriebsmappe – alle Kapitel
+
+Übersicht **aller** Texthefte (FAQ, Lizenz, erste Schritte, B2B, Wettbewerb, Medien): [00-INDEX.md](00-INDEX.md).
 
 ---
 

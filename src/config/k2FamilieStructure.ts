@@ -16,8 +16,8 @@ export type FamilieLeitGroup = {
   sections: FamilieLeitSection[]
 }
 
-/** Gruppierte Navigation – Reihenfolge = Leselogik */
-export const k2FamilieLeitGroups: FamilieLeitGroup[] = [
+/** Vorderteil der Leitstruktur (bis inkl. Benutzerhandbuch) */
+const k2FamilieLeitGroupsHead: FamilieLeitGroup[] = [
   {
     chapterTitle: 'Start & Orientierung',
     sections: [
@@ -47,6 +47,17 @@ export const k2FamilieLeitGroups: FamilieLeitGroup[] = [
     chapterTitle: 'Lesen & Außenauftritt',
     sections: [{ id: 'fam-handbuch', label: 'Benutzerhandbuch', to: R.benutzerHandbuch }],
   },
+]
+
+/** Eigenständiger Bereich wie bei mök2 (ein Ordner, eine Lesefassung) – nur K2-Familie-Inhalt, keine Galerie-Vertriebslinks. */
+const k2FamilieProspekteGruppe: FamilieLeitGroup = {
+  chapterTitle: 'Prospekte & Präsentationsmappen',
+  sections: [
+    { id: 'fam-prop-k2fam', label: 'K2 Familie – Kurzprospekt', to: R.familiePraesentationsmappe },
+  ],
+}
+
+const k2FamilieLeitGroupsTail: FamilieLeitGroup[] = [
   {
     chapterTitle: 'K2 Familien Marketing',
     sections: [
@@ -69,6 +80,14 @@ export const k2FamilieLeitGroups: FamilieLeitGroup[] = [
     ],
   },
 ]
+
+/** Leitstruktur-Sidebar inkl. eigener Gruppe „Prospekte & Präsentationsmappen“ (nur K2 Familie). */
+export function getK2FamilieLeitGroups(): FamilieLeitGroup[] {
+  return [...k2FamilieLeitGroupsHead, k2FamilieProspekteGruppe, ...k2FamilieLeitGroupsTail]
+}
+
+/** Snapshot beim Modulstart – für Tests/Imports; UI: getK2FamilieLeitGroups() */
+export const k2FamilieLeitGroups: FamilieLeitGroup[] = getK2FamilieLeitGroups()
 
 /** Pfad ohne Query und Hash – für aktiven Zustand bei Links mit ?t=… oder Anker (#) */
 export function familiePathWithoutHash(to: string): string {

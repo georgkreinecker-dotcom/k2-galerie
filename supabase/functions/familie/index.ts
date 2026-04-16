@@ -46,6 +46,23 @@ function getCorsHeaders(req: Request): Record<string, string> {
 const TABLE = 'k2_familie_data'
 const TYPES = ['personen', 'momente', 'events'] as const
 
+/**
+ * GET ?lite=1: Personen ohne Bild-Daten (keine data:-URLs / riesige Strings), keine Momente/Events.
+ * Nur für Code-Zuordnung & Struktur – weniger MB beim Neueinstieg / Retries.
+ */
+function stripPersonenForLiteFetch(personen: unknown[]): unknown[] {
+  return personen.map((p) => {
+    if (!p || typeof p !== 'object') return p
+    const o = { ...(p as Record<string, unknown>) }
+    delete o.photo
+    delete o.photoKind
+    delete o.photoJugend
+    delete o.photoErwachsen
+    delete o.photoAlter
+    return o
+  })
+}
+
 /** PostgREST / Supabase-Fehler lesbar machen (500-Body + Logs). */
 function serializeDbError(e: unknown): Record<string, string | undefined> {
   if (e && typeof e === 'object' && 'message' in e) {
@@ -103,6 +120,7 @@ serve(async (req) => {
       }
 
       const tenantId = url.searchParams.get('tenantId') || 'default'
+      const lite = url.searchParams.get('lite') === '1'
       const { data: rows, error } = await supabase
         .from(TABLE)
         .select('data_type, payload')
@@ -119,13 +137,16 @@ serve(async (req) => {
         }
         if (t && Array.isArray(row.payload)) byType[t] = row.payload
       }
+      const personenRaw = byType.personen || []
+      const personenOut = lite ? stripPersonenForLiteFetch(personenRaw) : personenRaw
       return new Response(
         JSON.stringify({
-          personen: byType.personen || [],
-          momente: byType.momente || [],
-          events: byType.events || [],
+          personen: personenOut,
+          momente: lite ? [] : byType.momente || [],
+          events: lite ? [] : byType.events || [],
           ...(einstellungen ? { einstellungen } : {}),
           timestamp: new Date().toISOString(),
+          ...(lite ? { lite: true } : {}),
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       )

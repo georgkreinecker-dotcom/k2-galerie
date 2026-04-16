@@ -4,12 +4,12 @@
  */
 
 import { Link, Navigate, useSearchParams } from 'react-router-dom'
-import { useLayoutEffect, useMemo } from 'react'
+import { useLayoutEffect, useMemo, useState } from 'react'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { getFamilieEinstiegContent, getFamilieEinstiegTexts } from '../config/einstiegContentFamilie'
 import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
-import { setFamilieNurMusterSession } from '../utils/familieMusterSession'
+import { isFamilieNurMusterSession, setFamilieNurMusterSession } from '../utils/familieMusterSession'
 import '../App.css'
 import { K2_FAMILIE_UI } from '../config/k2FamilieUiColors'
 
@@ -25,14 +25,18 @@ export default function K2FamilieEinstiegPage() {
   /** Flyer/Sidebar: `?t=huber` = explizit Musterfamilie – nie sofort nach „Meine Familie“ schicken, nur weil zuvor Kreinecker aktiv war. */
   const tParam = searchParams.get('t')?.trim().toLowerCase() ?? ''
   const huberDemoFromUrl = tParam === FAMILIE_HUBER_TENANT_ID
+  /** Nach Layout: Demo-Sitzung gesetzt – kein zweites „großes“ Betreten, wenn du schon in der Huber-Umschau bist. */
+  const [demoUmschauAktiv, setDemoUmschauAktiv] = useState(() => isFamilieNurMusterSession())
   useLayoutEffect(() => {
     /** Ohne diese Abfrage: Redirect zu „Meine Familie“ würde trotzdem Nur-Muster setzen → Enforcer zwingt huber, echte Familie (persönlicher QR) wirkt „weg“. */
     if (!huberDemoFromUrl && currentTenantId !== FAMILIE_HUBER_TENANT_ID) return
     setFamilieNurMusterSession(true)
+    setDemoUmschauAktiv(true)
     if (huberDemoFromUrl) {
       ensureTenantInListAndSelect(FAMILIE_HUBER_TENANT_ID)
     }
   }, [huberDemoFromUrl, currentTenantId, ensureTenantInListAndSelect])
+  const zeigeKompaktenZurUebersicht = huberDemoFromUrl && demoUmschauAktiv
   const tenantForContent = huberDemoFromUrl ? FAMILIE_HUBER_TENANT_ID : currentTenantId
   const texts = useMemo(() => getFamilieEinstiegTexts(tenantForContent), [tenantForContent])
   const content = useMemo(() => getFamilieEinstiegContent(tenantForContent), [tenantForContent])
@@ -68,24 +72,41 @@ export default function K2FamilieEinstiegPage() {
 
       <div style={{ padding: '1.25rem 1.25rem 2rem', maxWidth: 720, margin: '0 auto' }}>
         <p style={{ color: C.textSoft, lineHeight: 1.65, marginBottom: '1.5rem', fontSize: '1.02rem' }}>{texts.body}</p>
-        <Link
-          to={`${R.meineFamilie}?t=huber`}
-          className="btn"
-          style={{
-            display: 'block',
-            textAlign: 'center',
-            padding: '1rem 1.25rem',
-            borderRadius: 18,
-            background: `linear-gradient(135deg, #0d9488 0%, ${C.accent} 100%)`,
-            color: '#042f2e',
-            fontWeight: 800,
-            textDecoration: 'none',
-            fontSize: '1.05rem',
-            border: `1px solid ${C.border}`,
-          }}
-        >
-          {texts.ctaLabel}
-        </Link>
+        {zeigeKompaktenZurUebersicht ? (
+          <p style={{ margin: 0, fontSize: '1rem', lineHeight: 1.6, color: C.text }}>
+            <span style={{ color: C.textSoft }}>Du bist in der Musterfamilie-Umschau. </span>
+            <Link
+              to={`${R.meineFamilie}?t=huber`}
+              style={{
+                color: C.accent,
+                fontWeight: 700,
+                textDecoration: 'underline',
+                textUnderlineOffset: '3px',
+              }}
+            >
+              Zur Familien-Übersicht
+            </Link>
+          </p>
+        ) : (
+          <Link
+            to={`${R.meineFamilie}?t=huber`}
+            className="btn"
+            style={{
+              display: 'block',
+              textAlign: 'center',
+              padding: '1rem 1.25rem',
+              borderRadius: 18,
+              background: `linear-gradient(135deg, #0d9488 0%, ${C.accent} 100%)`,
+              color: '#042f2e',
+              fontWeight: 800,
+              textDecoration: 'none',
+              fontSize: '1.05rem',
+              border: `1px solid ${C.border}`,
+            }}
+          >
+            {texts.ctaLabel}
+          </Link>
+        )}
       </div>
     </div>
   )

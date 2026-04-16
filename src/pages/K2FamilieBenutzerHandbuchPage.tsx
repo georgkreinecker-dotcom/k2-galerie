@@ -2,6 +2,7 @@
 
 import BenutzerHandbuchViewer from '../components/BenutzerHandbuchViewer'
 import { PROJECT_ROUTES } from '../config/navigation'
+import { PRODUCT_K2_FAMILIE_WERBELINIE_DECKBLATT } from '../config/tenantConfig'
 
 const DOCUMENTS = [
   { id: '00-index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
@@ -35,7 +36,7 @@ export default function K2FamilieBenutzerHandbuchPage() {
       headerSubtitle="Personenkarte, Stammbaum, Grafik, Druck, Events, Geschichte, Gedenkort, Einstellungen, Rollen."
       printHintFolder="public/k2-familie-handbuch/"
       deckblattTop="K2 Familie"
-      deckblattSlogan="Ein Raum für eure Geschichte – vernetzt, respektvoll, bei euch."
+      deckblattSlogan={PRODUCT_K2_FAMILIE_WERBELINIE_DECKBLATT}
       deckblattMainTitle="Familie sichtbar machen"
       deckblattFooterProduct="K2 Familie"
       deckblattFooterKind="Benutzerhandbuch"

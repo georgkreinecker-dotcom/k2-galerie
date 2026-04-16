@@ -46,3 +46,4 @@ Alle Code-Änderungen sind fertig. Jetzt nur noch Supabase konfigurieren!
 - ✅ Dokumentation komplett
 
 **Bereit für Production!** 🎉
+npx supabase login

@@ -1,8 +1,21 @@
 import { describe, it, expect } from 'vitest'
-import { familiePathWithoutHash, isFamilieNavSectionActive } from '../config/k2FamilieStructure'
+import {
+  familiePathWithoutHash,
+  getK2FamilieLeitGroups,
+  isFamilieNavSectionActive,
+} from '../config/k2FamilieStructure'
 import { PROJECT_ROUTES } from '../config/navigation'
 
 const R = PROJECT_ROUTES['k2-familie']
+
+describe('getK2FamilieLeitGroups', () => {
+  it('enthält Gruppe Prospekte & Präsentationsmappen mit K2-Familie-Kurzprospekt', () => {
+    const groups = getK2FamilieLeitGroups()
+    const prop = groups.find((g) => g.chapterTitle === 'Prospekte & Präsentationsmappen')
+    expect(prop).toBeDefined()
+    expect(prop?.sections.some((s) => s.to === R.familiePraesentationsmappe)).toBe(true)
+  })
+})
 
 describe('isFamilieNavSectionActive', () => {
   it('home nur exakt, nicht Unterpfade', () => {

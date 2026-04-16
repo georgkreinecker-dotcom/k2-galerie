@@ -10,6 +10,7 @@ import { PROJECT_ROUTES } from '../config/navigation'
 import { K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
 import { K2_FAMILIE_NAV_LABEL_GESCHICHTE } from '../config/k2FamilieNavLabels'
 import { isK2FamilieApfLocalhost } from '../config/k2FamilieApfDefaults'
+import { useFamilieMusterDemoHint } from '../context/FamilieMusterDemoHintContext'
 
 const t = adminTheme
 const R = PROJECT_ROUTES['k2-familie']
@@ -522,7 +523,6 @@ export function FamilieMusterHuberLeitfadenModal({ open, onOpenChange, onAbgesch
                 resetPanelLayout={resetPanelLayout}
                 schliessenUndMerken={schliessenUndMerken}
                 demoBeenden={demoBeenden}
-                onOpenChange={onOpenChange}
                 hasFixedBounds={false}
               />
             </div>
@@ -556,7 +556,6 @@ export function FamilieMusterHuberLeitfadenModal({ open, onOpenChange, onAbgesch
               resetPanelLayout={resetPanelLayout}
               schliessenUndMerken={schliessenUndMerken}
               demoBeenden={demoBeenden}
-              onOpenChange={onOpenChange}
               hasFixedBounds
             />
           </div>
@@ -585,7 +584,6 @@ type LeitfadenSheetInnerProps = {
   resetPanelLayout: () => void
   schliessenUndMerken: () => void
   demoBeenden: () => void
-  onOpenChange: (open: boolean) => void
   hasFixedBounds: boolean
 }
 
@@ -608,9 +606,10 @@ function LeitfadenSheetInner({
   resetPanelLayout,
   schliessenUndMerken,
   demoBeenden,
-  onOpenChange,
   hasFixedBounds,
 }: LeitfadenSheetInnerProps) {
+  const musterHint = useFamilieMusterDemoHint()
+  const hoverHint = musterHint?.hoverHint ?? null
   return (
     <>
           {/* Griff + Kopf – ziehbar */}
@@ -782,6 +781,25 @@ function LeitfadenSheetInner({
             })}
           </div>
 
+          {hoverHint ? (
+            <div
+              role="status"
+              aria-live="polite"
+              style={{
+                padding: '0.5rem 1rem',
+                borderBottom: '1px solid rgba(181, 74, 30, 0.1)',
+                background: 'rgba(94, 234, 212, 0.08)',
+              }}
+            >
+              <p style={{ margin: 0, fontSize: '0.68rem', fontWeight: 700, color: t.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                Aktuell unter dem Cursor
+              </p>
+              <p style={{ margin: '0.2rem 0 0', fontSize: '0.82rem', color: t.text, lineHeight: 1.45, fontWeight: 600 }}>
+                {hoverHint}
+              </p>
+            </div>
+          ) : null}
+
           <div
             className="k2-familie-muster-leitfaden-step-body"
             key={schritt}
@@ -827,7 +845,6 @@ function LeitfadenSheetInner({
               <p style={{ margin: '0.85rem 0 0' }}>
                 <Link
                   to={s.linkTo}
-                  onClick={() => onOpenChange(false)}
                   style={{
                     display: 'inline-block',
                     fontSize: '0.9rem',
@@ -972,7 +989,6 @@ function LeitfadenSheetInner({
             onPointerUp={onResizePointerUp}
             onPointerCancel={onResizePointerUp}
             role="separator"
-            aria-orientation="both"
             aria-label="Größe ziehen"
             style={{
               position: 'absolute',

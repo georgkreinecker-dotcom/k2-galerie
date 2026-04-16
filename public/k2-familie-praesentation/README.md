@@ -6,9 +6,16 @@
 
 | Datei | Inhalt |
 |--------|--------|
-| **00-INDEX.md** | Inhaltsverzeichnis – Kurzanleitung |
-| **01-FLYER-KURZPROSPEKT-VERKAUFSARGUMENTATION.md** | Flyer / Kurzprospekt – Verkaufsargumentation (ein Blatt) |
-| **02-PROSPEKT-PRODUKTINFORMATION.md** | Prospekt – mehr Produktinformation (ableitend aus 01) |
+| **00-INDEX.md** | Inhaltsverzeichnis – Kurzanleitung (**alle** Kapitel) |
+| **01-…** | Flyer / Kurzprospekt – Verkaufsargumentation |
+| **02-…** | Prospekt – Produktinformation |
+| **03-…** | Produktfeatures – Überblick für Vertrieb |
+| **04-…** | FAQ und Einwände – Gesprächs-Spickzettel |
+| **05-…** | Lizenz, Kündigung, Daten – Kurz für Vertrieb |
+| **06-…** | Nach der Lizenz – erste Schritte (Vertrieb) |
+| **07-…** | Multiplikatoren und B2B – Argumente |
+| **08-…** | Wettbewerb und Einordnung |
+| **09-…** | Medien und Erweiterung – Rahmen für Screenshots/PDF |
 
 ## App
 

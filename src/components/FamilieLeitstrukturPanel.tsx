@@ -5,7 +5,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { PLATFORM_ROUTES } from '../config/navigation'
-import { k2FamilieLeitGroups, isFamilieNavSectionActive } from '../config/k2FamilieStructure'
+import { getK2FamilieLeitGroups, isFamilieNavSectionActive } from '../config/k2FamilieStructure'
 
 const LS_KEY = 'k2-familie-leitstruktur-minimized'
 const PANEL_WIDTH = 304
@@ -125,7 +125,7 @@ export default function FamilieLeitstrukturPanel() {
           ← Projekte
         </Link>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-          {k2FamilieLeitGroups.map((group) => (
+          {getK2FamilieLeitGroups().map((group) => (
             <div key={group.chapterTitle}>
               <div
                 style={{

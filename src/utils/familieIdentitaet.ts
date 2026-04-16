@@ -14,6 +14,8 @@ import { getFamilieRollenCapabilities } from '../types/k2FamilieRollen'
 import { trimMitgliedsNummerEingabe } from './familieMitgliedsNummer'
 import { isFamilieFamilienQrKompaktSession } from './familieEinladungPending'
 import { loadIdentitaetBestaetigt } from './familieIdentitaetStorage'
+import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
+import { isFamilieNurMusterSession } from './familieMusterSession'
 
 /**
  * Lokale Rollenwahl vs. festgelegte Inhaber:in in den Familien-Daten.
@@ -135,7 +137,10 @@ export function getFamilieEffectiveCapabilities(
   }
 
   const sessionPid = loadIdentitaetBestaetigt(tenantId)
-  if (sessionPid !== ich) {
+  /** Musterfamilie Huber über Flyer/Einstieg: keine erneute Code-Eingabe – nur Demo-Umschau. */
+  const demoHuberNurMuster =
+    tenantId === FAMILIE_HUBER_TENANT_ID && isFamilieNurMusterSession()
+  if (sessionPid !== ich && !demoHuberNurMuster) {
     return withCanDeleteFertigeGeschichte(
       mergeCaps(capabilitiesNurLesen(rolleForCaps), rolle, effectiveRolle, inhaberArbeitsansicht),
       effectiveRolle,
@@ -172,7 +177,11 @@ export function isK2FamilieNurMitgliedEinstiegModus(
     ? trimMitgliedsNummerEingabe(personen.find((p) => p.id === ich)?.mitgliedsNummer ?? '')
     : ''
   const sessionBestaetigtFuerIch = Boolean(ich && loadIdentitaetBestaetigt(tenantId) === ich)
-  const wartetAufPersoenlicheCodeBestaetigung = Boolean(ich && codeAufDuKarte && !sessionBestaetigtFuerIch)
+  const demoHuberNurMuster =
+    tenantId === FAMILIE_HUBER_TENANT_ID && isFamilieNurMusterSession()
+  const wartetAufPersoenlicheCodeBestaetigung = Boolean(
+    ich && codeAufDuKarte && !sessionBestaetigtFuerIch && !demoHuberNurMuster,
+  )
 
   if (rolle === 'inhaber') {
     if (wartetAufPersoenlicheCodeBestaetigung) return true
@@ -183,5 +192,6 @@ export function isK2FamilieNurMitgliedEinstiegModus(
   }
   if (!ich) return true
   if (!codeAufDuKarte) return false
+  if (demoHuberNurMuster) return false
   return !sessionBestaetigtFuerIch
 }

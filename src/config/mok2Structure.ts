@@ -22,6 +22,7 @@ export const mok2Groups: Mok2Group[] = [
       { id: 'mok2-was-kann-die-app', label: 'Was kann die App? (ök2 | VK2)' },
       { id: 'mok2-produktbeschreibung', label: 'Genaue Produktbeschreibung' },
       { id: 'mok2-prospekt', label: 'K2 Galerie Prospekt' },
+      { id: 'mok2-k2-familie-kurzprospekt', label: 'K2 Familie – Kurzprospekt (Vertrieb)' },
       { id: 'mok2-prospekt-galerieeroeffnung', label: 'Prospekt Galerieeröffnung K2' },
       { id: 'mok2-verkauf-map-drei-ebenen', label: 'Präsentationsmappe (Entscheidungshilfe)' },
       { id: 'mok2-1', label: '1. USPs' },

@@ -39,6 +39,13 @@ import { loadIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
 import { isK2FamilieMeineFamilieHomePath, K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
 import { K2_FAMILIE_NAV_LABEL_GESCHICHTE } from '../config/k2FamilieNavLabels'
 import { resolveFamiliePwaResumeTarget, writeFamiliePwaLastPath } from '../utils/familiePwaLastPath'
+import { FamilieMusterDemoHintProvider } from '../context/FamilieMusterDemoHintContext'
+import {
+  MUSTER_HINT_TOOLBAR_DEMO_ENDE,
+  MUSTER_HINT_TOOLBAR_FAMILIE,
+  MUSTER_HINT_TOOLBAR_LEITFADEN_BUTTON,
+  musterHintForFamilieNavLink,
+} from '../config/familieMusterDemoHints'
 
 /** Gleicher String wie `K2_FAMILIE_SESSION_UPDATED` in `familieStorage.ts` — hier als Literal, damit kein Laufzeit-ReferenceError (z. B. HMR). */
 const FAMILIE_SESSION_UPDATED_EVENT = 'k2-familie-einstellungen-updated'
@@ -208,6 +215,7 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
                 <button
                   type="button"
                   onClick={() => setMusterLeitfadenOpen(true)}
+                  data-muster-hint={MUSTER_HINT_TOOLBAR_LEITFADEN_BUTTON}
                   style={{
                     ...btnBase,
                     border: '1px solid rgba(181, 74, 30, 0.45)',
@@ -222,6 +230,7 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
                   onClick={() =>
                     navigate({ pathname: K2_FAMILIE_APP_SHORT_PATH, search: '' }, { replace: true })
                   }
+                  data-muster-hint={MUSTER_HINT_TOOLBAR_DEMO_ENDE}
                   style={{
                     ...btnBase,
                     border: '1px solid rgba(181, 74, 30, 0.35)',
@@ -250,6 +259,7 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
               <select
                 aria-label="Aktive Familie wählen"
                 title="In der Muster-Sitzung nur Huber."
+                data-muster-hint={MUSTER_HINT_TOOLBAR_FAMILIE}
                 value={selectValue}
                 onChange={(e) => setCurrentTenantId(e.target.value)}
                 style={selectStyle}
@@ -739,10 +749,13 @@ function FamilieNav() {
               ? isK2FamilieMeineFamilieHomePath(path)
               : path === to || path === to + '/'
             : path.startsWith(to)
+        const navMuster = isFamilieNurMusterSession()
+        const musterHint = navMuster ? musterHintForFamilieNavLink(to) : undefined
         return (
           <Link
             key={to}
             to={to}
+            {...(musterHint ? { 'data-muster-hint': musterHint } : {})}
             className={isActive ? 'k2-familie-nav-link k2-familie-nav-link--active' : 'k2-familie-nav-link'}
             style={{
               padding: '0.45rem 0.85rem',
@@ -768,6 +781,8 @@ function FamilieNav() {
 function FamilieLayoutInner() {
   const location = useLocation()
   const navigate = useNavigate()
+  const nurMuster = isFamilieNurMusterSession()
+  const [musterHintRoot, setMusterHintRoot] = useState<HTMLDivElement | null>(null)
   const { currentTenantId, familieStorageRevision } = useFamilieTenant()
   const { rolle } = useFamilieRolle()
   const einst = useMemo(() => loadEinstellungen(currentTenantId), [currentTenantId, familieStorageRevision])
@@ -814,6 +829,56 @@ function FamilieLayoutInner() {
     writeFamiliePwaLastPath(location.pathname, location.search)
   }, [location.pathname, location.search])
 
+  const columnInner = (
+    <>
+      {nurMitgliedEinstieg ? (
+        <div
+          className="k2-familie-no-print"
+          style={{
+            padding: '0.65rem 1rem',
+            background: t.bgDark,
+            borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
+            fontFamily: t.fontHeading,
+            color: t.text,
+          }}
+        >
+          <div style={{ fontWeight: 700, fontSize: '0.95rem', lineHeight: 1.3 }}>K2 Familie · Persönlicher Zugang</div>
+          <p
+            style={{
+              margin: '0.35rem 0 0',
+              fontSize: '0.82rem',
+              lineHeight: 1.45,
+              color: t.muted,
+              fontFamily: t.fontBody,
+              fontWeight: 500,
+            }}
+          >
+            Privater Familienraum – Betreten nur mit deiner persönlichen ID, dem Code auf deiner Karte.
+          </p>
+        </div>
+      ) : (
+        <>
+          <FamilieNav />
+          {!nurMuster ? (
+            <FamilieTenantRolleCollapsibleSection />
+          ) : (
+            <>
+              <FamilieTenantToolbar />
+              <FamilieRolleLeiste />
+            </>
+          )}
+        </>
+      )}
+      <main id="k2-familie-main" className="k2-familie-main">
+        <Outlet />
+      </main>
+      <footer className="k2-familie-app-footer k2-familie-no-print" role="contentinfo">
+        <p className="k2-familie-app-footer__line">{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
+        <p className="k2-familie-app-footer__line k2-familie-app-footer__line--muted">{PRODUCT_URHEBER_ANWENDUNG}</p>
+      </footer>
+    </>
+  )
+
   return (
     <>
       <FamilieEinladungQuerySync />
@@ -822,53 +887,11 @@ function FamilieLayoutInner() {
       <FamilieCloudAutoSync />
       <div className="k2-familie-layout-shell">
         {!nurMitgliedEinstieg ? <FamilieLeitstrukturPanel /> : null}
-        <div className="k2-familie-layout-column">
-          {nurMitgliedEinstieg ? (
-            <div
-              className="k2-familie-no-print"
-              style={{
-                padding: '0.65rem 1rem',
-                background: t.bgDark,
-                borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
-                fontFamily: t.fontHeading,
-                color: t.text,
-              }}
-            >
-              <div style={{ fontWeight: 700, fontSize: '0.95rem', lineHeight: 1.3 }}>K2 Familie · Persönlicher Zugang</div>
-              <p
-                style={{
-                  margin: '0.35rem 0 0',
-                  fontSize: '0.82rem',
-                  lineHeight: 1.45,
-                  color: t.muted,
-                  fontFamily: t.fontBody,
-                  fontWeight: 500,
-                }}
-              >
-                Privater Familienraum – Betreten nur mit deiner persönlichen ID, dem Code auf deiner Karte.
-              </p>
-            </div>
-          ) : (
-            <>
-              <FamilieNav />
-              {!isFamilieNurMusterSession() ? (
-                <FamilieTenantRolleCollapsibleSection />
-              ) : (
-                <>
-                  <FamilieTenantToolbar />
-                  <FamilieRolleLeiste />
-                </>
-              )}
-            </>
-          )}
-          <main id="k2-familie-main" className="k2-familie-main">
-            <Outlet />
-          </main>
-          <footer className="k2-familie-app-footer k2-familie-no-print" role="contentinfo">
-            <p className="k2-familie-app-footer__line">{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
-            <p className="k2-familie-app-footer__line k2-familie-app-footer__line--muted">{PRODUCT_URHEBER_ANWENDUNG}</p>
-          </footer>
-        </div>
+        <FamilieMusterDemoHintProvider active={nurMuster} root={musterHintRoot}>
+          <div ref={setMusterHintRoot} className="k2-familie-layout-column">
+            {columnInner}
+          </div>
+        </FamilieMusterDemoHintProvider>
       </div>
     </>
   )

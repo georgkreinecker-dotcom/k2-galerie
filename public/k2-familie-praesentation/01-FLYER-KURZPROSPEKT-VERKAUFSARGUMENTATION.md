@@ -93,6 +93,12 @@ Ausführlich: `docs/K2-FAMILIE-GRUNDBOTSCHAFT.md` und das **Benutzerhandbuch K2 
 
 **Kontakt:** **info@kgm.at** – sachlich, skalierbar, **ohne** Aufbau individueller Kundenbeziehung als Standardprozess.
 
+[SEITENUMBRUCH]
+
+## Mappe – alle Kapitel
+
+Vollständiges Inhaltsverzeichnis mit **FAQ**, **Lizenz/Kündigung/Daten**, **erste Schritte nach Lizenz**, **Multiplikatoren**, **Wettbewerbseinordnung** und **Medien-Rahmen:** [00-INDEX.md](00-INDEX.md).
+
 ---
 
 *Stand: April 2026 · Datei: Flyer / Kurzprospekt Verkaufsargumentation · `public/k2-familie-praesentation/`*

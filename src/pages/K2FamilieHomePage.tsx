@@ -30,15 +30,23 @@ import {
 import {
   findPersonIdByMitgliedsNummer,
   persoenlicherCodePasstZuKarte,
+  resolvePersonIdFuerPersoenlichenCodeNachMerge,
   trimMitgliedsNummerEingabe,
 } from '../utils/familieMitgliedsNummer'
 import type { K2FamilieStartpunktTyp } from '../types/k2Familie'
 import { isK2FamilieNurMitgliedEinstiegModus } from '../utils/familieIdentitaet'
 import { seedFamilieHuber, FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
 import { clearFamilieNurMusterSession, isFamilieNurMusterSession } from '../utils/familieMusterSession'
+import {
+  MUSTER_HINT_HOME_KACHEL_EVENTS_KALENDER,
+  MUSTER_HINT_HOME_KACHEL_GEDENKORT,
+  MUSTER_HINT_HOME_KACHEL_GESCHICHTE,
+  MUSTER_HINT_HOME_KACHEL_EINSTELLUNGEN,
+  MUSTER_HINT_HOME_KACHEL_STAMMBAUM,
+  MUSTER_HINT_HOME_STAMMDATEN,
+} from '../config/familieMusterDemoHints'
 import { useMemo, useState, useEffect, type CSSProperties } from 'react'
 import { adminTheme } from '../config/theme'
-import { PRODUCT_K2_FAMILIE_WERBESLOGAN } from '../config/tenantConfig'
 import { K2_FAMILIE_UI } from '../config/k2FamilieUiColors'
 import { K2_FAMILIE_NAV_LABEL_GESCHICHTE } from '../config/k2FamilieNavLabels'
 
@@ -221,6 +229,7 @@ export default function K2FamilieHomePage() {
         return
       }
 
+      /** Eine Quelle: nur die gemergte Liste nach Vollladen (inkl. Code vom Server bei leerem Lokal). */
       const data = await loadFamilieFromSupabase(currentTenantId)
       if (cancelled) return
       bumpFamilieStorageRevision()
@@ -229,7 +238,7 @@ export default function K2FamilieHomePage() {
         clearFamilieEinladungPending()
         return
       }
-      const pid = findPersonIdByMitgliedsNummer(data.personen, mNorm)
+      const pid = resolvePersonIdFuerPersoenlichenCodeNachMerge(data.personen, mNorm)
       if (pid) {
         const einst = loadEinstellungen(currentTenantId)
         if (saveEinstellungen(currentTenantId, { ...einst, ichBinPersonId: pid })) {
@@ -377,6 +386,7 @@ export default function K2FamilieHomePage() {
       }
       /** Gemergte Liste aus dem Ladevorgang – nicht nur loadPersonen(): Speichern nach Cloud-Laden kann auf dem Gerät fehlschlagen (Quota), die Server-Antwort ist trotzdem gültig. */
       const personenAktuell = result.personen.length > 0 ? result.personen : loadPersonen(currentTenantId)
+      const pid = resolvePersonIdFuerPersoenlichenCodeNachMerge(personenAktuell, raw)
       if (personenAktuell.length === 0) {
         setRegistrierungHinweis(
           (result.loadMeta.serverPersonenCount ?? 0) === 0
@@ -385,7 +395,6 @@ export default function K2FamilieHomePage() {
         )
         return
       }
-      const pid = findPersonIdByMitgliedsNummer(personenAktuell, raw)
       if (!pid) {
         setRegistrierungHinweis(
           'Keine Person mit diesem Code in dieser Familie. Persönlicher Code (z. B. AB12), nicht die Familien-Zugangsnummer (KF-…). Sonst Schreibweise prüfen oder Administrator fragen.',
@@ -435,9 +444,16 @@ export default function K2FamilieHomePage() {
     ichIdSession && loadIdentitaetBestaetigt(currentTenantId) !== ichIdSession,
   )
   const isDemoMusterHuber = currentTenantId === FAMILIE_HUBER_TENANT_ID && isFamilieNurMusterSession()
+  const nurMusterDemo = isFamilieNurMusterSession()
+  const musterHintProps = (text: string) =>
+    nurMusterDemo ? ({ 'data-muster-hint': text } as const) : ({} as const)
+  /** Echte Familie aktiv (Lizenz-Mandant) – Demo-Karte „Musterfamilie laden“ nicht anzeigen. */
+  const istEchteFamilieTenantAktiv = currentTenantId.startsWith('familie-')
+  /** Demo Huber (Nur-Muster-Sitzung): kein gelber Code-Banner – Rechte gelten über familieIdentitaet. */
+  const showIdentitaetSessionBanner = needsIdentitaetSessionBanner && !isDemoMusterHuber
   /** Ohne Personenliste oder ohne gespeicherten Code auf der Karte (lokal) gibt es nichts zum Abgleichen – zuerst Server laden. */
   const identitaetSessionFehlenDatenZumAbgleich = Boolean(
-    needsIdentitaetSessionBanner && (personen.length === 0 || !codeAufDuKarteSession),
+    showIdentitaetSessionBanner && (personen.length === 0 || !codeAufDuKarteSession),
   )
 
   useEffect(() => {
@@ -459,7 +475,7 @@ export default function K2FamilieHomePage() {
       <div className="viewport k2-familie-page" style={{ padding: 0, maxWidth: '100%' }}>
         {/* Familie wählen / Neue Familie: einmal im Layout (K2FamilieLayout) */}
 
-        {needsIdentitaetSessionBanner ? (
+        {showIdentitaetSessionBanner ? (
           <div
             id="k2-familie-identitaet-bestaetigen"
             style={{
@@ -489,33 +505,12 @@ export default function K2FamilieHomePage() {
                   fontFamily: a.fontBody,
                 }}
               >
-                {isDemoMusterHuber ? (
-                  <>
-                    <span
-                      style={{
-                        display: 'block',
-                        marginBottom: '0.4rem',
-                        fontSize: '0.95rem',
-                        fontWeight: 800,
-                        color: '#92400e',
-                        fontFamily: a.fontHeading,
-                      }}
-                    >
-                      {PRODUCT_K2_FAMILIE_WERBESLOGAN}
-                    </span>
-                    <strong>Rolle in der Musterfamilie bestätigen.</strong> Trage den persönlichen Code ein, wie auf der
-                    Demo-Karte – damit deine gewählte Rolle wie bei einer echten Familie gilt. Optional: &quot;Auf diesem
-                    Gerät merken&quot; – dann musst du auf <strong>diesem</strong> Browser nicht bei jedem Besuch neu
-                    tippen (anderes Gerät = erneut eingeben).
-                  </>
-                ) : (
-                  <>
-                    <strong>Sitzung nicht bestätigt.</strong> Trage hier deinen persönlichen Code ein (wie auf deiner
-                    Karte). Optional: &quot;Auf diesem Gerät merken&quot; – dann musst du auf <strong>diesem</strong>{' '}
-                    Browser nicht bei jedem Besuch neu tippen (anderes Gerät = erneut eingeben). Den Code kannst du später
-                    auf deiner Personenkarte ändern; dann gilt die Merkung hier nicht mehr.
-                  </>
-                )}
+                <>
+                  <strong>Sitzung nicht bestätigt.</strong> Trage hier deinen persönlichen Code ein (wie auf deiner
+                  Karte). Optional: &quot;Auf diesem Gerät merken&quot; – dann musst du auf <strong>diesem</strong>{' '}
+                  Browser nicht bei jedem Besuch neu tippen (anderes Gerät = erneut eingeben). Den Code kannst du später
+                  auf deiner Personenkarte ändern; dann gilt die Merkung hier nicht mehr.
+                </>
               </p>
               <div
                 style={{
@@ -988,6 +983,7 @@ export default function K2FamilieHomePage() {
                 <Link
                   to={stammdatenLinkTo}
                   className="btn k2-familie-action-btn"
+                  {...musterHintProps(MUSTER_HINT_HOME_STAMMDATEN)}
                   style={{
                     ...actionBtnBase,
                     background: C.btnStammdaten,
@@ -1002,6 +998,7 @@ export default function K2FamilieHomePage() {
                   className="btn k2-familie-action-btn"
                   disabled={!kannStruktur}
                   onClick={kannStruktur ? openEinstellungenAnsicht : undefined}
+                  {...musterHintProps(MUSTER_HINT_HOME_STAMMDATEN)}
                   style={{
                     ...actionBtnBase,
                     background: C.btnStammdaten,
@@ -1016,6 +1013,7 @@ export default function K2FamilieHomePage() {
               <Link
                 to={familieR.stammbaum}
                 className="btn k2-familie-action-btn"
+                {...musterHintProps(MUSTER_HINT_HOME_KACHEL_STAMMBAUM)}
                 style={{
                   ...actionBtnBase,
                   background: C.btnStammbaum,
@@ -1027,6 +1025,7 @@ export default function K2FamilieHomePage() {
               <Link
                 to={familieR.events}
                 className="btn k2-familie-action-btn"
+                {...musterHintProps(MUSTER_HINT_HOME_KACHEL_EVENTS_KALENDER)}
                 style={{
                   ...actionBtnBase,
                   background: C.btnEventsKalender,
@@ -1039,6 +1038,7 @@ export default function K2FamilieHomePage() {
               <Link
                 to={familieR.geschichte}
                 className="btn k2-familie-action-btn"
+                {...musterHintProps(MUSTER_HINT_HOME_KACHEL_GESCHICHTE)}
                 style={{
                   ...actionBtnBase,
                   background: C.btnGeschichte,
@@ -1050,6 +1050,7 @@ export default function K2FamilieHomePage() {
               <Link
                 to={familieR.gedenkort}
                 className="btn k2-familie-action-btn"
+                {...musterHintProps(MUSTER_HINT_HOME_KACHEL_GEDENKORT)}
                 style={{
                   ...actionBtnBase,
                   background: C.btnGedenkort,
@@ -1061,6 +1062,7 @@ export default function K2FamilieHomePage() {
               <Link
                 to={familieR.einstellungen}
                 className="btn k2-familie-action-btn"
+                {...musterHintProps(MUSTER_HINT_HOME_KACHEL_EINSTELLUNGEN)}
                 style={{
                   ...actionBtnBase,
                   background: C.btnEinstellungen,
@@ -1151,7 +1153,7 @@ export default function K2FamilieHomePage() {
           </div>
 
 
-          {!tenantList.includes(FAMILIE_HUBER_TENANT_ID) && kannInstanz && (
+          {!tenantList.includes(FAMILIE_HUBER_TENANT_ID) && kannInstanz && !istEchteFamilieTenantAktiv && (
             <div
               style={{
                 marginTop: '1.5rem',

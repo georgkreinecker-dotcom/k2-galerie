@@ -8,7 +8,12 @@
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useLayoutEffect } from 'react'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
+import {
+  PRODUCT_COPYRIGHT_BRAND_ONLY,
+  PRODUCT_K2_FAMILIE_WERBESLOGAN,
+  PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ,
+  PRODUCT_URHEBER_ANWENDUNG,
+} from '../config/tenantConfig'
 import { setFamilieNurMusterSession } from '../utils/familieMusterSession'
 
 const BG = 'linear-gradient(160deg, #042f2e 0%, #0f172a 48%, #134e4a 100%)'
@@ -58,11 +63,14 @@ export default function K2FamilieWillkommenPage() {
           K2 Familie
         </p>
         <h1 style={{ fontSize: 'clamp(1.65rem, 4.5vw, 2.25rem)', fontWeight: 800, lineHeight: 1.2, margin: '0 0 1rem' }}>
-          Eure gemeinsame Geschichte – sichtbar und vernetzt
+          {PRODUCT_K2_FAMILIE_WERBESLOGAN.replace(/\s*\.$/, '')}
         </h1>
-        <p style={{ fontSize: '1.05rem', lineHeight: 1.65, color: MUTED, marginBottom: '1.5rem' }}>
-          Stammbaum, Kalender, Events und Gedenkort an einem Ort: eine Homepage für die Familie, die ihr selbst gestaltet.
-          Bearbeiten und Sicherung findet ihr in der Familien-App – wie der Admin-Bereich bei der Galerie, nur für Familien.
+        <p style={{ fontSize: '1.05rem', lineHeight: 1.65, color: MUTED, marginBottom: '0.85rem' }}>
+          {PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ}
+        </p>
+        <p style={{ fontSize: '0.98rem', lineHeight: 1.6, color: 'rgba(240,249,255,0.82)', marginBottom: '1.5rem' }}>
+          Kalender, Events und Gedenkort gehören dazu – gestaltet in der Familien-App. Unten startet ihr bei der Musterfamilie oder
+          mit eurer Einladung.
         </p>
 
         <div

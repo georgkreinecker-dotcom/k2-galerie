@@ -13,6 +13,7 @@ describe('SEO: K2 Familie vs. K2 Galerie (keine Vermischung)', () => {
     '/projects/k2-familie',
     '/projects/k2-familie/meine-familie',
     '/projects/k2-familie/handbuch',
+    '/projects/k2-familie/praesentationsmappe',
   ]
 
   it.each(familiePfade)('%s: kein Galerie-Default (Trennung)', (pathname) => {

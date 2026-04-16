@@ -5,7 +5,10 @@
 
 import { useEffect, useRef } from 'react'
 import { useFamilieTenant } from '../../context/FamilieTenantContext'
-import { loadFamilieFromSupabase } from '../../utils/familieSupabaseClient'
+import {
+  loadFamilieFromSupabase,
+  shouldSkipFamilieFullSyncDuplicate,
+} from '../../utils/familieSupabaseClient'
 
 export function FamilieCloudAutoSync() {
   const { currentTenantId, bumpFamilieStorageRevision } = useFamilieTenant()
@@ -15,6 +18,11 @@ export function FamilieCloudAutoSync() {
   useEffect(() => {
     let cancelled = false
     const tid = currentTenantId
+    /** Kurz nach vollem Laden (z. B. Einladung) kein zweites identisches Vollladen. */
+    if (shouldSkipFamilieFullSyncDuplicate(tid)) {
+      bumpFamilieStorageRevision()
+      return
+    }
     void loadFamilieFromSupabase(tid).finally(() => {
       if (cancelled) return
       if (tid !== tenantRef.current) return

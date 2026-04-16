@@ -10,6 +10,8 @@ import {
   setFamilieFamilienQrKompaktSession,
 } from '../utils/familieEinladungPending'
 import type { K2FamiliePerson } from '../types/k2Familie'
+import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
+import { K2_FAMILIE_NUR_MUSTER_SESSION_KEY } from '../utils/familieMusterSession'
 
 const TID = 'default'
 
@@ -152,5 +154,41 @@ describe('isK2FamilieNurMitgliedEinstiegModus', () => {
 
   it('Leser mit Du und Code, Sitzung offen: kompakt', () => {
     expect(isK2FamilieNurMitgliedEinstiegModus('leser', TID, { ichBinPersonId: 'p1' }, [p1])).toBe(true)
+  })
+})
+
+describe('Huber-Demo (Nur-Muster-Sitzung): kein erneuter Code, volle Oberfläche', () => {
+  beforeEach(() => {
+    clearIdentitaetBestaetigt(FAMILIE_HUBER_TENANT_ID)
+    sessionStorage.setItem(K2_FAMILIE_NUR_MUSTER_SESSION_KEY, '1')
+  })
+
+  afterEach(() => {
+    sessionStorage.removeItem(K2_FAMILIE_NUR_MUSTER_SESSION_KEY)
+  })
+
+  const pCode = person('p1', 'AB12')
+
+  it('Inhaber mit Du und Code: ohne Session-Bestätigung volle Rechte', () => {
+    const caps = getFamilieEffectiveCapabilities(
+      'inhaber',
+      FAMILIE_HUBER_TENANT_ID,
+      { ichBinPersonId: 'p1' },
+      [pCode],
+    )
+    expect(caps.canManageFamilienInstanz).toBe(true)
+    expect(caps.canEditStrukturUndStammdaten).toBe(true)
+  })
+
+  it('Inhaber mit Du und Code: nicht kompakt', () => {
+    expect(
+      isK2FamilieNurMitgliedEinstiegModus('inhaber', FAMILIE_HUBER_TENANT_ID, { ichBinPersonId: 'p1' }, [pCode]),
+    ).toBe(false)
+  })
+
+  it('Leser mit Du und Code: nicht kompakt', () => {
+    expect(
+      isK2FamilieNurMitgliedEinstiegModus('leser', FAMILIE_HUBER_TENANT_ID, { ichBinPersonId: 'p1' }, [pCode]),
+    ).toBe(false)
   })
 })

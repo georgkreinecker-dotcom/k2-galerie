@@ -33,6 +33,28 @@ function sleep(ms: number): Promise<void> {
 /** Mobil/WLAN: fetch ohne Timeout kann Minuten hängen – UI wirkt „endlos“. */
 const FAMILIE_FETCH_TIMEOUT_MS = 20000
 
+/** Nach vollem Cloud-Laden: kurzes Zeitfenster, damit Auto-Sync nicht direkt nochmal dieselbe Nutzlast zieht (z. B. nach Einladung). */
+const SS_FAMILIE_FULL_SYNC_TS = 'k2-familie-full-sync-ts'
+
+export function markFamilieFullSyncDone(tenantId: string): void {
+  try {
+    sessionStorage.setItem(`${SS_FAMILIE_FULL_SYNC_TS}:${tenantId}`, String(Date.now()))
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Verhindert doppeltes Vollladen innerhalb weniger Sekunden (gleicher Tenant). */
+export function shouldSkipFamilieFullSyncDuplicate(tenantId: string, withinMs = 8000): boolean {
+  try {
+    const raw = sessionStorage.getItem(`${SS_FAMILIE_FULL_SYNC_TS}:${tenantId}`)
+    if (!raw) return false
+    return Date.now() - Number(raw) < withinMs
+  } catch {
+    return false
+  }
+}
+
 async function fetchFamilieWithTimeout(url: string, init: Omit<RequestInit, 'signal'>): Promise<Response> {
   const ctrl = new AbortController()
   const t = setTimeout(() => ctrl.abort(), FAMILIE_FETCH_TIMEOUT_MS)
@@ -208,6 +230,7 @@ export async function loadFamilieFromSupabase(tenantId: string): Promise<Familie
       const mergedEinst = { ...loadEinstellungen(tenantId), ...serverEinst }
       saveEinstellungen(tenantId, mergedEinst)
     }
+    markFamilieFullSyncDone(tenantId)
     return withMeta(
       { personen: mergedPersonen, momente: mergedMomente, events: mergedEvents },
       { ok: true, source: 'server', serverPersonenCount },
@@ -215,6 +238,79 @@ export async function loadFamilieFromSupabase(tenantId: string): Promise<Familie
   } catch (e) {
     const networkDetail = e instanceof Error ? e.message : String(e)
     console.warn('loadFamilieFromSupabase fehlgeschlagen:', e, networkDetail)
+    return withMeta(localSnapshot(tenantId), {
+      ok: false,
+      source: 'local_only',
+      reason: 'network',
+      networkDetail,
+    })
+  }
+}
+
+/**
+ * Nur für **persönlichen Code / Einladung**: schlanke GET-Antwort (ohne Foto-Felder in Personen, ohne Momente/Events),
+ * merged mit lokaler Personenliste für Zuordnung – **schreibt nicht** in localStorage.
+ * Danach einmal `loadFamilieFromSupabase(tenantId)` für volle Daten.
+ */
+export async function fetchFamilieIdentityLite(tenantId: string): Promise<FamilieLoadResult> {
+  if (!isSupabaseConfigured() || !FAMILIE_API_URL) {
+    return withMeta(localSnapshot(tenantId), {
+      ok: false,
+      source: 'local_only',
+      reason: 'not_configured',
+    })
+  }
+  const url = `${FAMILIE_API_URL}?tenantId=${encodeURIComponent(tenantId)}&lite=1`
+  const maxAttempts = 3
+  try {
+    let res: Response | null = null
+    let lastNetworkErr: unknown
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      if (attempt > 0) await sleep(350 * attempt)
+      try {
+        res = await fetchFamilieWithTimeout(url, {
+          method: 'GET',
+          headers: familieApiHeaders(),
+        })
+        break
+      } catch (e) {
+        lastNetworkErr = e
+        if (attempt === maxAttempts - 1) throw e
+      }
+    }
+    if (!res) throw lastNetworkErr ?? new Error('fetch leer')
+    if (!res.ok) {
+      return withMeta(localSnapshot(tenantId), {
+        ok: false,
+        source: 'local_only',
+        reason: 'http',
+        httpStatus: res.status,
+      })
+    }
+    let data: unknown
+    try {
+      data = await res.json()
+    } catch {
+      return withMeta(localSnapshot(tenantId), {
+        ok: false,
+        source: 'local_only',
+        reason: 'parse',
+      })
+    }
+    const d = data as Record<string, unknown>
+    const serverPersonen = Array.isArray(d.personen) ? d.personen : []
+    const serverPersonenTyped = serverPersonen as K2FamiliePerson[]
+    const localPersonen = loadPersonen(tenantId)
+    const serverPersonenCount = serverPersonen.length
+    const mergedRaw = mergeById(serverPersonenTyped, localPersonen)
+    const mergedPersonen = ergaenzeMitgliedsNummerAusServerListe(serverPersonenTyped, mergedRaw)
+    return withMeta(
+      { personen: mergedPersonen, momente: [], events: [] },
+      { ok: true, source: 'server', serverPersonenCount },
+    )
+  } catch (e) {
+    const networkDetail = e instanceof Error ? e.message : String(e)
+    console.warn('fetchFamilieIdentityLite fehlgeschlagen:', e, networkDetail)
     return withMeta(localSnapshot(tenantId), {
       ok: false,
       source: 'local_only',

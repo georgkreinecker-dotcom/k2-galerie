@@ -5,6 +5,7 @@ import {
   buildMitgliederCodesZweigGruppen,
   ergaenzeMitgliedsNummerAusServerListe,
   findPersonIdByMitgliedsNummer,
+  resolvePersonIdFuerPersoenlichenCodeNachMerge,
   mitgliedsNummernImGebrauch,
   normalizeMitgliedsNummerInput,
   persoenlicherCodePasstZuKarte,
@@ -61,6 +62,13 @@ describe('familieMitgliedsNummer', () => {
     const mergedOhneCode = [p('x', undefined)]
     const out = ergaenzeMitgliedsNummerAusServerListe(server, mergedOhneCode)
     expect(findPersonIdByMitgliedsNummer(out, 'ab12')).toBe('x')
+  })
+
+  it('Cod-Registrierung: resolvePersonIdFuerPersoenlichenCodeNachMerge = gleiche Trefferlogik wie find (einzige Quelle nach Cloud-Merge)', () => {
+    const server = [p('neu', 'ZX77')]
+    const merged = ergaenzeMitgliedsNummerAusServerListe(server, [p('neu', undefined)])
+    expect(resolvePersonIdFuerPersoenlichenCodeNachMerge(merged, 'zx77')).toBe('neu')
+    expect(resolvePersonIdFuerPersoenlichenCodeNachMerge(merged, '')).toBe(null)
   })
 
   it('ergaenzeMitgliedsNummerAusServerListe: lokaler Code bleibt, kein Überschreiben vom Server', () => {

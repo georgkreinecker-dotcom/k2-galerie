@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 16.04.26 – **Build grün: Einladung pid + Leitfaden Resize-ARIA** – **`FamilieEinladungQuerySync`:** zweite `findPersonIdByMitgliedsNummer`-Zuweisung ohne `?? undefined` (TS: `string | undefined` konsistent). **`FamilieMusterHuberLeitfaden`:** ungültiges **`aria-orientation="both"`** am Größen-Ziehpunkt entfernt (Separator erlaubt nur horizontal/vertical). **Tests + Build** grün. **Commit:** _(nach Push eintragen)_ ✅ GitHub
+
+**Was wir JETZT tun:** Muster **`?t=huber`:** Huber-Leitfaden **bleibt beim Navigieren offen**, **Hover-Hilfen** (`data-muster-hint`) kurz prüfen; bei Bedarf weitere Felder mit Hinweisen versehen.
+
+---
+
 **Letzter Stand:** 16.04.26 – **K2 Familie Huber-Leitfaden: verschieben, Größe, minimieren** – **`FamilieMusterHuberLeitfaden.tsx`:** Kopfzeile **ziehen** (Position), **rechts unten** Ziehpunkt **Größe**, Buttons **− / +**, bei freiem Panel **Unten** (wieder unten mittig), **▼** **minimiert** zu Chip „Rundgang · Huber“; Klick auf **Hintergrund** oder **Escape** **minimiert** (nicht Demo beenden); **Später** / **Schließen** wie bisher. **Bounds** in **sessionStorage** (`k2-familie-leitfaden-bounds`). Export **`clampFamilieLeitfadenBounds`**, Test ergänzt. **Commit:** **`dcf4dae1`** ✅ GitHub
 
 **Was wir JETZT tun:** Muster-Demo **`?t=huber`** – Leitfaden **verschieben**, **verkleinern/vergrößern**, **minimieren** kurz prüfen.
