@@ -47,17 +47,14 @@ export const MUSTER_HINT_HOME_KACHEL_GESCHICHTE =
 export const MUSTER_HINT_HOME_KACHEL_GEDENKORT =
   'Gedenkort: besonderer Ort der Erinnerung – in der Musterfamilie zum Ausprobieren.'
 
-export const MUSTER_HINT_HOME_KACHEL_EINSTELLUNGEN =
-  'Einstellungen: wer darf was, Zugang, Gerät – später für eure echte Familie.'
-
 export const MUSTER_HINT_TOOLBAR_FAMILIE =
-  'Aktive Familie: In der Demo nur „Huber“ – bei euch später alle angelegten Familien auf diesem Gerät.'
+  'Musterfamilie Huber: in der Demo nur dieser Mandant – bei euch später alle angelegten Familien auf diesem Gerät.'
 
 export const MUSTER_HINT_TOOLBAR_LEITFADEN_BUTTON =
   'Rundgang öffnen: Schritt für Schritt durch die App – du kannst das Fenster verschieben und kleiner ziehen.'
 
 export const MUSTER_HINT_TOOLBAR_DEMO_ENDE =
-  'Demo beenden: zurück zur Produktseite – deine echte Familie startest du mit Einladung oder neuer Familie.'
+  'Beispiel beenden: zurück zur Übersicht – euren eigenen Familienraum richtet ihr mit Lizenz und Einladung ein.'
 
 /** Nav-Link `to` → Kurztext für data-muster-hint (exakte Pfade wie in FamilieNav). */
 export function musterHintForFamilieNavLink(to: string): string | undefined {

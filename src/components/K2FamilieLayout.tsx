@@ -230,7 +230,7 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
                   color: '#fff',
                 }}
               >
-                Demo beenden
+                Beispiel beenden
               </button>
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem', marginLeft: 'auto' }}>

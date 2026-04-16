@@ -1,5 +1,5 @@
 /**
- * Musterfamilie Huber: geführter Rundgang durch die Demo – warm, von unten, mit Schwung (kein totes Zentrier-Modal).
+ * Musterfamilie Huber: geführter Rundgang durch den Beispiel-Raum – warm, von unten, mit Schwung (kein totes Zentrier-Modal).
  * Verschiebbar, in der Größe änderbar, minimierbar (Bounds in sessionStorage).
  */
 
@@ -99,36 +99,36 @@ function leitfadenStep(
 export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
   leitfadenStep({
     id: 'begruessung',
-    titel: 'Herzlich willkommen bei K2 Familie',
-    stimmung: 'Geschützter Raum für Familie – getrennt von Galerie, Demo und Verein.',
+    titel: 'Herzlich willkommen',
+    stimmung: 'Um Zugehörigkeit, Erinnerung und was bleibt – nicht um andere Welten.',
     body:
-      '**K2 Familie** ist der geschützte Raum für Beziehungen, gemeinsame Momente und Erinnerung – **getrennt** von Galerie, öffentlicher Demo und Vereinswelten.\n\n' +
-      '**Genom:** Familiendaten werden nicht kommerziell verwertet – dauerhaft ausgeschlossen.\n\n' +
-      '**Musterfamilie Huber:** nur Beispieldaten.',
+      'Familie, im weitesten Sinn: **wer zusammengehört**, **was ihr gemeinsam erlebt**, **was ihr festhalten wollt** – Freude, Abschied, Alltag.\n\n' +
+      '**Eure Daten gehören euch.** In K2 Familie ist das **Genom** festgeschrieben: **keine kommerzielle Verwertung** der Familiendaten – **für immer** ausgeschlossen.\n\n' +
+      '**Musterfamilie Huber:** nur erfundene Beispiele, damit ihr **hineinschnuppern** könnt.',
   }),
   leitfadenStep({
     id: 'verkaufsversprechen',
-    titel: 'Was K2 Familie euch bietet',
-    stimmung: 'Vertrauen, Ruhe, Mitgestaltung, Erinnerung, Genom – in Kurzform.',
+    titel: 'Worum es im Kern geht',
+    stimmung: 'Was Familien tiefer bewegt – in wenigen Worten.',
     body:
-      '**Vertrauen:** Beziehungen nur aus den **Karten** in der App – keine Vermutungen, keine Vermischung mit anderen Welten.\n\n' +
-      '**Ruhe:** Eigene Instanz, eigene Schlüssel – nichts gemeinsam mit Galerie-, Demo- oder Vereinsdaten.\n\n' +
-      '**Mitgestaltung:** Rollen, Einladungen, Zugänge – in der Familie geregelt.\n\n' +
-      '**Erinnerung:** Momente, Kalender, Geschichten, **Gedenkort**.\n\n' +
-      '**Genom:** keine kommerzielle Verwertung der Familiendaten.',
+      '**Zugehörigkeit:** Beziehungen, die ihr **in den Karten** führt – **eine** nachvollziehbare Wahrheit für euch.\n\n' +
+      '**Gemeinsame Zeit:** Termine und Jahresüberblick – was vor euch liegt.\n\n' +
+      '**Was bleibt:** Geschichten und **Gedenkort** – Worte und Orte der Erinnerung.\n\n' +
+      '**Eure Grenzen:** wer einlädt, wer mitliest, wer mitgestaltet – **bei euch** geregelt.\n\n' +
+      '**Genom:** Familiendaten **nur** im Familienraum; **nie** verkaufen, **nie** anders verwerten.',
   }),
   leitfadenStep({
     id: 'einordnung',
-    titel: 'Herzlich willkommen bei den Hubers',
-    stimmung: 'Nur Beispieldaten – eure echte Familie kommt später.',
+    titel: 'Bei den Hubers',
+    stimmung: 'Ausgedacht – nur zum Ankommen in der Oberfläche.',
     body:
-      '**Musterfamilie Huber:** erfundene Daten, nur zum Ansehen. **Eure** Familie später: eigener geschützter Raum – wieder getrennt von Galerie, Demo und Verein.',
+      '**Alles hier ist Beispiel** – zum Durchklicken und Spüren. Wenn ihr **euren** Raum anlegt, ist das **euer** geschützter Familienraum – **nur** für euch gedacht.',
   }),
   leitfadenStep({
     id: 'home',
     titel: 'Meine Familie',
-    stimmung: 'Einstieg und Überblick.',
-    body: '**Meine Familie:** Willkommensbereich und Überblick – **euer** späterer täglicher Einstieg.',
+    stimmung: 'Wo ihr ankommt.',
+    body: '**Meine Familie:** der Einstieg mit Willkommen und Überblick – der Ort, an dem ihr **euren** Alltag in der App beginnt.',
     linkTo: K2_FAMILIE_APP_SHORT_PATH,
     linkLabel: 'Diese Seite gleich öffnen',
     focusKey: 'home',
@@ -136,8 +136,8 @@ export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
   leitfadenStep({
     id: 'stammbaum',
     titel: 'Stammbaum',
-    stimmung: 'Beziehungen und Generationen sichtbar.',
-    body: '**Stammbaum:** Beziehungen und Generationen – in der Demo mit Beispielpersonen.',
+    stimmung: 'Wer zu wem gehört – im Bild.',
+    body: '**Stammbaum:** Generationen und Beziehungen sichtbar – hier mit **Beispielpersonen**.',
     linkTo: R.stammbaum,
     linkLabel: 'Stammbaum ansehen',
     focusKey: 'stammbaum',
@@ -145,8 +145,8 @@ export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
   leitfadenStep({
     id: 'events-kalender',
     titel: 'Events & Kalender',
-    stimmung: 'Gemeinsame Termine im Blick.',
-    body: '**Kalender & Events:** gemeinsame Termine; die Ansicht erreicht ihr auch über die **Menüleiste oben**.',
+    stimmung: 'Gemeinsam im Jahr.',
+    body: '**Kalender & Events:** was ansteht und was ihr feiert – auch über die **Menüleiste oben**.',
     linkTo: R.events,
     linkLabel: 'Zu den Events',
     focusKey: 'events',
@@ -154,8 +154,8 @@ export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
   leitfadenStep({
     id: 'geschichte',
     titel: `${K2_FAMILIE_NAV_LABEL_GESCHICHTE} & Gedenkort`,
-    stimmung: 'Texte und Orte der Erinnerung.',
-    body: '**Geschichten & Gedenkort:** gemeinsame Texte und Orte der Erinnerung.',
+    stimmung: 'Erzählen und Gedenken.',
+    body: '**Geschichten & Gedenkort:** was ihr **in Worten** und **an Orten** festhalten wollt.',
     linkTo: R.geschichte,
     linkLabel: 'Geschichten ansehen',
     focusKey: 'geschichte',
@@ -163,18 +163,18 @@ export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
   leitfadenStep({
     id: 'einstellungen',
     titel: 'Einstellungen',
-    stimmung: 'Zugang, Rollen, Einladungen.',
-    body: '**Einstellungen:** Zugang, Rollen, Einladungen. In der Demo ohne echte Daten.',
+    stimmung: 'Wer darf was – bei euch.',
+    body: '**Einstellungen:** Einladungen und Rollen. In diesem Beispiel **ohne** echte Daten.',
     linkTo: R.einstellungen,
     linkLabel: 'Einstellungen öffnen',
     focusKey: 'einstellungen',
   }),
   leitfadenStep({
     id: 'entscheid',
-    titel: 'Eure Familie',
+    titel: 'Wenn ihr soweit seid',
     stimmung: 'Kein Druck.',
     body:
-      '**Eure** Familie: Lizenz und Einladung – dann **eure** Daten in **eurem** geschützten Bereich. Demo jederzeit wieder offen, überschreibt nichts.',
+      'Euer **eigener Familienraum** entsteht mit **Lizenz und Einladung** – dann liegen **eure** Daten bei **euch**. Diesen **Beispiel-Raum** könnt ihr jederzeit wieder öffnen; er **ändert** nichts an einem späteren echten Raum.',
     focusKey: 'demo-ende',
   }),
 ]
@@ -1060,7 +1060,7 @@ function LeitfadenSheetInner({
             ) : null}
             {isK2FamilieApfLocalhost() && s.id === 'einordnung' ? (
               <p style={{ margin: '0.75rem 0 0', fontSize: '0.8rem', color: t.muted, lineHeight: 1.45 }}>
-                Tipp APf: Nach dem Demo-Ende kann die Stammfamilie automatisch gewählt werden.
+                Tipp APf: Nach dem Beenden des Beispiel-Rundgangs kann die Stammfamilie automatisch gewählt werden.
               </p>
             ) : null}
           </div>
@@ -1173,7 +1173,7 @@ function LeitfadenSheetInner({
                       boxShadow: '0 4px 14px rgba(28, 26, 24, 0.25)',
                     }}
                   >
-                    Demo beenden
+                    Beispiel beenden
                   </button>
                 </>
               )}

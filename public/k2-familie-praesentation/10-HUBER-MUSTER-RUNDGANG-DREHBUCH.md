@@ -1,8 +1,8 @@
 # Huber-Muster-Rundgang – Sprecher-Drehbuch
 
-**Zweck:** Gespräche, Screen-Sharing und Piloten – **dieselbe** inhaltliche Linie wie im interaktiven Rundgang in der App (Schritte **Begrüßung**, **Versprechen**, dann **Demo Huber**). Quelle Verkaufskern: [01-FLYER-KURZPROSPEKT-VERKAUFSARGUMENTATION.md](01-FLYER-KURZPROSPEKT-VERKAUFSARGUMENTATION.md), Abschnitt „Das Versprechen“.
+**Zweck:** Gespräche, Screen-Sharing und Piloten – **dieselbe** inhaltliche Linie wie im interaktiven Rundgang in der App. **Nicht** Produktvergleich oder Verweis auf andere Produkte – **sondern:** was Familien **an sich** bewegt (Zugehörigkeit, Erinnerung, gemeinsame Zeit, Daten gehören der Familie). Quelle Ethik: [docs/K2-FAMILIE-GRUNDBOTSCHAFT.md](../../docs/K2-FAMILIE-GRUNDBOTSCHAFT.md).
 
-**Tonalität:** Warm und klar. **Inhalt vor Prozess:** was die App **ist** und **bietet** – nicht erklären, *dass* man etwas erklärt. In der App sind **Anzeige und Vorlesen** derselbe Text.
+**Tonalität:** Respektvoll, klar. **Existenz vor Erklärung:** worum es Menschen geht – nicht „was wir alles können“. In der App sind **Anzeige und Vorlesen** derselbe Text.
 
 [SEITENUMBRUCH]
 
@@ -11,27 +11,27 @@
 **Einstieg**
 
 - Kurz nachfragen, ob Bildschirm oder Handy gut zu sehen ist.
-- **Kernaussage (wie in der App):** **K2 Familie** ist der geschützte Raum für Beziehungen, gemeinsame Momente und Erinnerung – **getrennt** von Galerie, öffentlicher Demo und Vereinswelten. **Genom:** Familiendaten werden nicht kommerziell verwertet – dauerhaft ausgeschlossen. **Musterfamilie Huber:** nur Beispieldaten.
+- **Kernaussage (wie in der App):** Familie im weitesten Sinn – **wer zusammengehört**, **was gemeinsam erlebt wird**, **was festgehalten werden soll**. **Genom:** Familiendaten werden **nicht** kommerziell verwertet – **für immer** ausgeschlossen. **Musterfamilie Huber:** nur erfundene Beispiele zum Hineinschnuppern.
 
 [SEITENUMBRUCH]
 
-## Phase 2 – Mini-Präsentation: Das Versprechen (ca. 90 Sekunden)
+## Phase 2 – Worum es im Kern geht (ca. 90 Sekunden)
 
 **Rahmen**
 
-- Kein „Wir erklären euch jetzt …“ – direkt die Substanz (wie im Leitfaden-Schritt **Was K2 Familie euch bietet**).
+- Kein Feature-Katalog – die fünf **Menschen-Themen** aus dem Leitfaden (Schritt **Worum es im Kern geht**).
 
-**Die fünf Punkte – jeweils ein Satz**
+**Fünf Punkte – jeweils ein Satz**
 
-1. **Vertrauen:** Beziehungen nur aus den **Karten** – keine Vermutungen, keine Vermischung mit anderen Welten.
-2. **Ruhe:** Eigene Instanz, eigene Schlüssel – nichts gemeinsam mit Galerie-, Demo- oder Vereinsdaten.
-3. **Mitgestaltung:** Rollen, Einladungen, Zugänge – in der Familie geregelt.
-4. **Erinnerung:** Momente, Kalender, Geschichten, **Gedenkort**.
-5. **Genom:** keine kommerzielle Verwertung der Familiendaten.
+1. **Zugehörigkeit:** Beziehungen, die in den **Karten** stehen – **eine** nachvollziehbare Wahrheit für die Familie.
+2. **Gemeinsame Zeit:** Termine und Jahresüberblick.
+3. **Was bleibt:** Geschichten und **Gedenkort**.
+4. **Eure Grenzen:** Einladungen und Rollen – **bei euch** geregelt.
+5. **Genom:** Daten **nur** im Familienraum; **nie** verkaufen oder anders verwerten.
 
 **Brücke zur Demo**
 
-- **Musterfamilie Huber:** erfundene Daten, nur zum Ansehen.
+- **Musterfamilie Huber:** nur Beispiel – zum Ankommen in der Oberfläche.
 
 [SEITENUMBRUCH]
 
@@ -39,7 +39,7 @@
 
 **Einordnung**
 
-- **Satz (wie in der App):** **Musterfamilie Huber:** erfundene Daten, nur zum Ansehen. **Ihre** Familie später: eigener geschützter Raum – wieder getrennt von Galerie, Demo und Verein.
+- **Satz (wie in der App):** Alles hier ist **Beispiel**. Der **eigene** Familienraum später – **nur** für diese Familie gedacht.
 
 **Optional live**
 
@@ -60,7 +60,7 @@
 
 **Entscheid**
 
-- **Satz (wie in der App):** **Ihre** Familie: Lizenz und Einladung – dann **Ihre** Daten in **Ihrem** geschützten Bereich. Demo jederzeit wieder offen, überschreibt nichts.
+- **Satz (wie in der App):** Eigener Familienraum mit **Lizenz und Einladung** – **eure** Daten bei **euch**. Demo jederzeit wieder offen; **ändert** nichts am späteren echten Raum.
 
 **Kein Druck**
 

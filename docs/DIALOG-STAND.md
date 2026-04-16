@@ -1,6 +1,15 @@
 # Dialog-Stand
 
-**Letzter Stand:** 16.04.26 – **Huber-Leitfaden: eine Quelle für Lesen + Vorlesen, Text gekürzt** – `leitfadenStep({ body })`: **text** = **sprecherDrehbuch**; Ballast und Meta raus; Fokus auf **was die App ist**; TTS entfernt `**` (`stripBoldMarkersForSpeech`); Tests; Drehbuch-PDF angeglichen. **Build** grün. **Commit:** _(nach Push)_
+**Letzter Stand:** 16.04.26 – **K2 Familie Huber: existenziell statt Produktvergleich** – Leitfaden + **`10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md`:** kein **Galerie**/**Demo**/**Verein**-Vergleich; Kern **Zugehörigkeit, gemeinsame Zeit, Erinnerung, Grenzen, Genom**; Formulierungen **Beispiel** statt „Demo“ wo sichtbar; Toolbar + **`MUSTER_HINT_TOOLBAR_DEMO_ENDE`** angepasst. **Tests + Build** grün. **Commit:** PENDING_FIRST_PUSH
+
+---
+**Was wir JETZT tun:** Muster **`?t=huber`** – Leitfaden lesen: wirkt **Menschen-Thema** statt Feature-Liste?
+
+**Einordnung:** Georg: Es geht um **was Familien im Kern bewegt** – nicht um „was K2 Familie alles kann“.
+
+---
+
+**Letzter Stand:** 16.04.26 – **Huber-Leitfaden: eine Quelle für Lesen + Vorlesen, Text gekürzt** – `leitfadenStep({ body })`: **text** = **sprecherDrehbuch**; Ballast und Meta raus; Fokus auf **was die App ist**; TTS entfernt `**` (`stripBoldMarkersForSpeech`); Tests; Drehbuch-PDF angeglichen. **Build** grün. **Commit:** **`b57d3eb5`** ✅ GitHub
 
 ---
 
@@ -9,10 +18,6 @@
 ---
 
 **Letzter Stand:** 16.04.26 – **Huber-Leitfaden interaktiv: Drehbuch-Sprecher + Fokus** – Pro Schritt **`sprecherDrehbuch`** (Vertriebsprospekt/Drehbuch-Linie); **`focusKey`** + **`familieLeitfadenFocus.ts`**: Navigation, Scroll, **`data-leitfaden-focus`** auf Nav/Home; TTS: Hover zuerst, sonst Drehbuch. **Tests + Build** grün. **Commit:** **`c09d4eac`** ✅ GitHub
-
-**Was wir JETZT tun:** Muster **`?t=huber`** – Leitfaden öffnen: Schritte durchklicken → **Vorlesen**, **Fokus-Rahmen**, ggf. **minimieren** und weiter in der App.
-
-**Einordnung:** Ein geführter Rundgang wie im **10-HUBER-MUSTER-RUNDGANG-DREHBUCH** – proaktiv erklären, nicht nur Text im Panel.
 
 ---
 
