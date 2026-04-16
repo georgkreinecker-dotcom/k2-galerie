@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 16.04.26 – **K2 Familie Huber-Leitfaden: verschieben, Größe, minimieren** – **`FamilieMusterHuberLeitfaden.tsx`:** Kopfzeile **ziehen** (Position), **rechts unten** Ziehpunkt **Größe**, Buttons **− / +**, bei freiem Panel **Unten** (wieder unten mittig), **▼** **minimiert** zu Chip „Rundgang · Huber“; Klick auf **Hintergrund** oder **Escape** **minimiert** (nicht Demo beenden); **Später** / **Schließen** wie bisher. **Bounds** in **sessionStorage** (`k2-familie-leitfaden-bounds`). Export **`clampFamilieLeitfadenBounds`**, Test ergänzt. **Commit:** _(nach Push eintragen)_ ✅ GitHub
+
+**Was wir JETZT tun:** Muster-Demo **`?t=huber`** – Leitfaden **verschieben**, **verkleinern/vergrößern**, **minimieren** kurz prüfen.
+
+---
+
 **Letzter Stand:** 15.04.26 – **K2 Familie: Anmeldung mit persönlichem Code auf fremdem Handy** – **`loadFamilieFromSupabase`:** nach **`mergeById`** wird **`ergaenzeMitgliedsNummerAusServerListe`** aufgerufen (war schon in `familieMitgliedsNummer` dokumentiert, fehlte im Lade-Pfad). **Grund:** neuere lokale Kopie ohne Code konnte den Server-Eintrag mit Code überschreiben → **`findPersonIdByMitgliedsNummer`** fand niemanden. **`npm run test`** grün; **`tsc --noEmit`** grün. **Commit:** _(nach Push eintragen)_
 
 **Was wir JETZT tun:** Auf **Vercel** nach Deploy: fremdes Gerät / privates Fenster → Familie laden → **persönlichen Code** eingeben → Person muss zuordenbar sein.
