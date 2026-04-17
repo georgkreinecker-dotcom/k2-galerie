@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 17.04.26 – **Sichere Optimierung: Index + ök2-Leitfaden Build-Fix** – **`docs/00-INDEX.md`:** Eintrag **OPTIMIERUNG-SICHER-SCHRITTWEISE.md** (Phasen, rote Linien). **`Oek2GalerieLeitfadenModal`:** fehlende **`touchChrome`**-State (wie VK2/Huber) → **tsc** wieder grün. **Tests + Build** grün. **Commit:** _(nach Push)_ ✅ GitHub
+**Letzter Stand:** 17.04.26 – **Sichere Optimierung: Index + ök2-Leitfaden Build-Fix** – **`docs/00-INDEX.md`:** Eintrag **OPTIMIERUNG-SICHER-SCHRITTWEISE.md** (Phasen, rote Linien); **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`** im Repo. **`Oek2GalerieLeitfadenModal`:** **`touchChrome`** (wie VK2/Huber) → **tsc** grün. **Tests + Build** grün. **Commits:** **`d8d8720e`**, **`db94b4fa`** ✅ GitHub
 
 ---
 
