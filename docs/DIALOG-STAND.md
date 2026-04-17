@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 17.04.26 – **VK2 Admin-Rundgang global:** **`Vk2AdminLeitfadenHost`** in **`App.tsx`** (über Routen hinweg sichtbar); **`vk2AdminLeitfadenStorage`** (Session `vk2-admin-rundgang-sichtbar`, Event); **Auto-Öffnen** bei Plattform + VK2-Kontext + nicht `vk2-admin-leitfaden-abgeschlossen`; Hub-Button **`openVk2AdminRundgangGlobally`**; **Später** = minimieren (nicht mehr „fertig“). Modal aus **`ScreenshotExportAdmin`** entfernt. Test **`vk2AdminLeitfadenStorage.test.ts`**. **Commit:** _(nach Push)_. **Nächster Schritt:** **ök2-Admin-Rundgang** analog.
+
+---
+
 **Letzter Stand:** 17.04.26 – **VK2 Admin-Rundgang:** Schritt **„Die Leiste oben“** (`admin-hub-leiste`) mit Text zu Logo/Schnellzugriff; **`header`** VK2 mit **`data-leitfaden-focus`**; Fokus **sichtbar** (`z-index` über Backdrop, **Pulse**-Animation); Sheet **breiter/höher**, Backdrop kräftiger, **`clampVk2AdminBounds`** bis 720×800. **Tests + Build** grün. **Commit:** **`e4ce094c`** ✅ GitHub. **Nächster Schritt:** **ök2-Admin-Rundgang** analog (siehe unten).
 
 ---
@@ -43,7 +47,7 @@
 **Letzter Stand:** 16.04.26 – **Huber-Leitfaden: inhaltlich durchgängig** – Analyse: Startseite **Kacheln** vs **reduzierte Leiste**, **Events/Kalender** = Leiste **zwei** Einträge + **Subnav** unter der Leiste; **Geschichten/Gedenkort** = **zwei** Menüpunkte, Link-Schritt nur Geschichten. Texte in **`FamilieMusterHuberLeitfaden`**, Drehbuch **`10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md`** Phase 3 ergänzt. **Tests** grün. **Commit:** **`5249866e`** ✅ GitHub
 
 ---
-**Was wir JETZT tun:** **ök2-Admin-Rundgang** analog VK2 (Sheet, Schritte, `data-leitfaden-focus`, nur Plattform + `tenant.isOeffentlich`).
+**Was wir JETZT tun:** **ök2-Admin-Rundgang** analog VK2 (globaler Host, Sheet, Schritte, `data-leitfaden-focus`, nur Plattform + `tenant.isOeffentlich`).
 
 **Einordnung:** VK2 Admin-Rundgang = Hub + Modal + Fokus-Keys; ök2 als nächster Strang (Konzept ggf. **`KONZEPT-ADMIN-RUNDGANG-OEK2-VK2.md`**).
 

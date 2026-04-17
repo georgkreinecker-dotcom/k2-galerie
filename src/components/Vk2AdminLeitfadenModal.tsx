@@ -14,6 +14,7 @@ import {
 import { renderLeitfadenText } from './guidedLeitfaden/renderLeitfadenMarkdownLite'
 import { buildVk2AdminLeitfadenSchritte } from './guidedLeitfaden/vk2AdminLeitfadenSteps'
 import { type FamilieLeitfadenPanelBounds } from './FamilieMusterHuberLeitfaden'
+import { LS_VK2_ADMIN_LEITFADEN_DONE } from '../utils/vk2AdminLeitfadenStorage'
 
 const VK2_ADMIN_CLAMP_MAX_W = 720
 const VK2_ADMIN_CLAMP_MAX_H = 800
@@ -34,7 +35,6 @@ function clampVk2AdminBounds(b: FamilieLeitfadenPanelBounds): FamilieLeitfadenPa
 
 const t = adminTheme
 
-const LS_VK2_ADMIN_LEITFADEN_DONE = 'vk2-admin-leitfaden-abgeschlossen'
 const SS_VK2_ADMIN_BOUNDS = 'vk2-admin-leitfaden-bounds'
 const SS_VK2_ADMIN_MIN = 'vk2-admin-leitfaden-minimized'
 
@@ -591,8 +591,7 @@ export function Vk2AdminLeitfadenModal({ name, onDismiss }: Props) {
             lineHeight: 1.35,
           }}
         >
-          Der Hintergrund blockiert Klicks nicht – du kannst die Seite dahinter bedienen. Ohne Audio: alles lesen. Zusammenklappen:{' '}
-          <strong style={{ color: t.text }}>▼</strong>.
+          Der Hintergrund blockiert Klicks nicht – du kannst die Seite dahinter bedienen. Ohne Audio: alles lesen. **Später** oder **▼** minimiert – der Rundgang bleibt in dieser Sitzung unten rechts erreichbar.
         </p>
 
         <div
@@ -673,7 +672,7 @@ export function Vk2AdminLeitfadenModal({ name, onDismiss }: Props) {
             ) : null}
             <button
               type="button"
-              onClick={schliessenUndMerken}
+              onClick={minimize}
               style={{
                 padding: '0.5rem 0.85rem',
                 fontSize: '0.86rem',

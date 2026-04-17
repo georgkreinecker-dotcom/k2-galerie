@@ -108,6 +108,7 @@ import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_ROUTE, AGB_ROUT
 import { getPageMeta, applyPageMeta } from './config/seoPageMeta'
 import { applyK2FamiliePwaBranding } from './utils/k2FamiliePwaBranding'
 import { TenantProvider } from './context/TenantContext'
+import { Vk2AdminLeitfadenHost } from './components/Vk2AdminLeitfadenHost'
 import WillkommenPage from './pages/WillkommenPage'
 import EntdeckenPage from './pages/EntdeckenPage'
 import AGBPage from './pages/AGBPage'
@@ -790,6 +791,7 @@ function App() {
     <AppErrorBoundary>
     <div style={{ width: '100%', minWidth: 0 }}>
     <StandBadgeSync />
+    <Vk2AdminLeitfadenHost />
     {/* Brand-Button entfernt – bei der Arbeit nicht nötig; bei Bedarf in BrandLogo.tsx wieder einbinden. APf-Float-Button entfernt – nirgends mehr benötigt. */}
     <Routes>
       {/* Schreiben an Michael – nur diese eine Seite, keine APf, keine Galerie */}
