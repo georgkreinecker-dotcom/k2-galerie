@@ -4,6 +4,10 @@
 
 Nach **Datenverlust** soll ein **einzelner Versionsordner** auf backupmicro reichen: darin liegen **`gallery-data.json`** (veröffentlichter Vercel-Stand) und – wenn du den Schritt unten machst – **`k2-vollbackup.json`** (kompletter K2-App-Stand aus dem Browser-Speicher).
 
+## APf (Entwickler): ein Klick, alle Kontexte
+
+Auf der **Arbeitsplattform** (Projekt **k2-galerie**, Dev-Ansicht): In der **Toolbar** den Button **„Alle Vollbackups (4×)“** – lädt nacheinander vier JSON-Dateien (K2, ök2, VK2, K2 Familie) aus **diesem Browser**, ohne jeden Admin einzeln zu öffnen. Die K2-Datei kannst du wie unten als `backup/k2-vollbackup-latest.json` speichern und `npm run backup:hard` ausführen.
+
 ## Was das Skript immer mitkopiert
 
 - `public/gallery-data.json` → im Versionsordner als `gallery-data.json`

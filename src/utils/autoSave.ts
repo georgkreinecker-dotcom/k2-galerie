@@ -750,6 +750,29 @@ export function downloadBackupAsFile(data: Record<string, any>, filename: string
   setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url) }, 300)
 }
 
+/**
+ * APf / Entwickler: Vollbackup für alle Kontexte nacheinander (K2, ök2, VK2, K2 Familie).
+ * Ein Aufruf = vier JSON-Dateien im Download-Ordner – dieselbe Browser-Session wie die App.
+ * Verzögerung zwischen den Downloads, damit der Browser mehrere Speichern-Dialoge nicht blockiert.
+ */
+export async function downloadAllDeveloperVollbackupsSequentially(delayMs = 500): Promise<void> {
+  const makers: Array<() => { data: Record<string, any>; filename: string }> = [
+    createK2Backup,
+    createOek2Backup,
+    createVk2Backup,
+    createK2FamilieBackup,
+  ]
+  for (let i = 0; i < makers.length; i++) {
+    const { data, filename } = makers[i]()
+    downloadBackupAsFile(data, filename)
+    if (i < makers.length - 1) {
+      await new Promise<void>(resolve => {
+        setTimeout(resolve, delayMs)
+      })
+    }
+  }
+}
+
 /** K2-Backup wiederherstellen – schreibt alle K2-Keys aus der Backup-Datei zurück */
 export function restoreK2FromBackup(backup: Record<string, any>): { ok: boolean; restored: string[] } {
   const restored: string[] = []

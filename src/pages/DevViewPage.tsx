@@ -3,7 +3,7 @@ import { Link, useSearchParams, useNavigate, useLocation } from 'react-router-do
 import { PROJECT_ROUTES, PLATFORM_ROUTES, getAllProjectIds } from '../config/navigation'
 import { usePersistentBoolean } from '../hooks/usePersistentState'
 import { checkMobileUpdates } from '../utils/supabaseClient'
-import { filterK2ArtworksOnly } from '../utils/autoSave'
+import { filterK2ArtworksOnly, downloadAllDeveloperVollbackupsSequentially } from '../utils/autoSave'
 import { publishGalleryDataToServer } from '../utils/publishGalleryData'
 import { readArtworksRawByKey, saveArtworksByKeyWithImageStore } from '../utils/artworksStorage'
 import { resolveArtworkImages } from '../utils/artworkImageStore'
@@ -96,6 +96,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   const pageFromUrl = searchParams.get('page')
   const [checkingVercel, setCheckingVercel] = useState(false)
   const [diagnoseRunning, setDiagnoseRunning] = useState(false)
+  const [devVollbackupBusy, setDevVollbackupBusy] = useState(false)
   const [isPublishing, setIsPublishing] = useState(false)
   const autoDiagnoseLockRef = React.useRef(false)
   const [deployHealth, setDeployHealth] = useState<{
@@ -391,6 +392,15 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       setCurrentPage(normalizeApfPageId(pageFromUrl) ?? pageFromUrl)
     }
   }, [pageFromUrl])
+
+  // URL ?page= mit Tabwahl synchron halten – TenantContext leitet Mandant aus pathname/search ab (VK2-Admin, Rundgang).
+  useEffect(() => {
+    if (!currentPage || currentPage === 'desktop-leer') return
+    const sp = new URLSearchParams(searchParams)
+    if (sp.get('page') === currentPage) return
+    sp.set('page', currentPage)
+    navigate({ pathname: location.pathname, search: sp.toString() }, { replace: true })
+  }, [currentPage, navigate, location.pathname, searchParams])
 
   // Alte URL ?page=oeffentlichkeitsarbeit → ?page=presse (ein Smart-Panel-Einstieg)
   useEffect(() => {
@@ -1748,6 +1758,40 @@ end tell`
           title="Ein Klick Diagnose für Vercel/API/Cache starten"
         >
           {diagnoseRunning ? '⏳ Diagnose…' : '🩺 Ein-Klick Diagnose'}
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            if (devVollbackupBusy) return
+            void (async () => {
+              setDevVollbackupBusy(true)
+              try {
+                await downloadAllDeveloperVollbackupsSequentially(500)
+              } catch (err) {
+                console.error('Vollbackup Entwickler:', err)
+                alert(`Vollbackup: ${err instanceof Error ? err.message : String(err)}`)
+              } finally {
+                setDevVollbackupBusy(false)
+              }
+            })()
+          }}
+          disabled={devVollbackupBusy}
+          style={{
+            padding: '0.5rem 1rem',
+            background: devVollbackupBusy ? 'rgba(16,185,129,0.25)' : 'rgba(16,185,129,0.35)',
+            color: '#fff',
+            border: '1px solid rgba(16,185,129,0.55)',
+            borderRadius: '6px',
+            fontSize: '0.9rem',
+            cursor: devVollbackupBusy ? 'wait' : 'pointer',
+            fontWeight: 600,
+            opacity: devVollbackupBusy ? 0.85 : 1,
+          }}
+          title="Ein Klick: vier JSON-Dateien (K2, ök2, VK2, K2 Familie) aus diesem Browser – ohne Admin-Kontext wechseln. Für backupmicro: K2-Datei als backup/k2-vollbackup-latest.json ins Projekt legen."
+        >
+          {devVollbackupBusy ? '⏳ Vollbackups…' : '💾 Alle Vollbackups (4×)'}
         </button>
         <button
           type="button"
