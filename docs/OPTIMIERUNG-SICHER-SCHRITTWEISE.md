@@ -31,6 +31,26 @@ Wenn ein Schritt **eine dieser Grenzen** berührt: **stoppen**, nur mit **expliz
 
 **Stop, wenn:** Tests oder Build rot → erst Ursache klären (keine Optimierung parallel).
 
+### Messung Phase 0 (erführt – 17.04.26, lokales Projekt)
+
+**Verzeichnisse** (`du -sh .git node_modules src public dist`):
+
+| Pfad | Größe |
+|------|--------|
+| `.git` | 1.5G |
+| `node_modules` | 934M |
+| `src` | 5.4M |
+| `public` | 129M |
+| `dist` | 190M |
+
+**Größte Dateien in `public/` (Auszug):** Viele `gallery-data.json.backup.*` je etwa 1.3–1.6 MB. Darüber: `img/k2/virtual-tour.mp4` und `img/oeffentlich/virtual-tour.mp4` je ca. 19 MB; `video/entdecken-eingangstor.mp4` ca. 8 MB; `img/k2/masterflyer-k2-seite1.png` ca. 2.5 MB; Willkommen-/Galerie-JPGs ca. 1.4–1.6 MB.
+
+**QS-Referenz:** `npm run test` → **91** Test-Dateien, **576** Tests, grün (Laufzeit der Suite ca. 76 s). `npm run build` → grün (Vite „built in“ ca. 23 s).
+
+**Build-Ausgabe (gzip, Auszug für spätere Vergleiche):** Hauptbundle `appBootstrap-*.js` ca. **806 kB** gzip; Chunk `ScreenshotExportAdmin-*.js` ca. **229 kB** gzip; ONNX-WASM `ort-wasm-simd-threaded*.wasm` ca. **5.66 MB** gzip (Werkzeug/Hintergrund-Entfernung – erwartbar groß). Vite-Hinweis: einige Chunks > 600 kB → für **Phase 3** notieren, nicht in Phase 0 ändern.
+
+**Nächster sinnvoller Schritt:** Phase 1 nur bei Bedarf (`git gc`), oder Phase 2 nach bewusster Prüfung großer Medien in `public/` (keine Löschaktion ohne Referenz-Check im Repo).
+
 ---
 
 ## Phase 1 – Nur Entwicklungsumgebung / Repo (kein Nutzerverhalten)
@@ -105,4 +125,4 @@ Wenn ein Schritt **eine dieser Grenzen** berührt: **stoppen**, nur mit **expliz
 - `docs/KRITISCHE-ABLAEUFE.md` – was nicht gebrochen werden darf  
 - `.cursor/rules/eiserne-regel-groessere-aenderung-kein-chaos.mdc` – vor großen Eingriffen  
 
-**Stand:** 17.04.26 – als Arbeitsgrundlage für schrittweise Optimierung ohne Sicherheitsverlust.
+**Stand:** 17.04.26 – Phase-0-Baseline gemessen und oben festgehalten; Verhalten der App dabei nicht geändert.

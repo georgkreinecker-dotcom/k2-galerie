@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **Sichere Optimierung** nach **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`:** als Nächstes **Phase 0** (Baseline messen, Tests/Build – nur dokumentieren). K2-Kern und rote Linien unverändert lassen.  
-**Einordnung:** Performance/Größe schrittweise; Sicherheit (Datentrennung, Stand/QR, kritische Abläufe) hat Vorrang.
+**Was wir JETZT tun:** **Sichere Optimierung – Phase 1 oder 2** nur bei Bedarf: **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`** (Phase 0 erfüllt: Messwerte + Test/Build-Referenz in derselben Datei).  
+**Einordnung:** Phase 0 = nur dokumentiert, kein Produktcode geändert.
+
+---
+
+**Letzter Stand:** 17.04.26 – **Optimierung Phase 0 (Baseline)** – Messung in **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`** (`du`, größte `public/`-Dateien, Test/Build-Referenz, Chunk-Auszug). **Commit:** _(nach Push)_ ✅ GitHub
 
 ---
 
