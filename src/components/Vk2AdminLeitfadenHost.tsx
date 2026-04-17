@@ -27,7 +27,8 @@ export function Vk2AdminLeitfadenHost() {
     return () => window.removeEventListener(EVENT_VK2_ADMIN_RUNDGANG, rerender)
   }, [rerender])
 
-  // Erstbesuch / noch nicht abgeschlossen: im VK2-Admin-Kontext Rundgang einblenden
+  // Nach „Fertig“: Hub-Button setzt Session → Wiederöffnen trotz LS „abgeschlossen“.
+  // Ohne Session-Gate beim Erstbesuch: sessionStorage ist erst nach useEffect gesetzt → Modal blieb unsichtbar.
   useEffect(() => {
     if (!isPlatformInstance()) return
     if (hasVk2AdminLeitfadenCompleted()) return
@@ -37,8 +38,8 @@ export function Vk2AdminLeitfadenHost() {
 
   const show =
     isPlatformInstance() &&
-    !hasVk2AdminLeitfadenCompleted() &&
-    isVk2AdminRundgangSessionVisible()
+    tenant.isVk2 &&
+    (!hasVk2AdminLeitfadenCompleted() || isVk2AdminRundgangSessionVisible())
 
   const vorname = (searchParams.get('vorname') ?? '').trim()
 

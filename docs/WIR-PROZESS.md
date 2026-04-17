@@ -126,6 +126,7 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 
 | Datum | Was ich gelernt habe |
 |---|---|
+| 16.04.26 (Spät) | **Schluss für heute:** Georg priorisiert **Optimierung, die Nutzer spüren** (Medien in `public/`); Session-Ende = **alles Offene** mit **Tests + Build grün** auf **main**, damit nichts auf dem Mac hängen bleibt. |
 | 16.04.26 (Abend) | **Schluss für heute:** Restliche lokale Arbeit (**Entdecken** Weg K2 Familie, **Muster-Nav** in K2 Familie, Präsentationsmappe **Einstiegsadressen**, Vertrieb-Doku) mit **Tests + Build grün** committen und pushen – morgen **VK2/ök2-Rundgang** auf Vercel ansehen. |
 | 16.04.26 | **GaleriePage-Aufräumen:** Wenn ein großer Block nach `export default` liegt, ist das oft **toter Code** (Parser/Export trotzdem ok) – **tsc** meldet erst bei **zweiter** Referenz zur alten Komponente. ök2-Rundgang = **`Oek2GalerieLeitfadenModal`** + **`musterOnly`**, nicht **`GalerieEntdeckenGuide`**. |
 | 15.04.26 (Abend) | **Schluss für heute:** K2 Familie am Handy – **ein Scrollbereich** (`k2-familie-main`) statt doppeltem `overflow-y` (mission-wrapper + viewport) nimmt das „Kleben“ auf iOS; **Safe-Area** am Inhalt statt toter Rand-Taps. **Commit `0b44a770`**, Tests + Build grün; **nächster Schritt:** Handy nach Vercel Deploy. |

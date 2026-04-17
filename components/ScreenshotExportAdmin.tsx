@@ -83,7 +83,8 @@ import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUST
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import { getStoryForPr } from '../src/utils/prStory'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
-import { openVk2AdminRundgangGlobally } from '../src/utils/vk2AdminLeitfadenStorage'
+import { openVk2PlatformRundgangGlobally } from '../src/utils/vk2PlatformLeitfadenStorage'
+import { openOek2PlatformRundgangGlobally } from '../src/utils/oek2PlatformLeitfadenStorage'
 import { getPageTexts, setPageTexts, defaultPageTexts, getGaleriePageTextsBaseline, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
 import {
@@ -14848,7 +14849,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
 
       <div style={{ position: 'relative', zIndex: 1 }}>
         <header
-          {...(tenant.isVk2 ? { 'data-leitfaden-focus': 'admin-hub-leiste' as const } : {})}
+          {...(tenant.isVk2 || tenant.isOeffentlich ? { 'data-leitfaden-focus': 'admin-hub-leiste' as const } : {})}
           style={{
           padding: 'clamp(1rem, 3vw, 1.5rem) clamp(1.5rem, 4vw, 3rem)',
           maxWidth: '1600px',
@@ -15268,7 +15269,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         .admin-hub-karte:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
                         .admin-hub-karte:active { transform: translateY(-1px); }
                       `}</style>
-                      <div {...(tenant.isVk2 ? { 'data-leitfaden-focus': 'hub-intro' as const } : {})}>
+                      <div {...(tenant.isVk2 || tenant.isOeffentlich ? { 'data-leitfaden-focus': 'hub-intro' as const } : {})}>
                       <h2 style={{ fontSize: 'clamp(1.2rem, 2.5vw, 1.5rem)', fontWeight: 700, color: s.text, margin: '0 0 0.25rem' }}>
                         Was möchtest du heute tun?
                       </h2>
@@ -15281,8 +15282,13 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
                           <button type="button" onClick={() => openHandbuchInFenster(getAdminReturnUrl(activeTab, eventplanSubTab), tenant.isVk2 ? VK2_HANDBUCH_ROUTE : undefined)} style={{ color: s.accent, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.2rem 0.4rem', borderRadius: '6px', background: `${s.accent}12`, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit' }} title="Handbuch in eigenem Fenster öffnen – zum Zoomen und neben Einstellungen mitlesen">📖 Handbuch</button>
                           {tenant.isVk2 && isPlatformInstance() ? (
-                            <button type="button" onClick={() => openVk2AdminRundgangGlobally()} style={{ color: s.accent, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.2rem 0.4rem', borderRadius: '6px', background: `${s.accent}18`, border: '1px solid rgba(192, 86, 42, 0.35)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 700 }} title="Kurz durch den Admin – Fokus auf die Kacheln">
-                              🧭 Admin-Rundgang
+                            <button type="button" onClick={() => openVk2PlatformRundgangGlobally()} style={{ color: s.accent, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.2rem 0.4rem', borderRadius: '6px', background: `${s.accent}18`, border: '1px solid rgba(192, 86, 42, 0.35)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 700 }} title="Vereinsgalerie und Verwaltungsbereich – ein durchgängiger Plattform-Rundgang">
+                              🧭 Plattform-Rundgang
+                            </button>
+                          ) : null}
+                          {tenant.isOeffentlich && isPlatformInstance() ? (
+                            <button type="button" onClick={() => openOek2PlatformRundgangGlobally()} style={{ color: s.accent, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.2rem 0.4rem', borderRadius: '6px', background: `${s.accent}18`, border: '1px solid rgba(90, 122, 106, 0.4)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 700 }} title="Demo-Galerie und Demo-Zentrale – ein durchgängiger Plattform-Rundgang">
+                              🧭 Plattform-Rundgang
                             </button>
                           ) : null}
                           <Link to="#" onClick={(e) => { e.preventDefault(); setActiveTab('einstellungen'); window.scrollTo({ top: 200, behavior: 'smooth' }); }} style={{ color: s.accent, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.2rem 0.4rem', borderRadius: '6px', background: `${s.accent}12` }} title="Einstellungen">⚙️ Einstellungen</Link>
@@ -15322,7 +15328,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                             )
                             return (
                           <button key={b.tab} type="button" className="admin-hub-karte"
-                            {...(tenant.isVk2 ? { 'data-leitfaden-focus': `hub-${b.tab}` as const } : {})}
+                            {...(tenant.isVk2 || tenant.isOeffentlich ? { 'data-leitfaden-focus': `hub-${b.tab}` as const } : {})}
                             onClick={() => openHubTab(b.tab)}
                             style={{
                               padding: mainPad,
@@ -15350,7 +15356,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 })()}
 
                 {/* Trennlinie vor Werke-Inhalt */}
-                <div id="admin-werke-inhalt" {...(tenant.isVk2 ? { 'data-leitfaden-focus': 'werke-bereich' as const } : {})} style={{ margin: 'clamp(2rem, 5vw, 3rem) 0 clamp(1rem, 3vw, 1.5rem)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div id="admin-werke-inhalt" {...(tenant.isVk2 || tenant.isOeffentlich ? { 'data-leitfaden-focus': 'werke-bereich' as const } : {})} style={{ margin: 'clamp(2rem, 5vw, 3rem) 0 clamp(1rem, 3vw, 1.5rem)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <div style={{ flex: 1, height: 1, background: `${s.accent}22` }} />
                   <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>🎨 {tenant.isVk2 ? 'Vereinsmitglieder' : 'Werke hinzufügen und bearbeiten'}</span>
                   <div style={{ flex: 1, height: 1, background: `${s.accent}22` }} />

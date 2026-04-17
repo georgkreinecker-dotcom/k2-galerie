@@ -13,7 +13,9 @@ import {
   EVENT_VK2_PLATFORM_RUNDGANG,
   SS_VK2_GALERIE_LEITFADEN_MINIMIZED,
   hasVk2PlatformLeitfadenCompleted,
+  isVk2PlatformLeitfadenContext,
   isVk2PlatformRundgangSessionVisible,
+  isVk2PublicGaleriePath,
   readVk2PlatformLeitfadenSchritt,
   setVk2PlatformRundgangSessionVisible,
   writeVk2PlatformLeitfadenSchritt,
@@ -67,8 +69,9 @@ export function Vk2PlatformLeitfadenHost() {
       } catch {
         /* ignore */
       }
+      // Erster Eintritt in VK2-Mandant nur, nicht bei jeder Navigation – sonst hält „Schließen“ nicht.
+      setVk2PlatformRundgangSessionVisible(true)
     }
-    setVk2PlatformRundgangSessionVisible(true)
   }, [location.pathname, location.search, tenant.isVk2])
 
   const navigateIfNeededForStep = useCallback(
@@ -81,12 +84,13 @@ export function Vk2PlatformLeitfadenHost() {
       const qs = q.toString()
       const suffix = qs ? `?${qs}` : ''
       if (step.phase === 'galerie') {
-        if (pathNow !== GALERIE_PATH) {
+        // Wie ök2: bereits auf Galerie oder Vorschau
+        if (!isVk2PublicGaleriePath(pathNow)) {
           navigate(`${GALERIE_PATH}${suffix}`)
         }
       } else if (step.phase === 'admin') {
         if (!pathNow.startsWith('/admin')) {
-          navigate('/admin?context=vk2')
+          navigate(`/admin?context=vk2${vorname ? `&vorname=${encodeURIComponent(vorname)}` : ''}`)
         }
       }
     },
@@ -113,10 +117,12 @@ export function Vk2PlatformLeitfadenHost() {
     [schritte, schritt, onSchrittChange],
   )
 
+  /** Wie ök2: Sichtbarkeit nur über Session-Flag – „Schließen“ hält; erstes Aufklappen nur beim Einstritt in VK2-Mandant (Effect). */
   const show =
     isPlatformInstance() &&
     tenant.isVk2 &&
-    (!hasVk2PlatformLeitfadenCompleted() || isVk2PlatformRundgangSessionVisible())
+    isVk2PlatformLeitfadenContext(location.pathname, tenant.isVk2) &&
+    isVk2PlatformRundgangSessionVisible()
 
   /** Nur einmal pro „Rundgang sichtbar“-Phase: Route an aktuellen Schritt anbinden. Nicht bei jedem Re-Render – sonst zwingt Admin-Schritt die Nutzer:innen zurück zum Admin, sobald sie zur Vereins-Galerie wechseln. Schrittwechsel im Modal = onSchrittChange → navigateIfNeededForStep. */
   const routeSyncedForVisibleSessionRef = useRef(false)

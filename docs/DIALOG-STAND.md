@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **Optimierung nutzerwirksam** – **Phase 2.2/2.3** nur mit **Backup + visueller Prüfung:** vor allem **MP4** (Rundgang ~19 MB, Entdecken ~8 MB), dann große **JPG/PNG**; siehe **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`** Phase 2.1.  
-**Einordnung:** Was Besucher beim Laden spüren – nicht `.git` weiter optimieren.
+**Was wir JETZT tun:** **Weiter nach Schlaf:** **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`** Phase 2 – **Videos/JPG** erst mit **Original-Backup** und **Prüfung** in der Galerie; parallel offene **Plattform-Rundgang ök2/VK2**-Arbeit auf **`main`** testen sobald Vercel **Ready** ist.  
+**Einordnung:** Nutzer spüren Medien-Größe; Rundgang-Features nach Deploy kurz gegenklicken.
+
+---
+
+**Letzter Stand:** 16.04.26 (Abend) – **Session-Ende:** Lokaler Stand **Plattform-Rundgang ök2/VK2** (Hosts, Schritte, Storage, **`mobileUiHelpers`**, Anpassungen **App/TenantContext/Galerie**), Konzept **`docs/KONZEPT-ADMIN-RUNDGANG-OEK2-VK2.md`**, Doku-Updates – **Tests + Build grün**, **commit + push**. **Commit:** _(Hash nach Push eintragen)_ ✅ GitHub
 
 ---
 

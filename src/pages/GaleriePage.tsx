@@ -4227,7 +4227,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         )}
 
         {/* ök2: geführter Rundgang (Sheet wie K2 Familie), ohne Audio – nur Demo-Galerie, nur Fremde */}
-        {musterOnly && isFremder && guideVisible && guideName && !isPraesentationModus && (
+        {musterOnly && isFremder && guideVisible && guideName && !isPraesentationModus && !isPlatformInstance() && (
           <Oek2GalerieLeitfadenModal
             name={guideName}
             onDismiss={() => {

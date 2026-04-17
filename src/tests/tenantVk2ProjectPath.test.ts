@@ -19,4 +19,13 @@ describe('deriveTenantId – VK2-Projektpfad', () => {
   it('liefert vk2 für /mein-bereich?context=vk2 (Einstieg Galerie → Admin, VK2-Admin-Rundgang)', () => {
     expect(deriveTenantId('/mein-bereich', '?context=vk2')).toBe('vk2')
   })
+
+  it('liefert vk2 für /dev-view?page=vk2-admin (APf Smart Panel ohne ?context= in der URL)', () => {
+    expect(deriveTenantId('/dev-view', '?page=vk2-admin')).toBe('vk2')
+    expect(deriveTenantId('/dev-view', '?page=vk2-kunden')).toBe('vk2')
+  })
+
+  it('liefert oeffentlich für /dev-view?page=galerie-oeffentlich', () => {
+    expect(deriveTenantId('/dev-view', '?page=galerie-oeffentlich')).toBe('oeffentlich')
+  })
 })

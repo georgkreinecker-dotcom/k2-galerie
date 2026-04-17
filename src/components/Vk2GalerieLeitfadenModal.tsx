@@ -24,6 +24,7 @@ import {
   clampFamilieLeitfadenBounds,
   type FamilieLeitfadenPanelBounds,
 } from './FamilieMusterHuberLeitfaden'
+import { isCoarsePointer } from '../utils/mobileUiHelpers'
 
 const t = adminTheme
 
@@ -184,6 +185,15 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss, platform }: Props) {
     startBounds: FamilieLeitfadenPanelBounds
   } | null>(null)
 
+  const [touchChrome, setTouchChrome] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px), (pointer: coarse)')
+    const apply = () => setTouchChrome(mq.matches)
+    apply()
+    mq.addEventListener('change', apply)
+    return () => mq.removeEventListener('change', apply)
+  }, [])
+
   const schritte = useMemo(
     () => (platform ? platform.schritte : buildVk2GalerieLeitfadenSchritte(name)),
     [name, platform],
@@ -277,6 +287,11 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss, platform }: Props) {
       /* ignore */
     }
   }, [])
+
+  const onBackdropTapDismiss = useCallback(() => {
+    if (platform) schliessenPlattformNurAusblenden()
+    else minimize()
+  }, [platform, schliessenPlattformNurAusblenden, minimize])
 
   useEffect(() => {
     if (!minimized) return
@@ -503,12 +518,17 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss, platform }: Props) {
     }
     const onPointerOver = (e: Event) => applyFromPointer(e, false)
     const onClick = (e: Event) => applyFromPointer(e, true)
-    document.addEventListener('pointerover', onPointerOver, true)
     document.addEventListener('click', onClick, true)
+    const useHoverSync = !isCoarsePointer()
+    if (useHoverSync) {
+      document.addEventListener('pointerover', onPointerOver, true)
+    }
     return () => {
       if (hoverTimer) clearTimeout(hoverTimer)
-      document.removeEventListener('pointerover', onPointerOver, true)
       document.removeEventListener('click', onClick, true)
+      if (useHoverSync) {
+        document.removeEventListener('pointerover', onPointerOver, true)
+      }
     }
   }, [platform, minimized, schritte, schritt])
 
@@ -549,6 +569,12 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss, platform }: Props) {
         }
 
   function renderSheetBody() {
+    const hdrBtnSize: CSSProperties = touchChrome
+      ? { minWidth: 44, minHeight: 44, padding: 0 }
+      : { width: 32, height: 32, padding: 0 }
+    const footerBtnPad = touchChrome ? '0.65rem 1.15rem' : '0.5rem 0.95rem'
+    const footerPrimaryPad = touchChrome ? '0.65rem 1.25rem' : '0.55rem 1.15rem'
+
     return (
       <>
         <div
@@ -587,8 +613,7 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss, platform }: Props) {
                   nudgeSize(-32)
                 }}
                 style={{
-                  width: 32,
-                  height: 32,
+                  ...hdrBtnSize,
                   borderRadius: 8,
                   border: '1px solid rgba(192, 86, 42, 0.35)',
                   background: '#fffefb',
@@ -597,7 +622,6 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss, platform }: Props) {
                   cursor: 'pointer',
                   fontSize: '1rem',
                   lineHeight: 1,
-                  padding: 0,
                 }}
               >
                 −
@@ -610,8 +634,7 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss, platform }: Props) {
                   nudgeSize(32)
                 }}
                 style={{
-                  width: 32,
-                  height: 32,
+                  ...hdrBtnSize,
                   borderRadius: 8,
                   border: '1px solid rgba(192, 86, 42, 0.35)',
                   background: '#fffefb',
@@ -620,7 +643,6 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss, platform }: Props) {
                   cursor: 'pointer',
                   fontSize: '1rem',
                   lineHeight: 1,
-                  padding: 0,
                 }}
               >
                 +
@@ -655,8 +677,7 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss, platform }: Props) {
                   minimize()
                 }}
                 style={{
-                  width: 32,
-                  height: 32,
+                  ...hdrBtnSize,
                   borderRadius: 8,
                   border: '1px solid rgba(192, 86, 42, 0.35)',
                   background: '#fffefb',
@@ -664,7 +685,6 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss, platform }: Props) {
                   fontWeight: 700,
                   cursor: 'pointer',
                   fontSize: '0.75rem',
-                  padding: 0,
                 }}
               >
                 ▼
@@ -723,14 +743,18 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss, platform }: Props) {
         >
           {platform ? (
             <>
-              Der Hintergrund blockiert Klicks nicht.{' '}
+              {touchChrome
+                ? 'Neben dem Fenster tippen schließt den Rundgang. '
+                : 'Der Hintergrund blockiert Klicks nicht. '}
               <strong style={{ color: t.text }}>Schließen</strong> beendet den Rundgang;{' '}
               <strong style={{ color: t.text }}>▼</strong> klappt nur zu. Ohne Audio.
             </>
           ) : (
             <>
-              Der Hintergrund blockiert Klicks nicht – du kannst die Seite dahinter bedienen. Ohne Audio: alles lesen. Zusammenklappen:{' '}
-              <strong style={{ color: t.text }}>▼</strong>.
+              {touchChrome
+                ? 'Neben dem Fenster tippen klappt zu. '
+                : 'Der Hintergrund blockiert Klicks nicht – du kannst die Seite dahinter bedienen. '}
+              Ohne Audio: alles lesen. Zusammenklappen: <strong style={{ color: t.text }}>▼</strong>.
             </>
           )}
         </p>
@@ -797,7 +821,8 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss, platform }: Props) {
                 type="button"
                 onClick={() => setSchritt(schritt - 1)}
                 style={{
-                  padding: '0.5rem 0.95rem',
+                  padding: footerBtnPad,
+                  minHeight: touchChrome ? 44 : undefined,
                   fontSize: '0.88rem',
                   fontWeight: 700,
                   borderRadius: 999,
@@ -815,7 +840,8 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss, platform }: Props) {
               type="button"
               onClick={platform ? schliessenPlattformNurAusblenden : minimize}
               style={{
-                padding: '0.5rem 0.85rem',
+                padding: footerBtnPad,
+                minHeight: touchChrome ? 44 : undefined,
                 fontSize: '0.86rem',
                 fontWeight: 600,
                 borderRadius: 999,
@@ -837,7 +863,8 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss, platform }: Props) {
                 type="button"
                 onClick={() => setSchritt(Math.min(max, schritt + 1))}
                 style={{
-                  padding: '0.55rem 1.15rem',
+                  padding: footerPrimaryPad,
+                  minHeight: touchChrome ? 48 : undefined,
                   fontSize: '0.92rem',
                   fontWeight: 800,
                   borderRadius: 999,
@@ -856,7 +883,8 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss, platform }: Props) {
                 type="button"
                 onClick={schliessenUndMerken}
                 style={{
-                  padding: '0.55rem 1.15rem',
+                  padding: footerPrimaryPad,
+                  minHeight: touchChrome ? 48 : undefined,
                   fontSize: '0.92rem',
                   fontWeight: 800,
                   borderRadius: 999,
@@ -924,7 +952,7 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss, platform }: Props) {
             boxShadow: '0 6px 24px rgba(15, 23, 42, 0.2)',
           }}
         >
-          Rundgang VK2 ▶
+          {platform ? 'VK2 Plattform · Rundgang ▶' : 'Rundgang VK2 ▶'}
         </button>
       </>
     )
@@ -952,6 +980,24 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss, platform }: Props) {
           pointerEvents: 'none',
         }}
       >
+        {touchChrome ? (
+          <button
+            type="button"
+            aria-label={platform ? 'Rundgang schließen' : 'Rundgang einklappen'}
+            onClick={onBackdropTapDismiss}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 25000,
+              margin: 0,
+              padding: 0,
+              border: 'none',
+              background: 'transparent',
+              cursor: 'pointer',
+              pointerEvents: 'auto',
+            }}
+          />
+        ) : null}
         {bounds === null ? (
           <div
             style={{

@@ -16,6 +16,8 @@ const ADMIN_CONTEXT_KEY = 'k2-admin-context'
 const K2_GALERIE_PROJECT_PREFIX = '/projects/k2-galerie'
 /** Vereinsplattform (Vereinsmuster): eigene Projekt-Routen – immer VK2 auf der Plattform (wie ?context=vk2 auf /admin). */
 const VK2_PROJECT_PREFIX = '/projects/vk2'
+/** APf Dev-View: gleiche Mandanten-Logik wie bei /projects/k2-galerie – ?page= vk2-* / öffentliche Galerie ohne extra ?context=. */
+const DEV_VIEW_PREFIX = '/dev-view'
 
 export type AdminTenantId = 'k2' | 'oeffentlich' | 'vk2'
 
@@ -38,6 +40,24 @@ function getDynamicTenantIdFromUrl(search: string): string | null {
     if (!/^[a-z0-9-]{1,64}$/.test(raw)) return null
     if (raw === 'k2' || raw === 'oeffentlich' || raw === 'vk2') return null
     return raw
+  } catch {
+    return null
+  }
+}
+
+/** APf /dev-view: Mandant aus ?page= (eingebettete Tabs), wenn kein ?context= gesetzt. */
+function tenantIdFromDevViewPageParam(search: string, onPlatform: boolean): AdminTenantId | null {
+  try {
+    const params = new URLSearchParams(search || '')
+    const page = (params.get('page') ?? '').toLowerCase().trim()
+    if (!page) return null
+    if (page === 'galerie-oeffentlich' || page === 'galerie-oeffentlich-vorschau') {
+      return onPlatform ? 'oeffentlich' : 'k2'
+    }
+    if (page === 'vk2' || page.startsWith('vk2-')) {
+      return onPlatform ? 'vk2' : 'k2'
+    }
+    return null
   } catch {
     return null
   }
@@ -77,6 +97,13 @@ export function deriveTenantId(pathname: string, search: string): AdminTenantId 
     if (!onPlatform) return 'k2'
     return 'vk2'
   }
+  if (pathname === DEV_VIEW_PREFIX || pathname.startsWith(`${DEV_VIEW_PREFIX}/`)) {
+    const u = fromUrlContext()
+    if (u !== null) return u
+    const fromPage = tenantIdFromDevViewPageParam(search, onPlatform)
+    if (fromPage !== null) return fromPage
+    return getTenantFromStorage()
+  }
   return getTenantFromStorage()
 }
 
@@ -107,6 +134,18 @@ function syncStorageFromUrl(pathname: string, search: string): void {
     }
     if (pathname.startsWith(VK2_PROJECT_PREFIX)) {
       sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'vk2')
+      return
+    }
+    if (pathname === DEV_VIEW_PREFIX || pathname.startsWith(`${DEV_VIEW_PREFIX}/`)) {
+      if (ctx === 'oeffentlich') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'oeffentlich')
+      else if (ctx === 'vk2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'vk2')
+      else if (ctx === 'k2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'k2')
+      else {
+        const pageTid = tenantIdFromDevViewPageParam(search, true)
+        if (pageTid === 'oeffentlich') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'oeffentlich')
+        else if (pageTid === 'vk2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'vk2')
+        else sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'k2')
+      }
     }
   } catch (_) {}
 }

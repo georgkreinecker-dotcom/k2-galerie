@@ -18,7 +18,7 @@ import { isAdminUnlocked } from '../utils/adminUnlockStorage'
 import { formatEventTerminKomplett } from '../utils/eventTerminFormat'
 import { eventPlakatMoreInfoTitle } from '../utils/eventPlakatTooltip'
 import { reportPublicGalleryVisit } from '../utils/reportPublicGalleryVisit'
-import { Vk2GalerieLeitfadenModal } from '../components/Vk2GalerieLeitfadenModal'
+import { openVk2PlatformRundgangGlobally } from '../utils/vk2PlatformLeitfadenStorage'
 import '../App.css'
 
 function normalizeSocialUrl(value?: string): string | undefined {
@@ -61,23 +61,15 @@ const VK2_VERCEL_BASE = BASE_APP_URL
 const Vk2GaleriePage: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const fromAdminTab = !!(location.state as { fromAdminTab?: string } | null)?.fromAdminTab
   const isVk2VorschauUrl = useMemo(
     () => new URLSearchParams(location.search).get('vorschau') === '1',
     [location.search],
   )
-  /** Nur Plattform, nicht Admin-Vorschau – reine Guide-Schicht, keine App-Logik. */
-  const showVk2LeitfadenUi = isPlatformInstance() && !fromAdminTab && !isVk2VorschauUrl
-  const vk2TourName = useMemo(() => {
-    try {
-      const v = new URLSearchParams(location.search).get('vorname')
-      if (v?.trim()) return v.trim()
-    } catch {
-      /* ignore */
-    }
-    return 'Besucher'
-  }, [location.search])
-  const [vk2TourOpen, setVk2TourOpen] = useState(false)
+  /**
+   * Nur Plattform; ohne `?vorschau=1` (explizite Vorschau-URL).
+   * Auch bei Aufruf vom Admin: Rundgang = nur Guide, kein Zusatzrisiko – Georg soll den Button immer sehen können.
+   */
+  const showVk2LeitfadenUi = isPlatformInstance() && !isVk2VorschauUrl
   const [plakatOverlayUrl, setPlakatOverlayUrl] = useState<string | null>(null)
   const openVk2EventA3Plakat = useCallback((eventId: unknown) => {
     const eid = eventId != null && String(eventId).trim() !== '' ? String(eventId).trim() : ''
@@ -252,7 +244,7 @@ const Vk2GaleriePage: React.FC = () => {
               {showVk2LeitfadenUi ? (
                 <button
                   type="button"
-                  onClick={() => setVk2TourOpen(true)}
+                  onClick={() => openVk2PlatformRundgangGlobally()}
                   style={{
                     background: 'rgba(192, 86, 42, 0.1)',
                     color: C.accent,
@@ -588,10 +580,6 @@ const Vk2GaleriePage: React.FC = () => {
             }}
           />
         </div>
-      ) : null}
-
-      {vk2TourOpen && showVk2LeitfadenUi ? (
-        <Vk2GalerieLeitfadenModal name={vk2TourName} onDismiss={() => setVk2TourOpen(false)} />
       ) : null}
 
     </div>
