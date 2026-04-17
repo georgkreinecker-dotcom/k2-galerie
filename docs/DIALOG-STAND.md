@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 17.04.26 – **QS: Schnelle lokale Spur** – **`npm run test:changed`**, **`npm run qs:local`** (= geänderte Tests + `build:vercel`); **Vercel** führt **`npm run build`** weiterhin aus (volle Suite). Regeln **`qs-standard-vor-commit`**, **`session-start-aufwaermen`**, Doku **`SERVICE-ARBEIT-DATEN-TESTS.md`**. **Commit:** _(nach Push)_
+
+---
+
 **Letzter Stand:** 17.04.26 – **Vereinsmuster: VK2-Rundgang beim Einstieg** – **`TenantContext`:** Pfade **`/projects/vk2/*`** = **`vk2`** auf der Plattform + **`syncStorageFromUrl`** schreibt **`k2-admin-context`** (vorher oft **K2** → **`tenant.isVk2`** false → kein Auto-Öffnen). **`Vk2AdminLeitfadenModal`:** kein vollständiger Reset bei **`name`/`vorname`-Wechsel** (nur Mount + Schritt-Clamp bei **`max`**). Test **`tenantVk2ProjectPath.test.ts`**. **Commit:** **`3153f395`** ✅ GitHub. **Nächster Schritt:** **ök2-Admin-Rundgang** analog.
 
 ---

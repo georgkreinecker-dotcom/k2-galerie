@@ -14,12 +14,16 @@ alwaysApply: true
 
 **Bevor irgendeine Code-Änderung gemacht wird:**
 
+**Standard (empfohlen):**
+
 ```bash
 npm run test
 ```
 
-- ✅ Alle Tests grün → weiterarbeiten
-- ❌ Test(s) rot → zuerst Ursache finden und beheben, DANN mit der eigentlichen Aufgabe weitermachen
+**Schneller Einstieg** (fortgesetzte Arbeit, nur kleine Änderung geplant): `npm run test:changed` – nur Tests zu geänderten Dateien (Git). Wenn rot → **volles** `npm run test` und Ursache beheben.
+
+- ✅ Grün → weiterarbeiten
+- ❌ Rot → **nicht** auf neuer Aufgabe aufbauen
 
 ## Warum
 
@@ -29,4 +33,4 @@ npm run test
 
 ## Kurzfassung
 
-**Session-Start = `npm run test` → alle grün → dann programmieren. Keine Ausnahme.**
+**Session-Start = `npm run test` oder `npm run test:changed` → grün → dann programmieren.** Bei Unsicherheit oder nach längerer Pause: volles `npm run test`.

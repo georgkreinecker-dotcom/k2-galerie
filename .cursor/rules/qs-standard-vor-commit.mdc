@@ -11,17 +11,34 @@ alwaysApply: true
 
 ## Pflicht-Checkliste vor Commit/Push
 
+### Standard (weiterhin gültig)
+
 1. **Tests:** `npm run test` → alle Tests grün (Unit + Flow).
 2. **Build:** `npm run build` → durchgelaufen (inkl. test, write-build-info, tsc, vite build).
-3. **Stand:** `node scripts/write-build-info.js` (wird im Build mit erledigt).
-4. **Erst dann:** `git add .` → `git commit -m "…"` → `git push`.
+3. **Stand:** `write-build-info` läuft in **`build:vercel`** (wie bei `npm run build`).
 
-## Reihenfolge (unveränderlich)
+### Schnelle lokale QS – kleine, klar abgegrenzte Änderungen
+
+**Ziel:** Weniger Wartezeit lokal, ohne Sicherheit aufzugeben.
+
+1. **`npm run qs:local`** (= `test:changed` + `build:vercel`): nur Tests, die zu **geänderten Dateien** (Git) passen, plus **TypeScript + Vite-Build** (wie Production-Build ohne vorangestellte volle Suite).
+2. **Vercel** führt beim **Push auf `main`** weiterhin **`npm run build`** aus → **volle Test-Suite** auf dem Server. Rot dort = sofort fixen.
+3. **Nicht** nur `qs:local` nutzen, wenn du **Merge/Publish, Sync, Stammdaten, Tenant, K2/ök2/VK2-Trennung** oder **neue kritische Abläufe** änderst – dort **`npm run test`** oder mindestens **`npm run test:daten`** / **`test:kritische-schranken`** zusätzlich sinnvoll (siehe `docs/SERVICE-ARBEIT-DATEN-TESTS.md`).
+
+## Reihenfolge
+
+**Voll (lokal = Vercel):**
 
 ```
 npm run test     → grün
 npm run build    → erfolgreich
-write-build-info (im Build enthalten)
+git add . && git commit && git push
+```
+
+**Schnell lokal (Push triggert Voll-Build auf Vercel):**
+
+```
+npm run qs:local → grün
 git add . && git commit && git push
 ```
 
@@ -37,6 +54,6 @@ git add . && git commit && git push
 
 ## Kurzfassung
 
-**QS-Standard = vor jedem Commit: test + build grün. Keine Ausnahme. Georg fragt nicht mehr „ist QS durch?“ – es ist immer durch, wenn committed wurde.**
+**QS-Standard:** Vor Commit muss **grün** sein: entweder **`npm run build`** (volle Tests) **oder** bei kleinen Änderungen **`npm run qs:local`**, **wenn** danach **Push auf `main`** → Vercel läuft **volle Suite** nach. Bei kritischen Datenpfaden zusätzlich **volle Tests** oder **`test:daten`**. Georg fragt nicht „ist QS durch?“ – die KI führt das durch.
 
 Verknüpfung: Session-Start = `session-start-aufwaermen.mdc` (Tests zuerst). Fertig = `fertig-heisst-getestet-committed.mdc` (committed + Build war erfolgreich). **Tests = Report, dann PC** = `tests-kein-selbstzweck-report-dann-pc.mdc`. **Typische Build-Fehler vermeiden** = `build-fehler-systematisch-vermeiden.mdc` (doppelte Variablen, Referenzen nach Refactoring, Build immer vor Fertig).

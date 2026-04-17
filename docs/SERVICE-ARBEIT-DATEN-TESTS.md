@@ -2,7 +2,7 @@
 
 **Zweck:** Ihr wollt das System laufend verbessern und anpassen, **ohne** Besucher:innen mit jedem kleinen Schritt zu überfordern. Dieses Dokument ordnet **wo** ihr arbeitet, **was** sichtbar wird, und **welche Tests** die Daten-Schicht absichern.
 
-**Stand:** 22.03.26
+**Stand:** 17.04.26 – ergänzt: **`qs:local`**, **`test:changed`**, Verweis Vercel-Vollbuild
 
 ---
 
@@ -21,8 +21,8 @@
 
 ## 2. Saubere Servicarbeit – Checkliste (vor Merge/Push)
 
-1. **`npm run test`** (gesamte Suite) und **`npm run build`** grün – verbindlich (QS-Standard).
-2. **Schnell-Fokus Datenlage (optional vor größeren Storage/Merge-Änderungen):** `npm run test:daten` – siehe Abschnitt 4.
+1. **QS lokal:** Entweder **`npm run build`** (enthält volle Tests + Vercel-Build) **oder** bei **kleinen, klar abgegrenzten** Änderungen **`npm run qs:local`** (= `test:changed` + `build:vercel`): schneller, ohne Voll-Tests lokal. **Vercel** führt beim **Deploy** weiterhin **`npm run build`** aus → **volle Suite** bleibt Pflicht auf dem Server.
+2. **Kritische Daten / Trennung / Merge:** Zusätzlich oder stattdessen **`npm run test:daten`** bzw. **`npm run test`** – siehe Abschnitt 4.
 3. **K2-Kern (echte Galerie):** Keine Refactors oder UX-Änderungen ohne **explizite** Anordnung (eisernes Gesetz K2).
 4. **K2 / ök2 / VK2:** Jede Änderung an Keys, `load*` / `save*`, Publish, Merge → **Datentrennung** und **PROZESS-VEROEFFENTLICHEN-LADEN** im Kopf; bei Zweifel **K2-OEK2-DATENTRENNUNG** lesen.
 5. **Dokumentation der Spur:** Nach größeren Betriebsänderungen kurz **DIALOG-STAND** / **WIR-PROZESS** – damit die nächste Session weiß, was im Betrieb angepasst wurde.
@@ -74,7 +74,16 @@ npm run test:daten
 
 **Enthält:** `datentrennung`, `syncMerge`, `artworksStorage`, `kundendaten-schutz`, `publish-mock`, `mergeMissingK2KeramikFromGalleryData`, `upload-download-simulation`, `kritische-ablaeufe`, `bild-zu-karte-flow`, `artworkImageStore`, `vk2-backup`.
 
-**Ersetzt nicht** `npm run test` vor Commit – die **volle Suite** bleibt Pflicht.
+**Ersetzt nicht** die **volle Suite auf Vercel** – dort läuft **`npm run build`** nach jedem Push. Lokal kann **`npm run qs:local`** die Wartezeit sparen.
+
+### 4b. Schnell: `qs:local` und `test:changed`
+
+| Befehl | Inhalt |
+|--------|--------|
+| **`npm run test:changed`** | Nur Tests, die zu **geänderten Dateien** (Git) passen, plus `--passWithNoTests` wenn nur Doku o. Ä. geändert wurde. |
+| **`npm run qs:local`** | `test:changed` + **`build:vercel`** (tsc + vite, wie Production ohne vorangestellte volle Suite). |
+
+**Wann volle Suite lokal:** Unsicherheit, große Refactors, oder nach rotem Vercel-Build.
 
 ---
 
@@ -87,4 +96,4 @@ npm run test:daten
 
 ---
 
-**Kurzfassung:** Servicarbeit = gezielt am **Werkzeug** und an **API/Datenlogik** arbeiten, volle Tests + Build vor Push, optional `test:daten` für Fokus. „Kein User-Update“ = **keine unnötigen** öffentlichen UI-Änderungen – technisch ist ein Deployment normal, sichtbar ist es nur dort, wo ihr es **in der Oberfläche** anfasst.
+**Kurzfassung:** Servicarbeit = gezielt am **Werkzeug** und an **API/Datenlogik** arbeiten. Lokal: **`npm run build`** oder bei kleinen Schritten **`npm run qs:local`**; **Vercel** macht nach Push weiterhin **volle Tests**. Optional **`test:daten`** für Fokus. „Kein User-Update“ = **keine unnötigen** öffentlichen UI-Änderungen – technisch ist ein Deployment normal, sichtbar ist es nur dort, wo ihr es **in der Oberfläche** anfasst.
