@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 17.04.26 – **VK2 Admin-Rundgang startet wieder** – **`/mein-bereich?context=vk2`** wurde in **`deriveTenantId`** / **`syncStorageFromUrl`** wie **`/admin`** behandelt (vorher nur **`getTenantFromStorage()`** → oft **K2** → **`tenant.isVk2` false** → kein Auto-Öffnen). Test **`tenantVk2ProjectPath`** ergänzt. **Commit:** _(nach Push)_
+**Letzter Stand:** 17.04.26 – **VK2 Admin-Rundgang startet wieder** – **`/mein-bereich?context=vk2`** wurde in **`deriveTenantId`** / **`syncStorageFromUrl`** wie **`/admin`** behandelt (vorher nur **`getTenantFromStorage()`** → oft **K2** → **`tenant.isVk2` false** → kein Auto-Öffnen). Test **`tenantVk2ProjectPath`** ergänzt. **Commit:** **`9301a4e6`** ✅ GitHub
 
 ---
 
