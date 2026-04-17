@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 17.04.26 – **VK2 Admin-Rundgang:** Schritt **„Die Leiste oben“** (`admin-hub-leiste`) mit Text zu Logo/Schnellzugriff; **`header`** VK2 mit **`data-leitfaden-focus`**; Fokus **sichtbar** (`z-index` über Backdrop, **Pulse**-Animation); Sheet **breiter/höher**, Backdrop kräftiger, **`clampVk2AdminBounds`** bis 720×800. **Tests + Build** grün. **Commit:** **`e4ce094c`** ✅ GitHub. **Nächster Schritt:** **ök2-Admin-Rundgang** analog (siehe unten).
+
+---
+
 **Letzter Stand:** 17.04.26 – **VK2 Admin-Rundgang (Plattform):** Button **Admin-Rundgang** im VK2-Admin-Hub; **`Vk2AdminLeitfadenModal`** + **`vk2AdminLeitfadenSteps`**; Fokus **`data-leitfaden-focus`** auf Intro, Hub-Kacheln (`hub-*`), Trennlinie **Vereinsmitglieder**; **`HTML_VK2_ADMIN_LEITFADEN_FOCUS_ATTR`** in **`familieLeitfadenFocus`**; Fix **`SS_VK2_ADMIN_MIN`** im Modal. Test **`vk2AdminLeitfadenSteps.test.ts`**. **Commit:** **`304d50f7`** ✅ GitHub. **Nächster Schritt:** gleiches Muster für **ök2-Admin** prüfen/umsetzen.
 
 ---
