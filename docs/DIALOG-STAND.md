@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 17.04.26 – **Vereinsmuster: VK2-Rundgang beim Einstieg** – **`TenantContext`:** Pfade **`/projects/vk2/*`** = **`vk2`** auf der Plattform + **`syncStorageFromUrl`** schreibt **`k2-admin-context`** (vorher oft **K2** → **`tenant.isVk2`** false → kein Auto-Öffnen). **`Vk2AdminLeitfadenModal`:** kein vollständiger Reset bei **`name`/`vorname`-Wechsel** (nur Mount + Schritt-Clamp bei **`max`**). Test **`tenantVk2ProjectPath.test.ts`**. **Commit:** _(nach Push)_ ✅ GitHub. **Nächster Schritt:** **ök2-Admin-Rundgang** analog.
+
+---
+
 **Letzter Stand:** 17.04.26 – **VK2 Admin-Rundgang global:** **`Vk2AdminLeitfadenHost`** in **`App.tsx`** (über Routen hinweg sichtbar); **`vk2AdminLeitfadenStorage`** (Session `vk2-admin-rundgang-sichtbar`, Event); **Auto-Öffnen** bei Plattform + VK2-Kontext + nicht `vk2-admin-leitfaden-abgeschlossen`; Hub-Button **`openVk2AdminRundgangGlobally`**; **Später** = minimieren (nicht mehr „fertig“). Modal aus **`ScreenshotExportAdmin`** entfernt. Test **`vk2AdminLeitfadenStorage.test.ts`**. **Commit:** **`f6da511b`** ✅ GitHub. **Nächster Schritt:** **ök2-Admin-Rundgang** analog.
 
 ---
@@ -47,9 +51,9 @@
 **Letzter Stand:** 16.04.26 – **Huber-Leitfaden: inhaltlich durchgängig** – Analyse: Startseite **Kacheln** vs **reduzierte Leiste**, **Events/Kalender** = Leiste **zwei** Einträge + **Subnav** unter der Leiste; **Geschichten/Gedenkort** = **zwei** Menüpunkte, Link-Schritt nur Geschichten. Texte in **`FamilieMusterHuberLeitfaden`**, Drehbuch **`10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md`** Phase 3 ergänzt. **Tests** grün. **Commit:** **`5249866e`** ✅ GitHub
 
 ---
-**Was wir JETZT tun:** **ök2-Admin-Rundgang** analog VK2 (globaler Host, Sheet, Schritte, `data-leitfaden-focus`, nur Plattform + `tenant.isOeffentlich`).
+**Was wir JETZT tun:** **ök2-Admin-Rundgang** analog VK2 (globaler Host, Sheet, Schritte, `data-leitfaden-focus`, nur Plattform + `tenant.isOeffentlich`). **VK2 Vereinsmuster-Einstieg** (`/projects/vk2/*` = Mandant vk2, Rundgang stabil) erledigt.
 
-**Einordnung:** VK2 Admin-Rundgang = Hub + Modal + Fokus-Keys; ök2 als nächster Strang (Konzept ggf. **`KONZEPT-ADMIN-RUNDGANG-OEK2-VK2.md`**).
+**Einordnung:** VK2 Admin-Rundgang = Hub + Modal + Fokus-Keys + Tenant-Pfad; ök2 als nächster Strang (Konzept ggf. **`KONZEPT-ADMIN-RUNDGANG-OEK2-VK2.md`**).
 
 ---
 

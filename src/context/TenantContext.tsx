@@ -14,6 +14,8 @@ import { isPlatformInstance } from '../config/tenantConfig'
 const ADMIN_CONTEXT_KEY = 'k2-admin-context'
 /** APf-Projekt „K2 Galerie“: gleiche ?context=-Logik wie /admin (nur Plattform-Instanz). */
 const K2_GALERIE_PROJECT_PREFIX = '/projects/k2-galerie'
+/** Vereinsplattform (Vereinsmuster): eigene Projekt-Routen – immer VK2 auf der Plattform (wie ?context=vk2 auf /admin). */
+const VK2_PROJECT_PREFIX = '/projects/vk2'
 
 export type AdminTenantId = 'k2' | 'oeffentlich' | 'vk2'
 
@@ -42,7 +44,7 @@ function getDynamicTenantIdFromUrl(search: string): string | null {
 }
 
 /** Liest tenant aus URL (?context=) und sessionStorage. URL hat Vorrang bei /admin und bei /projects/k2-galerie/* (z. B. Flyer A3 aus neuem Tab – sonst bleibt tenantId auf K2 bis zum nächsten Render). Nur auf Plattform: oeffentlich/vk2; sonst K2. */
-function deriveTenantId(pathname: string, search: string): AdminTenantId {
+export function deriveTenantId(pathname: string, search: string): AdminTenantId {
   const onPlatform = isPlatformInstance()
   const params = new URLSearchParams(search || '')
   const raw = params.get('context')
@@ -71,6 +73,10 @@ function deriveTenantId(pathname: string, search: string): AdminTenantId {
     if (u !== null) return u
     return getTenantFromStorage()
   }
+  if (pathname.startsWith(VK2_PROJECT_PREFIX)) {
+    if (!onPlatform) return 'k2'
+    return 'vk2'
+  }
   return getTenantFromStorage()
 }
 
@@ -97,6 +103,10 @@ function syncStorageFromUrl(pathname: string, search: string): void {
       if (ctx === 'oeffentlich') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'oeffentlich')
       else if (ctx === 'vk2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'vk2')
       else if (ctx === 'k2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'k2')
+      return
+    }
+    if (pathname.startsWith(VK2_PROJECT_PREFIX)) {
+      sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'vk2')
     }
   } catch (_) {}
 }

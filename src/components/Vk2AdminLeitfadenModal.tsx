@@ -159,8 +159,9 @@ export function Vk2AdminLeitfadenModal({ name, onDismiss }: Props) {
     beendeGuideFlow()
   }, [])
 
+  // Einmal beim Mount: Bounds/Minimiert aus Session – nicht bei jeder name-Änderung (URL/?vorname),
+  // sonst wirkt der Rundgang wie „schließt wieder“ (Schritt 0, Minimiert neu gelesen).
   useEffect(() => {
-    setSchritt(0)
     try {
       setMinimized(sessionStorage.getItem(SS_VK2_ADMIN_MIN) === '1')
     } catch {
@@ -168,7 +169,11 @@ export function Vk2AdminLeitfadenModal({ name, onDismiss }: Props) {
     }
     const saved = readBoundsFromSession()
     setBounds(saved ?? null)
-  }, [name])
+  }, [])
+
+  useEffect(() => {
+    setSchritt((prev) => Math.min(prev, max))
+  }, [max])
 
   useEffect(() => {
     const onResize = () => {
