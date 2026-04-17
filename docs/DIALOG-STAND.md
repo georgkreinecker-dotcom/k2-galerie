@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 16.04.26 (Abend) – **Session-Ende:** Lokaler Stand **Plattform-Rundgang ök2/VK2** (Hosts, Schritte, Storage, **`mobileUiHelpers`**, Anpassungen **App/TenantContext/Galerie**), Konzept **`docs/KONZEPT-ADMIN-RUNDGANG-OEK2-VK2.md`**, Doku-Updates – **Tests + Build grün**, **commit + push**. **Commit:** _(Hash nach Push eintragen)_ ✅ GitHub
+**Letzter Stand:** 16.04.26 (Abend) – **Session-Ende:** Lokaler Stand **Plattform-Rundgang ök2/VK2** (Hosts, Schritte, Storage, **`mobileUiHelpers`**, Anpassungen **App/TenantContext/Galerie**), Konzept **`docs/KONZEPT-ADMIN-RUNDGANG-OEK2-VK2.md`**, Doku-Updates – **Tests + Build grün**, **commit + push**. **Commit:** **`b0fbd0bb`** ✅ GitHub
 
 ---
 
