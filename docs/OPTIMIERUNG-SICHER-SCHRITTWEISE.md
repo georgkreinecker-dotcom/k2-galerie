@@ -106,6 +106,28 @@ Wenn ein Schritt **eine dieser Grenzen** berührt: **stoppen**, nur mit **expliz
 | 2.2 | Bilder: komprimieren / WebP wo sichtbar gleichwertig; **immer** visuell prüfen. | **Original behalten** (Kopie/Backup), bis die neue Version in der App geprüft ist; Git-Commit vorher sinnvoll. |
 | 2.3 | Doppelte/nutzlose Kopien entfernen (nach `grep`/Suche im Repo). | Keine gelöschte Datei, die noch von einer Route importiert wird. |
 
+**Priorität „Nutzer spüren“:** Zuerst **Medien, die beim Seitenaufruf geladen werden** (Videos, große Bilder auf Willkommen/Galerie-Karte), nicht nur Repo-Größe.
+
+### Messung Phase 2.1 (Analyse – 16.04.26)
+
+**Größe gesamt:** `public/` ca. **129M** (`du -sh public`).
+
+**Größte Einzeldateien (Auszug):**
+
+| Datei(en) | Größe (ca.) | Nutzer-Relevanz |
+|-----------|-------------|----------------|
+| `img/k2/virtual-tour.mp4`, `img/oeffentlich/virtual-tour.mp4` | je **~19 MB** | **Hoch** – Virtueller Rundgang / Galerie, Fallback-URLs in `GaleriePage`, `VirtuellerRundgangPage`, Blob-Upload-Pfade |
+| `video/entdecken-eingangstor.mp4` | **~8 MB** | **Hoch** – Standard-Hero Entdecken (`ENTDECKEN_HERO_DEFAULT_PATH`) |
+| `img/k2/masterflyer-k2-seite1.png` | **~2,5 MB** | Mittel – Datei vorhanden; viele Verweise nutzen **`masterflyer-k2-a5-seite1.png`** (eigene Datei prüfen) |
+| Willkommen-/Galerie-**JPG** (k2/oeffentlich) | **~1,1–1,6 MB** | Mittel – erste Sicht auf der Galerie |
+| Viele `gallery-data.json.backup.*` unter `public/` | je **~1,3 MB** | **Keine** – im Code **keine** Referenz; dienen nicht der Anzeige. Teilweise **gitignored**; **zwei** ältere Dateien waren irrtümlich noch **im Git** → **Entfernung aus dem Repo** (Deploy etwas schlanker, keine Funktionsänderung). |
+
+**Nächste Schritte mit spürbarem Effekt (ohne Risiko für Pfade):**
+
+1. **Videos:** Mit Ziel **kleinere MP4** (z. B. `ffmpeg`, bitrate/Auflösung) – **immer** Original aufbewahren (backupmicro/Kopie), in der App **einmal** visuell prüfen (Rundgang, Entdecken).
+2. **Bilder:** JPEG stärker komprimieren oder **WebP** + Fallback nur wenn überall getestet; Original behalten bis Freigabe.
+3. **Bundle (Phase 3):** Erst nach Asset-Baseline erneut `npm run build` – Chunks mit Vergleich zur Phase-0-Notiz.
+
 **Stop, wenn:** Ein Handbuch oder eine Seite fehlt – sofort zurück auf letzten grünen Stand.
 
 ---
@@ -158,4 +180,4 @@ Wenn ein Schritt **eine dieser Grenzen** berührt: **stoppen**, nur mit **expliz
 - `docs/KRITISCHE-ABLAEUFE.md` – was nicht gebrochen werden darf  
 - `.cursor/rules/eiserne-regel-groessere-aenderung-kein-chaos.mdc` – vor großen Eingriffen  
 
-**Stand:** 16.04.26 – Phase-0-Baseline gemessen; Phase 1.1 `git gc` dokumentiert (`.git` 1.5G → 1.4G); Regel **Kein Kaputtmachen / Wiederherstellung** ergänzt.
+**Stand:** 16.04.26 – Phase-0-Baseline; Phase 1.1 `git gc`; **Phase 2.1** Nutzer-priorisierte Analyse (`public/`, Videos zuerst); zwei obsolete `gallery-data.json.backup.*` aus dem Repo entfernt.

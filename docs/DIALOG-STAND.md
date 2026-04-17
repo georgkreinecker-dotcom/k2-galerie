@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **Sichere Optimierung** – **Phase 2 vorbereiten** (`public/`: größte Dateien, Referenz-`grep`, keine Löschung ohne Rückweg) laut **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`**. Phase 1.1 (`git gc`) ist dokumentiert.  
-**Einordnung:** Stabilität vor Byte-Ersparnis; bei Zweifel nicht ändern.
+**Was wir JETZT tun:** **Optimierung nutzerwirksam** – **Phase 2.2/2.3** nur mit **Backup + visueller Prüfung:** vor allem **MP4** (Rundgang ~19 MB, Entdecken ~8 MB), dann große **JPG/PNG**; siehe **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`** Phase 2.1.  
+**Einordnung:** Was Besucher beim Laden spüren – nicht `.git` weiter optimieren.
+
+---
+
+**Letzter Stand:** 16.04.26 – **Optimierung Phase 2.1 (Nutzer-Fokus)** – Analyse **`public/`** in **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`**; zwei obsolete **`gallery-data.json.backup.*`** aus dem **Repo** entfernt (~1,1 MB weniger im Deploy, keine Referenzen). Nächster Schritt: **Videos/Bilder** komprimieren mit Original-Backup. **Commit:** _(nach Push)_ ✅ GitHub
 
 ---
 
