@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 17.04.26 – **Optimierung Phase 0 (Baseline)** – Messung in **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`** (`du`, größte `public/`-Dateien, Test/Build-Referenz, Chunk-Auszug). **Commit:** _(nach Push)_ ✅ GitHub
+**Letzter Stand:** 17.04.26 – **Optimierung Phase 0 (Baseline)** – Messung in **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`** (`du`, größte `public/`-Dateien, Test/Build-Referenz, Chunk-Auszug). **Commit:** **`24f377b1`** ✅ GitHub
 
 ---
 
