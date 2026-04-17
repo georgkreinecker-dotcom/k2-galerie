@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 17.04.26 – **VK2 Admin-Rundgang startet wieder** – **`/mein-bereich?context=vk2`** wurde in **`deriveTenantId`** / **`syncStorageFromUrl`** wie **`/admin`** behandelt (vorher nur **`getTenantFromStorage()`** → oft **K2** → **`tenant.isVk2` false** → kein Auto-Öffnen). Test **`tenantVk2ProjectPath`** ergänzt. **Commit:** _(nach Push)_
+
+---
+
 **Letzter Stand:** 17.04.26 – **QS: Schnelle lokale Spur** – **`npm run test:changed`**, **`npm run qs:local`** (= geänderte Tests + `build:vercel`); **Vercel** führt **`npm run build`** weiterhin aus (volle Suite). Regeln **`qs-standard-vor-commit`**, **`session-start-aufwaermen`**, Doku **`SERVICE-ARBEIT-DATEN-TESTS.md`**. **Commit:** **`cfdb7815`** ✅ GitHub
 
 ---

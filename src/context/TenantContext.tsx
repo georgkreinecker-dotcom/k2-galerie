@@ -43,7 +43,7 @@ function getDynamicTenantIdFromUrl(search: string): string | null {
   }
 }
 
-/** Liest tenant aus URL (?context=) und sessionStorage. URL hat Vorrang bei /admin und bei /projects/k2-galerie/* (z. B. Flyer A3 aus neuem Tab – sonst bleibt tenantId auf K2 bis zum nächsten Render). Nur auf Plattform: oeffentlich/vk2; sonst K2. */
+/** Liest tenant aus URL (?context=) und sessionStorage. URL hat Vorrang bei /admin, /mein-bereich und bei /projects/k2-galerie/* (z. B. Flyer A3 aus neuem Tab – sonst bleibt tenantId auf K2 bis zum nächsten Render). Nur auf Plattform: oeffentlich/vk2; sonst K2. */
 export function deriveTenantId(pathname: string, search: string): AdminTenantId {
   const onPlatform = isPlatformInstance()
   const params = new URLSearchParams(search || '')
@@ -63,7 +63,7 @@ export function deriveTenantId(pathname: string, search: string): AdminTenantId 
     return null
   }
 
-  if (pathname === '/admin') {
+  if (pathname === '/admin' || pathname === '/mein-bereich') {
     const u = fromUrlContext()
     if (u !== null) return u
     return 'k2'
@@ -92,7 +92,7 @@ function syncStorageFromUrl(pathname: string, search: string): void {
     const params = new URLSearchParams(search || '')
     const raw = params.get('context')
     const ctx = raw != null ? raw.toLowerCase().trim() : null
-    if (pathname === '/admin') {
+    if (pathname === '/admin' || pathname === '/mein-bereich') {
       if (ctx === 'oeffentlich') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'oeffentlich')
       else if (ctx === 'vk2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'vk2')
       else if (ctx === 'k2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'k2')

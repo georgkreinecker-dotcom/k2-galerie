@@ -15,4 +15,8 @@ describe('deriveTenantId – VK2-Projektpfad', () => {
     expect(deriveTenantId('/projects/vk2/galerie', '')).toBe('vk2')
     expect(deriveTenantId('/projects/vk2/einstieg', '?x=1')).toBe('vk2')
   })
+
+  it('liefert vk2 für /mein-bereich?context=vk2 (Einstieg Galerie → Admin, VK2-Admin-Rundgang)', () => {
+    expect(deriveTenantId('/mein-bereich', '?context=vk2')).toBe('vk2')
+  })
 })
