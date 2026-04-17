@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 16.04.26 – **Optimierung Phase 2.1 (Nutzer-Fokus)** – Analyse **`public/`** in **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`**; zwei obsolete **`gallery-data.json.backup.*`** aus dem **Repo** entfernt (~1,1 MB weniger im Deploy, keine Referenzen). Nächster Schritt: **Videos/Bilder** komprimieren mit Original-Backup. **Commit:** _(nach Push)_ ✅ GitHub
+**Letzter Stand:** 16.04.26 – **Optimierung Phase 2.1 (Nutzer-Fokus)** – Analyse **`public/`** in **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`**; zwei obsolete **`gallery-data.json.backup.*`** aus dem **Repo** entfernt (~1,1 MB weniger im Deploy, keine Referenzen). Nächster Schritt: **Videos/Bilder** komprimieren mit Original-Backup. **Commit:** **`e4abbc0d`** ✅ GitHub
 
 ---
 
