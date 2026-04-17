@@ -83,6 +83,7 @@ import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUST
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import { getStoryForPr } from '../src/utils/prStory'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
+import { Vk2AdminLeitfadenModal } from '../src/components/Vk2AdminLeitfadenModal'
 import { getPageTexts, setPageTexts, defaultPageTexts, getGaleriePageTextsBaseline, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
 import {
@@ -2111,6 +2112,9 @@ function ScreenshotExportAdmin(props?: AdminProps) {
    * Kein Guide-Balken im APf/Admin-Alltag – nur echter Fremdenblick in der öffentlichen Galerie.
    */
   const showAdminGuideBalken = false
+
+  /** VK2 Plattform: Admin-Rundgang (Sheet wie Galerie-Leitfaden) */
+  const [vk2AdminRundgangOpen, setVk2AdminRundgangOpen] = useState(false)
 
   // Direktaufruf Admin (ök2/VK2): bewusst kein Auto-Start mehr (Guide nur im Fremdenblick)
   React.useEffect(() => {
@@ -15267,6 +15271,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         .admin-hub-karte:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
                         .admin-hub-karte:active { transform: translateY(-1px); }
                       `}</style>
+                      <div {...(tenant.isVk2 ? { 'data-leitfaden-focus': 'hub-intro' as const } : {})}>
                       <h2 style={{ fontSize: 'clamp(1.2rem, 2.5vw, 1.5rem)', fontWeight: 700, color: s.text, margin: '0 0 0.25rem' }}>
                         Was möchtest du heute tun?
                       </h2>
@@ -15278,9 +15283,15 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         </span>
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
                           <button type="button" onClick={() => openHandbuchInFenster(getAdminReturnUrl(activeTab, eventplanSubTab), tenant.isVk2 ? VK2_HANDBUCH_ROUTE : undefined)} style={{ color: s.accent, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.2rem 0.4rem', borderRadius: '6px', background: `${s.accent}12`, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit' }} title="Handbuch in eigenem Fenster öffnen – zum Zoomen und neben Einstellungen mitlesen">📖 Handbuch</button>
+                          {tenant.isVk2 && isPlatformInstance() ? (
+                            <button type="button" onClick={() => setVk2AdminRundgangOpen(true)} style={{ color: s.accent, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.2rem 0.4rem', borderRadius: '6px', background: `${s.accent}18`, border: '1px solid rgba(192, 86, 42, 0.35)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 700 }} title="Kurz durch den Admin – Fokus auf die Kacheln">
+                              🧭 Admin-Rundgang
+                            </button>
+                          ) : null}
                           <Link to="#" onClick={(e) => { e.preventDefault(); setActiveTab('einstellungen'); window.scrollTo({ top: 200, behavior: 'smooth' }); }} style={{ color: s.accent, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.2rem 0.4rem', borderRadius: '6px', background: `${s.accent}12` }} title="Einstellungen">⚙️ Einstellungen</Link>
                         </span>
                       </p>
+                      </div>
                       {/* Zwei Spalten: links Werke/Galerie gestalten/Einstellungen/Schritt, rechts Kassa/Events/Presse – zeilenweise gefüllt */}
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'clamp(0.75rem, 2vw, 1rem)', maxWidth: '900px' }}>
                         {(() => {
@@ -15314,6 +15325,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                             )
                             return (
                           <button key={b.tab} type="button" className="admin-hub-karte"
+                            {...(tenant.isVk2 ? { 'data-leitfaden-focus': `hub-${b.tab}` as const } : {})}
                             onClick={() => openHubTab(b.tab)}
                             style={{
                               padding: mainPad,
@@ -15341,7 +15353,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 })()}
 
                 {/* Trennlinie vor Werke-Inhalt */}
-                <div id="admin-werke-inhalt" style={{ margin: 'clamp(2rem, 5vw, 3rem) 0 clamp(1rem, 3vw, 1.5rem)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div id="admin-werke-inhalt" {...(tenant.isVk2 ? { 'data-leitfaden-focus': 'werke-bereich' as const } : {})} style={{ margin: 'clamp(2rem, 5vw, 3rem) 0 clamp(1rem, 3vw, 1.5rem)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <div style={{ flex: 1, height: 1, background: `${s.accent}22` }} />
                   <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>🎨 {tenant.isVk2 ? 'Vereinsmitglieder' : 'Werke hinzufügen und bearbeiten'}</span>
                   <div style={{ flex: 1, height: 1, background: `${s.accent}22` }} />
@@ -29663,6 +29675,13 @@ ${name}`
       {/* ─── Nahtloser Guide-Begleiter im Admin ─────────────────────────────── */}
       {/* Erscheint wenn User über Guide-Flow hereinkam – begleitet bis Schritt 1 erledigt */}
       {/* Schwarzer Vollbild-Guide abgeschaltet – nur k2GuideFlowStorage + grüner Balken oben */}
+
+      {vk2AdminRundgangOpen && tenant.isVk2 && isPlatformInstance() ? (
+        <Vk2AdminLeitfadenModal
+          name={guideVorname.trim() || 'Besucher'}
+          onDismiss={() => setVk2AdminRundgangOpen(false)}
+        />
+      ) : null}
 
     </div>
   )

@@ -6,6 +6,8 @@ export const HTML_LEITFADEN_FOCUS_ATTR = 'data-k2-familie-leitfaden-focus'
 export const HTML_OEK2_LEITFADEN_FOCUS_ATTR = 'data-oek2-leitfaden-focus'
 /** VK2 Vereinsgalerie-Rundgang (Plattform): gleiche Ziele, eigenes html-Attribut für Outline-CSS. */
 export const HTML_VK2_LEITFADEN_FOCUS_ATTR = 'data-vk2-leitfaden-focus'
+/** VK2 Admin-Rundgang (Plattform): Fokus auf Hub-Kacheln und Werke-Bereich. */
+export const HTML_VK2_ADMIN_LEITFADEN_FOCUS_ATTR = 'data-vk2-admin-leitfaden-focus'
 
 export function setLeitfadenFocusOnDocument(
   focusKey: string | null | undefined,
@@ -16,6 +18,7 @@ export function setLeitfadenFocusOnDocument(
   el.removeAttribute(HTML_LEITFADEN_FOCUS_ATTR)
   el.removeAttribute(HTML_OEK2_LEITFADEN_FOCUS_ATTR)
   el.removeAttribute(HTML_VK2_LEITFADEN_FOCUS_ATTR)
+  el.removeAttribute(HTML_VK2_ADMIN_LEITFADEN_FOCUS_ATTR)
   if (!focusKey) {
     return
   }

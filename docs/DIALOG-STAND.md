@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 17.04.26 – **VK2 Admin-Rundgang (Plattform):** Button **Admin-Rundgang** im VK2-Admin-Hub; **`Vk2AdminLeitfadenModal`** + **`vk2AdminLeitfadenSteps`**; Fokus **`data-leitfaden-focus`** auf Intro, Hub-Kacheln (`hub-*`), Trennlinie **Vereinsmitglieder**; **`HTML_VK2_ADMIN_LEITFADEN_FOCUS_ATTR`** in **`familieLeitfadenFocus`**; Fix **`SS_VK2_ADMIN_MIN`** im Modal. Test **`vk2AdminLeitfadenSteps.test.ts`**. **Nächster Schritt:** gleiches Muster für **ök2-Admin** prüfen/umsetzen.
+
+---
+
 **Letzter Stand:** 16.04.26 (Abend) – **Session-Ende:** Entdecken (Weg K2 Familie), K2-Familie Muster-Nav, Präsentationsmappe Einstiegsadressen, Vertrieb-Doku – **Tests + Build** grün, **Commit:** **`8655bd5c`** ✅ GitHub. **Morgen:** Plattform **VK2-Rundgang** auf Vercel kurz prüfen.
 
 ---
@@ -35,9 +39,9 @@
 **Letzter Stand:** 16.04.26 – **Huber-Leitfaden: inhaltlich durchgängig** – Analyse: Startseite **Kacheln** vs **reduzierte Leiste**, **Events/Kalender** = Leiste **zwei** Einträge + **Subnav** unter der Leiste; **Geschichten/Gedenkort** = **zwei** Menüpunkte, Link-Schritt nur Geschichten. Texte in **`FamilieMusterHuberLeitfaden`**, Drehbuch **`10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md`** Phase 3 ergänzt. **Tests** grün. **Commit:** **`5249866e`** ✅ GitHub
 
 ---
-**Was wir JETZT tun:** Optional: **VK2-Galerie** auf **Plattform-Host** ohne `?vorschau=1` / ohne Admin – **Rundgang**, Fokus-Highlights, Schließen kurz prüfen. Entdecken/K2-Familie-Muster/Präsentation: im Commit **`8655bd5c`** auf GitHub.
+**Was wir JETZT tun:** **ök2-Admin-Rundgang** analog VK2 (Sheet, Schritte, `data-leitfaden-focus`, nur Plattform + `tenant.isOeffentlich`).
 
-**Einordnung:** Plattform-Rundgang **nur Guide** (Sheet, Schritte, Session/Keys für Bounds) – **keine** Galerie-Logik geändert. Konzept **`KONZEPT-PLATTFORM-RUNDGANG-OEK2-VK2.md`** weiterhin Referenz für nächste Phasen (Hover-Hints …).
+**Einordnung:** VK2 Admin-Rundgang = Hub + Modal + Fokus-Keys; ök2 als nächster Strang (Konzept ggf. **`KONZEPT-ADMIN-RUNDGANG-OEK2-VK2.md`**).
 
 ---
 
