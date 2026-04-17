@@ -20,6 +20,21 @@ Wenn ein Schritt **eine dieser Grenzen** berührt: **stoppen**, nur mit **expliz
 
 ---
 
+## Kein Kaputtmachen – Wiederherstellung muss sicher sein (alle Phasen)
+
+**Grundsatz:** Optimierung ist **nachrangig**. Lieber nichts ändern, als etwas zu riskieren, das wir **nicht** zuverlässig zurückdrehen können.
+
+**Vor jeder Änderung, die Dateien löscht, ersetzt oder Pfade bricht:**
+
+1. **Wiederherstellbarkeit klären:** Wie kommen wir **genau** zum heutigen Stand zurück? (z. B. `git revert` / vorheriger Commit, Kopie der Originaldatei **außerhalb** des Repos, Vollbackup aus der App – siehe `docs/KRITISCHE-ABLAEUFE.md` §11 Backup.)
+2. **Kein „mal eben“:** Große Medien in `public/` **ersetzen** nur, wenn eine **Kopie** des Originals existiert (z. B. Ordner-Backup auf **backupmicro** oder Duplikat mit anderem Namen), bis die neue Version verifiziert ist.
+3. **Git:** Sinnvoller Zwischenstand auf **`main`** (oder klar benannter Branch): **ein** fokussierter Commit pro Optimierungsschritt → bei Problemen **revert** oder zurück auf diesen Commit.
+4. **Unklar, ob Referenzen im Repo treffen:** **Nicht** löschen; erst `grep`/Suche, ggf. Georg kurz einbeziehen.
+
+**Wenn Wiederherstellung nicht zweifelsfrei möglich ist:** Schritt **nicht** ausführen.
+
+---
+
 ## Phase 0 – Baseline (einmal, risikolos)
 
 1. **Größen-Snapshot** (nur lesen):  
@@ -67,10 +82,12 @@ Wenn ein Schritt **eine dieser Grenzen** berührt: **stoppen**, nur mit **expliz
 
 ## Phase 2 – Statische Assets (`public/`) – geringes Risiko für Logik
 
+**Vor Phase 2:** Abschnitt **„Kein Kaputtmachen – Wiederherstellung muss sicher sein“** lesen. Ohne nachvollziehbaren Rückweg **keine** Ersetzung/Löschung.
+
 | Schritt | Maßnahme | Sicherheit |
 |--------|-----------|------------|
 | 2.1 | Größte Bilder identifizieren (PDFs/Videos prüfen: brauchen die alle Vollauflösung?). | Nur Dateien ersetzen, **keine** Pfad-Umbrüche ohne Suche nach Verweisen. |
-| 2.2 | Bilder: komprimieren / WebP wo sichtbar gleichwertig; **immer** visuell prüfen. | Backup oder Git-Stand vorher. |
+| 2.2 | Bilder: komprimieren / WebP wo sichtbar gleichwertig; **immer** visuell prüfen. | **Original behalten** (Kopie/Backup), bis die neue Version in der App geprüft ist; Git-Commit vorher sinnvoll. |
 | 2.3 | Doppelte/nutzlose Kopien entfernen (nach `grep`/Suche im Repo). | Keine gelöschte Datei, die noch von einer Route importiert wird. |
 
 **Stop, wenn:** Ein Handbuch oder eine Seite fehlt – sofort zurück auf letzten grünen Stand.
@@ -125,4 +142,4 @@ Wenn ein Schritt **eine dieser Grenzen** berührt: **stoppen**, nur mit **expliz
 - `docs/KRITISCHE-ABLAEUFE.md` – was nicht gebrochen werden darf  
 - `.cursor/rules/eiserne-regel-groessere-aenderung-kein-chaos.mdc` – vor großen Eingriffen  
 
-**Stand:** 17.04.26 – Phase-0-Baseline gemessen und oben festgehalten; Verhalten der App dabei nicht geändert.
+**Stand:** 17.04.26 – Phase-0-Baseline gemessen; Regel **Kein Kaputtmachen / Wiederherstellung** ergänzt.

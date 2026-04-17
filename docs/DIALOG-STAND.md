@@ -1,7 +1,7 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **Sichere Optimierung – Phase 1 oder 2** nur bei Bedarf: **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`** (Phase 0 erfüllt: Messwerte + Test/Build-Referenz in derselben Datei).  
-**Einordnung:** Phase 0 = nur dokumentiert, kein Produktcode geändert.
+**Was wir JETZT tun:** **Sichere Optimierung** weiter nach **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`** – **Kein Kaputtmachen:** Wiederherstellung vor riskanten Schritten; Phase 2 nur mit Backup/Kopie und Referenz-Check.  
+**Einordnung:** Stabilität vor Byte-Ersparnis; bei Zweifel nicht ändern.
 
 ---
 
