@@ -35,7 +35,7 @@
 **Letzter Stand:** 16.04.26 – **Huber-Leitfaden: inhaltlich durchgängig** – Analyse: Startseite **Kacheln** vs **reduzierte Leiste**, **Events/Kalender** = Leiste **zwei** Einträge + **Subnav** unter der Leiste; **Geschichten/Gedenkort** = **zwei** Menüpunkte, Link-Schritt nur Geschichten. Texte in **`FamilieMusterHuberLeitfaden`**, Drehbuch **`10-HUBER-MUSTER-RUNDGANG-DREHBUCH.md`** Phase 3 ergänzt. **Tests** grün. **Commit:** **`5249866e`** ✅ GitHub
 
 ---
-**Was wir JETZT tun:** Optional: **VK2-Galerie** auf **Plattform-Host** ohne `?vorschau=1` / ohne Admin – **Rundgang**, Fokus-Highlights, Schließen kurz prüfen. Offen lokal (nicht im Commit **`2449b3f7`**): Entdecken/K2-Familie-Layout/Präsentationsmappe – separat committen oder verwerfen.
+**Was wir JETZT tun:** Optional: **VK2-Galerie** auf **Plattform-Host** ohne `?vorschau=1` / ohne Admin – **Rundgang**, Fokus-Highlights, Schließen kurz prüfen. Entdecken/K2-Familie-Muster/Präsentation: im Commit **`8655bd5c`** auf GitHub.
 
 **Einordnung:** Plattform-Rundgang **nur Guide** (Sheet, Schritte, Session/Keys für Bounds) – **keine** Galerie-Logik geändert. Konzept **`KONZEPT-PLATTFORM-RUNDGANG-OEK2-VK2.md`** weiterhin Referenz für nächste Phasen (Hover-Hints …).
 
