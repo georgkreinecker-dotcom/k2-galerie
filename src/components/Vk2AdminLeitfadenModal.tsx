@@ -13,19 +13,30 @@ import {
 } from '../utils/familieLeitfadenFocus'
 import { renderLeitfadenText } from './guidedLeitfaden/renderLeitfadenMarkdownLite'
 import { buildVk2AdminLeitfadenSchritte } from './guidedLeitfaden/vk2AdminLeitfadenSteps'
-import {
-  clampFamilieLeitfadenBounds,
-  type FamilieLeitfadenPanelBounds,
-} from './FamilieMusterHuberLeitfaden'
+import { type FamilieLeitfadenPanelBounds } from './FamilieMusterHuberLeitfaden'
+
+const VK2_ADMIN_CLAMP_MAX_W = 720
+const VK2_ADMIN_CLAMP_MAX_H = 800
+
+/** Etwas großzügiger als der Standard-Leitfaden – VK2-Admin-Rundgang soll präsenter sein. */
+function clampVk2AdminBounds(b: FamilieLeitfadenPanelBounds): FamilieLeitfadenPanelBounds {
+  if (typeof window === 'undefined') return b
+  const maxW = Math.min(VK2_ADMIN_CLAMP_MAX_W, window.innerWidth - 8)
+  const maxH = Math.min(window.innerHeight * 0.9, VK2_ADMIN_CLAMP_MAX_H)
+  const MIN_W = 280
+  const MIN_H = 220
+  const width = Math.min(maxW, Math.max(MIN_W, b.width))
+  const height = Math.min(maxH, Math.max(MIN_H, b.height))
+  const left = Math.min(window.innerWidth - width - 4, Math.max(4, b.left))
+  const top = Math.min(window.innerHeight - height - 4, Math.max(4, b.top))
+  return { left, top, width, height }
+}
 
 const t = adminTheme
 
 const LS_VK2_ADMIN_LEITFADEN_DONE = 'vk2-admin-leitfaden-abgeschlossen'
 const SS_VK2_ADMIN_BOUNDS = 'vk2-admin-leitfaden-bounds'
 const SS_VK2_ADMIN_MIN = 'vk2-admin-leitfaden-minimized'
-
-const MAX_W_CAP = 560
-const MAX_H_VH = 0.88
 
 function readBoundsFromSession(): FamilieLeitfadenPanelBounds | null {
   try {
@@ -40,7 +51,7 @@ function readBoundsFromSession(): FamilieLeitfadenPanelBounds | null {
     ) {
       return null
     }
-    return clampFamilieLeitfadenBounds({ left: p.left, top: p.top, width: p.width, height: p.height })
+    return clampVk2AdminBounds({ left: p.left, top: p.top, width: p.width, height: p.height })
   } catch {
     return null
   }
@@ -49,7 +60,7 @@ function readBoundsFromSession(): FamilieLeitfadenPanelBounds | null {
 function writeBoundsToSession(b: FamilieLeitfadenPanelBounds | null) {
   try {
     if (b === null) sessionStorage.removeItem(SS_VK2_ADMIN_BOUNDS)
-    else sessionStorage.setItem(SS_VK2_ADMIN_BOUNDS, JSON.stringify(clampFamilieLeitfadenBounds(b)))
+    else sessionStorage.setItem(SS_VK2_ADMIN_BOUNDS, JSON.stringify(clampVk2AdminBounds(b)))
   } catch {
     /* ignore */
   }
@@ -78,6 +89,14 @@ function Vk2AdminLeitfadenKeyframes() {
         from { opacity: 0; transform: translate3d(0, 8px, 0); }
         to { opacity: 1; transform: translate3d(0, 0, 0); }
       }
+      @keyframes vk2AdminLeitfadenSpotPulse {
+        0%, 100% {
+          box-shadow: 0 0 0 5px rgba(30, 92, 181, 0.32), 0 10px 36px rgba(192, 86, 42, 0.22);
+        }
+        50% {
+          box-shadow: 0 0 0 10px rgba(30, 92, 181, 0.42), 0 14px 48px rgba(192, 86, 42, 0.3);
+        }
+      }
       .vk2-admin-leitfaden-backdrop {
         animation: vk2AdminLeitfadenBackdropIn 0.32s ease-out forwards;
       }
@@ -90,6 +109,7 @@ function Vk2AdminLeitfadenKeyframes() {
       html[data-vk2-admin-leitfaden-focus] [data-leitfaden-focus] {
         transition: outline 0.35s ease, box-shadow 0.35s ease;
       }
+      html[data-vk2-admin-leitfaden-focus="admin-hub-leiste"] [data-leitfaden-focus="admin-hub-leiste"],
       html[data-vk2-admin-leitfaden-focus="hub-intro"] [data-leitfaden-focus="hub-intro"],
       html[data-vk2-admin-leitfaden-focus="hub-werke"] [data-leitfaden-focus="hub-werke"],
       html[data-vk2-admin-leitfaden-focus="hub-design"] [data-leitfaden-focus="hub-design"],
@@ -97,10 +117,16 @@ function Vk2AdminLeitfadenKeyframes() {
       html[data-vk2-admin-leitfaden-focus="hub-katalog"] [data-leitfaden-focus="hub-katalog"],
       html[data-vk2-admin-leitfaden-focus="hub-eventplan"] [data-leitfaden-focus="hub-eventplan"],
       html[data-vk2-admin-leitfaden-focus="werke-bereich"] [data-leitfaden-focus="werke-bereich"] {
-        outline: 3px solid rgba(192, 86, 42, 0.92);
-        outline-offset: 3px;
+        position: relative;
+        z-index: 25040;
+        isolation: isolate;
+        outline: 4px solid rgba(192, 86, 42, 0.95);
+        outline-offset: 4px;
         border-radius: 12px;
-        box-shadow: 0 0 0 4px rgba(30, 92, 181, 0.12);
+        animation: vk2AdminLeitfadenSpotPulse 2.2s ease-in-out infinite;
+      }
+      html[data-vk2-admin-leitfaden-focus="admin-hub-leiste"] [data-leitfaden-focus="admin-hub-leiste"] {
+        border-radius: 0 0 18px 18px;
       }
     `}</style>
   )
@@ -146,7 +172,7 @@ export function Vk2AdminLeitfadenModal({ name, onDismiss }: Props) {
 
   useEffect(() => {
     const onResize = () => {
-      setBounds((prev) => (prev ? clampFamilieLeitfadenBounds(prev) : null))
+      setBounds((prev) => (prev ? clampVk2AdminBounds(prev) : null))
     }
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
@@ -214,7 +240,7 @@ export function Vk2AdminLeitfadenModal({ name, onDismiss }: Props) {
       const r = el.getBoundingClientRect()
       const startBounds =
         bounds ??
-        clampFamilieLeitfadenBounds({
+        clampVk2AdminBounds({
           left: r.left,
           top: r.top,
           width: r.width,
@@ -245,7 +271,7 @@ export function Vk2AdminLeitfadenModal({ name, onDismiss }: Props) {
       const r = el.getBoundingClientRect()
       const startBounds =
         bounds ??
-        clampFamilieLeitfadenBounds({
+        clampVk2AdminBounds({
           left: r.left,
           top: r.top,
           width: r.width,
@@ -274,7 +300,7 @@ export function Vk2AdminLeitfadenModal({ name, onDismiss }: Props) {
     const sb = d.startBounds
     if (d.kind === 'move') {
       setBounds(
-        clampFamilieLeitfadenBounds({
+        clampVk2AdminBounds({
           left: sb.left + dx,
           top: sb.top + dy,
           width: sb.width,
@@ -283,7 +309,7 @@ export function Vk2AdminLeitfadenModal({ name, onDismiss }: Props) {
       )
     } else {
       setBounds(
-        clampFamilieLeitfadenBounds({
+        clampVk2AdminBounds({
           left: sb.left,
           top: sb.top,
           width: sb.width + dx,
@@ -302,7 +328,7 @@ export function Vk2AdminLeitfadenModal({ name, onDismiss }: Props) {
     }
     setBounds((prev) => {
       if (!prev) return prev
-      const c = clampFamilieLeitfadenBounds(prev)
+      const c = clampVk2AdminBounds(prev)
       writeBoundsToSession(c)
       return c
     })
@@ -314,7 +340,7 @@ export function Vk2AdminLeitfadenModal({ name, onDismiss }: Props) {
       const base =
         prev ??
         (el
-          ? clampFamilieLeitfadenBounds({
+          ? clampVk2AdminBounds({
               left: el.getBoundingClientRect().left,
               top: el.getBoundingClientRect().top,
               width: el.getBoundingClientRect().width,
@@ -322,7 +348,7 @@ export function Vk2AdminLeitfadenModal({ name, onDismiss }: Props) {
             })
           : null)
       if (!base) return prev
-      const next = clampFamilieLeitfadenBounds({
+      const next = clampVk2AdminBounds({
         ...base,
         width: base.width + delta,
         height: base.height + delta * 0.6,
@@ -358,9 +384,10 @@ export function Vk2AdminLeitfadenModal({ name, onDismiss }: Props) {
     display: 'flex',
     flexDirection: 'column',
     overflow: 'hidden',
-    boxShadow: '0 -12px 48px rgba(15, 23, 42, 0.28), 0 0 0 1px rgba(255, 254, 251, 0.12) inset',
+    boxShadow:
+      '0 -16px 56px rgba(15, 23, 42, 0.38), 0 0 0 2px rgba(192, 86, 42, 0.2), 0 0 0 1px rgba(255, 254, 251, 0.12) inset',
     background: 'linear-gradient(180deg, #fffefb 0%, #faf6f0 100%)',
-    border: '1px solid rgba(192, 86, 42, 0.28)',
+    border: '1px solid rgba(192, 86, 42, 0.38)',
   }
 
   const sheetPositionStyle: CSSProperties =
@@ -381,10 +408,11 @@ export function Vk2AdminLeitfadenModal({ name, onDismiss }: Props) {
       : {
           position: 'relative',
           width: '100%',
-          maxWidth: 'min(100%, 560px)',
+          maxWidth: 'min(100%, 720px)',
           margin: '0 auto',
-          maxHeight: 'min(88vh, 720px)',
-          borderRadius: '22px 22px 0 0',
+          maxHeight: 'min(90vh, 820px)',
+          minHeight: 'min(42vh, 420px)',
+          borderRadius: '24px 24px 0 0',
           borderBottom: 'none',
           zIndex: 25001,
           ...sheetBaseStyle,
@@ -417,7 +445,7 @@ export function Vk2AdminLeitfadenModal({ name, onDismiss }: Props) {
             aria-hidden
           />
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', paddingBottom: '0.65rem', flexWrap: 'wrap' }}>
-            <p style={{ margin: 0, fontSize: '0.82rem', fontWeight: 800, letterSpacing: '0.04em', color: '#7a3418', fontFamily: t.fontHeading }}>
+            <p style={{ margin: 0, fontSize: 'clamp(0.95rem, 3.2vw, 1.05rem)', fontWeight: 800, letterSpacing: '0.04em', color: '#7a3418', fontFamily: t.fontHeading }}>
               VK2 Admin · Rundgang
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }} onPointerDown={(e) => e.stopPropagation()}>
@@ -584,7 +612,7 @@ export function Vk2AdminLeitfadenModal({ name, onDismiss }: Props) {
             id="vk2-admin-leitfaden-titel"
             style={{
               margin: '0 0 0.35rem',
-              fontSize: 'clamp(1.2rem, 4vw, 1.45rem)',
+              fontSize: 'clamp(1.35rem, 4.2vw, 1.65rem)',
               fontWeight: 800,
               color: t.text,
               fontFamily: t.fontHeading,
@@ -742,17 +770,17 @@ export function Vk2AdminLeitfadenModal({ name, onDismiss }: Props) {
             position: 'fixed',
             right: 'max(12px, env(safe-area-inset-right, 0px))',
             bottom: 'max(12px, env(safe-area-inset-bottom, 0px))',
-            zIndex: 25002,
-            padding: '0.55rem 1rem',
-            fontSize: '0.88rem',
+            zIndex: 25042,
+            padding: '0.7rem 1.25rem',
+            fontSize: 'clamp(0.92rem, 2.8vw, 1rem)',
             fontWeight: 800,
             borderRadius: 999,
-            border: '1px solid rgba(192, 86, 42, 0.45)',
-            background: 'linear-gradient(90deg, #fffefb, #faf8f5)',
+            border: '2px solid rgba(192, 86, 42, 0.55)',
+            background: 'linear-gradient(90deg, #fffefb, #f5ebe3)',
             color: '#7a3418',
             cursor: 'pointer',
             fontFamily: t.fontHeading,
-            boxShadow: '0 6px 24px rgba(15, 23, 42, 0.2)',
+            boxShadow: '0 8px 28px rgba(15, 23, 42, 0.28), 0 0 0 1px rgba(30, 92, 181, 0.12)',
           }}
         >
           Admin-Rundgang ▶
@@ -772,7 +800,7 @@ export function Vk2AdminLeitfadenModal({ name, onDismiss }: Props) {
           inset: 0,
           zIndex: 25000,
           background:
-            'linear-gradient(165deg, rgba(28, 26, 24, 0.38) 0%, rgba(30, 92, 181, 0.12) 50%, rgba(15, 23, 42, 0.45) 100%)',
+            'linear-gradient(165deg, rgba(28, 26, 24, 0.52) 0%, rgba(30, 92, 181, 0.18) 50%, rgba(15, 23, 42, 0.55) 100%)',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'flex-end',

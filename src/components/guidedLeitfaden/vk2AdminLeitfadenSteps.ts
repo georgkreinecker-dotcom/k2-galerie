@@ -21,6 +21,15 @@ export function buildVk2AdminLeitfadenSchritte(name: string): Vk2AdminLeitfadenS
         '**Kein Audio** – du liest in Ruhe. Mit **Weiter** Schritt für Schritt; **▼** minimiert nur das Fenster.',
     },
     {
+      id: 'admin-leiste',
+      titel: 'Die Leiste oben',
+      stimmung: 'Logo und Schnellzugriff.',
+      text:
+        '**Links:** **Logo** und Badge **VK2 ADMIN** – du bist im Verwaltungsbereich des Vereins.\n\n' +
+        '**Rechts:** **Unsere Mitglieder** öffnet die öffentliche Galerie-Ansicht; **Kasse** und **Buchhaltung** für den Vereinsbetrieb; die **Zahl** zeigt die **Besucherzahl** der Galerie; **Idee? Wunsch?** schickt eine Notiz ins Smart Panel; **Abmelden** beendet den Admin auf diesem Gerät.',
+      focusKey: 'admin-hub-leiste',
+    },
+    {
       id: 'hub',
       titel: 'Die Übersicht',
       stimmung: '„Was möchtest du heute tun?“',

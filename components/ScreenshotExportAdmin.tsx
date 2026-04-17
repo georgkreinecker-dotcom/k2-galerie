@@ -14853,13 +14853,16 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
       )}
 
       <div style={{ position: 'relative', zIndex: 1 }}>
-        <header style={{
+        <header
+          {...(tenant.isVk2 ? { 'data-leitfaden-focus': 'admin-hub-leiste' as const } : {})}
+          style={{
           padding: 'clamp(1rem, 3vw, 1.5rem) clamp(1.5rem, 4vw, 3rem)',
           maxWidth: '1600px',
           margin: '0 auto',
           marginBottom: 'clamp(1.5rem, 4vw, 2.5rem)',
           borderBottom: `1px solid ${s.accent}18`
-        }}>
+        }}
+        >
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
