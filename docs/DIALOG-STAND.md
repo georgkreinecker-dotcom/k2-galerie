@@ -1,5 +1,26 @@
 # Dialog-Stand
 
+**Was wir JETZT tun:** **K2 Familie Muster-Rundgang** am Handy kurz prüfen: **Neben dem Sheet tippen** klappt zu; **Zurück / Weiter / ▼** groß genug. (ök2/VK2-Leitfaden hatten dieselbe Touch-Strategie schon.)  
+**Einordnung:** Mobile Bedienung – Backdrop **`pointer-events: none`** + fehlender Außen-Tap war die Hauptursache „Fenster hängt“.
+
+---
+
+**Letzter Stand:** 17.04.26 – **K2 Familie Huber-Rundgang: Touch wie ök2/VK2** – **`FamilieMusterHuberLeitfaden`:** `touchChrome` (`max-width: 768px` / `pointer: coarse`); **Vollflächen-Button** unter dem Sheet (`z-index` 25000) → Tap außen = **`minimize`**; Header **− / + / Unten / ▼** min. **44×44**; Footer-Padding; **Resize-Ecke** 44px; Hinweistext bei Touch. **`tsc --noEmit`** grün; voller **`npm run build`** lokal bei Bedarf vor Push. **Commit:** **`78a13f8e`** ✅ GitHub
+
+---
+
+**Letzter Stand:** 17.04.26 – **VK2 Plattform-Rundgang: Willkommen ausgeklappt** – Ursache: neues `platform`-Objekt pro Host-Render → Modal las `sessionStorage` „minimiert“ wieder ein. Fix: **`useMemo`** `platformConfig` im Host; im Modal Minimiert nur noch bei **`name`** für Plattform-Rundgang synchronisieren (nicht bei jedem `platform`-Wechsel). **Tests + Build** grün. **Commit:** **`f726e143`** ✅ GitHub
+
+---
+
+**Letzter Stand:** 17.04.26 – **VK2 Rundgänge: Sichtbarkeit + Eintritt** – **`Vk2AdminLeitfadenHost`:** Anzeige **ohne** Henne-Ei mit leerem `sessionStorage` beim ersten Render – **`show`** = Plattform + **`tenant.isVk2`** + (**nicht abgeschlossen** **oder** Session nach Hub **„Admin-Rundgang“**). **`Vk2GalerieLeitfadenModal`:** **Später** = **minimieren** (vorher fälschlich wie **Fertig** → localStorage „abgeschlossen“). **`Vk2GaleriePage`:** Rundgang **nach Eintritt** öffnen, solange Galerie-Leitfaden nicht abgeschlossen. **Tests + Build** grün. **Commit:** _(nach Push)_ ✅ GitHub
+
+---
+
+**Letzter Stand:** 17.04.26 – **VK2 Admin-Rundgang auf der APf (`/dev-view`)** – **`TenantContext`:** Pfad **`/dev-view`** wie Projekt-K2-Galerie: **`?context=`** + Ableitung aus **`?page=`** (**`vk2-*`** → **vk2**, **`galerie-oeffentlich*`** → **oeffentlich**), sonst Storage; **`syncStorageFromUrl`** spiegelt das. **`DevViewPage`:** Tabwahl schreibt **`?page=`** in die URL (**replace**), damit Mandant und Rundgang (**`Vk2AdminLeitfadenHost`**) zuverlässig **`tenant.isVk2`** sehen. Tests **`tenantVk2ProjectPath`**. **Commit:** _(nach Push)_ ✅ GitHub
+
+---
+
 **Letzter Stand:** 17.04.26 – **VK2 Admin-Rundgang startet wieder** – **`/mein-bereich?context=vk2`** wurde in **`deriveTenantId`** / **`syncStorageFromUrl`** wie **`/admin`** behandelt (vorher nur **`getTenantFromStorage()`** → oft **K2** → **`tenant.isVk2` false** → kein Auto-Öffnen). Test **`tenantVk2ProjectPath`** ergänzt. **Commit:** **`9301a4e6`** ✅ GitHub
 
 ---

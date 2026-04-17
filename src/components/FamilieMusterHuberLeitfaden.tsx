@@ -290,6 +290,15 @@ export function FamilieMusterHuberLeitfadenModal({ open, onOpenChange, onAbgesch
     startBounds: FamilieLeitfadenPanelBounds
   } | null>(null)
 
+  const [touchChrome, setTouchChrome] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px), (pointer: coarse)')
+    const apply = () => setTouchChrome(mq.matches)
+    apply()
+    mq.addEventListener('change', apply)
+    return () => mq.removeEventListener('change', apply)
+  }, [])
+
   const max = FAMILIE_MUSTER_LEITFADEN_SCHRITTE.length - 1
   const istLetzter = schritt >= max
   const total = FAMILIE_MUSTER_LEITFADEN_SCHRITTE.length
@@ -334,6 +343,11 @@ export function FamilieMusterHuberLeitfadenModal({ open, onOpenChange, onAbgesch
       /* ignore */
     }
   }, [])
+
+  /** Handy: dunklen Bereich tippen = einklappen – Backdrop hat sonst pointer-events: none. */
+  const onBackdropTapDismiss = useCallback(() => {
+    minimize()
+  }, [minimize])
 
   /** Escape auch wenn Backdrop pointer-events: none (Muster-Hover-Hinweise unter dem Overlay). */
   useEffect(() => {
@@ -617,6 +631,24 @@ export function FamilieMusterHuberLeitfadenModal({ open, onOpenChange, onAbgesch
           pointerEvents: 'none',
         }}
       >
+        {touchChrome ? (
+          <button
+            type="button"
+            aria-label="Rundgang einklappen"
+            onClick={onBackdropTapDismiss}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 25000,
+              margin: 0,
+              padding: 0,
+              border: 'none',
+              background: 'transparent',
+              cursor: 'pointer',
+              pointerEvents: 'auto',
+            }}
+          />
+        ) : null}
         {bounds === null ? (
           <div
             style={{
@@ -639,6 +671,7 @@ export function FamilieMusterHuberLeitfadenModal({ open, onOpenChange, onAbgesch
             >
               <LeitfadenSheetInner
                 t={familieLeitfadenTheme}
+                touchChrome={touchChrome}
                 schritt={schritt}
                 setSchritt={setSchritt}
                 total={total}
@@ -672,6 +705,7 @@ export function FamilieMusterHuberLeitfadenModal({ open, onOpenChange, onAbgesch
           >
             <LeitfadenSheetInner
               t={familieLeitfadenTheme}
+              touchChrome={touchChrome}
               schritt={schritt}
               setSchritt={setSchritt}
               total={total}
@@ -700,6 +734,7 @@ export function FamilieMusterHuberLeitfadenModal({ open, onOpenChange, onAbgesch
 
 type LeitfadenSheetInnerProps = {
   t: typeof adminTheme
+  touchChrome: boolean
   schritt: number
   setSchritt: (n: number | ((prev: number) => number)) => void
   total: number
@@ -722,6 +757,7 @@ type LeitfadenSheetInnerProps = {
 
 function LeitfadenSheetInner({
   t,
+  touchChrome,
   schritt,
   setSchritt,
   total,
@@ -745,6 +781,12 @@ function LeitfadenSheetInner({
   const hoverHint = musterHint?.hoverHint ?? null
   const speechAvail = isFamilieMusterHintSpeechAvailable()
   const [speechOn, setSpeechOn] = useState(() => getFamilieMusterHintSpeechEnabled())
+
+  const hdrBtnSize: CSSProperties = touchChrome
+    ? { minWidth: 44, minHeight: 44, padding: 0 }
+    : { width: 32, height: 32, padding: 0 }
+  const footerBtnPad = touchChrome ? '0.65rem 1.15rem' : '0.5rem 0.95rem'
+  const footerPrimaryPad = touchChrome ? '0.65rem 1.25rem' : '0.55rem 1.15rem'
 
   /** Hover hat Vorrang; sonst Sprechertext aus Drehbuch pro Schritt. */
   useEffect(() => {
@@ -815,8 +857,7 @@ function LeitfadenSheetInner({
                     nudgeSize(-32)
                   }}
                   style={{
-                    width: 32,
-                    height: 32,
+                    ...hdrBtnSize,
                     borderRadius: 8,
                     border: '1px solid rgba(181, 74, 30, 0.35)',
                     background: '#fffefb',
@@ -825,7 +866,6 @@ function LeitfadenSheetInner({
                     cursor: 'pointer',
                     fontSize: '1rem',
                     lineHeight: 1,
-                    padding: 0,
                   }}
                 >
                   −
@@ -838,8 +878,7 @@ function LeitfadenSheetInner({
                     nudgeSize(32)
                   }}
                   style={{
-                    width: 32,
-                    height: 32,
+                    ...hdrBtnSize,
                     borderRadius: 8,
                     border: '1px solid rgba(181, 74, 30, 0.35)',
                     background: '#fffefb',
@@ -848,7 +887,6 @@ function LeitfadenSheetInner({
                     cursor: 'pointer',
                     fontSize: '1rem',
                     lineHeight: 1,
-                    padding: 0,
                   }}
                 >
                   +
@@ -862,14 +900,15 @@ function LeitfadenSheetInner({
                       resetPanelLayout()
                     }}
                     style={{
-                      padding: '0.25rem 0.5rem',
-                      fontSize: '0.72rem',
+                      padding: touchChrome ? '0.45rem 0.65rem' : '0.25rem 0.5rem',
+                      fontSize: touchChrome ? '0.78rem' : '0.72rem',
                       fontWeight: 700,
                       borderRadius: 8,
                       border: '1px solid rgba(181, 74, 30, 0.25)',
                       background: 'rgba(255, 254, 251, 0.9)',
                       color: t.muted,
                       cursor: 'pointer',
+                      minHeight: touchChrome ? 44 : undefined,
                     }}
                   >
                     Unten
@@ -883,8 +922,7 @@ function LeitfadenSheetInner({
                     minimize()
                   }}
                   style={{
-                    width: 32,
-                    height: 32,
+                    ...hdrBtnSize,
                     borderRadius: 8,
                     border: '1px solid rgba(181, 74, 30, 0.35)',
                     background: '#fffefb',
@@ -892,7 +930,6 @@ function LeitfadenSheetInner({
                     fontWeight: 700,
                     cursor: 'pointer',
                     fontSize: '0.75rem',
-                    padding: 0,
                   }}
                 >
                   ▼
@@ -953,7 +990,15 @@ function LeitfadenSheetInner({
               lineHeight: 1.35,
             }}
           >
-            Der dunkle Hintergrund blockiert die Maus nicht – du kannst die Navigation und Kacheln anfahren (Hover-Hinweise).
+            {touchChrome ? (
+              <>
+                Neben dem Fenster tippen klappt zu (nur Leiste). Am Desktop:{' '}
+              </>
+            ) : (
+              <>
+                Der dunkle Hintergrund blockiert die Maus nicht – du kannst die Navigation und Kacheln anfahren (Hover-Hinweise).{' '}
+              </>
+            )}
             Pro Schritt führt der Rundgang zur passenden Ansicht und markiert die Stelle – optional Vorlesen wie beim Drehbuch.
             Rundgang aus dem Weg: <strong style={{ color: t.text }}>▼</strong> oder <strong style={{ color: t.text }}>Escape</strong>.
           </p>
@@ -1146,7 +1191,7 @@ function LeitfadenSheetInner({
                   type="button"
                   onClick={() => setSchritt((n) => Math.min(max, n + 1))}
                   style={{
-                    padding: '0.55rem 1.15rem',
+                    padding: footerPrimaryPad,
                     fontSize: '0.92rem',
                     fontWeight: 800,
                     borderRadius: 999,
@@ -1156,6 +1201,7 @@ function LeitfadenSheetInner({
                     cursor: 'pointer',
                     fontFamily: 'inherit',
                     boxShadow: '0 4px 16px rgba(181, 74, 30, 0.4)',
+                    minHeight: touchChrome ? 44 : undefined,
                   }}
                 >
                   Weiter →
@@ -1166,7 +1212,7 @@ function LeitfadenSheetInner({
                     type="button"
                     onClick={schliessenUndMerken}
                     style={{
-                      padding: '0.55rem 1rem',
+                      padding: footerPrimaryPad,
                       fontSize: '0.9rem',
                       fontWeight: 700,
                       borderRadius: 999,
@@ -1175,6 +1221,7 @@ function LeitfadenSheetInner({
                       color: t.text,
                       cursor: 'pointer',
                       fontFamily: 'inherit',
+                      minHeight: touchChrome ? 44 : undefined,
                     }}
                   >
                     Schließen
@@ -1183,7 +1230,7 @@ function LeitfadenSheetInner({
                     type="button"
                     onClick={demoBeenden}
                     style={{
-                      padding: '0.55rem 1.1rem',
+                      padding: footerPrimaryPad,
                       fontSize: '0.9rem',
                       fontWeight: 800,
                       borderRadius: 999,
@@ -1193,6 +1240,7 @@ function LeitfadenSheetInner({
                       cursor: 'pointer',
                       fontFamily: 'inherit',
                       boxShadow: '0 4px 14px rgba(28, 26, 24, 0.25)',
+                      minHeight: touchChrome ? 44 : undefined,
                     }}
                   >
                     Beispiel beenden
@@ -1213,8 +1261,8 @@ function LeitfadenSheetInner({
               position: 'absolute',
               right: 0,
               bottom: 0,
-              width: 28,
-              height: 28,
+              width: touchChrome ? 44 : 28,
+              height: touchChrome ? 44 : 28,
               cursor: 'nwse-resize',
               touchAction: 'none',
               background:
