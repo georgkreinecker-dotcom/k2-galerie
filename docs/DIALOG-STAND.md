@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 17.04.26 – **VK2 Admin-Rundgang global:** **`Vk2AdminLeitfadenHost`** in **`App.tsx`** (über Routen hinweg sichtbar); **`vk2AdminLeitfadenStorage`** (Session `vk2-admin-rundgang-sichtbar`, Event); **Auto-Öffnen** bei Plattform + VK2-Kontext + nicht `vk2-admin-leitfaden-abgeschlossen`; Hub-Button **`openVk2AdminRundgangGlobally`**; **Später** = minimieren (nicht mehr „fertig“). Modal aus **`ScreenshotExportAdmin`** entfernt. Test **`vk2AdminLeitfadenStorage.test.ts`**. **Commit:** _(nach Push)_. **Nächster Schritt:** **ök2-Admin-Rundgang** analog.
+**Letzter Stand:** 17.04.26 – **VK2 Admin-Rundgang global:** **`Vk2AdminLeitfadenHost`** in **`App.tsx`** (über Routen hinweg sichtbar); **`vk2AdminLeitfadenStorage`** (Session `vk2-admin-rundgang-sichtbar`, Event); **Auto-Öffnen** bei Plattform + VK2-Kontext + nicht `vk2-admin-leitfaden-abgeschlossen`; Hub-Button **`openVk2AdminRundgangGlobally`**; **Später** = minimieren (nicht mehr „fertig“). Modal aus **`ScreenshotExportAdmin`** entfernt. Test **`vk2AdminLeitfadenStorage.test.ts`**. **Commit:** **`f6da511b`** ✅ GitHub. **Nächster Schritt:** **ök2-Admin-Rundgang** analog.
 
 ---
 
