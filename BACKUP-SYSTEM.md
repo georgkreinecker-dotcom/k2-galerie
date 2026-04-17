@@ -60,6 +60,7 @@
   Vorher: **BACKUPMICRO** anstecken (externer Speicher, wie auf dem Desktop). Standard-Pfad: `/Volumes/BACKUPMICRO`. Wenn das Laufwerk anders heißt: `BACKUPMICRO=/Volumes/DeinLaufwerk bash scripts/hard-backup-to-backupmicro.sh`
 - **Vor dem ersten Mal:** Einmal im Admin **„Veröffentlichen“** klicken, damit `public/gallery-data.json` existiert. Dann Skript ausführen – das ist deine erste vollständige Version (v001).
 - **Noch vollständiger (optional):** Im Admin **„Vollbackup herunterladen“** (Einstellungen → Backup & Wiederherstellung) klicken, die Datei im Projektordner als `backup/k2-vollbackup-latest.json` speichern. Beim nächsten Skript-Lauf wird diese Datei mit auf backupmicro kopiert (als `k2-vollbackup.json` im Versionsordner). So hast du neben `gallery-data.json` auch den kompletten App-Vollbackup in der Version.
+- **Festgehaltener Ablauf** (gleicher Ordner = wiederherstellbar): siehe **[backup/README.md](backup/README.md)**. Kurzbefehl nach Anlegen von `k2-vollbackup-latest.json`: `npm run backup:hard`.
 
 ---
 

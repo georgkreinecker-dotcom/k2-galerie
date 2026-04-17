@@ -18,8 +18,9 @@ release/
 *.zip
 *.tar.gz
 
-# Backup-Dateien
-backup/
+# Backup-Dateien (Inhalt lokal; Anleitung versioniert)
+backup/*
+!backup/README.md
 *.backup
 *.bak
 
