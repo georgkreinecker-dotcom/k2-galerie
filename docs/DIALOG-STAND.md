@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 16.04.26 – **Optimierung Phase 1.1 (`git gc`)** – **`.git`** lokal **1.5G → 1.4G**; Messung in **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`**. Nächster dokumentierter Schritt: Phase 2 oder Phase 1.3 nur bei Bedarf. **Commit:** **`cd836dee`** ✅ GitHub
+**Letzter Stand:** 16.04.26 – **Optimierung Phase 1.1 (`git gc`)** – **`.git`** lokal **1.5G → 1.4G**; Messung in **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`**. Nächster dokumentierter Schritt: Phase 2 oder Phase 1.3 nur bei Bedarf. **Commit:** **`0b9b33c9`** ✅ GitHub
 
 ---
 
