@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **Sichere Optimierung** weiter nach **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`** – **Kein Kaputtmachen:** Wiederherstellung vor riskanten Schritten; Phase 2 nur mit Backup/Kopie und Referenz-Check.  
+**Was wir JETZT tun:** **Sichere Optimierung** – **Phase 2 vorbereiten** (`public/`: größte Dateien, Referenz-`grep`, keine Löschung ohne Rückweg) laut **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`**. Phase 1.1 (`git gc`) ist dokumentiert.  
 **Einordnung:** Stabilität vor Byte-Ersparnis; bei Zweifel nicht ändern.
+
+---
+
+**Letzter Stand:** 16.04.26 – **Optimierung Phase 1.1 (`git gc`)** – **`.git`** lokal **1.5G → 1.4G**; Messung in **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`**. Nächster dokumentierter Schritt: Phase 2 oder Phase 1.3 nur bei Bedarf. **Commit:** **`cd836dee`** ✅ GitHub
 
 ---
 

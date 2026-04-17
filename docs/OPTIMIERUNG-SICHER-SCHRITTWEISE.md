@@ -78,6 +78,22 @@ Wenn ein Schritt **eine dieser Grenzen** berührt: **stoppen**, nur mit **expliz
 
 **Nicht:** Dependencies „aufräumen“ mit großem Bang ohne Changelog und Tests.
 
+### Messung Phase 1.1 (erführt – 16.04.26, lokales Projekt)
+
+**Schritt 1.1:** `git gc --prune=now` (nur lokal, kein Einfluss auf Remote oder App-Verhalten).
+
+| Messung | Wert |
+|--------|------|
+| `.git` **vor** `git gc` | **1.5G** (`du -sh .git`, wie Phase 0) |
+| `.git` **nach** `git gc` | **1.4G** |
+| `git count-objects -vH` (nachher) | **size-pack** ca. **1.35 GiB**, **1** Pack-Datei, **prune-packable: 0**, **garbage: 0** |
+
+**Prüfung:** `git status` / Arbeitsbaum in Ordnung; `git gc` beendet mit Exit-Code 0.
+
+**Hinweis:** Der Großteil der `.git`-Größe bleibt in den Packfiles (Historie, Binärdaten im Verlauf). Weitere Reduktion nur mit tieferen Git-Maßnahmen (nicht Ziel dieser Phase) oder weniger großer Historie – **nicht** ohne Backup und klares Ziel.
+
+**Nächster sinnvoller Schritt:** Phase 1.3 (`node_modules` frisch) **nur bei Bedarf**; sonst **Phase 2** nach Abschnitt „Kein Kaputtmachen“ (Referenz-Check, Kopien großer Assets).
+
 ---
 
 ## Phase 2 – Statische Assets (`public/`) – geringes Risiko für Logik
@@ -142,4 +158,4 @@ Wenn ein Schritt **eine dieser Grenzen** berührt: **stoppen**, nur mit **expliz
 - `docs/KRITISCHE-ABLAEUFE.md` – was nicht gebrochen werden darf  
 - `.cursor/rules/eiserne-regel-groessere-aenderung-kein-chaos.mdc` – vor großen Eingriffen  
 
-**Stand:** 17.04.26 – Phase-0-Baseline gemessen; Regel **Kein Kaputtmachen / Wiederherstellung** ergänzt.
+**Stand:** 16.04.26 – Phase-0-Baseline gemessen; Phase 1.1 `git gc` dokumentiert (`.git` 1.5G → 1.4G); Regel **Kein Kaputtmachen / Wiederherstellung** ergänzt.
