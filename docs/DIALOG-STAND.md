@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 17.04.26 – **K2 Familie Huber-Rundgang: Touch wie ök2/VK2** – **`FamilieMusterHuberLeitfaden`:** `touchChrome` (`max-width: 768px` / `pointer: coarse`); **Vollflächen-Button** unter dem Sheet (`z-index` 25000) → Tap außen = **`minimize`**; Header **− / + / Unten / ▼** min. **44×44**; Footer-Padding; **Resize-Ecke** 44px; Hinweistext bei Touch. **`tsc --noEmit`** grün; voller **`npm run build`** lokal bei Bedarf vor Push. **Commit:** **`78a13f8e`** ✅ GitHub
+**Letzter Stand:** 17.04.26 – **K2 Familie Huber-Rundgang: Touch wie ök2/VK2** – **`FamilieMusterHuberLeitfaden`:** `touchChrome` (`max-width: 768px` / `pointer: coarse`); **Vollflächen-Button** unter dem Sheet (`z-index` 25000) → Tap außen = **`minimize`**; Header **− / + / Unten / ▼** min. **44×44**; Footer-Padding; **Resize-Ecke** 44px; Hinweistext bei Touch. **`tsc --noEmit`** grün; voller **`npm run build`** lokal bei Bedarf vor Push. **Commit:** **`9112e104`** ✅ GitHub
 
 ---
 
