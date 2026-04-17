@@ -7,11 +7,18 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 import { adminTheme } from '../config/theme'
 import { beendeGuideFlow } from '../utils/k2GuideFlowStorage'
 import {
+  HTML_VK2_ADMIN_LEITFADEN_FOCUS_ATTR,
   HTML_VK2_LEITFADEN_FOCUS_ATTR,
   scrollLeitfadenFocusIntoView,
   setLeitfadenFocusOnDocument,
 } from '../utils/familieLeitfadenFocus'
+import {
+  EVENT_VK2_PLATFORM_RUNDGANG,
+  SS_VK2_GALERIE_LEITFADEN_MINIMIZED,
+  setVk2PlatformLeitfadenCompleted,
+} from '../utils/vk2PlatformLeitfadenStorage'
 import { renderLeitfadenText } from './guidedLeitfaden/renderLeitfadenMarkdownLite'
+import { type Vk2PlatformLeitfadenStep } from './guidedLeitfaden/vk2PlatformLeitfadenSteps'
 import { buildVk2GalerieLeitfadenSchritte } from './guidedLeitfaden/vk2GalerieLeitfadenSteps'
 import {
   clampFamilieLeitfadenBounds,
@@ -20,9 +27,18 @@ import {
 
 const t = adminTheme
 
-const LS_VK2_LEITFADEN_DONE = 'vk2-galerie-leitfaden-abgeschlossen'
+export const LS_VK2_GALERIE_LEITFADEN_DONE = 'vk2-galerie-leitfaden-abgeschlossen'
+/** @internal – gleicher Key wie Export */
+const LS_VK2_LEITFADEN_DONE = LS_VK2_GALERIE_LEITFADEN_DONE
+
+export function hasVk2GalerieLeitfadenCompleted(): boolean {
+  try {
+    return localStorage.getItem(LS_VK2_GALERIE_LEITFADEN_DONE) === '1'
+  } catch {
+    return false
+  }
+}
 const SS_VK2_BOUNDS = 'vk2-galerie-leitfaden-bounds'
-const SS_VK2_MIN = 'vk2-galerie-leitfaden-minimized'
 
 const MAX_W_CAP = 560
 const MAX_H_VH = 0.88
@@ -56,6 +72,45 @@ function writeBoundsToSession(b: FamilieLeitfadenPanelBounds | null) {
 }
 
 const SHEET_STYLE_ID = 'vk2-galerie-leitfaden-anim'
+const ADMIN_SHEET_STYLE_ID = 'vk2-platform-admin-leitfaden-anim'
+
+/** Admin-Hub-Fokus-Styles – für durchgängigen Plattform-Rundgang neben Galerie-Styles */
+function Vk2PlatformAdminLeitfadenKeyframes() {
+  return (
+    <style id={ADMIN_SHEET_STYLE_ID}>{`
+      @keyframes vk2AdminLeitfadenSpotPulse {
+        0%, 100% {
+          box-shadow: 0 0 0 5px rgba(30, 92, 181, 0.32), 0 10px 36px rgba(192, 86, 42, 0.22);
+        }
+        50% {
+          box-shadow: 0 0 0 10px rgba(30, 92, 181, 0.42), 0 14px 48px rgba(192, 86, 42, 0.3);
+        }
+      }
+      html[data-vk2-admin-leitfaden-focus] [data-leitfaden-focus] {
+        transition: outline 0.35s ease, box-shadow 0.35s ease;
+      }
+      html[data-vk2-admin-leitfaden-focus="admin-hub-leiste"] [data-leitfaden-focus="admin-hub-leiste"],
+      html[data-vk2-admin-leitfaden-focus="hub-intro"] [data-leitfaden-focus="hub-intro"],
+      html[data-vk2-admin-leitfaden-focus="hub-werke"] [data-leitfaden-focus="hub-werke"],
+      html[data-vk2-admin-leitfaden-focus="hub-design"] [data-leitfaden-focus="hub-design"],
+      html[data-vk2-admin-leitfaden-focus="hub-einstellungen"] [data-leitfaden-focus="hub-einstellungen"],
+      html[data-vk2-admin-leitfaden-focus="hub-katalog"] [data-leitfaden-focus="hub-katalog"],
+      html[data-vk2-admin-leitfaden-focus="hub-eventplan"] [data-leitfaden-focus="hub-eventplan"],
+      html[data-vk2-admin-leitfaden-focus="werke-bereich"] [data-leitfaden-focus="werke-bereich"] {
+        position: relative;
+        z-index: 25040;
+        isolation: isolate;
+        outline: 4px solid rgba(192, 86, 42, 0.95);
+        outline-offset: 4px;
+        border-radius: 12px;
+        animation: vk2AdminLeitfadenSpotPulse 2.2s ease-in-out infinite;
+      }
+      html[data-vk2-admin-leitfaden-focus="admin-hub-leiste"] [data-leitfaden-focus="admin-hub-leiste"] {
+        border-radius: 0 0 18px 18px;
+      }
+    `}</style>
+  )
+}
 
 function Vk2LeitfadenKeyframes() {
   return (
@@ -107,11 +162,19 @@ function Vk2LeitfadenKeyframes() {
 type Props = {
   name: string
   onDismiss: () => void
+  /** Durchgängiger VK2-Plattform-Rundgang (Galerie + Admin): gesteuerte Schritte, eine Quelle „Fertig“ */
+  platform?: {
+    schritte: Vk2PlatformLeitfadenStep[]
+    schritt: number
+    onSchrittChange: (i: number) => void
+  }
 }
 
-export function Vk2GalerieLeitfadenModal({ name, onDismiss }: Props) {
+export function Vk2GalerieLeitfadenModal({ name, onDismiss, platform }: Props) {
   const sheetRef = useRef<HTMLDivElement | null>(null)
-  const [schritt, setSchritt] = useState(0)
+  const [schrittInternal, setSchrittInternal] = useState(0)
+  const schritt = platform ? platform.schritt : schrittInternal
+  const setSchritt = platform ? platform.onSchrittChange : setSchrittInternal
   const [bounds, setBounds] = useState<FamilieLeitfadenPanelBounds | null>(null)
   const [minimized, setMinimized] = useState(false)
   const dragRef = useRef<{
@@ -121,7 +184,10 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss }: Props) {
     startBounds: FamilieLeitfadenPanelBounds
   } | null>(null)
 
-  const schritte = useMemo(() => buildVk2GalerieLeitfadenSchritte(name), [name])
+  const schritte = useMemo(
+    () => (platform ? platform.schritte : buildVk2GalerieLeitfadenSchritte(name)),
+    [name, platform],
+  )
   const max = schritte.length - 1
   const istLetzter = schritt >= max
   const total = schritte.length
@@ -131,15 +197,32 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss }: Props) {
     beendeGuideFlow()
   }, [])
 
+  /**
+   * Bounds + Schritt: bei jeder relevanten Änderung.
+   * Minimiert: bei reinem VK2-Galerie-Leitfaden aus sessionStorage.
+   * Plattform-Rundgang: Minimiert **nicht** bei jedem neuen `platform`-Objekt-Referenz neu aus sessionStorage lesen –
+   * sonst überschreibt ein Host-Re-Render den geleerten Zustand nach VK2-Einstieg wieder mit „minimiert“.
+   */
   useEffect(() => {
-    setSchritt(0)
-    try {
-      setMinimized(sessionStorage.getItem(SS_VK2_MIN) === '1')
-    } catch {
-      setMinimized(false)
+    if (!platform) {
+      setSchrittInternal(0)
+      try {
+        setMinimized(sessionStorage.getItem(SS_VK2_GALERIE_LEITFADEN_MINIMIZED) === '1')
+      } catch {
+        setMinimized(false)
+      }
     }
     const saved = readBoundsFromSession()
     setBounds(saved ?? null)
+  }, [name, platform])
+
+  useEffect(() => {
+    if (!platform) return
+    try {
+      setMinimized(sessionStorage.getItem(SS_VK2_GALERIE_LEITFADEN_MINIMIZED) === '1')
+    } catch {
+      setMinimized(false)
+    }
   }, [name])
 
   useEffect(() => {
@@ -150,7 +233,33 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss }: Props) {
     return () => window.removeEventListener('resize', onResize)
   }, [])
 
+  useEffect(() => {
+    if (!platform) return
+    const onRundgang = () => {
+      try {
+        sessionStorage.removeItem(SS_VK2_GALERIE_LEITFADEN_MINIMIZED)
+      } catch {
+        /* ignore */
+      }
+      setMinimized(false)
+    }
+    window.addEventListener(EVENT_VK2_PLATFORM_RUNDGANG, onRundgang)
+    return () => window.removeEventListener(EVENT_VK2_PLATFORM_RUNDGANG, onRundgang)
+  }, [platform])
+
+  /** Plattform-Rundgang: Fenster ausblenden, Fokus löschen – ohne „Fertig“/Abgeschlossen zu setzen. */
+  const schliessenPlattformNurAusblenden = useCallback(() => {
+    setLeitfadenFocusOnDocument(null)
+    onDismiss()
+  }, [onDismiss])
+
   const schliessenUndMerken = useCallback(() => {
+    if (platform) {
+      setVk2PlatformLeitfadenCompleted(true)
+      setLeitfadenFocusOnDocument(null)
+      onDismiss()
+      return
+    }
     try {
       localStorage.setItem(LS_VK2_LEITFADEN_DONE, '1')
     } catch {
@@ -158,12 +267,12 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss }: Props) {
     }
     setLeitfadenFocusOnDocument(null)
     onDismiss()
-  }, [onDismiss])
+  }, [onDismiss, platform])
 
   const minimize = useCallback(() => {
     setMinimized(true)
     try {
-      sessionStorage.setItem(SS_VK2_MIN, '1')
+      sessionStorage.setItem(SS_VK2_GALERIE_LEITFADEN_MINIMIZED, '1')
     } catch {
       /* ignore */
     }
@@ -175,7 +284,7 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss }: Props) {
       if (e.key === 'Escape') {
         setMinimized(false)
         try {
-          sessionStorage.removeItem(SS_VK2_MIN)
+          sessionStorage.removeItem(SS_VK2_GALERIE_LEITFADEN_MINIMIZED)
         } catch {
           /* ignore */
         }
@@ -188,16 +297,21 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss }: Props) {
   useEffect(() => {
     if (minimized) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') minimize()
+      if (e.key !== 'Escape') return
+      if (platform) {
+        schliessenPlattformNurAusblenden()
+        return
+      }
+      minimize()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [minimized, minimize])
+  }, [minimized, minimize, platform, schliessenPlattformNurAusblenden])
 
   const restoreFromMinimized = useCallback(() => {
     setMinimized(false)
     try {
-      sessionStorage.removeItem(SS_VK2_MIN)
+      sessionStorage.removeItem(SS_VK2_GALERIE_LEITFADEN_MINIMIZED)
     } catch {
       /* ignore */
     }
@@ -345,12 +459,58 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss }: Props) {
       setLeitfadenFocusOnDocument(null)
       return
     }
-    setLeitfadenFocusOnDocument(step.focusKey ?? null, HTML_VK2_LEITFADEN_FOCUS_ATTR)
-    scrollLeitfadenFocusIntoView(step.focusKey)
+    const htmlAttr =
+      platform && 'phase' in step && step.phase === 'admin'
+        ? HTML_VK2_ADMIN_LEITFADEN_FOCUS_ATTR
+        : HTML_VK2_LEITFADEN_FOCUS_ATTR
+    setLeitfadenFocusOnDocument(step.focusKey ?? null, htmlAttr)
+    // Galerie-Phase: oben ansetzen – sonst bleibt der Hero „Willkommen“ oft unter dem unteren Sheet unsichtbar (block: nearest)
+    const galerieOben =
+      platform && 'phase' in step && step.phase === 'galerie'
+        ? ({ behavior: 'smooth' as const, block: 'start' as const, inline: 'nearest' as const })
+        : undefined
+    scrollLeitfadenFocusIntoView(step.focusKey, galerieOben)
     return () => {
       setLeitfadenFocusOnDocument(null)
     }
-  }, [minimized, schritt, schritte])
+  }, [minimized, schritt, schritte, platform])
+
+  useEffect(() => {
+    if (!platform || minimized) return
+    let hoverTimer: ReturnType<typeof setTimeout> | null = null
+    const findIndexForFocusKey = (key: string | null | undefined) => {
+      if (!key) return -1
+      return schritte.findIndex((st) => st.focusKey === key)
+    }
+    const applyFromPointer = (e: Event, immediate: boolean) => {
+      const t = e.target as HTMLElement | null
+      if (!t?.closest) return
+      // Links: keinen Schritt per Hover/Klick überschreiben – sonst kollidiert es mit der Navigation zur Galerie
+      if (t.closest('a[href]')) return
+      const el = t.closest('[data-leitfaden-focus]') as HTMLElement | null
+      const key = el?.getAttribute('data-leitfaden-focus') ?? null
+      const idx = findIndexForFocusKey(key)
+      if (idx < 0 || idx === schritt) return
+      const step = schritte[idx]
+      if (!step || !('phase' in step)) return
+      if (immediate) {
+        if (hoverTimer) clearTimeout(hoverTimer)
+        platform.onSchrittChange(idx)
+        return
+      }
+      if (hoverTimer) clearTimeout(hoverTimer)
+      hoverTimer = setTimeout(() => platform.onSchrittChange(idx), 200)
+    }
+    const onPointerOver = (e: Event) => applyFromPointer(e, false)
+    const onClick = (e: Event) => applyFromPointer(e, true)
+    document.addEventListener('pointerover', onPointerOver, true)
+    document.addEventListener('click', onClick, true)
+    return () => {
+      if (hoverTimer) clearTimeout(hoverTimer)
+      document.removeEventListener('pointerover', onPointerOver, true)
+      document.removeEventListener('click', onClick, true)
+    }
+  }, [platform, minimized, schritte, schritt])
 
   const sheetBaseStyle: CSSProperties = {
     display: 'flex',
@@ -416,7 +576,7 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss }: Props) {
           />
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', paddingBottom: '0.65rem', flexWrap: 'wrap' }}>
             <p style={{ margin: 0, fontSize: '0.82rem', fontWeight: 800, letterSpacing: '0.04em', color: '#7a3418', fontFamily: t.fontHeading }}>
-              Vereinsgalerie · Rundgang
+              {platform ? 'VK2 Plattform · Rundgang' : 'Vereinsgalerie · Rundgang'}
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }} onPointerDown={(e) => e.stopPropagation()}>
               <button
@@ -561,8 +721,18 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss }: Props) {
             lineHeight: 1.35,
           }}
         >
-          Der Hintergrund blockiert Klicks nicht – du kannst die Seite dahinter bedienen. Ohne Audio: alles lesen. Zusammenklappen:{' '}
-          <strong style={{ color: t.text }}>▼</strong>.
+          {platform ? (
+            <>
+              Der Hintergrund blockiert Klicks nicht.{' '}
+              <strong style={{ color: t.text }}>Schließen</strong> beendet den Rundgang;{' '}
+              <strong style={{ color: t.text }}>▼</strong> klappt nur zu. Ohne Audio.
+            </>
+          ) : (
+            <>
+              Der Hintergrund blockiert Klicks nicht – du kannst die Seite dahinter bedienen. Ohne Audio: alles lesen. Zusammenklappen:{' '}
+              <strong style={{ color: t.text }}>▼</strong>.
+            </>
+          )}
         </p>
 
         <div
@@ -625,7 +795,7 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss }: Props) {
             {schritt > 0 ? (
               <button
                 type="button"
-                onClick={() => setSchritt((n) => n - 1)}
+                onClick={() => setSchritt(schritt - 1)}
                 style={{
                   padding: '0.5rem 0.95rem',
                   fontSize: '0.88rem',
@@ -643,7 +813,7 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss }: Props) {
             ) : null}
             <button
               type="button"
-              onClick={schliessenUndMerken}
+              onClick={platform ? schliessenPlattformNurAusblenden : minimize}
               style={{
                 padding: '0.5rem 0.85rem',
                 fontSize: '0.86rem',
@@ -658,14 +828,14 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss }: Props) {
                 textUnderlineOffset: '3px',
               }}
             >
-              Später
+              {platform ? 'Schließen' : 'Später'}
             </button>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem', justifyContent: 'flex-end' }}>
             {!istLetzter ? (
               <button
                 type="button"
-                onClick={() => setSchritt((n) => Math.min(max, n + 1))}
+                onClick={() => setSchritt(Math.min(max, schritt + 1))}
                 style={{
                   padding: '0.55rem 1.15rem',
                   fontSize: '0.92rem',
@@ -732,6 +902,7 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss }: Props) {
     return (
       <>
         <Vk2LeitfadenKeyframes />
+        {platform ? <Vk2PlatformAdminLeitfadenKeyframes /> : null}
         <button
           type="button"
           className="k2-familie-no-print"
@@ -762,6 +933,7 @@ export function Vk2GalerieLeitfadenModal({ name, onDismiss }: Props) {
   return (
     <>
       <Vk2LeitfadenKeyframes />
+      {platform ? <Vk2PlatformAdminLeitfadenKeyframes /> : null}
       <div
         className="vk2-galerie-leitfaden-backdrop"
         role="presentation"

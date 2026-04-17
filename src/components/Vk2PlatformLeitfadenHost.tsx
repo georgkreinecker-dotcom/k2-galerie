@@ -11,6 +11,7 @@ import { buildVk2PlatformLeitfadenSchritte } from './guidedLeitfaden/vk2Platform
 import { Vk2GalerieLeitfadenModal } from './Vk2GalerieLeitfadenModal'
 import {
   EVENT_VK2_PLATFORM_RUNDGANG,
+  SS_VK2_GALERIE_LEITFADEN_MINIMIZED,
   hasVk2PlatformLeitfadenCompleted,
   isVk2PlatformRundgangSessionVisible,
   readVk2PlatformLeitfadenSchritt,
@@ -52,10 +53,21 @@ export function Vk2PlatformLeitfadenHost() {
     setSchritt((s) => Math.min(s, max))
   }, [schritte.length])
 
+  /** Beim Wechsel in den Kunstverein-Bereich (VK2): Rundgang als Willkommensaktion sichtbar ausklappen, nicht nur minimiert unten. */
+  const prevVk2TenantRef = useRef(false)
   useEffect(() => {
     if (!isPlatformInstance()) return
-    if (hasVk2PlatformLeitfadenCompleted()) return
+    const enteredVk2 = tenant.isVk2 && !prevVk2TenantRef.current
+    prevVk2TenantRef.current = tenant.isVk2
     if (!tenant.isVk2) return
+    if (hasVk2PlatformLeitfadenCompleted()) return
+    if (enteredVk2) {
+      try {
+        sessionStorage.removeItem(SS_VK2_GALERIE_LEITFADEN_MINIMIZED)
+      } catch {
+        /* ignore */
+      }
+    }
     setVk2PlatformRundgangSessionVisible(true)
   }, [location.pathname, location.search, tenant.isVk2])
 
@@ -92,17 +104,31 @@ export function Vk2PlatformLeitfadenHost() {
     [schritte, navigateIfNeededForStep],
   )
 
+  const platformConfig = useMemo(
+    () => ({
+      schritte,
+      schritt,
+      onSchrittChange,
+    }),
+    [schritte, schritt, onSchrittChange],
+  )
+
   const show =
     isPlatformInstance() &&
     tenant.isVk2 &&
     (!hasVk2PlatformLeitfadenCompleted() || isVk2PlatformRundgangSessionVisible())
 
+  /** Nur einmal pro „Rundgang sichtbar“-Phase: Route an aktuellen Schritt anbinden. Nicht bei jedem Re-Render – sonst zwingt Admin-Schritt die Nutzer:innen zurück zum Admin, sobald sie zur Vereins-Galerie wechseln. Schrittwechsel im Modal = onSchrittChange → navigateIfNeededForStep. */
+  const routeSyncedForVisibleSessionRef = useRef(false)
   useEffect(() => {
-    if (!show) return
-    const step = schritte[schritt]
-    if (!step) return
+    if (!show) {
+      routeSyncedForVisibleSessionRef.current = false
+      return
+    }
+    if (routeSyncedForVisibleSessionRef.current) return
+    routeSyncedForVisibleSessionRef.current = true
     navigateIfNeededForStep(schritt)
-  }, [show, schritt, schritte, navigateIfNeededForStep])
+  }, [show, schritt, navigateIfNeededForStep])
 
   if (!show) return null
 
@@ -110,11 +136,7 @@ export function Vk2PlatformLeitfadenHost() {
     <Vk2GalerieLeitfadenModal
       name={name}
       onDismiss={() => setVk2PlatformRundgangSessionVisible(false)}
-      platform={{
-        schritte,
-        schritt,
-        onSchrittChange,
-      }}
+      platform={platformConfig}
     />
   )
 }
