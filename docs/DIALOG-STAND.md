@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **K2 Familie Muster-Rundgang** am Handy kurz prüfen: **Neben dem Sheet tippen** klappt zu; **Zurück / Weiter / ▼** groß genug. (ök2/VK2-Leitfaden hatten dieselbe Touch-Strategie schon.)  
-**Einordnung:** Mobile Bedienung – Backdrop **`pointer-events: none`** + fehlender Außen-Tap war die Hauptursache „Fenster hängt“.
+**Was wir JETZT tun:** **Sichere Optimierung** nach **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`:** als Nächstes **Phase 0** (Baseline messen, Tests/Build – nur dokumentieren). K2-Kern und rote Linien unverändert lassen.  
+**Einordnung:** Performance/Größe schrittweise; Sicherheit (Datentrennung, Stand/QR, kritische Abläufe) hat Vorrang.
+
+---
+
+**Letzter Stand:** 17.04.26 – **Sichere Optimierung: Index + ök2-Leitfaden Build-Fix** – **`docs/00-INDEX.md`:** Eintrag **OPTIMIERUNG-SICHER-SCHRITTWEISE.md** (Phasen, rote Linien). **`Oek2GalerieLeitfadenModal`:** fehlende **`touchChrome`**-State (wie VK2/Huber) → **tsc** wieder grün. **Tests + Build** grün. **Commit:** _(nach Push)_ ✅ GitHub
 
 ---
 

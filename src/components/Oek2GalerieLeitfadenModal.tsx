@@ -7,22 +7,29 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 import { adminTheme } from '../config/theme'
 import { beendeGuideFlow } from '../utils/k2GuideFlowStorage'
 import {
+  HTML_OEK2_ADMIN_LEITFADEN_FOCUS_ATTR,
   HTML_OEK2_LEITFADEN_FOCUS_ATTR,
   scrollLeitfadenFocusIntoView,
   setLeitfadenFocusOnDocument,
 } from '../utils/familieLeitfadenFocus'
+import {
+  EVENT_OEK2_PLATFORM_RUNDGANG,
+  SS_OEK2_GALERIE_LEITFADEN_MINIMIZED,
+  setOek2PlatformLeitfadenCompleted,
+} from '../utils/oek2PlatformLeitfadenStorage'
 import { renderLeitfadenText } from './guidedLeitfaden/renderLeitfadenMarkdownLite'
+import { type Oek2PlatformLeitfadenStep } from './guidedLeitfaden/oek2PlatformLeitfadenSteps'
 import { buildOek2GalerieLeitfadenSchritte } from './guidedLeitfaden/oek2GalerieLeitfadenSteps'
 import {
   clampFamilieLeitfadenBounds,
   type FamilieLeitfadenPanelBounds,
 } from './FamilieMusterHuberLeitfaden'
+import { isCoarsePointer } from '../utils/mobileUiHelpers'
 
 const t = adminTheme
 
 const LS_OEK2_LEITFADEN_DONE = 'oek2-galerie-leitfaden-abgeschlossen'
 const SS_OEK2_BOUNDS = 'oek2-galerie-leitfaden-bounds'
-const SS_OEK2_MIN = 'oek2-galerie-leitfaden-minimized'
 
 const MAX_W_CAP = 560
 const MAX_H_VH = 0.88
@@ -56,6 +63,45 @@ function writeBoundsToSession(b: FamilieLeitfadenPanelBounds | null) {
 }
 
 const SHEET_STYLE_ID = 'oek2-galerie-leitfaden-anim'
+const ADMIN_SHEET_STYLE_ID = 'oek2-platform-admin-leitfaden-anim'
+
+/** Admin-Hub-Fokus – durchgängiger Plattform-Rundgang (grüner ök2-Akzent) */
+function Oek2PlatformAdminLeitfadenKeyframes() {
+  return (
+    <style id={ADMIN_SHEET_STYLE_ID}>{`
+      @keyframes oek2AdminLeitfadenSpotPulse {
+        0%, 100% {
+          box-shadow: 0 0 0 5px rgba(90, 122, 106, 0.35), 0 10px 36px rgba(61, 92, 74, 0.18);
+        }
+        50% {
+          box-shadow: 0 0 0 10px rgba(90, 122, 106, 0.45), 0 14px 48px rgba(61, 92, 74, 0.24);
+        }
+      }
+      html[data-oek2-admin-leitfaden-focus] [data-leitfaden-focus] {
+        transition: outline 0.35s ease, box-shadow 0.35s ease;
+      }
+      html[data-oek2-admin-leitfaden-focus="admin-hub-leiste"] [data-leitfaden-focus="admin-hub-leiste"],
+      html[data-oek2-admin-leitfaden-focus="hub-intro"] [data-leitfaden-focus="hub-intro"],
+      html[data-oek2-admin-leitfaden-focus="hub-werke"] [data-leitfaden-focus="hub-werke"],
+      html[data-oek2-admin-leitfaden-focus="hub-design"] [data-leitfaden-focus="hub-design"],
+      html[data-oek2-admin-leitfaden-focus="hub-einstellungen"] [data-leitfaden-focus="hub-einstellungen"],
+      html[data-oek2-admin-leitfaden-focus="hub-katalog"] [data-leitfaden-focus="hub-katalog"],
+      html[data-oek2-admin-leitfaden-focus="hub-eventplan"] [data-leitfaden-focus="hub-eventplan"],
+      html[data-oek2-admin-leitfaden-focus="werke-bereich"] [data-leitfaden-focus="werke-bereich"] {
+        position: relative;
+        z-index: 25040;
+        isolation: isolate;
+        outline: 4px solid rgba(90, 122, 106, 0.95);
+        outline-offset: 4px;
+        border-radius: 12px;
+        animation: oek2AdminLeitfadenSpotPulse 2.2s ease-in-out infinite;
+      }
+      html[data-oek2-admin-leitfaden-focus="admin-hub-leiste"] [data-leitfaden-focus="admin-hub-leiste"] {
+        border-radius: 0 0 18px 18px;
+      }
+    `}</style>
+  )
+}
 
 function Oek2LeitfadenKeyframes() {
   return (
@@ -108,11 +154,19 @@ function Oek2LeitfadenKeyframes() {
 type Props = {
   name: string
   onDismiss: () => void
+  /** Durchgängiger ök2-Plattform-Rundgang (Galerie + Admin): gesteuerte Schritte, eine Quelle „Fertig“ */
+  platform?: {
+    schritte: Oek2PlatformLeitfadenStep[]
+    schritt: number
+    onSchrittChange: (i: number) => void
+  }
 }
 
-export function Oek2GalerieLeitfadenModal({ name, onDismiss }: Props) {
+export function Oek2GalerieLeitfadenModal({ name, onDismiss, platform }: Props) {
   const sheetRef = useRef<HTMLDivElement | null>(null)
-  const [schritt, setSchritt] = useState(0)
+  const [schrittInternal, setSchrittInternal] = useState(0)
+  const schritt = platform ? platform.schritt : schrittInternal
+  const setSchritt = platform ? platform.onSchrittChange : setSchrittInternal
   const [bounds, setBounds] = useState<FamilieLeitfadenPanelBounds | null>(null)
   const [minimized, setMinimized] = useState(false)
   const dragRef = useRef<{
@@ -122,7 +176,19 @@ export function Oek2GalerieLeitfadenModal({ name, onDismiss }: Props) {
     startBounds: FamilieLeitfadenPanelBounds
   } | null>(null)
 
-  const schritte = useMemo(() => buildOek2GalerieLeitfadenSchritte(name), [name])
+  const [touchChrome, setTouchChrome] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px), (pointer: coarse)')
+    const apply = () => setTouchChrome(mq.matches)
+    apply()
+    mq.addEventListener('change', apply)
+    return () => mq.removeEventListener('change', apply)
+  }, [])
+
+  const schritte = useMemo(
+    () => (platform ? platform.schritte : buildOek2GalerieLeitfadenSchritte(name)),
+    [name, platform],
+  )
   const max = schritte.length - 1
   const istLetzter = schritt >= max
   const total = schritte.length
@@ -132,16 +198,46 @@ export function Oek2GalerieLeitfadenModal({ name, onDismiss }: Props) {
     beendeGuideFlow()
   }, [])
 
+  /**
+   * Bounds + Schritt: bei jeder relevanten Änderung.
+   * Nur Galerie-Rundgang: Schritt 0 + Minimiert aus sessionStorage.
+   * Plattform-Rundgang: Minimiert nicht bei jedem neuen `platform`-Referenz überschreiben.
+   */
   useEffect(() => {
-    setSchritt(0)
-    try {
-      setMinimized(sessionStorage.getItem(SS_OEK2_MIN) === '1')
-    } catch {
-      setMinimized(false)
+    if (!platform) {
+      setSchrittInternal(0)
+      try {
+        setMinimized(sessionStorage.getItem(SS_OEK2_GALERIE_LEITFADEN_MINIMIZED) === '1')
+      } catch {
+        setMinimized(false)
+      }
     }
     const saved = readBoundsFromSession()
     setBounds(saved ?? null)
+  }, [name, platform])
+
+  useEffect(() => {
+    if (!platform) return
+    try {
+      setMinimized(sessionStorage.getItem(SS_OEK2_GALERIE_LEITFADEN_MINIMIZED) === '1')
+    } catch {
+      setMinimized(false)
+    }
   }, [name])
+
+  useEffect(() => {
+    if (!platform) return
+    const onRundgang = () => {
+      try {
+        sessionStorage.removeItem(SS_OEK2_GALERIE_LEITFADEN_MINIMIZED)
+      } catch {
+        /* ignore */
+      }
+      setMinimized(false)
+    }
+    window.addEventListener(EVENT_OEK2_PLATFORM_RUNDGANG, onRundgang)
+    return () => window.removeEventListener(EVENT_OEK2_PLATFORM_RUNDGANG, onRundgang)
+  }, [platform])
 
   useEffect(() => {
     const onResize = () => {
@@ -151,7 +247,19 @@ export function Oek2GalerieLeitfadenModal({ name, onDismiss }: Props) {
     return () => window.removeEventListener('resize', onResize)
   }, [])
 
+  /** Plattform-Rundgang: Sheet schließen, Fokus löschen – ohne „Fertig“/Abgeschlossen. */
+  const schliessenPlattformNurAusblenden = useCallback(() => {
+    setLeitfadenFocusOnDocument(null)
+    onDismiss()
+  }, [onDismiss])
+
   const schliessenUndMerken = useCallback(() => {
+    if (platform) {
+      setOek2PlatformLeitfadenCompleted(true)
+      setLeitfadenFocusOnDocument(null)
+      onDismiss()
+      return
+    }
     try {
       localStorage.setItem(LS_OEK2_LEITFADEN_DONE, '1')
     } catch {
@@ -159,16 +267,22 @@ export function Oek2GalerieLeitfadenModal({ name, onDismiss }: Props) {
     }
     setLeitfadenFocusOnDocument(null)
     onDismiss()
-  }, [onDismiss])
+  }, [onDismiss, platform])
 
   const minimize = useCallback(() => {
     setMinimized(true)
     try {
-      sessionStorage.setItem(SS_OEK2_MIN, '1')
+      sessionStorage.setItem(SS_OEK2_GALERIE_LEITFADEN_MINIMIZED, '1')
     } catch {
       /* ignore */
     }
   }, [])
+
+  /** Auf dem Handy: dunklen Bereich tippen = wie „Schließen“ (Plattform) bzw. einklappen (Demo) – Backdrop ist sonst pointer-events: none. */
+  const onBackdropTapDismiss = useCallback(() => {
+    if (platform) schliessenPlattformNurAusblenden()
+    else minimize()
+  }, [platform, schliessenPlattformNurAusblenden, minimize])
 
   useEffect(() => {
     if (!minimized) return
@@ -176,7 +290,7 @@ export function Oek2GalerieLeitfadenModal({ name, onDismiss }: Props) {
       if (e.key === 'Escape') {
         setMinimized(false)
         try {
-          sessionStorage.removeItem(SS_OEK2_MIN)
+          sessionStorage.removeItem(SS_OEK2_GALERIE_LEITFADEN_MINIMIZED)
         } catch {
           /* ignore */
         }
@@ -189,16 +303,21 @@ export function Oek2GalerieLeitfadenModal({ name, onDismiss }: Props) {
   useEffect(() => {
     if (minimized) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') minimize()
+      if (e.key !== 'Escape') return
+      if (platform) {
+        schliessenPlattformNurAusblenden()
+        return
+      }
+      minimize()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [minimized, minimize])
+  }, [minimized, minimize, platform, schliessenPlattformNurAusblenden])
 
   const restoreFromMinimized = useCallback(() => {
     setMinimized(false)
     try {
-      sessionStorage.removeItem(SS_OEK2_MIN)
+      sessionStorage.removeItem(SS_OEK2_GALERIE_LEITFADEN_MINIMIZED)
     } catch {
       /* ignore */
     }
@@ -346,12 +465,61 @@ export function Oek2GalerieLeitfadenModal({ name, onDismiss }: Props) {
       setLeitfadenFocusOnDocument(null)
       return
     }
-    setLeitfadenFocusOnDocument(step.focusKey ?? null, HTML_OEK2_LEITFADEN_FOCUS_ATTR)
-    scrollLeitfadenFocusIntoView(step.focusKey)
+    const htmlAttr =
+      platform && 'phase' in step && step.phase === 'admin'
+        ? HTML_OEK2_ADMIN_LEITFADEN_FOCUS_ATTR
+        : HTML_OEK2_LEITFADEN_FOCUS_ATTR
+    setLeitfadenFocusOnDocument(step.focusKey ?? null, htmlAttr)
+    const galerieOben =
+      platform && 'phase' in step && step.phase === 'galerie'
+        ? ({ behavior: 'smooth' as const, block: 'start' as const, inline: 'nearest' as const })
+        : undefined
+    scrollLeitfadenFocusIntoView(step.focusKey, galerieOben)
     return () => {
       setLeitfadenFocusOnDocument(null)
     }
-  }, [minimized, schritt, schritte])
+  }, [minimized, schritt, schritte, platform])
+
+  useEffect(() => {
+    if (!platform || minimized) return
+    let hoverTimer: ReturnType<typeof setTimeout> | null = null
+    const findIndexForFocusKey = (key: string | null | undefined) => {
+      if (!key) return -1
+      return schritte.findIndex((st) => st.focusKey === key)
+    }
+    const applyFromPointer = (e: Event, immediate: boolean) => {
+      const t = e.target as HTMLElement | null
+      if (!t?.closest) return
+      if (t.closest('a[href]')) return
+      const el = t.closest('[data-leitfaden-focus]') as HTMLElement | null
+      const key = el?.getAttribute('data-leitfaden-focus') ?? null
+      const idx = findIndexForFocusKey(key)
+      if (idx < 0 || idx === schritt) return
+      const step = schritte[idx]
+      if (!step || !('phase' in step)) return
+      if (immediate) {
+        if (hoverTimer) clearTimeout(hoverTimer)
+        platform.onSchrittChange(idx)
+        return
+      }
+      if (hoverTimer) clearTimeout(hoverTimer)
+      hoverTimer = setTimeout(() => platform.onSchrittChange(idx), 200)
+    }
+    const onPointerOver = (e: Event) => applyFromPointer(e, false)
+    const onClick = (e: Event) => applyFromPointer(e, true)
+    document.addEventListener('click', onClick, true)
+    const useHoverSync = !isCoarsePointer()
+    if (useHoverSync) {
+      document.addEventListener('pointerover', onPointerOver, true)
+    }
+    return () => {
+      if (hoverTimer) clearTimeout(hoverTimer)
+      document.removeEventListener('click', onClick, true)
+      if (useHoverSync) {
+        document.removeEventListener('pointerover', onPointerOver, true)
+      }
+    }
+  }, [platform, minimized, schritte, schritt])
 
   const sheetBaseStyle: CSSProperties = {
     display: 'flex',
@@ -390,6 +558,12 @@ export function Oek2GalerieLeitfadenModal({ name, onDismiss }: Props) {
         }
 
   function renderSheetBody() {
+    const hdrBtnSize: CSSProperties = touchChrome
+      ? { minWidth: 44, minHeight: 44, padding: 0 }
+      : { width: 32, height: 32, padding: 0 }
+    const footerBtnPad = touchChrome ? '0.65rem 1.15rem' : '0.5rem 0.95rem'
+    const footerPrimaryPad = touchChrome ? '0.65rem 1.25rem' : '0.55rem 1.15rem'
+
     return (
       <>
         <div
@@ -417,7 +591,7 @@ export function Oek2GalerieLeitfadenModal({ name, onDismiss }: Props) {
           />
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', paddingBottom: '0.65rem', flexWrap: 'wrap' }}>
             <p style={{ margin: 0, fontSize: '0.82rem', fontWeight: 800, letterSpacing: '0.04em', color: '#3d5c4a', fontFamily: t.fontHeading }}>
-              Muster-Galerie · Rundgang
+              {platform ? 'ök2 Plattform · Rundgang' : 'Muster-Galerie · Rundgang'}
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }} onPointerDown={(e) => e.stopPropagation()}>
               <button
@@ -496,8 +670,7 @@ export function Oek2GalerieLeitfadenModal({ name, onDismiss }: Props) {
                   minimize()
                 }}
                 style={{
-                  width: 32,
-                  height: 32,
+                  ...hdrBtnSize,
                   borderRadius: 8,
                   border: '1px solid rgba(107, 144, 128, 0.35)',
                   background: '#fffefb',
@@ -505,7 +678,6 @@ export function Oek2GalerieLeitfadenModal({ name, onDismiss }: Props) {
                   fontWeight: 700,
                   cursor: 'pointer',
                   fontSize: '0.75rem',
-                  padding: 0,
                 }}
               >
                 ▼
@@ -562,8 +734,22 @@ export function Oek2GalerieLeitfadenModal({ name, onDismiss }: Props) {
             lineHeight: 1.35,
           }}
         >
-          Der Hintergrund blockiert Klicks nicht – du kannst die Seite dahinter bedienen. Ohne Audio: alles lesen. Zusammenklappen:{' '}
-          <strong style={{ color: t.text }}>▼</strong>.
+          {platform ? (
+            <>
+              {touchChrome
+                ? 'Neben dem Fenster tippen schließt den Rundgang. '
+                : 'Der Hintergrund blockiert Klicks nicht. '}
+              <strong style={{ color: t.text }}>Schließen</strong> beendet den Rundgang;{' '}
+              <strong style={{ color: t.text }}>▼</strong> klappt nur zu. Ohne Audio.
+            </>
+          ) : (
+            <>
+              {touchChrome
+                ? 'Neben dem Fenster tippen klappt zu. '
+                : 'Der Hintergrund blockiert Klicks nicht – du kannst die Seite dahinter bedienen. '}
+              Ohne Audio: alles lesen. Zusammenklappen: <strong style={{ color: t.text }}>▼</strong>.
+            </>
+          )}
         </p>
 
         <div
@@ -626,9 +812,10 @@ export function Oek2GalerieLeitfadenModal({ name, onDismiss }: Props) {
             {schritt > 0 ? (
               <button
                 type="button"
-                onClick={() => setSchritt((n) => n - 1)}
+                onClick={() => setSchritt(schritt - 1)}
                 style={{
-                  padding: '0.5rem 0.95rem',
+                  padding: footerBtnPad,
+                  minHeight: touchChrome ? 44 : undefined,
                   fontSize: '0.88rem',
                   fontWeight: 700,
                   borderRadius: 999,
@@ -644,9 +831,10 @@ export function Oek2GalerieLeitfadenModal({ name, onDismiss }: Props) {
             ) : null}
             <button
               type="button"
-              onClick={schliessenUndMerken}
+              onClick={platform ? schliessenPlattformNurAusblenden : minimize}
               style={{
-                padding: '0.5rem 0.85rem',
+                padding: footerBtnPad,
+                minHeight: touchChrome ? 44 : undefined,
                 fontSize: '0.86rem',
                 fontWeight: 600,
                 borderRadius: 999,
@@ -659,14 +847,14 @@ export function Oek2GalerieLeitfadenModal({ name, onDismiss }: Props) {
                 textUnderlineOffset: '3px',
               }}
             >
-              Später
+              {platform ? 'Schließen' : 'Später'}
             </button>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem', justifyContent: 'flex-end' }}>
             {!istLetzter ? (
               <button
                 type="button"
-                onClick={() => setSchritt((n) => Math.min(max, n + 1))}
+                onClick={() => setSchritt(Math.min(max, schritt + 1))}
                 style={{
                   padding: '0.55rem 1.15rem',
                   fontSize: '0.92rem',
@@ -716,8 +904,8 @@ export function Oek2GalerieLeitfadenModal({ name, onDismiss }: Props) {
             position: 'absolute',
             right: 0,
             bottom: 0,
-            width: 28,
-            height: 28,
+            width: touchChrome ? 44 : 28,
+            height: touchChrome ? 44 : 28,
             cursor: 'nwse-resize',
             touchAction: 'none',
             background:
@@ -733,6 +921,7 @@ export function Oek2GalerieLeitfadenModal({ name, onDismiss }: Props) {
     return (
       <>
         <Oek2LeitfadenKeyframes />
+        {platform ? <Oek2PlatformAdminLeitfadenKeyframes /> : null}
         <button
           type="button"
           className="k2-familie-no-print"
@@ -754,7 +943,7 @@ export function Oek2GalerieLeitfadenModal({ name, onDismiss }: Props) {
             boxShadow: '0 6px 24px rgba(15, 23, 42, 0.2)',
           }}
         >
-          Demo-Rundgang ök2 ▶
+          {platform ? 'ök2 Plattform · Rundgang ▶' : 'Demo-Rundgang ök2 ▶'}
         </button>
       </>
     )
@@ -763,6 +952,7 @@ export function Oek2GalerieLeitfadenModal({ name, onDismiss }: Props) {
   return (
     <>
       <Oek2LeitfadenKeyframes />
+      {platform ? <Oek2PlatformAdminLeitfadenKeyframes /> : null}
       <div
         className="oek2-galerie-leitfaden-backdrop"
         role="presentation"
@@ -781,6 +971,24 @@ export function Oek2GalerieLeitfadenModal({ name, onDismiss }: Props) {
           pointerEvents: 'none',
         }}
       >
+        {touchChrome ? (
+          <button
+            type="button"
+            aria-label={platform ? 'Rundgang schließen' : 'Rundgang einklappen'}
+            onClick={onBackdropTapDismiss}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 25000,
+              margin: 0,
+              padding: 0,
+              border: 'none',
+              background: 'transparent',
+              cursor: 'pointer',
+              pointerEvents: 'auto',
+            }}
+          />
+        ) : null}
         {bounds === null ? (
           <div
             style={{
