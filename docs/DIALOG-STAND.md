@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Pilot-Testrunde: **eine Mappe** [`/testuser-anmeldung`](https://k2-galerie.vercel.app/testuser-anmeldung), Zettel ab **Nr. 10**; Organisations-Plan: **`docs/TESTUSER-PILOT-E2E-ORGA.md`**; Browser-Pfad **`npm run test:e2e`** (Formular → Zettel).  
-**Einordnung:** Weniger Seiten merken – Faden in einem Doc; Zähler + Unit-Tests + optional Playwright E2E.
+**Was wir JETZT tun:** Pilot-Testrunde: **Testuser-Mappe** [`/testuser-anmeldung`](https://k2-galerie.vercel.app/testuser-anmeldung) mit **zentraler Pilotenliste** (Vercel Blob + API-Key); bei Bedarf **`.env.example`** (PILOT_KATALOG_*).  
+**Einordnung:** Eine Quelle für die Liste – nicht nur localStorage.
+
+---
+
+**Letzter Stand:** 18.04.26 – **Piloten-/Testuser-Katalog: zentrale Liste (Vercel Blob)** – **`api/pilot-katalog.js`:** GET/POST, `pilot-katalog.json`, **PILOT_KATALOG_API_KEY** Pflicht; **`pilotKatalogMerge`**, **`pilotKatalogApi`** (Pull, Push, Debounce); **`testuserKatalogStorage`:** `updatedAt`, `saveTestuserKatalog` → Remote-Push; **`TestuserAnmeldungPage`:** Abgleich + Status + „Mit Server abgleichen“; **`.env.example`**. **`qs:local`** grün. **Commit:** `40de5610` ✅ GitHub
 
 ---
 

@@ -17,6 +17,7 @@ import {
   type TestuserKatalogStatus,
   updateTestuserKatalogEintrag,
 } from '../utils/testuserKatalogStorage'
+import { isPilotKatalogSyncConfigured, pullAndMergePilotKatalog } from '../utils/pilotKatalogApi'
 
 const R = PROJECT_ROUTES['k2-galerie']
 
@@ -307,6 +308,9 @@ function TestuserAnmeldungForm() {
 
 function KatalogSection() {
   const [rows, setRows] = useState<TestuserKatalogEintrag[]>(() => loadTestuserKatalog())
+  const [syncStatus, setSyncStatus] = useState<'loading' | 'ok' | 'offline' | 'error'>(() =>
+    isPilotKatalogSyncConfigured() ? 'loading' : 'offline'
+  )
   const [name, setName] = useState('')
   const [appName, setAppName] = useState('')
   const [email, setEmail] = useState('')
@@ -320,9 +324,40 @@ function KatalogSection() {
   }
 
   useEffect(() => {
+    let cancelled = false
     ensureTestuserKatalogSeedOnce()
     setRows(loadTestuserKatalog())
+    if (!isPilotKatalogSyncConfigured()) {
+      setSyncStatus('offline')
+      return () => {
+        cancelled = true
+      }
+    }
+    setSyncStatus('loading')
+    void pullAndMergePilotKatalog().then((r) => {
+      if (cancelled) return
+      if (r === 'ok') setSyncStatus('ok')
+      else if (r === 'offline') setSyncStatus('offline')
+      else setSyncStatus('error')
+      ensureTestuserKatalogSeedOnce()
+      setRows(loadTestuserKatalog())
+    })
+    return () => {
+      cancelled = true
+    }
   }, [])
+
+  const handleServerSync = () => {
+    if (!isPilotKatalogSyncConfigured()) return
+    setSyncStatus('loading')
+    ensureTestuserKatalogSeedOnce()
+    void pullAndMergePilotKatalog().then((r) => {
+      if (r === 'ok') setSyncStatus('ok')
+      else if (r === 'offline') setSyncStatus('offline')
+      else setSyncStatus('error')
+      refresh()
+    })
+  }
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault()
@@ -352,9 +387,51 @@ function KatalogSection() {
 
   return (
     <div className="tu-no-print">
-      <p style={{ fontSize: '0.88rem', color: '#555', lineHeight: 1.5, marginBottom: '0.75rem' }}>
-        <strong>Pilot-Zettel:</strong> Sobald ein neuer Zettel erzeugt wird, erscheint er hier mit Link zum <strong>Zugangsblatt</strong> (dieselbe Seite wie beim Versand/Druck). Nur auf diesem Gerät gespeichert – zum Abgleich mit Anmeldungen.
-      </p>
+      <div
+        style={{
+          marginBottom: '0.75rem',
+          padding: '0.55rem 0.7rem',
+          borderRadius: 8,
+          border: '1px solid #e8e4dc',
+          background: '#faf8f5',
+          fontSize: '0.86rem',
+          color: '#1c1a18',
+          lineHeight: 1.5,
+        }}
+      >
+        <p style={{ margin: '0 0 0.45rem' }}>
+          <strong>Pilot-Zettel:</strong> Neuer Zettel erscheint hier mit Link zum <strong>Zugangsblatt</strong>.
+        </p>
+        <p style={{ margin: 0, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem' }}>
+          <span>
+            <strong>Liste:</strong>{' '}
+            {syncStatus === 'loading' && '⏳ Abgleich mit Server …'}
+            {syncStatus === 'ok' && '✅ Zentrale Liste (Vercel) – alle Geräte gleicher Stand.'}
+            {syncStatus === 'offline' && '○ Nur dieser Browser – setze VITE_PILOT_KATALOG_API_KEY + PILOT_KATALOG_API_KEY auf Vercel für zentrale Liste.'}
+            {syncStatus === 'error' && '⚠️ Server-Abgleich fehlgeschlagen – prüfe API-Key in Vercel oder Netzwerk.'}
+          </span>
+          {isPilotKatalogSyncConfigured() && (
+            <button
+              type="button"
+              className="tu-no-print"
+              onClick={handleServerSync}
+              disabled={syncStatus === 'loading'}
+              style={{
+                padding: '0.3rem 0.65rem',
+                fontSize: '0.82rem',
+                fontWeight: 600,
+                borderRadius: 6,
+                border: '1px solid #b54a1e',
+                background: syncStatus === 'loading' ? '#ddd' : '#fffefb',
+                color: '#b54a1e',
+                cursor: syncStatus === 'loading' ? 'not-allowed' : 'pointer',
+              }}
+            >
+              Mit Server abgleichen
+            </button>
+          )}
+        </p>
+      </div>
       <form
         onSubmit={handleAdd}
         style={{
@@ -678,7 +755,7 @@ export default function TestuserAnmeldungPage() {
 
       <section id="katalog" className="tu-map-katalog" style={{ marginBottom: '1.5rem' }}>
         <h2 className="tu-no-print" style={{ fontSize: '1.05rem', margin: '0 0 0.5rem', color: '#b54a1e', fontWeight: 700 }}>
-          Katalog Testuser (nur diese APf)
+          Katalog Testuser / Piloten
         </h2>
         <KatalogSection />
       </section>

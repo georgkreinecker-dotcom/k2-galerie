@@ -23,6 +23,8 @@ export type TestuserKatalogEintrag = {
   notiz: string
   status: TestuserKatalogStatus
   createdAt: string
+  /** Für Merge Server ↔ Gerät (neuere Version gewinnt) */
+  updatedAt?: string
   /** Relativer Link zum Zugangsblatt (z. B. /zettel-pilot?…), nach Versand/Druck gesetzt */
   zugangsblattUrl?: string
   pilotLinie?: 'oek2' | 'vk2' | 'familie'
@@ -62,19 +64,29 @@ export function loadTestuserKatalog(): TestuserKatalogEintrag[] {
   }
 }
 
-export function saveTestuserKatalog(list: TestuserKatalogEintrag[]): void {
+export function saveTestuserKatalog(
+  list: TestuserKatalogEintrag[],
+  opts?: { skipRemotePush?: boolean }
+): void {
   try {
     localStorage.setItem(KEY, JSON.stringify(list))
   } catch {
     console.warn('⚠️ Testuser-Katalog konnte nicht gespeichert werden')
   }
+  if (!opts?.skipRemotePush && typeof window !== 'undefined') {
+    void import('./pilotKatalogApi')
+      .then((m) => m.schedulePilotKatalogPush())
+      .catch(() => {})
+  }
 }
 
 export function addTestuserKatalogEintrag(e: Omit<TestuserKatalogEintrag, 'id' | 'createdAt'>): TestuserKatalogEintrag[] {
+  const now = new Date().toISOString()
   const neu: TestuserKatalogEintrag = {
     ...e,
     id: `tu-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-    createdAt: new Date().toISOString(),
+    createdAt: now,
+    updatedAt: now,
   }
   const next = [...loadTestuserKatalog(), neu]
   saveTestuserKatalog(next)
@@ -127,11 +139,15 @@ export function ensureTestuserKatalogSeedOnce(): void {
     if (localStorage.getItem(SEED_FLAG) === '1') return
     const cur = loadTestuserKatalog()
     const existingIds = new Set(cur.map((e) => e.id))
-    const seeds: TestuserKatalogEintrag[] = INITIAL_THREE.map((s, i) => ({
-      ...s,
-      id: `seed-pilot-${i + 1}`,
-      createdAt: new Date().toISOString(),
-    }))
+    const seeds: TestuserKatalogEintrag[] = INITIAL_THREE.map((s, i) => {
+      const now = new Date().toISOString()
+      return {
+        ...s,
+        id: `seed-pilot-${i + 1}`,
+        createdAt: now,
+        updatedAt: now,
+      }
+    })
     const merged = [...cur]
     for (const s of seeds) {
       if (!existingIds.has(s.id)) merged.push(s)
@@ -229,7 +245,10 @@ export function updateTestuserKatalogEintrag(
     >
   >
 ): TestuserKatalogEintrag[] {
-  const next = loadTestuserKatalog().map((e) => (e.id === id ? { ...e, ...patch } : e))
+  const touch = new Date().toISOString()
+  const next = loadTestuserKatalog().map((e) =>
+    e.id === id ? { ...e, ...patch, updatedAt: touch } : e
+  )
   saveTestuserKatalog(next)
   return next
 }
