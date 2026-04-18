@@ -5,6 +5,10 @@
 
 ---
 
+**Letzter Stand:** 18.04.26 – **Testpilot: Vorname in ök2-Stammdaten + Galerie-Karte + Admin** – **`zettelPilotOeffentlichPrefill`**: Name nur wenn leer oder Muster; **`GaleriePage`/`GalerieVorschauPage`**: bei Zettel-Link; **`ScreenshotExportAdmin`**: Session ohne `k2-pilot-einladung`; **`oeffentlichMartinaDisplayName`** statt fixer Muster-Name in der Karte. **`EntdeckenPage`**: Redirect zur ök2-Galerie bei `context=oeffentlich` + `vorname` + `entwurf=1`. **`ZettelPilotPage`**: defekte ök2-URL `/` oder `/entdecken` → **`buildOek2PilotGalerieUrl`**. **`npm run build:vercel`** grün. **Commit:** `b5dd49e5` ✅ GitHub
+
+---
+
 **Letzter Stand:** 18.04.26 – **Pilot-Zettel: ök2/VK2 getrennte Anwendungen + ök2-Galerie ohne Entdecken-Umweg** – **`pilotZettelMdAdapt.ts`:** Text je Linie (nur ök2 / nur VK2); **`ZettelPilotPage`:** Hinweisbox; **`GaleriePage`:** bei `entwurf=1` + `vorname` kein Redirect zu Entdecken. **`pilotZettelMdAdapt.test.ts`**. **`npm run build`** grün. **Commit:** `366318f8` ✅ GitHub
 
 ---

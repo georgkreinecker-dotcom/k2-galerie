@@ -101,6 +101,7 @@ import { addPendingArtwork, ensureArtworkUid, filterK2Only, isEchteK2Werknummer,
 import { isSupabaseConfigured, saveArtworksToSupabase, fillArtworkImageUrlsFromSupabase, fillMissingImageUrlsFromIndexedDB } from '../src/utils/supabaseClient'
 import { uploadArtworkImageToStorage } from '../src/utils/supabaseStorage'
 import { loadStammdaten, saveStammdaten as persistStammdaten, loadVk2Stammdaten, saveVk2Stammdaten, buildK2PersonStateForAdmin } from '../src/utils/stammdatenStorage'
+import { applyZettelPilotVornameToOeffentlichMartina } from '../src/utils/zettelPilotOeffentlichPrefill'
 import { computeK2MalereiMartinaCorrectedNumber } from '../src/utils/k2MalereiMartinaKtoMPrefixFix'
 import { loadEvents as loadEventsFromStorage, saveEvents as saveEventsToStorage, loadK2EventsBackup, mergeEventTimesFromLocal } from '../src/utils/eventsStorage'
 import { pickOpeningEventForWerbemittel } from '../src/utils/oek2MusterEventLinie'
@@ -3809,7 +3810,26 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     } catch {
       return
     }
-    if (!raw) return
+    if (!raw) {
+      if (tenant.isOeffentlich) {
+        let sessionName = ''
+        try {
+          if (sessionStorage.getItem(WILLKOMMEN_ENTWURF_KEY) === '1') {
+            sessionName = (sessionStorage.getItem(WILLKOMMEN_NAME_KEY) || '').trim()
+          }
+        } catch {
+          /* ignore */
+        }
+        if (sessionName && applyZettelPilotVornameToOeffentlichMartina(sessionName)) {
+          pilotPrefillAppliedRef.current = true
+          setMartinaData((prev: typeof martinaData) => {
+            const loaded = loadStammdaten('oeffentlich', 'martina')
+            return { ...prev, ...loaded }
+          })
+        }
+      }
+      return
+    }
     let parsed: { name?: string; firstName?: string; lastName?: string; email?: string; context?: string }
     try {
       parsed = JSON.parse(raw) as {

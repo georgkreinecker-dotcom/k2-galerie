@@ -7,14 +7,14 @@
  * Am Ende: verblüffender Moment – „Das ist deine Galerie."
  */
 
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, AGB_ROUTE, BASE_APP_URL, ENTDECKEN_ROUTE } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { prepareFreshOek2VisitorSession } from '../utils/oek2FreshStart'
 import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_K2_FAMILIE_WERBESLOGAN, PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ } from '../config/tenantConfig'
-import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_LIZENZ_ANFRAGE_BETREFF } from '../config/tenantConfig'
+import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_LIZENZ_ANFRAGE_BETREFF, isPlatformInstance } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import {
   getPageContentEntdecken,
@@ -610,6 +610,22 @@ function HubArbeitsbereich({ name, q1, accent, accentLight, accentGlow, bgDark, 
 export default function EntdeckenPage() {
   const navigate = useNavigate()
   const location = useLocation()
+  /**
+   * Testpilot-Links (context=oeffentlich, vorname, entwurf=1) dürfen nicht auf Entdecken enden:
+   * Vercel leitet / mit Query nach /entdecken um; Root-Links landen sonst hier statt in der Demo-Galerie.
+   */
+  useLayoutEffect(() => {
+    try {
+      if (!isPlatformInstance()) return
+      const sp = new URLSearchParams(location.search)
+      if (sp.get('context') !== 'oeffentlich') return
+      const vorname = (sp.get('vorname') || '').trim()
+      if (!vorname) return
+      if (sp.get('entwurf') !== '1') return
+      const path = PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+      navigate(`${path}?${sp.toString()}`, { replace: true })
+    } catch (_) {}
+  }, [location.search, navigate])
   /** Beim Betreten Entdecken: Flag zurücksetzen, damit Direktaufrufer von galerie-oeffentlich wieder hierher umgeleitet werden. */
   useEffect(() => {
     try { sessionStorage.removeItem('k2-from-entdecken') } catch (_) {}

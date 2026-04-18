@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { beendeGuideFlow } from '../utils/k2GuideFlowStorage'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, ENTDECKEN_ROUTE, MEIN_BEREICH_ROUTE, flyerEventBogenUrl, type FlyerEventBogenTenantContext } from '../config/navigation'
+import { applyZettelPilotVornameToOeffentlichMartina } from '../utils/zettelPilotOeffentlichPrefill'
 import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, K2_DEFAULT_VITA_MARTINA, K2_DEFAULT_VITA_GEORG, isPlatformInstance, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, PRODUCT_LIZENZ_ANFRAGE_EMAIL, OEK2_WILLKOMMEN_IMAGES, getOek2WelcomeImageEffective, OEK2_PLACEHOLDER_IMAGE, initVk2DemoStammdatenIfEmpty, getProminenteAdresseFormatiert, FOCUS_DIRECTIONS } from '../config/tenantConfig'
 import { buildVitaDocumentHtml } from '../utils/vitaDocument'
 import { getGalerieImages, getPageContentGalerie, mergePageContentGalerieFromServer } from '../config/pageContentGalerie'
@@ -345,6 +346,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       const urlName = params.get('vorname')
       const urlEntwurf = params.get('entwurf')
       if (urlName && urlName.trim() && urlEntwurf === '1') {
+        applyZettelPilotVornameToOeffentlichMartina(urlName.trim())
         setGuideName(urlName.trim())
         setGuideVisible(true)
         try {
@@ -356,7 +358,11 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       // Fallback: sessionStorage / localStorage
       const n = sessionStorage.getItem(WILLKOMMEN_NAME_KEY) || localStorage.getItem(WILLKOMMEN_NAME_KEY)
       const e = sessionStorage.getItem(WILLKOMMEN_ENTWURF_KEY) || localStorage.getItem(WILLKOMMEN_ENTWURF_KEY)
-      if (n && e === '1') { setGuideName(n.trim()); setGuideVisible(true) }
+      if (n && e === '1') {
+        applyZettelPilotVornameToOeffentlichMartina(n.trim())
+        setGuideName(n.trim())
+        setGuideVisible(true)
+      }
     } catch (_) {}
   }, [musterOnly, fromApf])
 
@@ -643,6 +649,14 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       galerieCardImage: ''
     }
   )
+
+  /** ök2: Anzeigename = Stammdaten wenn gesetzt, sonst Muster – damit Testpilot-Vorname sichtbar ist */
+  const oeffentlichMartinaDisplayName = React.useMemo(() => {
+    if (!musterOnly) return ''
+    const n = (martinaData.name || '').trim()
+    const m = (MUSTER_TEXTE.martina.name || '').trim()
+    return n || m
+  }, [musterOnly, martinaData.name])
 
   // Aktuelles aus Eventplanung (k2-events): anzeigen zwischen Foto und Kunstschaffende
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>(() => getUpcomingEvents())
@@ -3795,13 +3809,13 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                       boxShadow: '0 8px 24px rgba(102, 126, 234, 0.4)',
                       flexShrink: 0
                     }}>
-                      {(musterOnly ? MUSTER_TEXTE.martina.name : ((tenantId === 'k2' && (martinaData.name === 'Künstlerin Muster' || !martinaData.name)) ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name))).charAt(0)}
+                      {(musterOnly ? oeffentlichMartinaDisplayName : ((tenantId === 'k2' && (martinaData.name === 'Künstlerin Muster' || !martinaData.name)) ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name))).charAt(0)}
                     </div>
                   )}
                   <div>
                     <span style={{ fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', letterSpacing: '0.12em', textTransform: 'uppercase', color: musterOnly ? theme.muted : 'rgba(255,255,255,0.5)', fontWeight: '600' }}>Bilder</span>
                     <h4 style={{ margin: '0.25rem 0 0', fontSize: 'clamp(1.2rem, 3.2vw, 1.6rem)', color: theme.text, fontWeight: '600' }}>
-                      {musterOnly ? MUSTER_TEXTE.martina.name : ((tenantId === 'k2' && (martinaData.name === 'Künstlerin Muster' || !martinaData.name)) ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name))}
+                      {musterOnly ? oeffentlichMartinaDisplayName : ((tenantId === 'k2' && (martinaData.name === 'Künstlerin Muster' || !martinaData.name)) ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name))}
                     </h4>
                   </div>
                 </div>

@@ -56,6 +56,22 @@ function pilotUrlIsK2FamilieWillkommen(pilotUrl: string): boolean {
   return pilotUrl === FAMILIE_BASE || pilotUrl.startsWith(`${FAMILIE_BASE}?`)
 }
 
+/** Kaputter oder alter Zettel: nur Eingangstor-URL, keine persönliche Galerie – dann aus appName reparieren */
+function isOek2ZettelUrlNurEntdeckenOderLeer(pilotUrlRaw: string): boolean {
+  const t = pilotUrlRaw.trim()
+  if (!t) return true
+  if (t.includes('/galerie-oeffentlich')) return false
+  if (t.includes('/projects/vk2/')) return false
+  if (pilotUrlIsK2FamilieWillkommen(t)) return false
+  try {
+    const u = new URL(t, BASE_APP_URL)
+    const p = u.pathname.replace(/\/$/, '') || '/'
+    return p === '/entdecken' || p === '/'
+  } catch {
+    return !t.includes('/galerie-oeffentlich')
+  }
+}
+
 function isPilotTableRowOek2(row: string[]): boolean {
   return /ök2/i.test(row[0] || '')
 }
@@ -91,8 +107,19 @@ export default function ZettelPilotPage() {
    * wenn & in der URL die Parameter zerschneidet – dann trotzdem korrekter Einstieg über appName.
    */
   const pilotUrl = useMemo(() => {
-    if (pilotType === 'oek2' && appName.trim()) {
-      return buildOek2PilotGalerieUrl(appName.trim())
+    const app = appName.trim()
+    if (pilotType === 'oek2' && app) {
+      return buildOek2PilotGalerieUrl(app)
+    }
+    if (
+      app &&
+      pilotType !== 'vk2' &&
+      pilotType !== 'familie' &&
+      pilotUrlRaw !== VK2_BASE &&
+      !pilotUrlIsK2FamilieWillkommen(pilotUrlRaw) &&
+      isOek2ZettelUrlNurEntdeckenOderLeer(pilotUrlRaw)
+    ) {
+      return buildOek2PilotGalerieUrl(app)
     }
     return pilotUrlRaw
   }, [pilotType, pilotUrlRaw, appName])
