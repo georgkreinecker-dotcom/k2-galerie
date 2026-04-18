@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 18.04.26 – **Pilot-Zettel ab 10 + E2E-Orga-Doc** – **`pilotZettelNr.ts`**, Tests **`pilotZettelNr.test.ts`**; **`docs/TESTUSER-PILOT-E2E-ORGA.md`**, **`docs/00-INDEX.md`**, **`HAUS-INDEX.md`**. **`npm run build:vercel`** grün. **Commit:** **`718ba0df`** ✅ GitHub
+**Letzter Stand:** 18.04.26 – **Pilot-Zettel ab 10 + E2E-Orga-Doc** – **`pilotZettelNr.ts`**, Tests **`pilotZettelNr.test.ts`**; **`docs/TESTUSER-PILOT-E2E-ORGA.md`**, **`docs/00-INDEX.md`**, **`HAUS-INDEX.md`**. **`npm run build:vercel`** grün. **Commit:** **`24b6bf6d`** ✅ GitHub
 
 ---
 
