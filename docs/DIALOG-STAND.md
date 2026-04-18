@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Kurz **K2-Familie-Pilot-Zettel** im Browser drucken (Tabelle: 3× Link + QR); bei Bedarf offene lokale Änderungen (u. a. **FamilieEinladungQuerySync**, **TestprotokollTestuserPage**, **k2team** 29) committen oder verwerfen.  
-**Einordnung:** Pilot-Zettel K2 Familie = **Handbuch + Testprotokoll** jetzt **auf dem Blatt** (Link + QR) + **Formular**-Titel **`8e3d8b3a`**.
+**Was wir JETZT tun:** Optional: Pilot-Einladungslink im Browser testen (**t** + **z** + **fn**) → Landung auf **`/projects/k2-familie`** mit voller Oberfläche (kein Nur-Zugang-Kompakt).  
+**Einordnung:** **Einfachste Form Inhaber-Code** = weiterhin **automatisch pro Person** beim Pilot-Seed (2 Buchstaben + 2 Ziffern); kein gemeinsamer Erstcode nötig.
+
+---
+
+**Letzter Stand:** 18.04.26 – **K2 Familie: Einstieg ohne Zwischenschritt (Pilot)** – **`FamilieEinladungQuerySync`:** bei Pilot-Tenant mit **z** kein Kompakt-„Nur-Zugang“ → Start **`R_FAM.home`**; **`K2FamilieWillkommenPage`:** Einladungs-Query weiter nach **home** statt **meineFamilie**; **`familiePilotSeed`:** Kommentar Erstzugang = automatischer persönlicher Code. **`tsc:build`** grün. **Commit:** **`ab552041`** ✅ GitHub
 
 ---
 
