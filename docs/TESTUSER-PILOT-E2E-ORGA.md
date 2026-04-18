@@ -31,7 +31,11 @@ Dort: interner **Katalog**, Anmeldetext, Links zu Zetteln/Testprotokoll – **ni
 | **Katalog-Logik** (Seed, Registrierung, Upsert) | `npm run test -- --run src/tests/testuserKatalogStorage.test.ts` |
 | **Volle Qualität vor Push** | `npm run test` und `npm run build` (wie Vercel) |
 
-**E2E im Browser (Playwright):** im Projekt vorhanden – **ausbaubar** für einen durchgängigen Klick-Pfad (Formular → Zettel). Bis das fest verdrahtet ist: die Unit-Tests oben + manuell einmal der Drei-Schritte-Ablauf reichen als „Ende-zu-Ende“-Sicherheit für die Datenlogik.
+**E2E im Browser (Playwright):** `e2e/pilot-zettel-form.spec.ts` – Formular `/zettel-pilot-form` → Klick **Laufzettel generieren** → `/zettel-pilot?…` (Name, App-Name, Typ ök2, pilotUrl).
+
+- **Einmalig:** Im Projektordner `npm run test:e2e:install` (lädt Chromium für Playwright).
+- **Lauf:** `npm run test:e2e` – startet bei Bedarf `build:vercel` + `vite preview` auf Port **4173** (oder nutzt einen bereits laufenden Preview dort, lokal ohne CI).
+- Ergänzend: die Unit-Tests oben; manuell der Drei-Schritte-Ablauf bleibt möglich.
 
 ---
 
@@ -48,4 +52,4 @@ In der Mappe als Zeilen **Bestehender Pilot 1–3** – Platzhalter. Namen, App 
 
 ---
 
-*Kurz: **Eine Mappe**, **ein Formular**, **ein Zettel** – Rest ist KI/Tests + optional später Playwright.*
+*Kurz: **Eine Mappe**, **ein Formular**, **ein Zettel** – Rest ist KI/Tests + optional `npm run test:e2e` für den Browser-Pfad.*

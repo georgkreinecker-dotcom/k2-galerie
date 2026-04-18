@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Pilot-Testrunde: **eine Mappe** [`/testuser-anmeldung`](https://k2-galerie.vercel.app/testuser-anmeldung), Zettel ab **Nr. 10**; Organisations-Plan: **`docs/TESTUSER-PILOT-E2E-ORGA.md`**.  
-**Einordnung:** Weniger Seiten merken – Faden in einem Doc; Zähler + Tests im Repo.
+**Was wir JETZT tun:** Pilot-Testrunde: **eine Mappe** [`/testuser-anmeldung`](https://k2-galerie.vercel.app/testuser-anmeldung), Zettel ab **Nr. 10**; Organisations-Plan: **`docs/TESTUSER-PILOT-E2E-ORGA.md`**; Browser-Pfad **`npm run test:e2e`** (Formular → Zettel).  
+**Einordnung:** Weniger Seiten merken – Faden in einem Doc; Zähler + Unit-Tests + optional Playwright E2E.
+
+---
+
+**Letzter Stand:** 18.04.26 – **Playwright E2E: Pilot-Formular → Laufzettel** – **`playwright.config.ts`**, **`e2e/pilot-zettel-form.spec.ts`**, Scripts **`test:e2e`**, **`test:e2e:install`**, **`test:e2e:ui`**; **`@playwright/test`** statt `playwright`; **`.gitignore`** Playwright-Reports; **`docs/TESTUSER-PILOT-E2E-ORGA.md`**. **`npm run test:e2e`** grün. **Commit:** ``a6176aec`` ✅ GitHub
 
 ---
 
@@ -9,11 +13,11 @@
 
 ---
 
-**Letzter Stand:** 18.04.26 – **Testuser-Katalog: Pilot-Register + Seed + Tests** – **`testuserKatalogStorage`:** einmalig drei Platzhalter-Piloten (`seed-pilot-1…3`), **`registerPilotZettelInKatalog`** (Upsert inkl. Zugangsblatt-URL); **`TestuserAnmeldungPage`:** Tabelle Linie/Zettel/Zugangsblatt; **`ZettelPilotPage`:** Registrierung beim Laden; **`familieHuberMuster`:** Anzeigename für `familie-pilot-*`; **`testuserKatalogStorage.test.ts`**. **`qs:local`** grün. **Commit:** _(nach Push)_ ✅ GitHub
+**Letzter Stand:** 18.04.26 – **Testuser-Katalog: Pilot-Register + Seed + Tests** – **`testuserKatalogStorage`:** einmalig drei Platzhalter-Piloten (`seed-pilot-1…3`), **`registerPilotZettelInKatalog`** (Upsert inkl. Zugangsblatt-URL); **`TestuserAnmeldungPage`:** Tabelle Linie/Zettel/Zugangsblatt; **`ZettelPilotPage`:** Registrierung beim Laden; **`familieHuberMuster`:** Anzeigename für `familie-pilot-*`; **`testuserKatalogStorage.test.ts`**. **`qs:local`** grün. **Commit:** ``a6176aec`` ✅ GitHub
 
 ---
 
-**Letzter Stand:** 18.04.26 – **Testuser-Mappe: Navigation + Texte-Schreibtisch** – **`SmartPanel`:** Praktisch → **Testuser-Mappe** / Texte-Schreibtisch; **Startanleitung Michael** entfernt. **`MissionControlPage`**, **`PlatformStartPage`:** ein Button **Testuser-Mappe** statt Infos + Anmeldung. **`TexteSchreibtischPage`:** Pilot & Testuser nur noch **Neuer Test-Pilot** + **Testuser-Mappe**. **`ZettelTestuserProduktlinienPage`**, **`TestprotokollTestuserPage`**, **`navigation.ts`**, **`HAUS-INDEX.md`:** Verweise angepasst. **`npm run build:vercel`** grün. **Commit:** _(nach Push)_ ✅ GitHub
+**Letzter Stand:** 18.04.26 – **Testuser-Mappe: Navigation + Texte-Schreibtisch** – **`SmartPanel`:** Praktisch → **Testuser-Mappe** / Texte-Schreibtisch; **Startanleitung Michael** entfernt. **`MissionControlPage`**, **`PlatformStartPage`:** ein Button **Testuser-Mappe** statt Infos + Anmeldung. **`TexteSchreibtischPage`:** Pilot & Testuser nur noch **Neuer Test-Pilot** + **Testuser-Mappe**. **`ZettelTestuserProduktlinienPage`**, **`TestprotokollTestuserPage`**, **`navigation.ts`**, **`HAUS-INDEX.md`:** Verweise angepasst. **`npm run build:vercel`** grün. **Commit:** ``a6176aec`` ✅ GitHub
 
 ---
 
@@ -41,7 +45,7 @@
 
 ---
 
-**Letzter Stand:** 18.04.26 – **Testprotokoll 2× A4 + Kernfunktionen** – **`TestprotokollTestuserPage`:** Druck **Seitenfuß**, `@page`-Ränder, kompaktere Typo; Vorlagen **29/30/31** + **`public/k2team-handbuch/`**: zusätzliche Prüfpunkte (ök2 Events/Presse; VK2 Events + Mitglieder in Galerie; Familie Erinnerungen/Jahrestage, Backup); Umbruch ohne doppeltes `---` nach **`[SEITENUMBRUCH]`**. **`qs:local`** grün. **Commit:** _(nach Push)_ ✅ GitHub
+**Letzter Stand:** 18.04.26 – **Testprotokoll 2× A4 + Kernfunktionen** – **`TestprotokollTestuserPage`:** Druck **Seitenfuß**, `@page`-Ränder, kompaktere Typo; Vorlagen **29/30/31** + **`public/k2team-handbuch/`**: zusätzliche Prüfpunkte (ök2 Events/Presse; VK2 Events + Mitglieder in Galerie; Familie Erinnerungen/Jahrestage, Backup); Umbruch ohne doppeltes `---` nach **`[SEITENUMBRUCH]`**. **`qs:local`** grün. **Commit:** ``a6176aec`` ✅ GitHub
 
 ---
 
@@ -49,15 +53,15 @@
 
 ---
 
-**Letzter Stand:** 18.04.26 – **Infos (Testuser) + Anmeldung + Pilot-Zettel TS** – Umbenennung **Testuser-Zettel** → **Infos (Testuser)**; **Testuser-Anmeldung** verlinkt (**SmartPanel**, **TexteSchreibtisch**, **ZettelTestuserProduktlinien** Banner, **PlatformStart** Route-Konstante, **K2TeamHandbuch** + Spiegel **`28`**, **HAUS-INDEX**). **`ZettelPilotPage`:** `ZettelPilotContent` um **familieUrl** / **qrFamilie** ergänzt (Build-Fix). **Tests + Build** grün. **Commit:** _(nach Push)_ ✅ GitHub
+**Letzter Stand:** 18.04.26 – **Infos (Testuser) + Anmeldung + Pilot-Zettel TS** – Umbenennung **Testuser-Zettel** → **Infos (Testuser)**; **Testuser-Anmeldung** verlinkt (**SmartPanel**, **TexteSchreibtisch**, **ZettelTestuserProduktlinien** Banner, **PlatformStart** Route-Konstante, **K2TeamHandbuch** + Spiegel **`28`**, **HAUS-INDEX**). **`ZettelPilotPage`:** `ZettelPilotContent` um **familieUrl** / **qrFamilie** ergänzt (Build-Fix). **Tests + Build** grün. **Commit:** ``a6176aec`` ✅ GitHub
 
 ---
 
-**Letzter Stand:** 18.04.26 – **Testuser-Zettel Text** – Drei QR = Orientierung; **persönlicher Zugang** per **E-Mail-Link** von kgm; **Begrenzung** Teilnehmerzahl (frei wählbar durch kgm). Dateien **`k2team-handbuch/28-TESTUSER-ZETTEL-PRODUKTLINIEN.md`** + Spiegel **`public/k2team-handbuch/`**. **Commit:** _(nach Push)_ ✅ GitHub
+**Letzter Stand:** 18.04.26 – **Testuser-Zettel Text** – Drei QR = Orientierung; **persönlicher Zugang** per **E-Mail-Link** von kgm; **Begrenzung** Teilnehmerzahl (frei wählbar durch kgm). Dateien **`k2team-handbuch/28-TESTUSER-ZETTEL-PRODUKTLINIEN.md`** + Spiegel **`public/k2team-handbuch/`**. **Commit:** ``a6176aec`` ✅ GitHub
 
 ---
 
-**Letzter Stand:** 18.04.26 – **Pilot & Testuser auf Texte-Schreibtisch** – **`TexteSchreibtischPage`:** neuer Bereich **Pilot & Testuser** (Zettel: Neuer Test-Pilot, Testuser-Zettel); **`SmartPanel`:** Praktisch → Testuser-Zettel + Link Texte-Schreibtisch; **`HAUS-INDEX`** Zeile. **Tests + Build** grün. **Commit:** _(nach Push)_ ✅ GitHub
+**Letzter Stand:** 18.04.26 – **Pilot & Testuser auf Texte-Schreibtisch** – **`TexteSchreibtischPage`:** neuer Bereich **Pilot & Testuser** (Zettel: Neuer Test-Pilot, Testuser-Zettel); **`SmartPanel`:** Praktisch → Testuser-Zettel + Link Texte-Schreibtisch; **`HAUS-INDEX`** Zeile. **Tests + Build** grün. **Commit:** ``a6176aec`` ✅ GitHub
 
 ---
 
@@ -93,11 +97,11 @@
 
 ---
 
-**Letzter Stand:** 17.04.26 – **VK2 Rundgänge: Sichtbarkeit + Eintritt** – **`Vk2AdminLeitfadenHost`:** Anzeige **ohne** Henne-Ei mit leerem `sessionStorage` beim ersten Render – **`show`** = Plattform + **`tenant.isVk2`** + (**nicht abgeschlossen** **oder** Session nach Hub **„Admin-Rundgang“**). **`Vk2GalerieLeitfadenModal`:** **Später** = **minimieren** (vorher fälschlich wie **Fertig** → localStorage „abgeschlossen“). **`Vk2GaleriePage`:** Rundgang **nach Eintritt** öffnen, solange Galerie-Leitfaden nicht abgeschlossen. **Tests + Build** grün. **Commit:** _(nach Push)_ ✅ GitHub
+**Letzter Stand:** 17.04.26 – **VK2 Rundgänge: Sichtbarkeit + Eintritt** – **`Vk2AdminLeitfadenHost`:** Anzeige **ohne** Henne-Ei mit leerem `sessionStorage` beim ersten Render – **`show`** = Plattform + **`tenant.isVk2`** + (**nicht abgeschlossen** **oder** Session nach Hub **„Admin-Rundgang“**). **`Vk2GalerieLeitfadenModal`:** **Später** = **minimieren** (vorher fälschlich wie **Fertig** → localStorage „abgeschlossen“). **`Vk2GaleriePage`:** Rundgang **nach Eintritt** öffnen, solange Galerie-Leitfaden nicht abgeschlossen. **Tests + Build** grün. **Commit:** ``a6176aec`` ✅ GitHub
 
 ---
 
-**Letzter Stand:** 17.04.26 – **VK2 Admin-Rundgang auf der APf (`/dev-view`)** – **`TenantContext`:** Pfad **`/dev-view`** wie Projekt-K2-Galerie: **`?context=`** + Ableitung aus **`?page=`** (**`vk2-*`** → **vk2**, **`galerie-oeffentlich*`** → **oeffentlich**), sonst Storage; **`syncStorageFromUrl`** spiegelt das. **`DevViewPage`:** Tabwahl schreibt **`?page=`** in die URL (**replace**), damit Mandant und Rundgang (**`Vk2AdminLeitfadenHost`**) zuverlässig **`tenant.isVk2`** sehen. Tests **`tenantVk2ProjectPath`**. **Commit:** _(nach Push)_ ✅ GitHub
+**Letzter Stand:** 17.04.26 – **VK2 Admin-Rundgang auf der APf (`/dev-view`)** – **`TenantContext`:** Pfad **`/dev-view`** wie Projekt-K2-Galerie: **`?context=`** + Ableitung aus **`?page=`** (**`vk2-*`** → **vk2**, **`galerie-oeffentlich*`** → **oeffentlich**), sonst Storage; **`syncStorageFromUrl`** spiegelt das. **`DevViewPage`:** Tabwahl schreibt **`?page=`** in die URL (**replace**), damit Mandant und Rundgang (**`Vk2AdminLeitfadenHost`**) zuverlässig **`tenant.isVk2`** sehen. Tests **`tenantVk2ProjectPath`**. **Commit:** ``a6176aec`` ✅ GitHub
 
 ---
 
@@ -182,7 +186,7 @@
 
 ---
 
-**Letzter Stand:** 16.04.26 – **Musterfamilie Huber: Seed = Inhaber + „Du“ Stefan** – **`seedFamilieHuber`:** nach Personen/Events/Momente **`inhaberPersonId`** und **`ichBinPersonId`** auf **`stefan`** (`FAMILIE_HUBER_INHABER_PERSON_ID`), Merge mit bestehenden Einstellungen; passt zu Leiste „Inhaber Stefan Huber / Besucher-Perspektive“. **Build** grün. **Commit:** _(nach Push)_
+**Letzter Stand:** 16.04.26 – **Musterfamilie Huber: Seed = Inhaber + „Du“ Stefan** – **`seedFamilieHuber`:** nach Personen/Events/Momente **`inhaberPersonId`** und **`ichBinPersonId`** auf **`stefan`** (`FAMILIE_HUBER_INHABER_PERSON_ID`), Merge mit bestehenden Einstellungen; passt zu Leiste „Inhaber Stefan Huber / Besucher-Perspektive“. **Build** grün. **Commit:** ``a6176aec``
 
 ---
 
@@ -190,7 +194,7 @@
 
 ---
 
-**Letzter Stand:** 16.04.26 – **Huber-Leitfaden: „Cannot access uninitialized variable“** – Modul **`t`** + Prop **`t`** im Sheet; **Umbenennung** zu **`familieLeitfadenTheme`** im Modal; **Render-Tests** (`MemoryRouter`) für offen + Session minimiert. **Commit:** _(nach Push)_
+**Letzter Stand:** 16.04.26 – **Huber-Leitfaden: „Cannot access uninitialized variable“** – Modul **`t`** + Prop **`t`** im Sheet; **Umbenennung** zu **`familieLeitfadenTheme`** im Modal; **Render-Tests** (`MemoryRouter`) für offen + Session minimiert. **Commit:** ``a6176aec``
 
 ---
 
@@ -1120,7 +1124,7 @@
 
 ---
 
-**Letzter Stand:** 04.04.26 – **Präsentationsmappe Vollversion: „Was ist K2“ neu, Admin-Kapitel, Schritt 3+4 zusammen** – `02-WAS-IST-K2-GALERIE.md` neu redigiert; neues `04-ADMIN-HERZSTUECK.md` direkt nach Willkommen/Galerie mit Screenshot `pm-admin-uebersicht.png`; `00-INDEX.md` Schritt 3+4 verschmolzen, TOC 7–18; `PraesentationsmappeVollversionPage.tsx` neuer DOCUMENTS-Eintrag. Tests + Build grün. **Commit:** _(nach Push)_
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe Vollversion: „Was ist K2“ neu, Admin-Kapitel, Schritt 3+4 zusammen** – `02-WAS-IST-K2-GALERIE.md` neu redigiert; neues `04-ADMIN-HERZSTUECK.md` direkt nach Willkommen/Galerie mit Screenshot `pm-admin-uebersicht.png`; `00-INDEX.md` Schritt 3+4 verschmolzen, TOC 7–18; `PraesentationsmappeVollversionPage.tsx` neuer DOCUMENTS-Eintrag. Tests + Build grün. **Commit:** ``a6176aec``
 
 **Was wir JETZT tun:** Vollversion in der App kurz durchklicken (neues Kapitel **Admin – Herzstück**).
 

@@ -60,3 +60,9 @@ public/gallery-data.json.backup.*
 
 # Mac-Bildschirmfotos in Referenzordner (liegen lokal, nicht jedes Mal als „neu“ anzeigen)
 reference-screenshots/Bildschirmfoto*.png
+
+# Playwright
+/playwright-report/
+/test-results/
+/blob-report/
+/playwright/.cache/
