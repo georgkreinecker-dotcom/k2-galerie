@@ -2243,6 +2243,15 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         return false
       }
     })()
+  /** Testpilot-Einladung: voller Zugang wie Demo, aber kein „generischer Muster-Demo-QR“ / andere Admin-Badge-Texte */
+  const oek2PilotEinladungAktiv = (() => {
+    try {
+      if (new URLSearchParams(window.location.search).get('pilot') === '1') return true
+      return !!sessionStorage.getItem('k2-pilot-einladung')
+    } catch {
+      return false
+    }
+  })()
   const { showChecklists: showGamificationChecklists, checklistsHiddenByUser: profiGamificationChecklistsHidden, setChecklistsHiddenByUser: setProfiGamificationChecklistsHidden } = useGamificationChecklistsUi()
   const settingsContentRef = useRef<HTMLDivElement>(null)
   /** Ref auf den oberen Rand des Admin-Bereichs – für „Zurück in den Admin-Bereich“ (scrollt den tatsächlichen Scroll-Container) */
@@ -14898,7 +14907,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 fontWeight: 600,
                 letterSpacing: '0.03em'
               }}>
-                {tenant.isVk2 ? 'VK2 ADMIN' : tenant.isOeffentlich ? 'Demo' : 'K2 ADMIN'}
+                {tenant.isVk2 ? 'VK2 ADMIN' : tenant.isOeffentlich ? (oek2PilotEinladungAktiv ? 'Testpilot' : 'Demo') : 'K2 ADMIN'}
               </span>
             </div>
 
@@ -15145,7 +15154,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
           {tenant.isOeffentlich && designVorschauChromeCompact ? (
             <div
               role="note"
-              aria-label="Hinweis: Demo mit Musterdaten"
+              aria-label={oek2PilotEinladungAktiv ? 'Hinweis: Testpilot-Galerie' : 'Hinweis: Demo mit Musterdaten'}
               style={{
                 marginTop: '0.5rem',
                 padding: '0.35rem 0.65rem',
@@ -15163,7 +15172,15 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               }}
             >
               <span>
-                <strong style={{ color: '#3f3f06' }}>Demo</strong> · Musterdaten · Veröffentlichen = für alle sichtbar
+                {oek2PilotEinladungAktiv ? (
+                  <>
+                    <strong style={{ color: '#3f3f06' }}>Testpilot</strong> · Deine Galerie · Veröffentlichen = für alle sichtbar
+                  </>
+                ) : (
+                  <>
+                    <strong style={{ color: '#3f3f06' }}>Demo</strong> · Musterdaten · Veröffentlichen = für alle sichtbar
+                  </>
+                )}
               </span>
               <button
                 type="button"
@@ -15188,7 +15205,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
           {tenant.isOeffentlich && !designVorschauChromeCompact ? (
             <div
               role="note"
-              aria-label="Hinweis: Demo mit Musterdaten"
+              aria-label={oek2PilotEinladungAktiv ? 'Hinweis: Testpilot-Galerie' : 'Hinweis: Demo mit Musterdaten'}
               style={{
                 marginTop: '0.85rem',
                 padding: '0.55rem 0.85rem',
@@ -15202,8 +15219,17 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 fontFamily: s.fontBody,
               }}
             >
-              <strong style={{ color: '#3f3f06' }}>Demo:</strong>{' '}
-              Das hier ist der <strong>Demo-Admin</strong> mit <strong>Musterdaten</strong> – <strong>noch nicht deine eigene Galerie</strong>. Nach dem Ausprobieren richtest du deine echte Galerie mit der Lizenz ein. Änderungen bleiben zuerst in der Demo; <strong>für alle Demo-Besucher</strong> sichtbar werden sie nach <strong>Veröffentlichen</strong>. Mit <strong>„Galerie ansehen“</strong> siehst du die Ansicht wie ein Besucher.
+              {oek2PilotEinladungAktiv ? (
+                <>
+                  <strong style={{ color: '#3f3f06' }}>Testpilot:</strong>{' '}
+                  Du arbeitest in <strong>deiner</strong> ök2-Galerie mit vollem Zugang. Nach <strong>Veröffentlichen</strong> sehen Besucher den aktuellen Stand. Mit <strong>„Galerie ansehen“</strong> prüfst du die Ansicht wie ein Besucher.
+                </>
+              ) : (
+                <>
+                  <strong style={{ color: '#3f3f06' }}>Demo:</strong>{' '}
+                  Das hier ist der <strong>Demo-Admin</strong> mit <strong>Musterdaten</strong> – <strong>noch nicht deine eigene Galerie</strong>. Nach dem Ausprobieren richtest du deine echte Galerie mit der Lizenz ein. Änderungen bleiben zuerst in der Demo; <strong>für alle Demo-Besucher</strong> sichtbar werden sie nach <strong>Veröffentlichen</strong>. Mit <strong>„Galerie ansehen“</strong> siehst du die Ansicht wie ein Besucher.
+                </>
+              )}
             </div>
           ) : null}
         </header>
@@ -19627,7 +19653,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           </>
                         )}
                       </div>
-                      {tenant.isOeffentlich && isPlatformInstance() && (
+                      {tenant.isOeffentlich && isPlatformInstance() && !oek2PilotEinladungAktiv && (
                         <LicenseeAdminQrPanel
                           registrationComplete
                           adminBaseUrl={`${APP_BASE_URL}/admin?context=oeffentlich`}

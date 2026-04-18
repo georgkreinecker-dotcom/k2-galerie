@@ -5,6 +5,10 @@
 
 ---
 
+**Letzter Stand:** 18.04.26 – **ök2 Testpilot im Admin: Badge „Testpilot“, andere gelbe Hinweise, Muster-Demo-QR ausgeblendet** – **`ScreenshotExportAdmin`:** `oek2PilotEinladungAktiv` (`?pilot=1` oder `k2-pilot-einladung`); Leiste **Testpilot** statt **Demo**; Hinweistexte Testpilot statt anonyme Demo; **`LicenseeAdminQrPanel`** nur wenn **nicht** Pilot. **`qs:local`** grün. **Commit:** `24a4b91a` ✅ GitHub
+
+---
+
 **Letzter Stand:** 18.04.26 – **Pilot-Zettel: „Deinen Weg“ – Hinweis auf Einstellungen (Sparte / Verein)** – **`ZettelPilotPage`:** graue Box **Deinen Weg** (ök2: „Wofür nutzt du deine Galerie?“; VK2: Verein + Kunstrichtungen); **`pilotZettelMdAdapt.test.ts`:** Fixture + Erwartungen; Handbuch **`20-PILOT-ZETTEL-OEK2-VK2`** (k2team + public) bereits mit Absatz **Deinen Weg festlegen**. **`pilotZettelMdAdapt.test.ts`** + **`vite:build`** grün. **Commit:** `f90d3d62` ✅ GitHub
 
 ---
