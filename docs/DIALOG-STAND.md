@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nächster Schritt wie besprochen (z. B. **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`** Phase 2 **Videos/JPG** oder Plattform-Rundgang testen).  
-**Einordnung:** Testprotokolle **29–31** auf **2× A4** mit **Seitenumbruch** und Fuß „Seite n“; Prüfpunkte an **Admin-Marketing** (ök2), **Verein/Galerie** (VK2), **Erinnerungen/Backup** (K2 Familie) angeglichen.
+**Was wir JETZT tun:** Offene lokale Änderungen (u. a. **FamilieEinladungQuerySync**, **TestprotokollTestuserPage**, **k2team** 29/32) prüfen – committen oder verwerfen; sonst wie besprochen **Optimierung** oder Plattform-Rundgang.  
+**Einordnung:** Testuser-Flow **App-Name** + **Handbuch 17** + **K2Team 28** ist auf **main** (**`39822214`**).
+
+---
+
+**Letzter Stand:** 18.04.26 – **Testuser: App-Name, Handbuch Testuser, Zettel** – **`/testuser-anmeldung`** und **`/zettel-pilot-form`:** Pflichtfeld **Wie soll die App heißen?**; K2 Familie **`fn`** aus App-Namen; **`/zettel-pilot`:** Zeile App-Name; **`public/benutzer-handbuch/17-TESTUSER-ZUGANG.md`** + Index + **`DOCUMENTS`**; **`k2team-handbuch/28`** + Spiegel: Paket Schreiben/Handbuch/Testprotokoll, PC zuerst; **`familiePilotSeed`** + Tests ins Repo. **`qs:local`** grün. **Commit:** **`39822214`** ✅ GitHub
 
 ---
 
