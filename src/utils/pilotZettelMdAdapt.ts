@@ -8,19 +8,22 @@ export function adaptPilotOek2Vk2ZettelMd(md: string, pilotType: 'oek2' | 'vk2' 
   return md
     .split('\n')
     .flatMap((line) => {
-      /** Kombinierte Zeile → nur die für die jeweilige Linie relevante Anweisung */
+      /**
+       * Ausführlicher Text steht im orangefarbenen Kasten oben (ZettelPilotPage).
+       * Hier nur ein kurzer Verweis – sonst fehlt der Weg-Hinweis, wenn man nur „Erste Schritte“ sieht.
+       */
       if (
         line.startsWith('**Deinen Weg festlegen:**') ||
         line.startsWith('**Deinen Weg festlegen (wichtig):**')
       ) {
         if (pilotType === 'oek2') {
           return [
-            '**Deinen Weg festlegen (wichtig):** Unter **„Wofür nutzt du deine Galerie?“** (Einstellungen → Meine Daten) **eine Sparte wählen** – davon hängen Typ und Kategorien in „Werke verwalten“ ab.',
+            '*Sparte („Wofür nutzt du deine Galerie?“): ausführlich im **Kasten „Deinen Weg wählen“ ganz oben** auf dem Zettel (über der Überschrift „Testpilot:in …“).*',
           ]
         }
         if (pilotType === 'vk2') {
           return [
-            '**Deinen Weg festlegen (wichtig):** Unter **Einstellungen** **Verein** und **Kunstrichtungen** zu euch passend eintragen – damit Galerie und Kategorien zu euch passen.',
+            '*Verein und Kunstrichtungen: ausführlich im **Kasten „Deinen Weg wählen“ ganz oben** auf dem Zettel.*',
           ]
         }
       }
@@ -36,8 +39,8 @@ export function adaptPilotOek2Vk2ZettelMd(md: string, pilotType: 'oek2' | 'vk2' 
             '*ök2 = Demo für Künstler:innen – **eigene** Web-Galerie im Browser (Laptop und Handy). Einmal **Drucken / Als PDF speichern**, mitgeben.*',
           ]
         }
-        /** Kombinierte „In einem Satz“-Zeile für ök2 nicht anzeigen */
-        if (line.includes('**In einem Satz:**') && line.includes('VK2')) {
+        /** „In einem Satz“ für ök2 nicht anzeigen (weder kombiniert noch alte Varianten) */
+        if (line.includes('**In einem Satz:**')) {
           return []
         }
         if (line.trim().startsWith('*Stand:') && line.includes('ök2 & VK2')) {
