@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 18.04.26 – **Pilot-Zettel: Team-Abschnitt raus, A4-Druck, Mappe ohne Piloten-Hinweis** – **`20-PILOT-ZETTEL-OEK2-VK2.md`** (k2team + public): Abschnitt „Team (kgm): Pilotenliste …“ entfernt; **`TestuserAnmeldungPage`:** Kasten **Pilotenliste** entfernt; **`ZettelPilotPage`:** `@page` A4 portrait für Druck/PDF. **`vite:build`** grün. **Commit:** *(nach Push)*
+**Letzter Stand:** 18.04.26 – **Pilot-Zettel: Team-Abschnitt raus, A4-Druck, Mappe ohne Piloten-Hinweis** – **`20-PILOT-ZETTEL-OEK2-VK2.md`** (k2team + public): Abschnitt „Team (kgm): Pilotenliste …“ entfernt; **`TestuserAnmeldungPage`:** Kasten **Pilotenliste** entfernt; **`ZettelPilotPage`:** `@page` A4 portrait für Druck/PDF. **`vite:build`** grün. **Commit:** `6eedb0c0` ✅ GitHub
 
 ---
 
