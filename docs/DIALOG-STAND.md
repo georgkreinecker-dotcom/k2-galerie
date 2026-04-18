@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 18.04.26 – **ök2 Testpilot im Admin: Badge „Testpilot“, andere gelbe Hinweise, Muster-Demo-QR ausgeblendet** – **`ScreenshotExportAdmin`:** `oek2PilotEinladungAktiv` (`?pilot=1` oder `k2-pilot-einladung`); Leiste **Testpilot** statt **Demo**; Hinweistexte Testpilot statt anonyme Demo; **`LicenseeAdminQrPanel`** nur wenn **nicht** Pilot. **`qs:local`** grün. **Commit:** `24a4b91a` ✅ GitHub
+**Letzter Stand:** 18.04.26 – **ök2 Testpilot im Admin: Badge „Testpilot“, andere gelbe Hinweise, Muster-Demo-QR ausgeblendet** – **`ScreenshotExportAdmin`:** `oek2PilotEinladungAktiv` (`?pilot=1` oder `k2-pilot-einladung`); Leiste **Testpilot** statt **Demo**; Hinweistexte Testpilot statt anonyme Demo; **`LicenseeAdminQrPanel`** nur wenn **nicht** Pilot. **`qs:local`** grün. **Commit:** `f4989c48` ✅ GitHub
 
 ---
 
