@@ -27,6 +27,8 @@ export default function TestprotokollTestuserPage() {
   const [searchParams] = useSearchParams()
   const linie = (searchParams.get('linie') || '').toLowerCase().trim()
   const file = linie && LINIE_TO_FILE[linie] ? LINIE_TO_FILE[linie] : null
+  /** Aus Zettel-Pilot-Query: Name in Kopfdaten voreintragen */
+  const nameForProtocol = (searchParams.get('name') || searchParams.get('pilot') || '').trim()
 
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(!!file)
@@ -40,9 +42,16 @@ export default function TestprotokollTestuserPage() {
     setLoading(true)
     fetch(`/k2team-handbuch/${file}`)
       .then((r) => (r.ok ? r.text() : ''))
-      .then(setContent)
+      .then((text) => {
+        let t = text
+        if (linie === 'familie' && nameForProtocol) {
+          const safe = nameForProtocol.replace(/\|/g, ' ')
+          t = t.replace(/\|\s*Name \(freiwillig\)\s*\|\s*\|/, `| Name (freiwillig) | ${safe} |`)
+        }
+        setContent(t)
+      })
       .finally(() => setLoading(false))
-  }, [file])
+  }, [file, linie, nameForProtocol])
 
   if (!file) {
     return (
@@ -142,6 +151,11 @@ export default function TestprotokollTestuserPage() {
             font-size: 7pt;
             color: #555;
             padding: 0;
+            height: 0;
+            line-height: 1.3;
+            background: none !important;
+            border: none !important;
+            box-shadow: none !important;
           }
           .tp-seitenfuss::after {
             content: 'Seite ' counter(page);
@@ -232,7 +246,15 @@ export default function TestprotokollTestuserPage() {
           🖨️ Drucken / PDF
         </button>
         <span className="tp-no-print" style={{ fontSize: '0.82rem', color: '#555' }}>
-          Druck: <strong>2× A4</strong> – Seite 1: Kopf, Ziel, Kernfunktionen · Seite 2: Alltag, Abschluss. Fuß: „Seite n“. Passt nicht: im Druckdialog <strong>Skalierung 100&nbsp;%</strong>, Ränder Standard.
+          {linie === 'oek2' ? (
+            <>
+              Druck <strong>2× A4</strong>: Seite 1 = bis Medienbereich · Seite 2 = Shop, Stabilität, Alltag, Abschluss. Unten „Seite n“. Im Dialog <strong>Skalierung 100&nbsp;%</strong>.
+            </>
+          ) : (
+            <>
+              Druck <strong>2× A4</strong>: Seite 1 = Kopf, Ziel, Kernfunktionen · Seite 2 = Alltag, Abschluss. Unten „Seite n“. <strong>100&nbsp;%</strong> skalieren.
+            </>
+          )}
         </span>
         <Link to={HUB_PATH} style={{ color: '#0d9488', fontWeight: 600 }}>
           Alle Testprotokolle
@@ -246,7 +268,7 @@ export default function TestprotokollTestuserPage() {
       </div>
 
       <div className="tp-print-root">
-        <main className="tp-sheet" style={{ marginTop: '0.5rem' }}>
+        <main className={`tp-sheet${linie ? ` tp-linie-${linie}` : ''}`} style={{ marginTop: '0.5rem' }}>
           <SimpleK2TeamHandbuchMd md={content} />
           <footer className="tp-no-print" style={{ marginTop: '1.5rem', paddingTop: '0.75rem', borderTop: '1px solid #eee', fontSize: '0.72rem', color: '#666' }}>
             <div>{PRODUCT_COPYRIGHT_BRAND_ONLY}</div>

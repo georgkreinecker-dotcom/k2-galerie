@@ -19,7 +19,14 @@ const VK2_BASE = BASE_APP_URL + PROJECT_ROUTES.vk2.galerie
 const FAMILIE_BASE = BASE_APP_URL + K2_FAMILIE_WILLKOMMEN_ROUTE
 /** K2 Familie – Benutzerhandbuch und Testprotokoll-Hub (gleiche Tabelle wie Pilot-Einstieg) */
 const FAMILIE_HANDBUCH_URL = BASE_APP_URL + PROJECT_ROUTES['k2-familie'].benutzerHandbuch
-const TESTPROTOKOLL_TESTUSER_URL = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].testprotokollTestuser
+
+function buildFamilieTestprotokollUrl(pilotName: string): string {
+  const u = new URL(PROJECT_ROUTES['k2-galerie'].testprotokollTestuser, BASE_APP_URL)
+  u.searchParams.set('linie', 'familie')
+  const n = pilotName.trim()
+  if (n) u.searchParams.set('name', n)
+  return u.toString()
+}
 
 function pilotUrlIsK2FamilieWillkommen(pilotUrl: string): boolean {
   return pilotUrl === FAMILIE_BASE || pilotUrl.startsWith(`${FAMILIE_BASE}?`)
@@ -47,8 +54,11 @@ export default function ZettelPilotPage() {
             : null
   const nr = searchParams.get('nr')?.trim() || ''
 
+  /** Volle Willkommens-URL mit t/z/fn – immer für Link + QR, sobald vom Formular übergeben */
   const familieUrlForQr =
-    pilotType === 'familie' && pilotUrl.includes('t=familie-pilot-') ? pilotUrl : FAMILIE_BASE
+    pilotType === 'familie' && pilotUrl && pilotUrlIsK2FamilieWillkommen(pilotUrl) ? pilotUrl : FAMILIE_BASE
+
+  const familieTestprotokollUrl = pilotType === 'familie' ? buildFamilieTestprotokollUrl(name) : ''
 
   const useK2FamilieZettel =
     pilotType === 'familie' || (pilotType === null && pilotUrlIsK2FamilieWillkommen(pilotUrl))
@@ -81,7 +91,9 @@ export default function ZettelPilotPage() {
     const vk2Bust = buildQrUrlWithBust(VK2_BASE, qrVersionTs)
     const familieBust = buildQrUrlWithBust(familieUrlForQr, qrVersionTs)
     const handbuchBust = buildQrUrlWithBust(FAMILIE_HANDBUCH_URL, qrVersionTs)
-    const testprotoBust = buildQrUrlWithBust(TESTPROTOKOLL_TESTUSER_URL, qrVersionTs)
+    const testprotoBust = familieTestprotokollUrl
+      ? buildQrUrlWithBust(familieTestprotokollUrl, qrVersionTs)
+      : ''
     if (pilotUrl) {
       const busted = pilotUrl.startsWith(BASE_APP_URL) ? buildQrUrlWithBust(pilotUrl, qrVersionTs) : pilotUrl
       QRCode.toDataURL(busted, { width: 100, margin: 1 }).then(setQrPilot).catch(() => setQrPilot(''))
@@ -92,8 +104,12 @@ export default function ZettelPilotPage() {
     QRCode.toDataURL(vk2Bust, { width: 100, margin: 1 }).then(setQrVk2).catch(() => {})
     QRCode.toDataURL(familieBust, { width: 100, margin: 1 }).then(setQrFamilie).catch(() => setQrFamilie(''))
     QRCode.toDataURL(handbuchBust, { width: 100, margin: 1 }).then(setQrFamilieHandbuch).catch(() => setQrFamilieHandbuch(''))
-    QRCode.toDataURL(testprotoBust, { width: 100, margin: 1 }).then(setQrTestprotokoll).catch(() => setQrTestprotokoll(''))
-  }, [pilotUrl, qrVersionTs, familieUrlForQr])
+    if (testprotoBust) {
+      QRCode.toDataURL(testprotoBust, { width: 100, margin: 1 }).then(setQrTestprotokoll).catch(() => setQrTestprotokoll(''))
+    } else {
+      setQrTestprotokoll('')
+    }
+  }, [pilotUrl, qrVersionTs, familieUrlForQr, familieTestprotokollUrl])
 
   if (loading) {
     return (
@@ -247,7 +263,7 @@ export default function ZettelPilotPage() {
           vk2Url={VK2_BASE}
           familieUrl={familieUrlForQr}
           familieHandbuchUrl={FAMILIE_HANDBUCH_URL}
-          testprotokollTestuserUrl={TESTPROTOKOLL_TESTUSER_URL}
+          testprotokollTestuserUrl={familieTestprotokollUrl}
           qrOek2={qrOek2}
           qrVk2={qrVk2}
           qrFamilie={qrFamilie}
@@ -355,7 +371,14 @@ function ZettelPilotContent({
         if (isK2FamiliePilotTable) {
           const showK2FamilieQrCol = !!(qrFamilie || qrFamilieHandbuch || qrTestprotokoll)
           const k2FamilieAddrCell = (r: number, row: string[]) => {
-            if (r === 0) return pilotUrl || familieUrl
+            if (r === 0) {
+              const href = pilotUrl || familieUrl
+              return (
+                <a href={href} style={{ color: '#0d9488', fontWeight: 600 }}>
+                  {href}
+                </a>
+              )
+            }
             if (r === 1) {
               return (
                 <a href={familieHandbuchUrl} style={{ color: '#0d9488', fontWeight: 600 }}>
@@ -363,7 +386,7 @@ function ZettelPilotContent({
                 </a>
               )
             }
-            if (r === 2) {
+            if (r === 2 && testprotokollTestuserUrl) {
               return (
                 <a href={testprotokollTestuserUrl} style={{ color: '#0d9488', fontWeight: 600 }}>
                   {testprotokollTestuserUrl}
@@ -376,7 +399,7 @@ function ZettelPilotContent({
             const src =
               r === 0 ? qrFamilie : r === 1 ? qrFamilieHandbuch : r === 2 ? qrTestprotokoll : ''
             const alt =
-              r === 0 ? 'QR K2 Familie Einstieg' : r === 1 ? 'QR Benutzerhandbuch K2 Familie' : r === 2 ? 'QR Testprotokolle Testuser' : ''
+              r === 0 ? 'QR K2 Familie Einstieg' : r === 1 ? 'QR Benutzerhandbuch K2 Familie' : r === 2 ? 'QR Testprotokoll K2 Familie' : ''
             if (!src) return null
             return (
               <img
