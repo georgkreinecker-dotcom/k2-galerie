@@ -20,6 +20,7 @@ const DOCUMENTS = [
   { id: '03-galerie', name: 'Mitglieder in der Galerie, Katalog und Kassa', file: '03-GALERIE-KATALOG-KASSA.md' },
   { id: '06-eventplanung', name: 'Eventplanung & Öffentlichkeitsarbeit', file: '06-EVENTPLANUNG-OEFFENTLICHKEITSARBEIT.md' },
   { id: '07-demo-lizenz', name: 'Demo und Lizenz', file: '07-DEMO-LIZENZ.md' },
+  { id: '12-testpiloten', name: 'Testpiloten', file: '12-TESTPILOTEN.md' },
   { id: '08-einstellungen', name: 'Einstellungen', file: '08-EINSTELLUNGEN.md' },
   { id: '09-faq', name: 'Häufige Fragen', file: '09-HAEUFIGE-FRAGEN.md' },
   { id: '05-kurz', name: 'Kurz zusammengefasst', file: '05-KURZ-ZUSAMMENGEFASST.md' },

@@ -50,6 +50,10 @@ Ueberblick: Mitgliederliste, Stammdaten, Galerie optional, Katalog, Kassa, Event
 
 Plattform-Betreiber (kgm solution), Copyright, Lizenzanfrage; Vereinsdaten aus Stammdaten.
 
+12. [Testpiloten](12-TESTPILOTEN.md)
+
+Zettel und Einladung: keine eigene Mandanten-Instanz pro Name; eine Demo-URL; Pilot-Session und Name in Stammdaten; Verweis Demo und Lizenz.
+
 ---
 
 **Drucken:** Button „Drucken“ – einzelnes Kapitel oder ganzes Handbuch als PDF.

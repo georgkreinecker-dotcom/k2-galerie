@@ -12,4 +12,6 @@ Zugang: Link oder QR-Code Ihres Vereins, mit Admin-Passwort in den Bearbeitungsb
 
 **Ausführliches Handbuch für Vereine:** [VK2-Handbuch öffnen](/vk2-handbuch)
 
-Dort finden Sie alle Kapitel: Was ist die Vereinsplattform?, Verein & Stammdaten (inkl. Ablauf und Kategorien), Mitglieder verwalten, Galerie/Katalog/Kassa, Kurz zusammengefasst.
+Dort finden Sie alle Kapitel: Was ist die Vereinsplattform?, Verein & Stammdaten (inkl. Ablauf und Kategorien), Mitglieder verwalten, Galerie/Katalog/Kassa, Demo und Lizenz, **Testpiloten** (Zettel/Einladung – keine eigene Mandanten-Instanz pro Name; eine Demo-URL), Kurz zusammengefasst.
+
+**Testpilot:innen:** Direkt im VK2-Handbuch das Kapitel [Testpiloten](/vk2-handbuch?doc=12-TESTPILOTEN.md) – kurz erklärt, was die Pilot-Session tut und was nicht.

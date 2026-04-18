@@ -8,6 +8,8 @@ Dieses Kapitel richtet sich an Vereine, die die **Vereinsplattform** (VK2) auspr
 
 Die Demo ist eine voll funktionsfähige Vorschau der Vereinsplattform. Sie können damit in Ruhe ausprobieren: Mitglieder verwalten, Kategorien definieren, optional Galerie und Kassa nutzen. Die Demo verwendet **Musterdaten** (z. B. Kunstverein Muster) – keine echten Vereinsdaten. Sie eignet sich ideal, um die Plattform kennenzulernen, bevor Sie eine Lizenz erwerben.
 
+**Testpilot:innen:** Per Zettel oder Einladung gibt es **keine** eigene „Mandanten-Instanz“ pro Name auf dem Server – **eine** Demo-URL, Daten im Browser. Details: [Testpiloten](12-TESTPILOTEN.md).
+
 **Testphase (2 Wochen kostenlos):** Sie können die Vereinsplattform **2 Wochen kostenlos** testen. Dafür sind die erforderlichen Angaben (z. B. E-Mail) einzugeben. Wenn Sie nach Ablauf der 2 Wochen keine Lizenz abschließen, werden Ihre in der Testphase gespeicherten Daten **unverzüglich gelöscht** und der Zugang erlischt – das ist in den **AGB** festgehalten. Der Eintritt in den Zugangsbereich setzt voraus, dass Sie die **AGB gelesen und durch Ankreuzen bestätigt** haben (wie bei der Nutzung üblich).
 
 ---
