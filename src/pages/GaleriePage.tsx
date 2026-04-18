@@ -437,8 +437,11 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
   useEffect(() => {
     if (!musterOnly || typeof window === 'undefined') return
     try {
-      if (new URLSearchParams(window.location.search).get('embedded') === '1') return
-      if (new URLSearchParams(window.location.search).get('praesentation') === '1') return
+      const sp = new URLSearchParams(window.location.search)
+      if (sp.get('embedded') === '1') return
+      if (sp.get('praesentation') === '1') return
+      /** Testpilot / persönliche Demo: vorname + entwurf – direkt Galerie, nicht Entdecken */
+      if (sp.get('entwurf') === '1' && (sp.get('vorname') || '').trim().length > 0) return
       if ((location.state as any)?.fromAdmin || sessionStorage.getItem(KEY_FROM_ADMIN)) return
       if (hasFreshOek2EntrySession()) return
       navigate(ENTDECKEN_ROUTE, { replace: true })

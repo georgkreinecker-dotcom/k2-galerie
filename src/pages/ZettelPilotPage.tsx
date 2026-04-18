@@ -17,6 +17,7 @@ import {
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { buildFamiliePilotFamilienZugang, buildFamiliePilotTenantIdFromZettelNr } from '../utils/familiePilotSeed'
 import { buildOek2PilotGalerieUrl } from '../utils/pilotOek2GalerieUrl'
+import { adaptPilotOek2Vk2ZettelMd } from '../utils/pilotZettelMdAdapt'
 import { registerPilotZettelInKatalog } from '../utils/testuserKatalogStorage'
 
 const PILOT_ZETTEL_MD_OEK2_VK2 = '/k2team-handbuch/20-PILOT-ZETTEL-OEK2-VK2.md'
@@ -162,6 +163,11 @@ export default function ZettelPilotPage() {
       })
       .catch(() => setLoading(false))
   }, [pilotZettelMd])
+
+  const pilotMdForRender = useMemo(
+    () => (useK2FamilieZettel ? content : adaptPilotOek2Vk2ZettelMd(content, pilotType)),
+    [content, useK2FamilieZettel, pilotType],
+  )
 
   useEffect(() => {
     const oek2Bust = buildQrUrlWithBust(OEK2_BASE, qrVersionTs)
@@ -398,7 +404,7 @@ export default function ZettelPilotPage() {
           </div>
         ) : null}
         <ZettelPilotContent
-          md={content}
+          md={pilotMdForRender}
           pilotType={pilotType}
           pilotUrl={pilotUrl || null}
           qrPilot={qrPilot}
