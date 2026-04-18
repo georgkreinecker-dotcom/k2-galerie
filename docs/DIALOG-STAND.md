@@ -5,7 +5,11 @@
 
 ---
 
-**Letzter Stand:** 18.04.26 – **Pilot-Zettel K2 Familie: Kopf „Zum Drucken“ / „Wichtig“ entfernt** – **`32-PILOT-ZETTEL-K2-FAMILIE.md`** + Spiegel. **Commit:** _(nach Push)_ ✅ GitHub
+**Letzter Stand:** 18.04.26 – **Pilot-Zettel K2 Familie: Klammer „Huber / Zugang im QR“ entfernt** – **`32-PILOT-ZETTEL-K2-FAMILIE.md`** + Spiegel (Absatz „Erste Schritte“ verkürzt). **Commit:** **`28955df6`** ✅ GitHub
+
+---
+
+**Letzter Stand:** 18.04.26 – **Pilot-Zettel K2 Familie: Kopf „Zum Drucken“ / „Wichtig“ entfernt** – **`32-PILOT-ZETTEL-K2-FAMILIE.md`** + Spiegel. **Commit:** **`d4832ef9`** ✅ GitHub
 
 ---
 

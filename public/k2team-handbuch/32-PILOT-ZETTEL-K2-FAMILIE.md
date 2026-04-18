@@ -12,7 +12,7 @@
 
 ## Erste Schritte
 
-**QR scannen oder Link im Browser öffnen** – ihr landet direkt in **eurer** Pilot-Familie (nicht Musterfamilie Huber; Zugangsnummer und Instanz stehen auf dem Zettel bzw. im QR). Ihr seid **Inhaber:in** und könnt sofort **Willkommen**, **Stammbaum & Personen** und **Momente** nutzen. **Später weitermachen:** dieselbe Adresse oder Lesezeichen. Bei Fragen: **Benutzerhandbuch** (QR in der Tabelle) oder Team.
+**QR scannen oder Link im Browser öffnen** – ihr landet direkt in **eurer** Pilot-Familie. Ihr seid **Inhaber:in** und könnt sofort **Willkommen**, **Stammbaum & Personen** und **Momente** nutzen. **Später weitermachen:** dieselbe Adresse oder Lesezeichen. Bei Fragen: **Benutzerhandbuch** (QR in der Tabelle) oder Team.
 
 ---
 
