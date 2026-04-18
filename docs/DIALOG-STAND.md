@@ -9,6 +9,10 @@
 
 ---
 
+**Letzter Stand:** 18.04.26 – **DIALOG-STAND: Commit-Hash** – `PLACEHOLDER_HASH` → `b7c16f76` (Pilot-Zettel-Zeile). **Commit:** `640d2315` ✅ GitHub
+
+---
+
 **Letzter Stand:** 18.04.26 – **Playwright E2E: Pilot-Formular → Laufzettel** – **`playwright.config.ts`**, **`e2e/pilot-zettel-form.spec.ts`**, Scripts **`test:e2e`**, **`test:e2e:install`**, **`test:e2e:ui`**; **`@playwright/test`** statt `playwright`; **`.gitignore`** Playwright-Reports; **`docs/TESTUSER-PILOT-E2E-ORGA.md`**. **`npm run test:e2e`** grün. **Commit:** ``a6176aec`` ✅ GitHub
 
 ---
