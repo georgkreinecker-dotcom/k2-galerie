@@ -50,6 +50,7 @@ ________________________________________________________________
 | Prüfpunkt | 1 | 2 | 3 | J | N |
 |-----------|---|---|---|---|---|
 | Einträge wie vorgesehen nutzbar | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Erinnerungen / Jahrestage (falls genutzt) | ☐ | ☐ | ☐ | ☐ | ☐ |
 
 ### Datenschutz & Gefühl
 
@@ -57,16 +58,15 @@ ________________________________________________________________
 |-----------|---|---|---|---|---|
 | Daten fühlen sich **sicher** an; App **respektvoll** | ☐ | ☐ | ☐ | ☐ | ☐ |
 
-### Stabilität
+### Stabilität & Daten
 
 | Prüfpunkt | 1 | 2 | 3 | J | N |
 |-----------|---|---|---|---|---|
 | Keine wiederkehrenden Abstürze | ☐ | ☐ | ☐ | ☐ | ☐ |
 | Nutzung über **ganzen Testzeitraum** (mind. 4 Wo.) | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Backup oder Daten sichern (falls genutzt) | ☐ | ☐ | ☐ | ☐ | ☐ |
 
 [SEITENUMBRUCH]
-
----
 
 ## 3. Nutzung im Alltag
 

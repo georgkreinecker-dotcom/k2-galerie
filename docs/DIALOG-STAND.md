@@ -1,11 +1,15 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **Weiter nach Schlaf:** **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`** Phase 2 – **Videos/JPG** erst mit **Original-Backup** und **Prüfung** in der Galerie; parallel **Plattform-Rundgang** nach Deploy kurz testen.  
-**Einordnung:** **Testprotokolle** als **Ansicht** `/testprotokoll-testuser` (+ `?linie=oek2|vk2|familie`), **Texte-Schreibtisch** Zettel **Testprotokolle (Ansicht)**; Handbuch **29–31** + **00-INDEX** aktualisiert.
+**Was wir JETZT tun:** Nächster Schritt wie besprochen (z. B. **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`** Phase 2 **Videos/JPG** oder Plattform-Rundgang testen).  
+**Einordnung:** Testprotokolle **29–31** auf **2× A4** mit **Seitenumbruch** und Fuß „Seite n“; Prüfpunkte an **Admin-Marketing** (ök2), **Verein/Galerie** (VK2), **Erinnerungen/Backup** (K2 Familie) angeglichen.
 
 ---
 
-**Letzter Stand:** 16.04.26 – **Testprotokolle Ansicht + Handbuch-Index** – Route **`/testprotokoll-testuser`** (Vorlagen ök2/VK2/K2 Familie); **`k2team-handbuch/00-INDEX.md`** + **`public/k2team-handbuch/`**: Zeilen **29–31**, Kapitel **28** um Verweis ergänzt. **Tests + Build** grün. **Commit:** _(nach Push)_ ✅ GitHub
+**Letzter Stand:** 18.04.26 – **Testprotokoll 2× A4 + Kernfunktionen** – **`TestprotokollTestuserPage`:** Druck **Seitenfuß**, `@page`-Ränder, kompaktere Typo; Vorlagen **29/30/31** + **`public/k2team-handbuch/`**: zusätzliche Prüfpunkte (ök2 Events/Presse; VK2 Events + Mitglieder in Galerie; Familie Erinnerungen/Jahrestage, Backup); Umbruch ohne doppeltes `---` nach **`[SEITENUMBRUCH]`**. **`qs:local`** grün. **Commit:** _(nach Push)_ ✅ GitHub
+
+---
+
+**Letzter Stand:** 16.04.26 – **Testprotokolle Ansicht + Handbuch-Index** – Route **`/testprotokoll-testuser`** (Vorlagen ök2/VK2/K2 Familie); **`k2team-handbuch/00-INDEX.md`** + **`public/k2team-handbuch/`**: Zeilen **29–31**, Kapitel **28** um Verweis ergänzt. **Tests + Build** grün. **Commit:** **`29718600`** ✅ GitHub
 
 ---
 

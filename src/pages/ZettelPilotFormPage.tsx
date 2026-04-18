@@ -65,13 +65,28 @@ export default function ZettelPilotFormPage() {
       <p style={{ fontSize: '0.85rem', color: '#5c5650', marginBottom: '0.75rem', lineHeight: 1.5, padding: '0.5rem 0.65rem', background: '#f8f6f2', borderRadius: 8, border: '1px solid #e8e4dc' }}>
         <strong>Hinweis:</strong> Das Testprogramm ist auf eine begrenzte Personenzahl begrenzt – die Plätze wählt das Team.
       </p>
-      <p style={{ fontSize: '0.85rem', color: '#555', marginBottom: '1.5rem', lineHeight: 1.5 }}>
-        <strong>E-Mail-Einladung statt Zettel?</strong> Unter{' '}
-        <Link to={`${PROJECT_ROUTES['k2-galerie'].licences}#testpilot-einladen`} style={{ color: '#0d9488', fontWeight: 600 }}>
-          Lizenzen → Testpilot einladen
-        </Link>{' '}
-        kannst du eine persönliche Einladung per Link (und optional automatische E-Mail) verschicken.
-      </p>
+      {pilotType === 'familie' ? (
+        <p style={{ fontSize: '0.85rem', color: '#555', marginBottom: '1.5rem', lineHeight: 1.5 }}>
+          <strong>K2 Familie</strong> ist eine <strong>eigene Produktlinie</strong> – <strong>nicht</strong> die Galerie-Lizenzen für ök2/VK2. Einladung per E-Mail und Zugang klärt das Team mit euch; das läuft{' '}
+          <strong>nicht</strong> über <strong>Lizenzen → Testpilot einladen</strong> (das gilt nur für ök2 und VK2). Orientierung:{' '}
+          <Link to={PROJECT_ROUTES['k2-familie'].handbuch} style={{ color: '#0d9488', fontWeight: 600 }}>
+            Handbuch K2 Familie
+          </Link>
+          {' · '}
+          <Link to={PROJECT_ROUTES['k2-familie'].lizenzErwerben} style={{ color: '#0d9488', fontWeight: 600 }}>
+            Lizenz K2 Familie
+          </Link>
+          {' '}(nur diese Produktlinie).
+        </p>
+      ) : (
+        <p style={{ fontSize: '0.85rem', color: '#555', marginBottom: '1.5rem', lineHeight: 1.5 }}>
+          <strong>E-Mail-Einladung statt Zettel?</strong> Unter{' '}
+          <Link to={`${PROJECT_ROUTES['k2-galerie'].licences}#testpilot-einladen`} style={{ color: '#0d9488', fontWeight: 600 }}>
+            Lizenzen → Testpilot einladen
+          </Link>{' '}
+          kannst du für <strong>ök2 und VK2</strong> eine persönliche Einladung per Link (und optional automatische E-Mail) verschicken.
+        </p>
+      )}
 
       <div style={{ marginBottom: '1.25rem' }}>
         <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.35rem', fontSize: '0.9rem' }}>

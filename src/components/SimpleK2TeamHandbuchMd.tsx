@@ -20,6 +20,13 @@ export function SimpleK2TeamHandbuchMd({ md }: { md: string }) {
       continue
     }
 
+    /** Druck: neuer Bogen (z. B. Testprotokoll 2 Seiten) – nur wenn Zeile exakt [SEITENUMBRUCH] */
+    if (t.toUpperCase() === '[SEITENUMBRUCH]') {
+      out.push(<div key={i} className="tp-md-pagebreak" aria-hidden />)
+      i++
+      continue
+    }
+
     if (line.startsWith('# ')) {
       out.push(<h1 key={i}>{line.slice(2).trim()}</h1>)
       i++

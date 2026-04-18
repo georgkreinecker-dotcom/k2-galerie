@@ -60,7 +60,10 @@ export default function TestprotokollTestuserPage() {
         </div>
         <h1 style={{ fontSize: '1.45rem', marginBottom: '0.5rem' }}>Testprotokolle (Testuser)</h1>
         <p style={{ fontSize: '0.95rem', color: '#444', lineHeight: 1.55, marginBottom: '1.25rem' }}>
-          Vollständige Vorlagen pro Produktlinie – lesen, im Browser drucken oder als PDF speichern. Einreichung an kgm wie in den Infos (Testuser) vereinbart.
+          Vollständige Vorlagen pro Produktlinie – je Prüfpunkt{' '}
+          <strong>drei Bewertungsstufen</strong>, <strong>Getestet Ja/Nein</strong>, Testzeitraum{' '}
+          <strong>mind. 4 Wochen</strong>. Lesen, im Browser drucken oder als PDF speichern. Einreichung an kgm wie in den
+          Infos (Testuser) vereinbart.
         </p>
         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {(['oek2', 'vk2', 'familie'] as const).map((key) => (
@@ -112,23 +115,68 @@ export default function TestprotokollTestuserPage() {
   return (
     <>
       <style>{`
-        @page { size: A4; margin: 12mm 14mm; }
+        /* Bildschirm: lesbar; Druck: 2× A4 – Seite 1 bis [SEITENUMBRUCH], Seite 2 Rest */
+        @page { size: A4; margin: 10mm 11mm 14mm 11mm; }
+        .tp-md-pagebreak {
+          height: 0;
+          margin: 0;
+          break-after: avoid;
+        }
+        .tp-seitenfuss {
+          display: none;
+        }
         @media print {
           .tp-no-print { display: none !important; }
-          html, body { background: #fff !important; }
+          html, body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .tp-md-pagebreak {
+            break-before: page;
+            page-break-before: always;
+          }
+          .tp-seitenfuss {
+            display: block !important;
+            position: fixed;
+            bottom: 5mm;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 7pt;
+            color: #555;
+            padding: 0;
+          }
+          .tp-seitenfuss::after {
+            content: 'Seite ' counter(page);
+          }
+          .tp-print-root {
+            padding-bottom: 0;
+          }
           .tp-sheet {
             max-width: none !important;
             margin: 0 !important;
             padding: 0 !important;
-            font-size: 10pt !important;
-            line-height: 1.38 !important;
+            font-size: 8.4pt !important;
+            line-height: 1.27 !important;
           }
-          .tp-sheet h1 { font-size: 14pt !important; }
-          .tp-sheet h2 { font-size: 11pt !important; }
-          .tp-sheet h3 { font-size: 10pt !important; }
-          .tp-sheet table { font-size: 9pt !important; }
+          .tp-sheet h1 { font-size: 11pt !important; margin: 0 0 0.22rem !important; page-break-after: avoid; }
+          .tp-sheet h2 { font-size: 9.1pt !important; margin: 0.32rem 0 0.1rem !important; page-break-after: avoid; }
+          .tp-sheet h3 { font-size: 8.35pt !important; margin: 0.18rem 0 0.06rem !important; page-break-after: avoid; }
+          .tp-sheet p {
+            margin: 0 0 0.1rem !important;
+            orphans: 2;
+            widows: 2;
+          }
+          .tp-sheet ul, .tp-sheet ol { margin: 0.12rem 0 0.2rem 1rem !important; }
+          .tp-sheet li { margin-bottom: 0.08rem !important; }
+          .tp-sheet hr { margin: 0.22rem 0 !important; }
+          /* Kopfdaten: nicht mitten auf Seite zerreißen */
+          .tp-sheet table:first-of-type { page-break-inside: avoid; }
+          .tp-sheet table { font-size: 7.15pt !important; margin: 0.15rem 0 !important; page-break-inside: auto; }
+          .tp-sheet thead { display: table-header-group; }
+          .tp-sheet tr { page-break-inside: avoid; }
+          .tp-sheet th, .tp-sheet td { padding: 0.1rem 0.16rem !important; }
+          .tp-sheet th:nth-child(n+2), .tp-sheet td:nth-child(n+2) { text-align: center; }
         }
         .tp-sheet {
+          overflow-x: auto;
           max-width: 210mm;
           margin: 0 auto;
           padding: 10mm 14mm 18mm;
@@ -148,6 +196,7 @@ export default function TestprotokollTestuserPage() {
         .tp-sheet table { width: 100%; border-collapse: collapse; font-size: 10pt; margin: 0.45rem 0; }
         .tp-sheet th, .tp-sheet td { border: 1px solid #bbb; padding: 0.35rem 0.5rem; text-align: left; vertical-align: top; }
         .tp-sheet th { background: #f3f2ef; font-weight: 600; }
+        .tp-sheet th:nth-child(n+2), .tp-sheet td:nth-child(n+2) { text-align: center; }
         .tp-sheet code { font-size: 0.88em; }
         .tp-sheet strong { font-weight: 600; }
       `}</style>
@@ -182,6 +231,9 @@ export default function TestprotokollTestuserPage() {
         >
           🖨️ Drucken / PDF
         </button>
+        <span className="tp-no-print" style={{ fontSize: '0.82rem', color: '#555' }}>
+          Druck: <strong>2× A4</strong> – Seite 1: Kopf, Ziel, Kernfunktionen · Seite 2: Alltag, Abschluss. Fuß: „Seite n“. Passt nicht: im Druckdialog <strong>Skalierung 100&nbsp;%</strong>, Ränder Standard.
+        </span>
         <Link to={HUB_PATH} style={{ color: '#0d9488', fontWeight: 600 }}>
           Alle Testprotokolle
         </Link>
@@ -193,13 +245,16 @@ export default function TestprotokollTestuserPage() {
         </Link>
       </div>
 
-      <main className="tp-sheet" style={{ marginTop: '0.5rem' }}>
-        <SimpleK2TeamHandbuchMd md={content} />
-        <footer className="tp-no-print" style={{ marginTop: '1.5rem', paddingTop: '0.75rem', borderTop: '1px solid #eee', fontSize: '0.72rem', color: '#666' }}>
-          <div>{PRODUCT_COPYRIGHT_BRAND_ONLY}</div>
-          <div>{PRODUCT_URHEBER_ANWENDUNG}</div>
-        </footer>
-      </main>
+      <div className="tp-print-root">
+        <main className="tp-sheet" style={{ marginTop: '0.5rem' }}>
+          <SimpleK2TeamHandbuchMd md={content} />
+          <footer className="tp-no-print" style={{ marginTop: '1.5rem', paddingTop: '0.75rem', borderTop: '1px solid #eee', fontSize: '0.72rem', color: '#666' }}>
+            <div>{PRODUCT_COPYRIGHT_BRAND_ONLY}</div>
+            <div>{PRODUCT_URHEBER_ANWENDUNG}</div>
+          </footer>
+        </main>
+        <div className="tp-seitenfuss" aria-hidden />
+      </div>
     </>
   )
 }

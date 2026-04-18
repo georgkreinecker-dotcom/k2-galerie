@@ -1,7 +1,6 @@
 /**
- * Pilot-Zettel – Testpilot:in ök2 & VK2, voller Gratis-Zugang.
- * Allgemein gültig, nicht personenfixiert. Name und optional Pilot-URL aus Query.
- * QR indexiert: Bei Pilot-URL wird deren QR angezeigt.
+ * Pilot-Zettel – Testpilot:in ök2 & VK2 (20-PILOT-…) oder K2 Familie (32-PILOT-…, eigenes Lizenz-/Produktkonzept).
+ * Name und Pilot-URL aus Query. QR: bei Pilot-URL deren busted QR.
  */
 
 import React, { useState, useEffect } from 'react'
@@ -10,7 +9,9 @@ import QRCode from 'qrcode'
 import { BASE_APP_URL, ENTDECKEN_ROUTE, K2_FAMILIE_WILLKOMMEN_ROUTE, PROJECT_ROUTES } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
-const PILOT_ZETTEL_MD = '/k2team-handbuch/20-PILOT-ZETTEL-OEK2-VK2.md'
+const PILOT_ZETTEL_MD_OEK2_VK2 = '/k2team-handbuch/20-PILOT-ZETTEL-OEK2-VK2.md'
+/** K2 Familie = eigene Produktlinie, kein Galerie-Lizenzsystem (ök2/VK2) – eigener Zetteltext */
+const PILOT_ZETTEL_MD_K2_FAMILIE = '/k2team-handbuch/32-PILOT-ZETTEL-K2-FAMILIE.md'
 /** Testpiloten über denselben Einstieg wie alle: Entdecken → Vorschau → Admin */
 const OEK2_BASE = BASE_APP_URL + ENTDECKEN_ROUTE
 const VK2_BASE = BASE_APP_URL + PROJECT_ROUTES.vk2.galerie
@@ -35,6 +36,11 @@ export default function ZettelPilotPage() {
             : null
   const nr = searchParams.get('nr')?.trim() || ''
 
+  const useK2FamilieZettel =
+    pilotType === 'familie' || (pilotType === null && pilotUrl === FAMILIE_BASE)
+
+  const pilotZettelMd = useK2FamilieZettel ? PILOT_ZETTEL_MD_K2_FAMILIE : PILOT_ZETTEL_MD_OEK2_VK2
+
   const [content, setContent] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [qrPilot, setQrPilot] = useState<string>('')
@@ -44,14 +50,15 @@ export default function ZettelPilotPage() {
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
 
   useEffect(() => {
-    fetch(PILOT_ZETTEL_MD)
+    setLoading(true)
+    fetch(pilotZettelMd)
       .then((r) => (r.ok ? r.text() : ''))
       .then((text) => {
         setContent(text)
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [])
+  }, [pilotZettelMd])
 
   useEffect(() => {
     const oek2Bust = buildQrUrlWithBust(OEK2_BASE, qrVersionTs)
@@ -226,6 +233,52 @@ function ZettelPilotContent({
       if (rows.length > 0) {
         const [head, ...body] = rows
         const isPilotTable = body.length >= 2 && body[0][0]?.includes('ök2') && body[1][0]?.includes('VK2')
+        const isK2FamiliePilotTable =
+          pilotType === 'familie' &&
+          !isPilotTable &&
+          body.length >= 1 &&
+          head.length >= 2 &&
+          /bereich|adresse/i.test(`${head[0] || ''} ${head[1] || ''}`)
+
+        if (isK2FamiliePilotTable) {
+          out.push(
+            <table key={i}>
+              {head && (
+                <thead>
+                  <tr>
+                    {head.map((c, j) => (
+                      <th key={j}>{parseInline(c)}</th>
+                    ))}
+                    {qrFamilie ? <th key="qr">QR</th> : null}
+                  </tr>
+                </thead>
+              )}
+              <tbody>
+                {body.map((row, r) => (
+                  <tr key={r}>
+                    <td>{parseInline(row[0] || '')}</td>
+                    <td style={{ wordBreak: 'break-all' }}>
+                      {r === 0 ? pilotUrl || familieUrl : parseInline(row[1] || '')}
+                    </td>
+                    {qrFamilie ? (
+                      <td style={{ verticalAlign: 'middle', width: 52 }}>
+                        {r === 0 ? (
+                          <img
+                            src={qrFamilie}
+                            alt="QR K2 Familie"
+                            style={{ display: 'block', width: 48, height: 48 }}
+                          />
+                        ) : null}
+                      </td>
+                    ) : null}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )
+          continue
+        }
+
         out.push(
           <table key={i}>
             {head && (

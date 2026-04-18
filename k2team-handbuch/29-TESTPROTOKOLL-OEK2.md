@@ -49,6 +49,7 @@ ________________________________________________________________
 | Admin / Bearbeiten wie besprochen | ☐ | ☐ | ☐ | ☐ | ☐ |
 | Werke anlegen oder bearbeiten | ☐ | ☐ | ☐ | ☐ | ☐ |
 | Galerie gestalten / Texte / Bilder | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Events, Dokumente oder Presse/Werbemittel (falls genutzt) | ☐ | ☐ | ☐ | ☐ | ☐ |
 
 ### Shop & Kassa (Demo)
 
@@ -65,8 +66,6 @@ ________________________________________________________________
 | Nutzung über **ganzen Testzeitraum** (mind. 4 Wo.) | ☐ | ☐ | ☐ | ☐ | ☐ |
 
 [SEITENUMBRUCH]
-
----
 
 ## 3. Nutzung im Alltag
 

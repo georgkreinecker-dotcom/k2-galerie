@@ -46,6 +46,7 @@
 | 06.04.26 | ro5 – Reopen nach Code 5; DIALOG-STAND gelesen, orientiert. |
 | 10.04.26 | ro5 – Reopen nach Code 5; DIALOG-STAND gelesen, orientiert (Faden: K2 Familie Stammbaum Druck/Hooks-Fix; Druck testen). |
 | 15.04.26 | ro5 – Reopen nach Code 5; DIALOG-STAND gelesen, orientiert. |
+| 18.04.26 | ro5 – Reopen nach Code 5; Briefing + DIALOG-STAND gelesen, orientiert (Faden: OPTIMIERUNG Phase 2 Videos/JPG + Plattform-Rundgang testen). |
 
 ---
 

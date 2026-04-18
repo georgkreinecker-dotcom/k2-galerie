@@ -45,6 +45,8 @@ ________________________________________________________________
 |-----------|---|---|---|---|---|
 | Galerie / Katalog geeignet | ☐ | ☐ | ☐ | ☐ | ☐ |
 | Bilder / Einträge pflegbar | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Events / Vereinsdokumente (falls genutzt) | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Mitglieder in der Galerie / Künstlerprofile (falls zutreffend) | ☐ | ☐ | ☐ | ☐ | ☐ |
 
 ### Ablauf & Zugriff
 
@@ -60,8 +62,6 @@ ________________________________________________________________
 | Nutzung über **ganzen Testzeitraum** (mind. 4 Wo.), nicht nur einmal | ☐ | ☐ | ☐ | ☐ | ☐ |
 
 [SEITENUMBRUCH]
-
----
 
 ## 3. Nutzung im Alltag
 
