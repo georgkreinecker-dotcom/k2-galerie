@@ -4,29 +4,12 @@
 
 import { BASE_APP_URL, ENTDECKEN_ROUTE, K2_FAMILIE_WILLKOMMEN_ROUTE, PROJECT_ROUTES } from '../config/navigation'
 import { buildFamiliePilotWillkommenUrl } from '../utils/familiePilotSeed'
+import { getNextPilotZettelNr, setLastPilotZettelNr } from '../utils/pilotZettelNr'
 
-const PILOT_ZETTEL_NR_KEY = 'k2-pilot-zettel-last-nr'
 /** Testpiloten über denselben Einstieg wie alle: Entdecken → Vorschau → Admin */
 const OEK2_URL = BASE_APP_URL + ENTDECKEN_ROUTE
 const VK2_URL = BASE_APP_URL + PROJECT_ROUTES.vk2.galerie
 const FAMILIE_URL = BASE_APP_URL + K2_FAMILIE_WILLKOMMEN_ROUTE
-
-function getNextZettelNr(): string {
-  try {
-    const last = localStorage.getItem(PILOT_ZETTEL_NR_KEY)
-    const n = last ? parseInt(last, 10) : 0
-    return String(Number.isNaN(n) ? 1 : n + 1)
-  } catch {
-    return '1'
-  }
-}
-
-function setLastZettelNr(nr: string) {
-  try {
-    const n = parseInt(nr, 10)
-    if (!Number.isNaN(n) && n > 0) localStorage.setItem(PILOT_ZETTEL_NR_KEY, String(n))
-  } catch { /* ignore */ }
-}
 
 export type PilotType = 'oek2' | 'vk2' | 'familie'
 
@@ -42,12 +25,12 @@ export default function ZettelPilotFormPage() {
   const [nr, setNr] = useState('')
 
   useEffect(() => {
-    setNr(getNextZettelNr())
+    setNr(getNextPilotZettelNr())
   }, [])
 
   const handleGenerate = () => {
     if (!name.trim() || !appName.trim() || !pilotType) return
-    if (nr.trim()) setLastZettelNr(nr.trim())
+    if (nr.trim()) setLastPilotZettelNr(nr.trim())
     const pilotUrl =
       pilotType === 'oek2'
         ? OEK2_URL

@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **Testuser-Mappe** (`/testuser-anmeldung`): Katalog prüfen; neue Piloten erscheinen automatisch nach Öffnen des **Pilot-Zettels**; drei Start-Einträge (Platzhalter) bei erstem Besuch – echte Namen/Links in der Mappe eintragen.  
-**Einordnung:** Register + Zugangsblatt-Link aus **`testuserKatalogStorage`**; **`ZettelPilotPage`** ruft **`registerPilotZettelInKatalog`** auf.
+**Was wir JETZT tun:** Pilot-Testrunde: **eine Mappe** [`/testuser-anmeldung`](https://k2-galerie.vercel.app/testuser-anmeldung), Zettel ab **Nr. 10**; Organisations-Plan: **`docs/TESTUSER-PILOT-E2E-ORGA.md`**.  
+**Einordnung:** Weniger Seiten merken – Faden in einem Doc; Zähler + Tests im Repo.
+
+---
+
+**Letzter Stand:** 18.04.26 – **Pilot-Zettel ab 10 + E2E-Orga-Doc** – **`pilotZettelNr.ts`**, Tests **`pilotZettelNr.test.ts`**; **`docs/TESTUSER-PILOT-E2E-ORGA.md`**, **`docs/00-INDEX.md`**, **`HAUS-INDEX.md`**. **`npm run build:vercel`** grün. **Commit:** **`718ba0df`** ✅ GitHub
 
 ---
 

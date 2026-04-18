@@ -32,7 +32,7 @@ Nichts wurde weggeschmissen oder verlegt – nur diese Übersicht zum Wiederfind
 
 | Ort | Inhalt | Wofür |
 |-----|--------|--------|
-| **docs/** | Projekt-Doku (K2/ök2, Vercel, Supabase, Crash-Fixes, Marketing) | Siehe **docs/00-INDEX.md** – dort alle Docs mit Kurzbeschreibung. |
+| **docs/** | Projekt-Doku (K2/ök2, Vercel, Supabase, Crash-Fixes, Marketing) | Siehe **docs/00-INDEX.md** – dort alle Docs mit Kurzbeschreibung. **Testuser/Pilot organisieren:** **docs/TESTUSER-PILOT-E2E-ORGA.md** (eine Mappe, Ablauf, Zähler ab 10). |
 | **k2team-handbuch/** | Team-Handbuch (00–13) | **00-INDEX.md** = Inhaltsverzeichnis. Spiegel in `public/k2team-handbuch/` für App. |
 | **docs/CRASH-FIXES-STAND-17-02-26.md** | Crash-Fixes (Admin, Safe-Mode, Verzögerungen) | Was wir für Stabilität geändert haben. |
 | **docs/K2-OEK2-DATENTRENNUNG.md** | K2 vs. ök2 Regeln | Pflicht bei Änderungen an Daten/Keys. |
