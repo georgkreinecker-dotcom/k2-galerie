@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 18.04.26 – **Testuser-Zettel drei Produktlinien** – Markdown **`k2team-handbuch/28-TESTUSER-ZETTEL-PRODUKTLINIEN.md`** + Spiegel **`public/`**; Seite **`/zettel-testuser-produktlinien`** (Druck, drei QR: ök2, VK2, K2 Familie mit **`buildQrUrlWithBust`**); **K2TeamHandbuchPage**-Eintrag; **Mission Control** + **Platform Start** Links; **Tests + Build** grün. **Commit:** _(nach Push)_ ✅ GitHub
+**Letzter Stand:** 18.04.26 – **Testuser-Zettel drei Produktlinien** – Markdown **`k2team-handbuch/28-TESTUSER-ZETTEL-PRODUKTLINIEN.md`** + Spiegel **`public/`**; Seite **`/zettel-testuser-produktlinien`** (Druck, drei QR: ök2, VK2, K2 Familie mit **`buildQrUrlWithBust`**); **K2TeamHandbuchPage**-Eintrag; **Mission Control** + **Platform Start** Links; **Tests + Build** grün. **Commit:** **`60834433`** ✅ GitHub
 
 ---
 
