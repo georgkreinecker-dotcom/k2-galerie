@@ -2,9 +2,16 @@
  * Pilot-Zettel 20-PILOT-ZETTEL-OEK2-VK2.md ist ein kombinierter Mustertext.
  * Bei nur ök2 oder nur VK2 werden Überschrift und Fließtext angepasst –
  * getrennte Anwendungen, kein Eindruck eines „gemeinsamen“ Zugangs.
+ *
+ * @param pilotDisplayName Gewählter App-/Galeriename (z. B. Neumann) – erscheint bei ök2 in Überschrift/Kurz, kein „Demo“-Ton.
  */
-export function adaptPilotOek2Vk2ZettelMd(md: string, pilotType: 'oek2' | 'vk2' | null): string {
+export function adaptPilotOek2Vk2ZettelMd(
+  md: string,
+  pilotType: 'oek2' | 'vk2' | null,
+  pilotDisplayName?: string,
+): string {
   if (pilotType !== 'oek2' && pilotType !== 'vk2') return md
+  const display = pilotDisplayName?.trim() || ''
   return md
     .split('\n')
     .flatMap((line) => {
@@ -28,16 +35,25 @@ export function adaptPilotOek2Vk2ZettelMd(md: string, pilotType: 'oek2' | 'vk2' 
         }
       }
       if (pilotType === 'oek2') {
-        if (line.startsWith('# ')) return ['# Testpilot:in ök2 – Demo-Galerie (voller Gratis-Zugang)']
+        if (line.startsWith('# ')) {
+          const h1 = display
+            ? `# Testpilot:in ök2 – Galerie von ${display} (voller Gratis-Zugang)`
+            : '# Testpilot:in ök2 – deine Galerie (voller Gratis-Zugang)'
+          return [h1]
+        }
         if (line.startsWith('**QR und feste Adressen**')) {
-          return [
-            '**QR und Adresse** stehen in der **Tabelle unten**. **ök2** ist eine **eigene Anwendung** (Künstler-Demo) – getrennt von VK2 und K2 Familie.',
-          ]
+          const qr =
+            display.length > 0
+              ? `**QR und Adresse** stehen in der **Tabelle unten**. Das ist **deine** Galerie **„${display}“** im Browser – dieselbe Plattform wie spätere Lizenz-Galerien. Getrennt von VK2 und K2 Familie.`
+              : '**QR und Adresse** stehen in der **Tabelle unten**. **ök2** ist **deine** persönliche Galerie im Browser – getrennt von VK2 und K2 Familie.'
+          return [qr]
         }
         if (line.trim().startsWith('*ök2 = Demo')) {
-          return [
-            '*ök2 = Demo für Künstler:innen – **eigene** Web-Galerie im Browser (Laptop und Handy). Einmal **Drucken / Als PDF speichern**, mitgeben.*',
-          ]
+          const kurz =
+            display.length > 0
+              ? `*Das ist **deine** Web-Galerie **${display}** (Laptop und Handy) – **nicht** die anonyme Startseite. Einmal **Drucken / Als PDF speichern**, mitgeben.*`
+              : '*Das ist **deine** Web-Galerie im Browser (Laptop und Handy), mit deinem gewählten Namen. Einmal **Drucken / Als PDF speichern**, mitgeben.*'
+          return [kurz]
         }
         /** „In einem Satz“ für ök2 nicht anzeigen (weder kombiniert noch alte Varianten) */
         if (line.includes('**In einem Satz:**')) {

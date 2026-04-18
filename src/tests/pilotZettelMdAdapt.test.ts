@@ -28,15 +28,23 @@ describe('adaptPilotOek2Vk2ZettelMd', () => {
   it('lässt null unverändert', () => {
     expect(adaptPilotOek2Vk2ZettelMd(COMBINED, null)).toBe(COMBINED)
   })
-  it('oek2: keine kombinierte Überschrift, eigene Anwendung', () => {
+  it('oek2: keine kombinierte Überschrift, kein Demo-Titel', () => {
     const r = adaptPilotOek2Vk2ZettelMd(COMBINED, 'oek2')
-    expect(r).toContain('ök2 – Demo-Galerie')
+    expect(r).toContain('ök2 – deine Galerie')
+    expect(r).not.toMatch(/Demo-Galerie|Künstler-Demo|Demo für Künstler/i)
     expect(r).not.toMatch(/ök2 & VK2 – voller/)
     expect(r).toContain('getrennt von VK2')
     expect(r).toContain('Nur ök2')
     expect(r).not.toMatch(/Deinen Weg festlegen/)
     expect(r).toContain('Kasten „Deinen Weg wählen“')
     expect(r).not.toMatch(/\*\*In einem Satz:\*\*/)
+  })
+  it('oek2: mit Anzeigename in der Überschrift', () => {
+    const r = adaptPilotOek2Vk2ZettelMd(COMBINED, 'oek2', 'Neumann')
+    expect(r).toContain('Galerie von Neumann')
+    expect(r).toContain('„Neumann“')
+    expect(r).toContain('Web-Galerie **Neumann**')
+    expect(r).not.toMatch(/Demo-Galerie|Künstler-Demo/i)
   })
   it('vk2: keine kombinierte Überschrift', () => {
     const r = adaptPilotOek2Vk2ZettelMd(COMBINED, 'vk2')

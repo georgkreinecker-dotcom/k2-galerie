@@ -103,7 +103,7 @@ export default function ZettelPilotPage() {
   const nr = searchParams.get('nr')?.trim() || ''
 
   /**
-   * ök2: Immer dieselbe URL wie im Formular (persönliche Demo-Galerie). Roh-Query kann fehlen oder nur /entdecken sein,
+   * ök2: Immer dieselbe URL wie im Formular (persönliche Galerie mit App-Namen). Roh-Query kann fehlen oder nur /entdecken sein,
    * wenn & in der URL die Parameter zerschneidet – dann trotzdem korrekter Einstieg über appName.
    */
   const pilotUrl = useMemo(() => {
@@ -192,8 +192,11 @@ export default function ZettelPilotPage() {
   }, [pilotZettelMd])
 
   const pilotMdForRender = useMemo(
-    () => (useK2FamilieZettel ? content : adaptPilotOek2Vk2ZettelMd(content, pilotType)),
-    [content, useK2FamilieZettel, pilotType],
+    () =>
+      useK2FamilieZettel
+        ? content
+        : adaptPilotOek2Vk2ZettelMd(content, pilotType, displayAppName || undefined),
+    [content, useK2FamilieZettel, pilotType, displayAppName],
   )
 
   useEffect(() => {
@@ -417,30 +420,33 @@ export default function ZettelPilotPage() {
             style={{
               marginBottom: '0.65rem',
               padding: '0.5rem 0.65rem',
-              border: '1px solid #e8e4dc',
+              border: '1px solid #b54a1e33',
               borderRadius: 8,
-              background: '#faf8f5',
+              background: '#fff8f3',
               fontSize: '0.95rem',
               lineHeight: 1.45,
               color: '#1c1a18',
             }}
           >
-            <p style={{ margin: '0 0 0.4rem', fontSize: '0.88rem', color: '#444' }}>
-              <strong>Benutzerhandbuch & Testprotokoll:</strong> In der <strong>Tabelle unten</strong> jeweils als <strong>Link + QR</strong> (wie bei K2 Familie).
+            <p style={{ margin: '0 0 0.45rem', fontSize: '0.92rem', color: '#1c1a18', fontWeight: 600 }}>
+              Deinen Weg wählen
             </p>
-            <p style={{ margin: 0, fontSize: '0.88rem', color: '#444' }}>
-              <strong>Deinen Weg:</strong>{' '}
+            <p style={{ margin: '0 0 0.45rem', fontSize: '0.88rem', color: '#444' }}>
               {pilotType === 'oek2' ? (
                 <>
-                  In den <strong>Einstellungen</strong> unter <strong>„Wofür nutzt du deine Galerie?“</strong> einmal die passende{' '}
-                  <strong>Sparte</strong> wählen – das steuert Typ und Kategorien in „Werke verwalten“.
+                  Im Admin unter <strong>Einstellungen</strong> → <strong>Meine Daten</strong>: bei{' '}
+                  <strong>„Wofür nutzt du deine Galerie?“</strong> eine <strong>Sparte</strong> wählen (z.&nbsp;B. Kunst &amp; Galerie, Handwerk …). Davon hängen{' '}
+                  <strong>Typ und Kategorien</strong> in „Werke verwalten“ ab.
                 </>
               ) : (
                 <>
-                  In den <strong>Einstellungen</strong> <strong>Verein</strong> und <strong>Kunstrichtungen</strong> so eintragen, wie es zu euch passt –{' '}
-                  <strong>euer Weg</strong> für die Vereins-Galerie.
+                  Im Admin unter <strong>Einstellungen</strong>: <strong>Verein</strong> und <strong>Kunstrichtungen</strong> zu euch passend eintragen – damit Galerie
+                  und Werke zu euch passen.
                 </>
               )}
+            </p>
+            <p style={{ margin: 0, fontSize: '0.88rem', color: '#444' }}>
+              <strong>Benutzerhandbuch &amp; Testprotokoll:</strong> In der <strong>Tabelle unten</strong> jeweils als <strong>Link + QR</strong> (wie bei K2 Familie).
             </p>
           </div>
         ) : null}
