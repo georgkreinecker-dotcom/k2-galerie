@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Offene lokale Änderungen (u. a. **FamilieEinladungQuerySync**, **TestprotokollTestuserPage**, **k2team** 29/32) prüfen – committen oder verwerfen; sonst wie besprochen **Optimierung** oder Plattform-Rundgang.  
-**Einordnung:** Testuser-Flow **App-Name** + **Handbuch 17** + **K2Team 28** ist auf **main** (**`39822214`**).
+**Was wir JETZT tun:** Kurz **K2-Familie-Pilot-Zettel** im Browser drucken (Tabelle: 3× Link + QR); bei Bedarf offene lokale Änderungen (u. a. **FamilieEinladungQuerySync**, **TestprotokollTestuserPage**, **k2team** 29) committen oder verwerfen.  
+**Einordnung:** Pilot-Zettel K2 Familie = **Handbuch + Testprotokoll** jetzt **auf dem Blatt** (Link + QR) + **Formular**-Titel **`8e3d8b3a`**.
+
+---
+
+**Letzter Stand:** 18.04.26 – **K2-Familie Pilot-Zettel: Handbuch + Testprotokoll in Tabelle** – **`ZettelPilotPage`:** Zeilen 2–3 **Benutzerhandbuch** (`/k2-familie-handbuch`) + **Testprotokolle Testuser** (`/testprotokoll-testuser`) mit **klickbarem Link** und **QR** (Server-Stand + Bust); **`32-PILOT-ZETTEL-K2-FAMILIE.md`** + Spiegel; Begrüßungskasten angepasst; **`ZettelPilotFormPage`:** Überschrift **Neuer Test-Pilot – Formular**. **`tsc:build`** grün. **Commit:** **`8e3d8b3a`** ✅ GitHub
 
 ---
 
