@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Pilot-Testrunde: **Testuser-Mappe** [`/testuser-anmeldung`](https://k2-galerie.vercel.app/testuser-anmeldung) mit **zentraler Pilotenliste** (Vercel Blob + API-Key); bei Bedarf **`.env.example`** (PILOT_KATALOG_*).  
-**Einordnung:** Eine Quelle für die Liste – nicht nur localStorage.
+**Was wir JETZT tun:** Nach Deploy: **VK2-Link** [`/projects/vk2/galerie?vk2Pilot=14`](https://k2-galerie.vercel.app/projects/vk2/galerie?vk2Pilot=14) im Browser testen (Vercel „Ready“ abwarten, ggf. Stand-Badge tippen).  
+**Einordnung:** Testpilot = eigener Mandanten-Key (`k2-vk2-pilot-{id}-*`) wie bei ök2/Familie – Session muss vor dem ersten Lesen gesetzt sein.
+
+---
+
+**Letzter Stand:** 18.04.26 – **VK2 Testpilot: eigener Mandant, Link lädt** – **`syncVk2PilotScopeFromSearch`** synchron in **`TenantProvider`** auf `/projects/vk2/*`; **`Vk2GaleriePage`:** `getVk2StammdatenKey` + scoped Eingangskarten, Reload bei `location.search`; **`tenantConfig`:** Demo-Stammdaten nur scoped Key; **`ZettelPilotPage`:** TS2367 behoben (Build ging vorher nicht). **`npm run build:vercel`** grün. **Commit:** `0e3335c0` ✅ GitHub
 
 ---
 
