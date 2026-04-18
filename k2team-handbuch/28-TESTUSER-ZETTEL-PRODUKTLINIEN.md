@@ -1,6 +1,6 @@
 # Infos (Testuser) – drei Produktlinien
 
-**Interesse:** **[Testuser-Anmeldung](/testuser-anmeldung)** – Namen, Kontakt, gewünschte Linie; Angaben an **kgm** per E-Mail.
+**Interesse:** **[Testuser-Anmeldung](/testuser-anmeldung)** – Name, **wie die App heißen soll** (für den persönlichen Zugang), Kontakt, gewünschte Linie; Angaben an **kgm** per E-Mail. Beim internen **Laufzettel** (Mission Control → Neuer Test-Pilot) werden derselbe App-Name und die Zettel-Nr. genutzt.
 
 **Zweck:** Produkttest im Alltag → kostenlose Testlizenz; bei erfüllten Bedingungen **Gutschein 250 €** für ein Kunstobjekt der **K2 Galerie** (kein Baranspruch).
 
@@ -15,6 +15,10 @@
 **Zugang:** Nur **persönlicher Link per E-Mail** von kgm. **Begrenzte Teilnahme**, Auswahl durch kgm.
 
 ---
+
+## Paket für Testuser
+
+- **Schreiben von kgm** mit persönlichem Link (und ggf. Zugangscode) · **Benutzerhandbuch** (Kapitel „Testuser: Zugang und Konditionen“ im [Benutzerhandbuch](/benutzer-handbuch)) · **Testprotokoll** (Vorlagen: [Testprotokolle](/testprotokoll-testuser)). **Erster Einstieg** nach Möglichkeit am **PC oder Laptop** (Übersicht), dann Handy/Tablet mit derselben Adresse möglich.
 
 ## Leistungen
 

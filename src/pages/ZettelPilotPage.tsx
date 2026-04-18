@@ -8,6 +8,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { BASE_APP_URL, ENTDECKEN_ROUTE, K2_FAMILIE_WILLKOMMEN_ROUTE, PROJECT_ROUTES } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import { buildFamiliePilotFamilienZugang, buildFamiliePilotTenantIdFromZettelNr } from '../utils/familiePilotSeed'
 
 const PILOT_ZETTEL_MD_OEK2_VK2 = '/k2team-handbuch/20-PILOT-ZETTEL-OEK2-VK2.md'
 /** K2 Familie = eigene Produktlinie, kein Galerie-Lizenzsystem (ök2/VK2) – eigener Zetteltext */
@@ -17,11 +18,18 @@ const OEK2_BASE = BASE_APP_URL + ENTDECKEN_ROUTE
 const VK2_BASE = BASE_APP_URL + PROJECT_ROUTES.vk2.galerie
 const FAMILIE_BASE = BASE_APP_URL + K2_FAMILIE_WILLKOMMEN_ROUTE
 
+function pilotUrlIsK2FamilieWillkommen(pilotUrl: string): boolean {
+  return pilotUrl === FAMILIE_BASE || pilotUrl.startsWith(`${FAMILIE_BASE}?`)
+}
+
 export type PilotType = 'oek2' | 'vk2' | 'familie'
 
 export default function ZettelPilotPage() {
   const [searchParams] = useSearchParams()
   const name = searchParams.get('name')?.trim() || ''
+  const appName = searchParams.get('appName')?.trim() || ''
+  /** Für Texte/Zettel: gewählter App-Name, sonst Kontaktname (alte Links) */
+  const displayAppName = appName || name
   const pilotUrl = searchParams.get('pilotUrl')?.trim() || ''
   const typeParam = searchParams.get('type')?.trim().toLowerCase()
   const pilotType: PilotType | null =
@@ -31,13 +39,16 @@ export default function ZettelPilotPage() {
         ? 'oek2'
         : pilotUrl === VK2_BASE
           ? 'vk2'
-          : pilotUrl === FAMILIE_BASE
+          : pilotUrlIsK2FamilieWillkommen(pilotUrl)
             ? 'familie'
             : null
   const nr = searchParams.get('nr')?.trim() || ''
 
+  const familieUrlForQr =
+    pilotType === 'familie' && pilotUrl.includes('t=familie-pilot-') ? pilotUrl : FAMILIE_BASE
+
   const useK2FamilieZettel =
-    pilotType === 'familie' || (pilotType === null && pilotUrl === FAMILIE_BASE)
+    pilotType === 'familie' || (pilotType === null && pilotUrlIsK2FamilieWillkommen(pilotUrl))
 
   const pilotZettelMd = useK2FamilieZettel ? PILOT_ZETTEL_MD_K2_FAMILIE : PILOT_ZETTEL_MD_OEK2_VK2
 
@@ -63,7 +74,7 @@ export default function ZettelPilotPage() {
   useEffect(() => {
     const oek2Bust = buildQrUrlWithBust(OEK2_BASE, qrVersionTs)
     const vk2Bust = buildQrUrlWithBust(VK2_BASE, qrVersionTs)
-    const familieBust = buildQrUrlWithBust(FAMILIE_BASE, qrVersionTs)
+    const familieBust = buildQrUrlWithBust(familieUrlForQr, qrVersionTs)
     if (pilotUrl) {
       const busted = pilotUrl.startsWith(BASE_APP_URL) ? buildQrUrlWithBust(pilotUrl, qrVersionTs) : pilotUrl
       QRCode.toDataURL(busted, { width: 100, margin: 1 }).then(setQrPilot).catch(() => setQrPilot(''))
@@ -73,7 +84,7 @@ export default function ZettelPilotPage() {
     QRCode.toDataURL(oek2Bust, { width: 100, margin: 1 }).then(setQrOek2).catch(() => {})
     QRCode.toDataURL(vk2Bust, { width: 100, margin: 1 }).then(setQrVk2).catch(() => {})
     QRCode.toDataURL(familieBust, { width: 100, margin: 1 }).then(setQrFamilie).catch(() => setQrFamilie(''))
-  }, [pilotUrl, qrVersionTs])
+  }, [pilotUrl, qrVersionTs, familieUrlForQr])
 
   if (loading) {
     return (
@@ -146,6 +157,24 @@ export default function ZettelPilotPage() {
         <p className="zettel-pilot-name">
           <strong>Name der Pilot:in:</strong> {name || '________________'}
         </p>
+        {appName ? (
+          <p className="zettel-pilot-name" style={{ fontSize: '0.95rem', marginBottom: '0.35rem' }}>
+            <strong>Name der App (für den Test):</strong> {appName}
+          </p>
+        ) : null}
+        {pilotType === 'familie' && nr ? (
+          <p
+            className="zettel-pilot-name"
+            style={{ fontSize: '0.95rem', fontWeight: 500, color: '#333', marginBottom: '0.75rem' }}
+          >
+            <strong>Test-Zugang K2 Familie:</strong> Familien-Zugangsnummer{' '}
+            <code style={{ fontSize: '0.9em' }}>{buildFamiliePilotFamilienZugang(nr)}</code>
+            {' · '}Instanz{' '}
+            <code style={{ fontSize: '0.9em' }}>{buildFamiliePilotTenantIdFromZettelNr(nr)}</code>
+            {' '}
+            (steht auch im QR; nach dem Öffnen ist die Familie unter „{displayAppName || '…'}“ bereit)
+          </p>
+        ) : null}
         <ZettelPilotContent
           md={content}
           pilotType={pilotType}
@@ -153,7 +182,7 @@ export default function ZettelPilotPage() {
           qrPilot={qrPilot}
           oek2Url={OEK2_BASE}
           vk2Url={VK2_BASE}
-          familieUrl={FAMILIE_BASE}
+          familieUrl={familieUrlForQr}
           qrOek2={qrOek2}
           qrVk2={qrVk2}
           qrFamilie={qrFamilie}

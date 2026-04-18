@@ -27,6 +27,7 @@ const DOCUMENTS = [
   { id: '13-k2-familie-inhaber', name: 'K2 Familie – Rolle Inhaber:in', file: '13-K2-FAMILIE-INHABER-ROLLE.md' },
   { id: '14-k2-familie-bearbeiter-leser', name: 'K2 Familie – Bearbeiter und Leser', file: '14-K2-FAMILIE-BEARBEITER-UND-LESER.md' },
   { id: '15-k2-familie-lizenz', name: 'K2 Familie – Lizenz und Kündigung', file: '15-K2-FAMILIE-LIZENZ.md' },
+  { id: '17-testuser', name: 'Testuser: Zugang und Konditionen', file: '17-TESTUSER-ZUGANG.md' },
   { id: '04-faq', name: 'Häufige Fragen', file: '04-HAEUFIGE-FRAGEN.md' },
 ] as const
 

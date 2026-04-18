@@ -62,7 +62,11 @@ Für **Inhaber:innen**: Verantwortung, nur-Inhaber-Bereiche, Arbeitsansicht, Sic
 
 **Für alle Mitglieder:** Wer ist **Lizenznehmer:in** (Inhaber:in), **Kündigung** wie bei der Galerie – ohne Bindung, Daten vorher sichern.
 
-15. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
+15. [Testuser: Zugang und Konditionen](17-TESTUSER-ZUGANG.md)
+
+**Persönlicher Testzugang**, Name der App, Paket mit Handbuch und Testprotokoll, **erster Einstieg am PC/Laptop**, Verweis auf Konditionen und Bewerbung.
+
+16. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
 
 **Gleiche URL auf PC und Handy**, Stand aktualisieren, Drucken, QR-Code, Passwort vergessen, Hilfe.
 

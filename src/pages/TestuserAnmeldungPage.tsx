@@ -9,6 +9,7 @@ import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_URH
 
 function buildPayload(params: {
   name: string
+  appName: string
   email: string
   phone: string
   oek2: boolean
@@ -20,6 +21,7 @@ function buildPayload(params: {
     'Testuser-Anmeldung (kgm solution)',
     '',
     `Name: ${params.name}`,
+    `Wunsch-Name für die App (Test): ${params.appName}`,
     `E-Mail: ${params.email}`,
     `Telefon: ${params.phone || '–'}`,
     'Interesse an Produktlinie:',
@@ -34,6 +36,7 @@ function buildPayload(params: {
 
 export default function TestuserAnmeldungPage() {
   const [name, setName] = useState('')
+  const [appName, setAppName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [oek2, setOek2] = useState(false)
@@ -45,6 +48,7 @@ export default function TestuserAnmeldungPage() {
 
   const canSubmit =
     name.trim().length > 0 &&
+    appName.trim().length > 0 &&
     email.trim().includes('@') &&
     (oek2 || vk2 || familie) &&
     einverstanden
@@ -52,7 +56,16 @@ export default function TestuserAnmeldungPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!canSubmit) return
-    const payload = buildPayload({ name: name.trim(), email: email.trim(), phone: phone.trim(), oek2, vk2, familie, anmerkung })
+    const payload = buildPayload({
+      name: name.trim(),
+      appName: appName.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
+      oek2,
+      vk2,
+      familie,
+      anmerkung,
+    })
     const subject = encodeURIComponent('Testuser-Anmeldung')
     const body = encodeURIComponent(payload)
     const mailto = `mailto:${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_EMAIL)}?subject=${subject}&body=${body}`
@@ -222,6 +235,21 @@ export default function TestuserAnmeldungPage() {
           />
         </div>
         <div className="tu-break-avoid">
+          <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.25rem', fontSize: '0.9rem' }}>
+            Wie soll die App heißen? <span style={{ fontWeight: 400 }}>*</span>
+          </label>
+          <input
+            required
+            value={appName}
+            onChange={(e) => setAppName(e.target.value)}
+            placeholder="z. B. Familienname, Verein, Kurzname der Galerie"
+            style={{ width: '100%', padding: '0.45rem 0.65rem', border: '1px solid #ccc', borderRadius: 6, fontSize: '1rem', boxSizing: 'border-box' }}
+          />
+          <p style={{ margin: '0.25rem 0 0', fontSize: '0.82rem', color: '#555', lineHeight: 1.45 }}>
+            So können wir Ihren persönlichen Testzugang auf diesen Namen ausrichten – Sie müssen später nichts mehr „umbenennen“.
+          </p>
+        </div>
+        <div className="tu-break-avoid">
           <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.25rem', fontSize: '0.9rem' }}>E-Mail *</label>
           <input
             required
@@ -309,7 +337,7 @@ export default function TestuserAnmeldungPage() {
 
       {!canSubmit && (
         <p className="tu-no-print" style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.65rem' }}>
-          Bitte Name, E-Mail, mindestens eine Produktlinie und die Einwilligung ausfüllen.
+          Bitte Name, gewünschten App-Namen, E-Mail, mindestens eine Produktlinie und die Einwilligung ausfüllen.
         </p>
       )}
 

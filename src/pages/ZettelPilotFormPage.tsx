@@ -3,6 +3,7 @@
  */
 
 import { BASE_APP_URL, ENTDECKEN_ROUTE, K2_FAMILIE_WILLKOMMEN_ROUTE, PROJECT_ROUTES } from '../config/navigation'
+import { buildFamiliePilotWillkommenUrl } from '../utils/familiePilotSeed'
 
 const PILOT_ZETTEL_NR_KEY = 'k2-pilot-zettel-last-nr'
 /** Testpiloten über denselben Einstieg wie alle: Entdecken → Vorschau → Admin */
@@ -35,6 +36,8 @@ import { useNavigate, Link } from 'react-router-dom'
 export default function ZettelPilotFormPage() {
   const navigate = useNavigate()
   const [name, setName] = useState('')
+  /** Anzeigename für die Test-App (alle Linien); bei K2 Familie → Parameter fn im Willkommens-Link */
+  const [appName, setAppName] = useState('')
   const [pilotType, setPilotType] = useState<PilotType | ''>('')
   const [nr, setNr] = useState('')
 
@@ -43,24 +46,30 @@ export default function ZettelPilotFormPage() {
   }, [])
 
   const handleGenerate = () => {
-    if (!name.trim() || !pilotType) return
+    if (!name.trim() || !appName.trim() || !pilotType) return
     if (nr.trim()) setLastZettelNr(nr.trim())
-    const pilotUrl = pilotType === 'oek2' ? OEK2_URL : pilotType === 'vk2' ? VK2_URL : FAMILIE_URL
+    const pilotUrl =
+      pilotType === 'oek2'
+        ? OEK2_URL
+        : pilotType === 'vk2'
+          ? VK2_URL
+          : buildFamiliePilotWillkommenUrl(FAMILIE_URL, appName.trim(), nr.trim() || '1')
     const params = new URLSearchParams()
     params.set('name', name.trim())
+    params.set('appName', appName.trim())
     params.set('type', pilotType)
     params.set('pilotUrl', pilotUrl)
     if (nr.trim()) params.set('nr', nr.trim())
     navigate(`/zettel-pilot?${params.toString()}`)
   }
 
-  const canGenerate = name.trim().length > 0 && pilotType !== ''
+  const canGenerate = name.trim().length > 0 && appName.trim().length > 0 && pilotType !== ''
 
   return (
     <main style={{ padding: '2rem', maxWidth: 480, margin: '0 auto', background: '#fff', minHeight: '100vh', color: '#1c1a18' }}>
       <h1 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Neuer Test-Pilot</h1>
       <p style={{ fontSize: '0.9rem', color: '#555', marginBottom: '0.75rem' }}>
-        Name eingeben → ök2, VK2 oder K2 Familie wählen → QR wird automatisch vergeben → Laufzettel generieren und mitgeben.
+        Name eingeben → <strong>Wie soll die App heißen?</strong> → ök2, VK2 oder K2 Familie wählen → QR wird automatisch vergeben → Laufzettel generieren und mitgeben.
       </p>
       <p style={{ fontSize: '0.85rem', color: '#5c5650', marginBottom: '0.75rem', lineHeight: 1.5, padding: '0.5rem 0.65rem', background: '#f8f6f2', borderRadius: 8, border: '1px solid #e8e4dc' }}>
         <strong>Hinweis:</strong> Das Testprogramm ist auf eine begrenzte Personenzahl begrenzt – die Plätze wählt das Team.
@@ -100,6 +109,22 @@ export default function ZettelPilotFormPage() {
           autoFocus
           style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #ccc', borderRadius: 6, fontSize: '1rem', boxSizing: 'border-box' }}
         />
+      </div>
+
+      <div style={{ marginBottom: '1.25rem' }}>
+        <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.35rem', fontSize: '0.9rem' }}>
+          Wie soll die App heißen? <span style={{ fontWeight: 400, color: '#666' }}>(für den Test)</span>
+        </label>
+        <input
+          type="text"
+          value={appName}
+          onChange={(e) => setAppName(e.target.value)}
+          placeholder="z. B. Familie Huber, Verein Muster, Galerie Demo"
+          style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #ccc', borderRadius: 6, fontSize: '1rem', boxSizing: 'border-box' }}
+        />
+        <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '0.35rem', lineHeight: 1.45 }}>
+          Dieser Name wird für den Zugang genutzt (z. B. Anzeige in der App, bei K2 Familie im Link). Er muss nicht mit dem Vornamen der Pilot:in übereinstimmen.
+        </p>
       </div>
 
       <div style={{ marginBottom: '1.25rem' }}>
@@ -162,7 +187,7 @@ export default function ZettelPilotFormPage() {
       </div>
       {!canGenerate && (
         <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.75rem' }}>
-          Bitte zuerst Name eintragen und ök2, VK2 oder K2 Familie wählen.
+          Bitte Name der Pilot:in, gewünschten App-Namen und ök2, VK2 oder K2 Familie eintragen.
         </p>
       )}
     </main>
