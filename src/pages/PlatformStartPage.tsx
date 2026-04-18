@@ -331,6 +331,23 @@ export default function PlatformStartPage() {
         >
           📄 Pilot-Zettel (Name eintragen, dann 🖨️ Drucken)
         </Link>
+        <Link
+          to="/zettel-testuser-produktlinien"
+          style={{
+            display: 'block',
+            marginTop: '0.75rem',
+            padding: '0.85rem 1.25rem',
+            background: 'linear-gradient(120deg, #0d9488, #0f766e)',
+            borderRadius: '12px',
+            color: '#fff',
+            fontWeight: 600,
+            textDecoration: 'none',
+            textAlign: 'center',
+            boxShadow: '0 4px 14px rgba(13,148,136,0.25)',
+          }}
+        >
+          🧪 Testuser-Zettel (ök2 · VK2 · K2 Familie → 🖨️)
+        </Link>
 
         {/* Haupt-Features - Prominent und groß */}
         <div style={{ 

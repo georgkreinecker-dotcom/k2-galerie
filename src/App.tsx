@@ -19,6 +19,7 @@ import K2TeamHandbuchPage from './pages/K2TeamHandbuchPage'
 import ZettelMartinaMunaPage from './pages/ZettelMartinaMunaPage'
 import ZettelPilotPage from './pages/ZettelPilotPage'
 import ZettelPilotFormPage from './pages/ZettelPilotFormPage'
+import ZettelTestuserProduktlinienPage from './pages/ZettelTestuserProduktlinienPage'
 import K2GalerieHandbuchPage from './pages/K2GalerieHandbuchPage'
 import KampagneMarketingStrategiePage from './pages/KampagneMarketingStrategiePage'
 import K2WeltStrategiePage from './pages/K2WeltStrategiePage'
@@ -978,6 +979,7 @@ function App() {
       <Route path="/zettel-martina-muna" element={<Navigate to="/zettel-pilot" replace />} />
       <Route path="/zettel-pilot" element={<ZettelPilotPage />} />
       <Route path="/zettel-pilot-form" element={<ZettelPilotFormPage />} />
+      <Route path="/zettel-testuser-produktlinien" element={<ZettelTestuserProduktlinienPage />} />
       <Route path="/k2-galerie-handbuch" element={<K2GalerieHandbuchPage />} />
       <Route path="/benutzer-handbuch" element={<BenutzerHandbuchPage />} />
       <Route path="/k2-familie-handbuch" element={<K2FamilieBenutzerHandbuchPage />} />

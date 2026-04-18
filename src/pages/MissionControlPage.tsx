@@ -94,6 +94,22 @@ export default function MissionControlPage() {
               <span>Pilot-Zettel</span>
             </Link>
             <Link
+              to="/zettel-testuser-produktlinien"
+              className="btn small-btn"
+              style={{
+                background: 'linear-gradient(120deg, #0d9488, #0f766e)',
+                color: '#ffffff',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem'
+              }}
+              title="Testuser-Zettel: ök2, VK2, K2 Familie – Testlizenz, Gutschein-Hinweis, QR zum Drucken"
+            >
+              <span style={{ fontSize: '1.1rem' }}>🧪</span>
+              <span>Testuser-Zettel</span>
+            </Link>
+            <Link
               to="/k2team-handbuch"
               className="btn small-btn"
               style={{

@@ -5,6 +5,10 @@
 
 ---
 
+**Letzter Stand:** 18.04.26 – **Testuser-Zettel drei Produktlinien** – Markdown **`k2team-handbuch/28-TESTUSER-ZETTEL-PRODUKTLINIEN.md`** + Spiegel **`public/`**; Seite **`/zettel-testuser-produktlinien`** (Druck, drei QR: ök2, VK2, K2 Familie mit **`buildQrUrlWithBust`**); **K2TeamHandbuchPage**-Eintrag; **Mission Control** + **Platform Start** Links; **Tests + Build** grün. **Commit:** _(nach Push)_ ✅ GitHub
+
+---
+
 **Letzter Stand:** 16.04.26 (Abend) – **Session-Ende:** Lokaler Stand **Plattform-Rundgang ök2/VK2** (Hosts, Schritte, Storage, **`mobileUiHelpers`**, Anpassungen **App/TenantContext/Galerie**), Konzept **`docs/KONZEPT-ADMIN-RUNDGANG-OEK2-VK2.md`**, Doku-Updates – **Tests + Build grün**, **commit + push**. **Commit:** **`b0fbd0bb`** ✅ GitHub
 
 ---

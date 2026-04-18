@@ -32,6 +32,7 @@ export default function K2TeamHandbuchPage() {
     { id: '24-texte-briefe-kompass', name: 'Texte & Briefe Kompass', file: '24-TEXTE-BRIEFE-KOMPASS.md' },
     { id: '26-testpilot-einladung', name: 'Testpilot-Einladung einrichten', file: '26-TESTPILOT-EINLADUNG-EINRICHTUNG.md' },
     { id: '27-lizenz-admin-qr', name: 'Lizenznehmer: Admin-QR fürs Handy', file: '27-LIZENZNEHMER-ADMIN-QR-MOBIL.md' },
+    { id: '28-testuser-zettel', name: 'Testuser-Zettel – drei Produktlinien', file: '28-TESTUSER-ZETTEL-PRODUKTLINIEN.md' },
     { id: 'video-praemap-analyse', name: 'Video-Produktion: Präsentationsmappe-Analyse', file: 'VIDEO-PRODUKTION-PRAEMAPPE-ANALYSE.md' },
     { id: 'video-matrix-drehbuch', name: 'Video-Produktion: Matrix & Drehbuch V1', file: 'VIDEO-PRODUKTION-MATRIX-UND-DREHBUCH-V1.md' },
   ]
