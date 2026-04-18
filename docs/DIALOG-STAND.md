@@ -5,6 +5,10 @@
 
 ---
 
+**Letzter Stand:** 18.04.26 – **Pilot-Zettel: ök2/VK2 getrennte Anwendungen + ök2-Galerie ohne Entdecken-Umweg** – **`pilotZettelMdAdapt.ts`:** Text je Linie (nur ök2 / nur VK2); **`ZettelPilotPage`:** Hinweisbox; **`GaleriePage`:** bei `entwurf=1` + `vorname` kein Redirect zu Entdecken. **`pilotZettelMdAdapt.test.ts`**. **`npm run build`** grün. **Commit:** `366318f8` ✅ GitHub
+
+---
+
 **Letzter Stand:** 18.04.26 – **Pilot-Zettel ök2/VK2: gleiches Format wie K2 Familie** – **`ZettelPilotPage`:** **`zettel-pilot-kompakt`** für alle Linien; **`20-PILOT-ZETTEL-OEK2-VK2.md`** (k2team + public) verkürzt; **`TESTUSER-PILOT-E2E-ORGA`:** Mappe = Ablage. **`npm run vite:build`** grün. **Commit:** `b7c16f76` ✅ GitHub
 
 ---
