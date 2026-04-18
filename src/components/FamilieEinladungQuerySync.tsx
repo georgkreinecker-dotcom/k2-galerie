@@ -14,11 +14,13 @@ import { findPersonIdByMitgliedsNummer, trimMitgliedsNummerEingabe } from '../ut
 import { fetchFamilieIdentityLite, loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
 import {
   clearFamilieEinladungPending,
+  clearFamilieFamilienQrKompaktSession,
   setFamilieEinladungPending,
   setFamilieFamilienQrKompaktSession,
 } from '../utils/familieEinladungPending'
 import { clearFamilieNurMusterSession } from '../utils/familieMusterSession'
 import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
+import { isFamiliePilotTenantId, seedFamiliePilotIfNeeded } from '../utils/familiePilotSeed'
 
 const R_FAM = PROJECT_ROUTES['k2-familie']
 const R_PERSONEN = R_FAM.personen
@@ -150,6 +152,9 @@ export function FamilieEinladungQuerySync() {
         if (t !== FAMILIE_HUBER_TENANT_ID) {
           clearFamilieNurMusterSession()
         }
+        if (isFamiliePilotTenantId(t) && z && fn) {
+          seedFamiliePilotIfNeeded(t, { familienZugang: z, familyDisplayName: fn })
+        }
         let switched: boolean
         if (tenantList.includes(t)) {
           setCurrentTenantId(t)
@@ -190,6 +195,11 @@ export function FamilieEinladungQuerySync() {
         } else if (m) {
           setFamilieEinladungPending({ t, z, m, fn })
           goMeineFamilieIfNeeded()
+        } else if (isFamiliePilotTenantId(t) && z) {
+          /** Testpilot K2 Familie (?t=familie-pilot-…): Inhaber:in angelegt, Identität bestätigt – volle App ohne Nur-Zugang. */
+          clearFamilieFamilienQrKompaktSession()
+          bumpFamilieStorageRevision()
+          navigate(R_FAM.home, { replace: true })
         } else if (z) {
           /** Allgemeine Familien-QR (t+z, kein m): kompakte Nur-Zugangs-Ansicht, nicht volle Homepage. */
           setFamilieFamilienQrKompaktSession(t)

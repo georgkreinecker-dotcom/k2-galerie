@@ -83,6 +83,7 @@ export function seedFamiliePilotIfNeeded(
     createdAt: now,
     updatedAt: now,
   }
+  /** Persönlicher Code (2 Buchstaben + 2 Ziffern): automatisch eindeutig in der Familie – einfachste Form, kein fester Sammel-Code. */
   const personen = assignMissingMitgliedsNummern([person], PILOT_INHABER_PERSON_ID)
   if (!savePersonen(tenantId, personen, { allowReduce: true })) return false
 

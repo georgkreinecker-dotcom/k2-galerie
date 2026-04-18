@@ -2,7 +2,7 @@
  * K2 Familie – Marketing-Einstieg (Flyer/QR).
  * Analog zur Galerie-Willkommensseite, aber eigene URL und Inhalt: Familie ≠ Galerie.
  * Kein Bearbeiten hier – nur Lesen und klare Wege zur Familien-App.
- * Einladungs-QR mit ?t=/ ?z= landet hier ohne Layout – sofort zur App mit gleicher Query (Tenant-Sync im Layout).
+ * Einladungs-QR mit ?t=/ ?z= landet hier ohne Layout – sofort zur **Startseite** der App mit gleicher Query (Sync im Layout).
  */
 
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
@@ -44,8 +44,8 @@ export default function K2FamilieWillkommenPage() {
     if (z) next.set('z', z)
     if (m) next.set('m', m)
     if (fn) next.set('fn', fn)
-    navigate(`${R.meineFamilie}?${next.toString()}`, { replace: true })
-  }, [searchParams, navigate, R.meineFamilie])
+    navigate(`${R.home}?${next.toString()}`, { replace: true })
+  }, [searchParams, navigate, R.home])
 
   return (
     <div
