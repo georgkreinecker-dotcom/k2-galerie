@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Optional: Pilot-Einladungslink im Browser testen (**t** + **z** + **fn**) → Landung auf **`/projects/k2-familie`** mit voller Oberfläche (kein Nur-Zugang-Kompakt).  
-**Einordnung:** **Einfachste Form Inhaber-Code** = weiterhin **automatisch pro Person** beim Pilot-Seed (2 Buchstaben + 2 Ziffern); kein gemeinsamer Erstcode nötig.
+**Was wir JETZT tun:** Bei Bedarf **Pilot-Zettel** drucken – Text ist jetzt **kurz** („Erste Schritte“).  
+**Einordnung:** Weniger Ablenkung auf dem Zettel; Tabelle Link/QR bleibt.
+
+---
+
+**Letzter Stand:** 18.04.26 – **Pilot-Zettel K2 Familie: nur kurze „Erste Schritte“** – **`32-PILOT-ZETTEL-K2-FAMILIE.md`** + Spiegel: Checkliste und nummerierte Schritte entfernt, ein Absatz (QR/Link → eure Familie, Inhaber:in, Momente, Lesezeichen, Handbuch); **`ZettelPilotPage`:** Druck-Seitenumbruch vor **`Adresse für Laptop und Handy`** statt „Schritt für Schritt“. **`qs:local`** grün. **Commit:** _(nach Push)_ ✅ GitHub
 
 ---
 

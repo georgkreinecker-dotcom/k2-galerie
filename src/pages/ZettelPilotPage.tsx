@@ -126,7 +126,7 @@ export default function ZettelPilotPage() {
           .zettel-no-print { display: none !important; }
           body, html { background: #fff !important; margin: 0 !important; }
           .zettel-page { box-shadow: none !important; margin: 0 !important; padding: 10mm 12mm !important; max-width: none !important; }
-          /* K2-Familie-Zettel: kompakt, kein erzwungener Umbruch vor „Schritt für Schritt“ */
+          /* K2-Familie-Zettel: kompakt; Seitenumbruch vor „Adresse für Laptop und Handy“ */
           .zettel-page.zettel-k2-familie {
             font-size: 8.5pt !important;
             line-height: 1.28 !important;
@@ -339,7 +339,7 @@ function ZettelPilotContent({
     }
     if (line.startsWith('## ')) {
       const title = line.slice(3).trim()
-      const isSeite2 = title.startsWith('Schritt für Schritt')
+      const isSeite2 = title.startsWith('Adresse für Laptop und Handy')
       out.push(<h2 key={i} className={isSeite2 ? 'zettel-seite-2' : undefined}>{title}</h2>)
       i++
       continue
