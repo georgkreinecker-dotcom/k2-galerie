@@ -1,6 +1,6 @@
 # Testprotokoll – Produktlinie ök2 (Demo-Galerie)
 
-**Vorlage für Testuser:innen.** Bitte vollständig ausfüllen und an **kgm solution** einreichen (E-Mail aus Ihrer Testuser-Korrespondenz). Pro abgeschlossener, freigegebener Linie kann ein **Gutschein 250 €** für die K2 Galerie vorgesehen sein – siehe Infos (Testuser).
+**Vorlage für Testuser:innen.** Vollständig ausfüllen, an **kgm solution** einreichen. **Gutschein 250 €** pro Linie nur bei freigegebenem Protokoll – siehe Infos (Testuser).
 
 ---
 
@@ -11,69 +11,93 @@
 | Name / Firma | |
 | E-Mail | |
 | Telefon | |
-| Testzeitraum (von–bis) | |
-| Kurz: Geräte genutzt (Mac, Handy, Tablet) | |
+| Testzeitraum (von–bis) | **Mind. 4 Wochen** – kürzer nur mit kgm abgesprochen |
+| Geräte (Mac, Handy, Tablet) | |
+
+*Ohne mind. vier Wochen ist die Alltagsbewertung kaum belastbar.*
+
+---
+
+## Legende (Abschnitt 2)
+
+**Bewertung** – pro Zeile eine Stufe: **1** gut · **2** teilweise · **3** unzureichend. **Getestet:** **J** = ausprobiert · **N** = nicht / irrelevant
 
 ---
 
 ## 1. Ziel Ihres Tests
 
-In eigenen Worten: Was wollen Sie mit der **ök2-Demo** im Alltag erreichen? (z. B. Ablauf kennenlernen, Kunden zeigen, Shop testen.)
+Was wollen Sie mit der **ök2-Demo** erreichen?
 
-_______________________________________________________________________________
+________________________________________________________________
 
 ---
 
-## 2. Kernfunktionen – bitte angekreuzt oder kurz kommentiert
+## 2. Kernfunktionen
 
 ### Galerie & Besucher
 
-- [ ] Willkommensbereich / Galerie-Ansicht wirkt verständlich
-- [ ] Werke / Kategorien / Filter sind für Sie nachvollziehbar
-- [ ] Stand-Anzeige / Aktualität (z. B. Badge) ist klar erkennbar
+| Prüfpunkt | 1 | 2 | 3 | J | N |
+|-----------|---|---|---|---|---|
+| Willkommen / Galerie verständlich | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Werke / Kategorien / Filter | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Stand / Aktualität erkennbar | ☐ | ☐ | ☐ | ☐ | ☐ |
 
-### Admin & Inhalte (Demo-Kontext)
+### Admin & Demo
 
-- [ ] Zugang zum Admin / Bearbeiten wie besprochen
-- [ ] Werke anlegen oder bearbeiten (wenn vorgesehen)
-- [ ] Galerie gestalten / Texte / Bilder (wenn vorgesehen)
+| Prüfpunkt | 1 | 2 | 3 | J | N |
+|-----------|---|---|---|---|---|
+| Admin / Bearbeiten wie besprochen | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Werke anlegen oder bearbeiten | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Galerie gestalten / Texte / Bilder | ☐ | ☐ | ☐ | ☐ | ☐ |
 
 ### Shop & Kassa (Demo)
 
-- [ ] Warenkorb / Bestellablauf nachvollziehbar
-- [ ] Kassa / Beleg (wenn getestet) – passt zur Erwartung
+| Prüfpunkt | 1 | 2 | 3 | J | N |
+|-----------|---|---|---|---|---|
+| Warenkorb / Bestellablauf | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Kassa / Beleg (falls getestet) | ☐ | ☐ | ☐ | ☐ | ☐ |
 
-### Stabilität & Alltag
+### Stabilität
 
-- [ ] Keine wiederkehrenden Abstürze oder „hängende“ Abläufe
-- [ ] Nutzung über **mehrere Tage/Wochen** wie geplant möglich
+| Prüfpunkt | 1 | 2 | 3 | J | N |
+|-----------|---|---|---|---|---|
+| Keine Abstürze / hängende Abläufe | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Nutzung über **ganzen Testzeitraum** (mind. 4 Wo.) | ☐ | ☐ | ☐ | ☐ | ☐ |
+
+[SEITENUMBRUCH]
 
 ---
 
 ## 3. Nutzung im Alltag
 
-Wie oft haben Sie die Demo **real** genutzt (nicht nur geöffnet)?
+Häufigkeit **realer** Nutzung (nicht nur öffnen):
 
-_______________________________________________________________________________
+________________________________________________________________
 
-Was lief besonders **gut**?
+Besonders **gut**:
 
-_______________________________________________________________________________
+________________________________________________________________
 
-Was war **unklar**, fehlerhaft oder fehlt Ihnen?
+**Unklar** / Fehler / fehlt:
 
-_______________________________________________________________________________
+________________________________________________________________
 
 ---
 
 ## 4. Abschluss
 
-- [ ] Dieses Protokoll ist **vollständig** ausgefüllt (keine offenen Pflichtfelder sinnvoll leer gelassen).
+- [ ] Protokoll **vollständig** ausgefüllt.
 
-**Datum:** ________________________
+**Datum:** ________________
 
-**Hinweis:** Mit Einreichen bestätigen Sie, dass die Angaben Ihrer Testnutzung entsprechen. Eine Auswertung erfolgt durch kgm solution; Rückfragen sind möglich.
+Mit Einreichen bestätigen Sie die Richtigkeit der Angaben. Auswertung: kgm solution.
 
 ---
 
-*kgm solution – K2 Galerie. Vorlage ök2. Stand: April 2026.*
+## Ein Wort zum Schluss
+
+**Vielen Dank**, dass Sie sich die Zeit für diesen Test nehmen – Ihr Feedback hilft uns. Wir wünschen Ihnen **viel Freude und Erfolg** mit unseren Produkten.
+
+---
+
+*kgm solution – K2 Galerie. ök2. April 2026.*

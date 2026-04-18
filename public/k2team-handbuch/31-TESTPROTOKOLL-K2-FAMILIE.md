@@ -1,6 +1,6 @@
 # Testprotokoll – Produktlinie K2 Familie
 
-**Vorlage für Testuser:innen.** Bitte vollständig ausfüllen und an **kgm solution** einreichen. Pro abgeschlossener, freigegebener Linie kann ein **Gutschein 250 €** für die K2 Galerie vorgesehen sein – siehe Infos (Testuser).
+**Vorlage für Testuser:innen.** Vollständig ausfüllen, an **kgm solution** einreichen. **Gutschein 250 €** pro Linie nur bei freigegebenem Protokoll – siehe Infos (Testuser).
 
 ---
 
@@ -8,71 +8,96 @@
 
 | Feld | Eintrag |
 |------|---------|
-| Name / Familienname (freiwillig) | |
+| Name (freiwillig) | |
 | E-Mail | |
 | Telefon | |
-| Testzeitraum (von–bis) | |
+| Testzeitraum (von–bis) | **Mind. 4 Wochen** – kürzer nur mit kgm abgesprochen |
 | Geräte (Handy, Tablet, Mac …) | |
+
+---
+
+## Legende (Abschnitt 2)
+
+**Bewertung** – pro Zeile eine Stufe: **1** gut · **2** teilweise · **3** unzureichend. **Getestet:** **J** = ausprobiert · **N** = nicht / irrelevant
 
 ---
 
 ## 1. Ziel Ihres Tests
 
-Was möchten Sie mit **K2 Familie** festhalten oder organisieren? (Personen, Beziehungen, Kalender, Momente …)
+Was möchten Sie mit **K2 Familie** festhalten? (Personen, Beziehungen, Kalender, Momente …)
 
-_______________________________________________________________________________
+________________________________________________________________
 
 ---
 
-## 2. Kernfunktionen – bitte angekreuzt oder kurz kommentiert
+## 2. Kernfunktionen
 
 ### Personen & Karten
 
-- [ ] Personen anlegen / bearbeiten ist verständlich
-- [ ] Beziehungen / Übersichten wirken nachvollziehbar (aus Ihren Daten)
+| Prüfpunkt | 1 | 2 | 3 | J | N |
+|-----------|---|---|---|---|---|
+| Personen anlegen / bearbeiten | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Beziehungen / Übersichten nachvollziehbar | ☐ | ☐ | ☐ | ☐ | ☐ |
 
-### Stammbaum / Übersichten
+### Stammbaum
 
-- [ ] Darstellung hilft Ihnen – oder: was fehlt?
+| Prüfpunkt | 1 | 2 | 3 | J | N |
+|-----------|---|---|---|---|---|
+| Darstellung hilft (Ergänzungen ggf. unten) | ☐ | ☐ | ☐ | ☐ | ☐ |
 
 ### Kalender & Momente (falls genutzt)
 
-- [ ] Einträge wie vorgesehen nutzbar
+| Prüfpunkt | 1 | 2 | 3 | J | N |
+|-----------|---|---|---|---|---|
+| Einträge wie vorgesehen nutzbar | ☐ | ☐ | ☐ | ☐ | ☐ |
 
 ### Datenschutz & Gefühl
 
-- [ ] Sie fühlen sich mit den Daten **sicher** und die App **respektvoll** im Umgang (kurz: ja / mit Einschränkung: ________________)
+| Prüfpunkt | 1 | 2 | 3 | J | N |
+|-----------|---|---|---|---|---|
+| Daten fühlen sich **sicher** an; App **respektvoll** | ☐ | ☐ | ☐ | ☐ | ☐ |
 
 ### Stabilität
 
-- [ ] Keine wiederkehrenden Abstürze; Nutzung über **mehrere Tage/Wochen** möglich
+| Prüfpunkt | 1 | 2 | 3 | J | N |
+|-----------|---|---|---|---|---|
+| Keine wiederkehrenden Abstürze | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Nutzung über **ganzen Testzeitraum** (mind. 4 Wo.) | ☐ | ☐ | ☐ | ☐ | ☐ |
+
+[SEITENUMBRUCH]
 
 ---
 
 ## 3. Nutzung im Alltag
 
-Wie oft haben Sie K2 Familie **wirklich** genutzt?
+Häufigkeit **echter** Nutzung:
 
-_______________________________________________________________________________
+________________________________________________________________
 
-Was lief besonders **gut**?
+Besonders **gut**:
 
-_______________________________________________________________________________
+________________________________________________________________
 
-Was war **unklar**, fehlerhaft oder fehlt Ihnen?
+**Unklar** / Fehler / fehlt:
 
-_______________________________________________________________________________
+________________________________________________________________
 
 ---
 
 ## 4. Abschluss
 
-- [ ] Dieses Protokoll ist **vollständig** ausgefüllt.
+- [ ] Protokoll **vollständig** ausgefüllt.
 
-**Datum:** ________________________
+**Datum:** ________________
 
-**Hinweis:** Mit Einreichen bestätigen Sie, dass die Angaben Ihrer Testnutzung entsprechen. Familiendaten bleiben in Ihrer Verantwortung; keine Weitergabe durch uns ohne gesonderte Absprache.
+Mit Einreichen bestätigen Sie die Richtigkeit; Familiendaten bleiben in Ihrer Verantwortung.
 
 ---
 
-*kgm solution – K2 Galerie. Vorlage K2 Familie. Stand: April 2026.*
+## Ein Wort zum Schluss
+
+**Vielen Dank**, dass Sie sich die Zeit für diesen Test nehmen – Ihr Feedback hilft uns. Wir wünschen Ihnen **viel Freude und Erfolg** mit unseren Produkten.
+
+---
+
+*kgm solution – K2 Galerie. K2 Familie. April 2026.*

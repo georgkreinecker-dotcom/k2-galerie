@@ -1,6 +1,6 @@
 # Testprotokoll – Produktlinie VK2 (Vereinsplattform)
 
-**Vorlage für Testuser:innen.** Bitte vollständig ausfüllen und an **kgm solution** einreichen. Pro abgeschlossener, freigegebener Linie kann ein **Gutschein 250 €** für die K2 Galerie vorgesehen sein – siehe Infos (Testuser).
+**Vorlage für Testuser:innen.** Vollständig ausfüllen, an **kgm solution** einreichen. **Gutschein 250 €** pro Linie nur bei freigegebenem Protokoll – siehe Infos (Testuser).
 
 ---
 
@@ -8,69 +8,91 @@
 
 | Feld | Eintrag |
 |------|---------|
-| Name Verein / Kontakt | |
+| Verein / Kontakt | |
 | E-Mail | |
 | Telefon | |
-| Testzeitraum (von–bis) | |
-| Rolle im Test (z. B. Vorstand, Admin) | |
+| Testzeitraum (von–bis) | **Mind. 4 Wochen** – kürzer nur mit kgm abgesprochen |
+| Rolle (z. B. Vorstand, Admin) | |
+
+---
+
+## Legende (Abschnitt 2)
+
+**Bewertung** – pro Zeile eine Stufe: **1** gut · **2** teilweise · **3** unzureichend. **Getestet:** **J** = ausprobiert · **N** = nicht / irrelevant
 
 ---
 
 ## 1. Ziel Ihres Tests
 
-Was soll die VK2-Plattform in Ihrem Verein leisten? (Katalog, Mitglieder, Galerie, Kommunikation …)
+Was soll VK2 im Verein leisten?
 
-_______________________________________________________________________________
+________________________________________________________________
 
 ---
 
-## 2. Kernfunktionen – bitte angekreuzt oder kurz kommentiert
+## 2. Kernfunktionen
 
 ### Verein & Mitglieder
 
-- [ ] Stammdaten / Einträge sind nachvollziehbar und editierbar
-- [ ] Mitgliederliste / Rollen (wie vorgesehen) nutzbar
+| Prüfpunkt | 1 | 2 | 3 | J | N |
+|-----------|---|---|---|---|---|
+| Stammdaten / Einträge editierbar | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Mitgliederliste / Rollen nutzbar | ☐ | ☐ | ☐ | ☐ | ☐ |
 
 ### Galerie & Katalog
 
-- [ ] Vereins-Galerie / Katalog für Ihre Zwecke geeignet
-- [ ] Bilder / Einträge (wie vorgesehen) pflegbar
+| Prüfpunkt | 1 | 2 | 3 | J | N |
+|-----------|---|---|---|---|---|
+| Galerie / Katalog geeignet | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Bilder / Einträge pflegbar | ☐ | ☐ | ☐ | ☐ | ☐ |
 
 ### Ablauf & Zugriff
 
-- [ ] Zugang für die vorgesehenen Personen klar
-- [ ] Keine wiederkehrenden Abstürze oder blockierende Fehler
+| Prüfpunkt | 1 | 2 | 3 | J | N |
+|-----------|---|---|---|---|---|
+| Zugang für vorgesehene Personen klar | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Keine Abstürze / blockierende Fehler | ☐ | ☐ | ☐ | ☐ | ☐ |
 
 ### Alltag
 
-- [ ] Die Plattform wurde **über einen längeren Zeitraum** im Alltag genutzt (nicht nur einmal geöffnet)
+| Prüfpunkt | 1 | 2 | 3 | J | N |
+|-----------|---|---|---|---|---|
+| Nutzung über **ganzen Testzeitraum** (mind. 4 Wo.), nicht nur einmal | ☐ | ☐ | ☐ | ☐ | ☐ |
+
+[SEITENUMBRUCH]
 
 ---
 
 ## 3. Nutzung im Alltag
 
-Wie oft wurde VK2 **praktisch** eingesetzt?
+Häufigkeit **praktischer** Einsatz:
 
-_______________________________________________________________________________
+________________________________________________________________
 
-Was lief besonders **gut**?
+Besonders **gut**:
 
-_______________________________________________________________________________
+________________________________________________________________
 
-Was war **unklar**, fehlerhaft oder fehlt dem Verein?
+**Unklar** / Fehler / Vereinswunsch:
 
-_______________________________________________________________________________
+________________________________________________________________
 
 ---
 
 ## 4. Abschluss
 
-- [ ] Dieses Protokoll ist **vollständig** ausgefüllt.
+- [ ] Protokoll **vollständig** ausgefüllt.
 
-**Datum:** ________________________
+**Datum:** ________________
 
-**Hinweis:** Mit Einreichen bestätigen Sie, dass die Angaben Ihrer Testnutzung entsprechen.
+Mit Einreichen bestätigen Sie die Richtigkeit der Angaben.
 
 ---
 
-*kgm solution – K2 Galerie. Vorlage VK2. Stand: April 2026.*
+## Ein Wort zum Schluss
+
+**Vielen Dank**, dass Sie sich die Zeit für diesen Test nehmen – Ihr Feedback hilft uns. Wir wünschen Ihnen **viel Freude und Erfolg** mit unseren Produkten.
+
+---
+
+*kgm solution – K2 Galerie. VK2. April 2026.*
