@@ -2243,7 +2243,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         return false
       }
     })()
-  /** Testpilot-Einladung: voller Zugang wie Demo, aber kein „generischer Muster-Demo-QR“ / andere Admin-Badge-Texte */
+  /** Testpilot-Einladung (ök2 + VK2): voller Zugang wie Demo, aber kein Muster-Demo-Admin-QR; andere Admin-Badge-Texte */
   const oek2PilotEinladungAktiv = (() => {
     try {
       if (new URLSearchParams(window.location.search).get('pilot') === '1') return true
@@ -19048,7 +19048,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         alignItems: 'start',
                       }}
                     >
-                      {isPlatformInstance() && (
+                      {isPlatformInstance() && !oek2PilotEinladungAktiv && (
                         <LicenseeAdminQrPanel
                           registrationComplete
                           adminBaseUrl={`${APP_BASE_URL}/admin?context=vk2`}
