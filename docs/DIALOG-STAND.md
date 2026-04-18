@@ -5,6 +5,10 @@
 
 ---
 
+**Letzter Stand:** 18.04.26 – **Pilot-Zettel: „Deinen Weg“ – Hinweis auf Einstellungen (Sparte / Verein)** – **`ZettelPilotPage`:** graue Box **Deinen Weg** (ök2: „Wofür nutzt du deine Galerie?“; VK2: Verein + Kunstrichtungen); **`pilotZettelMdAdapt.test.ts`:** Fixture + Erwartungen; Handbuch **`20-PILOT-ZETTEL-OEK2-VK2`** (k2team + public) bereits mit Absatz **Deinen Weg festlegen**. **`pilotZettelMdAdapt.test.ts`** + **`vite:build`** grün. **Commit:** `f90d3d62` ✅ GitHub
+
+---
+
 **Letzter Stand:** 18.04.26 – **Testpilot: Vorname in ök2-Stammdaten + Galerie-Karte + Admin** – **`zettelPilotOeffentlichPrefill`**: Name nur wenn leer oder Muster; **`GaleriePage`/`GalerieVorschauPage`**: bei Zettel-Link; **`ScreenshotExportAdmin`**: Session ohne `k2-pilot-einladung`; **`oeffentlichMartinaDisplayName`** statt fixer Muster-Name in der Karte. **`EntdeckenPage`**: Redirect zur ök2-Galerie bei `context=oeffentlich` + `vorname` + `entwurf=1`. **`ZettelPilotPage`**: defekte ök2-URL `/` oder `/entdecken` → **`buildOek2PilotGalerieUrl`**. **`npm run build:vercel`** grün. **Commit:** `2bad2610` ✅ GitHub
 
 ---

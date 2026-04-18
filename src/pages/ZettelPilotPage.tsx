@@ -425,8 +425,22 @@ export default function ZettelPilotPage() {
               color: '#1c1a18',
             }}
           >
-            <p style={{ margin: 0, fontSize: '0.88rem', color: '#444' }}>
+            <p style={{ margin: '0 0 0.4rem', fontSize: '0.88rem', color: '#444' }}>
               <strong>Benutzerhandbuch & Testprotokoll:</strong> In der <strong>Tabelle unten</strong> jeweils als <strong>Link + QR</strong> (wie bei K2 Familie).
+            </p>
+            <p style={{ margin: 0, fontSize: '0.88rem', color: '#444' }}>
+              <strong>Deinen Weg:</strong>{' '}
+              {pilotType === 'oek2' ? (
+                <>
+                  In den <strong>Einstellungen</strong> unter <strong>„Wofür nutzt du deine Galerie?“</strong> einmal die passende{' '}
+                  <strong>Sparte</strong> wählen – das steuert Typ und Kategorien in „Werke verwalten“.
+                </>
+              ) : (
+                <>
+                  In den <strong>Einstellungen</strong> <strong>Verein</strong> und <strong>Kunstrichtungen</strong> so eintragen, wie es zu euch passt –{' '}
+                  <strong>euer Weg</strong> für die Vereins-Galerie.
+                </>
+              )}
             </p>
           </div>
         ) : null}

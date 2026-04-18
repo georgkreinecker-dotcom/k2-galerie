@@ -15,6 +15,8 @@ const COMBINED = `# Testpilot:in ök2 & VK2 – voller Gratis-Zugang
 
 ## Erste Schritte
 
+**Deinen Weg festlegen:** Bei **ök2** unter **„Wofür nutzt du deine Galerie?“** eine **Sparte** wählen (z. B. Kunst & Galerie, Handwerk …) – davon hängen Typ und Kategorien in „Werke verwalten“ ab. Bei **VK2** in den Einstellungen **Verein** und **Kunstrichtungen** zu euch passend eintragen.
+
 **In einem Satz:** *„Plattform für Galerie, Kasse, Einladungen, Presse – **ök2** ist die Demo, **VK2** die Vereinsplattform. Beides gratis testen.“*
 
 ---
@@ -32,6 +34,9 @@ describe('adaptPilotOek2Vk2ZettelMd', () => {
     expect(r).not.toMatch(/ök2 & VK2 – voller/)
     expect(r).toContain('getrennt von VK2')
     expect(r).toContain('Nur ök2')
+    expect(r).toContain('Wofür nutzt du deine Galerie?')
+    expect(r).toContain('dein Weg')
+    expect(r).not.toMatch(/Bei \*\*VK2\*\*/)
   })
   it('vk2: keine kombinierte Überschrift', () => {
     const r = adaptPilotOek2Vk2ZettelMd(COMBINED, 'vk2')
@@ -39,5 +44,7 @@ describe('adaptPilotOek2Vk2ZettelMd', () => {
     expect(r).not.toMatch(/ök2 & VK2 – voller/)
     expect(r).toContain('getrennt von ök2')
     expect(r).toContain('Nur VK2')
+    expect(r).toContain('euer Weg')
+    expect(r).not.toContain('Wofür nutzt du deine Galerie?')
   })
 })
