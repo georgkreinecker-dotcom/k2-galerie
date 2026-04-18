@@ -67,7 +67,7 @@ export default function ZettelPilotFormPage() {
 
   return (
     <main style={{ padding: '2rem', maxWidth: 480, margin: '0 auto', background: '#fff', minHeight: '100vh', color: '#1c1a18' }}>
-      <h1 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Neuer Test-Pilot</h1>
+      <h1 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Neuer Test-Pilot – Formular</h1>
       <p style={{ fontSize: '0.9rem', color: '#555', marginBottom: '0.75rem' }}>
         Name eingeben → <strong>Wie soll die App heißen?</strong> → ök2, VK2 oder K2 Familie wählen → QR wird automatisch vergeben → Laufzettel generieren und mitgeben.
       </p>

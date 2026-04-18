@@ -17,6 +17,9 @@ const PILOT_ZETTEL_MD_K2_FAMILIE = '/k2team-handbuch/32-PILOT-ZETTEL-K2-FAMILIE.
 const OEK2_BASE = BASE_APP_URL + ENTDECKEN_ROUTE
 const VK2_BASE = BASE_APP_URL + PROJECT_ROUTES.vk2.galerie
 const FAMILIE_BASE = BASE_APP_URL + K2_FAMILIE_WILLKOMMEN_ROUTE
+/** K2 Familie – Benutzerhandbuch und Testprotokoll-Hub (gleiche Tabelle wie Pilot-Einstieg) */
+const FAMILIE_HANDBUCH_URL = BASE_APP_URL + PROJECT_ROUTES['k2-familie'].benutzerHandbuch
+const TESTPROTOKOLL_TESTUSER_URL = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].testprotokollTestuser
 
 function pilotUrlIsK2FamilieWillkommen(pilotUrl: string): boolean {
   return pilotUrl === FAMILIE_BASE || pilotUrl.startsWith(`${FAMILIE_BASE}?`)
@@ -58,6 +61,8 @@ export default function ZettelPilotPage() {
   const [qrVk2, setQrVk2] = useState<string>('')
   const [qrOek2, setQrOek2] = useState<string>('')
   const [qrFamilie, setQrFamilie] = useState<string>('')
+  const [qrFamilieHandbuch, setQrFamilieHandbuch] = useState<string>('')
+  const [qrTestprotokoll, setQrTestprotokoll] = useState<string>('')
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
 
   useEffect(() => {
@@ -75,6 +80,8 @@ export default function ZettelPilotPage() {
     const oek2Bust = buildQrUrlWithBust(OEK2_BASE, qrVersionTs)
     const vk2Bust = buildQrUrlWithBust(VK2_BASE, qrVersionTs)
     const familieBust = buildQrUrlWithBust(familieUrlForQr, qrVersionTs)
+    const handbuchBust = buildQrUrlWithBust(FAMILIE_HANDBUCH_URL, qrVersionTs)
+    const testprotoBust = buildQrUrlWithBust(TESTPROTOKOLL_TESTUSER_URL, qrVersionTs)
     if (pilotUrl) {
       const busted = pilotUrl.startsWith(BASE_APP_URL) ? buildQrUrlWithBust(pilotUrl, qrVersionTs) : pilotUrl
       QRCode.toDataURL(busted, { width: 100, margin: 1 }).then(setQrPilot).catch(() => setQrPilot(''))
@@ -84,6 +91,8 @@ export default function ZettelPilotPage() {
     QRCode.toDataURL(oek2Bust, { width: 100, margin: 1 }).then(setQrOek2).catch(() => {})
     QRCode.toDataURL(vk2Bust, { width: 100, margin: 1 }).then(setQrVk2).catch(() => {})
     QRCode.toDataURL(familieBust, { width: 100, margin: 1 }).then(setQrFamilie).catch(() => setQrFamilie(''))
+    QRCode.toDataURL(handbuchBust, { width: 100, margin: 1 }).then(setQrFamilieHandbuch).catch(() => setQrFamilieHandbuch(''))
+    QRCode.toDataURL(testprotoBust, { width: 100, margin: 1 }).then(setQrTestprotokoll).catch(() => setQrTestprotokoll(''))
   }, [pilotUrl, qrVersionTs, familieUrlForQr])
 
   if (loading) {
@@ -101,6 +110,25 @@ export default function ZettelPilotPage() {
           .zettel-no-print { display: none !important; }
           body, html { background: #fff !important; margin: 0 !important; }
           .zettel-page { box-shadow: none !important; margin: 0 !important; padding: 10mm 12mm !important; max-width: none !important; }
+          /* K2-Familie-Zettel: kompakt, kein erzwungener Umbruch vor „Schritt für Schritt“ */
+          .zettel-page.zettel-k2-familie {
+            font-size: 8.5pt !important;
+            line-height: 1.28 !important;
+            padding: 6mm 8mm 8mm !important;
+          }
+          .zettel-page.zettel-k2-familie h1 { font-size: 11pt !important; margin: 0 0 0.2rem !important; }
+          .zettel-page.zettel-k2-familie h2 { font-size: 9.5pt !important; margin: 0.3rem 0 0.12rem !important; }
+          .zettel-page.zettel-k2-familie h2.zettel-seite-2 { page-break-before: auto !important; }
+          .zettel-page.zettel-k2-familie h1,
+          .zettel-page.zettel-k2-familie h2 { break-after: avoid-page; page-break-after: avoid; }
+          .zettel-page.zettel-k2-familie table { font-size: 8pt !important; margin: 0.2rem 0 !important; }
+          .zettel-page.zettel-k2-familie th,
+          .zettel-page.zettel-k2-familie td { padding: 0.15rem 0.35rem !important; }
+          .zettel-page.zettel-k2-familie hr { margin: 0.25rem 0 !important; }
+          .zettel-page.zettel-k2-familie ul,
+          .zettel-page.zettel-k2-familie ol { margin: 0.12rem 0 0.25rem 1rem !important; }
+          .zettel-page.zettel-k2-familie .zettel-md-spacer { height: 0.12rem !important; }
+          .zettel-page.zettel-k2-familie ~ footer.zettel-footer { display: none !important; }
         }
         .zettel-page {
           max-width: 210mm;
@@ -148,7 +176,10 @@ export default function ZettelPilotPage() {
         <Link to="/zettel-pilot-form" style={{ color: '#333', fontSize: '0.9rem' }}>Neuer Test-Pilot</Link>
       </div>
 
-      <div className="zettel-page" style={{ marginTop: '3rem' }}>
+      <div
+        className={useK2FamilieZettel ? 'zettel-page zettel-k2-familie' : 'zettel-page'}
+        style={{ marginTop: '3rem' }}
+      >
         {nr && (
           <p className="zettel-pilot-name" style={{ marginBottom: '0.25rem' }}>
             <strong>Test-Pilot-Zettel Nr. {nr}</strong>
@@ -175,17 +206,53 @@ export default function ZettelPilotPage() {
             (steht auch im QR; nach dem Öffnen ist die Familie unter „{displayAppName || '…'}“ bereit)
           </p>
         ) : null}
+        {pilotType === 'familie' && (name || displayAppName) ? (
+          <div
+            className="zettel-familie-gruss"
+            style={{
+              marginBottom: '0.65rem',
+              padding: '0.5rem 0.65rem',
+              border: '1px solid #e8e4dc',
+              borderRadius: 8,
+              background: '#faf8f5',
+              fontSize: '0.95rem',
+              lineHeight: 1.45,
+              color: '#1c1a18',
+            }}
+          >
+            <p style={{ margin: '0 0 0.4rem' }}>
+              Liebe/r <strong>{name || 'Testpilot:in'}</strong>, herzlichen Dank für dein Interesse am Test von{' '}
+              <strong>K2 Familie</strong>
+              {displayAppName ? (
+                <>
+                  {' '}
+                  – deine App heißt <strong>„{displayAppName}“</strong>
+                </>
+              ) : null}
+              . Wir wünschen dir einen guten Einstieg und freuen uns auf deine Rückmeldung.
+            </p>
+            <p style={{ margin: 0, fontSize: '0.88rem', color: '#444' }}>
+              <strong>Handbuch & Testprotokoll:</strong> In der <strong>Tabelle unten</strong> jeweils als <strong>Link + QR</strong>.
+              Das Team kann sie dir <strong>zusätzlich in derselben E-Mail</strong> wie den Zugangslink schicken (oder als PDF-Anhang).
+            </p>
+          </div>
+        ) : null}
         <ZettelPilotContent
           md={content}
+          compactMdSpacers={useK2FamilieZettel}
           pilotType={pilotType}
           pilotUrl={pilotUrl || null}
           qrPilot={qrPilot}
           oek2Url={OEK2_BASE}
           vk2Url={VK2_BASE}
           familieUrl={familieUrlForQr}
+          familieHandbuchUrl={FAMILIE_HANDBUCH_URL}
+          testprotokollTestuserUrl={TESTPROTOKOLL_TESTUSER_URL}
           qrOek2={qrOek2}
           qrVk2={qrVk2}
           qrFamilie={qrFamilie}
+          qrFamilieHandbuch={qrFamilieHandbuch}
+          qrTestprotokoll={qrTestprotokoll}
         />
       </div>
       <footer className="zettel-footer" aria-hidden="true">
@@ -198,26 +265,36 @@ export default function ZettelPilotPage() {
 
 function ZettelPilotContent({
   md,
+  compactMdSpacers,
   pilotType,
   pilotUrl,
   qrPilot,
   oek2Url,
   vk2Url,
   familieUrl,
+  familieHandbuchUrl,
+  testprotokollTestuserUrl,
   qrOek2,
   qrVk2,
   qrFamilie,
+  qrFamilieHandbuch,
+  qrTestprotokoll,
 }: {
   md: string
+  compactMdSpacers?: boolean
   pilotType: PilotType | null
   pilotUrl: string | null
   qrPilot: string
   oek2Url: string
   vk2Url: string
   familieUrl: string
+  familieHandbuchUrl: string
+  testprotokollTestuserUrl: string
   qrOek2: string
   qrVk2: string
   qrFamilie: string
+  qrFamilieHandbuch: string
+  qrTestprotokoll: string
 }) {
   const lines = md.split('\n')
   const out: React.ReactNode[] = []
@@ -228,7 +305,13 @@ function ZettelPilotContent({
     const t = line.trim()
 
     if (t === '') {
-      out.push(<div key={i} style={{ height: '0.4rem' }} />)
+      out.push(
+        <div
+          key={i}
+          className={compactMdSpacers ? 'zettel-md-spacer' : undefined}
+          style={{ height: compactMdSpacers ? '0.15rem' : '0.4rem' }}
+        />,
+      )
       i++
       continue
     }
@@ -270,6 +353,39 @@ function ZettelPilotContent({
           /bereich|adresse/i.test(`${head[0] || ''} ${head[1] || ''}`)
 
         if (isK2FamiliePilotTable) {
+          const showK2FamilieQrCol = !!(qrFamilie || qrFamilieHandbuch || qrTestprotokoll)
+          const k2FamilieAddrCell = (r: number, row: string[]) => {
+            if (r === 0) return pilotUrl || familieUrl
+            if (r === 1) {
+              return (
+                <a href={familieHandbuchUrl} style={{ color: '#0d9488', fontWeight: 600 }}>
+                  {familieHandbuchUrl}
+                </a>
+              )
+            }
+            if (r === 2) {
+              return (
+                <a href={testprotokollTestuserUrl} style={{ color: '#0d9488', fontWeight: 600 }}>
+                  {testprotokollTestuserUrl}
+                </a>
+              )
+            }
+            return parseInline(row[1] || '')
+          }
+          const k2FamilieQrCell = (r: number) => {
+            const src =
+              r === 0 ? qrFamilie : r === 1 ? qrFamilieHandbuch : r === 2 ? qrTestprotokoll : ''
+            const alt =
+              r === 0 ? 'QR K2 Familie Einstieg' : r === 1 ? 'QR Benutzerhandbuch K2 Familie' : r === 2 ? 'QR Testprotokolle Testuser' : ''
+            if (!src) return null
+            return (
+              <img
+                src={src}
+                alt={alt}
+                style={{ display: 'block', width: 44, height: 44 }}
+              />
+            )
+          }
           out.push(
             <table key={i}>
               {head && (
@@ -278,7 +394,7 @@ function ZettelPilotContent({
                     {head.map((c, j) => (
                       <th key={j}>{parseInline(c)}</th>
                     ))}
-                    {qrFamilie ? <th key="qr">QR</th> : null}
+                    {showK2FamilieQrCol ? <th key="qr">QR</th> : null}
                   </tr>
                 </thead>
               )}
@@ -286,18 +402,10 @@ function ZettelPilotContent({
                 {body.map((row, r) => (
                   <tr key={r}>
                     <td>{parseInline(row[0] || '')}</td>
-                    <td style={{ wordBreak: 'break-all' }}>
-                      {r === 0 ? pilotUrl || familieUrl : parseInline(row[1] || '')}
-                    </td>
-                    {qrFamilie ? (
-                      <td style={{ verticalAlign: 'middle', width: 52 }}>
-                        {r === 0 ? (
-                          <img
-                            src={qrFamilie}
-                            alt="QR K2 Familie"
-                            style={{ display: 'block', width: 48, height: 48 }}
-                          />
-                        ) : null}
+                    <td style={{ wordBreak: 'break-all' }}>{k2FamilieAddrCell(r, row)}</td>
+                    {showK2FamilieQrCol ? (
+                      <td style={{ verticalAlign: 'middle', width: 50 }}>
+                        {k2FamilieQrCell(r)}
                       </td>
                     ) : null}
                   </tr>
