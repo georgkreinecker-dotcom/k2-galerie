@@ -1,7 +1,15 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Bei Bedarf **Zettel-Pilot** K2 Familie im Browser öffnen und Druck prüfen.  
-**Einordnung:** Zettel-Text minimal; Weg zum Drucken steht in der APf, nicht mehr auf dem Blatt.
+**Was wir JETZT tun:** **Testuser-Mappe** (`/testuser-anmeldung`): Katalog prüfen; neue Piloten erscheinen automatisch nach Öffnen des **Pilot-Zettels**; drei Start-Einträge (Platzhalter) bei erstem Besuch – echte Namen/Links in der Mappe eintragen.  
+**Einordnung:** Register + Zugangsblatt-Link aus **`testuserKatalogStorage`**; **`ZettelPilotPage`** ruft **`registerPilotZettelInKatalog`** auf.
+
+---
+
+**Letzter Stand:** 18.04.26 – **Testuser-Katalog: Pilot-Register + Seed + Tests** – **`testuserKatalogStorage`:** einmalig drei Platzhalter-Piloten (`seed-pilot-1…3`), **`registerPilotZettelInKatalog`** (Upsert inkl. Zugangsblatt-URL); **`TestuserAnmeldungPage`:** Tabelle Linie/Zettel/Zugangsblatt; **`ZettelPilotPage`:** Registrierung beim Laden; **`familieHuberMuster`:** Anzeigename für `familie-pilot-*`; **`testuserKatalogStorage.test.ts`**. **`qs:local`** grün. **Commit:** _(nach Push)_ ✅ GitHub
+
+---
+
+**Letzter Stand:** 18.04.26 – **Testuser-Mappe: Navigation + Texte-Schreibtisch** – **`SmartPanel`:** Praktisch → **Testuser-Mappe** / Texte-Schreibtisch; **Startanleitung Michael** entfernt. **`MissionControlPage`**, **`PlatformStartPage`:** ein Button **Testuser-Mappe** statt Infos + Anmeldung. **`TexteSchreibtischPage`:** Pilot & Testuser nur noch **Neuer Test-Pilot** + **Testuser-Mappe**. **`ZettelTestuserProduktlinienPage`**, **`TestprotokollTestuserPage`**, **`navigation.ts`**, **`HAUS-INDEX.md`:** Verweise angepasst. **`npm run build:vercel`** grün. **Commit:** _(nach Push)_ ✅ GitHub
 
 ---
 

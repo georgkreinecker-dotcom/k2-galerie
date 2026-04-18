@@ -3,12 +3,13 @@
  * Name und Pilot-URL aus Query. QR: bei Pilot-URL deren busted QR.
  */
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { BASE_APP_URL, ENTDECKEN_ROUTE, K2_FAMILIE_WILLKOMMEN_ROUTE, PROJECT_ROUTES } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { buildFamiliePilotFamilienZugang, buildFamiliePilotTenantIdFromZettelNr } from '../utils/familiePilotSeed'
+import { registerPilotZettelInKatalog } from '../utils/testuserKatalogStorage'
 
 const PILOT_ZETTEL_MD_OEK2_VK2 = '/k2team-handbuch/20-PILOT-ZETTEL-OEK2-VK2.md'
 /** K2 Familie = eigene Produktlinie, kein Galerie-Lizenzsystem (ök2/VK2) – eigener Zetteltext */
@@ -74,6 +75,25 @@ export default function ZettelPilotPage() {
   const [qrFamilieHandbuch, setQrFamilieHandbuch] = useState<string>('')
   const [qrTestprotokoll, setQrTestprotokoll] = useState<string>('')
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
+  const pilotImKatalogRef = useRef(false)
+
+  /** Pilot-Zettel in Testuser-Mappe registrieren (Zugangsblatt = diese URL) */
+  useEffect(() => {
+    if (loading) return
+    if (pilotImKatalogRef.current) return
+    if (!name.trim() || !pilotType) return
+    const regAppName = (appName || name).trim()
+    if (!regAppName) return
+    pilotImKatalogRef.current = true
+    const rel = `${window.location.pathname}${window.location.search}`
+    registerPilotZettelInKatalog({
+      name: name.trim(),
+      appName: regAppName,
+      pilotLinie: pilotType,
+      zettelNr: nr,
+      zugangsblattRelPath: rel,
+    })
+  }, [loading, name, appName, pilotType, nr])
 
   useEffect(() => {
     setLoading(true)
@@ -249,7 +269,6 @@ export default function ZettelPilotPage() {
             </p>
             <p style={{ margin: 0, fontSize: '0.88rem', color: '#444' }}>
               <strong>Handbuch & Testprotokoll:</strong> In der <strong>Tabelle unten</strong> jeweils als <strong>Link + QR</strong>.
-              Das Team kann sie dir <strong>zusätzlich in derselben E-Mail</strong> wie den Zugangslink schicken (oder als PDF-Anhang).
             </p>
           </div>
         ) : null}

@@ -93,7 +93,7 @@ const BEREICHE: Bereich[] = [
     id: 'pilot-testuser',
     titel: 'Pilot & Testuser',
     untertitel:
-      'Zettel für Testpilot:innen und Produktlinien-Tests: Infos, Anmeldung, Testprotokolle – griffbereit wie auf dem Schreibtisch.',
+      'Pilot-Zettel wie gewohnt; alles Weitere zu Testuser liegt in der Mappe gebündelt (Dokumente, Anmeldung, Katalog).',
     akzent: '#c2410c',
     zoneBg: 'linear-gradient(145deg, rgba(194,65,12,0.09), rgba(255,247,237,0.98))',
     zettel: [
@@ -105,25 +105,11 @@ const BEREICHE: Bereich[] = [
         rotateDeg: 0.22,
       },
       {
-        id: 'zettel-testuser-produktlinien',
-        titel: 'Infos (Testuser)',
-        zweck: 'ök2 · VK2 · K2 Familie – Leistungen, eine A4-Seite zum Drucken',
-        to: '/zettel-testuser-produktlinien',
-        rotateDeg: -0.2,
-      },
-      {
-        id: 'testuser-anmeldung',
-        titel: 'Testuser-Anmeldung',
-        zweck: 'Interesse eintragen – Formular, A4 drucken, E-Mail an kgm',
+        id: 'testuser-mappe',
+        titel: 'Testuser-Mappe',
+        zweck: 'Infos-Zettel, Anmeldung, Testprotokolle, Handbuch – thematisch; Katalog intern',
         to: R.testuserAnmeldung,
-        rotateDeg: 0.18,
-      },
-      {
-        id: 'testprotokolle-testuser',
-        titel: 'Testprotokolle (Ansicht)',
-        zweck: 'Vorlagen ök2 · VK2 · K2 Familie – lesen, drucken, PDF',
-        to: R.testprotokollTestuser,
-        rotateDeg: -0.12,
+        rotateDeg: -0.18,
       },
     ],
   },

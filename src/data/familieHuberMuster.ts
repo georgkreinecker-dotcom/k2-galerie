@@ -31,6 +31,8 @@ export function getFamilieTenantDisplayName(tenantId: string, defaultLabel: stri
   const stored = loadEinstellungen(tenantId).familyDisplayName?.trim()
   if (stored) return stored
   if (tenantId === FAMILIE_HUBER_TENANT_ID) return 'Musterfamilie Huber'
+  /** Testpilot K2 Familie (?t=familie-pilot-…): bis Namen gespeichert sind */
+  if (tenantId.startsWith('familie-pilot-')) return 'Test-Familie (Pilot)'
   if (tenantId === 'default') return defaultLabel
   if (/^familie-\d+$/.test(tenantId)) return 'Neue Familie (Name unten eintragen)'
   return tenantId

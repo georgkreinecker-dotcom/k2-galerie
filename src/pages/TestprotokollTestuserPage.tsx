@@ -72,7 +72,7 @@ export default function TestprotokollTestuserPage() {
           Vollständige Vorlagen pro Produktlinie – je Prüfpunkt{' '}
           <strong>drei Bewertungsstufen</strong>, <strong>Getestet Ja/Nein</strong>, Testzeitraum{' '}
           <strong>mind. 4 Wochen</strong>. Lesen, im Browser drucken oder als PDF speichern. Einreichung an kgm wie in den
-          Infos (Testuser) vereinbart.
+          Testuser-Mappe vereinbart.
         </p>
         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {(['oek2', 'vk2', 'familie'] as const).map((key) => (
@@ -96,13 +96,9 @@ export default function TestprotokollTestuserPage() {
           ))}
         </ul>
         <p style={{ marginTop: '1.25rem', fontSize: '0.88rem', color: '#666' }}>
-          Hintergrund:{' '}
-          <Link to="/zettel-testuser-produktlinien" style={{ color: '#0d9488' }}>
-            Infos (Testuser)
-          </Link>
-          {' · '}
-          <Link to={PROJECT_ROUTES['k2-galerie'].testuserAnmeldung} style={{ color: '#0d9488' }}>
-            Testuser-Anmeldung
+          Übersicht und weitere Dokumente:{' '}
+          <Link to={PROJECT_ROUTES['k2-galerie'].testuserAnmeldung} style={{ color: '#0d9488', fontWeight: 600 }}>
+            Testuser-Mappe
           </Link>
         </p>
         <footer style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid #eee', fontSize: '0.72rem', color: '#666' }}>

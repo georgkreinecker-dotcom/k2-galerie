@@ -157,7 +157,7 @@ export const PROJECT_ROUTES = {
     verguetung: '/projects/k2-galerie/verguetung',
     vitaMartina: '/projects/k2-galerie/vita/martina',
     vitaGeorg: '/projects/k2-galerie/vita/georg',
-    /** Testuser: Interesse anmelden (Formular, A4-Druck) */
+    /** Testuser-Mappe: Dokumente, Anmeldung, Katalog (Route /testuser-anmeldung) */
     testuserAnmeldung: '/testuser-anmeldung',
     /** Testuser: Testprotokoll-Vorlagen (Ansicht, Druck) – Hub oder ?linie=oek2|vk2|familie */
     testprotokollTestuser: '/testprotokoll-testuser',

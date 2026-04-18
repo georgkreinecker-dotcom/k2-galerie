@@ -332,38 +332,22 @@ export default function PlatformStartPage() {
           📄 Pilot-Zettel (Name eintragen, dann 🖨️ Drucken)
         </Link>
         <Link
-          to="/zettel-testuser-produktlinien"
+          to={PROJECT_ROUTES['k2-galerie'].testuserAnmeldung}
           style={{
             display: 'block',
             marginTop: '0.75rem',
             padding: '0.85rem 1.25rem',
-            background: 'linear-gradient(120deg, #0d9488, #0f766e)',
+            background: 'linear-gradient(120deg, #0d9488, #115e59)',
             borderRadius: '12px',
             color: '#fff',
             fontWeight: 600,
             textDecoration: 'none',
             textAlign: 'center',
-            boxShadow: '0 4px 14px rgba(13,148,136,0.25)',
+            boxShadow: '0 4px 14px rgba(13,148,136,0.28)',
           }}
+          title="Dokumente, Anmeldung, Katalog, Infos-Zettel, Testprotokolle"
         >
-          ℹ️ Infos (Testuser) – ök2 · VK2 · K2 Familie (🖨️)
-        </Link>
-        <Link
-          to={PROJECT_ROUTES['k2-galerie'].testuserAnmeldung}
-          style={{
-            display: 'block',
-            marginTop: '0.5rem',
-            padding: '0.85rem 1.25rem',
-            background: 'linear-gradient(120deg, #0f766e, #115e59)',
-            borderRadius: '12px',
-            color: '#fff',
-            fontWeight: 600,
-            textDecoration: 'none',
-            textAlign: 'center',
-            boxShadow: '0 4px 14px rgba(15,118,110,0.28)',
-          }}
-        >
-          📝 Testuser-Anmeldung (Interesse eintragen)
+          📂 Testuser-Mappe (Dokumente & Katalog)
         </Link>
 
         {/* Haupt-Features - Prominent und groß */}

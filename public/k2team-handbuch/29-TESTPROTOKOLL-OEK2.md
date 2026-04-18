@@ -49,7 +49,22 @@ ________________________________________________________________
 | Admin / Bearbeiten wie besprochen | ☐ | ☐ | ☐ | ☐ | ☐ |
 | Werke anlegen oder bearbeiten | ☐ | ☐ | ☐ | ☐ | ☐ |
 | Galerie gestalten / Texte / Bilder | ☐ | ☐ | ☐ | ☐ | ☐ |
-| Events, Dokumente oder Presse/Werbemittel (falls genutzt) | ☐ | ☐ | ☐ | ☐ | ☐ |
+
+### Events
+
+| Prüfpunkt | 1 | 2 | 3 | J | N |
+|-----------|---|---|---|---|---|
+| Events planen / Termine / Übersicht nachvollziehbar | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Event-Dokumente oder Anhänge (falls genutzt) | ☐ | ☐ | ☐ | ☐ | ☐ |
+
+### Medienbereich
+
+| Prüfpunkt | 1 | 2 | 3 | J | N |
+|-----------|---|---|---|---|---|
+| Flyer, Presse, Plakat / Werbeunterlagen (falls genutzt) | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Texte-Schreibtisch, Zettel, Medienplanung (falls genutzt) | ☐ | ☐ | ☐ | ☐ | ☐ |
+
+[SEITENUMBRUCH]
 
 ### Shop & Kassa (Demo)
 
@@ -65,19 +80,24 @@ ________________________________________________________________
 | Keine Abstürze / hängende Abläufe | ☐ | ☐ | ☐ | ☐ | ☐ |
 | Nutzung über **ganzen Testzeitraum** (mind. 4 Wo.) | ☐ | ☐ | ☐ | ☐ | ☐ |
 
-[SEITENUMBRUCH]
+---
 
 ## 3. Nutzung im Alltag
 
 Häufigkeit **realer** Nutzung (nicht nur öffnen):
 
+
 ________________________________________________________________
+
 
 Besonders **gut**:
 
+
 ________________________________________________________________
 
+
 **Unklar** / Fehler / fehlt:
+
 
 ________________________________________________________________
 
