@@ -5,7 +5,11 @@
 
 ---
 
-**Letzter Stand:** 18.04.26 – **Piloten-/Testuser-Katalog: zentrale Liste (Vercel Blob)** – **`api/pilot-katalog.js`:** GET/POST, `pilot-katalog.json`, **PILOT_KATALOG_API_KEY** Pflicht; **`pilotKatalogMerge`**, **`pilotKatalogApi`** (Pull, Push, Debounce); **`testuserKatalogStorage`:** `updatedAt`, `saveTestuserKatalog` → Remote-Push; **`TestuserAnmeldungPage`:** Abgleich + Status + „Mit Server abgleichen“; **`.env.example`**. **`qs:local`** grün. **Commit:** `40de5610` ✅ GitHub
+**Letzter Stand:** 18.04.26 – **Pilot-Zettel: Team-Abschnitt raus, A4-Druck, Mappe ohne Piloten-Hinweis** – **`20-PILOT-ZETTEL-OEK2-VK2.md`** (k2team + public): Abschnitt „Team (kgm): Pilotenliste …“ entfernt; **`TestuserAnmeldungPage`:** Kasten **Pilotenliste** entfernt; **`ZettelPilotPage`:** `@page` A4 portrait für Druck/PDF. **`vite:build`** grün. **Commit:** *(nach Push)*
+
+---
+
+**Letzter Stand:** 18.04.26 – **Piloten-/Testuser-Katalog: zentrale Liste (Vercel Blob)** – **`api/pilot-katalog.js`:** GET/POST, `pilot-katalog.json`, **PILOT_KATALOG_API_KEY** Pflicht; **`pilotKatalogMerge`**, **`pilotKatalogApi`** (Pull, Push, Debounce); **`testuserKatalogStorage`:** `updatedAt`, `saveTestuserKatalog` → Remote-Push; **`TestuserAnmeldungPage`:** Abgleich + Status + „Mit Server abgleichen“; **`.env.example`**. **`qs:local`** grün. **Commit:** `1677192f` ✅ GitHub
 
 ---
 

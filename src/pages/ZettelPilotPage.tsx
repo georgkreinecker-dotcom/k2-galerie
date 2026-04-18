@@ -248,6 +248,10 @@ export default function ZettelPilotPage() {
   return (
     <>
       <style>{`
+        @page {
+          size: A4 portrait;
+          margin: 10mm 12mm 14mm 12mm;
+        }
         @media print {
           .zettel-no-print { display: none !important; }
           body, html { background: #fff !important; margin: 0 !important; }
@@ -446,7 +450,7 @@ export default function ZettelPilotPage() {
               )}
             </p>
             <p style={{ margin: 0, fontSize: '0.88rem', color: '#444' }}>
-              <strong>Benutzerhandbuch &amp; Testprotokoll:</strong> In der <strong>Tabelle unten</strong> jeweils als <strong>Link + QR</strong> (wie bei K2 Familie).
+              <strong>Benutzerhandbuch &amp; Testprotokoll:</strong> In der <strong>Tabelle unten</strong> jeweils als <strong>Link + QR</strong>.
             </p>
           </div>
         ) : null}
