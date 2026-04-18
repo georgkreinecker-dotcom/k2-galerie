@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 18.04.26 – **Pilot-Zettel ök2/VK2: gleiches Format wie K2 Familie** – **`ZettelPilotPage`:** **`zettel-pilot-kompakt`** für alle Linien; **`20-PILOT-ZETTEL-OEK2-VK2.md`** (k2team + public) verkürzt; **`TESTUSER-PILOT-E2E-ORGA`:** Mappe = Ablage. **`npm run vite:build`** grün. **Commit:** `PLACEHOLDER_HASH` ✅ GitHub
+**Letzter Stand:** 18.04.26 – **Pilot-Zettel ök2/VK2: gleiches Format wie K2 Familie** – **`ZettelPilotPage`:** **`zettel-pilot-kompakt`** für alle Linien; **`20-PILOT-ZETTEL-OEK2-VK2.md`** (k2team + public) verkürzt; **`TESTUSER-PILOT-E2E-ORGA`:** Mappe = Ablage. **`npm run vite:build`** grün. **Commit:** `b7c16f76` ✅ GitHub
 
 ---
 
