@@ -20,6 +20,8 @@ import ZettelMartinaMunaPage from './pages/ZettelMartinaMunaPage'
 import ZettelPilotPage from './pages/ZettelPilotPage'
 import ZettelPilotFormPage from './pages/ZettelPilotFormPage'
 import ZettelTestuserProduktlinienPage from './pages/ZettelTestuserProduktlinienPage'
+import TestuserAnmeldungPage from './pages/TestuserAnmeldungPage'
+import TestprotokollTestuserPage from './pages/TestprotokollTestuserPage'
 import K2GalerieHandbuchPage from './pages/K2GalerieHandbuchPage'
 import KampagneMarketingStrategiePage from './pages/KampagneMarketingStrategiePage'
 import K2WeltStrategiePage from './pages/K2WeltStrategiePage'
@@ -980,6 +982,8 @@ function App() {
       <Route path="/zettel-pilot" element={<ZettelPilotPage />} />
       <Route path="/zettel-pilot-form" element={<ZettelPilotFormPage />} />
       <Route path="/zettel-testuser-produktlinien" element={<ZettelTestuserProduktlinienPage />} />
+      <Route path="/testuser-anmeldung" element={<TestuserAnmeldungPage />} />
+      <Route path="/testprotokoll-testuser" element={<TestprotokollTestuserPage />} />
       <Route path="/k2-galerie-handbuch" element={<K2GalerieHandbuchPage />} />
       <Route path="/benutzer-handbuch" element={<BenutzerHandbuchPage />} />
       <Route path="/k2-familie-handbuch" element={<K2FamilieBenutzerHandbuchPage />} />

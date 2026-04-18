@@ -1,44 +1,43 @@
-# Testuser-Zettel – drei Produktlinien
+# Infos (Testuser) – drei Produktlinien
 
-**Zweck:** Dieser Zettel beschreibt den Ablauf für **Testuser:innen**, die eines unserer Programme im **aktiven Betrieb** erproben und dafür eine **kostenlose Testlizenz** sowie – bei erfüllten Voraussetzungen – einen **Gutschein** erhalten.
+**Interesse:** **[Testuser-Anmeldung](/testuser-anmeldung)** – Namen, Kontakt, gewünschte Linie; Angaben an **kgm** per E-Mail.
 
----
-
-## Die drei wählbaren Programme
-
-Sie entscheiden sich für **eine** Produktlinie (oder testen nacheinander mehrere; die Bedingungen gelten **pro Linie**).
-
-1. **ök2** – Öffentliche Demo-Galerie: Besucher:innen erleben Galerie, Shop und Abläufe wie bei einer echten Instanz, getrennt von Kundendaten.
-2. **VK2** – Vereinsplattform: Katalog, Mitglieder, Vereins-Galerie – für Kunstvereine und ähnliche Gemeinschaften.
-3. **K2 Familie** – Stammbaum, Personen, Kalender, Momente – für Familien, die ihre Geschichte strukturiert festhalten.
-
-Am Ende dieses Zettels (in der **gedruckten oder PDF-Version** aus der App) finden Sie **QR-Codes** zu den jeweiligen Einstiegen.
+**Zweck:** Produkttest im Alltag → kostenlose Testlizenz; bei erfüllten Bedingungen **Gutschein 250 €** für ein Kunstobjekt der **K2 Galerie** (kein Baranspruch).
 
 ---
 
-## Leistungen im Test
+## Die drei Programme (eine oder mehrere Linien nacheinander)
 
-- **Kostenlose Lizenz** für die **Dauer des vereinbarten Produkttests**. Keine Lizenzgebühr in dieser Phase, solange die Testbedingungen eingehalten werden.
-- **Gutschein der K2 Galerie:** Für jede **abgeschlossene Produkttestlinie** (ök2, VK2 oder K2 Familie) – nach Freigabe durch uns – ein **Gutschein im Wert von 250 €** für **ein Kunstobjekt** aus dem Angebot der **K2 Galerie** (Auswahl und Einlösung nach gesonderter Absprache; kein Barauszahlungsanspruch).
+1. **ök2** – Demo-Galerie: Shop und Abläufe wie bei einer echten Instanz, getrennt von Kundendaten.
+2. **VK2** – Vereinsplattform: Katalog, Mitglieder, Vereins-Galerie.
+3. **K2 Familie** – Stammbaum, Personen, Kalender, Momente.
+
+**Zugang:** Nur **persönlicher Link per E-Mail** von kgm. **Begrenzte Teilnahme**, Auswahl durch kgm.
+
+---
+
+## Leistungen
+
+- **Testphase:** Keine Lizenzgebühr, solange Testbedingungen eingehalten werden.
+- **Bis zu fünf Jahre kostenfrei** für die gewählte Linie – **nur** mit **vollständig ausgefülltem und eingereichtem Testprotokoll**; sonst gesondert vereinbart.
+- **Gutschein 250 €** pro **abgeschlossener** Linie – nach Freigabe – für ein Kunstobjekt der K2 Galerie (Einlösung nach Absprache).
 
 ---
 
 ## Voraussetzungen
 
-1. **Aktiver Betrieb:** Sie nutzen das gewählte Produkt **im Alltag** (nicht nur einmal ansehen): z. B. Demo pflegen, Vereinsdaten führen oder Familienkarten befüllen – so, wie es für diese Linie vorgesehen ist.
-2. **Testprotokoll:** Sie füllen ein **Testprotokoll** vollständig aus und reichen es ein. **Die Vorlage für das Testprotokoll ist in Vorbereitung** und wird rechtzeitig mitgeteilt, sobald sie feststeht.
-
-Ohne erfüllte Voraussetzungen und ohne abgeschlossenes Testprotokoll **kein** Anspruch auf Gutschein; die kostenlose Testlizenz kann gesondert vereinbart sein.
+1. **Aktiver Einsatz** im Alltag (nicht nur ansehen).
+2. **Testprotokoll** vollständig ausfüllen und einreichen. **Vorlagen (Ansicht & Druck):** [Testprotokolle (Testuser)](/testprotokoll-testuser) – je Produktlinie ök2, VK2, K2 Familie. Ohne Protokoll: **kein** Gutschein, **kein** Anspruch auf die **fünf Jahre kostenfrei** im beschriebenen Sinn.
 
 ---
 
-## Kurz-Checkliste vor dem Start
+## Kurz-Checkliste
 
-- [ ] Produktlinie gewählt: ök2 **oder** VK2 **oder** K2 Familie  
-- [ ] Zugang eingerichtet und **aktiv im Einsatz**  
-- [ ] Testprotokoll-Vorlage abwarten bzw. nutzen, sobald verfügbar  
-- [ ] Nach Abschluss: Protokoll einreichen → Prüfung → ggf. Gutschein-Freigabe  
+- [ ] E-Mail von kgm mit **persönlichem Link** erhalten
+- [ ] Linie: ök2 und/oder VK2 und/oder K2 Familie
+- [ ] Zugang eingerichtet und **genutzt**
+- [ ] Protokoll einreichen → Prüfung → ggf. **kostenfrei** und Gutschein
 
 ---
 
-*kgm solution – K2 Galerie. Stand der Information: April 2026.*
+*kgm solution – K2 Galerie. Stand: April 2026.*

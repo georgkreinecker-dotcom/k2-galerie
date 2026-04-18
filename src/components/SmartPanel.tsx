@@ -1145,6 +1145,15 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                         <Link to="/zettel-pilot-form" style={{ display: 'block', padding: '0.6rem 0.85rem', background: 'linear-gradient(120deg, rgba(245,158,11,0.28), rgba(217,119,6,0.2))', border: '1px solid rgba(245,158,11,0.5)', borderRadius: '8px', color: '#fbbf24', fontWeight: 700, fontSize: '0.9rem', textDecoration: 'none', fontFamily: 'inherit' }} title="Zettel mit neuen Codes drucken (ök2 oder VK2): Nr., Name, Pilot-URL eintragen → Zettel anzeigen → drucken. Ablauf kontrolliert und wiederholbar.">
                           ✈️ Neuer Test-Pilot
                         </Link>
+                        <Link to="/zettel-testuser-produktlinien" style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'linear-gradient(120deg, rgba(245,158,11,0.22), rgba(217,119,6,0.14))', border: '1px solid rgba(245,158,11,0.42)', borderRadius: '8px', color: '#fbbf24', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none', fontFamily: 'inherit' }} title="Infos (Testuser): ök2, VK2, K2 Familie – eine A4-Seite zum Drucken">
+                          ℹ️ Infos (Testuser)
+                        </Link>
+                        <Link to={PROJECT_ROUTES['k2-galerie'].testuserAnmeldung} style={{ display: 'block', padding: '0.5rem 0.75rem', marginTop: '0.35rem', background: 'linear-gradient(120deg, rgba(13,148,136,0.2), rgba(15,118,110,0.12))', border: '1px solid rgba(13,148,136,0.4)', borderRadius: '8px', color: '#5eead4', fontWeight: 600, fontSize: '0.82rem', textDecoration: 'none', fontFamily: 'inherit' }} title="Testuser-Anmeldung: Interesse eintragen, Formular oder A4">
+                          📝 Testuser-Anmeldung
+                        </Link>
+                        <Link to={`${PROJECT_ROUTES['k2-galerie'].texteSchreibtisch}`} style={{ display: 'block', padding: '0.5rem 0.75rem', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.28)', borderRadius: '8px', color: 'rgba(253,230,138,0.95)', fontWeight: 600, fontSize: '0.78rem', textDecoration: 'none', fontFamily: 'inherit' }} title="Beide Zettel liegen auf dem Texte-Schreibtisch im Bereich Pilot & Testuser">
+                          🪑 Zettel auf dem Texte-Schreibtisch
+                        </Link>
                         <Link to={`${PROJECT_ROUTES['k2-galerie'].marketingOek2}#mok2-pilot-start-michael`} style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'linear-gradient(120deg, rgba(245,158,11,0.2), rgba(217,119,6,0.15))', border: '1px solid rgba(245,158,11,0.4)', borderRadius: '8px', color: '#fbbf24', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none', fontFamily: 'inherit' }} title="Startanleitung Michael in mök2">
                           Startanleitung Michael
                         </Link>

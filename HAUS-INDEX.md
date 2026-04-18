@@ -45,6 +45,7 @@ Nichts wurde weggeschmissen oder verlegt – nur diese Übersicht zum Wiederfind
 
 | Ort | Inhalt | Wofür |
 |-----|--------|-------|
+| **APf** `/projects/k2-galerie/texte-schreibtisch` | Bereich **Pilot & Testuser** (Zettel): **Neuer Test-Pilot** → `/zettel-pilot-form`, **Infos (Testuser)** (ök2 · VK2 · K2 Familie) → `/zettel-testuser-produktlinien`, **Testuser-Anmeldung** → `/testuser-anmeldung` | Zettel griffbereit auf dem Schreibtisch; Schnellzugriff in der APf unter **Praktisch** → Infos (Testuser) / Texte-Schreibtisch. |
 | **public/texte-schreibtisch/andenken-erstes-gemeinsames-projekt-k2-oek2-vk2.html** | Würdiges **Andenken** an das erste gemeinsame Projekt (K2, ök2, VK2) – **liegt beim Textschreibtisch** (wie Vita & Co.) | Lokal: Datei im Finder **doppelklicken** → Browser → **Drucken** → PDF oder Papier. **Oder** nach Deploy: `/texte-schreibtisch/andenken-erstes-gemeinsames-projekt-k2-oek2-vk2.html` auf der gleichen Domain wie die Galerie. |
 | **texts/andenken-erstes-gemeinsames-projekt-k2-oek2-vk2.html** | dieselbe Datei (Kopie im Repo-Ordner **texts/**) | gleicher Druckweg |
 

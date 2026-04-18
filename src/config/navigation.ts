@@ -157,6 +157,10 @@ export const PROJECT_ROUTES = {
     verguetung: '/projects/k2-galerie/verguetung',
     vitaMartina: '/projects/k2-galerie/vita/martina',
     vitaGeorg: '/projects/k2-galerie/vita/georg',
+    /** Testuser: Interesse anmelden (Formular, A4-Druck) */
+    testuserAnmeldung: '/testuser-anmeldung',
+    /** Testuser: Testprotokoll-Vorlagen (Ansicht, Druck) – Hub oder ?linie=oek2|vk2|familie */
+    testprotokollTestuser: '/testprotokoll-testuser',
     /** Große Arbeitsfläche: Texte wie auf dem Schreibtisch (Bereiche + Zettel, kein Listen-Navi) */
     texteSchreibtisch: '/projects/k2-galerie/texte-schreibtisch',
     /** Nur Board-Mitte – eigenes Fenster für 2. Monitor */

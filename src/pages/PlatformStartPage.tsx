@@ -346,7 +346,24 @@ export default function PlatformStartPage() {
             boxShadow: '0 4px 14px rgba(13,148,136,0.25)',
           }}
         >
-          🧪 Testuser-Zettel (ök2 · VK2 · K2 Familie → 🖨️)
+          ℹ️ Infos (Testuser) – ök2 · VK2 · K2 Familie (🖨️)
+        </Link>
+        <Link
+          to={PROJECT_ROUTES['k2-galerie'].testuserAnmeldung}
+          style={{
+            display: 'block',
+            marginTop: '0.5rem',
+            padding: '0.85rem 1.25rem',
+            background: 'linear-gradient(120deg, #0f766e, #115e59)',
+            borderRadius: '12px',
+            color: '#fff',
+            fontWeight: 600,
+            textDecoration: 'none',
+            textAlign: 'center',
+            boxShadow: '0 4px 14px rgba(15,118,110,0.28)',
+          }}
+        >
+          📝 Testuser-Anmeldung (Interesse eintragen)
         </Link>
 
         {/* Haupt-Features - Prominent und groß */}

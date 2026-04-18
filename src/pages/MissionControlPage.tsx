@@ -104,10 +104,26 @@ export default function MissionControlPage() {
                 alignItems: 'center',
                 gap: '0.4rem'
               }}
-              title="Testuser-Zettel: ök2, VK2, K2 Familie – Testlizenz, Gutschein-Hinweis, QR zum Drucken"
+              title="Infos (Testuser): ök2, VK2, K2 Familie – eine A4-Seite zum Drucken"
             >
-              <span style={{ fontSize: '1.1rem' }}>🧪</span>
-              <span>Testuser-Zettel</span>
+              <span style={{ fontSize: '1.1rem' }}>ℹ️</span>
+              <span>Infos (Testuser)</span>
+            </Link>
+            <Link
+              to={PROJECT_ROUTES['k2-galerie'].testuserAnmeldung}
+              className="btn small-btn"
+              style={{
+                background: 'linear-gradient(120deg, #0f766e, #115e59)',
+                color: '#ffffff',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem'
+              }}
+              title="Testuser-Anmeldung: Interesse eintragen, Formular ausfüllen oder A4 drucken"
+            >
+              <span style={{ fontSize: '1.1rem' }}>📝</span>
+              <span>Testuser-Anmeldung</span>
             </Link>
             <Link
               to="/k2team-handbuch"

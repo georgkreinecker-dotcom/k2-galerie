@@ -1,11 +1,27 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **Weiter nach Schlaf:** **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`** Phase 2 – **Videos/JPG** erst mit **Original-Backup** und **Prüfung** in der Galerie; parallel offene **Plattform-Rundgang ök2/VK2**-Arbeit auf **`main`** testen sobald Vercel **Ready** ist.  
-**Einordnung:** Nutzer spüren Medien-Größe; Rundgang-Features nach Deploy kurz gegenklicken.
+**Was wir JETZT tun:** **Weiter nach Schlaf:** **`docs/OPTIMIERUNG-SICHER-SCHRITTWEISE.md`** Phase 2 – **Videos/JPG** erst mit **Original-Backup** und **Prüfung** in der Galerie; parallel **Plattform-Rundgang** nach Deploy kurz testen.  
+**Einordnung:** **Testprotokolle** als **Ansicht** `/testprotokoll-testuser` (+ `?linie=oek2|vk2|familie`), **Texte-Schreibtisch** Zettel **Testprotokolle (Ansicht)**; Handbuch **29–31** + **00-INDEX** aktualisiert.
 
 ---
 
-**Letzter Stand:** 18.04.26 – **Testuser-Zettel drei Produktlinien** – Markdown **`k2team-handbuch/28-TESTUSER-ZETTEL-PRODUKTLINIEN.md`** + Spiegel **`public/`**; Seite **`/zettel-testuser-produktlinien`** (Druck, drei QR: ök2, VK2, K2 Familie mit **`buildQrUrlWithBust`**); **K2TeamHandbuchPage**-Eintrag; **Mission Control** + **Platform Start** Links; **Tests + Build** grün. **Commit:** **`60834433`** ✅ GitHub
+**Letzter Stand:** 16.04.26 – **Testprotokolle Ansicht + Handbuch-Index** – Route **`/testprotokoll-testuser`** (Vorlagen ök2/VK2/K2 Familie); **`k2team-handbuch/00-INDEX.md`** + **`public/k2team-handbuch/`**: Zeilen **29–31**, Kapitel **28** um Verweis ergänzt. **Tests + Build** grün. **Commit:** _(nach Push)_ ✅ GitHub
+
+---
+
+**Letzter Stand:** 18.04.26 – **Infos (Testuser) + Anmeldung + Pilot-Zettel TS** – Umbenennung **Testuser-Zettel** → **Infos (Testuser)**; **Testuser-Anmeldung** verlinkt (**SmartPanel**, **TexteSchreibtisch**, **ZettelTestuserProduktlinien** Banner, **PlatformStart** Route-Konstante, **K2TeamHandbuch** + Spiegel **`28`**, **HAUS-INDEX**). **`ZettelPilotPage`:** `ZettelPilotContent` um **familieUrl** / **qrFamilie** ergänzt (Build-Fix). **Tests + Build** grün. **Commit:** _(nach Push)_ ✅ GitHub
+
+---
+
+**Letzter Stand:** 18.04.26 – **Testuser-Zettel Text** – Drei QR = Orientierung; **persönlicher Zugang** per **E-Mail-Link** von kgm; **Begrenzung** Teilnehmerzahl (frei wählbar durch kgm). Dateien **`k2team-handbuch/28-TESTUSER-ZETTEL-PRODUKTLINIEN.md`** + Spiegel **`public/k2team-handbuch/`**. **Commit:** _(nach Push)_ ✅ GitHub
+
+---
+
+**Letzter Stand:** 18.04.26 – **Pilot & Testuser auf Texte-Schreibtisch** – **`TexteSchreibtischPage`:** neuer Bereich **Pilot & Testuser** (Zettel: Neuer Test-Pilot, Testuser-Zettel); **`SmartPanel`:** Praktisch → Testuser-Zettel + Link Texte-Schreibtisch; **`HAUS-INDEX`** Zeile. **Tests + Build** grün. **Commit:** _(nach Push)_ ✅ GitHub
+
+---
+
+**Letzter Stand:** 18.04.26 – **Testuser-Zettel drei Produktlinien** – Markdown **`k2team-handbuch/28-TESTUSER-ZETTEL-PRODUKTLINIEN.md`** + Spiegel **`public/`**; Seite **`/zettel-testuser-produktlinien`** (Druck, drei QR: ök2, VK2, K2 Familie mit **`buildQrUrlWithBust`**); **K2TeamHandbuchPage**-Eintrag; **Mission Control** + **Platform Start** Links; **Tests + Build** grün. **Commits:** **`60834433`** (Feature), **`a97e343c`** (DIALOG-STAND-Hash) ✅ GitHub
 
 ---
 

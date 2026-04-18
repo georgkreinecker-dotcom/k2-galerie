@@ -7,22 +7,32 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { BASE_APP_URL, ENTDECKEN_ROUTE, PROJECT_ROUTES } from '../config/navigation'
+import { BASE_APP_URL, ENTDECKEN_ROUTE, K2_FAMILIE_WILLKOMMEN_ROUTE, PROJECT_ROUTES } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
 const PILOT_ZETTEL_MD = '/k2team-handbuch/20-PILOT-ZETTEL-OEK2-VK2.md'
 /** Testpiloten über denselben Einstieg wie alle: Entdecken → Vorschau → Admin */
 const OEK2_BASE = BASE_APP_URL + ENTDECKEN_ROUTE
 const VK2_BASE = BASE_APP_URL + PROJECT_ROUTES.vk2.galerie
+const FAMILIE_BASE = BASE_APP_URL + K2_FAMILIE_WILLKOMMEN_ROUTE
 
-export type PilotType = 'oek2' | 'vk2'
+export type PilotType = 'oek2' | 'vk2' | 'familie'
 
 export default function ZettelPilotPage() {
   const [searchParams] = useSearchParams()
   const name = searchParams.get('name')?.trim() || ''
   const pilotUrl = searchParams.get('pilotUrl')?.trim() || ''
   const typeParam = searchParams.get('type')?.trim().toLowerCase()
-  const pilotType: PilotType | null = typeParam === 'oek2' || typeParam === 'vk2' ? typeParam : pilotUrl === OEK2_BASE ? 'oek2' : pilotUrl === VK2_BASE ? 'vk2' : null
+  const pilotType: PilotType | null =
+    typeParam === 'oek2' || typeParam === 'vk2' || typeParam === 'familie'
+      ? typeParam
+      : pilotUrl === OEK2_BASE
+        ? 'oek2'
+        : pilotUrl === VK2_BASE
+          ? 'vk2'
+          : pilotUrl === FAMILIE_BASE
+            ? 'familie'
+            : null
   const nr = searchParams.get('nr')?.trim() || ''
 
   const [content, setContent] = useState<string>('')
@@ -30,6 +40,7 @@ export default function ZettelPilotPage() {
   const [qrPilot, setQrPilot] = useState<string>('')
   const [qrVk2, setQrVk2] = useState<string>('')
   const [qrOek2, setQrOek2] = useState<string>('')
+  const [qrFamilie, setQrFamilie] = useState<string>('')
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
 
   useEffect(() => {
@@ -45,6 +56,7 @@ export default function ZettelPilotPage() {
   useEffect(() => {
     const oek2Bust = buildQrUrlWithBust(OEK2_BASE, qrVersionTs)
     const vk2Bust = buildQrUrlWithBust(VK2_BASE, qrVersionTs)
+    const familieBust = buildQrUrlWithBust(FAMILIE_BASE, qrVersionTs)
     if (pilotUrl) {
       const busted = pilotUrl.startsWith(BASE_APP_URL) ? buildQrUrlWithBust(pilotUrl, qrVersionTs) : pilotUrl
       QRCode.toDataURL(busted, { width: 100, margin: 1 }).then(setQrPilot).catch(() => setQrPilot(''))
@@ -53,6 +65,7 @@ export default function ZettelPilotPage() {
     }
     QRCode.toDataURL(oek2Bust, { width: 100, margin: 1 }).then(setQrOek2).catch(() => {})
     QRCode.toDataURL(vk2Bust, { width: 100, margin: 1 }).then(setQrVk2).catch(() => {})
+    QRCode.toDataURL(familieBust, { width: 100, margin: 1 }).then(setQrFamilie).catch(() => setQrFamilie(''))
   }, [pilotUrl, qrVersionTs])
 
   if (loading) {
@@ -133,8 +146,10 @@ export default function ZettelPilotPage() {
           qrPilot={qrPilot}
           oek2Url={OEK2_BASE}
           vk2Url={VK2_BASE}
+          familieUrl={FAMILIE_BASE}
           qrOek2={qrOek2}
           qrVk2={qrVk2}
+          qrFamilie={qrFamilie}
         />
       </div>
       <footer className="zettel-footer" aria-hidden="true">
@@ -152,8 +167,10 @@ function ZettelPilotContent({
   qrPilot,
   oek2Url,
   vk2Url,
+  familieUrl,
   qrOek2,
   qrVk2,
+  qrFamilie,
 }: {
   md: string
   pilotType: PilotType | null
@@ -161,8 +178,10 @@ function ZettelPilotContent({
   qrPilot: string
   oek2Url: string
   vk2Url: string
+  familieUrl: string
   qrOek2: string
   qrVk2: string
+  qrFamilie: string
 }) {
   const lines = md.split('\n')
   const out: React.ReactNode[] = []
@@ -226,15 +245,42 @@ function ZettelPilotContent({
                     <td>{parseInline(row[0] || '')}</td>
                     <td style={{ wordBreak: 'break-all' }}>
                       {isPilotTable && r === 0
-                        ? pilotType === 'oek2' && pilotUrl ? pilotUrl : pilotType === 'vk2' ? oek2Url : pilotUrl || '(Adresse und QR vom Team erhalten)'
+                        ? pilotType === 'oek2' && pilotUrl
+                          ? pilotUrl
+                          : pilotType === 'vk2'
+                            ? oek2Url
+                            : pilotType === 'familie' && pilotUrl
+                              ? pilotUrl
+                              : pilotType === 'familie'
+                                ? familieUrl
+                                : pilotUrl || '(Adresse und QR vom Team erhalten)'
                         : isPilotTable && r === 1
-                          ? pilotType === 'vk2' && pilotUrl ? pilotUrl : vk2Url
+                          ? pilotType === 'vk2' && pilotUrl
+                            ? pilotUrl
+                            : vk2Url
                           : parseInline(row[1] || '')}
                     </td>
-                    {isPilotTable && (qrPilot || qrOek2 || qrVk2) && (
+                    {isPilotTable && (qrPilot || qrOek2 || qrVk2 || qrFamilie) && (
                       <td style={{ verticalAlign: 'middle', width: 52 }}>
-                        {r === 0 && ((pilotType === 'oek2' || (pilotType === null && pilotUrl)) ? qrPilot : pilotType === 'vk2' ? qrOek2 : null) ? (
-                          <img src={(pilotType === 'oek2' || (pilotType === null && pilotUrl)) ? qrPilot : qrOek2} alt="QR ök2" style={{ display: 'block', width: 48, height: 48 }} />
+                        {r === 0 &&
+                        ((pilotType === 'oek2' || (pilotType === null && pilotUrl))
+                          ? qrPilot
+                          : pilotType === 'vk2'
+                            ? qrOek2
+                            : pilotType === 'familie'
+                              ? qrFamilie
+                              : null) ? (
+                          <img
+                            src={
+                              (pilotType === 'oek2' || (pilotType === null && pilotUrl))
+                                ? qrPilot
+                                : pilotType === 'vk2'
+                                  ? qrOek2
+                                  : qrFamilie
+                            }
+                            alt={pilotType === 'familie' ? 'QR K2 Familie' : 'QR ök2'}
+                            style={{ display: 'block', width: 48, height: 48 }}
+                          />
                         ) : r === 1 && (pilotType === 'vk2' ? qrPilot : qrVk2) ? (
                           <img src={pilotType === 'vk2' ? qrPilot : qrVk2} alt="QR VK2" style={{ display: 'block', width: 48, height: 48 }} />
                         ) : r === 0 ? (

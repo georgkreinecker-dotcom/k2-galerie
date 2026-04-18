@@ -1,13 +1,14 @@
 /**
- * Neuer Test-Pilot: Name eingeben → ök2 oder VK2 wählen → QR wird automatisch vergeben → Laufzettel generieren und mitgeben.
+ * Neuer Test-Pilot: Name eingeben → ök2, VK2 oder K2 Familie wählen → QR wird automatisch vergeben → Laufzettel generieren und mitgeben.
  */
 
-import { BASE_APP_URL, ENTDECKEN_ROUTE, PROJECT_ROUTES } from '../config/navigation'
+import { BASE_APP_URL, ENTDECKEN_ROUTE, K2_FAMILIE_WILLKOMMEN_ROUTE, PROJECT_ROUTES } from '../config/navigation'
 
 const PILOT_ZETTEL_NR_KEY = 'k2-pilot-zettel-last-nr'
 /** Testpiloten über denselben Einstieg wie alle: Entdecken → Vorschau → Admin */
 const OEK2_URL = BASE_APP_URL + ENTDECKEN_ROUTE
 const VK2_URL = BASE_APP_URL + PROJECT_ROUTES.vk2.galerie
+const FAMILIE_URL = BASE_APP_URL + K2_FAMILIE_WILLKOMMEN_ROUTE
 
 function getNextZettelNr(): string {
   try {
@@ -26,7 +27,7 @@ function setLastZettelNr(nr: string) {
   } catch { /* ignore */ }
 }
 
-export type PilotType = 'oek2' | 'vk2'
+export type PilotType = 'oek2' | 'vk2' | 'familie'
 
 import React, { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
@@ -44,7 +45,7 @@ export default function ZettelPilotFormPage() {
   const handleGenerate = () => {
     if (!name.trim() || !pilotType) return
     if (nr.trim()) setLastZettelNr(nr.trim())
-    const pilotUrl = pilotType === 'oek2' ? OEK2_URL : VK2_URL
+    const pilotUrl = pilotType === 'oek2' ? OEK2_URL : pilotType === 'vk2' ? VK2_URL : FAMILIE_URL
     const params = new URLSearchParams()
     params.set('name', name.trim())
     params.set('type', pilotType)
@@ -59,7 +60,10 @@ export default function ZettelPilotFormPage() {
     <main style={{ padding: '2rem', maxWidth: 480, margin: '0 auto', background: '#fff', minHeight: '100vh', color: '#1c1a18' }}>
       <h1 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Neuer Test-Pilot</h1>
       <p style={{ fontSize: '0.9rem', color: '#555', marginBottom: '0.75rem' }}>
-        Name eingeben → ök2 oder VK2 wählen → QR wird automatisch vergeben → Laufzettel generieren und mitgeben.
+        Name eingeben → ök2, VK2 oder K2 Familie wählen → QR wird automatisch vergeben → Laufzettel generieren und mitgeben.
+      </p>
+      <p style={{ fontSize: '0.85rem', color: '#5c5650', marginBottom: '0.75rem', lineHeight: 1.5, padding: '0.5rem 0.65rem', background: '#f8f6f2', borderRadius: 8, border: '1px solid #e8e4dc' }}>
+        <strong>Hinweis:</strong> Das Testprogramm ist auf eine begrenzte Personenzahl begrenzt – die Plätze wählt das Team.
       </p>
       <p style={{ fontSize: '0.85rem', color: '#555', marginBottom: '1.5rem', lineHeight: 1.5 }}>
         <strong>E-Mail-Einladung statt Zettel?</strong> Unter{' '}
@@ -95,6 +99,10 @@ export default function ZettelPilotFormPage() {
           <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', padding: '0.5rem 0.75rem', border: `2px solid ${pilotType === 'vk2' ? '#1a1a1a' : '#ddd'}`, borderRadius: 8, background: pilotType === 'vk2' ? '#f5f5f5' : 'transparent' }}>
             <input type="radio" name="pilotType" checked={pilotType === 'vk2'} onChange={() => setPilotType('vk2')} />
             <span>VK2 (Vereinsplattform)</span>
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', padding: '0.5rem 0.75rem', border: `2px solid ${pilotType === 'familie' ? '#1a1a1a' : '#ddd'}`, borderRadius: 8, background: pilotType === 'familie' ? '#f5f5f5' : 'transparent' }}>
+            <input type="radio" name="pilotType" checked={pilotType === 'familie'} onChange={() => setPilotType('familie')} />
+            <span>K2 Familie (Familien-App)</span>
           </label>
         </div>
         <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '0.35rem' }}>
@@ -139,7 +147,7 @@ export default function ZettelPilotFormPage() {
       </div>
       {!canGenerate && (
         <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.75rem' }}>
-          Bitte zuerst Name eintragen und ök2 oder VK2 wählen.
+          Bitte zuerst Name eintragen und ök2, VK2 oder K2 Familie wählen.
         </p>
       )}
     </main>
