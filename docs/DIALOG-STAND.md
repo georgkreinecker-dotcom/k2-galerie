@@ -5,6 +5,10 @@
 
 ---
 
+**Letzter Stand:** 18.04.26 – **Pilot-Zettel ök2/VK2: gleiches Format wie K2 Familie** – **`ZettelPilotPage`:** **`zettel-pilot-kompakt`** für alle Linien; **`20-PILOT-ZETTEL-OEK2-VK2.md`** (k2team + public) verkürzt; **`TESTUSER-PILOT-E2E-ORGA`:** Mappe = Ablage. **`npm run vite:build`** grün. **Commit:** `PLACEHOLDER_HASH` ✅ GitHub
+
+---
+
 **Letzter Stand:** 18.04.26 – **Playwright E2E: Pilot-Formular → Laufzettel** – **`playwright.config.ts`**, **`e2e/pilot-zettel-form.spec.ts`**, Scripts **`test:e2e`**, **`test:e2e:install`**, **`test:e2e:ui`**; **`@playwright/test`** statt `playwright`; **`.gitignore`** Playwright-Reports; **`docs/TESTUSER-PILOT-E2E-ORGA.md`**. **`npm run test:e2e`** grün. **Commit:** ``a6176aec`` ✅ GitHub
 
 ---

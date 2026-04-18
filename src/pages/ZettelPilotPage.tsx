@@ -146,24 +146,24 @@ export default function ZettelPilotPage() {
           .zettel-no-print { display: none !important; }
           body, html { background: #fff !important; margin: 0 !important; }
           .zettel-page { box-shadow: none !important; margin: 0 !important; padding: 10mm 12mm !important; max-width: none !important; }
-          /* K2-Familie-Zettel: kompakt; Seitenumbruch vor „Adresse für Laptop und Handy“ */
-          .zettel-page.zettel-k2-familie {
+          /* Alle Pilot-Zettel (ök2/VK2 + K2 Familie): gleiches kompaktes Druckformat */
+          .zettel-page.zettel-pilot-kompakt {
             font-size: 8.5pt !important;
             line-height: 1.28 !important;
             padding: 6mm 8mm 8mm !important;
           }
-          .zettel-page.zettel-k2-familie h1 { font-size: 11pt !important; margin: 0 0 0.2rem !important; }
-          .zettel-page.zettel-k2-familie h2 { font-size: 9.5pt !important; margin: 0.3rem 0 0.12rem !important; }
-          .zettel-page.zettel-k2-familie h2.zettel-seite-2 { page-break-before: auto !important; }
-          .zettel-page.zettel-k2-familie h1,
-          .zettel-page.zettel-k2-familie h2 { break-after: avoid-page; page-break-after: avoid; }
-          .zettel-page.zettel-k2-familie table { font-size: 8pt !important; margin: 0.2rem 0 !important; }
-          .zettel-page.zettel-k2-familie th,
-          .zettel-page.zettel-k2-familie td { padding: 0.15rem 0.35rem !important; }
-          .zettel-page.zettel-k2-familie hr { margin: 0.25rem 0 !important; }
-          .zettel-page.zettel-k2-familie ul,
-          .zettel-page.zettel-k2-familie ol { margin: 0.12rem 0 0.25rem 1rem !important; }
-          .zettel-page.zettel-k2-familie .zettel-md-spacer { height: 0.12rem !important; }
+          .zettel-page.zettel-pilot-kompakt h1 { font-size: 11pt !important; margin: 0 0 0.2rem !important; }
+          .zettel-page.zettel-pilot-kompakt h2 { font-size: 9.5pt !important; margin: 0.3rem 0 0.12rem !important; }
+          .zettel-page.zettel-pilot-kompakt h2.zettel-seite-2 { page-break-before: auto !important; }
+          .zettel-page.zettel-pilot-kompakt h1,
+          .zettel-page.zettel-pilot-kompakt h2 { break-after: avoid-page; page-break-after: avoid; }
+          .zettel-page.zettel-pilot-kompakt table { font-size: 8pt !important; margin: 0.2rem 0 !important; }
+          .zettel-page.zettel-pilot-kompakt th,
+          .zettel-page.zettel-pilot-kompakt td { padding: 0.15rem 0.35rem !important; }
+          .zettel-page.zettel-pilot-kompakt hr { margin: 0.25rem 0 !important; }
+          .zettel-page.zettel-pilot-kompakt ul,
+          .zettel-page.zettel-pilot-kompakt ol { margin: 0.12rem 0 0.25rem 1rem !important; }
+          .zettel-page.zettel-pilot-kompakt .zettel-md-spacer { height: 0.12rem !important; }
           .zettel-page.zettel-k2-familie ~ footer.zettel-footer { display: none !important; }
         }
         .zettel-page {
@@ -213,7 +213,7 @@ export default function ZettelPilotPage() {
       </div>
 
       <div
-        className={useK2FamilieZettel ? 'zettel-page zettel-k2-familie' : 'zettel-page'}
+        className={useK2FamilieZettel ? 'zettel-page zettel-pilot-kompakt zettel-k2-familie' : 'zettel-page zettel-pilot-kompakt'}
         style={{ marginTop: '3rem' }}
       >
         {nr && (
@@ -274,7 +274,6 @@ export default function ZettelPilotPage() {
         ) : null}
         <ZettelPilotContent
           md={content}
-          compactMdSpacers={useK2FamilieZettel}
           pilotType={pilotType}
           pilotUrl={pilotUrl || null}
           qrPilot={qrPilot}
@@ -300,7 +299,6 @@ export default function ZettelPilotPage() {
 
 function ZettelPilotContent({
   md,
-  compactMdSpacers,
   pilotType,
   pilotUrl,
   qrPilot,
@@ -316,7 +314,6 @@ function ZettelPilotContent({
   qrTestprotokoll,
 }: {
   md: string
-  compactMdSpacers?: boolean
   pilotType: PilotType | null
   pilotUrl: string | null
   qrPilot: string
@@ -343,8 +340,8 @@ function ZettelPilotContent({
       out.push(
         <div
           key={i}
-          className={compactMdSpacers ? 'zettel-md-spacer' : undefined}
-          style={{ height: compactMdSpacers ? '0.15rem' : '0.4rem' }}
+          className="zettel-md-spacer"
+          style={{ height: '0.15rem' }}
         />,
       )
       i++
@@ -358,7 +355,9 @@ function ZettelPilotContent({
     }
     if (line.startsWith('## ')) {
       const title = line.slice(3).trim()
-      const isSeite2 = title.startsWith('Adresse für Laptop und Handy')
+      const isSeite2 =
+        title.startsWith('Adresse für Laptop und Handy') ||
+        /^Adressen\b/i.test(title) && /Laptop|Handy/i.test(title)
       out.push(<h2 key={i} className={isSeite2 ? 'zettel-seite-2' : undefined}>{title}</h2>)
       i++
       continue

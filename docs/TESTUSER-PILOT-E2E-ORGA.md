@@ -17,7 +17,7 @@ Dort: interner **Katalog**, Anmeldetext, Links zu Zetteln/Testprotokoll – **ni
 ## 2. Der kurze Ablauf (drei Schritte)
 
 1. **Neuer Pilot:** `/zettel-pilot-form` → Name, App-Name, Linie → **Laufzettel generieren** → `/zettel-pilot?…`
-2. **Zettel** ausdrucken / mitgeben; nach Öffnen des Zettels erscheint der Eintrag **mit Zugangsblatt-Link** in der Testuser-Mappe (automatisch).
+2. **Zettel** ausdrucken / mitgeben; nach **Öffnen** des Zettels in der App erscheint der Eintrag **mit Zugangsblatt-Link** in der Testuser-Mappe (**automatisch** – kein separates „Dokument ablegen“ nötig). Optional: **PDF speichern** über den Druckdialog für deine Unterlagen; eine zweite „Ablage zur Weiterleitung“ gibt es nicht – die Mappe ist die Ablage.
 3. **Testen:** Protokoll-Vorlagen in der Mappe verlinkt; Handbuch „Testuser“ bei Bedarf.
 
 **Zähler:** Nächste Zettel-Nr. startet bei **10** (siehe unten). Ältere kleine Nummern im Browser-Speicher werden beim nächsten Zettel auf mindestens 10 angehoben.
