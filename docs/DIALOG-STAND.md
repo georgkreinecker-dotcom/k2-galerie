@@ -1,11 +1,15 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Bei Bedarf **Pilot-Zettel** drucken – Text ist jetzt **kurz** („Erste Schritte“).  
-**Einordnung:** Weniger Ablenkung auf dem Zettel; Tabelle Link/QR bleibt.
+**Was wir JETZT tun:** Bei Bedarf **Zettel-Pilot** K2 Familie im Browser öffnen und Druck prüfen.  
+**Einordnung:** Zettel-Text minimal; Weg zum Drucken steht in der APf, nicht mehr auf dem Blatt.
 
 ---
 
-**Letzter Stand:** 18.04.26 – **Pilot-Zettel K2 Familie: nur kurze „Erste Schritte“** – **`32-PILOT-ZETTEL-K2-FAMILIE.md`** + Spiegel: Checkliste und nummerierte Schritte entfernt, ein Absatz (QR/Link → eure Familie, Inhaber:in, Momente, Lesezeichen, Handbuch); **`ZettelPilotPage`:** Druck-Seitenumbruch vor **`Adresse für Laptop und Handy`** statt „Schritt für Schritt“. **`qs:local`** grün. **Commit:** _(nach Push)_ ✅ GitHub
+**Letzter Stand:** 18.04.26 – **Pilot-Zettel K2 Familie: Kopf „Zum Drucken“ / „Wichtig“ entfernt** – **`32-PILOT-ZETTEL-K2-FAMILIE.md`** + Spiegel. **Commit:** _(nach Push)_ ✅ GitHub
+
+---
+
+**Letzter Stand:** 18.04.26 – **Pilot-Zettel K2 Familie: nur kurze „Erste Schritte“** – **`32-PILOT-ZETTEL-K2-FAMILIE.md`** + Spiegel: Checkliste und nummerierte Schritte entfernt, ein Absatz (QR/Link → eure Familie, Inhaber:in, Momente, Lesezeichen, Handbuch); **`ZettelPilotPage`:** Druck-Seitenumbruch vor **`Adresse für Laptop und Handy`** statt „Schritt für Schritt“. **`qs:local`** grün. **Commit:** **`e8a76ed9`** ✅ GitHub
 
 ---
 

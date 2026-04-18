@@ -1,10 +1,6 @@
 # Testpilot:in K2 Familie – eigener Zugang (kein Galerie-Lizenzsystem)
 
-**Zum Drucken:** Mission Control → „Neuer Test-Pilot“ → **K2 Familie** → Name + App-Name → **Laufzettel generieren** → drucken.
-
-**Wichtig:** K2 Familie = **eigene Produktlinie** (Familienraum, Stammbaum, Momente), **nicht** die Galerie-Lizenzen ök2/VK2. Details: Handbuch / Lizenz K2 Familie in der App.
-
-Oben: **Begrüßung** – **Handbuch & Testprotokoll** stehen **in der Tabelle** (Link + QR) und kann das Team **zusätzlich in derselben E-Mail** wie den Zugangslink mitschicken.
+**Handbuch & Testprotokoll** stehen **in der Tabelle** (Link + QR).
 
 ---
 
