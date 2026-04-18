@@ -2,12 +2,11 @@
  * Neuer Test-Pilot: Name eingeben → ök2, VK2 oder K2 Familie wählen → QR wird automatisch vergeben → Laufzettel generieren und mitgeben.
  */
 
-import { BASE_APP_URL, ENTDECKEN_ROUTE, K2_FAMILIE_WILLKOMMEN_ROUTE, PROJECT_ROUTES } from '../config/navigation'
+import { BASE_APP_URL, K2_FAMILIE_WILLKOMMEN_ROUTE, PROJECT_ROUTES } from '../config/navigation'
 import { buildFamiliePilotWillkommenUrl } from '../utils/familiePilotSeed'
+import { buildOek2PilotGalerieUrl } from '../utils/pilotOek2GalerieUrl'
 import { getNextPilotZettelNr, setLastPilotZettelNr } from '../utils/pilotZettelNr'
 
-/** Testpiloten über denselben Einstieg wie alle: Entdecken → Vorschau → Admin */
-const OEK2_URL = BASE_APP_URL + ENTDECKEN_ROUTE
 const VK2_URL = BASE_APP_URL + PROJECT_ROUTES.vk2.galerie
 const FAMILIE_URL = BASE_APP_URL + K2_FAMILIE_WILLKOMMEN_ROUTE
 
@@ -33,7 +32,7 @@ export default function ZettelPilotFormPage() {
     if (nr.trim()) setLastPilotZettelNr(nr.trim())
     const pilotUrl =
       pilotType === 'oek2'
-        ? OEK2_URL
+        ? buildOek2PilotGalerieUrl(appName.trim())
         : pilotType === 'vk2'
           ? VK2_URL
           : buildFamiliePilotWillkommenUrl(FAMILIE_URL, appName.trim(), nr.trim() || '1')
@@ -144,6 +143,13 @@ export default function ZettelPilotFormPage() {
           onChange={(e) => setNr(e.target.value.replace(/\D/g, ''))}
           style={{ width: '5rem', padding: '0.5rem 0.75rem', border: '1px solid #ccc', borderRadius: 6, fontSize: '1rem', boxSizing: 'border-box' }}
         />
+        <p style={{ fontSize: '0.78rem', color: '#666', marginTop: '0.4rem', lineHeight: 1.45, maxWidth: '26rem' }}>
+          Hier steht nur der <strong>nächste Vorschlag</strong> (letzte Nummer in diesem Browser + 1, mindestens 10). Es gibt <strong>keine Liste</strong> „Zettel 11, 12 …“ – frühere Nummern verschwinden nicht, sie werden nur nirgends gesammelt angezeigt. Wer angelegt wurde, steht in der{' '}
+          <Link to="/testuser-anmeldung" style={{ color: '#0d9488', fontWeight: 600 }}>
+            Testuser-Mappe
+          </Link>
+          .
+        </p>
       </div>
 
       <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>

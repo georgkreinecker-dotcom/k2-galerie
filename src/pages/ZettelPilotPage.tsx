@@ -3,12 +3,20 @@
  * Name und Pilot-URL aus Query. QR: bei Pilot-URL deren busted QR.
  */
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { BASE_APP_URL, ENTDECKEN_ROUTE, K2_FAMILIE_WILLKOMMEN_ROUTE, PROJECT_ROUTES } from '../config/navigation'
+import {
+  BASE_APP_URL,
+  BENUTZER_HANDBUCH_ROUTE,
+  ENTDECKEN_ROUTE,
+  K2_FAMILIE_WILLKOMMEN_ROUTE,
+  PROJECT_ROUTES,
+  VK2_HANDBUCH_ROUTE,
+} from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { buildFamiliePilotFamilienZugang, buildFamiliePilotTenantIdFromZettelNr } from '../utils/familiePilotSeed'
+import { buildOek2PilotGalerieUrl } from '../utils/pilotOek2GalerieUrl'
 import { registerPilotZettelInKatalog } from '../utils/testuserKatalogStorage'
 
 const PILOT_ZETTEL_MD_OEK2_VK2 = '/k2team-handbuch/20-PILOT-ZETTEL-OEK2-VK2.md'
@@ -29,8 +37,30 @@ function buildFamilieTestprotokollUrl(pilotName: string): string {
   return u.toString()
 }
 
+function buildOek2Vk2TestprotokollUrl(linie: 'oek2' | 'vk2', pilotName: string): string {
+  const u = new URL(PROJECT_ROUTES['k2-galerie'].testprotokollTestuser, BASE_APP_URL)
+  u.searchParams.set('linie', linie)
+  const n = pilotName.trim()
+  if (n) u.searchParams.set('name', n)
+  return u.toString()
+}
+
+/** ök2: früher nur /entdecken, jetzt Galerie-URL – beides als ök2-Zugang erkennen */
+function pilotUrlIsOek2Einstieg(pilotUrl: string): boolean {
+  if (!pilotUrl) return false
+  return pilotUrl === OEK2_BASE || pilotUrl.includes('/projects/k2-galerie/galerie-oeffentlich')
+}
+
 function pilotUrlIsK2FamilieWillkommen(pilotUrl: string): boolean {
   return pilotUrl === FAMILIE_BASE || pilotUrl.startsWith(`${FAMILIE_BASE}?`)
+}
+
+function isPilotTableRowOek2(row: string[]): boolean {
+  return /ök2/i.test(row[0] || '')
+}
+
+function isPilotTableRowVk2(row: string[]): boolean {
+  return /VK2/i.test(row[0] || '')
 }
 
 export type PilotType = 'oek2' | 'vk2' | 'familie'
@@ -41,30 +71,52 @@ export default function ZettelPilotPage() {
   const appName = searchParams.get('appName')?.trim() || ''
   /** Für Texte/Zettel: gewählter App-Name, sonst Kontaktname (alte Links) */
   const displayAppName = appName || name
-  const pilotUrl = searchParams.get('pilotUrl')?.trim() || ''
+  const pilotUrlRaw = searchParams.get('pilotUrl')?.trim() || ''
   const typeParam = searchParams.get('type')?.trim().toLowerCase()
   const pilotType: PilotType | null =
     typeParam === 'oek2' || typeParam === 'vk2' || typeParam === 'familie'
       ? typeParam
-      : pilotUrl === OEK2_BASE
+      : pilotUrlIsOek2Einstieg(pilotUrlRaw)
         ? 'oek2'
-        : pilotUrl === VK2_BASE
+        : pilotUrlRaw === VK2_BASE
           ? 'vk2'
-          : pilotUrlIsK2FamilieWillkommen(pilotUrl)
+          : pilotUrlIsK2FamilieWillkommen(pilotUrlRaw)
             ? 'familie'
             : null
   const nr = searchParams.get('nr')?.trim() || ''
 
+  /**
+   * ök2: Immer dieselbe URL wie im Formular (persönliche Demo-Galerie). Roh-Query kann fehlen oder nur /entdecken sein,
+   * wenn & in der URL die Parameter zerschneidet – dann trotzdem korrekter Einstieg über appName.
+   */
+  const pilotUrl = useMemo(() => {
+    if (pilotType === 'oek2' && appName.trim()) {
+      return buildOek2PilotGalerieUrl(appName.trim())
+    }
+    return pilotUrlRaw
+  }, [pilotType, pilotUrlRaw, appName])
+
   /** Volle Willkommens-URL mit t/z/fn – immer für Link + QR, sobald vom Formular übergeben */
   const familieUrlForQr =
-    pilotType === 'familie' && pilotUrl && pilotUrlIsK2FamilieWillkommen(pilotUrl) ? pilotUrl : FAMILIE_BASE
+    pilotType === 'familie' && pilotUrlRaw && pilotUrlIsK2FamilieWillkommen(pilotUrlRaw) ? pilotUrlRaw : FAMILIE_BASE
 
   const familieTestprotokollUrl = pilotType === 'familie' ? buildFamilieTestprotokollUrl(name) : ''
 
   const useK2FamilieZettel =
-    pilotType === 'familie' || (pilotType === null && pilotUrlIsK2FamilieWillkommen(pilotUrl))
+    pilotType === 'familie' || (pilotType === null && pilotUrlIsK2FamilieWillkommen(pilotUrlRaw))
 
   const pilotZettelMd = useK2FamilieZettel ? PILOT_ZETTEL_MD_K2_FAMILIE : PILOT_ZETTEL_MD_OEK2_VK2
+
+  const oek2Vk2HandbuchUrl = useMemo(() => {
+    if (pilotType === 'oek2') return `${BASE_APP_URL}${BENUTZER_HANDBUCH_ROUTE}`
+    if (pilotType === 'vk2') return `${BASE_APP_URL}${VK2_HANDBUCH_ROUTE}`
+    return ''
+  }, [pilotType])
+
+  const oek2Vk2TestprotokollUrl = useMemo(() => {
+    if (pilotType === 'oek2' || pilotType === 'vk2') return buildOek2Vk2TestprotokollUrl(pilotType, name)
+    return ''
+  }, [pilotType, name])
 
   const [content, setContent] = useState<string>('')
   const [loading, setLoading] = useState(true)
@@ -74,8 +126,12 @@ export default function ZettelPilotPage() {
   const [qrFamilie, setQrFamilie] = useState<string>('')
   const [qrFamilieHandbuch, setQrFamilieHandbuch] = useState<string>('')
   const [qrTestprotokoll, setQrTestprotokoll] = useState<string>('')
+  const [qrOek2Vk2Handbuch, setQrOek2Vk2Handbuch] = useState<string>('')
+  const [qrOek2Vk2Testprotokoll, setQrOek2Vk2Testprotokoll] = useState<string>('')
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
   const pilotImKatalogRef = useRef(false)
+  /** Sichtbarer Hinweis: der einzige „automatische“ Schritt für dich in der App (Katalog-Eintrag) */
+  const [katalogHinweis, setKatalogHinweis] = useState(false)
 
   /** Pilot-Zettel in Testuser-Mappe registrieren (Zugangsblatt = diese URL) */
   useEffect(() => {
@@ -93,6 +149,7 @@ export default function ZettelPilotPage() {
       zettelNr: nr,
       zugangsblattRelPath: rel,
     })
+    setKatalogHinweis(true)
   }, [loading, name, appName, pilotType, nr])
 
   useEffect(() => {
@@ -129,7 +186,20 @@ export default function ZettelPilotPage() {
     } else {
       setQrTestprotokoll('')
     }
-  }, [pilotUrl, qrVersionTs, familieUrlForQr, familieTestprotokollUrl])
+
+    const hbO = oek2Vk2HandbuchUrl ? buildQrUrlWithBust(oek2Vk2HandbuchUrl, qrVersionTs) : ''
+    const tpO = oek2Vk2TestprotokollUrl ? buildQrUrlWithBust(oek2Vk2TestprotokollUrl, qrVersionTs) : ''
+    if (hbO) {
+      QRCode.toDataURL(hbO, { width: 100, margin: 1 }).then(setQrOek2Vk2Handbuch).catch(() => setQrOek2Vk2Handbuch(''))
+    } else {
+      setQrOek2Vk2Handbuch('')
+    }
+    if (tpO) {
+      QRCode.toDataURL(tpO, { width: 100, margin: 1 }).then(setQrOek2Vk2Testprotokoll).catch(() => setQrOek2Vk2Testprotokoll(''))
+    } else {
+      setQrOek2Vk2Testprotokoll('')
+    }
+  }, [pilotUrl, qrVersionTs, familieUrlForQr, familieTestprotokollUrl, oek2Vk2HandbuchUrl, oek2Vk2TestprotokollUrl])
 
   if (loading) {
     return (
@@ -200,7 +270,23 @@ export default function ZettelPilotPage() {
         .zettel-footer { display: none; }
       `}</style>
 
-      <div className="zettel-no-print" style={{ position: 'fixed', top: 0, left: 0, right: 0, padding: '0.5rem 1rem', background: '#f5f5f5', borderBottom: '1px solid #ddd', zIndex: 1000, display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      <div
+        className="zettel-no-print"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          padding: '0.5rem 1rem',
+          background: '#f5f5f5',
+          borderBottom: '1px solid #ddd',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '0.65rem 1rem',
+        }}
+      >
         <button
           type="button"
           onClick={() => window.print()}
@@ -210,6 +296,26 @@ export default function ZettelPilotPage() {
         </button>
         <Link to="/mission-control" style={{ color: '#333', fontSize: '0.9rem' }}>← Mission Control</Link>
         <Link to="/zettel-pilot-form" style={{ color: '#333', fontSize: '0.9rem' }}>Neuer Test-Pilot</Link>
+        {katalogHinweis ? (
+          <span
+            style={{
+              fontSize: '0.82rem',
+              color: '#14532d',
+              background: '#dcfce7',
+              padding: '0.35rem 0.65rem',
+              borderRadius: 8,
+              border: '1px solid #86efac',
+              lineHeight: 1.35,
+              maxWidth: 'min(100%, 28rem)',
+            }}
+          >
+            ✅ <strong>Automatik (sichtbar):</strong> Dieser Pilot ist in der{' '}
+            <Link to={PROJECT_ROUTES['k2-galerie'].testuserAnmeldung} style={{ color: '#0d9488', fontWeight: 700 }}>
+              Testuser-Mappe
+            </Link>{' '}
+            eingetragen – mit Link zum Zugangsblatt (nur auf diesem Gerät, Browser-Speicher).
+          </span>
+        ) : null}
       </div>
 
       <div
@@ -272,6 +378,25 @@ export default function ZettelPilotPage() {
             </p>
           </div>
         ) : null}
+        {pilotType === 'oek2' || pilotType === 'vk2' ? (
+          <div
+            className="zettel-familie-gruss"
+            style={{
+              marginBottom: '0.65rem',
+              padding: '0.5rem 0.65rem',
+              border: '1px solid #e8e4dc',
+              borderRadius: 8,
+              background: '#faf8f5',
+              fontSize: '0.95rem',
+              lineHeight: 1.45,
+              color: '#1c1a18',
+            }}
+          >
+            <p style={{ margin: 0, fontSize: '0.88rem', color: '#444' }}>
+              <strong>Benutzerhandbuch & Testprotokoll:</strong> In der <strong>Tabelle unten</strong> jeweils als <strong>Link + QR</strong> (wie bei K2 Familie).
+            </p>
+          </div>
+        ) : null}
         <ZettelPilotContent
           md={content}
           pilotType={pilotType}
@@ -282,11 +407,15 @@ export default function ZettelPilotPage() {
           familieUrl={familieUrlForQr}
           familieHandbuchUrl={FAMILIE_HANDBUCH_URL}
           testprotokollTestuserUrl={familieTestprotokollUrl}
+          oek2Vk2HandbuchUrl={oek2Vk2HandbuchUrl}
+          oek2Vk2TestprotokollUrl={oek2Vk2TestprotokollUrl}
           qrOek2={qrOek2}
           qrVk2={qrVk2}
           qrFamilie={qrFamilie}
           qrFamilieHandbuch={qrFamilieHandbuch}
           qrTestprotokoll={qrTestprotokoll}
+          qrOek2Vk2Handbuch={qrOek2Vk2Handbuch}
+          qrOek2Vk2Testprotokoll={qrOek2Vk2Testprotokoll}
         />
       </div>
       <footer className="zettel-footer" aria-hidden="true">
@@ -307,11 +436,15 @@ function ZettelPilotContent({
   familieUrl,
   familieHandbuchUrl,
   testprotokollTestuserUrl,
+  oek2Vk2HandbuchUrl,
+  oek2Vk2TestprotokollUrl,
   qrOek2,
   qrVk2,
   qrFamilie,
   qrFamilieHandbuch,
   qrTestprotokoll,
+  qrOek2Vk2Handbuch,
+  qrOek2Vk2Testprotokoll,
 }: {
   md: string
   pilotType: PilotType | null
@@ -322,11 +455,15 @@ function ZettelPilotContent({
   familieUrl: string
   familieHandbuchUrl: string
   testprotokollTestuserUrl: string
+  oek2Vk2HandbuchUrl: string
+  oek2Vk2TestprotokollUrl: string
   qrOek2: string
   qrVk2: string
   qrFamilie: string
   qrFamilieHandbuch: string
   qrTestprotokoll: string
+  qrOek2Vk2Handbuch: string
+  qrOek2Vk2Testprotokoll: string
 }) {
   const lines = md.split('\n')
   const out: React.ReactNode[] = []
@@ -457,6 +594,68 @@ function ZettelPilotContent({
           continue
         }
 
+        const tableBody =
+          isPilotTable && pilotType === 'oek2'
+            ? body.filter(isPilotTableRowOek2)
+            : isPilotTable && pilotType === 'vk2'
+              ? body.filter(isPilotTableRowVk2)
+              : body
+
+        const showPilotQrCol =
+          isPilotTable &&
+          !!(qrPilot || qrOek2 || qrVk2 || qrFamilie || qrOek2Vk2Handbuch || qrOek2Vk2Testprotokoll)
+
+        const pilotAddrCell = (row: string[]) => {
+          if (!isPilotTable) return parseInline(row[1] || '')
+          const isO = isPilotTableRowOek2(row)
+          const isV = isPilotTableRowVk2(row)
+          const link = (href: string) => (
+            <a href={href} style={{ color: '#0d9488', fontWeight: 600, wordBreak: 'break-all' }}>
+              {href}
+            </a>
+          )
+          if (isO) {
+            if (pilotType === 'oek2' || pilotType === null) {
+              const href = pilotUrl || oek2Url
+              return link(href)
+            }
+            return link(oek2Url)
+          }
+          if (isV) {
+            if (pilotType === 'vk2' || pilotType === null) {
+              const href = pilotType === 'vk2' && pilotUrl ? pilotUrl : vk2Url
+              return link(href)
+            }
+            return link(vk2Url)
+          }
+          return parseInline(row[1] || '')
+        }
+
+        const pilotQrCell = (row: string[]) => {
+          const isO = isPilotTableRowOek2(row)
+          const isV = isPilotTableRowVk2(row)
+          if (isO) {
+            if (pilotType === 'oek2' || (pilotType === null && pilotUrl)) {
+              return qrPilot ? (
+                <img src={qrPilot} alt="QR ök2" style={{ display: 'block', width: 48, height: 48 }} />
+              ) : null
+            }
+            return qrOek2 ? (
+              <img src={qrOek2} alt="QR ök2" style={{ display: 'block', width: 48, height: 48 }} />
+            ) : null
+          }
+          if (isV) {
+            if (pilotType === 'vk2' && pilotUrl) {
+              return <img src={qrPilot} alt="QR VK2" style={{ display: 'block', width: 48, height: 48 }} />
+            }
+            return qrVk2 ? <img src={qrVk2} alt="QR VK2" style={{ display: 'block', width: 48, height: 48 }} /> : null
+          }
+          return null
+        }
+
+        const showOek2Vk2HandbuchRows =
+          isPilotTable && (pilotType === 'oek2' || pilotType === 'vk2') && !!oek2Vk2HandbuchUrl
+
         out.push(
           <table key={i}>
             {head && (
@@ -465,68 +664,80 @@ function ZettelPilotContent({
                   {head.map((c, j) => (
                     <th key={j}>{parseInline(c)}</th>
                   ))}
-                    {isPilotTable && (qrPilot || qrOek2 || qrVk2) && <th key="qr">QR</th>}
+                  {showPilotQrCol ? <th key="qr">QR</th> : null}
                 </tr>
               </thead>
             )}
             <tbody>
-              {body.map((row, r) => (
+              {tableBody.map((row, r) => (
                 <React.Fragment key={r}>
                   <tr>
                     <td>{parseInline(row[0] || '')}</td>
-                    <td style={{ wordBreak: 'break-all' }}>
-                      {isPilotTable && r === 0
-                        ? pilotType === 'oek2' && pilotUrl
-                          ? pilotUrl
-                          : pilotType === 'vk2'
-                            ? oek2Url
-                            : pilotType === 'familie' && pilotUrl
-                              ? pilotUrl
-                              : pilotType === 'familie'
-                                ? familieUrl
-                                : pilotUrl || '(Adresse und QR vom Team erhalten)'
-                        : isPilotTable && r === 1
-                          ? pilotType === 'vk2' && pilotUrl
-                            ? pilotUrl
-                            : vk2Url
-                          : parseInline(row[1] || '')}
-                    </td>
-                    {isPilotTable && (qrPilot || qrOek2 || qrVk2 || qrFamilie) && (
-                      <td style={{ verticalAlign: 'middle', width: 52 }}>
-                        {r === 0 &&
-                        ((pilotType === 'oek2' || (pilotType === null && pilotUrl))
-                          ? qrPilot
-                          : pilotType === 'vk2'
-                            ? qrOek2
-                            : pilotType === 'familie'
-                              ? qrFamilie
-                              : null) ? (
-                          <img
-                            src={
-                              (pilotType === 'oek2' || (pilotType === null && pilotUrl))
-                                ? qrPilot
-                                : pilotType === 'vk2'
-                                  ? qrOek2
-                                  : qrFamilie
-                            }
-                            alt={pilotType === 'familie' ? 'QR K2 Familie' : 'QR ök2'}
-                            style={{ display: 'block', width: 48, height: 48 }}
-                          />
-                        ) : r === 1 && (pilotType === 'vk2' ? qrPilot : qrVk2) ? (
-                          <img src={pilotType === 'vk2' ? qrPilot : qrVk2} alt="QR VK2" style={{ display: 'block', width: 48, height: 48 }} />
-                        ) : r === 0 ? (
-                          <span style={{ fontSize: '0.75rem', color: '#666' }}>{pilotType === 'vk2' ? 'zum Vergleich' : 'vom Team'}</span>
-                        ) : null}
-                      </td>
-                    )}
+                    <td style={{ wordBreak: 'break-all' }}>{pilotAddrCell(row)}</td>
+                    {showPilotQrCol ? (
+                      <td style={{ verticalAlign: 'middle', width: 52 }}>{pilotQrCell(row)}</td>
+                    ) : null}
                   </tr>
                   {isPilotTable && r === 0 && (
                     <tr aria-hidden>
-                      <td colSpan={3} style={{ height: '1.5rem', border: 'none', background: 'transparent', padding: 0, lineHeight: 0 }} />
+                      <td
+                        colSpan={showPilotQrCol ? 3 : 2}
+                        style={{ height: '1.5rem', border: 'none', background: 'transparent', padding: 0, lineHeight: 0 }}
+                      />
                     </tr>
                   )}
                 </React.Fragment>
               ))}
+              {showOek2Vk2HandbuchRows ? (
+                <>
+                  <tr>
+                    <td>{parseInline(pilotType === 'oek2' ? '**Benutzerhandbuch**' : '**VK2 Handbuch**')}</td>
+                    <td style={{ wordBreak: 'break-all' }}>
+                      <a
+                        href={oek2Vk2HandbuchUrl}
+                        style={{ color: '#0d9488', fontWeight: 600, wordBreak: 'break-all' }}
+                      >
+                        {oek2Vk2HandbuchUrl}
+                      </a>
+                    </td>
+                    {showPilotQrCol ? (
+                      <td style={{ verticalAlign: 'middle', width: 52 }}>
+                        {qrOek2Vk2Handbuch ? (
+                          <img
+                            src={qrOek2Vk2Handbuch}
+                            alt={pilotType === 'oek2' ? 'QR Benutzerhandbuch' : 'QR VK2 Handbuch'}
+                            style={{ display: 'block', width: 48, height: 48 }}
+                          />
+                        ) : null}
+                      </td>
+                    ) : null}
+                  </tr>
+                  {oek2Vk2TestprotokollUrl ? (
+                    <tr>
+                      <td>{parseInline('**Testprotokoll**')}</td>
+                      <td style={{ wordBreak: 'break-all' }}>
+                        <a
+                          href={oek2Vk2TestprotokollUrl}
+                          style={{ color: '#0d9488', fontWeight: 600, wordBreak: 'break-all' }}
+                        >
+                          {oek2Vk2TestprotokollUrl}
+                        </a>
+                      </td>
+                      {showPilotQrCol ? (
+                        <td style={{ verticalAlign: 'middle', width: 52 }}>
+                          {qrOek2Vk2Testprotokoll ? (
+                            <img
+                              src={qrOek2Vk2Testprotokoll}
+                              alt="QR Testprotokoll"
+                              style={{ display: 'block', width: 48, height: 48 }}
+                            />
+                          ) : null}
+                        </td>
+                      ) : null}
+                    </tr>
+                  ) : null}
+                </>
+              ) : null}
             </tbody>
           </table>
         )
