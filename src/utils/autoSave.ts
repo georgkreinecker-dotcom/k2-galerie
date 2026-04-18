@@ -17,6 +17,7 @@ import {
 import { loadEvents, saveEvents, mergeEventTimesFromLocal } from './eventsStorage'
 import { loadDocuments, saveDocuments } from './documentsStorage'
 import { sanitizePageContentForVk2Publish } from '../config/pageContentGalerie'
+import { pilotScopeVk2Key } from './vk2StorageKeys'
 
 // Auto-Save alle 5 Sekunden
 const AUTO_SAVE_INTERVAL = 5000
@@ -440,12 +441,11 @@ export function getBackupTimestamps(): string[] {
 
 /** Nur Metadaten: Zeitpunkt des letzten „Sicherungskopie herunterladen“ (ök2/VK2) – kein Ersatz für Vollbackup-Buttons */
 const LAST_EXPORT_OEK2_KEY = 'k2-oeffentlich-last-backup-export-at'
-const LAST_EXPORT_VK2_KEY = 'k2-vk2-last-backup-export-at'
 
 export function recordLastBackupDownloadExported(tenant: 'oeffentlich' | 'vk2'): void {
   try {
     const iso = new Date().toISOString()
-    localStorage.setItem(tenant === 'oeffentlich' ? LAST_EXPORT_OEK2_KEY : LAST_EXPORT_VK2_KEY, iso)
+    localStorage.setItem(tenant === 'oeffentlich' ? LAST_EXPORT_OEK2_KEY : pilotScopeVk2Key('k2-vk2-last-backup-export-at'), iso)
   } catch {
     /* ignore */
   }
@@ -453,7 +453,7 @@ export function recordLastBackupDownloadExported(tenant: 'oeffentlich' | 'vk2'):
 
 export function getLastBackupDownloadExported(tenant: 'oeffentlich' | 'vk2'): string | null {
   try {
-    const raw = localStorage.getItem(tenant === 'oeffentlich' ? LAST_EXPORT_OEK2_KEY : LAST_EXPORT_VK2_KEY)
+    const raw = localStorage.getItem(tenant === 'oeffentlich' ? LAST_EXPORT_OEK2_KEY : pilotScopeVk2Key('k2-vk2-last-backup-export-at'))
     return raw && raw.trim() ? raw.trim() : null
   } catch {
     return null
@@ -541,6 +541,22 @@ function readAllKeys(keys: string[]): Record<string, any> {
       const raw = localStorage.getItem(key)
       if (raw && raw.length > 0 && raw.length < 8 * 1024 * 1024) {
         try { result[key] = JSON.parse(raw) } catch { result[key] = raw }
+      }
+    } catch (_) {}
+  }
+  return result
+}
+
+/** VK2: JSON-Felder wie bisher (k2-vk2-*); liest aus pilot-gescopten Keys, Fallback unscoped. */
+function readVk2KeysForBackup(logicalKeys: string[]): Record<string, any> {
+  const result: Record<string, any> = {}
+  for (const logical of logicalKeys) {
+    try {
+      const sk = pilotScopeVk2Key(logical)
+      let raw = localStorage.getItem(sk)
+      if (!raw || raw.length === 0) raw = localStorage.getItem(logical)
+      if (raw && raw.length > 0 && raw.length < 8 * 1024 * 1024) {
+        try { result[logical] = JSON.parse(raw) } catch { result[logical] = raw }
       }
     } catch (_) {}
   }
@@ -832,7 +848,7 @@ export function restoreVk2FromBackup(backup: Record<string, any>): { ok: boolean
     if (backup[key] != null) {
       try {
         const val = typeof backup[key] === 'string' ? backup[key] : JSON.stringify(backup[key])
-        localStorage.setItem(key, val)
+        localStorage.setItem(pilotScopeVk2Key(key), val)
         restored.push(key)
       } catch (_) {}
     }

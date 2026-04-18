@@ -13,11 +13,13 @@ import {
   K2_FAMILIE_WILLKOMMEN_ROUTE,
   PROJECT_ROUTES,
   VK2_HANDBUCH_ROUTE,
+  WILLKOMMEN_NAME_KEY,
 } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { buildFamiliePilotFamilienZugang, buildFamiliePilotTenantIdFromZettelNr } from '../utils/familiePilotSeed'
 import { buildOek2PilotGalerieUrl } from '../utils/pilotOek2GalerieUrl'
 import { adaptPilotOek2Vk2ZettelMd } from '../utils/pilotZettelMdAdapt'
+import { buildVk2PilotGalerieUrl } from '../utils/vk2PilotUrls'
 import { registerPilotZettelInKatalog } from '../utils/testuserKatalogStorage'
 
 const PILOT_ZETTEL_MD_OEK2_VK2 = '/k2team-handbuch/20-PILOT-ZETTEL-OEK2-VK2.md'
@@ -27,6 +29,19 @@ const PILOT_ZETTEL_MD_K2_FAMILIE = '/k2team-handbuch/32-PILOT-ZETTEL-K2-FAMILIE.
 const OEK2_BASE = BASE_APP_URL + ENTDECKEN_ROUTE
 const VK2_BASE = BASE_APP_URL + PROJECT_ROUTES.vk2.galerie
 const FAMILIE_BASE = BASE_APP_URL + K2_FAMILIE_WILLKOMMEN_ROUTE
+
+/** VK2-Galerie mit oder ohne ?vk2Pilot= (Testpilot = eigene Mandanten-Instanz) */
+function pilotUrlIsVk2Galerie(url: string): boolean {
+  if (!url?.trim()) return false
+  try {
+    const u = new URL(url.trim(), BASE_APP_URL)
+    const p = u.pathname.replace(/\/$/, '') || '/'
+    const g = PROJECT_ROUTES.vk2.galerie.replace(/\/$/, '') || ''
+    return p === g
+  } catch {
+    return url.includes('/projects/vk2/galerie')
+  }
+}
 /** K2 Familie – Benutzerhandbuch und Testprotokoll-Hub (gleiche Tabelle wie Pilot-Einstieg) */
 const FAMILIE_HANDBUCH_URL = BASE_APP_URL + PROJECT_ROUTES['k2-familie'].benutzerHandbuch
 
@@ -95,7 +110,7 @@ export default function ZettelPilotPage() {
       ? typeParam
       : pilotUrlIsOek2Einstieg(pilotUrlRaw)
         ? 'oek2'
-        : pilotUrlRaw === VK2_BASE
+        : pilotUrlIsVk2Galerie(pilotUrlRaw) || pilotUrlRaw === VK2_BASE
           ? 'vk2'
           : pilotUrlIsK2FamilieWillkommen(pilotUrlRaw)
             ? 'familie'
@@ -111,10 +126,16 @@ export default function ZettelPilotPage() {
     if (pilotType === 'oek2' && app) {
       return buildOek2PilotGalerieUrl(app)
     }
+    if (pilotType === 'vk2') {
+      const n = nr.trim()
+      if (n) return buildVk2PilotGalerieUrl(n)
+      if (pilotUrlRaw && pilotUrlIsVk2Galerie(pilotUrlRaw)) return pilotUrlRaw
+      return VK2_BASE
+    }
     if (
       app &&
-      pilotType !== 'vk2' &&
       pilotType !== 'familie' &&
+      !pilotUrlIsVk2Galerie(pilotUrlRaw) &&
       pilotUrlRaw !== VK2_BASE &&
       !pilotUrlIsK2FamilieWillkommen(pilotUrlRaw) &&
       isOek2ZettelUrlNurEntdeckenOderLeer(pilotUrlRaw)
@@ -122,7 +143,7 @@ export default function ZettelPilotPage() {
       return buildOek2PilotGalerieUrl(app)
     }
     return pilotUrlRaw
-  }, [pilotType, pilotUrlRaw, appName])
+  }, [pilotType, pilotUrlRaw, appName, nr])
 
   /** Volle Willkommens-URL mit t/z/fn – immer für Link + QR, sobald vom Formular übergeben */
   const familieUrlForQr =
@@ -158,8 +179,41 @@ export default function ZettelPilotPage() {
   const [qrOek2Vk2Testprotokoll, setQrOek2Vk2Testprotokoll] = useState<string>('')
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
   const pilotImKatalogRef = useRef(false)
+  /** Wie PilotEinladungPage: Session für Testpilot (QR Muster-Demo ausblenden, Stammdaten/Lizenz) */
+  const pilotEinladungSessionRef = useRef(false)
   /** Sichtbarer Hinweis: der einzige „automatische“ Schritt für dich in der App (Katalog-Eintrag) */
   const [katalogHinweis, setKatalogHinweis] = useState(false)
+
+  /** Gleicher Ablauf wie E-Mail-Einladung (PilotEinladungPage goOek2/goVk2): k2-pilot-einladung + Name */
+  useEffect(() => {
+    if (loading) return
+    if (pilotEinladungSessionRef.current) return
+    if (pilotType !== 'oek2' && pilotType !== 'vk2') return
+    const n = name.trim()
+    if (!n) return
+    pilotEinladungSessionRef.current = true
+    try {
+      sessionStorage.setItem(WILLKOMMEN_NAME_KEY, n)
+      const zDigits = nr.trim().replace(/\D/g, '').slice(0, 8)
+      sessionStorage.setItem(
+        'k2-pilot-einladung',
+        JSON.stringify({
+          name: n,
+          firstName: '',
+          lastName: '',
+          email: '',
+          context: pilotType === 'oek2' ? 'oeffentlich' : 'vk2',
+          licenceType: 'propplus',
+          pilotProPlusUnlimited: true,
+          ...(pilotType === 'vk2' && zDigits
+            ? { zettelNr: nr.trim(), vk2PilotId: zDigits }
+            : {}),
+        }),
+      )
+    } catch {
+      /* ignore */
+    }
+  }, [loading, pilotType, name, nr])
 
   /** Pilot-Zettel in Testuser-Mappe registrieren (Zugangsblatt = diese URL) */
   useEffect(() => {
@@ -199,9 +253,14 @@ export default function ZettelPilotPage() {
     [content, useK2FamilieZettel, pilotType, displayAppName],
   )
 
+  const vk2UrlForZettel = useMemo(() => {
+    if (pilotType === 'vk2' && nr.trim()) return buildVk2PilotGalerieUrl(nr.trim())
+    return VK2_BASE
+  }, [pilotType, nr])
+
   useEffect(() => {
     const oek2Bust = buildQrUrlWithBust(OEK2_BASE, qrVersionTs)
-    const vk2Bust = buildQrUrlWithBust(VK2_BASE, qrVersionTs)
+    const vk2Bust = buildQrUrlWithBust(vk2UrlForZettel, qrVersionTs)
     const familieBust = buildQrUrlWithBust(familieUrlForQr, qrVersionTs)
     const handbuchBust = buildQrUrlWithBust(FAMILIE_HANDBUCH_URL, qrVersionTs)
     const testprotoBust = familieTestprotokollUrl
@@ -235,7 +294,7 @@ export default function ZettelPilotPage() {
     } else {
       setQrOek2Vk2Testprotokoll('')
     }
-  }, [pilotUrl, qrVersionTs, familieUrlForQr, familieTestprotokollUrl, oek2Vk2HandbuchUrl, oek2Vk2TestprotokollUrl])
+  }, [pilotUrl, qrVersionTs, familieUrlForQr, familieTestprotokollUrl, oek2Vk2HandbuchUrl, oek2Vk2TestprotokollUrl, vk2UrlForZettel])
 
   if (loading) {
     return (
@@ -460,7 +519,7 @@ export default function ZettelPilotPage() {
           pilotUrl={pilotUrl || null}
           qrPilot={qrPilot}
           oek2Url={OEK2_BASE}
-          vk2Url={VK2_BASE}
+          vk2Url={vk2UrlForZettel}
           familieUrl={familieUrlForQr}
           familieHandbuchUrl={FAMILIE_HANDBUCH_URL}
           testprotokollTestuserUrl={familieTestprotokollUrl}

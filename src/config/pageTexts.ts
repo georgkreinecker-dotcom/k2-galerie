@@ -3,6 +3,7 @@
  * K2: k2-page-texts. ök2 (Admin Design): k2-oeffentlich-page-texts.
  */
 import { MUSTER_TEXTE, TENANT_CONFIGS } from './tenantConfig'
+import { pilotScopeVk2Key } from '../utils/vk2StorageKeys'
 
 export type StartCard = { title: string; description: string; cta: string }
 export type QuickLink = { label: string; anchor: string }
@@ -59,7 +60,7 @@ export type PageTextsTenantId = 'oeffentlich' | 'vk2' | undefined
 
 function getStorageKey(tenantId?: PageTextsTenantId): string {
   if (tenantId === 'oeffentlich') return STORAGE_KEY_OEFFENTLICH
-  if (tenantId === 'vk2') return STORAGE_KEY_VK2
+  if (tenantId === 'vk2') return pilotScopeVk2Key(STORAGE_KEY_VK2)
   return STORAGE_KEY
 }
 

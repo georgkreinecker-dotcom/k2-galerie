@@ -4,6 +4,7 @@
  * Hinweis: Key im Code teils 'k2-documents' (ohne s), einheitlich hier als documents.
  */
 import { loadStammdaten, loadVk2Stammdaten } from './stammdatenStorage'
+import { pilotScopeVk2Key } from './vk2StorageKeys'
 
 export type DocumentsTenantId = 'k2' | 'oeffentlich' | 'vk2'
 
@@ -14,6 +15,7 @@ const DOCUMENTS_KEYS: Record<DocumentsTenantId, string> = {
 }
 
 export function getDocumentsKey(tenantId: DocumentsTenantId): string {
+  if (tenantId === 'vk2') return pilotScopeVk2Key(DOCUMENTS_KEYS.vk2)
   return DOCUMENTS_KEYS[tenantId]
 }
 
@@ -33,7 +35,7 @@ export function loadDocuments(tenantId: DocumentsTenantId): any[] {
 function isSameAsOtherKey(list: any[], otherTenantId: DocumentsTenantId): boolean {
   if (!Array.isArray(list) || list.length === 0) return false
   try {
-    const raw = typeof window !== 'undefined' ? localStorage.getItem(DOCUMENTS_KEYS[otherTenantId]) : null
+    const raw = typeof window !== 'undefined' ? localStorage.getItem(getDocumentsKey(otherTenantId)) : null
     const other = (raw && raw.trim() ? JSON.parse(raw) : []) || []
     if (!Array.isArray(other) || other.length !== list.length) return false
     return JSON.stringify(list) === JSON.stringify(other)

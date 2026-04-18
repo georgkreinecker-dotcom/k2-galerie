@@ -10,6 +10,7 @@
 import React, { createContext, useContext, useMemo, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { isPlatformInstance } from '../config/tenantConfig'
+import { pilotScopeVk2Key, syncVk2PilotScopeFromSearch } from '../utils/vk2StorageKeys'
 
 const ADMIN_CONTEXT_KEY = 'k2-admin-context'
 /** APf-Projekt „K2 Galerie“: gleiche ?context=-Logik wie /admin (nur Plattform-Instanz). */
@@ -165,9 +166,17 @@ function keysForTenant(tenantId: AdminTenantId) {
   return {
     getArtworksKey: () => (tenantId === 'oeffentlich' ? 'k2-oeffentlich-artworks' : 'k2-artworks'),
     getEventsKey: () =>
-      tenantId === 'vk2' ? 'k2-vk2-events' : tenantId === 'oeffentlich' ? 'k2-oeffentlich-events' : 'k2-events',
+      tenantId === 'vk2'
+        ? pilotScopeVk2Key('k2-vk2-events')
+        : tenantId === 'oeffentlich'
+          ? 'k2-oeffentlich-events'
+          : 'k2-events',
     getDocumentsKey: () =>
-      tenantId === 'vk2' ? 'k2-vk2-documents' : tenantId === 'oeffentlich' ? 'k2-oeffentlich-documents' : 'k2-documents',
+      tenantId === 'vk2'
+        ? pilotScopeVk2Key('k2-vk2-documents')
+        : tenantId === 'oeffentlich'
+          ? 'k2-oeffentlich-documents'
+          : 'k2-documents',
   }
 }
 
@@ -178,10 +187,18 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
   const pathname = location.pathname
   const search = location.search || ''
 
+  /** Pilot-Mandant sofort setzen (nicht nur in useEffect), sonst erster Render liest noch unscoped k2-vk2-* Keys. */
+  if (typeof window !== 'undefined' && pathname.startsWith(VK2_PROJECT_PREFIX)) {
+    syncVk2PilotScopeFromSearch(search)
+  }
+
   const tenantId = useMemo(() => deriveTenantId(pathname, search), [pathname, search])
   const dynamicTenantId = useMemo(() => (pathname === '/admin' ? getDynamicTenantIdFromUrl(search) : null), [pathname, search])
 
   useEffect(() => {
+    if (pathname.startsWith(VK2_PROJECT_PREFIX)) {
+      syncVk2PilotScopeFromSearch(search)
+    }
     syncStorageFromUrl(pathname, search)
   }, [pathname, search])
 
@@ -206,6 +223,9 @@ export function useTenant(): TenantContextValue {
     if (typeof window !== 'undefined') {
       const pathname = window.location.pathname
       const search = window.location.search || ''
+      if (pathname.startsWith(VK2_PROJECT_PREFIX)) {
+        syncVk2PilotScopeFromSearch(search)
+      }
       syncStorageFromUrl(pathname, search)
       const tid = deriveTenantId(pathname, search)
       const dynId = pathname === '/admin' ? getDynamicTenantIdFromUrl(search) : null

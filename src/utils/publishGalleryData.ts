@@ -14,7 +14,11 @@ import { artworksForExport } from './artworkExport'
 import { loadEvents } from './eventsStorage'
 import { loadDocuments } from './documentsStorage'
 import { getPageContentGalerie } from '../config/pageContentGalerie'
-import { FLYER_EVENT_BOGEN_STORAGE_KEY_K2, FLYER_EVENT_BOGEN_STORAGE_KEY_OEFF, FLYER_EVENT_BOGEN_STORAGE_KEY_VK2 } from './flyerEventBogenStorageKeys'
+import {
+  FLYER_EVENT_BOGEN_STORAGE_KEY_K2,
+  FLYER_EVENT_BOGEN_STORAGE_KEY_OEFF,
+  getFlyerEventBogenStorageKey,
+} from './flyerEventBogenStorageKeys'
 import type { TenantId } from '../config/tenantConfig'
 
 type PublishTenantId = Exclude<TenantId, 'demo'>
@@ -44,7 +48,7 @@ function tenantKey(tenantId: PublishTenantId, suffix: string): string {
 
 function getFlyerMasterKeyForTenant(tenantId: PublishTenantId): string {
   if (tenantId === 'oeffentlich') return FLYER_EVENT_BOGEN_STORAGE_KEY_OEFF
-  if (tenantId === 'vk2') return FLYER_EVENT_BOGEN_STORAGE_KEY_VK2
+  if (tenantId === 'vk2') return getFlyerEventBogenStorageKey(false, true)
   return FLYER_EVENT_BOGEN_STORAGE_KEY_K2
 }
 

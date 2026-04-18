@@ -3,6 +3,8 @@
  * Einfaches Modell: Name, E-Mail, Telefon, Notizen. Für Verkauf und Ausstellungsbetrieb / Vereinsmitglieder.
  */
 
+import { pilotScopeVk2Key } from './vk2StorageKeys'
+
 export const CUSTOMERS_STORAGE_KEY = 'k2-customers'
 export const VK2_CUSTOMERS_STORAGE_KEY = 'k2-vk2-customers'
 
@@ -27,7 +29,7 @@ function generateId(): string {
 }
 
 function getStorageKeyForScope(scope?: CustomersScope): string {
-  return scope === 'vk2' ? VK2_CUSTOMERS_STORAGE_KEY : CUSTOMERS_STORAGE_KEY
+  return scope === 'vk2' ? pilotScopeVk2Key(VK2_CUSTOMERS_STORAGE_KEY) : CUSTOMERS_STORAGE_KEY
 }
 
 export function getCustomers(scope?: CustomersScope): Customer[] {

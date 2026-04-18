@@ -1,4 +1,5 @@
 /** Nur UI-Präferenzen – keine Werk-/Stammdaten (K2 / ök2 / VK2 getrennt). */
+import { pilotScopeVk2Key } from './vk2StorageKeys'
 export type KatalogFilterState = {
   status: 'alle' | 'galerie' | 'verkauft' | 'reserviert' | 'lager'
   kategorie: string
@@ -87,7 +88,7 @@ const VK2_COLUMN_IDS = new Set([
 ])
 
 export function werkkatalogStorageKey(isOeffentlich: boolean, isVk2: boolean): string {
-  if (isVk2) return 'k2-vk2-werkkatalog-prefs'
+  if (isVk2) return pilotScopeVk2Key('k2-vk2-werkkatalog-prefs')
   if (isOeffentlich) return 'k2-oeffentlich-werkkatalog-prefs'
   return 'k2-werkkatalog-prefs'
 }

@@ -5,6 +5,8 @@
  * Steuerberatergeeignet: chronologisch, Beleg (QR/Foto), separat druckbar/exportierbar.
  */
 
+import { pilotScopeVk2Key } from './vk2StorageKeys'
+
 export type KassabuchArt = 'eingang' | 'ausgang' | 'bar_privat' | 'bar_beleg' | 'kassa_an_bank' | 'bank_an_kassa'
 
 export type KassabuchTenant = 'k2' | 'oeffentlich' | 'vk2'
@@ -24,11 +26,10 @@ export interface KassabuchEintrag {
 
 const K2_KASSABUCH_KEY = 'k2-kassabuch'
 const OEF_KASSABUCH_KEY = 'k2-oeffentlich-kassabuch'
-const VK2_KASSABUCH_KEY = 'k2-vk2-kassabuch'
 
 export function getKassabuchKey(tenant: KassabuchTenant): string {
   if (tenant === 'oeffentlich') return OEF_KASSABUCH_KEY
-  if (tenant === 'vk2') return VK2_KASSABUCH_KEY
+  if (tenant === 'vk2') return pilotScopeVk2Key('k2-vk2-kassabuch')
   return K2_KASSABUCH_KEY
 }
 
@@ -118,12 +119,11 @@ export type KassabuchLizenzStufe = 'basic' | 'pro' | 'proplus' | 'propplus'
 
 const K2_LIZENZ_STUFE_KEY = 'k2-lizenz-stufe'
 const OEF_LIZENZ_STUFE_KEY = 'k2-oeffentlich-lizenz-stufe'
-const VK2_LIZENZ_STUFE_KEY = 'k2-vk2-lizenz-stufe'
 
 export function getKassabuchLizenzStufe(tenant: KassabuchTenant): KassabuchLizenzStufe {
   if (tenant === 'vk2') {
     try {
-      const v = localStorage.getItem(VK2_LIZENZ_STUFE_KEY)
+      const v = localStorage.getItem(pilotScopeVk2Key('k2-vk2-lizenz-stufe'))
       if (v === 'basic' || v === 'pro' || v === 'proplus' || v === 'propplus') return v
     } catch {}
     return 'pro' // VK2 = immer mindestens Pro (Vereins-Kassa)
@@ -140,7 +140,12 @@ export function getKassabuchLizenzStufe(tenant: KassabuchTenant): KassabuchLizen
 
 export function setKassabuchLizenzStufe(tenant: KassabuchTenant, stufe: KassabuchLizenzStufe): void {
   try {
-    const key = tenant === 'oeffentlich' ? OEF_LIZENZ_STUFE_KEY : tenant === 'vk2' ? VK2_LIZENZ_STUFE_KEY : K2_LIZENZ_STUFE_KEY
+    const key =
+      tenant === 'oeffentlich'
+        ? OEF_LIZENZ_STUFE_KEY
+        : tenant === 'vk2'
+          ? pilotScopeVk2Key('k2-vk2-lizenz-stufe')
+          : K2_LIZENZ_STUFE_KEY
     localStorage.setItem(key, stufe)
   } catch {}
 }
@@ -160,11 +165,15 @@ export function hasKassabuchVoll(tenant: KassabuchTenant): boolean {
 /** Kassabuch führen Ja/Nein – Einstellung pro Kontext (default: true). VK2 = nur Einnahmen. */
 const K2_KASSABUCH_AKTIV_KEY = 'k2-kassabuch-aktiv'
 const OEF_KASSABUCH_AKTIV_KEY = 'k2-oeffentlich-kassabuch-aktiv'
-const VK2_KASSABUCH_AKTIV_KEY = 'k2-vk2-kassabuch-aktiv'
 
 export function isKassabuchAktiv(tenant: KassabuchTenant): boolean {
   try {
-    const key = tenant === 'oeffentlich' ? OEF_KASSABUCH_AKTIV_KEY : tenant === 'vk2' ? VK2_KASSABUCH_AKTIV_KEY : K2_KASSABUCH_AKTIV_KEY
+    const key =
+      tenant === 'oeffentlich'
+        ? OEF_KASSABUCH_AKTIV_KEY
+        : tenant === 'vk2'
+          ? pilotScopeVk2Key('k2-vk2-kassabuch-aktiv')
+          : K2_KASSABUCH_AKTIV_KEY
     const v = localStorage.getItem(key)
     if (v === '0' || v === 'false') return false
     return true
@@ -175,7 +184,12 @@ export function isKassabuchAktiv(tenant: KassabuchTenant): boolean {
 
 export function setKassabuchAktiv(tenant: KassabuchTenant, aktiv: boolean): void {
   try {
-    const key = tenant === 'oeffentlich' ? OEF_KASSABUCH_AKTIV_KEY : tenant === 'vk2' ? VK2_KASSABUCH_AKTIV_KEY : K2_KASSABUCH_AKTIV_KEY
+    const key =
+      tenant === 'oeffentlich'
+        ? OEF_KASSABUCH_AKTIV_KEY
+        : tenant === 'vk2'
+          ? pilotScopeVk2Key('k2-vk2-kassabuch-aktiv')
+          : K2_KASSABUCH_AKTIV_KEY
     localStorage.setItem(key, aktiv ? '1' : '0')
   } catch {}
 }

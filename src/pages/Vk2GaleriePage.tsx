@@ -19,6 +19,8 @@ import { formatEventTerminKomplett } from '../utils/eventTerminFormat'
 import { eventPlakatMoreInfoTitle } from '../utils/eventPlakatTooltip'
 import { reportPublicGalleryVisit } from '../utils/reportPublicGalleryVisit'
 import { openVk2PlatformRundgangGlobally } from '../utils/vk2PlatformLeitfadenStorage'
+import { getVk2StammdatenKey } from '../utils/stammdatenStorage'
+import { pilotScopeVk2Key } from '../utils/vk2StorageKeys'
 import '../App.css'
 
 function normalizeSocialUrl(value?: string): string | undefined {
@@ -33,7 +35,7 @@ function normalizeSocialUrl(value?: string): string | undefined {
 function loadVk2Stammdaten(): Vk2Stammdaten | null {
   try {
     initVk2DemoStammdatenIfEmpty()
-    const raw = localStorage.getItem('k2-vk2-stammdaten')
+    const raw = localStorage.getItem(getVk2StammdatenKey())
     if (!raw) return null
     return JSON.parse(raw) as Vk2Stammdaten
   } catch {
@@ -142,6 +144,14 @@ const Vk2GaleriePage: React.FC = () => {
       window.removeEventListener('k2-page-content-updated', reload)
     }
   }, [])
+
+  // ?vk2Pilot= wechselt Mandanten-Key – State neu laden ohne Seitenwechsel
+  useEffect(() => {
+    setStammdaten(loadVk2Stammdaten())
+    setPageTexts(loadVk2PageTexts())
+    setPageContent(loadVk2PageContent())
+    setEvents(loadVk2Events())
+  }, [location.search])
 
   // Besucherzähler VK2: einmal pro Session als Mitglied oder Extern melden (nicht in iframe, nicht in Admin-Vorschau)
   useEffect(() => {
@@ -375,7 +385,7 @@ const Vk2GaleriePage: React.FC = () => {
         {...(showVk2LeitfadenUi ? { 'data-leitfaden-focus': 'eingangskarten' as const } : {})}
         style={{ padding: '1.75rem clamp(1.25rem, 5vw, 3rem)', background: C.bg }}
       >
-        <Vk2Eingangskarten stammdaten={stammdaten} welcomeImage={welcomeImage} />
+        <Vk2Eingangskarten key={location.search} stammdaten={stammdaten} welcomeImage={welcomeImage} />
       </div>
 
       {/* ── TRENNLINIE ── */}
@@ -588,7 +598,9 @@ const Vk2GaleriePage: React.FC = () => {
 
 // ─── Eingangskarten ─────────────────────────────────────────────────────────
 
-const VK2_KARTEN_KEY = 'k2-vk2-eingangskarten'
+function vk2EingangskartenKey(): string {
+  return pilotScopeVk2Key('k2-vk2-eingangskarten')
+}
 
 interface EingangskarteData {
   titel: string
@@ -611,7 +623,7 @@ const DEFAULT_KARTEN: EingangskarteData[] = [
 
 function loadEingangskarten(): EingangskarteData[] {
   try {
-    const raw = localStorage.getItem(VK2_KARTEN_KEY)
+    const raw = localStorage.getItem(vk2EingangskartenKey())
     if (!raw) return DEFAULT_KARTEN
     const parsed = JSON.parse(raw)
     if (Array.isArray(parsed) && parsed.length >= 2) return parsed

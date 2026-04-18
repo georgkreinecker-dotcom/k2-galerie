@@ -5,14 +5,15 @@
  */
 
 import { loadStammdaten } from '../utils/stammdatenStorage'
+import { pilotScopeVk2Key } from '../utils/vk2StorageKeys'
 
 const STORAGE_KEY_K2 = 'k2-page-content-galerie'
 const STORAGE_KEY_OEFFENTLICH = 'k2-oeffentlich-page-content-galerie'
-const STORAGE_KEY_VK2 = 'k2-vk2-page-content-galerie'
+const STORAGE_KEY_VK2_BASE = 'k2-vk2-page-content-galerie'
 
 function getStorageKey(tenantId?: 'oeffentlich' | 'vk2'): string {
   if (tenantId === 'oeffentlich') return STORAGE_KEY_OEFFENTLICH
-  if (tenantId === 'vk2') return STORAGE_KEY_VK2
+  if (tenantId === 'vk2') return pilotScopeVk2Key(STORAGE_KEY_VK2_BASE)
   return STORAGE_KEY_K2
 }
 
@@ -97,7 +98,7 @@ export function getPageContentGalerie(tenantId?: 'oeffentlich' | 'vk2'): PageCon
           changed = true
         }
         try {
-          const vk2Raw = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY_VK2) : null
+          const vk2Raw = typeof window !== 'undefined' ? localStorage.getItem(pilotScopeVk2Key(STORAGE_KEY_VK2_BASE)) : null
           if (vk2Raw && vk2Raw.length > 0) {
             const vk2Content = JSON.parse(vk2Raw) as Partial<PageContentGalerie>
             const imgFields: (keyof PageContentGalerie)[] = ['welcomeImage', 'galerieCardImage', 'virtualTourImage', 'virtualTourVideo']

@@ -3,6 +3,8 @@
  * Alle Lese-/Schreibzugriffe für k2-events, k2-oeffentlich-events, k2-vk2-events laufen hier.
  */
 
+import { pilotScopeVk2Key } from './vk2StorageKeys'
+
 export type EventsTenantId = 'k2' | 'oeffentlich' | 'vk2'
 
 const EVENTS_KEYS: Record<EventsTenantId, string> = {
@@ -12,6 +14,7 @@ const EVENTS_KEYS: Record<EventsTenantId, string> = {
 }
 
 export function getEventsKey(tenantId: EventsTenantId): string {
+  if (tenantId === 'vk2') return pilotScopeVk2Key(EVENTS_KEYS.vk2)
   return EVENTS_KEYS[tenantId]
 }
 

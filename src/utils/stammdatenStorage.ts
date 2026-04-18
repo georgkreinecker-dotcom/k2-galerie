@@ -13,6 +13,7 @@ import {
   K2_DEFAULT_VITA_GEORG,
 } from '../config/tenantConfig'
 import { sanitizeK2ParsedStammdatenRecord, sanitizeK2WebsiteField } from './k2StammdatenWebSanitize'
+import { pilotScopeVk2Key } from './vk2StorageKeys'
 
 /** Verhindert Auto-Save-Race: noch nicht hydratisierter React-State (Repo-Defaults) darf abweichende gespeicherte Werte nicht überschreiben. */
 function pickPersonScalar(incoming: unknown, existing: unknown, def: unknown): string {
@@ -39,7 +40,10 @@ const KEYS: Record<StammdatenTenantId, Record<StammdatenType, string>> = {
   },
 }
 
-export const VK2_STAMMDATEN_KEY = 'k2-vk2-stammdaten'
+/** VK2-Stammdaten – bei Testpilot (?vk2Pilot) eigener Key pro Zettel */
+export function getVk2StammdatenKey(): string {
+  return pilotScopeVk2Key('k2-vk2-stammdaten')
+}
 
 export function getStammdatenKey(tenant: StammdatenTenantId, type: StammdatenType): string {
   return KEYS[tenant][type]
@@ -354,7 +358,7 @@ export function saveStammdaten(
 /** VK2: ein Key, anderes Format (verein, mitglieder). Nur lesen/schreiben, kein Merge. */
 export function loadVk2Stammdaten(): any {
   try {
-    const raw = typeof window !== 'undefined' ? localStorage.getItem(VK2_STAMMDATEN_KEY) : null
+    const raw = typeof window !== 'undefined' ? localStorage.getItem(getVk2StammdatenKey()) : null
     if (!raw || !raw.trim()) return null
     const parsed = JSON.parse(raw)
     return typeof parsed === 'object' && parsed !== null ? parsed : null
@@ -376,7 +380,7 @@ export function saveVk2Stammdaten(data: any): void {
       return
     }
     if (typeof window !== 'undefined') {
-      localStorage.setItem(VK2_STAMMDATEN_KEY, json)
+      localStorage.setItem(getVk2StammdatenKey(), json)
       window.dispatchEvent(new Event('vk2-stammdaten-updated'))
       window.dispatchEvent(new CustomEvent('k2-vk2-stammdaten-updated'))
     }

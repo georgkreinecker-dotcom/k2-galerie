@@ -5,6 +5,8 @@
 
 import { loadEvents, saveEvents } from '../utils/eventsStorage'
 import { loadDocuments, saveDocuments } from '../utils/documentsStorage'
+import { getVk2StammdatenKey } from '../utils/stammdatenStorage'
+import { pilotScopeVk2Key } from '../utils/vk2StorageKeys'
 
 /** Firmen-/Plattform-Marke (Copyright, Rechtliches, Lizenz, Plattform-UI). */
 export const PRODUCT_BRAND_NAME = 'kgm solution'
@@ -702,7 +704,7 @@ export function getVk2DemoDocuments(eventId: string): Array<{ id: string; name: 
 export function initVk2DemoEventAndDocumentsIfEmpty(): void {
   if (typeof window === 'undefined') return
   try {
-    const rawStamm = localStorage.getItem('k2-vk2-stammdaten')
+    const rawStamm = localStorage.getItem(getVk2StammdatenKey())
     if (!rawStamm) return
     const stamm = JSON.parse(rawStamm) as Vk2Stammdaten
     if (stamm?.verein?.name !== 'Kunstverein Muster') return
@@ -726,7 +728,7 @@ function _seedVk2DemoArtworksIfEmpty(stammdaten: Vk2Stammdaten): void {
   for (let i = 3; i < Math.min(6, mitglieder.length); i++) {
     const m = mitglieder[i]
     if (!m?.name || (m as Vk2Mitglied).lizenzGalerieUrl) continue
-    const key = `k2-vk2-artworks-${m.name.replace(/\s+/g, '-').toLowerCase()}`
+    const key = pilotScopeVk2Key(`k2-vk2-artworks-${m.name.replace(/\s+/g, '-').toLowerCase()}`)
     try {
       const raw = localStorage.getItem(key)
       if (raw) {
@@ -757,15 +759,15 @@ function _seedVk2DemoArtworksIfEmpty(stammdaten: Vk2Stammdaten): void {
 export function initVk2DemoStammdatenIfEmpty(): void {
   if (typeof window === 'undefined') return
   try {
-    const raw = localStorage.getItem('k2-vk2-stammdaten')
+    const raw = localStorage.getItem(getVk2StammdatenKey())
     if (!raw) {
-      localStorage.setItem('k2-vk2-stammdaten', JSON.stringify(VK2_DEMO_STAMMDATEN))
+      localStorage.setItem(getVk2StammdatenKey(), JSON.stringify(VK2_DEMO_STAMMDATEN))
       _seedVk2DemoArtworksIfEmpty(VK2_DEMO_STAMMDATEN)
       return
     }
     const parsed = JSON.parse(raw) as Vk2Stammdaten
     if (!parsed?.verein?.name) {
-      localStorage.setItem('k2-vk2-stammdaten', JSON.stringify(VK2_DEMO_STAMMDATEN))
+      localStorage.setItem(getVk2StammdatenKey(), JSON.stringify(VK2_DEMO_STAMMDATEN))
       _seedVk2DemoArtworksIfEmpty(VK2_DEMO_STAMMDATEN)
       return
     }
@@ -774,7 +776,7 @@ export function initVk2DemoStammdatenIfEmpty(): void {
       const hasMembers = Array.isArray(parsed.mitglieder) && parsed.mitglieder.length > 0
       if (!hasMembers) {
         const data = { ...parsed, mitglieder: VK2_DEMO_STAMMDATEN.mitglieder }
-        localStorage.setItem('k2-vk2-stammdaten', JSON.stringify(data))
+        localStorage.setItem(getVk2StammdatenKey(), JSON.stringify(data))
         _seedVk2DemoArtworksIfEmpty(data)
         return
       }
@@ -796,7 +798,7 @@ export function initVk2DemoStammdatenIfEmpty(): void {
       })
       if (changed) {
         const data = { ...parsed, mitglieder: updated }
-        localStorage.setItem('k2-vk2-stammdaten', JSON.stringify(data))
+        localStorage.setItem(getVk2StammdatenKey(), JSON.stringify(data))
         _seedVk2DemoArtworksIfEmpty(data)
       } else {
         _seedVk2DemoArtworksIfEmpty(parsed)

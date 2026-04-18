@@ -6,8 +6,8 @@ import { BASE_APP_URL, K2_FAMILIE_WILLKOMMEN_ROUTE, PROJECT_ROUTES } from '../co
 import { buildFamiliePilotWillkommenUrl } from '../utils/familiePilotSeed'
 import { buildOek2PilotGalerieUrl } from '../utils/pilotOek2GalerieUrl'
 import { getNextPilotZettelNr, setLastPilotZettelNr } from '../utils/pilotZettelNr'
+import { buildVk2PilotGalerieUrl } from '../utils/vk2PilotUrls'
 
-const VK2_URL = BASE_APP_URL + PROJECT_ROUTES.vk2.galerie
 const FAMILIE_URL = BASE_APP_URL + K2_FAMILIE_WILLKOMMEN_ROUTE
 
 export type PilotType = 'oek2' | 'vk2' | 'familie'
@@ -34,7 +34,7 @@ export default function ZettelPilotFormPage() {
       pilotType === 'oek2'
         ? buildOek2PilotGalerieUrl(appName.trim())
         : pilotType === 'vk2'
-          ? VK2_URL
+          ? buildVk2PilotGalerieUrl(nr.trim() || '1')
           : buildFamiliePilotWillkommenUrl(FAMILIE_URL, appName.trim(), nr.trim() || '1')
     const params = new URLSearchParams()
     params.set('name', name.trim())
