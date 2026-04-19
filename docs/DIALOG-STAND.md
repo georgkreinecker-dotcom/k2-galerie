@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 19.04.26 – **Besucherzähler: pro Mandant/Pilot eigener tenant_id** – **`src/utils/publicGalleryVisitTenant.ts`:** `oeffentlich` · `oeffentlich-pilot-{Ziffern}` · `oeffentlich-pilot-v-{slug}` (Entdecken) · `vk2` · `vk2-pilot-{id}`. **`GaleriePage`**, **`Vk2GaleriePage`**, **`ScreenshotExportAdmin`**, **`PlatformStartPage`**, **`UebersichtBoardPage`**; **`ZettelPilotPage`:** ök2-Zettel schreibt **`oek2PilotId`**. Tests **`publicGalleryVisitTenant.test.ts`**, **`reportPublicGalleryVisit.test.ts`**. **`npm run build`** grün. **Commit:** `008bcca9` ✅ GitHub
+**Letzter Stand:** 19.04.26 – **Besucherzähler: pro Mandant/Pilot eigener tenant_id** – **`src/utils/publicGalleryVisitTenant.ts`:** `oeffentlich` · `oeffentlich-pilot-{Ziffern}` · `oeffentlich-pilot-v-{slug}` (Entdecken) · `vk2` · `vk2-pilot-{id}`. **`GaleriePage`**, **`Vk2GaleriePage`**, **`ScreenshotExportAdmin`**, **`PlatformStartPage`**, **`UebersichtBoardPage`**; **`ZettelPilotPage`:** ök2-Zettel schreibt **`oek2PilotId`**. Tests **`publicGalleryVisitTenant.test.ts`**, **`reportPublicGalleryVisit.test.ts`**. **`npm run build`** grün. **Commit:** `b9d9ca37` ✅ GitHub
 
 ---
 
