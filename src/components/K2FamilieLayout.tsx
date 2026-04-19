@@ -41,7 +41,6 @@ import { K2_FAMILIE_NAV_LABEL_GESCHICHTE } from '../config/k2FamilieNavLabels'
 import { resolveFamiliePwaResumeTarget, writeFamiliePwaLastPath } from '../utils/familiePwaLastPath'
 import { FamilieMusterDemoHintProvider } from '../context/FamilieMusterDemoHintContext'
 import {
-  MUSTER_HINT_TOOLBAR_DEMO_ENDE,
   MUSTER_HINT_TOOLBAR_FAMILIE,
   MUSTER_HINT_TOOLBAR_LEITFADEN_BUTTON,
   musterHintForFamilieNavLink,
@@ -76,7 +75,6 @@ function saveFamilieLeisteEingeklappt(eingeklappt: boolean): void {
 }
 
 function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
-  const navigate = useNavigate()
   const familieRoutesNav = PROJECT_ROUTES['k2-familie']
   const {
     currentTenantId,
@@ -217,20 +215,6 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
                 }}
               >
                 Rundgang
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate({ pathname: K2_FAMILIE_APP_SHORT_PATH, search: '' }, { replace: true })}
-                data-leitfaden-focus="demo-ende"
-                data-muster-hint={MUSTER_HINT_TOOLBAR_DEMO_ENDE}
-                style={{
-                  ...btnBase,
-                  border: '1px solid rgba(181, 74, 30, 0.35)',
-                  background: '#b54a1e',
-                  color: '#fff',
-                }}
-              >
-                Beispiel beenden
               </button>
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem', marginLeft: 'auto' }}>

@@ -197,7 +197,7 @@ export const FAMILIE_MUSTER_LEITFADEN_SCHRITTE: FamilieMusterLeitfadenStep[] = [
     stimmung: 'Kein Druck.',
     body:
       'Euer **eigener Familienraum** entsteht mit **Lizenz und Einladung** – dann liegen **eure** Daten bei **euch**. Diesen **Beispiel-Raum** könnt ihr jederzeit wieder öffnen; er **ändert** nichts an einem späteren echten Raum.',
-    focusKey: 'demo-ende',
+    focusKey: 'leitfaden',
   }),
 ]
 
@@ -265,8 +265,7 @@ function LeitfadenKeyframes() {
       html[data-k2-familie-leitfaden-focus="gedenkort"] [data-leitfaden-focus="gedenkort"],
       html[data-k2-familie-leitfaden-focus="einstellungen"] [data-leitfaden-focus="einstellungen"],
       html[data-k2-familie-leitfaden-focus="handbuch"] [data-leitfaden-focus="handbuch"],
-      html[data-k2-familie-leitfaden-focus="leitfaden"] [data-leitfaden-focus="leitfaden"],
-      html[data-k2-familie-leitfaden-focus="demo-ende"] [data-leitfaden-focus="demo-ende"] {
+      html[data-k2-familie-leitfaden-focus="leitfaden"] [data-leitfaden-focus="leitfaden"] {
         outline: 3px solid rgba(94, 234, 212, 0.92);
         outline-offset: 3px;
         border-radius: 12px;

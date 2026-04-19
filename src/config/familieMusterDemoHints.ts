@@ -58,9 +58,6 @@ export const MUSTER_HINT_TOOLBAR_FAMILIE =
 export const MUSTER_HINT_TOOLBAR_LEITFADEN_BUTTON =
   'Rundgang öffnen: Schritt für Schritt durch die App – du kannst das Fenster verschieben und kleiner ziehen.'
 
-export const MUSTER_HINT_TOOLBAR_DEMO_ENDE =
-  'Beispiel beenden: zurück zur Übersicht – euren eigenen Familienraum richtet ihr mit Lizenz und Einladung ein.'
-
 /** Nav-Link `to` → Kurztext für data-muster-hint (exakte Pfade wie in FamilieNav). */
 export function musterHintForFamilieNavLink(to: string): string | undefined {
   const path = to.replace(/\/$/, '') || '/'
