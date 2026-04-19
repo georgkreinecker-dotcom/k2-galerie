@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 19.04.26 – **Entdecken: Testpilot-Band – Hinweis Gutschein 250 €** (`T.testpilotKurz`, Formular-Kurzinfo-Bündel). **Commit:** `78fef3aa` ✅ GitHub
+**Letzter Stand:** 19.04.26 – **Entdecken: Testpilot-Band – Hinweis Gutschein 250 €** (`T.testpilotKurz`, Formular-Kurzinfo-Bündel). **Commit:** `f34a3183` ✅ GitHub
 
 ---
 
