@@ -1,4 +1,5 @@
 import { APP_BASE_URL } from '../config/externalUrls'
+import { K2_FAMILIE_WILLKOMMEN_ROUTE } from '../config/navigation'
 import { buildQrUrlWithBust } from '../hooks/useServerBuildTimestamp'
 
 export type PublicTenant = 'k2' | 'oeffentlich' | 'vk2'
@@ -26,6 +27,11 @@ export function getPublicGalerieUrl(tenant: PublicTenant, mode: PublicViewMode):
  */
 export function getPublicGalerieUrlWithBust(tenant: PublicTenant, mode: PublicViewMode, versionTimestamp: number): string {
   return buildQrUrlWithBust(getPublicGalerieUrl(tenant, mode), versionTimestamp)
+}
+
+/** Öffentlicher Einstieg K2 Familie (Flyer/QR) – für Teilen nie localhost. */
+export function getPublicK2FamilieMusterEntryUrl(): string {
+  return `${APP_BASE_URL}${K2_FAMILIE_WILLKOMMEN_ROUTE}`
 }
 
 /**

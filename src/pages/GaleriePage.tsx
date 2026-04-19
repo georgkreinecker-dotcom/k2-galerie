@@ -32,6 +32,7 @@ import { isOek2PilotEntwurfQuery } from '../utils/pilotOek2GalerieUrl'
 import { setAdminUnlock, clearAdminUnlock } from '../utils/adminUnlockStorage'
 import { OK2_THEME } from '../config/ok2Theme'
 import { getPublicGalerieUrl } from '../utils/publicLinks'
+import { isLocalOrPrivateOrigin } from '../utils/publicShare'
 import { reportPublicGalleryVisit } from '../utils/reportPublicGalleryVisit'
 import {
   resolveOek2PublicGalleryVisitTenantId,
@@ -62,12 +63,6 @@ function getPublicPageUrl(vk2: boolean, musterOnly: boolean): string {
   if (vk2) return getPublicGalerieUrl('vk2', 'galerie')
   if (musterOnly) return getPublicGalerieUrl('oeffentlich', 'galerie')
   return getPublicGalerieUrl('k2', 'galerie')
-}
-
-function isLocalOrPrivateOrigin(): boolean {
-  if (typeof window === 'undefined') return false
-  const h = window.location.hostname
-  return h === 'localhost' || h === '127.0.0.1' || h.startsWith('192.168.') || h.startsWith('10.')
 }
 
 /** Erkennt VK2-Werke (aus Vereinsplattform/Mitgliederverzeichnis) – gehören nicht in K2-Galerie. */

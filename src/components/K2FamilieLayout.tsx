@@ -46,6 +46,8 @@ import {
   MUSTER_HINT_TOOLBAR_LEITFADEN_BUTTON,
   musterHintForFamilieNavLink,
 } from '../config/familieMusterDemoHints'
+import { PublicTeilenFixed } from './PublicTeilenFixed'
+import { getPublicK2FamilieMusterEntryUrl } from '../utils/publicLinks'
 
 /** Gleicher String wie `K2_FAMILIE_SESSION_UPDATED` in `familieStorage.ts` — hier als Literal, damit kein Laufzeit-ReferenceError (z. B. HMR). */
 const FAMILIE_SESSION_UPDATED_EVENT = 'k2-familie-einstellungen-updated'
@@ -1005,6 +1007,15 @@ function FamilieLayoutInner() {
       <FamilieApfMeineFamilieSync />
       <FamilieMusterSessionEnforcer />
       <FamilieCloudAutoSync />
+      {nurMuster ? (
+        <PublicTeilenFixed
+          variant="familie"
+          displayName="K2 Familie Musterfamilie"
+          canonicalPublicUrl={getPublicK2FamilieMusterEntryUrl()}
+          buttonLabel="📤 Teilen"
+          getShareText={() => 'K2 Familie Musterfamilie – Schau dir die Beispiel-Familie an'}
+        />
+      ) : null}
       <div className={`k2-familie-layout-shell${nurMuster ? ' k2-familie-layout-shell--nur-muster' : ''}`}>
         {!nurMitgliedEinstieg && !nurMuster ? <FamilieLeitstrukturPanel /> : null}
         <FamilieMusterDemoHintProvider active={nurMuster} root={musterHintRoot}>

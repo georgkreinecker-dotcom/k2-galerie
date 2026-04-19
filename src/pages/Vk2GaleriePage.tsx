@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, BASE_APP_URL, ENTDECKEN_ROUTE, flyerEventBogenUrl } from '../config/navigation'
+import { getPublicGalerieUrl } from '../utils/publicLinks'
 import {
   initVk2DemoStammdatenIfEmpty,
   isPlatformInstance,
@@ -20,6 +21,7 @@ import { eventPlakatMoreInfoTitle } from '../utils/eventPlakatTooltip'
 import { reportPublicGalleryVisit } from '../utils/reportPublicGalleryVisit'
 import { resolveVk2PublicGalleryVisitTenantId } from '../utils/publicGalleryVisitTenant'
 import { openVk2PlatformRundgangGlobally } from '../utils/vk2PlatformLeitfadenStorage'
+import { PublicTeilenFixed } from '../components/PublicTeilenFixed'
 import { getVk2StammdatenKey } from '../utils/stammdatenStorage'
 import { pilotScopeVk2Key } from '../utils/vk2StorageKeys'
 import '../App.css'
@@ -233,6 +235,13 @@ const Vk2GaleriePage: React.FC = () => {
     }}>
 
       {/* Keine gelbe Leiste mit „Zurück zu Einstellungen“ – für User verboten, zur APf zu führen */}
+
+      <PublicTeilenFixed
+        variant="vk2"
+        displayName={vereinsName}
+        canonicalPublicUrl={getPublicGalerieUrl('vk2', 'galerie')}
+        getShareText={() => `${vereinsName} – Vereinsgalerie zum Ausprobieren`}
+      />
 
       {/* Nav: kein „Zurück“ zur APf (Georg 03.04.26). „Admin“ nur wenn Aufruf vom Admin oder Unlock – Zugang wiederherstellbar */}
       {(() => {

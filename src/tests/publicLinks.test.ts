@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { getPublicGaleriePath, getPublicGalerieUrl, normalizeLicenseeAdminUrl, getLicenseeAdminQrTargetUrl } from '../utils/publicLinks'
+import {
+  getPublicGaleriePath,
+  getPublicGalerieUrl,
+  getPublicK2FamilieMusterEntryUrl,
+  normalizeLicenseeAdminUrl,
+  getLicenseeAdminQrTargetUrl,
+} from '../utils/publicLinks'
 
 describe('publicLinks', () => {
   it('getPublicGaleriePath liefert Besucher-Routen für K2/ök2 und VK2-Routen', () => {
@@ -14,6 +20,12 @@ describe('publicLinks', () => {
   it('getPublicGalerieUrl ist absolut und enthält den Pfad', () => {
     const u = getPublicGalerieUrl('k2', 'galerie')
     expect(u.includes('/galerie')).toBe(true)
+    expect(u.startsWith('http')).toBe(true)
+  })
+
+  it('getPublicK2FamilieMusterEntryUrl zeigt auf Willkommen-Route', () => {
+    const u = getPublicK2FamilieMusterEntryUrl()
+    expect(u).toContain('/projects/k2-familie/willkommen')
     expect(u.startsWith('http')).toBe(true)
   })
 
