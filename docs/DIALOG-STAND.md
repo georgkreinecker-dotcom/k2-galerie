@@ -5,6 +5,10 @@
 
 ---
 
+**Letzter Stand:** 19.04.26 – **Entdecken: Testpilot-Band – Hinweis Gutschein 250 €** (`T.testpilotKurz`, Formular-Kurzinfo-Bündel). **Commit:** `78fef3aa` ✅ GitHub
+
+---
+
 **Letzter Stand:** 19.04.26 – **Testuser: öffentlich nur Anmeldeformular; Mappe separat (`?mappe=1`, `testuserMappe`)** – **`TestuserAnmeldungPage`:** `useSearchParams` `mappe===1`; **`navigation.ts`:** `testuserMappe`; APf-Links (Smart Panel, Mission Control, Platform Start, Texte-Schreibtisch, Zettel Pilot, Testprotokoll) auf Mappe; Entdecken + Infos-Zettel → reines Formular. **Commit:** `6b1d897a` ✅ GitHub
 
 ---

@@ -84,7 +84,8 @@ const T_DEFAULTS = {
   wegIntro: 'Ein Klick – du siehst sofort, was dich erwartet.',
 
   /** Kurzkampagne Testpilot (Band über den Weg-Karten) */
-  testpilotKurz: 'Begrenztes Testpilot-Programm – mitmachen und Feedback geben.',
+  testpilotKurz:
+    'Begrenztes Testpilot-Programm – mitmachen und Feedback geben. Bei erfüllten Bedingungen u. a. Gutschein 250 € für ein Kunstobjekt der K2 Galerie (Details im Formular).',
   testpilotCta: 'Zur Anmeldung →',
 
   q3: 'Wie heißt du – oder deine Galerie?',
