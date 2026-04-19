@@ -16,6 +16,7 @@ import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
 import { loadEinstellungen, loadPersonen, saveEinstellungen, K2_FAMILIE_SESSION_UPDATED } from '../utils/familieStorage'
 import { mergeQuelleFamilieInZielFamilie } from '../utils/familieMergeFamilien'
+import { buildMitgliederInformationsText } from '../utils/familieMitgliedInfoBriefText'
 import type { K2FamilieInhaberArbeitsansicht, K2FamilieRolle } from '../types/k2FamilieRollen'
 import {
   K2_FAMILIE_INHABER_ANSICHT,
@@ -99,6 +100,19 @@ export default function K2FamilieEinstellungenPage() {
     return () => window.clearTimeout(tmr)
   }, [location.hash, location.pathname])
   const personen = loadPersonen(currentTenantId)
+  const mitgliederInformText = useMemo(() => {
+    const e = loadEinstellungen(currentTenantId)
+    const pers = loadPersonen(currentTenantId)
+    const map = new Map(pers.map((p) => [p.id, p]))
+    const ich = e.ichBinPersonId ? map.get(e.ichBinPersonId) : undefined
+    return buildMitgliederInformationsText({
+      tenantId: currentTenantId,
+      familienZ: (e.mitgliedsNummerAdmin ?? '').trim(),
+      familyDisplayName: (e.familyDisplayName ?? '').trim(),
+      signaturName: ich?.name?.trim() ?? '',
+    })
+  }, [currentTenantId, einstTick])
+  const [infoBriefKopiert, setInfoBriefKopiert] = useState(false)
   const ichId = einst.ichBinPersonId?.trim() || ''
   const designatedId = einst.inhaberPersonId?.trim() || ''
   const designatedName = designatedId ? personen.find((p) => p.id === designatedId)?.name?.trim() || '' : ''
@@ -543,6 +557,70 @@ export default function K2FamilieEinstellungenPage() {
             <Link to={R.mitgliederCodes} style={linkBtn}>
               → Zu Mitglieder &amp; Codes
             </Link>
+          </div>
+        )}
+
+        {kannInstanz && (
+          <div id="k2-fam-mitglieder-informieren" style={{ ...card, borderLeftColor: '#15803d' }}>
+            <h2 style={{ margin: '0 0 0.45rem', fontSize: '1.05rem', fontWeight: 700, color: a.text, fontFamily: a.fontHeading }}>
+              Mitglieder informieren
+            </h2>
+            <p style={{ margin: '0 0 0.65rem', fontSize: '0.9rem', color: a.muted, lineHeight: 1.55 }}>
+              <strong style={{ color: a.text }}>Inhaber:in</strong>: Mustertext für Mail, Messenger oder SMS – wird aus Familienname, Kennung, Links und deiner Signatur{' '}
+              <strong style={{ color: a.text }}>automatisch erzeugt</strong>. Einmal kopieren und verschicken; für druckfertige Briefe mit QR pro Zweig siehe unten.
+            </p>
+            <textarea
+              readOnly
+              value={mitgliederInformText}
+              aria-label="Text zum Informieren der Mitglieder"
+              rows={14}
+              style={{
+                width: '100%',
+                boxSizing: 'border-box',
+                marginBottom: '0.65rem',
+                padding: '0.55rem 0.65rem',
+                fontSize: '0.86rem',
+                lineHeight: 1.45,
+                fontFamily: 'inherit',
+                color: a.text,
+                background: '#fffefb',
+                border: '1px solid rgba(22, 101, 52, 0.22)',
+                borderRadius: a.radius,
+                resize: 'vertical',
+              }}
+            />
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center', marginBottom: '0.5rem' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  void navigator.clipboard.writeText(mitgliederInformText).then(() => {
+                    setInfoBriefKopiert(true)
+                    window.setTimeout(() => setInfoBriefKopiert(false), 2400)
+                  })
+                }}
+                style={{
+                  padding: '0.5rem 1rem',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  fontFamily: 'inherit',
+                  borderRadius: a.radius,
+                  border: 'none',
+                  cursor: 'pointer',
+                  ...a.buttonPrimary,
+                }}
+              >
+                Text in Zwischenablage kopieren
+              </button>
+              {infoBriefKopiert ? (
+                <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#15803d' }}>Kopiert.</span>
+              ) : null}
+            </div>
+            <p style={{ margin: 0, fontSize: '0.85rem', color: a.muted, lineHeight: 1.5 }}>
+              <Link to={R.einladungGeschwisterBriefe} style={{ color: a.accent, fontWeight: 600 }}>
+                → Geschwister-Briefe drucken
+              </Link>{' '}
+              (lange Vorlage pro Familienzweig mit QR, wie unter Mitglieder &amp; Codes)
+            </p>
           </div>
         )}
 

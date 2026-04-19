@@ -29,19 +29,25 @@ function p(id: string, mitgliedsNummer?: string): K2FamiliePerson {
 
 describe('familieMitgliedsNummer', () => {
   it('trimMitgliedsNummerEingabe', () => {
-    expect(trimMitgliedsNummerEingabe('  ab12  ')).toBe('ab12')
+    expect(trimMitgliedsNummerEingabe('  ab12  ')).toBe('AB12')
     expect(trimMitgliedsNummerEingabe('')).toBe('')
   })
 
   it('normalizeMitgliedsNummerInput: Vollbreite, Zero-Width, Leerzeichen innen', () => {
     expect(normalizeMitgliedsNummerInput('ＡＢ１２')).toBe('AB12')
-    expect(normalizeMitgliedsNummerInput('ab\u200b12')).toBe('ab12')
-    expect(normalizeMitgliedsNummerInput('ab 12')).toBe('ab12')
+    expect(normalizeMitgliedsNummerInput('ab\u200b12')).toBe('AB12')
+    expect(normalizeMitgliedsNummerInput('ab 12')).toBe('AB12')
+  })
+
+  it('normalizeMitgliedsNummerInput: L + kleines l + Ziffern → LI… (i vs l auf dem Bildschirm)', () => {
+    expect(normalizeMitgliedsNummerInput('Ll36')).toBe('LI36')
+    expect(normalizeMitgliedsNummerInput('LI36')).toBe('LI36')
+    expect(normalizeMitgliedsNummerInput('LL36')).toBe('LL36')
   })
 
   it('normalizeMitgliedsNummerInput: optionaler Bindestrich bei XX12 (Mobil)', () => {
     expect(normalizeMitgliedsNummerInput('AB-12')).toBe('AB12')
-    expect(normalizeMitgliedsNummerInput('ab–12')).toBe('ab12')
+    expect(normalizeMitgliedsNummerInput('ab–12')).toBe('AB12')
     expect(normalizeMitgliedsNummerInput('XY99')).toBe('XY99')
     expect(normalizeMitgliedsNummerInput('KF-M-1001')).toBe('KF-M-1001')
   })

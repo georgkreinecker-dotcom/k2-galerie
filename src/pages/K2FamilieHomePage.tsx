@@ -49,6 +49,7 @@ import { useMemo, useState, useEffect, type CSSProperties } from 'react'
 import { adminTheme } from '../config/theme'
 import { K2_FAMILIE_UI } from '../config/k2FamilieUiColors'
 import { K2_FAMILIE_NAV_LABEL_GESCHICHTE } from '../config/k2FamilieNavLabels'
+import { getFamilieTenantDisplayName } from '../data/familieHuberMuster'
 
 const C = {
   ...K2_FAMILIE_UI,
@@ -127,6 +128,10 @@ export default function K2FamilieHomePage() {
   const [heroBildVollbild, setHeroBildVollbild] = useState(false)
 
   const einstAmpel = useMemo(() => loadEinstellungen(currentTenantId), [currentTenantId, familieStorageRevision])
+  const identitaetBannerFamilienname = useMemo(() => {
+    const n = (einstAmpel.familyDisplayName ?? '').trim()
+    return n || getFamilieTenantDisplayName(currentTenantId, 'diese Familie')
+  }, [einstAmpel.familyDisplayName, currentTenantId])
   const ichBinPersonId = einstAmpel.ichBinPersonId ?? ''
 
   const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId, familieStorageRevision])
@@ -326,12 +331,31 @@ export default function K2FamilieHomePage() {
     const codePasstZuDu =
       pid === ich || (ichPerson ? persoenlicherCodePasstZuKarte(raw, ichPerson.mitgliedsNummer) : false)
     if (!codePasstZuDu) {
-      if (!pid && ichPerson?.mitgliedsNummer && trimMitgliedsNummerEingabe(raw)) {
+      const gespeichert = ichPerson?.mitgliedsNummer
+        ? trimMitgliedsNummerEingabe(ichPerson.mitgliedsNummer)
+        : ''
+      const nameDu = ichPerson?.name?.trim() || 'deine Person'
+      /** Code gehört zu einer anderen Person als „Du“ – häufig: Listen-Code getippt, „Du“ aber noch woanders gesetzt. */
+      if (pid && pid !== ich) {
+        const andereP = personenAktuell.find((p) => p.id === pid)
+        const nameAndere = andereP?.name?.trim() || 'einem anderen Mitglied'
         setIdentitaetSessionHinweis(
-          'Kein Treffer. Hier den persönlichen Code eintragen (z. B. AB12) – nicht die Familien-Zugangsnummer (KF-…).',
+          gespeichert
+            ? `Dieser Code steht in der App bei „${nameAndere}«. Als „Du« bist du „${nameDu}« eingetragen – dafür ist der Code »${gespeichert}« vorgesehen (nicht ein anderer Eintrag aus der Liste). Entweder »${gespeichert}« eintragen oder unter Einstellungen → Zugang & Name klären, wer „Du« sein soll.`
+            : `Dieser Code gehört zu „${nameAndere}«, nicht zu deiner Eintragung „Du«. Bitte Zugang & Name in den Einstellungen prüfen.`,
+        )
+      } else if (!pid && ichPerson?.mitgliedsNummer && trimMitgliedsNummerEingabe(raw)) {
+        setIdentitaetSessionHinweis(
+          gespeichert
+            ? `Kein Treffer für deine Eingabe. Für „Du“ ist in dieser App »${gespeichert}« gespeichert – bitte genau so eintragen (persönlicher Code, nicht KF-…). Tipp: zweites Zeichen oft großes I (wie Innsbruck), nicht kleines l (wie „laut“). Wenn der Code auf dem Ausdruck anders steht: „Daten vom Server laden“ oder dieselbe Familie wie beim Ausdruck wählen.`
+            : 'Kein Treffer. Hier den persönlichen Code eintragen (z. B. AB12) – nicht die Familien-Zugangsnummer (KF-…).',
         )
       } else {
-        setIdentitaetSessionHinweis('Der Code passt nicht zu deiner Person „Du“. Schreibweise prüfen.')
+        setIdentitaetSessionHinweis(
+          gespeichert
+            ? `Der eingegebene Code passt nicht. Gespeichert für „Du“: »${gespeichert}«. Tipp: zweites Zeichen oft großes I, nicht kleines l.`
+            : 'Der Code passt nicht zu deiner Person „Du“. Schreibweise prüfen.',
+        )
       }
       return
     }
@@ -523,8 +547,26 @@ export default function K2FamilieHomePage() {
                   <strong>Sitzung nicht bestätigt.</strong> Trage hier deinen persönlichen Code ein (wie auf deiner
                   Karte). Optional: &quot;Auf diesem Gerät merken&quot; – dann musst du auf <strong>diesem</strong>{' '}
                   Browser nicht bei jedem Besuch neu tippen (anderes Gerät = erneut eingeben). Den Code kannst du später
-                  auf deiner Personenkarte ändern; dann gilt die Merkung hier nicht mehr.
+                  auf deiner Personenkarte ändern; dann gilt die Merkung hier nicht mehr. Derselbe Schritt schaltet z. B.{' '}
+                  Einladungsbriefe                   und Mitglieder-Codes frei – es gibt keinen separaten Code nur für Briefe; die Eingabe
+                  ist immer der persönliche Code von der Karte, nicht die Familien-Kennung für alle.
                 </>
+              </p>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: '0.85rem',
+                  color: '#92400e',
+                  lineHeight: 1.4,
+                  fontFamily: a.fontBody,
+                }}
+              >
+                <strong>Aktive Familie:</strong> {identitaetBannerFamilienname}
+                <span style={{ opacity: 0.75 }}>
+                  {' '}
+                  · Karten-Codes dieser Familie sind nur hier gültig, wenn dieselbe Familie gewählt ist wie in der
+                  Leiste „Familie wechseln“.
+                </span>
               </p>
               <div
                 style={{

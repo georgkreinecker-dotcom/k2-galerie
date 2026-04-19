@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Kurz Einladungsbriefe mit Link/QR am Rechner prüfen (Druckdialog).  
-**Einordnung:** K2 Familie Geschwister-Briefe = dieselbe URL-Logik wie Mitglieder & Codes (`buildQrUrlWithBust` + `useQrVersionTimestamp`).
+**Was wir JETZT tun:** Nächste Session: bei Bedarf Einladungsbriefe/PM-Screenshot prüfen; offen nur falls Georg danach fragt.  
+**Einordnung:** Session 19.04.26 abgeschlossen – K2-Familie Identität („Du“ vs. Listen-Code) geklärt, neuer persönlicher Code funktioniert; Code + UI-Texte committed.
+
+---
+
+**Letzter Stand:** 19.04.26 (Session-Ende) – **K2 Familie: Sitzungs-Banner + Mitgliedsnummer + Einladung/Briefe/Verwaltung** – `familieMitgliedsNummer` (L/l→LI); **`K2FamilieHomePage`:** gelbes Banner **Aktive Familie**, Hinweise Identität/Briefe, Fehlertext wenn Code zu **anderer Person** als „Du“; `ScreenshotExportAdmin` PM-Einstellungen-Screenshot; `familieMitgliedInfoBriefText`; Teilen/Galerie/VK2/K2-Familie-Seiten divers; Regel **eiserne-regel-georg-bestehende-loesung**. **`npm run qs:local` grün.** **Commit:** `f41454e8` ✅ GitHub (nach Push prüfen)
 
 ---
 

@@ -27,6 +27,14 @@ export interface PublicTeilenFixedProps {
   layout?: 'fixed' | 'inline'
 }
 
+/** Kurzhinweis unter den Teilen-Aktionen – kein Presse-„Verteiler“; sitzt pro Kontext (Demo / Verein / Familie). */
+const SHARE_FOOTER_HINT: Record<PublicTeilenVariant, string> = {
+  oeffentlich:
+    'Die Demo-Galerie per Link teilen – für Chats, Mail und überall.',
+  vk2: 'Die Vereinsseite per Link teilen – für Mitglieder und Bekannte.',
+  familie: 'Den Familien-Link teilen – für Angehörige und Bekannte.',
+}
+
 const VARIANT_PRIMARY_BUTTON: Record<
   PublicTeilenVariant,
   { background: string; border: string; color: string }
@@ -302,7 +310,7 @@ export function PublicTeilenFixed(props: PublicTeilenFixedProps) {
               color: 'rgba(255,255,255,0.75)',
             }}
           >
-            Deine eigene Galerie bringst du so in den Verteiler – überall.
+            {SHARE_FOOTER_HINT[variant]}
           </p>
         </div>
       )}

@@ -527,6 +527,17 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         ? (musterOnly ? '8.5rem' : '7rem')
         : 'clamp(12rem, 30vw, 18rem)')
     : 'clamp(1rem, 2vw, 1.5rem)'
+  /** Teilen-Popover: kein Wort „Verteiler“ (Medien/Presse) – neutraler Link-Hinweis je Kontext */
+  const galerieShareHintTitle = vk2
+    ? 'Vereinsgalerie teilen – Link für Mitglieder und Bekannte'
+    : musterOnly
+      ? 'Demo-Galerie teilen – Link für Chats, Mail und überall'
+      : 'Galerie teilen – Link für Chats, Mail und überall'
+  const galerieShareHintFooter = vk2
+    ? 'Die Vereinsseite per Link teilen – für Mitglieder und Bekannte.'
+    : musterOnly
+      ? 'Die Demo-Galerie per Link teilen – für Chats, Mail und überall.'
+      : 'Die Galerie per Link teilen – für Chats, Mail und überall.'
   useEffect(() => {
     if (!sharePopoverOpen) return
     const close = (e: MouseEvent | TouchEvent) => {
@@ -2898,7 +2909,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         <button
           type="button"
           onClick={handleGalerieTeilen}
-          title="Galerie teilen – deine eigene genauso einfach in den Verteiler (WhatsApp, Link, überall)"
+          title={galerieShareHintTitle}
           style={{
             position: 'fixed',
             top: 'max(clamp(1rem, 2vw, 1.5rem), calc(env(safe-area-inset-top, 0px) + 1rem))',
@@ -2951,7 +2962,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
               </button>
             )}
             <p style={{ margin: '0.5rem 0 0', padding: '0 0.25rem', fontSize: '0.75rem', lineHeight: 1.4, color: 'rgba(255,255,255,0.75)' }}>
-              Deine eigene Galerie bringst du so in den Verteiler – überall.
+              {galerieShareHintFooter}
             </p>
           </div>
         )}

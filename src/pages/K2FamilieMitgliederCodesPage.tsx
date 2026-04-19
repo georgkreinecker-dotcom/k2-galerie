@@ -23,6 +23,13 @@ import {
 
 const R = PROJECT_ROUTES['k2-familie']
 
+/** Lesbarkeit auf dunklem K2-Familie-Viewport (mission-wrapper); vgl. K2FamilieEinladungGeschwisterBriefePage. */
+const vp = {
+  text: 'var(--k2-text)',
+  muted: 'var(--k2-muted)',
+  link: 'var(--k2-accent)',
+} as const
+
 /** Wie K2FamilieHomePage: Produktions-Host, t + z + m, dann Cache-Bust für QR/Links. */
 function buildPersonalEinladungsUrl(
   tenantId: string,
@@ -53,8 +60,10 @@ function buildShortEinladungsUrlForPrint(
 export default function K2FamilieMitgliederCodesPage() {
   const a = adminTheme
   const { currentTenantId } = useFamilieTenant()
-  const { capabilities } = useFamilieRolle()
+  const { capabilities, rolle } = useFamilieRolle()
   const kannInstanz = capabilities.canManageFamilienInstanz
+  const inhaberOhneVerwaltungsrecht = !kannInstanz && rolle === 'inhaber'
+  const linkMeineFamilieIdentitaet = `${R.meineFamilie}#k2-familie-identitaet-bestaetigen`
   const { versionTimestamp } = useQrVersionTimestamp()
   const [kopiert, setKopiert] = useState(false)
   const [listenRefresh, setListenRefresh] = useState(0)
@@ -116,17 +125,28 @@ export default function K2FamilieMitgliederCodesPage() {
     return (
       <div className="mission-wrapper">
         <div className="viewport k2-familie-page" style={{ padding: '1.25rem 1rem 2rem', maxWidth: 560, margin: '0 auto' }}>
-          <Link to={R.meineFamilie} style={{ fontSize: '0.9rem', color: a.accent, fontWeight: 600 }}>
+          <Link
+            to={inhaberOhneVerwaltungsrecht ? linkMeineFamilieIdentitaet : R.meineFamilie}
+            style={{ fontSize: '0.9rem', color: vp.link, fontWeight: 600 }}
+          >
             ← Zu Meine Familie
           </Link>
-          <h1 style={{ margin: '0.75rem 0 0.5rem', fontSize: '1.35rem', fontWeight: 700, color: a.text, fontFamily: a.fontHeading }}>
+          <h1 style={{ margin: '0.75rem 0 0.5rem', fontSize: '1.35rem', fontWeight: 700, color: vp.text, fontFamily: a.fontHeading }}>
             Mitglieder &amp; Codes
           </h1>
-          <p style={{ margin: 0, fontSize: '0.95rem', color: a.muted, lineHeight: 1.55 }}>
-            Diese Übersicht ist nur für <strong style={{ color: a.text }}>Inhaber:innen</strong> der Familien-Instanz sichtbar. Wähle in der Leiste die Rolle „Inhaber:in“ oder wende dich an die Person, die die Familie verwaltet.
-          </p>
+          {inhaberOhneVerwaltungsrecht ? (
+            <p style={{ margin: 0, fontSize: '0.95rem', color: vp.muted, lineHeight: 1.55 }}>
+              <strong style={{ color: vp.text }}>Persönliche Sitzung noch nicht bestätigt.</strong> Die Übersicht ist Teil der Verwaltung: Bitte auf{' '}
+              <strong style={{ color: vp.text }}>Meine Familie</strong> einmal den <strong style={{ color: vp.text }}>persönlichen Code</strong> von deiner Karte eintragen (z. B. AB12) –{' '}
+              <strong style={{ color: vp.text }}>nicht</strong> die Familien-Kennung für alle. Danach sind diese Seite und die Einladungsbriefe nutzbar.
+            </p>
+          ) : (
+            <p style={{ margin: 0, fontSize: '0.95rem', color: vp.muted, lineHeight: 1.55 }}>
+              Diese Übersicht ist nur für <strong style={{ color: vp.text }}>Inhaber:innen</strong> der Familien-Instanz sichtbar. Wähle in der Leiste die Rolle „Inhaber:in“ oder wende dich an die Person, die die Familie verwaltet.
+            </p>
+          )}
           <Link
-            to={R.meineFamilie}
+            to={inhaberOhneVerwaltungsrecht ? linkMeineFamilieIdentitaet : R.meineFamilie}
             style={{
               display: 'inline-block',
               marginTop: '1rem',
@@ -141,8 +161,8 @@ export default function K2FamilieMitgliederCodesPage() {
           >
             → Zu Meine Familie
           </Link>
-          <p style={{ marginTop: '1.5rem', fontSize: '0.78rem', color: a.muted }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
-          <p style={{ marginTop: '0.35rem', fontSize: '0.78rem', color: a.muted }}>{PRODUCT_URHEBER_ANWENDUNG}</p>
+          <p style={{ marginTop: '1.5rem', fontSize: '0.78rem', color: vp.muted }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
+          <p style={{ marginTop: '0.35rem', fontSize: '0.78rem', color: vp.muted }}>{PRODUCT_URHEBER_ANWENDUNG}</p>
         </div>
       </div>
     )

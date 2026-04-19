@@ -21,6 +21,16 @@ import { buildMitgliederCodesZweigGruppen, type MitgliederCodesZweigGruppe } fro
 
 const R = PROJECT_ROUTES['k2-familie']
 
+/**
+ * Auf dem dunklen K2-Familie-Viewport (mission-wrapper) sind adminTheme.text/muted für helle Karten gedacht —
+ * sonst wirken Überschrift und Fließtext fast unsichtbar. Siehe ui-kontrast-lesbarkeit.mdc.
+ */
+const vp = {
+  text: 'var(--k2-text)',
+  muted: 'var(--k2-muted)',
+  link: 'var(--k2-accent)',
+} as const
+
 /** Kurz-URL für Papier (ohne Cache-Bust). */
 function buildShortEinladungsUrlForPrint(
   tenantId: string,
@@ -141,8 +151,10 @@ function briefBloeckeWaehlen(
 export default function K2FamilieEinladungGeschwisterBriefePage() {
   const a = adminTheme
   const { currentTenantId } = useFamilieTenant()
-  const { capabilities } = useFamilieRolle()
+  const { capabilities, rolle } = useFamilieRolle()
   const kannInstanz = capabilities.canManageFamilienInstanz
+  /** Rolle „Inhaber:in“, aber ohne bestätigte Sitzung: getFamilieEffectiveCapabilities schaltet Verwaltung aus – eigene Meldung nötig. */
+  const inhaberOhneVerwaltungsrecht = !kannInstanz && rolle === 'inhaber'
   const [nurGeschwisterAst, setNurGeschwisterAst] = useState(true)
   const { versionTimestamp } = useQrVersionTimestamp()
 
@@ -172,7 +184,10 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
     return (
       <div className="mission-wrapper">
         <div className="viewport k2-familie-page" style={{ padding: '1.25rem 1rem 2rem', maxWidth: 560, margin: '0 auto' }}>
-          <Link to={R.meineFamilie} style={{ fontSize: '0.9rem', color: a.accent, fontWeight: 600 }}>
+          <Link
+            to={inhaberOhneVerwaltungsrecht ? `${R.meineFamilie}#k2-familie-identitaet-bestaetigen` : R.meineFamilie}
+            style={{ fontSize: '0.9rem', color: vp.link, fontWeight: 600 }}
+          >
             ← Zu Meine Familie
           </Link>
           <h1
@@ -180,17 +195,25 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
               margin: '0.75rem 0 0.5rem',
               fontSize: '1.35rem',
               fontWeight: 700,
-              color: a.text,
+              color: vp.text,
               fontFamily: a.fontHeading,
             }}
           >
             Einladung · Geschwister-Briefe
           </h1>
-          <p style={{ margin: 0, fontSize: '0.95rem', color: a.muted, lineHeight: 1.55 }}>
-            Nur für <strong style={{ color: a.text }}>Inhaber:innen</strong> der Familien-Instanz.
-          </p>
+          {inhaberOhneVerwaltungsrecht ? (
+            <p style={{ margin: 0, fontSize: '0.95rem', color: vp.muted, lineHeight: 1.55 }}>
+              <strong style={{ color: vp.text }}>Persönliche Sitzung noch nicht bestätigt.</strong> Die Briefe nutzen dieselben Schutzregeln wie der Rest der K2 Familie: Bitte auf{' '}
+              <strong style={{ color: vp.text }}>Meine Familie</strong> einmal den <strong style={{ color: vp.text }}>persönlichen Code</strong> von deiner Karte eintragen (z. B. AB12) –{' '}
+              <strong style={{ color: vp.text }}>nicht</strong> die Familien-Kennung für alle. Danach sind Einladungsbriefe und Mitglieder-Codes hier verfügbar.
+            </p>
+          ) : (
+            <p style={{ margin: 0, fontSize: '0.95rem', color: vp.muted, lineHeight: 1.55 }}>
+              Nur für <strong style={{ color: vp.text }}>Inhaber:innen</strong> der Familien-Instanz (in der Leiste „Inhaber:in“ wählen).
+            </p>
+          )}
           <Link
-            to={R.meineFamilie}
+            to={`${R.meineFamilie}#k2-familie-identitaet-bestaetigen`}
             style={{
               display: 'inline-block',
               marginTop: '1rem',
@@ -205,8 +228,8 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
           >
             → Zu Meine Familie
           </Link>
-          <p style={{ marginTop: '1.5rem', fontSize: '0.78rem', color: a.muted }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
-          <p style={{ marginTop: '0.35rem', fontSize: '0.78rem', color: a.muted }}>{PRODUCT_URHEBER_ANWENDUNG}</p>
+          <p style={{ marginTop: '1.5rem', fontSize: '0.78rem', color: vp.muted }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
+          <p style={{ marginTop: '0.35rem', fontSize: '0.78rem', color: vp.muted }}>{PRODUCT_URHEBER_ANWENDUNG}</p>
         </div>
       </div>
     )
@@ -216,7 +239,7 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
     <div className="mission-wrapper">
       <style>{`
         @page { size: A4; margin: 14mm 16mm 20mm 16mm; }
-        .k2-fam-einlad-brief-wrap { font-family: ${a.fontBody}; color: ${a.text}; }
+        .k2-fam-einlad-brief-wrap { font-family: ${a.fontBody}; color: var(--k2-text); }
         .k2-fam-einlad-brief-screenbar {
           display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: 1rem;
         }
@@ -275,7 +298,7 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
         style={{ padding: '1.25rem 1rem 2rem', maxWidth: 720, margin: '0 auto' }}
       >
         <div className="k2-fam-einlad-no-print">
-          <Link to={R.mitgliederCodes} style={{ fontSize: '0.9rem', color: a.accent, fontWeight: 600 }}>
+          <Link to={R.mitgliederCodes} style={{ fontSize: '0.9rem', color: vp.link, fontWeight: 600 }}>
             ← Mitglieder &amp; Codes
           </Link>
         </div>
@@ -285,20 +308,20 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
             margin: '0.75rem 0 0.35rem',
             fontSize: '1.4rem',
             fontWeight: 700,
-            color: a.text,
+            color: vp.text,
             fontFamily: a.fontHeading,
           }}
         >
           Einladung · Briefe pro Familienzweig
         </h1>
-        <p className="k2-fam-einlad-no-print" style={{ margin: '0 0 1rem', fontSize: '0.92rem', color: a.muted, lineHeight: 1.5 }}>
-          <strong style={{ color: a.text }}>Live mit Codes:</strong> Dieselben Daten wie unter &nbsp;
-          <Link to={R.mitgliederCodes} style={{ color: a.accent, fontWeight: 600 }}>
+        <p className="k2-fam-einlad-no-print" style={{ margin: '0 0 1rem', fontSize: '0.92rem', color: vp.muted, lineHeight: 1.5 }}>
+          <strong style={{ color: vp.text }}>Live mit Codes:</strong> Dieselben Daten wie unter &nbsp;
+          <Link to={R.mitgliederCodes} style={{ color: vp.link, fontWeight: 600 }}>
             Mitglieder &amp; Codes
           </Link>
-          . Im Brief: <strong style={{ color: a.text }}>Familien-Kennung</strong>,{' '}
-          <strong style={{ color: a.text }}>Familien-Link &amp; QR</strong> (Einstieg für alle) und pro Person{' '}
-          <strong style={{ color: a.text }}>Link &amp; QR</strong> (mit Server-Stand zum Scannen). Pro Brief ein Geschwister-Zweig; vertraulich drucken.
+          . Im Brief: <strong style={{ color: vp.text }}>Familien-Kennung</strong>,{' '}
+          <strong style={{ color: vp.text }}>Familien-Link &amp; QR</strong> (Einstieg für alle) und pro Person{' '}
+          <strong style={{ color: vp.text }}>Link &amp; QR</strong> (mit Server-Stand zum Scannen). Pro Brief ein Geschwister-Zweig; vertraulich drucken.
         </p>
 
         <div className="k2-fam-einlad-brief-screenbar k2-fam-einlad-no-print">
@@ -319,7 +342,7 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
             Alle Briefe drucken
           </button>
           {zweigGruppenAst.length > 0 ? (
-            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.88rem', color: a.text, cursor: 'pointer' }}>
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.88rem', color: vp.text, cursor: 'pointer' }}>
               <input
                 type="checkbox"
                 checked={nurGeschwisterAst}
@@ -330,7 +353,7 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
           ) : null}
           <Link
             to="/texte-schreibtisch/einladung-geschwister-k2-familie.html"
-            style={{ fontSize: '0.88rem', color: a.accent, fontWeight: 600 }}
+            style={{ fontSize: '0.88rem', color: vp.link, fontWeight: 600 }}
           >
             Statische Vorlage ohne Codes
           </Link>
@@ -343,18 +366,18 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
         ) : null}
 
         {zweigGruppenAst.length === 0 ? (
-          <p className="k2-fam-einlad-no-print" style={{ fontSize: '0.88rem', color: a.muted, marginBottom: '1rem' }}>
-            Keine getrennten <strong>Geschwister-Äste</strong> im Stammbaum erkannt — es werden{' '}
-            <strong>alle Familienzweige</strong> wie bei Mitglieder &amp; Codes verwendet (eine Seite pro Block).
+          <p className="k2-fam-einlad-no-print" style={{ fontSize: '0.88rem', color: vp.muted, marginBottom: '1rem' }}>
+            Keine getrennten <strong style={{ color: vp.text }}>Geschwister-Äste</strong> im Stammbaum erkannt — es werden{' '}
+            <strong style={{ color: vp.text }}>alle Familienzweige</strong> wie bei Mitglieder &amp; Codes verwendet (eine Seite pro Block).
           </p>
         ) : !effektivNurAst ? (
-          <p className="k2-fam-einlad-no-print" style={{ fontSize: '0.88rem', color: a.muted, marginBottom: '1rem' }}>
-            Anzeige: <strong>alle Familienzweige</strong> (nicht nur Geschwister-Äste).
+          <p className="k2-fam-einlad-no-print" style={{ fontSize: '0.88rem', color: vp.muted, marginBottom: '1rem' }}>
+            Anzeige: <strong style={{ color: vp.text }}>alle Familienzweige</strong> (nicht nur Geschwister-Äste).
           </p>
         ) : null}
 
         {bloecke.length === 0 ? (
-          <p style={{ fontSize: '0.92rem', color: a.muted }}>Noch keine Personen — bitte zuerst Personen anlegen.</p>
+          <p style={{ fontSize: '0.92rem', color: vp.muted }}>Noch keine Personen — bitte zuerst Personen anlegen.</p>
         ) : (
           bloecke.map((g, idx) => (
             <EinladungsBriefSeite
@@ -372,7 +395,7 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
           ))
         )}
 
-        <div className="k2-fam-einlad-no-print" style={{ marginTop: '2rem', fontSize: '0.78rem', color: a.muted }}>
+        <div className="k2-fam-einlad-no-print" style={{ marginTop: '2rem', fontSize: '0.78rem', color: vp.muted }}>
           <p style={{ margin: '0 0 0.35rem' }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
           <p style={{ margin: 0 }}>{PRODUCT_URHEBER_ANWENDUNG}</p>
         </div>

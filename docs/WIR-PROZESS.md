@@ -126,6 +126,7 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 
 | Datum | Was ich gelernt habe |
 |---|---|
+| 19.04.26 (Abend) | **K2 Familie Sitzungsbestätigung:** Der persönliche Code gilt nur für **„Du“**, nicht für jeden Listen-Eintrag – Verwechslung erklärt „Code laut Liste stimmt, App sagt nein“; klare UI + **neuer Code** an „Du“ löst es. Session-Ende: **qs:local grün**, DIALOG-STAND, commit + push. |
 | 16.04.26 (Spät) | **Schluss für heute:** Georg priorisiert **Optimierung, die Nutzer spüren** (Medien in `public/`); Session-Ende = **alles Offene** mit **Tests + Build grün** auf **main**, damit nichts auf dem Mac hängen bleibt. |
 | 16.04.26 (Abend) | **Schluss für heute:** Restliche lokale Arbeit (**Entdecken** Weg K2 Familie, **Muster-Nav** in K2 Familie, Präsentationsmappe **Einstiegsadressen**, Vertrieb-Doku) mit **Tests + Build grün** committen und pushen – morgen **VK2/ök2-Rundgang** auf Vercel ansehen. |
 | 16.04.26 | **GaleriePage-Aufräumen:** Wenn ein großer Block nach `export default` liegt, ist das oft **toter Code** (Parser/Export trotzdem ok) – **tsc** meldet erst bei **zweiter** Referenz zur alten Komponente. ök2-Rundgang = **`Oek2GalerieLeitfadenModal`** + **`musterOnly`**, nicht **`GalerieEntdeckenGuide`**. |
@@ -272,6 +273,8 @@ Wenn ja: wir bauen es.
 Wenn nein: wir lassen es.
 
 ---
+
+**Session-Reflexion (19.04.26):** K2 Familie: Sitzung prüft nur den Code der Person **„Du“** – Listen-Codes anderer Mitglieder sind absichtlich nicht genug; nachvollziehbare Texte + aktiver Familienname im Banner; Georg hat einen neuen Code, der passt.
 
 **Session-Reflexion (11.04.26):** AGB in der App und Doku mit Lizenzmodell (Haupt-/Nebenlizenz, Mandant, K2 Familie) abgebildet; eine Referenz-Datei gegen Textdrift; Verweise im Marketing und Handbuch angeglichen – Rechtssicherheit stützt Anwalt + konsistente Quellen.
 

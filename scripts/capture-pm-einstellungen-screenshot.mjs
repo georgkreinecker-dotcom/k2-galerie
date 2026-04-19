@@ -31,7 +31,7 @@ async function main() {
       waitUntil: 'networkidle',
       timeout: 120_000,
     })
-    await page.getByText('Demo-Modus (ök2)', { exact: false }).waitFor({
+    await page.getByText('Meine Kontaktdaten', { exact: false }).waitFor({
       state: 'visible',
       timeout: 60_000,
     })

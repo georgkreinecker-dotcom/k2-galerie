@@ -37,7 +37,21 @@ export function normalizeMitgliedsNummerInput(s: string | undefined | null): str
   t = t.trim().replace(/\s+/g, '')
   /** Mobil: AB-12 / AB–12 (Bindestrich, Gedankenstrich) → AB12; nur dieses 2+2-Format, KF-… & Co. bleiben. */
   const vier = t.match(/^([A-Za-z]{2})[\u002D\u2010-\u2015\u2212\uFE63\uFF0D]?(\d{2})$/)
-  if (vier) return `${vier[1]}${vier[2]}`
+  if (vier) {
+    const L0 = vier[1][0]!
+    const L1 = vier[1][1]!
+    const digits = vier[2]
+    const a = L0.toUpperCase()
+    /**
+     * Auf Bildschirmen sieht „I“ (i) wie „l“ (L) aus: Nutzer tippen oft L + kleines l statt L + großes I (LI…).
+     * Nur dieses eine Muster: erstes Zeichen L, zweites ASCII-kleines l → zweites zu I.
+     * Echtes „LL…“: zweites Zeichen großes L oder anderes (A…, nicht Ll-Muster).
+     */
+    if (a === 'L' && L1 === 'l') {
+      return `LI${digits}`
+    }
+    return `${a}${L1.toUpperCase()}${digits}`
+  }
   return t
 }
 

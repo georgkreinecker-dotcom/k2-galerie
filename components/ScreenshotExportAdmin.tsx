@@ -2263,7 +2263,9 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       return false
     }
   })()
-  const showPilotStammdatenWelcome = !pilotStammdatenBannerDismissed && oek2PilotEinladungAktiv
+  /** VK2 Testpilot (?vk2Pilot): eigener Hinweis – nicht an ök2-Zettel-Session koppeln. */
+  const showVk2PilotStammdatenBanner =
+    !pilotStammdatenBannerDismissed && !!getActiveVk2PilotId()
   const { showChecklists: showGamificationChecklists, checklistsHiddenByUser: profiGamificationChecklistsHidden, setChecklistsHiddenByUser: setProfiGamificationChecklistsHidden } = useGamificationChecklistsUi()
   const settingsContentRef = useRef<HTMLDivElement>(null)
   /** Ref auf den oberen Rand des Admin-Bereichs – für „Zurück in den Admin-Bereich“ (scrollt den tatsächlichen Scroll-Container) */
@@ -18259,8 +18261,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     : 'Name, Kontakt, Adresse, Öffnungszeiten, YouTube/Instagram'}
                 </div>
               </button>
-              {/* 2. Lizenzen – ök2, VK2, dynamischer Mandant: Info + Anmelden/Abschließen + Beenden (ein Standard) */}
-              {(tenant.isOeffentlich || tenant.isVk2 || tenant.dynamicTenantId) && (() => {
+              {/* 2. Lizenzen – ök2, VK2, dynamischer Mandant. ök2-Testpilot: große Kachel weg, kompakt unten in details */}
+              {((tenant.isOeffentlich && !oek2PilotEinladungAktiv) || tenant.isVk2 || tenant.dynamicTenantId) && (() => {
                 const lizenzHubAktiv = settingsSubTab === 'lizenz' || settingsSubTab === 'lizenzbeenden' || settingsSubTab === 'lizenzinfo'
                 const innerBtn = {
                   flex: '1 1 140px',
@@ -18346,8 +18348,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   </div>
                 )
               })()}
-              {/* 4. Empfehlungs-Programm – nur ök2 (K2 schlank) */}
-              {tenant.isOeffentlich && (
+              {/* 4. Empfehlungs-Programm – nur ök2 ohne Testpilot (Pilot: in details unten) */}
+              {tenant.isOeffentlich && !oek2PilotEinladungAktiv && (
               <button type="button" onClick={() => setSettingsSubTab('empfehlung')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'empfehlung' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'empfehlung' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', boxSizing: 'border-box', width: '100%', minHeight: '7.75rem', height: '100%' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'empfehlung' ? s.accent : `${s.accent}22` }}
@@ -18405,6 +18407,136 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Anmeldung</div>
                 <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem', flex: 1, lineHeight: 1.35 }}>Wie melden sich Nutzer an?</div>
               </button>
+              )}
+              {/* ök2 Testpilot: Lizenz + Empfehlung dezent, standardmäßig zu – bei Bedarf aufklappen */}
+              {tenant.isOeffentlich && oek2PilotEinladungAktiv && (
+                <details
+                  style={{
+                    gridColumn: '1 / -1',
+                    alignSelf: 'stretch',
+                    margin: 0,
+                    padding: '0.45rem 0.65rem',
+                    background: s.bgElevated,
+                    border: `1px dashed ${s.accent}55`,
+                    borderRadius: 10,
+                  }}
+                >
+                  <summary
+                    style={{
+                      cursor: 'pointer',
+                      fontSize: '0.8rem',
+                      color: s.muted,
+                      fontWeight: 600,
+                      lineHeight: 1.45,
+                      listStyle: 'none',
+                    }}
+                  >
+                    Für später: Lizenz &amp; Empfehlungs-Programm (optional aufklappen)
+                  </summary>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                      gap: '0.65rem',
+                      marginTop: '0.65rem',
+                      paddingTop: '0.65rem',
+                      borderTop: `1px solid ${s.accent}22`,
+                    }}
+                  >
+                    <div
+                      style={{
+                        padding: '0.6rem 0.75rem',
+                        background: s.bgCard,
+                        border: `1px solid ${s.accent}33`,
+                        borderRadius: 8,
+                      }}
+                    >
+                      <div style={{ fontWeight: 700, color: s.text, fontSize: '0.82rem', marginBottom: '0.4rem' }}>📄 Lizenzen</div>
+                      <button
+                        type="button"
+                        onClick={() => setSettingsSubTab('lizenzinfo')}
+                        style={{
+                          width: '100%',
+                          boxSizing: 'border-box',
+                          padding: '0.45rem 0.65rem',
+                          marginBottom: '0.4rem',
+                          borderRadius: 6,
+                          border: `1px solid ${s.accent}55`,
+                          background: s.bgElevated,
+                          color: s.text,
+                          fontWeight: 600,
+                          fontSize: '0.8rem',
+                          cursor: 'pointer',
+                          fontFamily: 'inherit',
+                        }}
+                      >
+                        Lizenzinformation
+                      </button>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                        <button
+                          type="button"
+                          onClick={() => setSettingsSubTab('lizenz')}
+                          style={{
+                            flex: '1 1 120px',
+                            minWidth: 0,
+                            padding: '0.4rem 0.55rem',
+                            borderRadius: 6,
+                            fontSize: '0.76rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            fontFamily: 'inherit',
+                            border: `1px solid ${s.accent}44`,
+                            background: settingsSubTab === 'lizenz' ? `${s.accent}22` : s.bgCard,
+                            color: s.text,
+                            textAlign: 'left',
+                          }}
+                        >
+                          📄 Lizenz abschließen
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSettingsSubTab('lizenzbeenden')}
+                          style={{
+                            flex: '1 1 120px',
+                            minWidth: 0,
+                            padding: '0.4rem 0.55rem',
+                            borderRadius: 6,
+                            fontSize: '0.76rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            fontFamily: 'inherit',
+                            border: `1px solid ${s.accent}44`,
+                            background: settingsSubTab === 'lizenzbeenden' ? `${s.accent}22` : s.bgCard,
+                            color: s.text,
+                            textAlign: 'left',
+                          }}
+                        >
+                          🚪 Lizenz beenden
+                        </button>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSettingsSubTab('empfehlung')}
+                      style={{
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        background: settingsSubTab === 'empfehlung' ? `${s.accent}18` : s.bgCard,
+                        border: `1px solid ${settingsSubTab === 'empfehlung' ? s.accent : `${s.accent}33`}`,
+                        borderRadius: 8,
+                        padding: '0.6rem 0.75rem',
+                        fontFamily: 'inherit',
+                        boxSizing: 'border-box',
+                        width: '100%',
+                        minHeight: 0,
+                      }}
+                    >
+                      <div style={{ fontSize: '1.1rem', marginBottom: '0.25rem' }}>🤝</div>
+                      <div style={{ fontWeight: 700, color: s.text, fontSize: '0.82rem' }}>Empfehlungs-Programm</div>
+                      <div style={{ fontSize: '0.72rem', color: s.muted, marginTop: '0.2rem', lineHeight: 1.35 }}>Rabattstufe, geworbene User</div>
+                    </button>
+                  </div>
+                </details>
               )}
             </div>
 
@@ -18923,7 +19055,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             {/* Stammdaten Sub-Tab */}
             {settingsSubTab === 'stammdaten' && (
               <div ref={settingsContentRef}>
-                {showPilotStammdatenWelcome && (tenant.isOeffentlich || tenant.isVk2) && (
+                {showVk2PilotStammdatenBanner && tenant.isVk2 && (
                   <div
                     style={{
                       padding: '0.85rem 1rem',
@@ -18942,27 +19074,17 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   >
                     <div style={{ flex: '1 1 220px', minWidth: 0 }}>
                       <strong>Testpilot:</strong>{' '}
-                      {tenant.isOeffentlich
-                        ? 'Dein Name und deine E-Mail sind hier vorbefüllt – bitte prüfen und ergänzen. Danach kannst du die öffentliche Demo ansehen.'
-                        : 'Vereinsname und Erreichbarkeit sind hier vorbefüllt – bitte prüfen und ergänzen. Danach könnt ihr die VK2-Galerie ansehen.'}
+                      Es gibt einen <strong>Start-Vereinsnamen</strong> (Zettel/Sandbox). <strong>Adresse und Erreichbarkeit</strong>{' '}
+                      (E-Mail, Website, Ort) sind zunächst <strong>leer</strong> – bitte eintragen, sobald ihr sie habt; das Vereinsprofil
+                      darunter zeigt, was noch fehlt. Dann könnt ihr die VK2-Galerie ansehen.
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
-                      {tenant.isOeffentlich && (
-                        <Link
-                          to={PROJECT_ROUTES['k2-galerie'].galerieOeffentlich}
-                          style={{ padding: '0.45rem 0.85rem', background: '#0d9488', color: '#fff', borderRadius: '8px', fontWeight: 600, textDecoration: 'none', fontSize: '0.88rem' }}
-                        >
-                          Zur Demo-Galerie
-                        </Link>
-                      )}
-                      {tenant.isVk2 && (
-                        <Link
-                          to={PROJECT_ROUTES.vk2.galerie}
-                          style={{ padding: '0.45rem 0.85rem', background: '#0d9488', color: '#fff', borderRadius: '8px', fontWeight: 600, textDecoration: 'none', fontSize: '0.88rem' }}
-                        >
-                          Zur VK2-Galerie
-                        </Link>
-                      )}
+                      <Link
+                        to={PROJECT_ROUTES.vk2.galerie}
+                        style={{ padding: '0.45rem 0.85rem', background: '#0d9488', color: '#fff', borderRadius: '8px', fontWeight: 600, textDecoration: 'none', fontSize: '0.88rem' }}
+                      >
+                        Zur VK2-Galerie
+                      </Link>
                       <button
                         type="button"
                         onClick={() => setPilotStammdatenBannerDismissed(true)}
@@ -19521,19 +19643,6 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 ) : (
                   <>
                     {tenant.isOeffentlich && (
-                      <div style={{
-                        padding: '0.75rem 1rem',
-                        marginBottom: '1rem',
-                        background: 'rgba(184, 184, 255, 0.15)',
-                        border: '1px solid rgba(184, 184, 255, 0.4)',
-                        borderRadius: '8px',
-                        color: '#b8b8ff',
-                        fontSize: '0.9rem'
-                      }}>
-                        🔒 Demo-Modus (ök2): Nur Musterdaten – Speichern schreibt keine echten K2-Daten.
-                      </div>
-                    )}
-                    {tenant.isOeffentlich && (
                       <p style={{ margin: '0 0 1rem', fontSize: '0.78rem', color: s.muted, lineHeight: 1.45 }}>
                         Musterfelder leeren: oben unter <strong>Einstellungen</strong> auf <strong>„Demo &amp; Muster zurücksetzen“</strong> tippen → <strong>🗑️ Musterfelder leeren</strong>.
                       </p>
@@ -20066,7 +20175,26 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 </div>
 
                 <div style={{ display: 'flex', gap: '1rem', flexDirection: 'column' }}>
-                  {tenant.isOeffentlich && isPlatformInstance() && (
+                  {tenant.isOeffentlich && isPlatformInstance() && oek2PilotEinladungAktiv && (
+                    <div
+                      style={{
+                        padding: '0.85rem 1rem',
+                        background: '#fffbeb',
+                        border: '1px solid #f59e0b',
+                        borderRadius: 10,
+                        color: '#1c1a18',
+                        fontSize: '0.88rem',
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      <strong style={{ display: 'block', marginBottom: '0.35rem' }}>Dein Zugang als Testpilot sichern</strong>
+                      Bewahre den <strong>Admin-Link</strong> und den <strong>QR vom Pilot-Zettel</strong> / der Einladung –
+                      oder setze ein Lesezeichen auf diese Admin-Seite. So kommst du <strong>wieder in deine Demo-Galerie</strong>{' '}
+                      – auch ohne neues Gerät. Später, mit <strong>eigener Lizenz</strong>: zusätzlich die{' '}
+                      <strong>Lizenzbestätigung</strong> nach dem Kauf aufbewahren (Seite nach erfolgreicher Zahlung).
+                    </div>
+                  )}
+                  {tenant.isOeffentlich && isPlatformInstance() && !oek2PilotEinladungAktiv && (
                     <div
                       style={{
                         padding: '0.85rem 1rem',

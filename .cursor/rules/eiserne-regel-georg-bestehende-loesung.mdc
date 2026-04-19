@@ -1,0 +1,48 @@
+---
+description: EISERNES GESETZ – Wenn Georg auf eine bestehende Lösung hinweist, gilt nur diese. Kein Parallelweg. Unumstösslich.
+alwaysApply: true
+---
+
+# 🔴 EISERNES GESETZ – Georg weist auf eine bestehende Lösung hin
+
+## Das Gesetz (eine Zeile)
+
+**Wenn Georg sagt, es gebe dafür schon eine Lösung, einen Ablauf, eine Vorlage (z. B. ök2, Galerie, „macht ihr wie …“): ist das verbindlich – die KI baut ausschließlich die Spiegelung/Anbindung an diese bestehende Lösung, keinen zweiten Weg.**
+
+---
+
+## Warum dieses zweite Eiserne Gesetz
+
+Georg hat **nicht vergessen**, dass es die Lösung schon gibt. Wenn trotzdem ein neuer Pfad entsteht, liegt das **nicht** an fehlendem Merksatz in der Regeldatei, sondern daran, dass die KI **nicht zuerst** die bestehende Lösung gesucht und übernommen hat. Diese Regel schließt diese Ausrede aus.
+
+---
+
+## Was NIEMALS passieren darf
+
+| Situation | Verboten |
+|-----------|----------|
+| Georg verweist auf „funktionierende Vorlage ök2“ / „gibt es schon“ / „wie bei X“ | Eigenen Ablauf erfinden, „ähnlich“ bauen, erst später angleichen |
+| Eine Lösung steht in **ein-standard-problem.mdc** (Tabelle) oder im genannten File | Tabelle ignorieren und parallelen Code schreiben |
+| Implementierung läuft | Ohne vorher **grep**/Lesen der Referenz-Stelle (wo es schon funktioniert) |
+
+---
+
+## Pflicht (vor jeder Zeile Code nach Georgs Hinweis)
+
+1. **Stop** – kein Tippen, bis die **genannte oder offensichtliche** Quelle gefunden ist (Datei, Funktion, Tabelle in **ein-standard-problem.mdc**).
+2. **Übernehmen** – dieselbe Kette / dieselbe Funktion / derselbe Aufruf wie am Referenz-Ort; neuer Einstieg = **nur weiterer Aufrufer**.
+3. **Erst danach** ggf. minimale Anpassung (Props, Kontext) – **nicht** die Logik duplizieren.
+
+---
+
+## Verknüpfung
+
+- **ein-standard-problem.mdc** – Tabelle der Standards
+- **funktionierende-muster-zuerst-nutzen.mdc** – zuerst im Repo suchen
+- **standard-verstoss-alle-stellen-nachziehen.mdc** – wenn eine Stelle den Standard brach, alle ähnlichen nachziehen
+
+---
+
+## Kurzfassung
+
+**Georg sagt „es gibt schon eine Lösung“ = Eisernes Gesetz: nur diese Lösung spiegeln. Kein Parallelweg. Kein „ich habe nicht dran gedacht“ – Pflicht: zuerst finden, dann nur verbinden.**
