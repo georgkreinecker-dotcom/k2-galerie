@@ -134,6 +134,10 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
             page-break-after: always;
             padding: 0 !important;
             max-width: none !important;
+            background: #fff !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            border: none !important;
           }
           .k2-fam-einlad-brief-seite:last-child { page-break-after: auto; }
           .k2-fam-einlad-url-screen { display: none !important; }
@@ -141,6 +145,34 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
         }
         @media screen {
           .k2-fam-einlad-url-print { display: none !important; }
+          /* Brief: Lesekontrast wie Papier — dunkler Text auf hellem Grund (nicht dunkel auf Galerie-Gradient) */
+          .k2-fam-einlad-brief-seite {
+            background: #fffefb;
+            color: #1c1a18 !important;
+            border-radius: 14px;
+            padding: 1.5rem 1.35rem !important;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+          }
+          .k2-fam-einlad-brief-seite p,
+          .k2-fam-einlad-brief-seite li,
+          .k2-fam-einlad-brief-seite td,
+          .k2-fam-einlad-brief-seite th {
+            color: #1c1a18 !important;
+          }
+          .k2-fam-einlad-brief-seite header p:first-of-type {
+            color: #5c5650 !important;
+          }
+          .k2-fam-einlad-brief-seite header h2 {
+            color: #2c2419 !important;
+          }
+          .k2-fam-einlad-brief-seite header p:last-of-type {
+            color: #4a4035 !important;
+          }
+          .k2-fam-einlad-brief-seite a {
+            color: #b45309 !important;
+            font-weight: 600;
+          }
         }
       `}</style>
 
