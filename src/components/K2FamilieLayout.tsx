@@ -234,6 +234,14 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
               >
                 Eigene Familie anlegen
               </Link>
+              <PublicTeilenFixed
+                layout="inline"
+                variant="familie"
+                displayName="K2 Familie Musterfamilie"
+                canonicalPublicUrl={getPublicK2FamilieMusterEntryUrl()}
+                buttonLabel="📤 Teilen"
+                getShareText={() => 'K2 Familie Musterfamilie – Schau dir die Beispiel-Familie an'}
+              />
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem', marginLeft: 'auto' }}>
               <select
@@ -1007,15 +1015,6 @@ function FamilieLayoutInner() {
       <FamilieApfMeineFamilieSync />
       <FamilieMusterSessionEnforcer />
       <FamilieCloudAutoSync />
-      {nurMuster ? (
-        <PublicTeilenFixed
-          variant="familie"
-          displayName="K2 Familie Musterfamilie"
-          canonicalPublicUrl={getPublicK2FamilieMusterEntryUrl()}
-          buttonLabel="📤 Teilen"
-          getShareText={() => 'K2 Familie Musterfamilie – Schau dir die Beispiel-Familie an'}
-        />
-      ) : null}
       <div className={`k2-familie-layout-shell${nurMuster ? ' k2-familie-layout-shell--nur-muster' : ''}`}>
         {!nurMitgliedEinstieg && !nurMuster ? <FamilieLeitstrukturPanel /> : null}
         <FamilieMusterDemoHintProvider active={nurMuster} root={musterHintRoot}>

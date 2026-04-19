@@ -83,6 +83,10 @@ const T_DEFAULTS = {
   /** Kurzer Hinweis unter der Überschrift – ohne Präsentationsmappe (später ergänzbar) */
   wegIntro: 'Ein Klick – du siehst sofort, was dich erwartet.',
 
+  /** Kurzkampagne Testpilot (Band über den Weg-Karten) */
+  testpilotKurz: 'Begrenztes Testpilot-Programm – mitmachen und Feedback geben.',
+  testpilotCta: 'Zur Anmeldung →',
+
   q3: 'Wie heißt du – oder deine Galerie?',
   q3placeholder: 'Dein Künstlername oder Galeriename',
   q3hint: 'Nur für deine persönliche Vorschau – nichts wird gespeichert.',
@@ -999,6 +1003,54 @@ export default function EntdeckenPage() {
             <p style={{ fontSize: '0.82rem', color: muted, textAlign: 'center', lineHeight: 1.5, marginBottom: '1.25rem', maxWidth: 500, marginLeft: 'auto', marginRight: 'auto' }}>
               {T.wegIntro}
             </p>
+
+            {/* Testpilot – schmales Aktionsband (ein Versuch: Symbol + Kurztext + Link) */}
+            <div
+              role="region"
+              aria-label="Testpilot-Programm"
+              style={{
+                marginBottom: '1.25rem',
+                padding: '0.75rem 1rem',
+                background: `linear-gradient(135deg, ${accent}14, ${accent}08)`,
+                border: `1px solid ${accent}40`,
+                borderRadius: 14,
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                gap: '0.75rem 1rem',
+                justifyContent: 'space-between',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', minWidth: 0, flex: '1 1 12rem' }}>
+                <span style={{ fontSize: '1rem', lineHeight: 1.2, flexShrink: 0 }} aria-hidden title="Pilot">
+                  🚩
+                </span>
+                <p style={{ margin: 0, fontSize: '0.78rem', color: text, lineHeight: 1.45, fontWeight: 600, fontFamily: fontBody }}>
+                  {T.testpilotKurz}
+                </p>
+              </div>
+              <Link
+                to={PROJECT_ROUTES['k2-galerie'].testuserAnmeldung}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  padding: '0.5rem 1rem',
+                  background: accent,
+                  color: '#fff',
+                  fontWeight: 700,
+                  fontSize: '0.82rem',
+                  borderRadius: 10,
+                  textDecoration: 'none',
+                  fontFamily: fontBody,
+                  boxShadow: `0 2px 10px ${accent}44`,
+                }}
+              >
+                {T.testpilotCta}
+              </Link>
+            </div>
+
             <ChoiceCard {...T.wegSolo} selected={answers.q1 === 'solo'} onClick={() => { setAnswers(a => ({ ...a, q1: 'solo' })); openByChoice('solo'); }} color="#c2410c" />
             <ChoiceCard {...T.wegVerein} selected={answers.q1 === 'verein'} onClick={() => { setAnswers(a => ({ ...a, q1: 'verein' })); openByChoice('verein'); }} color="#1e5cb5" />
             <ChoiceCard

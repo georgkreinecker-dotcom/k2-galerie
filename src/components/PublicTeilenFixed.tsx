@@ -20,6 +20,11 @@ export interface PublicTeilenFixedProps {
   buttonLabel?: string
   /** Wenn abweichend vom Standard „… – Schau dir die Werke an“ */
   getShareText?: () => string
+  /**
+   * `inline` = Button im normalen Layout (z. B. Sticky-Nav), kein fixed – vermeidet Überlappung mit Rundgang/Mitglied.
+   * `fixed` = bisheriges Verhalten (oben rechts im Viewport), z. B. Galerie ök2 Vollfläche.
+   */
+  layout?: 'fixed' | 'inline'
 }
 
 const VARIANT_PRIMARY_BUTTON: Record<
@@ -51,7 +56,9 @@ export function PublicTeilenFixed(props: PublicTeilenFixedProps) {
     fixedRight = 'clamp(1rem, 2vw, 1.5rem)',
     buttonLabel = '📤 Galerie teilen',
     getShareText,
+    layout = 'fixed',
   } = props
+  const isInline = layout === 'inline'
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
   const [sharePopoverOpen, setSharePopoverOpen] = useState(false)
   const [shareLinkCopied, setShareLinkCopied] = useState(false)
@@ -139,30 +146,68 @@ export function PublicTeilenFixed(props: PublicTeilenFixedProps) {
 
   if (typeof navigator === 'undefined') return null
 
+  const buttonBase: React.CSSProperties = {
+    background: pb.background,
+    border: pb.border,
+    color: pb.color,
+    fontWeight: 600,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.35rem',
+    fontFamily: 'inherit',
+  }
+
+  const buttonPosition: React.CSSProperties = isInline
+    ? {
+        position: 'relative',
+        zIndex: 2,
+        flexShrink: 0,
+        borderRadius: 8,
+        ...(variant === 'familie'
+          ? { padding: '0.5rem 1rem', fontSize: '0.88rem' }
+          : { padding: '0.28rem 0.65rem', fontSize: '0.78rem', fontFamily: 'system-ui, sans-serif' }),
+        boxShadow: variant !== 'oeffentlich' ? '0 2px 8px rgba(0,0,0,0.12)' : undefined,
+      }
+    : {
+        position: 'fixed',
+        top: 'max(clamp(1rem, 2vw, 1.5rem), calc(env(safe-area-inset-top, 0px) + 1rem))',
+        right: fixedRight,
+        padding: 'clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem)',
+        borderRadius: '10px',
+        fontSize: 'clamp(0.78rem, 1.8vw, 0.9rem)',
+        zIndex: 1001,
+        boxShadow: variant !== 'oeffentlich' ? '0 4px 16px rgba(0,0,0,0.25)' : undefined,
+      }
+
+  const popoverPosition: React.CSSProperties = isInline
+    ? {
+        position: 'absolute',
+        top: 'calc(100% + 6px)',
+        right: 0,
+        zIndex: 5000,
+      }
+    : {
+        position: 'fixed',
+        top: 'max(clamp(3.5rem, 8vw, 4.5rem), calc(env(safe-area-inset-top, 0px) + 3.5rem))',
+        right: fixedRight,
+        zIndex: 1002,
+      }
+
   return (
-    <div ref={sharePopoverContainerRef} style={{ position: 'relative' }}>
+    <div
+      ref={sharePopoverContainerRef}
+      style={
+        isInline
+          ? { position: 'relative', display: 'inline-flex', alignItems: 'center', flexShrink: 0 }
+          : { position: 'relative' }
+      }
+    >
       <button
         type="button"
         onClick={() => setSharePopoverOpen((v) => !v)}
         title="Teilen – WhatsApp, Link, überall (öffentlicher Link)"
-        style={{
-          position: 'fixed',
-          top: 'max(clamp(1rem, 2vw, 1.5rem), calc(env(safe-area-inset-top, 0px) + 1rem))',
-          right: fixedRight,
-          background: pb.background,
-          border: pb.border,
-          color: pb.color,
-          padding: 'clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem)',
-          borderRadius: '10px',
-          fontSize: 'clamp(0.78rem, 1.8vw, 0.9rem)',
-          fontWeight: 600,
-          cursor: 'pointer',
-          zIndex: 1001,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.35rem',
-          boxShadow: variant !== 'oeffentlich' ? '0 4px 16px rgba(0,0,0,0.25)' : undefined,
-        }}
+        style={{ ...buttonBase, ...buttonPosition }}
       >
         {buttonLabel}
       </button>
@@ -171,10 +216,7 @@ export function PublicTeilenFixed(props: PublicTeilenFixedProps) {
           role="dialog"
           aria-label="Teilen"
           style={{
-            position: 'fixed',
-            top: 'max(clamp(3.5rem, 8vw, 4.5rem), calc(env(safe-area-inset-top, 0px) + 3.5rem))',
-            right: fixedRight,
-            zIndex: 1002,
+            ...popoverPosition,
             background: 'rgba(26, 15, 10, 0.98)',
             border: '1px solid rgba(255, 255, 255, 0.2)',
             borderRadius: '12px',

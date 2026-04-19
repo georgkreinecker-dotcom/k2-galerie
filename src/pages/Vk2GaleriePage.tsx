@@ -236,13 +236,6 @@ const Vk2GaleriePage: React.FC = () => {
 
       {/* Keine gelbe Leiste mit „Zurück zu Einstellungen“ – für User verboten, zur APf zu führen */}
 
-      <PublicTeilenFixed
-        variant="vk2"
-        displayName={vereinsName}
-        canonicalPublicUrl={getPublicGalerieUrl('vk2', 'galerie')}
-        getShareText={() => `${vereinsName} – Vereinsgalerie zum Ausprobieren`}
-      />
-
       {/* Nav: kein „Zurück“ zur APf (Georg 03.04.26). „Admin“ nur wenn Aufruf vom Admin oder Unlock – Zugang wiederherstellbar */}
       {(() => {
         const fromAdmin = !!(location.state as { fromAdminTab?: string } | null)?.fromAdminTab
@@ -282,6 +275,13 @@ const Vk2GaleriePage: React.FC = () => {
                   Rundgang
                 </button>
               ) : null}
+              <PublicTeilenFixed
+                layout="inline"
+                variant="vk2"
+                displayName={vereinsName}
+                canonicalPublicUrl={getPublicGalerieUrl('vk2', 'galerie')}
+                getShareText={() => `${vereinsName} – Vereinsgalerie zum Ausprobieren`}
+              />
               <button
                 onClick={() => navigate(PROJECT_ROUTES.vk2.mitgliedLogin)}
                 style={{ background: '#f0f4ff', color: '#3b5bdb', border: '1px solid #c5d0fa', borderRadius: 8, padding: '0.28rem 0.7rem', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600, fontFamily: 'system-ui, sans-serif' }}
