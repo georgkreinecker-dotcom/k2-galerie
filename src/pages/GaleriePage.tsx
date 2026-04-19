@@ -29,6 +29,10 @@ import { setAdminUnlock, clearAdminUnlock } from '../utils/adminUnlockStorage'
 import { OK2_THEME } from '../config/ok2Theme'
 import { getPublicGalerieUrl } from '../utils/publicLinks'
 import { reportPublicGalleryVisit } from '../utils/reportPublicGalleryVisit'
+import {
+  resolveOek2PublicGalleryVisitTenantId,
+  resolveVk2PublicGalleryVisitTenantId,
+} from '../utils/publicGalleryVisitTenant'
 import { getFullscreenElement, requestElementFullscreen, exitElementFullscreenIfActive } from '../utils/domFullscreen'
 import '../App.css'
 import '../styles/k2GaleriePublicPolish.css'
@@ -552,22 +556,27 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Besucherzähler: einmal pro Session pro Tenant an API melden (nur echte Besucher, nicht in iframe/Cursor Preview)
+  // Besucherzähler: einmal pro Session pro Mandant (Pilot = eigener tenant_id)
   useEffect(() => {
-    const key = tenantId === 'vk2' ? 'k2-visit-sent-vk2' : 'k2-visit-sent-' + tenantId
-    const tenant =
-      tenantId === 'vk2'
-        ? sessionStorage.getItem('k2-vk2-mitglied-eingeloggt')
-          ? 'vk2-members'
-          : 'vk2-external'
-        : tenantId
+    let tenant: string
+    let sessionKey: string
+    if (tenantId === 'k2') {
+      tenant = 'k2'
+      sessionKey = 'k2-visit-sent-k2'
+    } else if (tenantId === 'oeffentlich') {
+      tenant = resolveOek2PublicGalleryVisitTenantId()
+      sessionKey = 'k2-visit-sent-' + tenant
+    } else {
+      tenant = resolveVk2PublicGalleryVisitTenantId()
+      sessionKey = 'k2-visit-sent-' + tenant
+    }
     reportPublicGalleryVisit({
       tenant,
-      sessionKey: key,
+      sessionKey,
       skip: () =>
         tenantId === 'k2' && typeof localStorage !== 'undefined' && localStorage.getItem('k2-admin-unlocked') === 'k2',
     })
-  }, [tenantId])
+  }, [tenantId, location.search])
 
   // Design-Farben aus Admin anwenden – NUR für K2 (nicht für ök2/musterOnly!)
   // ök2 hat eigene Design-Einstellungen unter k2-oeffentlich-design-settings

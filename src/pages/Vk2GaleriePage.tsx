@@ -18,6 +18,7 @@ import { isAdminUnlocked } from '../utils/adminUnlockStorage'
 import { formatEventTerminKomplett } from '../utils/eventTerminFormat'
 import { eventPlakatMoreInfoTitle } from '../utils/eventPlakatTooltip'
 import { reportPublicGalleryVisit } from '../utils/reportPublicGalleryVisit'
+import { resolveVk2PublicGalleryVisitTenantId } from '../utils/publicGalleryVisitTenant'
 import { openVk2PlatformRundgangGlobally } from '../utils/vk2PlatformLeitfadenStorage'
 import { getVk2StammdatenKey } from '../utils/stammdatenStorage'
 import { pilotScopeVk2Key } from '../utils/vk2StorageKeys'
@@ -153,14 +154,15 @@ const Vk2GaleriePage: React.FC = () => {
     setEvents(loadVk2Events())
   }, [location.search])
 
-  // Besucherzähler VK2: einmal pro Session als Mitglied oder Extern melden (nicht in iframe, nicht in Admin-Vorschau)
+  // Besucherzähler VK2: ein Mandant = ein Zähler (Pilot → vk2-pilot-{id}, sonst vk2)
   useEffect(() => {
+    const tenant = resolveVk2PublicGalleryVisitTenantId()
     reportPublicGalleryVisit({
-      tenant: sessionStorage.getItem('k2-vk2-mitglied-eingeloggt') ? 'vk2-members' : 'vk2-external',
-      sessionKey: 'k2-visit-sent-vk2',
+      tenant,
+      sessionKey: 'k2-visit-sent-' + tenant,
       skip: () => new URLSearchParams(window.location.search).get('vorschau') === '1',
     })
-  }, [])
+  }, [location.search])
 
   // QR-Code auf Mitglieder-Seite (Vercel, mit Cache-Bust)
   useEffect(() => {

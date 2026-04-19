@@ -109,7 +109,7 @@ export default function PlatformStartPage() {
   const [isMobile, setIsMobile] = useState(false)
   const [apiKeySet, setApiKeySet] = useState(false)
   const [githubTokenSet, setGithubTokenSet] = useState(false)
-  const [visits, setVisits] = useState<{ k2: number; oeffentlich: number; vk2Members: number; vk2External: number } | null>(null)
+  const [visits, setVisits] = useState<{ k2: number; oeffentlich: number; vk2Demo: number } | null>(null)
 
   useEffect(() => {
     setApiKeySet(!!(localStorage.getItem('k2-openai-api-key') || localStorage.getItem('openai-api-key') || localStorage.getItem('k2-api-key')))
@@ -120,9 +120,8 @@ export default function PlatformStartPage() {
     Promise.all([
       fetchVisitCount('k2'),
       fetchVisitCount('oeffentlich'),
-      fetchVisitCount('vk2-members'),
-      fetchVisitCount('vk2-external'),
-    ]).then(([k2, oef, vk2M, vk2E]) => setVisits({ k2, oeffentlich: oef, vk2Members: vk2M, vk2External: vk2E }))
+      fetchVisitCount('vk2'),
+    ]).then(([k2, oef, vk2Demo]) => setVisits({ k2, oeffentlich: oef, vk2Demo }))
   }, [])
 
   // Prüfe ob iOS und ob bereits installiert
@@ -228,7 +227,7 @@ export default function PlatformStartPage() {
                   border: '1px solid rgba(129,140,248,0.4)',
                 }}
               >
-                👁 Besucher: K2 {visits.k2} · ök2 {visits.oeffentlich} · VK2 Mitgl. {visits.vk2Members} / Ext. {visits.vk2External} → Details
+                👁 Besucher: K2 {visits.k2} · ök2 {visits.oeffentlich} · VK2-Demo {visits.vk2Demo} → Details
               </Link>
             )}
           </div>

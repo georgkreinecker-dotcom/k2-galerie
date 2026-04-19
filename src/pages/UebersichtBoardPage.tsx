@@ -44,7 +44,7 @@ const C = {
 export default function UebersichtBoardPage() {
   const [manualCount, setManualCount] = useState(0)
   const [apiData, setApiData] = useState<ApiData | null>(null)
-  const [visits, setVisits] = useState<{ k2: number; oeffentlich: number; vk2Members: number; vk2External: number }>({ k2: 0, oeffentlich: 0, vk2Members: 0, vk2External: 0 })
+  const [visits, setVisits] = useState<{ k2: number; oeffentlich: number; vk2Demo: number }>({ k2: 0, oeffentlich: 0, vk2Demo: 0 })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -69,10 +69,9 @@ export default function UebersichtBoardPage() {
       Promise.all([
         fetchVisitCount('k2'),
         fetchVisitCount('oeffentlich'),
-        fetchVisitCount('vk2-members'),
-        fetchVisitCount('vk2-external'),
-      ]).then(([k2, oef, vk2M, vk2E]) => {
-        if (!cancelled) setVisits({ k2, oeffentlich: oef, vk2Members: vk2M, vk2External: vk2E })
+        fetchVisitCount('vk2'),
+      ]).then(([k2, oef, vk2Demo]) => {
+        if (!cancelled) setVisits({ k2, oeffentlich: oef, vk2Demo })
       }),
     ]).finally(() => {
       if (!cancelled) setLoading(false)
@@ -200,14 +199,14 @@ export default function UebersichtBoardPage() {
               }}
             >
               <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#a5b4fc', lineHeight: 1.2, marginBottom: '0.35rem' }}>
-                {visits.k2 + visits.oeffentlich + visits.vk2Members + visits.vk2External}
+                {visits.k2 + visits.oeffentlich + visits.vk2Demo}
               </div>
               <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem', color: C.text }}>Besucher</h2>
               <p style={{ margin: 0, fontSize: '0.85rem', color: C.textSoft }}>
                 K2: {visits.k2} · ök2: {visits.oeffentlich}
               </p>
               <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: C.textSoft }}>
-                VK2 Mitglieder: {visits.vk2Members} · VK2 Extern: {visits.vk2External}
+                VK2-Demo (ohne Pilot): {visits.vk2Demo}
               </p>
               <span style={{ display: 'inline-block', marginTop: '0.75rem', fontSize: '0.8rem', color: C.textSoft }}>
                 Pro Session einmal gezählt

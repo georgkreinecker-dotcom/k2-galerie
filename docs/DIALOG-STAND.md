@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Kurz testen: VK2 Admin → Stammdaten Verein mit **`?context=vk2`** und **`?vk2Pilot=…`** bzw. Zettel-Einladung: kein „Kunstverein Muster“, sondern Sandbox-Name.  
-**Einordnung:** Admin nutzt jetzt dieselbe **`initVk2DemoStammdatenIfEmpty`**-Kette wie die VK2-Galerie; Pilot-Key mit altem Demo-Namen wird einmalig auf Sandbox gestellt.
+**Was wir JETZT tun:** Nach Deploy: Besucherzähler testen (ök2 ohne/mit Zettel, VK2 ohne/mit `?vk2Pilot=`); Plattform-Zahlen K2/ök2/VK2-Demo.  
+**Einordnung:** POST `/api/visit` nutzt jetzt **einen** `tenant_id` pro Mandant (`vk2-pilot-*`, `oeffentlich-pilot-*`, Lizenz-Slug unverändert).
+
+---
+
+**Letzter Stand:** 19.04.26 – **Besucherzähler: pro Mandant/Pilot eigener tenant_id** – **`src/utils/publicGalleryVisitTenant.ts`:** `oeffentlich` · `oeffentlich-pilot-{Ziffern}` · `oeffentlich-pilot-v-{slug}` (Entdecken) · `vk2` · `vk2-pilot-{id}`. **`GaleriePage`**, **`Vk2GaleriePage`**, **`ScreenshotExportAdmin`**, **`PlatformStartPage`**, **`UebersichtBoardPage`**; **`ZettelPilotPage`:** ök2-Zettel schreibt **`oek2PilotId`**. Tests **`publicGalleryVisitTenant.test.ts`**, **`reportPublicGalleryVisit.test.ts`**. **`npm run build`** grün. **Commit:** `008bcca9` ✅ GitHub
 
 ---
 

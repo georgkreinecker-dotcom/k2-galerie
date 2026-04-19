@@ -35,6 +35,10 @@ import {
 import { formatEventTerminKomplett } from '../src/utils/eventTerminFormat'
 import { openCheckoutOrPaymentUrl } from '../src/utils/openCheckoutOrPaymentUrl'
 import { fetchVisitCount } from '../src/utils/visitCountApiOrigin'
+import {
+  resolveOek2PublicGalleryVisitTenantId,
+  resolveVk2PublicGalleryVisitTenantId,
+} from '../src/utils/publicGalleryVisitTenant'
 import { getActiveVk2PilotId } from '../src/utils/vk2StorageKeys'
 
 /** Nur echte Produktions-URLs für gedruckte QR/Links (https, kein localhost) – sonst Fallback nutzen */
@@ -3534,18 +3538,18 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     return () => clearTimeout(t)
   }, [activeTab, settingsSubTab])
 
-  // Besucher-Ticker: Zahl für aktuellen Kontext laden (K2 / ök2 / VK2 Summe / Lizenz-Mandant). GET immer Produktions-API unter Vite (lokal kein /api/visit).
+  // Besucher-Ticker: ein Mandant = ein Zähler (Pilot-Zähler wie POST /api/visit)
   useEffect(() => {
     let isMounted = true
     const dyn = tenant.dynamicTenantId
     if (tenant.isVk2) {
-      Promise.all([fetchVisitCount('vk2-members'), fetchVisitCount('vk2-external')]).then(([m, e]) => {
-        if (isMounted) setBesucherCount(m + e)
-      })
+      const tid = resolveVk2PublicGalleryVisitTenantId()
+      fetchVisitCount(tid).then((n) => { if (isMounted) setBesucherCount(n) })
     } else if (dyn && /^[a-z0-9-]{1,64}$/.test(dyn)) {
       fetchVisitCount(dyn).then((n) => { if (isMounted) setBesucherCount(n) })
     } else if (tenant.isOeffentlich) {
-      fetchVisitCount('oeffentlich').then((n) => { if (isMounted) setBesucherCount(n) })
+      const tid = resolveOek2PublicGalleryVisitTenantId()
+      fetchVisitCount(tid).then((n) => { if (isMounted) setBesucherCount(n) })
     } else {
       fetchVisitCount('k2').then((n) => { if (isMounted) setBesucherCount(n) })
     }

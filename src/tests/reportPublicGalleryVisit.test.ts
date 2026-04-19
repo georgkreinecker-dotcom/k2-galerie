@@ -2,11 +2,13 @@ import { describe, it, expect } from 'vitest'
 import { isValidVisitTenantId, VISIT_TENANT_ID_RE } from '../utils/reportPublicGalleryVisit'
 
 describe('reportPublicGalleryVisit / Mandanten-Slug', () => {
-  it('akzeptiert K2, ök2, VK2 und Lizenz-Slugs', () => {
+  it('akzeptiert K2, ök2, VK2, Mandanten-Pilot-Slugs und Lizenz-Slugs', () => {
     expect(isValidVisitTenantId('k2')).toBe(true)
     expect(isValidVisitTenantId('oeffentlich')).toBe(true)
-    expect(isValidVisitTenantId('vk2-members')).toBe(true)
-    expect(isValidVisitTenantId('vk2-external')).toBe(true)
+    expect(isValidVisitTenantId('vk2')).toBe(true)
+    expect(isValidVisitTenantId('oeffentlich-pilot-12345678')).toBe(true)
+    expect(isValidVisitTenantId('oeffentlich-pilot-v-anna-muster')).toBe(true)
+    expect(isValidVisitTenantId('vk2-pilot-14')).toBe(true)
     expect(isValidVisitTenantId('meine-galerie-2026')).toBe(true)
   })
   it('lehnt ungültige Zeichen oder Länge ab', () => {

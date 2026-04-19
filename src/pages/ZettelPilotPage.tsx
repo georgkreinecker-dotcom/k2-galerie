@@ -205,8 +205,15 @@ export default function ZettelPilotPage() {
           context: pilotType === 'oek2' ? 'oeffentlich' : 'vk2',
           licenceType: 'propplus',
           pilotProPlusUnlimited: true,
-          ...(pilotType === 'vk2' && zDigits
-            ? { zettelNr: nr.trim(), vk2PilotId: zDigits }
+          ...(zDigits
+            ? {
+                zettelNr: nr.trim(),
+                ...(pilotType === 'oek2'
+                  ? { oek2PilotId: zDigits }
+                  : pilotType === 'vk2'
+                    ? { vk2PilotId: zDigits }
+                    : {}),
+              }
             : {}),
         }),
       )
