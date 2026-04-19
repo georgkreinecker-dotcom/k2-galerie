@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 19.04.26 – **VK2 Admin Stammdaten: wie Galerie – Init + Reload bei URL** – **`ScreenshotExportAdmin`:** vor **`loadVk2Stammdaten`** → **`initVk2DemoStammdatenIfEmpty()`**; Effect-Deps **`location.search`**; bei Testpilot kein Fallback **`USER_LISTE_FUER_MITGLIEDER`**. **`tenantConfig`:** bei aktivem Pilot + gespeichertem exaktem Namen „Kunstverein Muster“ → **`buildVk2PilotSandboxStammdaten`**. **`qs:local`** / **`vite:build`** grün. **Commit:** _(nach Push)_
+**Letzter Stand:** 19.04.26 – **VK2 Admin Stammdaten: wie Galerie – Init + Reload bei URL** – **`ScreenshotExportAdmin`:** vor **`loadVk2Stammdaten`** → **`initVk2DemoStammdatenIfEmpty()`**; Effect-Deps **`location.search`**; bei Testpilot kein Fallback **`USER_LISTE_FUER_MITGLIEDER`**. **`tenantConfig`:** bei aktivem Pilot + gespeichertem exaktem Namen „Kunstverein Muster“ → **`buildVk2PilotSandboxStammdaten`**. **`qs:local`** / **`vite:build`** grün. **Commit:** `f11b8417` ✅ GitHub
 
 ---
 
