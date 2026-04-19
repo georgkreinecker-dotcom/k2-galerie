@@ -3,7 +3,8 @@
  * Verhindert Datenverlust bei Cursor-Crashes
  */
 
-import { K2_STAMMDATEN_DEFAULTS, MUSTER_TEXTE, DEFAULT_OEK2_FOCUS_DIRECTION_ID } from '../config/tenantConfig'
+import { K2_STAMMDATEN_DEFAULTS } from '../config/tenantConfig'
+import { resetOeffentlichStammdatenToMusterDemo } from './oeffentlichStammdatenMuster'
 import { readArtworksRawByKey, saveArtworksByKey, saveArtworksByKeyWithImageStore } from './artworksStorage'
 import { preserveStorageImageRefs, mergeMissingFromStorage } from './syncMerge'
 import { fillMissingImageRefsFromIndexedDB } from './artworkImageStore'
@@ -490,40 +491,7 @@ export function restoreK2AndOek2StammdatenFromRepo(): void {
     internetShopNotSetUp: true,
   }, { merge: false })
 
-  const om = MUSTER_TEXTE.martina
-  const og = MUSTER_TEXTE.georg
-  const oGal = MUSTER_TEXTE.gallery
-  const oGalFd = (oGal as { focusDirections?: readonly string[] }).focusDirections
-  const oGalFocus = Array.isArray(oGalFd) && oGalFd.length > 0 ? [oGalFd[0]] : [DEFAULT_OEK2_FOCUS_DIRECTION_ID]
-  saveStammdaten('oeffentlich', 'martina', { name: om.name, email: om.email, phone: om.phone, website: om.website ?? '', category: 'malerei', bio: '' }, { merge: false })
-  saveStammdaten('oeffentlich', 'georg', { name: og.name, email: og.email, phone: og.phone, website: og.website ?? '', category: 'keramik', bio: '' }, { merge: false })
-  saveStammdaten('oeffentlich', 'gallery', {
-    name: 'Galerie Muster',
-    address: oGal.address ?? '',
-    city: oGal.city ?? '',
-    country: oGal.country ?? '',
-    phone: oGal.phone ?? '',
-    email: oGal.email ?? '',
-    website: oGal.website ?? '',
-    internetadresse: oGal.internetadresse ?? '',
-    openingHours: oGal.openingHours ?? '',
-    openingHoursWeek: (oGal as { openingHoursWeek?: Record<string, string> }).openingHoursWeek ?? {},
-    bankverbindung: oGal.bankverbindung ?? '',
-    gewerbebezeichnung: (oGal as { gewerbebezeichnung?: string }).gewerbebezeichnung ?? 'freie Kunstschaffende',
-    welcomeImage: oGal.welcomeImage ?? '',
-    virtualTourImage: oGal.virtualTourImage ?? '',
-    galerieCardImage: oGal.galerieCardImage ?? '',
-    soldArtworksDisplayDays: 30,
-    internetShopNotSetUp: true,
-    focusDirections: oGalFocus,
-    story: (oGal as { story?: string }).story ?? '',
-  }, { merge: false })
-
-  try {
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new Event('k2-oek2-stammdaten-restored'))
-    }
-  } catch (_) {}
+  resetOeffentlichStammdatenToMusterDemo()
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

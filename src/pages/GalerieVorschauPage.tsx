@@ -20,7 +20,10 @@ import { loadEvents } from '../utils/eventsStorage'
 import { loadDocuments } from '../utils/documentsStorage'
 import { mergeServerWithLocal, preserveLocalImageData, updateKnownServerMaxNumbers, getKnownServerMaxForPrefix, renumberCollidingLocalArtworks } from '../utils/syncMerge'
 import { loadStammdaten } from '../utils/stammdatenStorage'
-import { applyZettelPilotVornameToOeffentlichMartina } from '../utils/zettelPilotOeffentlichPrefill'
+import {
+  applyZettelPilotVornameToOeffentlichMartina,
+  runOek2ZettelPilotEntwurfPrefill,
+} from '../utils/zettelPilotOeffentlichPrefill'
 import { getShopSoldArtworksKey } from '../utils/shopContextKeys'
 import { readKuenstlerFallbackGalerieKarten, resolveArtistLabelForGalerieStatistik } from '../utils/artworkArtistDisplay'
 // Fotos für neue Werke nur im Admin (Neues Werk hinzufügen) – dort Option Freistellen/Original
@@ -365,7 +368,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
       const urlName = params.get('vorname')
       const urlEntwurf = params.get('entwurf')
       if (urlName && urlName.trim() && urlEntwurf === '1') {
-        applyZettelPilotVornameToOeffentlichMartina(urlName.trim())
+        runOek2ZettelPilotEntwurfPrefill(urlName.trim())
         setWillkommenName(urlName.trim())
         try {
           sessionStorage.setItem(WILLKOMMEN_NAME_KEY, urlName.trim())
@@ -377,7 +380,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
       const n = sessionStorage.getItem(WILLKOMMEN_NAME_KEY) || localStorage.getItem(WILLKOMMEN_NAME_KEY)
       const e = sessionStorage.getItem(WILLKOMMEN_ENTWURF_KEY) || localStorage.getItem(WILLKOMMEN_ENTWURF_KEY)
       if (n && n.trim() && e === '1') {
-        applyZettelPilotVornameToOeffentlichMartina(n.trim())
+        applyZettelPilotVornameToOeffentlichMartina(n.trim(), { force: true })
         setWillkommenName(n.trim())
       }
     } catch (_) {}

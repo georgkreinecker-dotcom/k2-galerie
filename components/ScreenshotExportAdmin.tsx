@@ -107,6 +107,7 @@ import { isSupabaseConfigured, saveArtworksToSupabase, fillArtworkImageUrlsFromS
 import { uploadArtworkImageToStorage } from '../src/utils/supabaseStorage'
 import { loadStammdaten, saveStammdaten as persistStammdaten, loadVk2Stammdaten, saveVk2Stammdaten, buildK2PersonStateForAdmin } from '../src/utils/stammdatenStorage'
 import { applyZettelPilotVornameToOeffentlichMartina } from '../src/utils/zettelPilotOeffentlichPrefill'
+import { SESSION_OEK2_ZETTEL_VORNAME_KEY } from '../src/utils/oeffentlichStammdatenMuster'
 import { computeK2MalereiMartinaCorrectedNumber } from '../src/utils/k2MalereiMartinaKtoMPrefixFix'
 import { loadEvents as loadEventsFromStorage, saveEvents as saveEventsToStorage, loadK2EventsBackup, mergeEventTimesFromLocal } from '../src/utils/eventsStorage'
 import { pickOpeningEventForWerbemittel } from '../src/utils/oek2MusterEventLinie'
@@ -2238,25 +2239,31 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   })()
   const [settingsSubTab, setSettingsSubTab] = useState<SettingsSubTabType>(initialSettingsSubTab)
   const [pilotStammdatenBannerDismissed, setPilotStammdatenBannerDismissed] = useState(false)
-  const showPilotStammdatenWelcome =
-    !pilotStammdatenBannerDismissed &&
-    (() => {
-      try {
-        if (new URLSearchParams(window.location.search).get('pilot') === '1') return true
-        return !!sessionStorage.getItem('k2-pilot-einladung')
-      } catch {
-        return false
-      }
-    })()
-  /** Testpilot-Einladung (ök2 + VK2): voller Zugang wie Demo, aber kein Muster-Demo-Admin-QR; andere Admin-Badge-Texte */
+  /**
+   * Testpilot: Zettel (?vorname+entwurf), Einladung, ?pilot=1 – dann kein Muster-Demo-Admin-QR / Badge „Testpilot“.
+   * (Früher nur k2-pilot-einladung – Zettel-Galerie setzt WILLKOMMEN_* / k2-oek2-zettel-vorname ohne Einladungs-JSON.)
+   */
   const oek2PilotEinladungAktiv = (() => {
     try {
       if (new URLSearchParams(window.location.search).get('pilot') === '1') return true
-      return !!sessionStorage.getItem('k2-pilot-einladung')
+      if (sessionStorage.getItem('k2-pilot-einladung')) return true
+      if (sessionStorage.getItem(SESSION_OEK2_ZETTEL_VORNAME_KEY)) return true
+      if (sessionStorage.getItem(WILLKOMMEN_ENTWURF_KEY) === '1' && (sessionStorage.getItem(WILLKOMMEN_NAME_KEY) || '').trim()) {
+        return true
+      }
+      try {
+        if (localStorage.getItem(WILLKOMMEN_ENTWURF_KEY) === '1' && (localStorage.getItem(WILLKOMMEN_NAME_KEY) || '').trim()) {
+          return true
+        }
+      } catch {
+        /* ignore */
+      }
+      return false
     } catch {
       return false
     }
   })()
+  const showPilotStammdatenWelcome = !pilotStammdatenBannerDismissed && oek2PilotEinladungAktiv
   const { showChecklists: showGamificationChecklists, checklistsHiddenByUser: profiGamificationChecklistsHidden, setChecklistsHiddenByUser: setProfiGamificationChecklistsHidden } = useGamificationChecklistsUi()
   const settingsContentRef = useRef<HTMLDivElement>(null)
   /** Ref auf den oberen Rand des Admin-Bereichs – für „Zurück in den Admin-Bereich“ (scrollt den tatsächlichen Scroll-Container) */
@@ -3836,7 +3843,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         } catch {
           /* ignore */
         }
-        if (sessionName && applyZettelPilotVornameToOeffentlichMartina(sessionName)) {
+        if (sessionName && applyZettelPilotVornameToOeffentlichMartina(sessionName, { force: true })) {
           pilotPrefillAppliedRef.current = true
           setMartinaData((prev: typeof martinaData) => {
             const loaded = loadStammdaten('oeffentlich', 'martina')

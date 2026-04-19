@@ -3,7 +3,10 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { beendeGuideFlow } from '../utils/k2GuideFlowStorage'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, ENTDECKEN_ROUTE, MEIN_BEREICH_ROUTE, flyerEventBogenUrl, type FlyerEventBogenTenantContext } from '../config/navigation'
-import { applyZettelPilotVornameToOeffentlichMartina } from '../utils/zettelPilotOeffentlichPrefill'
+import {
+  applyZettelPilotVornameToOeffentlichMartina,
+  runOek2ZettelPilotEntwurfPrefill,
+} from '../utils/zettelPilotOeffentlichPrefill'
 import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, K2_DEFAULT_VITA_MARTINA, K2_DEFAULT_VITA_GEORG, isPlatformInstance, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, PRODUCT_LIZENZ_ANFRAGE_EMAIL, OEK2_WILLKOMMEN_IMAGES, getOek2WelcomeImageEffective, OEK2_PLACEHOLDER_IMAGE, initVk2DemoStammdatenIfEmpty, getProminenteAdresseFormatiert, FOCUS_DIRECTIONS } from '../config/tenantConfig'
 import { buildVitaDocumentHtml } from '../utils/vitaDocument'
 import { getGalerieImages, getPageContentGalerie, mergePageContentGalerieFromServer } from '../config/pageContentGalerie'
@@ -350,7 +353,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       const urlName = params.get('vorname')
       const urlEntwurf = params.get('entwurf')
       if (urlName && urlName.trim() && urlEntwurf === '1') {
-        applyZettelPilotVornameToOeffentlichMartina(urlName.trim())
+        runOek2ZettelPilotEntwurfPrefill(urlName.trim())
         setGuideName(urlName.trim())
         setGuideVisible(true)
         try {
@@ -363,7 +366,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       const n = sessionStorage.getItem(WILLKOMMEN_NAME_KEY) || localStorage.getItem(WILLKOMMEN_NAME_KEY)
       const e = sessionStorage.getItem(WILLKOMMEN_ENTWURF_KEY) || localStorage.getItem(WILLKOMMEN_ENTWURF_KEY)
       if (n && e === '1') {
-        applyZettelPilotVornameToOeffentlichMartina(n.trim())
+        applyZettelPilotVornameToOeffentlichMartina(n.trim(), { force: true })
         setGuideName(n.trim())
         setGuideVisible(true)
       }

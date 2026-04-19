@@ -18,6 +18,7 @@ import {
   updateTestuserKatalogEintrag,
 } from '../utils/testuserKatalogStorage'
 import { isPilotKatalogSyncConfigured, pullAndMergePilotKatalog } from '../utils/pilotKatalogApi'
+import { clearOek2ZettelPilotVornameSessionMarker } from '../utils/zettelPilotOeffentlichPrefill'
 
 const R = PROJECT_ROUTES['k2-galerie']
 
@@ -381,7 +382,8 @@ function KatalogSection() {
 
   const handleRemove = (id: string) => {
     if (!window.confirm('Diesen Katalog-Eintrag wirklich löschen?')) return
-    removeTestuserKatalogEintrag(id)
+    const next = removeTestuserKatalogEintrag(id)
+    if (next.length === 0) clearOek2ZettelPilotVornameSessionMarker()
     refresh()
   }
 
