@@ -812,6 +812,12 @@ export function initVk2DemoStammdatenIfEmpty(): void {
       return
     }
     const parsed = JSON.parse(raw) as Vk2Stammdaten
+    /** Testpilot aktiv: Demo-Name „Kunstverein Muster“ im Pilot-Key → Sandbox (Admin lud früher ohne init wie die Galerie). */
+    if (pilotId && parsed?.verein?.name === 'Kunstverein Muster') {
+      const pilotStamm = buildVk2PilotSandboxStammdaten(pilotId)
+      localStorage.setItem(getVk2StammdatenKey(), JSON.stringify(pilotStamm))
+      return
+    }
     if (!parsed?.verein?.name) {
       if (pilotId) {
         const pilotStamm = buildVk2PilotSandboxStammdaten(pilotId)

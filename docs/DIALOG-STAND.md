@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** VK2-Pilot-Admin: Regression abgesichert – **`src/tests/vk2PilotScopeSync.test.ts`** (7 Tests), **`shouldSyncVk2PilotScopeFromUrl`** in **`vk2StorageKeys.ts`**.  
-**Einordnung:** Nicht „noch ein Versuch“ – feste Regeln im Test; CI rot bei Rückbau.
+**Was wir JETZT tun:** Kurz testen: VK2 Admin → Stammdaten Verein mit **`?context=vk2`** und **`?vk2Pilot=…`** bzw. Zettel-Einladung: kein „Kunstverein Muster“, sondern Sandbox-Name.  
+**Einordnung:** Admin nutzt jetzt dieselbe **`initVk2DemoStammdatenIfEmpty`**-Kette wie die VK2-Galerie; Pilot-Key mit altem Demo-Namen wird einmalig auf Sandbox gestellt.
+
+---
+
+**Letzter Stand:** 19.04.26 – **VK2 Admin Stammdaten: wie Galerie – Init + Reload bei URL** – **`ScreenshotExportAdmin`:** vor **`loadVk2Stammdaten`** → **`initVk2DemoStammdatenIfEmpty()`**; Effect-Deps **`location.search`**; bei Testpilot kein Fallback **`USER_LISTE_FUER_MITGLIEDER`**. **`tenantConfig`:** bei aktivem Pilot + gespeichertem exaktem Namen „Kunstverein Muster“ → **`buildVk2PilotSandboxStammdaten`**. **`qs:local`** / **`vite:build`** grün. **Commit:** _(nach Push)_
 
 ---
 

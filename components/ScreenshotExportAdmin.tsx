@@ -80,7 +80,7 @@ const WRITE_GALLERY_DATA_API_URL = `${VERCEL_APP_BASE}/api/write-gallery-data`
 const CENTRAL_GALLERY_DATA_URL = `${VERCEL_APP_BASE}/api/gallery-data`
 /** Fallback wenn Blob noch leer (z. B. erste Deploy): statische Datei aus Build */
 const CENTRAL_GALLERY_DATA_FALLBACK_URL = `${VERCEL_APP_BASE}/gallery-data.json`
-import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, K2_DEFAULT_VITA_MARTINA, K2_DEFAULT_VITA_GEORG, isPlatformInstance, TENANT_CONFIGS, PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SWEET_SPOT, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, getCategoriesForEntryTypeAndDirection, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_VEREINSTYP_OPTIONS, getVk2KategorienVorschlagFuerTyp, getVk2Kunstrichtungen, isVk2VereinsTypId, VK2_STAMMDATEN_DEFAULTS, VK2_DEMO_STAMMDATEN, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, OEK2_DEPRECATED_MUSTER_PR_DOC_IDS, getProminenteAdresseFormatiert, getProminenteAdresse, FOCUS_DIRECTIONS, getDefaultEntryTypeForFocusDirections, getWelcomeIntroForFocusDirections, getCategoriesForDirection, getEffectiveDirectionFromWork, getEntryTypeForDirection, DEFAULT_OEK2_FOCUS_DIRECTION_ID, type TenantId, type FocusDirectionId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
+import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, K2_DEFAULT_VITA_MARTINA, K2_DEFAULT_VITA_GEORG, isPlatformInstance, TENANT_CONFIGS, PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SWEET_SPOT, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, getCategoriesForEntryTypeAndDirection, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_VEREINSTYP_OPTIONS, getVk2KategorienVorschlagFuerTyp, getVk2Kunstrichtungen, isVk2VereinsTypId, VK2_STAMMDATEN_DEFAULTS, VK2_DEMO_STAMMDATEN, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoStammdatenIfEmpty, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, OEK2_DEPRECATED_MUSTER_PR_DOC_IDS, getProminenteAdresseFormatiert, getProminenteAdresse, FOCUS_DIRECTIONS, getDefaultEntryTypeForFocusDirections, getWelcomeIntroForFocusDirections, getCategoriesForDirection, getEffectiveDirectionFromWork, getEntryTypeForDirection, DEFAULT_OEK2_FOCUS_DIRECTION_ID, type TenantId, type FocusDirectionId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import { getStoryForPr } from '../src/utils/prStory'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
@@ -3770,7 +3770,11 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     const t = setTimeout(() => {
       if (!isMounted) return
       try {
+        // Wie Vk2GaleriePage: leeren Pilot-Key füllen / Pilot-Muster migrieren – sonst liest loadVk2Stammdaten den unscoped Key (Musterverein).
+        initVk2DemoStammdatenIfEmpty()
         const parsed = loadVk2Stammdaten() as Partial<Vk2Stammdaten> | null
+        const pilotAktiv = !!getActiveVk2PilotId()
+        const fallbackMitglieder = pilotAktiv ? [] : USER_LISTE_FUER_MITGLIEDER
         if (parsed && typeof parsed === 'object' && JSON.stringify(parsed).length < 500000) {
           const parsedMitglieder: Vk2Mitglied[] = Array.isArray(parsed.mitglieder) ? parsed.mitglieder.map((m: any) => typeof m === 'string' ? { name: m, oeffentlichSichtbar: true } : { name: m?.name ?? '', email: m?.email, lizenz: m?.lizenz, typ: m?.typ, mitgliedFotoUrl: m?.mitgliedFotoUrl, imageUrl: m?.imageUrl, phone: m?.phone, website: m?.website, seit: m?.seit, strasse: m?.strasse, plz: m?.plz, ort: m?.ort, land: m?.land, geburtsdatum: m?.geburtsdatum, eintrittsdatum: m?.eintrittsdatum ?? m?.seit, oeffentlichSichtbar: m?.oeffentlichSichtbar !== false, bankKontoinhaber: m?.bankKontoinhaber, bankIban: m?.bankIban, bankBic: m?.bankBic, bankName: m?.bankName }) : []
           const eigParsed = Array.isArray(parsed.eigeneKategorien)
@@ -3791,23 +3795,21 @@ function ScreenshotExportAdmin(props?: AdminProps) {
             kassier: { ...VK2_STAMMDATEN_DEFAULTS.kassier, ...parsed.kassier },
             schriftfuehrer: { ...VK2_STAMMDATEN_DEFAULTS.schriftfuehrer, ...parsed.schriftfuehrer },
             beisitzer: parsed.beisitzer ? { ...VK2_STAMMDATEN_DEFAULTS.beisitzer!, ...parsed.beisitzer } : undefined,
-            // Wenn keine Mitglieder gespeichert: Muster-Mitglieder als Fallback
-            mitglieder: parsedMitglieder.length > 0 ? parsedMitglieder : USER_LISTE_FUER_MITGLIEDER,
+            mitglieder: parsedMitglieder.length > 0 ? parsedMitglieder : fallbackMitglieder,
             mitgliederNichtRegistriert: Array.isArray(parsed.mitgliederNichtRegistriert) ? parsed.mitgliederNichtRegistriert : [],
             eigeneKategorien,
             vereinsTyp,
           }
           setVk2Stammdaten(merged)
         } else {
-          // Kein gespeicherter Stand → Defaults + Muster-Mitglieder verwenden
-          setVk2Stammdaten({ ...VK2_STAMMDATEN_DEFAULTS, mitglieder: USER_LISTE_FUER_MITGLIEDER })
+          setVk2Stammdaten({ ...VK2_STAMMDATEN_DEFAULTS, mitglieder: fallbackMitglieder })
         }
       } catch (_) {
-        setVk2Stammdaten({ ...VK2_STAMMDATEN_DEFAULTS, mitglieder: USER_LISTE_FUER_MITGLIEDER })
+        setVk2Stammdaten({ ...VK2_STAMMDATEN_DEFAULTS, mitglieder: getActiveVk2PilotId() ? [] : USER_LISTE_FUER_MITGLIEDER })
       }
     }, 300)
     return () => { isMounted = false; clearTimeout(t) }
-  }, [])
+  }, [tenant.isVk2, location.search])
 
   /** Testpilot: Name/E-Mail aus Einladung in Stammdaten übernehmen (nur wenn noch Muster/leer). */
   const pilotPrefillAppliedRef = React.useRef(false)
