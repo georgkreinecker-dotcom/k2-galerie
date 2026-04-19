@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 19.04.26 – **VK2 Pilot: Admin `?context=vk2` synchronisiert Pilot-Scope** – **`TenantContext`:** `shouldSyncVk2PilotScopeFromUrl` → **`syncVk2PilotScopeFromSearch`** bei `/admin` / `/mein-bereich` / **`/projects/k2-galerie?context=vk2`**; **`ScreenshotExportAdmin`:** Muster-Demo-QR aus wenn **`getActiveVk2PilotId()`**. **`qs:local`** grün. **Commit:** `c3ebeec9` ✅ GitHub
+**Letzter Stand:** 19.04.26 – **VK2 Pilot: Admin `?context=vk2` synchronisiert Pilot-Scope** – **`TenantContext`:** `shouldSyncVk2PilotScopeFromUrl` → **`syncVk2PilotScopeFromSearch`** bei `/admin` / `/mein-bereich` / **`/projects/k2-galerie?context=vk2`**; **`ScreenshotExportAdmin`:** Muster-Demo-QR aus wenn **`getActiveVk2PilotId()`**. **`qs:local`** grün. **Commit:** `b2ed6450` ✅ GitHub
 
 ---
 
