@@ -35,6 +35,7 @@ import {
 import { formatEventTerminKomplett } from '../src/utils/eventTerminFormat'
 import { openCheckoutOrPaymentUrl } from '../src/utils/openCheckoutOrPaymentUrl'
 import { fetchVisitCount } from '../src/utils/visitCountApiOrigin'
+import { getActiveVk2PilotId } from '../src/utils/vk2StorageKeys'
 
 /** Nur echte Produktions-URLs für gedruckte QR/Links (https, kein localhost) – sonst Fallback nutzen */
 function isProductionLikeUrl(url: string | undefined): boolean {
@@ -19048,7 +19049,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         alignItems: 'start',
                       }}
                     >
-                      {isPlatformInstance() && !oek2PilotEinladungAktiv && (
+                      {isPlatformInstance() &&
+                        !oek2PilotEinladungAktiv &&
+                        !getActiveVk2PilotId() && (
                         <LicenseeAdminQrPanel
                           registrationComplete
                           adminBaseUrl={`${APP_BASE_URL}/admin?context=vk2`}

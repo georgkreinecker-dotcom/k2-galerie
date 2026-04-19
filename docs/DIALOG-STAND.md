@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nach Deploy: [`?vk2Pilot=14`](https://k2-galerie.vercel.app/projects/vk2/galerie?vk2Pilot=14) – erwartet: **„Testpilot-Verein (Zettel 14)“**, keine „Kunstverein Muster“-Mitglieder (früher: Demo-Seed). Mit Zettel/E-Mail zuvor: **„Verein – {Name}“** wenn `k2-pilot-einladung` passt.  
-**Einordnung:** Pilot = eigener Key; leerer Key wird nicht mehr mit `VK2_DEMO_STAMMDATEN` gefüllt.
+**Was wir JETZT tun:** Nach Deploy: Zettel → **`/admin?context=vk2`** (Stammdaten): **Pilot-Sandbox** statt „Kunstverein Muster“ – **`syncVk2PilotScopeFromSearch`** läuft jetzt auch dort (nicht nur `/projects/vk2/*`). Test: gleiche Session, `k2-pilot-einladung` gesetzt.  
+**Einordnung:** Pilot-Mandant = Session **`k2-vk2-active-pilot-id`** aus URL oder Einladung; ohne Sync blieb der Key leer im Admin.
+
+---
+
+**Letzter Stand:** 19.04.26 – **VK2 Pilot: Admin `?context=vk2` synchronisiert Pilot-Scope** – **`TenantContext`:** `shouldSyncVk2PilotScopeFromUrl` → **`syncVk2PilotScopeFromSearch`** bei `/admin` / `/mein-bereich` / **`/projects/k2-galerie?context=vk2`**; **`ScreenshotExportAdmin`:** Muster-Demo-QR aus wenn **`getActiveVk2PilotId()`**. **`qs:local`** grün. **Commit:** `c3ebeec9` ✅ GitHub
 
 ---
 

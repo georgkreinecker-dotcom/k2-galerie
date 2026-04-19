@@ -20,6 +20,23 @@ const VK2_PROJECT_PREFIX = '/projects/vk2'
 /** APf Dev-View: gleiche Mandanten-Logik wie bei /projects/k2-galerie – ?page= vk2-* / öffentliche Galerie ohne extra ?context=. */
 const DEV_VIEW_PREFIX = '/dev-view'
 
+/**
+ * VK2-Pilot-Scope synchronisieren (URL ?vk2Pilot= / Einladung) – nicht nur unter /projects/vk2/*,
+ * sondern auch bei /admin?context=vk2 und APf-Projekt mit context=vk2, sonst bleibt k2-vk2-active-pilot-id leer
+ * und Stammdaten zeigen den Musterverein.
+ */
+function shouldSyncVk2PilotScopeFromUrl(pathname: string, search: string): boolean {
+  if (pathname.startsWith(VK2_PROJECT_PREFIX)) return true
+  try {
+    const params = new URLSearchParams(search || '')
+    const ctx = params.get('context')?.toLowerCase().trim()
+    if (ctx !== 'vk2') return false
+    if (pathname === '/admin' || pathname === '/mein-bereich') return true
+    if (pathname.startsWith(K2_GALERIE_PROJECT_PREFIX)) return true
+  } catch (_) {}
+  return false
+}
+
 export type AdminTenantId = 'k2' | 'oeffentlich' | 'vk2'
 
 function getTenantFromStorage(): AdminTenantId {
@@ -188,7 +205,7 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
   const search = location.search || ''
 
   /** Pilot-Mandant sofort setzen (nicht nur in useEffect), sonst erster Render liest noch unscoped k2-vk2-* Keys. */
-  if (typeof window !== 'undefined' && pathname.startsWith(VK2_PROJECT_PREFIX)) {
+  if (typeof window !== 'undefined' && shouldSyncVk2PilotScopeFromUrl(pathname, search)) {
     syncVk2PilotScopeFromSearch(search)
   }
 
@@ -223,7 +240,7 @@ export function useTenant(): TenantContextValue {
     if (typeof window !== 'undefined') {
       const pathname = window.location.pathname
       const search = window.location.search || ''
-      if (pathname.startsWith(VK2_PROJECT_PREFIX)) {
+      if (shouldSyncVk2PilotScopeFromUrl(pathname, search)) {
         syncVk2PilotScopeFromSearch(search)
       }
       syncStorageFromUrl(pathname, search)
