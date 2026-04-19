@@ -5,11 +5,16 @@
 
 import { PROJECT_ROUTES } from './navigation'
 import { K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
+import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
 
 const R = PROJECT_ROUTES['k2-familie']
 
 export const MUSTER_HINT_NAV_MEINE_FAMILIE =
   'Meine Familie: Einstieg mit Willkommen, Bild und Kacheln zu Stammbaum, Terminen und mehr.'
+
+/** Erster Punkt in der Muster-Orientierungsleiste (Link mit ?t=huber). */
+export const MUSTER_HINT_NAV_MUSTERFAMILIE_HOME =
+  'Musterfamilie Huber: Zur Übersicht dieser Demo – Willkommen, Bild und Kacheln. Nicht eure eigene Familie.'
 
 export const MUSTER_HINT_NAV_STAMMBAUM =
   'Stammbaum: Personen, Beziehungen und Generationen – in der Demo mit Beispieldaten.'
@@ -61,6 +66,7 @@ export function musterHintForFamilieNavLink(to: string): string | undefined {
   const path = to.replace(/\/$/, '') || '/'
   const map: Record<string, string> = {
     [K2_FAMILIE_APP_SHORT_PATH]: MUSTER_HINT_NAV_MEINE_FAMILIE,
+    [`${R.meineFamilie}?t=${FAMILIE_HUBER_TENANT_ID}`]: MUSTER_HINT_NAV_MUSTERFAMILIE_HOME,
     [R.stammbaum]: MUSTER_HINT_NAV_STAMMBAUM,
     [R.events]: MUSTER_HINT_NAV_EVENTS,
     [R.kalender]: MUSTER_HINT_NAV_KALENDER,

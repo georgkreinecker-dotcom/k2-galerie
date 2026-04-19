@@ -730,6 +730,9 @@ function FamilieRolleLeiste() {
 
 const familieRoutes = PROJECT_ROUTES['k2-familie']
 
+/** Muster-Demo: Start in der Leiste = Huber mit ?t=huber (nicht nur /familie → „meine“ echte Familie). */
+const FAMILIE_MUSTER_HOME_NAV_TO = `${familieRoutes.meineFamilie}?t=${FAMILIE_HUBER_TENANT_ID}`
+
 type FamilieNavItem = {
   to: string
   label: string
@@ -771,6 +774,17 @@ function FamilieNav() {
   const isLeser = capabilities.rolle === 'leser'
   const navItems = useMemo((): FamilieNavItem[] => {
     if (isMeineFamilieHome) {
+      /** Musterfamilie-Start: volle Orientierungsleiste wie auf Unterseiten (sonst kein Nav oben). Handbuch wie bisher vor Einstellungen. */
+      if (nurMusterBesuch) {
+        const ohneErsteUndEinst = FAMILIE_NAV.slice(1).filter((i) => i.to !== familieRoutes.einstellungen)
+        const einst = FAMILIE_NAV.find((i) => i.to === familieRoutes.einstellungen)!
+        return [
+          { to: FAMILIE_MUSTER_HOME_NAV_TO, label: getFamilieTenantDisplayName(FAMILIE_HUBER_TENANT_ID) },
+          ...ohneErsteUndEinst,
+          { to: familieRoutes.benutzerHandbuch, label: 'Handbuch' },
+          einst,
+        ]
+      }
       return [
         { to: K2_FAMILIE_APP_SHORT_PATH, label: 'Meine Familie' },
         { to: familieRoutes.benutzerHandbuch, label: 'Handbuch' },
@@ -781,12 +795,9 @@ function FamilieNav() {
       ]
     }
     return FAMILIE_NAV
-  }, [isMeineFamilieHome, isLeser])
+  }, [isMeineFamilieHome, isLeser, nurMusterBesuch])
 
-  /** Musterfamilie-Start: keine APf-Tabs – nur Inhalt der Startseite. Unterseiten: minimal Zurück + Link zur Musterfamilie. */
-  if (nurMusterBesuch && isMeineFamilieHome) {
-    return null
-  }
+  /** Unterseiten Musterfamilie: minimal Zurück + Link zur Musterfamilie. */
   if (nurMusterBesuch && !isMeineFamilieHome) {
     return (
       <nav
@@ -805,7 +816,7 @@ function FamilieNav() {
       >
         <FamilieBackButton style={{ color: t.text, marginRight: '0.25rem' }} />
         <Link
-          to={K2_FAMILIE_APP_SHORT_PATH}
+          to={FAMILIE_MUSTER_HOME_NAV_TO}
           className="k2-familie-nav-link"
           style={{
             padding: '0.45rem 0.85rem',
@@ -844,16 +855,18 @@ function FamilieNav() {
         <FamilieBackButton style={{ color: t.text, marginRight: '0.25rem' }} />
       ) : null}
       {navItems.map(({ to, label, activePrefixes }) => {
-        const isStart = to === K2_FAMILIE_APP_SHORT_PATH
+        const isFamilieHomeNavLink =
+          to === K2_FAMILIE_APP_SHORT_PATH || to === FAMILIE_MUSTER_HOME_NAV_TO
         const isExactMatchNav =
           to === familieRoutes.benutzerHandbuch || to === familieRoutes.einstellungen
+        const toPathOnly = to.split('?')[0] ?? to
         const isActive = activePrefixes?.length
           ? activePrefixes.some((p) => path.startsWith(p))
-          : isStart || isExactMatchNav
-            ? isStart
+          : isFamilieHomeNavLink || isExactMatchNav
+            ? isFamilieHomeNavLink
               ? isK2FamilieMeineFamilieHomePath(path)
-              : path === to || path === to + '/'
-            : path.startsWith(to)
+              : path === toPathOnly || path === toPathOnly + '/'
+            : path.startsWith(toPathOnly)
         const navMuster = isFamilieNurMusterSession()
         const musterHint = navMuster ? musterHintForFamilieNavLink(to) : undefined
         const leitfadenFocus = familieNavLeitfadenFocusForTo(to)
