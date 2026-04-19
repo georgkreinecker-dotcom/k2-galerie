@@ -41,6 +41,7 @@ import { K2_FAMILIE_NAV_LABEL_GESCHICHTE } from '../config/k2FamilieNavLabels'
 import { resolveFamiliePwaResumeTarget, writeFamiliePwaLastPath } from '../utils/familiePwaLastPath'
 import { FamilieMusterDemoHintProvider } from '../context/FamilieMusterDemoHintContext'
 import {
+  MUSTER_HINT_TOOLBAR_EIGENE_FAMILIE,
   MUSTER_HINT_TOOLBAR_FAMILIE,
   MUSTER_HINT_TOOLBAR_LEITFADEN_BUTTON,
   musterHintForFamilieNavLink,
@@ -216,6 +217,21 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
               >
                 Rundgang
               </button>
+              <Link
+                to={`${familieRoutesNav.einstellungen}#k2-familie-lizenz-erwerben`}
+                data-muster-hint={MUSTER_HINT_TOOLBAR_EIGENE_FAMILIE}
+                style={{
+                  ...btnBase,
+                  border: '1px solid rgba(181, 74, 30, 0.45)',
+                  background: '#fffefb',
+                  color: '#b54a1e',
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                }}
+              >
+                Eigene Familie anlegen
+              </Link>
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem', marginLeft: 'auto' }}>
               <select

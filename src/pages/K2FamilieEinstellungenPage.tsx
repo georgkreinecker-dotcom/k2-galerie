@@ -5,7 +5,7 @@
 
 import type { CSSProperties } from 'react'
 import { useState, useMemo, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import K2FamilieVerwaltungZugangUndAnsicht from '../components/K2FamilieVerwaltungZugangUndAnsicht'
 import K2FamilieStartseiteGestalten from '../components/K2FamilieStartseiteGestalten'
 import '../App.css'
@@ -72,6 +72,7 @@ const iconLink: CSSProperties = {
 }
 
 export default function K2FamilieEinstellungenPage() {
+  const location = useLocation()
   const { currentTenantId, tenantList, refreshFromStorage, setCurrentTenantId } = useFamilieTenant()
   const { rolle, setRolle, capabilities, inhaberArbeitsansicht, setInhaberArbeitsansicht } = useFamilieRolle()
   const effRolle = capabilities.rolle
@@ -88,6 +89,15 @@ export default function K2FamilieEinstellungenPage() {
     window.addEventListener(K2_FAMILIE_SESSION_UPDATED, onUp)
     return () => window.removeEventListener(K2_FAMILIE_SESSION_UPDATED, onUp)
   }, [])
+
+  useEffect(() => {
+    const id = location.hash.replace(/^#/, '')
+    if (!id) return
+    const tmr = window.setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 80)
+    return () => window.clearTimeout(tmr)
+  }, [location.hash, location.pathname])
   const personen = loadPersonen(currentTenantId)
   const ichId = einst.ichBinPersonId?.trim() || ''
   const designatedId = einst.inhaberPersonId?.trim() || ''
@@ -565,6 +575,7 @@ export default function K2FamilieEinstellungenPage() {
           </p>
         )}
 
+        <section id="k2-familie-lizenz-erwerben" style={{ margin: 0, padding: 0 }}>
         {isLeser ? (
           <p style={{ margin: '0 0 1.15rem', fontSize: '0.88rem', color: onViewport.muted, lineHeight: 1.55 }}>
             <strong style={{ color: onViewport.text }}>Lizenz:</strong> Die <strong style={{ color: onViewport.text }}>Inhaber:in</strong> ist die{' '}
@@ -604,6 +615,7 @@ export default function K2FamilieEinstellungenPage() {
             </div>
           </div>
         )}
+        </section>
 
         <div
           style={{
