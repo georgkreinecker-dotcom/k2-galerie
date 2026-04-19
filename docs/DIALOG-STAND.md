@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nach Deploy: Zettel → **`/admin?context=vk2`** (Stammdaten): **Pilot-Sandbox** statt „Kunstverein Muster“ – **`syncVk2PilotScopeFromSearch`** läuft jetzt auch dort (nicht nur `/projects/vk2/*`). Test: gleiche Session, `k2-pilot-einladung` gesetzt.  
-**Einordnung:** Pilot-Mandant = Session **`k2-vk2-active-pilot-id`** aus URL oder Einladung; ohne Sync blieb der Key leer im Admin.
+**Was wir JETZT tun:** VK2-Pilot-Admin: Regression abgesichert – **`src/tests/vk2PilotScopeSync.test.ts`** (7 Tests), **`shouldSyncVk2PilotScopeFromUrl`** in **`vk2StorageKeys.ts`**.  
+**Einordnung:** Nicht „noch ein Versuch“ – feste Regeln im Test; CI rot bei Rückbau.
+
+---
+
+**Letzter Stand:** 19.04.26 – **VK2 Pilot-Scope: Regressionstests + eine Quelle** – **`shouldSyncVk2PilotScopeFromUrl`** nach **`vk2StorageKeys.ts`**; **`vk2PilotScopeSync.test.ts`**: Admin/mein-bereich/k2-galerie+context=vk2, Zettel-Einladung, URL `vk2Pilot`. **Commit:** `b48a94c7` ✅ GitHub
 
 ---
 
