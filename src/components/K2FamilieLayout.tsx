@@ -220,7 +220,7 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
                 Rundgang
               </button>
               <Link
-                to={`${familieRoutesNav.einstellungen}#k2-familie-lizenz-erwerben`}
+                to={familieRoutesNav.lizenzErwerben}
                 data-muster-hint={MUSTER_HINT_TOOLBAR_EIGENE_FAMILIE}
                 style={{
                   ...btnBase,
