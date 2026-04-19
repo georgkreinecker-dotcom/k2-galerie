@@ -232,6 +232,13 @@ const BEREICHE: Bereich[] = [
     zoneBg: 'linear-gradient(145deg, rgba(15,118,110,0.08), rgba(240,253,250,0.96))',
     zettel: [
       {
+        id: 'einladung-geschwister-k2-familie',
+        titel: 'Einladung Geschwister · K2 Familie',
+        zweck: 'Schreiben an 13 Geschwister, Beilage Codes Kinder – druckfertig',
+        to: '/texte-schreibtisch/einladung-geschwister-k2-familie.html',
+        rotateDeg: 0.12,
+      },
+      {
         id: 'august',
         titel: 'Brief an August',
         zweck: 'Persönlicher Vermächtnis-Ton',
