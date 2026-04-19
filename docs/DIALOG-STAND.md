@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 19.04.26 – **K2 Familie: Einladungsbriefe personalisiert (Familien-Zugang + Codes je Zweig)** – **`K2FamilieEinladungGeschwisterBriefePage`:** Route **`/projects/k2-familie/einladung-geschwister-briefe`**; Daten wie **Mitglieder & Codes** (`buildMitgliederCodesZweigGruppen`); pro **Geschwister-Ast** ein Druck-Brief; optional alle Zweige; Link von **Mitglieder-Codes** + **Texte-Schreibtisch** (Zettel → Live-Seite). **Commit:** `63f82752` ✅ GitHub
+**Letzter Stand:** 19.04.26 – **K2 Familie: Einladungsbriefe personalisiert (Familien-Zugang + Codes je Zweig)** – **`K2FamilieEinladungGeschwisterBriefePage`:** Route **`/projects/k2-familie/einladung-geschwister-briefe`**; Daten wie **Mitglieder & Codes** (`buildMitgliederCodesZweigGruppen`); pro **Geschwister-Ast** ein Druck-Brief; optional alle Zweige; Link von **Mitglieder-Codes** + **Texte-Schreibtisch** (Zettel → Live-Seite). **Commit (Feature-Code):** `57b4cb94` ✅ GitHub
 
 ---
 
