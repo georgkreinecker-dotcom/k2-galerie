@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 19.04.26 – **VK2 Galerie (Vereinsseite): „Jetzt entdecken“ zurückhaltend** – **`Vk2GaleriePage`:** Karte neutral (`bgCard`/Border); CTA als Fließtext-Link im Absatz statt oranger Button-Kachel. **Commit:** `68a24d3c` ✅ GitHub
+**Letzter Stand:** 19.04.26 – **VK2 Galerie (Vereinsseite): „Jetzt entdecken“ zurückhaltend** – **`Vk2GaleriePage`:** Karte neutral (`bgCard`/Border); CTA als Fließtext-Link im Absatz statt oranger Button-Kachel. **Commit:** `8c2e61f0` ✅ GitHub
 
 ---
 
