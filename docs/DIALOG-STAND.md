@@ -1,7 +1,15 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** (frei).  
-**Einordnung:** VK2 Vereins-Galerie: Einladungskarte „eigene Galerie“ visuell zurückhaltend (kein oranger Vollbutton).
+**Einordnung:** K2 Familie: Einladung Geschwister liegt im Texte-Schreibtisch.
+
+---
+
+**Letzter Stand:** 19.04.26 – **K2 Familie: Einladung an Geschwister (druckfertig)** – **`public/texte-schreibtisch/einladung-geschwister-k2-familie.html`**; Zettel **Persönliche Briefe** auf **`TexteSchreibtischPage`**. **Commit:** `0b6f4c22` ✅ GitHub
+
+---
+
+**Letzter Stand:** 19.04.26 – **Teilen: Fußtext/Tooltip kontextrichtig (kein Presse-„Verteiler“)** – **`PublicTeilenFixed`:** `SHARE_FOOTER_HINT` für `oeffentlich` / `vk2` / `familie`. **`GaleriePage`:** `galerieShareHintTitle` + `galerieShareHintFooter` (K2 / ök2 / VK2). **Commit:** (nach Push)
 
 ---
 
