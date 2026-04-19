@@ -1,7 +1,15 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nach Vercel-Deploy: ök2 mit Zettel-URL (`vorname` + `entwurf=1`) → Admin: **kein** Block „Admin-Zugang Muster-Demo (ök2)“; Stammdaten passen zum neuen Vorname.  
-**Einordnung:** `oek2PilotEinladungAktiv` erkennt jetzt auch Zettel-Session (`k2-oek2-zettel-vorname`, Willkommen-Entwurf); bei gewechseltem Vorname: `resetOeffentlichStammdatenToMusterDemo` + `force`-Prefill.
+**Was wir JETZT tun:** (frei) – letzte Lieferung: Teilen auf VK2-Galerie + K2-Familie Muster.  
+**Einordnung:** Ein Standard wie `GaleriePage` – `PublicTeilenFixed` + `buildQrUrlWithBust` + `getPublicGalerieUrl` / `getPublicK2FamilieMusterEntryUrl`.
+
+---
+
+**Letzter Stand:** 19.04.26 – **Teilen: VK2-Galerie + Musterfamilie wie ök2** – **`PublicTeilenFixed`**, **`publicShare`** (`isLocalOrPrivateOrigin`), **`getPublicK2FamilieMusterEntryUrl`** (Willkommen-Route); **`Vk2GaleriePage`**, **`K2FamilieLayout`** (nur Muster-Session); **`GaleriePage`:** `isLocalOrPrivateOrigin` aus Utility. **Commit:** `fc79cf1e` ✅ GitHub
+
+---
+
+**Letzter Stand:** 19.04.26 – **ök2 Testpilot: Zettel-Link landet in Demo-Galerie, nicht in Entdecken** – **`GaleriePage`:** `useLayoutEffect` statt `useEffect` für Fremde→Entdecken; **`pilotOek2GalerieUrl`:** `isOek2PilotEntwurfQuery`; **`EntdeckenPage`:** gleiche Hilfe; Test **`pilotOek2GalerieUrl.test.ts`**. **Commit:** `e4816d48` ✅ GitHub
 
 ---
 
