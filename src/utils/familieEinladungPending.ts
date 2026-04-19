@@ -54,7 +54,8 @@ export function setFamilieEinladungPending(
 ): void {
   if (typeof window === 'undefined') return
   try {
-    const mTrim = typeof partial.m === 'string' ? partial.m.trim() : ''
+    /** Wie URL/Scan: Vollbreite-Zeichen, Bindestrich in AB-12 → AB12 (sonst „Code nicht erkannt“). */
+    const mTrim = typeof partial.m === 'string' ? trimMitgliedsNummerEingabe(partial.m) : ''
     const p: FamilieEinladungPending = {
       ...partial,
       ...(mTrim ? { m: mTrim } : {}),

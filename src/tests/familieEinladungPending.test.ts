@@ -18,6 +18,14 @@ describe('familieEinladungPending', () => {
     sessionStorage.removeItem(FAM_QR_KOMPAKT)
   })
 
+  it('normalisiert m wie URL (z. B. Bindestrich, Vollbreite-Ziffern)', () => {
+    setFamilieEinladungPending({ t: 'familie-x', m: 'AB–12' })
+    expect(getFamilieEinladungPending()?.m).toBe('AB12')
+    clearFamilieEinladungPending()
+    setFamilieEinladungPending({ t: 'familie-x', m: 'ＡＢ１２' })
+    expect(getFamilieEinladungPending()?.m).toBe('AB12')
+  })
+
   it('speichert und liest m + t', () => {
     setFamilieEinladungPending({ t: 'familie-x', m: 'AB12', z: 'KF-2026-1' })
     const p = getFamilieEinladungPending()

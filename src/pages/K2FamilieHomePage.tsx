@@ -18,6 +18,7 @@ import {
   clearFamilieFamilienQrKompaktSession,
   getFamilieEinladungPending,
   isFamilieEinladungNurZugangAnsicht,
+  isFamilieFamilienQrKompaktSession,
   K2_FAMILIE_EINLADUNG_PENDING_EVENT,
 } from '../utils/familieEinladungPending'
 import {
@@ -157,6 +158,22 @@ export default function K2FamilieHomePage() {
       ),
     [rolleGewaehlt, currentTenantId, einstAmpel, personen, einladungNurZugangAnsicht],
   )
+
+  /** Nur „t+z“-QR: ohne diesen Schritt bleiben Main + Formular leer, wenn schon „Du“ + bestätigt im Gerätespeicher. */
+  const familienQrKompakt = useMemo(
+    () => isFamilieFamilienQrKompaktSession(currentTenantId),
+    [currentTenantId, familieStorageRevision, location.search],
+  )
+  const familienQrZeigeWeiterZurFamilie = useMemo(() => {
+    const ich = ichBinPersonId?.trim()
+    if (!familienQrKompakt || !ich) return false
+    return loadIdentitaetBestaetigt(currentTenantId) === ich
+  }, [familienQrKompakt, ichBinPersonId, currentTenantId, familieStorageRevision])
+
+  const beendeFamilienQrKompaktAnsicht = () => {
+    clearFamilieFamilienQrKompaktSession()
+    bumpFamilieStorageRevision()
+  }
 
   const ichName = useMemo(() => {
     const id = ichBinPersonId?.trim()
@@ -618,6 +635,44 @@ export default function K2FamilieHomePage() {
                   {identitaetSessionOk}
                 </p>
               ) : null}
+            </div>
+          </div>
+        ) : null}
+
+        {familienQrZeigeWeiterZurFamilie ? (
+          <div
+            className="k2-familie-no-print"
+            style={{
+              width: '100%',
+              boxSizing: 'border-box',
+              padding: '0.65rem clamp(0.85rem, 4vw, 1.25rem)',
+              background: 'linear-gradient(180deg, #ecfdf5 0%, #d1fae5 100%)',
+              borderBottom: '2px solid rgba(5, 150, 105, 0.35)',
+            }}
+          >
+            <div style={{ maxWidth: 920, margin: '0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem' }}>
+              <p style={{ margin: 0, flex: '1 1 220px', fontSize: '0.88rem', lineHeight: 1.45, color: '#064e3b', fontFamily: a.fontBody }}>
+                <strong>Familien-Einstieg:</strong> Auf diesem Gerät ist deine Identität schon bestätigt{ichName ? ` (${ichName})` : ''}. Tippe auf den Button für die volle Ansicht mit Navigation und Kacheln.
+              </p>
+              <button
+                type="button"
+                onClick={beendeFamilienQrKompaktAnsicht}
+                style={{
+                  minHeight: 46,
+                  padding: '0.5rem 1.1rem',
+                  fontSize: '0.95rem',
+                  fontFamily: 'inherit',
+                  borderRadius: 10,
+                  border: 'none',
+                  background: '#059669',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontWeight: 700,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Weiter zur Familie
+              </button>
             </div>
           </div>
         ) : null}
