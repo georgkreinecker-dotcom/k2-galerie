@@ -2311,7 +2311,8 @@ header h1 {
 
 /* K2 Familie: Lesekontrast (Meta, Platzhalter, Outline-Buttons auf dunklem Grund) */
 .k2-familie-page {
-  --k2-familie-readable-muted: rgba(255, 255, 255, 0.92);
+  /* Nicht fest weiß: auf hellen Karten (.card, Musteransicht / ok2-theme) wäre Meta sonst unsichtbar */
+  --k2-familie-readable-muted: var(--k2-muted);
   --k2-familie-placeholder: rgba(226, 232, 240, 0.82);
 }
 
