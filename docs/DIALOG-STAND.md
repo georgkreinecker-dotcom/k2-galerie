@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nach Deploy: Besucherzähler testen (ök2 ohne/mit Zettel, VK2 ohne/mit `?vk2Pilot=`); Plattform-Zahlen K2/ök2/VK2-Demo.  
-**Einordnung:** POST `/api/visit` nutzt jetzt **einen** `tenant_id` pro Mandant (`vk2-pilot-*`, `oeffentlich-pilot-*`, Lizenz-Slug unverändert).
+**Was wir JETZT tun:** Nach Vercel-Deploy: ök2 mit Zettel-URL (`vorname` + `entwurf=1`) → Admin: **kein** Block „Admin-Zugang Muster-Demo (ök2)“; Stammdaten passen zum neuen Vorname.  
+**Einordnung:** `oek2PilotEinladungAktiv` erkennt jetzt auch Zettel-Session (`k2-oek2-zettel-vorname`, Willkommen-Entwurf); bei gewechseltem Vorname: `resetOeffentlichStammdatenToMusterDemo` + `force`-Prefill.
+
+---
+
+**Letzter Stand:** 19.04.26 – **ök2 Testpilot: Muster-Admin-QR aus bei Zettel/Entwurf, Demo-Reset bei neuem Vorname** – **`oeffentlichStammdatenMuster.ts`**, **`zettelPilotOeffentlichPrefill`**, **`GaleriePage`/`GalerieVorschauPage`**, **`ScreenshotExportAdmin`**, **`TestuserAnmeldungPage`**, **`autoSave`**. **Commit:** `b170d941` ✅ GitHub
 
 ---
 
