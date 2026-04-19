@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 19.04.26 (Session-Ende) – **K2 Familie: Sitzungs-Banner + Mitgliedsnummer + Einladung/Briefe/Verwaltung** – `familieMitgliedsNummer` (L/l→LI); **`K2FamilieHomePage`:** gelbes Banner **Aktive Familie**, Hinweise Identität/Briefe, Fehlertext wenn Code zu **anderer Person** als „Du“; `ScreenshotExportAdmin` PM-Einstellungen-Screenshot; `familieMitgliedInfoBriefText`; Teilen/Galerie/VK2/K2-Familie-Seiten divers; Regel **eiserne-regel-georg-bestehende-loesung**. **`npm run qs:local` grün.** **Commit:** `d6c73dbc` ✅ GitHub
+**Letzter Stand:** 19.04.26 (Session-Ende) – **K2 Familie: Sitzungs-Banner + Mitgliedsnummer + Einladung/Briefe/Verwaltung** – `familieMitgliedsNummer` (L/l→LI); **`K2FamilieHomePage`:** gelbes Banner **Aktive Familie**, Hinweise Identität/Briefe, Fehlertext wenn Code zu **anderer Person** als „Du“; `ScreenshotExportAdmin` PM-Einstellungen-Screenshot; `familieMitgliedInfoBriefText`; Teilen/Galerie/VK2/K2-Familie-Seiten divers; Regel **eiserne-regel-georg-bestehende-loesung**. **`npm run qs:local` grün.** **Commit:** `d6c73dbc` ✅ GitHub (Feature-Bundle; ggf. `git log -1` für letzten Tip)
 
 ---
 
