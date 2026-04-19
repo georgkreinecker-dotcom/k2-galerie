@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** (frei) – letzte Lieferung: Teilen auf VK2-Galerie + K2-Familie Muster.  
-**Einordnung:** Ein Standard wie `GaleriePage` – `PublicTeilenFixed` + `buildQrUrlWithBust` + `getPublicGalerieUrl` / `getPublicK2FamilieMusterEntryUrl`.
+**Was wir JETZT tun:** (frei). Letzte kleine UX: Muster-Toolbar „Eigene Familie anlegen“ → direkt Lizenz-Seite.  
+**Einordnung:** `PROJECT_ROUTES['k2-familie'].lizenzErwerben` statt Einstellungen-Hash.
+
+---
+
+**Letzter Stand:** 19.04.26 – **K2 Familie Muster: „Eigene Familie anlegen“ → `/projects/k2-familie/lizenz-erwerben`** – **`K2FamilieLayout`:** `Link to={familieRoutesNav.lizenzErwerben}`; **`familieMusterDemoHints`:** Toolbar-Hint angepasst. **Commit:** `78b73582` ✅ GitHub
 
 ---
 
