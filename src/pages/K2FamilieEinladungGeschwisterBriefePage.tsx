@@ -5,12 +5,14 @@
  */
 
 import { Link } from 'react-router-dom'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import QRCode from 'qrcode'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { adminTheme } from '../config/theme'
 import { APP_BASE_URL_SHAREABLE } from '../config/externalUrls'
+import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
 import { loadEinstellungen, loadPersonen } from '../utils/familieStorage'
@@ -19,6 +21,7 @@ import { buildMitgliederCodesZweigGruppen, type MitgliederCodesZweigGruppe } fro
 
 const R = PROJECT_ROUTES['k2-familie']
 
+/** Kurz-URL für Papier (ohne Cache-Bust). */
 function buildShortEinladungsUrlForPrint(
   tenantId: string,
   familienZ: string,
@@ -29,6 +32,94 @@ function buildShortEinladungsUrlForPrint(
   base.searchParams.set('z', familienZ)
   base.searchParams.set('m', mitgliedsNummer)
   return base.toString()
+}
+
+/** Wie K2FamilieMitgliederCodesPage: Scan/Öffnen mit Server-Stand. */
+function buildPersonalEinladungsUrlScan(
+  tenantId: string,
+  familienZ: string,
+  mitgliedsNummer: string,
+  versionTs: number,
+): string {
+  const base = new URL(`${APP_BASE_URL_SHAREABLE}${R.meineFamilie}`)
+  base.searchParams.set('t', tenantId)
+  base.searchParams.set('z', familienZ)
+  base.searchParams.set('m', mitgliedsNummer)
+  return buildQrUrlWithBust(base.toString(), versionTs)
+}
+
+/** Familien-Einstieg nur t+z (optional fn) — wie K2FamilieVerwaltungZugangUndAnsicht. */
+function buildFamilieEinladungsUrlCanonical(
+  tenantId: string,
+  familienZ: string,
+  familyDisplayName?: string,
+): string {
+  if (!familienZ.trim()) return ''
+  const base = new URL(`${APP_BASE_URL_SHAREABLE}${R.meineFamilie}`)
+  base.searchParams.set('t', tenantId)
+  base.searchParams.set('z', familienZ.trim())
+  const fn = (familyDisplayName ?? '').trim()
+  if (fn) base.searchParams.set('fn', fn)
+  return base.toString()
+}
+
+/** Familien-Link zum Scannen: kanonische URL + Server-Stand (wie Mitglieder & Codes). */
+function buildFamilieEinladungsUrlScan(
+  tenantId: string,
+  familienZ: string,
+  familyDisplayName: string | undefined,
+  versionTs: number,
+): string {
+  const canonical = buildFamilieEinladungsUrlCanonical(tenantId, familienZ, familyDisplayName)
+  if (!canonical) return ''
+  return buildQrUrlWithBust(canonical, versionTs)
+}
+
+function EinladungQrImg({ url, size = 112 }: { url: string; size?: number }) {
+  const [dataUrl, setDataUrl] = useState('')
+  useEffect(() => {
+    if (!url) {
+      setDataUrl('')
+      return
+    }
+    let cancelled = false
+    QRCode.toDataURL(url, { width: size, margin: 1, errorCorrectionLevel: 'M' })
+      .then((d) => {
+        if (!cancelled) setDataUrl(d)
+      })
+      .catch(() => {
+        if (!cancelled) setDataUrl('')
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [url, size])
+  if (!url) return null
+  if (!dataUrl) {
+    return (
+      <span
+        style={{
+          display: 'inline-block',
+          width: size,
+          height: size,
+          background: 'rgba(0,0,0,0.06)',
+          borderRadius: 4,
+          verticalAlign: 'top',
+        }}
+        aria-hidden
+      />
+    )
+  }
+  return (
+    <img
+      src={dataUrl}
+      alt="QR-Code Einladung"
+      width={size}
+      height={size}
+      className="k2-fam-einlad-qr"
+      style={{ display: 'block', marginTop: '0.35rem' }}
+    />
+  )
 }
 
 /** Anker-Person eines Geschwister-Asts (Großfamilie). */
@@ -53,8 +144,9 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
   const { capabilities } = useFamilieRolle()
   const kannInstanz = capabilities.canManageFamilienInstanz
   const [nurGeschwisterAst, setNurGeschwisterAst] = useState(true)
+  const { versionTimestamp } = useQrVersionTimestamp()
 
-  const { familienZ, personMap, zweigGruppenAst, bloecke, signaturName } = useMemo(() => {
+  const { familienZ, familyDisplayName, personMap, zweigGruppenAst, bloecke, signaturName } = useMemo(() => {
     const einst = loadEinstellungen(currentTenantId)
     const z = (einst.mitgliedsNummerAdmin ?? '').trim()
     const personen = loadPersonen(currentTenantId)
@@ -66,6 +158,7 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
     const sig = ich?.name?.trim() || ''
     return {
       familienZ: z,
+      familyDisplayName: (einst.familyDisplayName ?? '').trim(),
       personMap: map,
       zweigGruppenAst: ast,
       bloecke: bloeckeRaw,
@@ -142,6 +235,7 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
           .k2-fam-einlad-brief-seite:last-child { page-break-after: auto; }
           .k2-fam-einlad-url-screen { display: none !important; }
           .k2-fam-einlad-url-print { display: block !important; font-size: 8pt; word-break: break-all; }
+          .k2-fam-einlad-qr { page-break-inside: avoid; max-width: 28mm; height: auto !important; }
         }
         @media screen {
           .k2-fam-einlad-url-print { display: none !important; }
@@ -198,11 +292,13 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
           Einladung · Briefe pro Familienzweig
         </h1>
         <p className="k2-fam-einlad-no-print" style={{ margin: '0 0 1rem', fontSize: '0.92rem', color: a.muted, lineHeight: 1.5 }}>
-          <strong style={{ color: a.text }}>Live mit Codes:</strong> Familien-Zugang und persönliche Mitgliedsnummern wie unter &nbsp;
+          <strong style={{ color: a.text }}>Live mit Codes:</strong> Dieselben Daten wie unter &nbsp;
           <Link to={R.mitgliederCodes} style={{ color: a.accent, fontWeight: 600 }}>
             Mitglieder &amp; Codes
           </Link>
-          . Pro Brief ein Geschwister-Zweig; Beilage = Tabelle für diesen Zweig. Vertraulich drucken.
+          . Im Brief: <strong style={{ color: a.text }}>Familien-Kennung</strong>,{' '}
+          <strong style={{ color: a.text }}>Familien-Link &amp; QR</strong> (Einstieg für alle) und pro Person{' '}
+          <strong style={{ color: a.text }}>Link &amp; QR</strong> (mit Server-Stand zum Scannen). Pro Brief ein Geschwister-Zweig; vertraulich drucken.
         </p>
 
         <div className="k2-fam-einlad-brief-screenbar k2-fam-einlad-no-print">
@@ -242,7 +338,7 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
 
         {!familienZ ? (
           <p className="k2-fam-einlad-no-print" style={{ fontSize: '0.88rem', color: '#b45309', marginBottom: '1rem' }}>
-            Zuerst die <strong>Familien-Zugangsnummer</strong> unter Einstellungen eintragen — sonst sind die Links unvollständig.
+            Zuerst die <strong>Familien-Kennung</strong> unter Einstellungen eintragen — sonst fehlen Familien-Link, QR und persönliche Einladungen.
           </p>
         ) : null}
 
@@ -265,9 +361,11 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
               key={`${g.branchKey}-${idx}`}
               gruppe={g}
               familienZ={familienZ}
+              familyDisplayName={familyDisplayName}
               tenantId={currentTenantId}
               personMap={personMap}
               signaturName={signaturName}
+              versionTimestamp={versionTimestamp}
               isLast={idx === bloecke.length - 1}
               a={a}
             />
@@ -286,17 +384,21 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
 function EinladungsBriefSeite({
   gruppe,
   familienZ,
+  familyDisplayName,
   tenantId,
   personMap,
   signaturName,
+  versionTimestamp,
   isLast,
   a,
 }: {
   gruppe: MitgliederCodesZweigGruppe
   familienZ: string
+  familyDisplayName: string
   tenantId: string
   personMap: Map<string, K2FamiliePerson>
   signaturName: string
+  versionTimestamp: number
   isLast: boolean
   a: typeof adminTheme
 }) {
@@ -304,6 +406,11 @@ function EinladungsBriefSeite({
   const titelZeile = astName && astName !== '—' ? astName : gruppe.branchLabel.replace(/^Familienzweig ·\s*/i, '').trim() || gruppe.branchLabel
 
   const mitCode = gruppe.rows.filter((r) => r.mitgliedsNummer)
+  const familienScanUrl =
+    familienZ.trim() !== ''
+      ? buildFamilieEinladungsUrlScan(tenantId, familienZ, familyDisplayName, versionTimestamp)
+      : ''
+  const familienUrlKurz = familienZ.trim() !== '' ? buildFamilieEinladungsUrlCanonical(tenantId, familienZ, familyDisplayName) : ''
 
   return (
     <article
@@ -347,8 +454,31 @@ function EinladungsBriefSeite({
           pageBreakInside: 'avoid',
         }}
       >
-        <strong style={{ color: '#2c2419' }}>Familien-Zugang</strong> (für euren Zweig derselbe wie für alle):{' '}
-        <span style={{ fontFamily: 'ui-monospace, monospace', fontWeight: 600 }}>{familienZ || '— noch eintragen'}</span>
+        <p style={{ margin: '0 0 0.45rem', color: '#2c2419' }}>
+          <strong>Familien-Kennung</strong> (gemeinsame Bezeichnung — steckt in jedem persönlichen Link mit drin)
+        </p>
+        <p style={{ margin: '0 0 0.5rem', fontSize: '10.5pt', color: '#4a4035' }}>
+          Die Kennung dient zum Abgleich. Zum Einstieg für die ganze Familie: Link und QR direkt darunter. Für einzelne Personen: persönliche Codes in der Tabelle.
+        </p>
+        <p style={{ margin: '0 0 0.35rem', fontFamily: 'ui-monospace, monospace', fontWeight: 600, color: '#1c1a18' }}>
+          {familienZ || '— noch eintragen'}
+        </p>
+        {familienScanUrl ? (
+          <div style={{ marginTop: '0.65rem', paddingTop: '0.65rem', borderTop: '1px solid #e8e0d4' }}>
+            <p style={{ margin: '0 0 0.4rem', color: '#2c2419', fontSize: '10.5pt' }}>
+              <strong>Familien-Einstieg</strong> (Link &amp; QR — gleicher Server-Stand wie unter Mitglieder &amp; Codes)
+            </p>
+            <span className="k2-fam-einlad-url-screen">
+              <a href={familienScanUrl} style={{ color: '#b45309', fontWeight: 600 }}>
+                Zur Familie öffnen
+              </a>
+            </span>
+            <span className="k2-fam-einlad-url-print" style={{ fontFamily: 'ui-monospace, monospace', fontSize: '8pt', color: '#1a1816', display: 'block', marginBottom: '0.35rem' }}>
+              {familienUrlKurz}
+            </span>
+            <EinladungQrImg url={familienScanUrl} size={112} />
+          </div>
+        ) : null}
       </div>
 
       <div
@@ -373,12 +503,16 @@ function EinladungsBriefSeite({
               <tr style={{ borderBottom: '1px solid #c9bfb0', textAlign: 'left' }}>
                 <th style={{ padding: '0.35rem 0.5rem 0.35rem 0' }}>Name</th>
                 <th style={{ padding: '0.35rem 0.5rem' }}>Code</th>
-                <th style={{ padding: '0.35rem 0' }}>Link / Adresse</th>
+                <th style={{ padding: '0.35rem 0' }}>Link &amp; QR</th>
               </tr>
             </thead>
             <tbody>
               {mitCode.map((r) => {
-                const url =
+                const urlScan =
+                  familienZ && r.mitgliedsNummer
+                    ? buildPersonalEinladungsUrlScan(tenantId, familienZ, r.mitgliedsNummer, versionTimestamp)
+                    : ''
+                const urlKurz =
                   familienZ && r.mitgliedsNummer
                     ? buildShortEinladungsUrlForPrint(tenantId, familienZ, r.mitgliedsNummer)
                     : ''
@@ -389,16 +523,19 @@ function EinladungsBriefSeite({
                       {r.mitgliedsNummer}
                     </td>
                     <td style={{ padding: '0.3rem 0', verticalAlign: 'top', fontSize: '9pt' }}>
-                      {url ? (
+                      {urlScan ? (
                         <>
-                          <span className="k2-fam-einlad-url-screen">
-                            <a href={url} style={{ color: '#b45309', fontWeight: 600 }}>
-                              Öffnen
-                            </a>
+                          <a
+                            className="k2-fam-einlad-url-screen"
+                            href={urlScan}
+                            style={{ color: '#b45309', fontWeight: 600, display: 'inline-block', marginBottom: '0.35rem' }}
+                          >
+                            Öffnen
+                          </a>
+                          <span className="k2-fam-einlad-url-print" style={{ fontFamily: 'ui-monospace, monospace', color: '#1a1816', marginBottom: '0.35rem', display: 'block' }}>
+                            {urlKurz}
                           </span>
-                          <span className="k2-fam-einlad-url-print" style={{ fontFamily: 'ui-monospace, monospace', color: '#1a1816' }}>
-                            {url}
-                          </span>
+                          <EinladungQrImg url={urlScan} size={96} />
                         </>
                       ) : (
                         '—'

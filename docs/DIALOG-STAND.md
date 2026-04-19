@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** (frei).  
-**Einordnung:** K2 Familie: Einladung Geschwister – live mit Codes (`einladung-geschwister-briefe`) + statische HTML-Vorlage.
+**Was wir JETZT tun:** Kurz Einladungsbriefe mit Link/QR am Rechner prüfen (Druckdialog).  
+**Einordnung:** K2 Familie Geschwister-Briefe = dieselbe URL-Logik wie Mitglieder & Codes (`buildQrUrlWithBust` + `useQrVersionTimestamp`).
+
+---
+
+**Letzter Stand:** 19.04.26 – **K2 Familie: Einladungsbriefe – Familien-Einstieg + Tabelle mit Link & QR (Server-Stand)** – **`K2FamilieEinladungGeschwisterBriefePage`:** Kasten **Familien-Kennung** + **Familien-Einstieg** (`buildFamilieEinladungsUrlScan`); Spalte **Link & QR** pro Person mit `buildPersonalEinladungsUrlScan`; Kurz-URL nur für **Druck** (`k2-fam-einlad-url-print`). ✅ GitHub
 
 ---
 
