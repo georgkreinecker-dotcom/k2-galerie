@@ -94,7 +94,7 @@ export default function MissionControlPage() {
               <span>Pilot-Zettel</span>
             </Link>
             <Link
-              to={PROJECT_ROUTES['k2-galerie'].testuserAnmeldung}
+              to={PROJECT_ROUTES['k2-galerie'].testuserMappe}
               className="btn small-btn"
               style={{
                 background: 'linear-gradient(120deg, #0d9488, #0f766e)',

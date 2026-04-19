@@ -331,7 +331,7 @@ export default function PlatformStartPage() {
           📄 Pilot-Zettel (Name eintragen, dann 🖨️ Drucken)
         </Link>
         <Link
-          to={PROJECT_ROUTES['k2-galerie'].testuserAnmeldung}
+          to={PROJECT_ROUTES['k2-galerie'].testuserMappe}
           style={{
             display: 'block',
             marginTop: '0.75rem',

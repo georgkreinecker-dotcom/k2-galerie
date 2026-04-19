@@ -1,10 +1,12 @@
 /**
- * Testuser-Mappe (Route /testuser-anmeldung): Dokumente, Anmeldung, interner Katalog.
+ * Route /testuser-anmeldung:
+ * - **Ohne Query:** nur öffentliches Anmeldeformular (Entdecken, Handbuch, Bewerber:innen).
+ * - **?mappe=1:** volle Testuser-Mappe (Dokumente, Formular, Katalog) – APf / Team.
  * Anmeldung: auslegbares Formular (online oder A4) – mailto + Textdatei.
  */
 
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import {
@@ -582,9 +584,12 @@ function KatalogSection() {
 }
 
 export default function TestuserAnmeldungPage() {
+  const [searchParams] = useSearchParams()
+  const showFullMappe = searchParams.get('mappe') === '1'
+
   useEffect(() => {
-    document.title = 'Testuser-Mappe – kgm solution'
-  }, [])
+    document.title = showFullMappe ? 'Testuser-Mappe – kgm solution' : 'Testuser-Anmeldung – kgm solution'
+  }, [showFullMappe])
 
   const docLinks: { to: string; title: string; hint: string }[] = [
     { to: '/zettel-pilot-form', title: 'Neuer Test-Pilot', hint: 'Laufzettel, QR, Druck' },
@@ -619,7 +624,17 @@ export default function TestuserAnmeldungPage() {
   ]
 
   return (
-    <main className="tu-a4-sheet" style={{ padding: '2rem', maxWidth: 920, margin: '0 auto', background: '#fff', minHeight: '100vh', color: '#1c1a18' }}>
+    <main
+      className="tu-a4-sheet"
+      style={{
+        padding: '2rem',
+        maxWidth: showFullMappe ? 920 : 640,
+        margin: '0 auto',
+        background: '#fff',
+        minHeight: '100vh',
+        color: '#1c1a18',
+      }}
+    >
       <style>{`
         @page {
           size: A4;
@@ -706,61 +721,69 @@ export default function TestuserAnmeldungPage() {
         }
       `}</style>
 
-      <div className="tu-no-print" style={{ marginBottom: '1rem', display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
-        <Link to="/mission-control" style={{ color: '#333', fontSize: '0.9rem' }}>
-          ← Mission Control
-        </Link>
-      </div>
+      {showFullMappe ? (
+        <>
+          <div className="tu-no-print" style={{ marginBottom: '1rem', display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
+            <Link to="/mission-control" style={{ color: '#333', fontSize: '0.9rem' }}>
+              ← Mission Control
+            </Link>
+          </div>
 
-      <h1 style={{ fontSize: '1.45rem', marginBottom: '0.35rem', color: '#1c1a18' }}>Testuser-Mappe</h1>
-      <p className="tu-no-print" style={{ fontSize: '0.92rem', color: '#555', lineHeight: 1.55, marginBottom: '1.25rem' }}>
-        Hier liegen alle Wege zu <strong>Dokumenten</strong> rund um Testuser und Piloten, die <strong>Anmeldung</strong> für Interessenten und der interne <strong>Katalog</strong> – thematisch sortiert, ein Einstieg für die APf.
-      </p>
+          <h1 style={{ fontSize: '1.45rem', marginBottom: '0.35rem', color: '#1c1a18' }}>Testuser-Mappe</h1>
+          <p className="tu-no-print" style={{ fontSize: '0.92rem', color: '#555', lineHeight: 1.55, marginBottom: '1.25rem' }}>
+            Hier liegen alle Wege zu <strong>Dokumenten</strong> rund um Testuser und Piloten, die <strong>Anmeldung</strong> für Interessenten und der interne <strong>Katalog</strong> – thematisch sortiert, ein Einstieg für die APf.
+          </p>
 
-      <section className="tu-map-docs tu-no-print" style={{ marginBottom: '1.75rem' }}>
-        <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.6rem', color: '#b54a1e', fontWeight: 700 }}>Dokumente &amp; Wege</h2>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-            gap: '0.5rem',
-          }}
-        >
-          {docLinks.map((d) => (
-            <Link
-              key={d.to + d.title}
-              to={d.to}
+          <section className="tu-map-docs tu-no-print" style={{ marginBottom: '1.75rem' }}>
+            <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.6rem', color: '#b54a1e', fontWeight: 700 }}>Dokumente &amp; Wege</h2>
+            <div
               style={{
-                display: 'block',
-                padding: '0.55rem 0.65rem',
-                borderRadius: 8,
-                border: '1px solid #e8e4dc',
-                background: '#faf8f5',
-                textDecoration: 'none',
-                color: '#1c1a18',
-                fontWeight: 600,
-                fontSize: '0.88rem',
-                lineHeight: 1.35,
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                gap: '0.5rem',
               }}
             >
-              {d.title}
-              <span style={{ display: 'block', fontWeight: 400, fontSize: '0.78rem', color: '#5c5650', marginTop: '0.2rem' }}>{d.hint}</span>
-            </Link>
-          ))}
-        </div>
-      </section>
+              {docLinks.map((d) => (
+                <Link
+                  key={d.to + d.title}
+                  to={d.to}
+                  style={{
+                    display: 'block',
+                    padding: '0.55rem 0.65rem',
+                    borderRadius: 8,
+                    border: '1px solid #e8e4dc',
+                    background: '#faf8f5',
+                    textDecoration: 'none',
+                    color: '#1c1a18',
+                    fontWeight: 600,
+                    fontSize: '0.88rem',
+                    lineHeight: 1.35,
+                  }}
+                >
+                  {d.title}
+                  <span style={{ display: 'block', fontWeight: 400, fontSize: '0.78rem', color: '#5c5650', marginTop: '0.2rem' }}>{d.hint}</span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        </>
+      ) : null}
 
-      <section id="anmeldung" style={{ marginBottom: '1.75rem' }}>
-        <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.5rem', color: '#b54a1e', fontWeight: 700 }}>Anmeldung (öffentlich)</h2>
+      <section id="anmeldung" style={{ marginBottom: showFullMappe ? '1.75rem' : '1.25rem' }}>
+        {showFullMappe ? (
+          <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.5rem', color: '#b54a1e', fontWeight: 700 }}>Anmeldung (öffentlich)</h2>
+        ) : null}
         <TestuserAnmeldungForm />
       </section>
 
-      <section id="katalog" className="tu-map-katalog" style={{ marginBottom: '1.5rem' }}>
-        <h2 className="tu-no-print" style={{ fontSize: '1.05rem', margin: '0 0 0.5rem', color: '#b54a1e', fontWeight: 700 }}>
-          Katalog Testuser / Piloten
-        </h2>
-        <KatalogSection />
-      </section>
+      {showFullMappe ? (
+        <section id="katalog" className="tu-map-katalog" style={{ marginBottom: '1.5rem' }}>
+          <h2 className="tu-no-print" style={{ fontSize: '1.05rem', margin: '0 0 0.5rem', color: '#b54a1e', fontWeight: 700 }}>
+            Katalog Testuser / Piloten
+          </h2>
+          <KatalogSection />
+        </section>
+      ) : null}
 
       <footer className="tu-footer-print" style={{ marginTop: '1.25rem', paddingTop: '0.75rem', borderTop: '1px solid #eee', fontSize: '0.72rem', color: '#666', lineHeight: 1.4 }}>
         <div>{PRODUCT_COPYRIGHT_BRAND_ONLY}</div>

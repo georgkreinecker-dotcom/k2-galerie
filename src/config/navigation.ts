@@ -157,8 +157,10 @@ export const PROJECT_ROUTES = {
     verguetung: '/projects/k2-galerie/verguetung',
     vitaMartina: '/projects/k2-galerie/vita/martina',
     vitaGeorg: '/projects/k2-galerie/vita/georg',
-    /** Testuser-Mappe: Dokumente, Anmeldung, Katalog (Route /testuser-anmeldung) */
+    /** Öffentliches Testuser-Anmeldeformular (nur Formular – ohne Query) */
     testuserAnmeldung: '/testuser-anmeldung',
+    /** Testuser-Mappe: Dokumente, Anmeldung, interner Katalog (?mappe=1 – APf / Team) */
+    testuserMappe: '/testuser-anmeldung?mappe=1',
     /** Testuser: Testprotokoll-Vorlagen (Ansicht, Druck) – Hub oder ?linie=oek2|vk2|familie */
     testprotokollTestuser: '/testprotokoll-testuser',
     /** Große Arbeitsfläche: Texte wie auf dem Schreibtisch (Bereiche + Zettel, kein Listen-Navi) */

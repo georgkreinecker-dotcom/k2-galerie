@@ -141,9 +141,9 @@ export default function ZettelTestuserProduktlinienPage() {
         >
           <strong>Interesse eintragen?</strong>{' '}
           <Link to={TESTUSER_ANMELDUNG_PATH} style={{ color: '#047857', fontWeight: 600 }}>
-            Testuser-Mappe öffnen
+            Zum Anmeldeformular
           </Link>
-          {' – '}Formular ausfüllen oder ausdrucken; Angaben per E-Mail an kgm.
+          {' – '}Online oder ausdrucken; Angaben per E-Mail an kgm.
         </div>
         <SimpleK2TeamHandbuchMd md={content} />
       </div>

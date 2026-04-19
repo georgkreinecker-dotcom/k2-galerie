@@ -416,7 +416,7 @@ export default function ZettelPilotPage() {
             }}
           >
             ✅ <strong>Automatik (sichtbar):</strong> Dieser Pilot ist in der{' '}
-            <Link to={PROJECT_ROUTES['k2-galerie'].testuserAnmeldung} style={{ color: '#0d9488', fontWeight: 700 }}>
+            <Link to={PROJECT_ROUTES['k2-galerie'].testuserMappe} style={{ color: '#0d9488', fontWeight: 700 }}>
               Testuser-Mappe
             </Link>{' '}
             eingetragen – mit Link zum Zugangsblatt (nur auf diesem Gerät, Browser-Speicher).

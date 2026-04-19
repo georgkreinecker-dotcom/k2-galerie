@@ -97,7 +97,7 @@ export default function TestprotokollTestuserPage() {
         </ul>
         <p style={{ marginTop: '1.25rem', fontSize: '0.88rem', color: '#666' }}>
           Übersicht und weitere Dokumente:{' '}
-          <Link to={PROJECT_ROUTES['k2-galerie'].testuserAnmeldung} style={{ color: '#0d9488', fontWeight: 600 }}>
+          <Link to={PROJECT_ROUTES['k2-galerie'].testuserMappe} style={{ color: '#0d9488', fontWeight: 600 }}>
             Testuser-Mappe
           </Link>
         </p>

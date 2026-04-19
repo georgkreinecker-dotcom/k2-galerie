@@ -108,7 +108,7 @@ const BEREICHE: Bereich[] = [
         id: 'testuser-mappe',
         titel: 'Testuser-Mappe',
         zweck: 'Infos-Zettel, Anmeldung, Testprotokolle, Handbuch – thematisch; Katalog intern',
-        to: R.testuserAnmeldung,
+        to: R.testuserMappe,
         rotateDeg: -0.18,
       },
     ],

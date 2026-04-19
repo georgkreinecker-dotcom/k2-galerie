@@ -1,7 +1,15 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** (frei). Letzte kleine UX: Muster-Toolbar „Eigene Familie anlegen“ → direkt Lizenz-Seite.  
-**Einordnung:** `PROJECT_ROUTES['k2-familie'].lizenzErwerben` statt Einstellungen-Hash.
+**Was wir JETZT tun:** (frei).  
+**Einordnung:** `/testuser-anmeldung` = nur öffentliches Formular; volle Testuser-Mappe = `PROJECT_ROUTES['k2-galerie'].testuserMappe` (`?mappe=1`).
+
+---
+
+**Letzter Stand:** 19.04.26 – **Testuser: öffentlich nur Anmeldeformular; Mappe separat (`?mappe=1`, `testuserMappe`)** – **`TestuserAnmeldungPage`:** `useSearchParams` `mappe===1`; **`navigation.ts`:** `testuserMappe`; APf-Links (Smart Panel, Mission Control, Platform Start, Texte-Schreibtisch, Zettel Pilot, Testprotokoll) auf Mappe; Entdecken + Infos-Zettel → reines Formular. **Commit:** `6b1d897a` ✅ GitHub
+
+---
+
+**Letzter Stand:** 19.04.26 – **Entdecken: Testpilot-Band** (`T.testpilotKurz` / `testuserAnmeldung`) **+ Teilen `layout=inline`** (VK2-Nav, K2-Familie-Muster-Toolbar). **Commit:** `93ea55d7` ✅ GitHub
 
 ---
 
