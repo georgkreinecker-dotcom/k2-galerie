@@ -10,7 +10,11 @@
 import React, { createContext, useContext, useMemo, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { isPlatformInstance } from '../config/tenantConfig'
-import { pilotScopeVk2Key, syncVk2PilotScopeFromSearch } from '../utils/vk2StorageKeys'
+import {
+  pilotScopeVk2Key,
+  shouldSyncVk2PilotScopeFromUrl,
+  syncVk2PilotScopeFromSearch,
+} from '../utils/vk2StorageKeys'
 
 const ADMIN_CONTEXT_KEY = 'k2-admin-context'
 /** APf-Projekt „K2 Galerie“: gleiche ?context=-Logik wie /admin (nur Plattform-Instanz). */
@@ -19,23 +23,6 @@ const K2_GALERIE_PROJECT_PREFIX = '/projects/k2-galerie'
 const VK2_PROJECT_PREFIX = '/projects/vk2'
 /** APf Dev-View: gleiche Mandanten-Logik wie bei /projects/k2-galerie – ?page= vk2-* / öffentliche Galerie ohne extra ?context=. */
 const DEV_VIEW_PREFIX = '/dev-view'
-
-/**
- * VK2-Pilot-Scope synchronisieren (URL ?vk2Pilot= / Einladung) – nicht nur unter /projects/vk2/*,
- * sondern auch bei /admin?context=vk2 und APf-Projekt mit context=vk2, sonst bleibt k2-vk2-active-pilot-id leer
- * und Stammdaten zeigen den Musterverein.
- */
-function shouldSyncVk2PilotScopeFromUrl(pathname: string, search: string): boolean {
-  if (pathname.startsWith(VK2_PROJECT_PREFIX)) return true
-  try {
-    const params = new URLSearchParams(search || '')
-    const ctx = params.get('context')?.toLowerCase().trim()
-    if (ctx !== 'vk2') return false
-    if (pathname === '/admin' || pathname === '/mein-bereich') return true
-    if (pathname.startsWith(K2_GALERIE_PROJECT_PREFIX)) return true
-  } catch (_) {}
-  return false
-}
 
 export type AdminTenantId = 'k2' | 'oeffentlich' | 'vk2'
 

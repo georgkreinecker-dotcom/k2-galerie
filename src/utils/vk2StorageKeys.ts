@@ -59,3 +59,22 @@ export function syncVk2PilotScopeFromSearch(search: string): void {
     /* ignore */
   }
 }
+
+const VK2_PROJECT_PREFIX = '/projects/vk2'
+const K2_GALERIE_PROJECT_PREFIX = '/projects/k2-galerie'
+
+/**
+ * Wo `syncVk2PilotScopeFromSearch` laufen muss – nicht nur unter /projects/vk2/*,
+ * sonst bleibt k2-vk2-active-pilot-id bei direktem /admin?context=vk2 leer (Regression mehrfach).
+ */
+export function shouldSyncVk2PilotScopeFromUrl(pathname: string, search: string): boolean {
+  if (pathname.startsWith(VK2_PROJECT_PREFIX)) return true
+  try {
+    const params = new URLSearchParams(search || '')
+    const ctx = params.get('context')?.toLowerCase().trim()
+    if (ctx !== 'vk2') return false
+    if (pathname === '/admin' || pathname === '/mein-bereich') return true
+    if (pathname.startsWith(K2_GALERIE_PROJECT_PREFIX)) return true
+  } catch (_) {}
+  return false
+}
