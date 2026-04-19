@@ -201,6 +201,23 @@ export default function K2FamilieMitgliederCodesPage() {
           >
             Liste drucken
           </button>
+          <Link
+            to={R.einladungGeschwisterBriefe}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              padding: '0.5rem 1rem',
+              fontSize: '0.9rem',
+              borderRadius: a.radius,
+              border: `1px solid rgba(181, 74, 30, 0.35)`,
+              background: a.bgCard,
+              color: a.accent,
+              fontWeight: 600,
+              textDecoration: 'none',
+            }}
+          >
+            Einladungsbriefe je Zweig (mit Codes)
+          </Link>
           <button
             type="button"
             onClick={copyListe}

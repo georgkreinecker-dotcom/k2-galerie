@@ -5,6 +5,7 @@ import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../conf
 import { TexteSchreibtischBoard } from '../components/TexteSchreibtischBoard'
 
 const R = PROJECT_ROUTES['k2-galerie']
+const R_K2_FAMILIE = PROJECT_ROUTES['k2-familie']
 const TEXTS_A4_BASE = '/projects/k2-galerie/texts-a4'
 const textsA4 = (doc: string) => `${TEXTS_A4_BASE}?doc=${encodeURIComponent(doc)}`
 
@@ -234,8 +235,8 @@ const BEREICHE: Bereich[] = [
       {
         id: 'einladung-geschwister-k2-familie',
         titel: 'Einladung Geschwister · K2 Familie',
-        zweck: 'Schreiben an 13 Geschwister, Beilage Codes Kinder – druckfertig',
-        to: '/texte-schreibtisch/einladung-geschwister-k2-familie.html',
+        zweck: 'Live: Familien-Zugang & Codes je Zweig · Inhaber:in · oder statische Vorlage',
+        to: R_K2_FAMILIE.einladungGeschwisterBriefe,
         rotateDeg: 0.12,
       },
       {

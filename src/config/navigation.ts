@@ -257,6 +257,8 @@ export const PROJECT_ROUTES = {
     einstellungen: '/projects/k2-familie/einstellungen',
     /** Inhaber:in: alle Personen mit persönlicher Mitgliedsnummer, Drucken, Versand-Text */
     mitgliederCodes: '/projects/k2-familie/mitglieder-codes',
+    /** Inhaber:in: Einladungsbriefe je Familienzweig mit echten Codes (Druck) */
+    einladungGeschwisterBriefe: '/projects/k2-familie/einladung-geschwister-briefe',
     /** Marketing/Flyer: kurze Vorstellung, dann CTA zur Familien-App (ohne Galerie-/willkommen) */
     willkommen: K2_FAMILIE_WILLKOMMEN_ROUTE,
     uebersicht: '/projects/k2-familie/uebersicht',

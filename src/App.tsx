@@ -70,6 +70,7 @@ import K2FamilieEntwicklungDokuPage from './pages/K2FamilieEntwicklungDokuPage'
 import K2FamilieSicherungPage from './pages/K2FamilieSicherungPage'
 import K2FamilieEinstellungenPage from './pages/K2FamilieEinstellungenPage'
 import K2FamilieMitgliederCodesPage from './pages/K2FamilieMitgliederCodesPage'
+import K2FamilieEinladungGeschwisterBriefePage from './pages/K2FamilieEinladungGeschwisterBriefePage'
 import K2FamilieWillkommenPage from './pages/K2FamilieWillkommenPage'
 import K2FamilieEinstiegPage from './pages/K2FamilieEinstiegPage'
 import K2FamilieMarketingPage from './pages/K2FamilieMarketingPage'
@@ -924,6 +925,7 @@ function App() {
         <Route path="praesentationsmappe" element={<K2FamiliePraesentationsmappePage />} />
         <Route path="einstellungen" element={<K2FamilieEinstellungenPage />} />
         <Route path="mitglieder-codes" element={<K2FamilieMitgliederCodesPage />} />
+        <Route path="einladung-geschwister-briefe" element={<K2FamilieEinladungGeschwisterBriefePage />} />
         <Route path="sicherung" element={<K2FamilieSicherungPage />} />
         <Route path="marketing" element={<K2FamilieMarketingPage />} />
         <Route path="lizenz-erwerben" element={<K2FamilieLizenzErwerbenPage />} />
