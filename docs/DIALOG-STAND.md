@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nach Deploy: **VK2-Link** [`/projects/vk2/galerie?vk2Pilot=14`](https://k2-galerie.vercel.app/projects/vk2/galerie?vk2Pilot=14) im Browser testen (Vercel „Ready“ abwarten, ggf. Stand-Badge tippen).  
-**Einordnung:** Testpilot = eigener Mandanten-Key (`k2-vk2-pilot-{id}-*`) wie bei ök2/Familie – Session muss vor dem ersten Lesen gesetzt sein.
+**Was wir JETZT tun:** Nach Deploy: [`?vk2Pilot=14`](https://k2-galerie.vercel.app/projects/vk2/galerie?vk2Pilot=14) – erwartet: **„Testpilot-Verein (Zettel 14)“**, keine „Kunstverein Muster“-Mitglieder (früher: Demo-Seed). Mit Zettel/E-Mail zuvor: **„Verein – {Name}“** wenn `k2-pilot-einladung` passt.  
+**Einordnung:** Pilot = eigener Key; leerer Key wird nicht mehr mit `VK2_DEMO_STAMMDATEN` gefüllt.
+
+---
+
+**Letzter Stand:** 19.04.26 – **VK2 Testpilot: Sandbox statt Musterverein** – **`buildVk2PilotSandboxStammdaten`** + **`initVk2DemoStammdatenIfEmpty`:** bei `getActiveVk2PilotId()` Erstbefüllung mit leeren Mitgliedern und klarem Vereinsnamen; Name aus **`k2-pilot-einladung`** nur wenn Zettel-ID zur Pilot-ID passt. Test: **`kundendaten-schutz.test.ts`**. **`npm run build:vercel`** grün. **Commit:** `6771fb23` ✅ GitHub
 
 ---
 

@@ -97,4 +97,36 @@ describe('Kundendaten-Schutz: VK2 Mitglieder', () => {
     expect(stored.mitglieder[0].name).toBe('Max Muster')
   })
 
+  it('VK2 Testpilot (?vk2Pilot): leerer Speicher = Sandbox, kein Kunstverein Muster', async () => {
+    const { initVk2DemoStammdatenIfEmpty, buildVk2PilotSandboxStammdaten } = await import('../config/tenantConfig')
+
+    sessionStorage.setItem('k2-vk2-active-pilot-id', '14')
+    localStorage.removeItem('k2-vk2-pilot-14-stammdaten')
+
+    initVk2DemoStammdatenIfEmpty()
+
+    const stored = JSON.parse(localStorage.getItem('k2-vk2-pilot-14-stammdaten') || '{}')
+    expect(stored.verein.name).toBe('Testpilot-Verein (Zettel 14)')
+    expect(stored.mitglieder).toEqual([])
+    expect(stored.verein.name).not.toBe('Kunstverein Muster')
+
+    const withName = buildVk2PilotSandboxStammdaten('14')
+    expect(withName.verein.name).toBe('Testpilot-Verein (Zettel 14)')
+
+    sessionStorage.setItem(
+      'k2-pilot-einladung',
+      JSON.stringify({
+        context: 'vk2',
+        name: 'Pilot Testperson',
+        vk2PilotId: '14',
+      }),
+    )
+    const named = buildVk2PilotSandboxStammdaten('14')
+    expect(named.verein.name).toBe('Verein – Pilot Testperson')
+    expect(named.vorstand.name).toBe('Pilot Testperson')
+
+    sessionStorage.removeItem('k2-vk2-active-pilot-id')
+    sessionStorage.removeItem('k2-pilot-einladung')
+  })
+
 })

@@ -6,7 +6,7 @@
 import { loadEvents, saveEvents } from '../utils/eventsStorage'
 import { loadDocuments, saveDocuments } from '../utils/documentsStorage'
 import { getVk2StammdatenKey } from '../utils/stammdatenStorage'
-import { pilotScopeVk2Key } from '../utils/vk2StorageKeys'
+import { getActiveVk2PilotId, pilotScopeVk2Key } from '../utils/vk2StorageKeys'
 
 /** Firmen-/Plattform-Marke (Copyright, Rechtliches, Lizenz, Plattform-UI). */
 export const PRODUCT_BRAND_NAME = 'kgm solution'
@@ -753,20 +753,71 @@ function _seedVk2DemoArtworksIfEmpty(stammdaten: Vk2Stammdaten): void {
   }
 }
 
+/**
+ * Liest Session-Einladung nur wenn Zettel zur aktuellen Pilot-ID passt (kein falscher Name).
+ */
+function readVk2PilotEinladungMatched(pilotId: string): { name?: string } | null {
+  if (typeof sessionStorage === 'undefined') return null
+  try {
+    const raw = sessionStorage.getItem('k2-pilot-einladung')
+    if (!raw) return null
+    const inv = JSON.parse(raw) as {
+      context?: string
+      name?: string
+      vk2PilotId?: string
+      zettelNr?: string
+    }
+    if (inv?.context !== 'vk2') return null
+    const z = String(inv.zettelNr ?? inv.vk2PilotId ?? '')
+      .replace(/\D/g, '')
+      .slice(0, 8)
+    if (!z || z !== pilotId) return null
+    return { name: typeof inv.name === 'string' ? inv.name : undefined }
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Erste Befüllung für ?vk2Pilot=… – eigene Sandbox, nicht „Kunstverein Muster“.
+ * Name aus passender k2-pilot-einladung (Zettel/E-Mail), sonst neutraler Testpilot-Titel.
+ */
+export function buildVk2PilotSandboxStammdaten(pilotId: string): Vk2Stammdaten {
+  const invite = readVk2PilotEinladungMatched(pilotId)
+  const pilotName = (invite?.name || '').trim()
+  const stamm: Vk2Stammdaten = JSON.parse(JSON.stringify(VK2_STAMMDATEN_DEFAULTS)) as Vk2Stammdaten
+  stamm.verein.name = pilotName ? `Verein – ${pilotName}` : `Testpilot-Verein (Zettel ${pilotId})`
+  if (pilotName) stamm.vorstand.name = pilotName
+  stamm.vereinsTyp = 'kunst'
+  return stamm
+}
+
 /** Initialisiert VK2-Stammdaten mit Demo-Daten falls noch nichts gespeichert ist.
  *  Füllt auch fehlende Demo-Fotos nach (mitgliedFotoUrl / imageUrl) ohne echte Daten zu überschreiben.
- *  Für Demo-Verein: je ein Dummy-Werk pro einfachem Mitglied im Vereinskatalog. */
+ *  Für Demo-Verein: je ein Dummy-Werk pro einfachem Mitglied im Vereinskatalog.
+ *  Mit aktivem Testpilot (?vk2Pilot): Sandbox ohne Musterverein-Daten. */
 export function initVk2DemoStammdatenIfEmpty(): void {
   if (typeof window === 'undefined') return
   try {
+    const pilotId = getActiveVk2PilotId()
     const raw = localStorage.getItem(getVk2StammdatenKey())
     if (!raw) {
+      if (pilotId) {
+        const pilotStamm = buildVk2PilotSandboxStammdaten(pilotId)
+        localStorage.setItem(getVk2StammdatenKey(), JSON.stringify(pilotStamm))
+        return
+      }
       localStorage.setItem(getVk2StammdatenKey(), JSON.stringify(VK2_DEMO_STAMMDATEN))
       _seedVk2DemoArtworksIfEmpty(VK2_DEMO_STAMMDATEN)
       return
     }
     const parsed = JSON.parse(raw) as Vk2Stammdaten
     if (!parsed?.verein?.name) {
+      if (pilotId) {
+        const pilotStamm = buildVk2PilotSandboxStammdaten(pilotId)
+        localStorage.setItem(getVk2StammdatenKey(), JSON.stringify(pilotStamm))
+        return
+      }
       localStorage.setItem(getVk2StammdatenKey(), JSON.stringify(VK2_DEMO_STAMMDATEN))
       _seedVk2DemoArtworksIfEmpty(VK2_DEMO_STAMMDATEN)
       return
