@@ -28,6 +28,7 @@ import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBui
 import { safeReload } from '../utils/env'
 import { getSameOriginReferrerPath, isReferrerIndicatingApfStyleSession } from '../utils/galerieOek2Referrer'
 import { hasFreshOek2EntrySession } from '../utils/oek2FreshStart'
+import { isOek2PilotEntwurfQuery } from '../utils/pilotOek2GalerieUrl'
 import { setAdminUnlock, clearAdminUnlock } from '../utils/adminUnlockStorage'
 import { OK2_THEME } from '../config/ok2Theme'
 import { getPublicGalerieUrl } from '../utils/publicLinks'
@@ -447,14 +448,16 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
   })()
 
   /** Fremde: Direktaufruf von galerie-oeffentlich → zuerst Entdecken. Von Entdecken (Klick „Meine eigene Plattform“) → nie zurück; Flag nicht löschen, damit nach ro5/Crash/Reload der Zugang bleibt (Referrer ist oft leer). */
-  useEffect(() => {
+  /** useLayoutEffect: vor erstem Paint, damit Testpilot-Links (vorname+entwurf) nie kurz Entdecken auslösen. */
+  useLayoutEffect(() => {
     if (!musterOnly || typeof window === 'undefined') return
     try {
-      const sp = new URLSearchParams(window.location.search)
+      const search = window.location.search || location.search || ''
+      const sp = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search)
       if (sp.get('embedded') === '1') return
       if (sp.get('praesentation') === '1') return
       /** Testpilot / persönliche Demo: vorname + entwurf – direkt Galerie, nicht Entdecken */
-      if (sp.get('entwurf') === '1' && (sp.get('vorname') || '').trim().length > 0) return
+      if (isOek2PilotEntwurfQuery(search)) return
       if ((location.state as any)?.fromAdmin || sessionStorage.getItem(KEY_FROM_ADMIN)) return
       if (hasFreshOek2EntrySession()) return
       navigate(ENTDECKEN_ROUTE, { replace: true })

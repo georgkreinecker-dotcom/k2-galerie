@@ -13,6 +13,7 @@ import QRCode from 'qrcode'
 import { PROJECT_ROUTES, AGB_ROUTE, BASE_APP_URL, ENTDECKEN_ROUTE } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { prepareFreshOek2VisitorSession } from '../utils/oek2FreshStart'
+import { isOek2PilotEntwurfQuery } from '../utils/pilotOek2GalerieUrl'
 import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_K2_FAMILIE_WERBESLOGAN, PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ } from '../config/tenantConfig'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_LIZENZ_ANFRAGE_BETREFF, isPlatformInstance } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
@@ -617,11 +618,10 @@ export default function EntdeckenPage() {
   useLayoutEffect(() => {
     try {
       if (!isPlatformInstance()) return
-      const sp = new URLSearchParams(location.search)
+      const search = location.search || ''
+      const sp = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search)
       if (sp.get('context') !== 'oeffentlich') return
-      const vorname = (sp.get('vorname') || '').trim()
-      if (!vorname) return
-      if (sp.get('entwurf') !== '1') return
+      if (!isOek2PilotEntwurfQuery(search)) return
       const path = PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
       navigate(`${path}?${sp.toString()}`, { replace: true })
     } catch (_) {}
