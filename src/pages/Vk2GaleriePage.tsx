@@ -469,42 +469,40 @@ const Vk2GaleriePage: React.FC = () => {
         </div>
       )}
 
-      {/* ── Einladung: Eigene Galerie mit K2 – direkt über Impressum, Icon nicht größer als Vereinstermine ── */}
+      {/* ── Einladung: Eigene Galerie – bewusst zurückhaltend (Vereinsseite), kein lauter Aktions-Button ── */}
       <div style={{ padding: '0 clamp(1.25rem, 5vw, 3rem)', maxWidth: 720, marginTop: 'clamp(2rem, 4vw, 2.5rem)' }}>
         <Link
           to={ENTDECKEN_ROUTE}
           style={{
             display: 'block',
-            padding: '1rem 1.25rem',
-            background: 'linear-gradient(135deg, rgba(30, 92, 181, 0.06) 0%, rgba(30, 92, 181, 0.12) 100%)',
-            border: `1px solid rgba(30, 92, 181, 0.35)`,
-            borderRadius: 14,
+            padding: '0.75rem 1rem',
+            background: C.bgCard,
+            border: `1px solid ${C.border}`,
+            borderRadius: 10,
             textDecoration: 'none',
             color: 'inherit',
-            transition: 'border-color 0.2s, box-shadow 0.2s',
+            transition: 'border-color 0.2s',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(30, 92, 181, 0.55)'
-            e.currentTarget.style.boxShadow = '0 4px 16px rgba(30, 92, 181, 0.12)'
+            e.currentTarget.style.borderColor = 'rgba(92, 86, 80, 0.35)'
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(30, 92, 181, 0.35)'
-            e.currentTarget.style.boxShadow = 'none'
+            e.currentTarget.style.borderColor = C.border
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '1rem', lineHeight: 1 }}>🖼️</span>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontWeight: 700, fontSize: 'clamp(0.95rem, 2vw, 1.1rem)', color: C.text, marginBottom: '0.25rem', fontFamily: 'system-ui, sans-serif' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '0.95rem', lineHeight: 1.2, opacity: 0.85 }} aria-hidden>
+              🖼️
+            </span>
+            <div style={{ flex: '1 1 12rem', minWidth: 0 }}>
+              <div style={{ fontWeight: 600, fontSize: 'clamp(0.9rem, 1.8vw, 1.02rem)', color: C.text, marginBottom: '0.2rem', fontFamily: 'system-ui, sans-serif' }}>
                 Deine eigene Galerie?
               </div>
-              <p style={{ margin: 0, fontSize: 'clamp(0.85rem, 1.6vw, 0.95rem)', color: C.textMid, lineHeight: 1.5, fontFamily: 'system-ui, sans-serif' }}>
-                Mit K2 Galerie kannst du Werke, Ideen oder Produkte und deine Präsenz professionell präsentieren.
+              <p style={{ margin: 0, fontSize: 'clamp(0.82rem, 1.5vw, 0.92rem)', color: C.textMid, lineHeight: 1.5, fontFamily: 'system-ui, sans-serif' }}>
+                Mit K2 Galerie kannst du Werke, Ideen oder Produkte und deine Präsenz professionell präsentieren.{' '}
+                <span style={{ color: C.accent, fontWeight: 500, whiteSpace: 'nowrap' }}>Jetzt entdecken →</span>
               </p>
             </div>
-            <span style={{ flexShrink: 0, padding: '0.4rem 0.9rem', background: C.accent, color: '#fff', borderRadius: 10, fontWeight: 600, fontSize: '0.85rem', fontFamily: 'system-ui, sans-serif' }}>
-              Jetzt entdecken →
-            </span>
           </div>
         </Link>
       </div>
