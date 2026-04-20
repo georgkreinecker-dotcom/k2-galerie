@@ -5,6 +5,10 @@
 
 ---
 
+**Letzter Stand:** 20.04.26 – **K2 Familie Stammbaum A+B** – Standard **„Nur mein Zweig“** wenn nie gewählt: **Aus** (ganze Familie strukturiert). **Ohne „Das bin ich“** + ≥3 Personen: Hinweis-Kasten + Link **Einstellungen**. Handbuch `05-STAMMBAUM-FUNKTIONEN.md`. **Commit:** `0b3c6487` ✅ GitHub
+
+---
+
 **Letzter Stand:** 20.04.26 – **K2 Familie: Geschwister-Briefe** – Anrede „ihr rund um {Vorname}“ (bei Anker „Du“: nur „Liebe Familie,“); Text: App nutzen, Daten/Bilder/Geschichten, Familienname in App, Entschuldigung bei Unfertigem; **Diesen Brief drucken** + CSS nur eine Seite; Intro-Zeile Tippfehler Scannen. **Commit:** `6ed15622` ✅ GitHub
 
 ---
