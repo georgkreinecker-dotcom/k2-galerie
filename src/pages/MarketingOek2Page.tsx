@@ -274,7 +274,24 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             <li><a href="#mok2-leitvision-k2-markt" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Leitvision – Mein Weg &amp; sechs Sparten</strong> (Vertrieb &amp; Demo)</a></li>
             <li><a href="#mok2-was-kann-die-app" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Was kann die App?</strong> (ök2 | VK2 – kurz)</a></li>
             <li><a href="#mok2-prospekt" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>K2 Galerie Prospekt</strong> (funktional & technisch, druckbar)</a></li>
-            <li><a href="#mok2-k2-familie-kurzprospekt" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>K2 Familie – Kurzprospekt</strong> (Vertrieb, getrennt von Galerie-Werbung)</a></li>
+            <li>
+              <Link
+                to={PROJECT_ROUTES['k2-familie'].familiePraesentationsmappeKunde}
+                state={{ returnTo: PROJECT_ROUTES['k2-galerie'].marketingOek2 }}
+                style={{ color: '#5ffbf1', textDecoration: 'none' }}
+              >
+                <strong>K2 Familie – Präsentationsmappe (Kunde)</strong> (eigener Link, zum Übergeben)
+              </Link>
+            </li>
+            <li>
+              <Link
+                to={PROJECT_ROUTES['k2-familie'].familiePraesentationsmappe}
+                state={{ returnTo: PROJECT_ROUTES['k2-galerie'].marketingOek2 }}
+                style={{ color: '#5ffbf1', textDecoration: 'none' }}
+              >
+                <strong>K2 Familie – Vertriebsunterlagen</strong> (intern)
+              </Link>
+            </li>
             <li><a href="#mok2-prospekt-galerieeroeffnung" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Prospekt Galerieeröffnung K2</strong> (Kunst und Keramik, 1 Seite)</a></li>
             <li><a href="#mok2-verkauf-map-drei-ebenen" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Präsentationsmappe</strong> (Entscheidungshilfe: A4, USP, Prospekt)</a></li>
             <li><a href="#mok2-1" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>USPs</strong> (Unique Selling Points)</a></li>
@@ -547,19 +564,17 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </Link>
       </section>
 
-      {/* K2 Familie – Kurzprospekt Vertrieb (eigenständig) */}
+      {/* K2 Familie – Präsentationsmappe Kund:innen (eigenständig) */}
       <section id="mok2-k2-familie-kurzprospekt" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
-          K2 Familie – Kurzprospekt (Vertrieb)
+          K2 Familie – Präsentationsmappe (Kund:innen)
         </h2>
         <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.5 }}>
-          Lesefassung für Gespräche und Druck: Positionierung, Vertrauen, Abgrenzung zur Galerie –{' '}
-          <strong>keine</strong> Galerie-Slogans auf K2 Familie. Eine Quelle unter{' '}
-          <code style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)' }}>public/k2-familie-praesentation/</code>
-          ; Meta: <code style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)' }}>docs/K2-FAMILIE-VERTRIEB-KURZ.md</code>.
+          Zum Lesen, Drucken und Übergeben: klare Produktinformation, ohne interne Vertriebs- oder Technikdetails.{' '}
+          <strong>Keine</strong> Vermischung mit Galerie-Slogans. Platzhalter für Screenshots sind vorgesehen – Bilder nach und nach ergänzen.
         </p>
         <Link
-          to={`${PROJECT_ROUTES['k2-familie'].familiePraesentationsmappe}?returnTo=${encodeURIComponent(PROJECT_ROUTES['k2-galerie'].marketingOek2)}`}
+          to={`${PROJECT_ROUTES['k2-familie'].familiePraesentationsmappeKunde}?returnTo=${encodeURIComponent(PROJECT_ROUTES['k2-galerie'].marketingOek2)}`}
           style={{
             display: 'inline-block',
             padding: '0.65rem 1.25rem',
@@ -572,7 +587,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             boxShadow: '0 2px 8px rgba(4,120,87,0.4)',
           }}
         >
-          Kurzprospekt öffnen (lesen, drucken)
+          Präsentationsmappe öffnen (Kunde, lesen, drucken)
         </Link>
       </section>
 

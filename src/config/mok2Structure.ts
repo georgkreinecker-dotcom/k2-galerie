@@ -3,9 +3,15 @@
  * Eine Änderung hier wirkt in Mok2Layout (Sidebar) und MarketingOek2Page (Kapitel + Druck).
  */
 
+import { PROJECT_ROUTES } from './navigation'
+
+const FAM = PROJECT_ROUTES['k2-familie']
+
 export interface Mok2Section {
   id: string
   label: string
+  /** Wenn gesetzt: eigener App-Pfad (z. B. K2-Familie-Mappe) statt Anker auf der mök2-Seite */
+  linkTo?: string
 }
 
 export interface Mok2Group {
@@ -22,7 +28,8 @@ export const mok2Groups: Mok2Group[] = [
       { id: 'mok2-was-kann-die-app', label: 'Was kann die App? (ök2 | VK2)' },
       { id: 'mok2-produktbeschreibung', label: 'Genaue Produktbeschreibung' },
       { id: 'mok2-prospekt', label: 'K2 Galerie Prospekt' },
-      { id: 'mok2-k2-familie-kurzprospekt', label: 'K2 Familie – Kurzprospekt (Vertrieb)' },
+      { id: 'mok2-k2-familie-map-kunde', label: 'K2 Familie – Präsentationsmappe (Kunde)', linkTo: FAM.familiePraesentationsmappeKunde },
+      { id: 'mok2-k2-familie-vertrieb-intern', label: 'K2 Familie – Vertriebsunterlagen (intern)', linkTo: FAM.familiePraesentationsmappe },
       { id: 'mok2-prospekt-galerieeroeffnung', label: 'Prospekt Galerieeröffnung K2' },
       { id: 'mok2-verkauf-map-drei-ebenen', label: 'Präsentationsmappe (Entscheidungshilfe)' },
       { id: 'mok2-1', label: '1. USPs' },

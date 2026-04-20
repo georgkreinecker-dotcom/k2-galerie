@@ -1,5 +1,7 @@
 # K2 Familie – Vertriebsunterlagen
 
+**Kund:innen-Mappe (Übergeben):** In der App unter **Präsentationsmappe (Kunde)** – Inhalt `public/k2-familie-praesentation-mappe/` (keine internen Vertriebstexte).
+
 Willkommen. Hier liegt die **vollständige Vertriebsmappe** zu **K2 Familie** – **Kurzprospekt**, **Prospekt**, **Produktfeatures**, **FAQ**, **Lizenz/Kündigung/Daten**, **Erste Schritte nach Lizenz**, **Multiplikatoren**, **Wettbewerbseinordnung**, **Rahmen Medien/Erweiterung** und **Huber-Muster-Rundgang – Drehbuch** – inhaltlich **nur K2 Familie**, klar getrennt von Galerie- und ök2-Werbung.
 
 **Prospekte, Postings, QR:** Feste **Einstiegsadressen** – eine Tabelle mit Pfaden und Voll-URLs: [Einstiegsadressen – Prospekte, Postings, QR](00-EINSTIEGSADRESSEN.md).

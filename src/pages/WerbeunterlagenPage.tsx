@@ -368,7 +368,7 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
             5. Präsentationsmappen – Links zum Mitsenden
           </h2>
           <p style={{ color: s.muted, marginBottom: '1rem', fontSize: '0.9rem' }}>
-            Kurzvariante (1 Seite, Teal/Weiß) und Vollversion (große Mappe, viele Kapitel; Start mit USPs und Mitbewerb). VK2: Kurz-, Voll- und Musterbilder-Mappe (Parameter variant=vk2-promo). Als Link in E-Mail, Chat oder Werbedokument einfügen.
+            Kurzvariante (1 Seite, Teal/Weiß) und Vollversion (große Mappe, viele Kapitel; Start mit USPs und Mitbewerb). VK2: Kurz-, Voll- und Musterbilder-Mappe (Parameter variant=vk2-promo). <strong>K2 Familie</strong> hat eine eigene Kunden-Präsentationsmappe (kein Galerie-Produkt). Als Link in E-Mail, Chat oder Werbedokument einfügen.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
             <div style={{ padding: '1rem', background: s.bgCard, borderRadius: s.radius, border: `1px solid ${s.accentSoft}` }}>
@@ -390,6 +390,18 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
             <div style={{ padding: '1rem', background: s.bgCard, borderRadius: s.radius, border: `1px solid ${s.accentSoft}` }}>
               <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>VK2 Mappe mit Musterbildern</p>
               <a href={`${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}?variant=vk2-promo`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: s.text, wordBreak: 'break-all' }}>{BASE_APP_URL}{PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}?variant=vk2-promo</a>
+            </div>
+            <div style={{ padding: '1rem', background: s.bgCard, borderRadius: s.radius, border: `1px solid ${s.accentSoft}` }}>
+              <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>K2 Familie – Präsentationsmappe (Kunde)</p>
+              <a
+                href={`${BASE_APP_URL}${PROJECT_ROUTES['k2-familie'].familiePraesentationsmappeKunde}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: '0.8rem', color: s.text, wordBreak: 'break-all' }}
+              >
+                {BASE_APP_URL}
+                {PROJECT_ROUTES['k2-familie'].familiePraesentationsmappeKunde}
+              </a>
             </div>
           </div>
         </section>

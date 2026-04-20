@@ -53,7 +53,8 @@ const k2FamilieLeitGroupsHead: FamilieLeitGroup[] = [
 const k2FamilieProspekteGruppe: FamilieLeitGroup = {
   chapterTitle: 'Prospekte & Präsentationsmappen',
   sections: [
-    { id: 'fam-prop-k2fam', label: 'K2 Familie – Kurzprospekt', to: R.familiePraesentationsmappe },
+    { id: 'fam-prop-mappe-kunde', label: 'K2 Familie – Präsentationsmappe (Kunde)', to: R.familiePraesentationsmappeKunde },
+    { id: 'fam-prop-k2fam', label: 'K2 Familie – Vertriebsunterlagen (intern)', to: R.familiePraesentationsmappe },
   ],
 }
 

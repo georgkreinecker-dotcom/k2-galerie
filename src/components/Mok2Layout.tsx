@@ -292,8 +292,31 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
                   {group.chapterTitle}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                  {group.sections.map(({ id, label }) => (
-                    isMarketingPage ? (
+                  {group.sections.map(({ id, label, linkTo }) => {
+                    if (linkTo) {
+                      const active = location.pathname === linkTo || location.pathname.startsWith(`${linkTo}/`)
+                      return (
+                        <Link
+                          key={id}
+                          to={linkTo}
+                          state={{ returnTo: PROJECT_ROUTES['k2-galerie'].marketingOek2 }}
+                          style={{
+                            padding: '0.4rem 0.6rem',
+                            background: active ? 'rgba(95, 251, 241, 0.22)' : 'rgba(95, 251, 241, 0.08)',
+                            border: `1px solid ${active ? 'rgba(95, 251, 241, 0.45)' : 'rgba(95, 251, 241, 0.2)'}`,
+                            borderRadius: '6px',
+                            color: active ? '#0f172a' : '#5ffbf1',
+                            textDecoration: 'none',
+                            fontSize: '0.82rem',
+                            display: 'block',
+                            fontWeight: active ? 600 : 400,
+                          }}
+                        >
+                          {label}
+                        </Link>
+                      )
+                    }
+                    return isMarketingPage ? (
                       <button
                         key={id}
                         type="button"
@@ -329,7 +352,7 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
                         {label}
                       </Link>
                     )
-                  ))}
+                  })}
                 </div>
               </div>
             ))}
