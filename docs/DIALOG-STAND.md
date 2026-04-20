@@ -5,6 +5,10 @@
 
 ---
 
+**Letzter Stand:** 20.04.26 – **K2 Familie Home:** Ampel „Erste Schritte – zum Start“ **ausblenden**, wenn **Du + Zugangsnummer + Startpunkt** erledigt (`setupAllesErledigt`). **`npm run tsc --noEmit` grün.** **Commit:** `COMMIT_PLACEHOLDER` ✅ GitHub
+
+---
+
 **Letzter Stand:** 20.04.26 – **K2 Familie Bundle (Push):** kompakte Rolle-Leiste **„Du: {Name}“** (`ichBinPersonId`); **Einladung `m`:** `preferInhaber` wie QuerySync, Home Pending/Anmeldung; **kein** `clearFamilieEinladungPending` bei `!loadMeta.ok`; Verwaltung QR-Hinweis; **Stammbaum/Großfamilie** + Tests; **Mitgliedsnummer**/Brief-Utils; Geschwister-Briefe/Einstellungen/Entdecken-Kurztext; **`npm run build`** grün. **Commit:** `38734b08` ✅ GitHub
 
 ---

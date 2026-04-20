@@ -994,7 +994,7 @@ export default function K2FamilieHomePage() {
 
           {/* Ampel: Inhaber:in – außer Huber-Demo (dort kein Block; Einstieg schrittweise im Leitfaden). */}
           {isInhaber ? (
-            isDemoMusterHuber ? null : (
+            isDemoMusterHuber || setupAllesErledigt ? null : (
             <div
               style={{
                 marginBottom: '1.25rem',
@@ -1003,11 +1003,11 @@ export default function K2FamilieHomePage() {
                 background: a.bgCard,
                 boxShadow: a.shadow,
                 border: '1px solid rgba(181, 74, 30, 0.12)',
-                borderLeft: `4px solid ${setupAllesErledigt ? '#15803d' : a.accent}`,
+                borderLeft: `4px solid ${a.accent}`,
               }}
             >
               <div style={{ fontWeight: 700, fontSize: '0.95rem', color: a.accent, marginBottom: '0.5rem' }}>
-                {setupAllesErledigt ? 'Erste Einrichtung: grundlegend erledigt' : 'Erste Schritte – zum Start'}
+                Erste Schritte – zum Start
               </div>
               <ul style={{ margin: 0, paddingLeft: '1.15rem', color: a.muted, fontSize: '0.88rem', lineHeight: 1.55 }}>
                 <li style={{ color: setupDu ? '#15803d' : a.muted }}>
@@ -1020,19 +1020,17 @@ export default function K2FamilieHomePage() {
                   {setupStartpunkt ? '✓' : '○'} Startpunkt für die Stammbaum-Ansicht gewählt
                 </li>
               </ul>
-              {!setupAllesErledigt && (
-                <p style={{ margin: '0.55rem 0 0', fontSize: '0.8rem', color: a.muted }}>
-                  {!setupDu ? 'Code oben eintragen. ' : null}
-                  <button type="button" onClick={openEinstellungenAnsicht} style={{ background: 'none', border: 'none', color: a.accent, cursor: 'pointer', padding: 0, textDecoration: 'underline', font: 'inherit' }}>
-                    Stammbaum-Ansicht
-                  </button>
-                  {' · '}
-                  <button type="button" onClick={openEinstellungenZugang} style={{ background: 'none', border: 'none', color: a.accent, cursor: 'pointer', padding: 0, textDecoration: 'underline', font: 'inherit' }}>
-                    Zugang &amp; Name
-                  </button>{' '}
-                  unter Einstellungen.
-                </p>
-              )}
+              <p style={{ margin: '0.55rem 0 0', fontSize: '0.8rem', color: a.muted }}>
+                {!setupDu ? 'Code oben eintragen. ' : null}
+                <button type="button" onClick={openEinstellungenAnsicht} style={{ background: 'none', border: 'none', color: a.accent, cursor: 'pointer', padding: 0, textDecoration: 'underline', font: 'inherit' }}>
+                  Stammbaum-Ansicht
+                </button>
+                {' · '}
+                <button type="button" onClick={openEinstellungenZugang} style={{ background: 'none', border: 'none', color: a.accent, cursor: 'pointer', padding: 0, textDecoration: 'underline', font: 'inherit' }}>
+                  Zugang &amp; Name
+                </button>{' '}
+                unter Einstellungen.
+              </p>
             </div>
             )
           ) : isDemoMusterHuber ? null : (
