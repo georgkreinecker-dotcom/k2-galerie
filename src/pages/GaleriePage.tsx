@@ -4318,7 +4318,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                 <p style={{ marginTop: '0.35rem', marginBottom: 0, fontSize: 'clamp(0.72rem, 1.6vw, 0.82rem)', color: theme.muted, opacity: 0.95 }}>
                   {PRODUCT_URHEBER_ANWENDUNG}
                 </p>
-                <AppVerlassenFooterLink ziel="entdecken" accentColor={theme.accent} mutedColor={theme.muted} />
+                <AppVerlassenFooterLink accentColor={theme.accent} mutedColor={theme.muted} />
             </div>
           </section>
           )}

@@ -347,7 +347,7 @@ const Vk2GalerieVorschauPage: React.FC = () => {
         <div style={{ color: C.textLight, fontSize: '0.78rem', marginBottom: '0.5rem' }}>© {new Date().getFullYear()} {vereinsName} · Powered by K2 Galerie</div>
         <div style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: C.textMid, letterSpacing: '0.01em' }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</div>
         <div style={{ marginTop: '0.35rem', fontSize: 'clamp(0.72rem, 1.6vw, 0.82rem)', color: C.textMid, opacity: 0.95 }}>{PRODUCT_URHEBER_ANWENDUNG}</div>
-        <AppVerlassenFooterLink ziel="entdecken" accentColor={C.accent} mutedColor={C.textMid} />
+        <AppVerlassenFooterLink accentColor={C.accent} mutedColor={C.textMid} />
       </footer>
 
     </div>

@@ -1156,7 +1156,7 @@ function FamilieLayoutInner() {
       <footer className="k2-familie-app-footer k2-familie-no-print" role="contentinfo">
         <p className="k2-familie-app-footer__line">{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
         <p className="k2-familie-app-footer__line k2-familie-app-footer__line--muted">{PRODUCT_URHEBER_ANWENDUNG}</p>
-        <AppVerlassenFooterLink ziel="familie-willkommen" accentColor={t.accent} mutedColor={t.muted} />
+        <AppVerlassenFooterLink accentColor={t.accent} mutedColor={t.muted} />
       </footer>
     </>
   )

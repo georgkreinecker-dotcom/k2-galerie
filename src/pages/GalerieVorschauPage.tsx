@@ -2993,7 +2993,6 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
           <div>{PRODUCT_COPYRIGHT_BRAND_ONLY}</div>
           <div style={{ marginTop: '0.35rem', fontSize: 'clamp(0.72rem, 1.6vw, 0.82rem)', opacity: 0.95 }}>{PRODUCT_URHEBER_ANWENDUNG}</div>
           <AppVerlassenFooterLink
-            ziel="entdecken"
             accentColor={galerieTheme.accent || '#5ffbf1'}
             mutedColor={galerieTheme.muted}
           />

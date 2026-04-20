@@ -725,7 +725,7 @@ const Vk2GaleriePage: React.FC = () => {
           </div>
           <p style={{ marginTop: '1.5rem', marginBottom: 0, paddingTop: '1rem', borderTop: `1px solid ${C.border}`, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: C.textMid, letterSpacing: '0.01em' }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
           <p style={{ marginTop: '0.35rem', marginBottom: 0, fontSize: 'clamp(0.72rem, 1.6vw, 0.82rem)', color: C.textMid, opacity: 0.95 }}>{PRODUCT_URHEBER_ANWENDUNG}</p>
-          <AppVerlassenFooterLink ziel="entdecken" accentColor={C.accent} mutedColor={C.textMid} />
+          <AppVerlassenFooterLink accentColor={C.accent} mutedColor={C.textMid} />
         </div>
       </footer>
 

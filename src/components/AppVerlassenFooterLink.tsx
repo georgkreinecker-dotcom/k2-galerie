@@ -1,28 +1,28 @@
-import { useNavigate } from 'react-router-dom'
-import { ENTDECKEN_ROUTE, K2_FAMILIE_WILLKOMMEN_ROUTE } from '../config/navigation'
-
-export type AppVerlassenZiel = 'entdecken' | 'familie-willkommen'
-
 type Props = {
-  ziel: AppVerlassenZiel
   accentColor: string
   mutedColor: string
   className?: string
 }
 
-/**
- * Ein Standard: Besucher verlassen die Galerie-/Produkt-Ansicht zur Eingangsseite (relativ, kein Link nach außen).
- * K2 Familie: Ziel Willkommen statt Entdecken.
- */
-export function AppVerlassenFooterLink({ ziel, accentColor, mutedColor, className }: Props) {
-  const navigate = useNavigate()
-  const path = ziel === 'entdecken' ? ENTDECKEN_ROUTE : K2_FAMILIE_WILLKOMMEN_ROUTE
+/** Leere Seite im aktuellen Tab – keine K2-/Produkt-Route. */
+function navigateToNeutralUserPage(): void {
+  try {
+    window.location.replace('about:blank')
+  } catch {
+    window.location.href = 'about:blank'
+  }
+}
 
+/**
+ * Besucher verlassen die Galerie-Ansicht: **neutrale leere Seite** (`about:blank`), keine K2-Eingangsseite.
+ * Relativ zur App: kein Link zu einer anderen Produkt-URL.
+ */
+export function AppVerlassenFooterLink({ accentColor, mutedColor, className }: Props) {
   return (
     <div className={className} style={{ marginTop: '0.75rem', textAlign: 'center' }}>
       <button
         type="button"
-        onClick={() => navigate(path)}
+        onClick={() => navigateToNeutralUserPage()}
         style={{
           background: 'none',
           border: 'none',
@@ -35,7 +35,7 @@ export function AppVerlassenFooterLink({ ziel, accentColor, mutedColor, classNam
           textUnderlineOffset: '2px',
         }}
       >
-        App verlassen · zur Eingangsseite
+        App verlassen
       </button>
       <p
         style={{
@@ -49,7 +49,7 @@ export function AppVerlassenFooterLink({ ziel, accentColor, mutedColor, classNam
           marginRight: 'auto',
         }}
       >
-        Installierte App: über den System-App-Umschalter schließen oder den Tab schließen.
+        Es öffnet sich eine leere Seite – den Tab können Sie schließen. Installierte App: über den System-App-Umschalter beenden oder Tab schließen.
       </p>
     </div>
   )
