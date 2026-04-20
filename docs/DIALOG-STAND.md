@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Nächste Aufgabe von Georg.  
-**Einordnung:** K2 Familie – Stand auf GitHub; weiter wie von Georg gewünscht.
+**Einordnung:** Öffentliche Oberflächen – „App verlassen“ in Galerie-/VK2-/Familie-Fuß umgesetzt (eine Komponente).
+
+---
+
+**Letzter Stand:** 20.04.26 – **App verlassen (Footer):** `AppVerlassenFooterLink` – Galerie + Vorschau (K2/ök2), VK2 + VK2-Vorschau → `/entdecken`; K2 Familie → `/projects/k2-familie/willkommen`. Kurzhinweis installierte PWA. **`npm run qs:local` grün.** **Commit:** `7cc704f5` ✅ GitHub
 
 ---
 
