@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Nächste Aufgabe von Georg.  
-**Einordnung:** ök2 **Plattform-Rundgang**: Einladungszeile unter Sparten-Kasten = Klick startet Sheet (`openOek2PlatformRundgangGlobally`), nur auf **Plattform-Instanz**; Lizenznehmer-Klon bleibt Fließtext.
+**Einordnung:** Testuser-Formular: **Server-Resend** wie Testpilot; Vercel `RESEND_API_KEY` / `RESEND_FROM` (optional `TESTUSER_ANMELDUNG_TO_EMAIL`).
+
+---
+
+**Letzter Stand:** 20.04.26 – **Testuser-Anmeldung: echte Mail-Anbindung (Resend)** – `api/send-testuser-anmeldung.js` (POST, Origin wie Pilot, `reply_to` = Bewerber); `testuserAnmeldungClient.ts` (localhost→Production wie Pilot); `TestuserAnmeldungPage` async `fetch`, Erfolg ohne mailto; sonst Fallback mailto + .txt. `.env.example`: `TESTUSER_ANMELDUNG_TO_EMAIL`. **Commit:** `17b530fb` ✅ GitHub
 
 ---
 
