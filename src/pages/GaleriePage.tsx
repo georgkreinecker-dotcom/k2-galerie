@@ -28,6 +28,7 @@ import { sanitizeK2WebsiteField } from '../utils/k2StammdatenWebSanitize'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { safeReload } from '../utils/env'
 import { getSameOriginReferrerPath, isReferrerIndicatingApfStyleSession } from '../utils/galerieOek2Referrer'
+import { openOek2PlatformRundgangGlobally } from '../utils/oek2PlatformLeitfadenStorage'
 import { hasFreshOek2EntrySession } from '../utils/oek2FreshStart'
 import { isOek2PilotEntwurfQuery } from '../utils/pilotOek2GalerieUrl'
 import { setAdminUnlock, clearAdminUnlock } from '../utils/adminUnlockStorage'
@@ -3410,20 +3411,48 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
           >
             {renderOek2SpartenKasten()}
             {oek2RundgangInviteLine.trim() ? (
-              <p
-                style={{
-                  margin: 'clamp(0.75rem, 2vw, 1rem) 0 0',
-                  textAlign: 'center',
-                  fontSize: 'clamp(0.9rem, 2.1vw, 1.05rem)',
-                  lineHeight: 1.45,
-                  color: theme.muted,
-                  maxWidth: '42rem',
-                  marginLeft: 'auto',
-                  marginRight: 'auto',
-                }}
-              >
-                {oek2RundgangInviteLine.trim()}
-              </p>
+              isPlatformInstance() ? (
+                <button
+                  type="button"
+                  onClick={() => openOek2PlatformRundgangGlobally()}
+                  title="Plattform-Rundgang starten"
+                  aria-label="Plattform-Rundgang starten"
+                  style={{
+                    margin: 'clamp(0.75rem, 2vw, 1rem) auto 0',
+                    padding: 0,
+                    textAlign: 'center',
+                    fontSize: 'clamp(0.9rem, 2.1vw, 1.05rem)',
+                    lineHeight: 1.45,
+                    color: theme.muted,
+                    maxWidth: '42rem',
+                    width: '100%',
+                    display: 'block',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    textDecoration: 'underline',
+                    textUnderlineOffset: '0.2em',
+                  }}
+                >
+                  {oek2RundgangInviteLine.trim()}
+                </button>
+              ) : (
+                <p
+                  style={{
+                    margin: 'clamp(0.75rem, 2vw, 1rem) 0 0',
+                    textAlign: 'center',
+                    fontSize: 'clamp(0.9rem, 2.1vw, 1.05rem)',
+                    lineHeight: 1.45,
+                    color: theme.muted,
+                    maxWidth: '42rem',
+                    marginLeft: 'auto',
+                    marginRight: 'auto',
+                  }}
+                >
+                  {oek2RundgangInviteLine.trim()}
+                </p>
+              )
             ) : null}
           </div>
         )}
