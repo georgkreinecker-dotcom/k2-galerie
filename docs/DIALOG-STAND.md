@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 20.04.26 – **K2 Familie Handy: Nav übersichtlich** – `K2FamilieLayout` `FamilieNav`: Hooks **vor** Muster-`return` (Rules of Hooks); **≤768px** eine Zeile (Zurück / aktueller Bereich / **Menü**) + Sheet mit allen Links; `App.css`: **`.k2-familie-nav-mobile-sheet`** Vollbild-Overlay + Bottom-Panel. **`npm run vite:build` grün.** **Commit:** (nach Push)
+**Letzter Stand:** 20.04.26 – **K2 Familie Handy: Nav übersichtlich** – `K2FamilieLayout` `FamilieNav`: Hooks **vor** Muster-`return` (Rules of Hooks); **≤768px** eine Zeile (Zurück / aktueller Bereich / **Menü**) + Sheet mit allen Links; `App.css`: **`.k2-familie-nav-mobile-sheet`** Vollbild-Overlay + Bottom-Panel. **`npm run vite:build` grün.** **Commit:** `a14311f9` ✅ GitHub
 
 ---
 
