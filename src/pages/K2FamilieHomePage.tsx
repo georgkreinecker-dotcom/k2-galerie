@@ -50,6 +50,7 @@ import { adminTheme } from '../config/theme'
 import { K2_FAMILIE_UI } from '../config/k2FamilieUiColors'
 import { K2_FAMILIE_NAV_LABEL_GESCHICHTE } from '../config/k2FamilieNavLabels'
 import { getFamilieTenantDisplayName } from '../data/familieHuberMuster'
+import { getCousinenCousinsListe } from '../utils/familieEventVerwandtschaftKategorie'
 
 const C = {
   ...K2_FAMILIE_UI,
@@ -191,6 +192,12 @@ export default function K2FamilieHomePage() {
     if (!id) return undefined
     return personen.find((p) => p.id === id)
   }, [personen, ichBinPersonId])
+
+  /** Dieselbe Verwandtschafts-Logik wie Events – nur Karten. */
+  const cousinPersonen = useMemo(
+    () => getCousinenCousinsListe(personen, ichBinPersonId),
+    [personen, ichBinPersonId]
+  )
 
   const persoenlicheMitgliedsNummerAufKarte = (meinePerson?.mitgliedsNummer ?? '').trim()
 
@@ -537,39 +544,75 @@ export default function K2FamilieHomePage() {
                 gap: '0.5rem',
               }}
             >
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: '0.9rem',
-                  color: '#78350f',
-                  lineHeight: 1.45,
-                  fontFamily: a.fontBody,
-                }}
-              >
+              {ichName ? (
                 <>
-                  <strong>Sitzung nicht bestätigt.</strong> Trage hier deinen persönlichen Code ein (wie auf deiner
-                  Karte). Optional: &quot;Auf diesem Gerät merken&quot; – dann musst du auf <strong>diesem</strong>{' '}
-                  Browser nicht bei jedem Besuch neu tippen (anderes Gerät = erneut eingeben). Den Code kannst du später
-                  auf deiner Personenkarte ändern; dann gilt die Merkung hier nicht mehr. Derselbe Schritt schaltet z. B.{' '}
-                  Einladungsbriefe                   und Mitglieder-Codes frei – es gibt keinen separaten Code nur für Briefe; die Eingabe
-                  ist immer der persönliche Code von der Karte, nicht die Familien-Kennung für alle.
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: '1.15rem',
+                      color: '#78350f',
+                      lineHeight: 1.35,
+                      fontFamily: a.fontHeading,
+                      fontWeight: 700,
+                    }}
+                  >
+                    Hallo,{' '}
+                    <strong style={{ fontWeight: 800 }}>
+                      {ichName.trim().split(/\s+/)[0] || ichName}
+                    </strong>
+                  </p>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: '0.92rem',
+                      color: '#78350f',
+                      lineHeight: 1.45,
+                      fontFamily: a.fontBody,
+                    }}
+                  >
+                    Kurz bestätigen: <strong>persönlicher Code</strong> von der Karte (wie bei{' '}
+                    <strong>{ichName}</strong> hinterlegt) – nicht die Familien-Kennung für alle.
+                  </p>
                 </>
-              </p>
+              ) : (
+                <>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: '1.02rem',
+                      color: '#78350f',
+                      lineHeight: 1.4,
+                      fontFamily: a.fontHeading,
+                      fontWeight: 700,
+                    }}
+                  >
+                    <strong>Sitzung nicht bestätigt</strong>
+                  </p>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: '0.9rem',
+                      color: '#78350f',
+                      lineHeight: 1.45,
+                      fontFamily: a.fontBody,
+                    }}
+                  >
+                    Persönlichen Code von der Karte eingeben. – Als „Du“ ist keine Person in der Liste – bitte unter
+                    Einstellungen → Zugang & Name prüfen oder „Daten vom Server laden“.
+                  </p>
+                </>
+              )}
               <p
                 style={{
                   margin: 0,
-                  fontSize: '0.85rem',
+                  fontSize: '0.82rem',
                   color: '#92400e',
-                  lineHeight: 1.4,
+                  lineHeight: 1.35,
                   fontFamily: a.fontBody,
                 }}
               >
-                <strong>Aktive Familie:</strong> {identitaetBannerFamilienname}
-                <span style={{ opacity: 0.75 }}>
-                  {' '}
-                  · Karten-Codes dieser Familie sind nur hier gültig, wenn dieselbe Familie gewählt ist wie in der
-                  Leiste „Familie wechseln“.
-                </span>
+                <strong>{identitaetBannerFamilienname}</strong>
+                <span style={{ opacity: 0.82 }}> · gleiche Auswahl wie in „Familie wechseln“</span>
               </p>
               <div
                 style={{
@@ -588,7 +631,7 @@ export default function K2FamilieHomePage() {
                     flex: '0 0 auto',
                   }}
                 >
-                  Dein Code
+                  {ichName ? `Code für ${ichName}` : 'Dein Code'}
                 </span>
                 <input
                   type="text"
@@ -610,8 +653,12 @@ export default function K2FamilieHomePage() {
                       bestaetigeIdentitaetFuerSession()
                     }
                   }}
-                  placeholder="persönlicher Code"
-                  aria-label="Persönlicher Code zur Sitzungsbestätigung"
+                  placeholder={ichName ? `Code von ${ichName}` : 'persönlicher Code'}
+                  aria-label={
+                    ichName
+                      ? `Persönlicher Code von ${ichName} zur Sitzungsbestätigung`
+                      : 'Persönlicher Code zur Sitzungsbestätigung'
+                  }
                   style={{
                     flex: '1 1 160px',
                     minWidth: 140,
@@ -668,7 +715,7 @@ export default function K2FamilieHomePage() {
                   aria-label="Auf diesem Gerät merken"
                   style={{ marginTop: '0.12rem', flexShrink: 0 }}
                 />
-                <span>Auf diesem Gerät merken (persönlicher Code nicht jedes Mal neu)</span>
+                <span>Auf diesem Gerät merken (optional)</span>
               </label>
               {identitaetSessionHinweis ? (
                 <p role="status" style={{ margin: 0, fontSize: '0.88rem', color: '#991b1b', fontWeight: 600 }}>
@@ -1164,6 +1211,56 @@ export default function K2FamilieHomePage() {
                 🕯️ Gedenkort
               </Link>
             </div>
+
+            {ichBinPersonId?.trim() && cousinPersonen.length > 0 ? (
+              <div
+                id="k2-familie-cousins"
+                className="k2-familie-no-print"
+                style={{
+                  marginTop: '0.85rem',
+                  padding: '1rem 1.1rem',
+                  borderRadius: a.radius,
+                  border: '1px solid rgba(109, 40, 217, 0.35)',
+                  background: 'rgba(109, 40, 217, 0.08)',
+                }}
+              >
+                <h3
+                  style={{
+                    margin: '0 0 0.35rem',
+                    fontSize: '1.05rem',
+                    fontWeight: 700,
+                    color: a.text,
+                    fontFamily: a.fontHeading,
+                  }}
+                >
+                  Cousinen &amp; Cousins
+                </h3>
+                <p style={{ margin: '0 0 0.65rem', fontSize: '0.82rem', lineHeight: 1.45, color: a.muted }}>
+                  Aus den Karten: Kinder deiner Tanten und Onkel. Tippe einen Namen – auf der Karte siehst du Partner und Momente.
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
+                  {cousinPersonen.map((p) => (
+                    <Link
+                      key={p.id}
+                      to={`${familieR.personen}/${p.id}`}
+                      style={{
+                        display: 'inline-block',
+                        padding: '0.4rem 0.65rem',
+                        borderRadius: 10,
+                        background: 'rgba(109, 40, 217, 0.14)',
+                        border: '1px solid rgba(109, 40, 217, 0.4)',
+                        color: a.text,
+                        fontWeight: 600,
+                        fontSize: '0.88rem',
+                        textDecoration: 'none',
+                      }}
+                    >
+                      {p.name.trim() || 'Ohne Name'}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </section>
 
           {!tenantList.includes(FAMILIE_HUBER_TENANT_ID) && kannInstanz && !istEchteFamilieTenantAktiv && (

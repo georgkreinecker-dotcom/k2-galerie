@@ -142,3 +142,23 @@ export function groupPersonenNachVerwandtschaftFuerEvent(
   }
   return out
 }
+
+/**
+ * Alle Personen, die relativ zu „Du“ als **Cousinen/Cousins** gelten – dieselbe Regel wie bei
+ * Event-Teilnehmergruppen (`getVerwandtschaftEventKategorie` → `cousin`), nur aus den Karten.
+ */
+export function getCousinenCousinsListe(
+  personen: K2FamiliePerson[],
+  ichBinPersonId: string | undefined
+): K2FamiliePerson[] {
+  const ichId = ichBinPersonId?.trim()
+  if (!ichId || personen.length === 0) return []
+  const out: K2FamiliePerson[] = []
+  for (const p of personen) {
+    if (p.id === ichId) continue
+    if (getVerwandtschaftEventKategorie(personen, ichId, p.id) === 'cousin') {
+      out.push(p)
+    }
+  }
+  return out.sort((a, b) => a.name.localeCompare(b.name, 'de', { sensitivity: 'base' }))
+}

@@ -5,6 +5,10 @@
 
 ---
 
+**Letzter Stand:** 19.04.26 – **K2 Familie: Cousinen & Cousins** – `getCousinenCousinsListe` (eine Quelle wie Event-Kategorien); **Meine Familie** Block `#k2-familie-cousins` mit Chips zu Personen; Stammbaum-Übersicht Link dorthin + Kurzhinweis bei Karten. Test: `familieEventVerwandtschaftKategorie.test.ts`. **Commit:** `316bd624` ✅ GitHub
+
+---
+
 **Letzter Stand:** 20.04.26 – **K2 Familie: Identität und „Das bin ich“ synchron** – `familieIdentitaetIchSync.ts` (`syncFamilieIdentitaetMitIchBinPerson`): gültiges **Du** → Sitzung angleichen; nur Sitzung, kein Du → Du übernehmen; Konflikt → **Du** gewinnt. `FamilieEinladungQuerySync`: bei Tenant + Speicher-Revision. Tests: `familieIdentitaetIchSync.test.ts`. **Commit:** `fe1b5c33` ✅ GitHub
 
 ---

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   getVerwandtschaftEventKategorie,
+  getCousinenCousinsListe,
   groupPersonenNachVerwandtschaftFuerEvent,
 } from '../utils/familieEventVerwandtschaftKategorie'
 import type { K2FamiliePerson } from '../types/k2Familie'
@@ -38,6 +39,7 @@ describe('familieEventVerwandtschaftKategorie', () => {
     expect(getVerwandtschaftEventKategorie(personen, 'du', 'cousin')).toBe('cousin')
     expect(getVerwandtschaftEventKategorie(personen, 'du', 'kind')).toBe('kinder')
     expect(getVerwandtschaftEventKategorie(personen, 'du', 'v')).toBe('eltern')
+    expect(getCousinenCousinsListe(personen, 'du').map((x) => x.id)).toEqual(['cousin'])
   })
 
   it('groupPersonenNachVerwandtschaftFuerEvent: Geschwister-Gruppe vor Onkel/Tanten', () => {

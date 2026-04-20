@@ -10,6 +10,7 @@ import { PROJECT_ROUTES } from '../config/navigation'
 import { loadPersonen, savePersonen, loadEinstellungen, saveEinstellungen } from '../utils/familieStorage'
 import { setIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
 import { getBeziehungenFromKarten, getFamilienzweigPersonen, getGeschwisterAnzeigeListe } from '../utils/familieBeziehungen'
+import { getCousinenCousinsListe } from '../utils/familieEventVerwandtschaftKategorie'
 import {
   buildStammbaumKartenState,
   buildGrossfamilieStammbaumSektionen,
@@ -97,7 +98,7 @@ const STAMMBAUM_BEREICH_TITEL: Record<Exclude<StammbaumBereich, 'uebersicht'>, s
 /** Ein Satz: was dieser Bereich *ist* – nicht nur ein Schlagwort. */
 const STAMMBAUM_BEREICH_UNTERTITEL: Record<Exclude<StammbaumBereich, 'uebersicht'>, string> = {
   karten:
-    'Jede Person eine Karte – öffnen, bearbeiten, Beziehungen pflegen. Optional nur deinen Ast (Schalter „Nur mein Zweig“, wenn „Das bin ich“ gesetzt ist).',
+    'Jede Person eine Karte – öffnen, bearbeiten, Beziehungen pflegen. Optional nur deinen Ast (Schalter „Nur mein Zweig“, wenn „Das bin ich“ gesetzt ist). Auf Meine Familie: Schnellliste Cousinen & Cousins (wenn „Du“ gesetzt und Seitenlinien in den Karten).',
   'nach-oben':
     'Dieselben Personen wie bei „Nach unten“, aber die Liste betont die Linie nach oben: Eltern, Großeltern, weiter zu den Wurzeln.',
   grafik:
@@ -330,6 +331,11 @@ export default function K2FamilieStammbaumPage() {
     const g = id ? getGeschwisterAnzeigeListe(personen, id) : []
     return g.length ? g.map((p) => p.name).join(', ') : '–'
   }, [einstellungen.ichBinPersonId, personen])
+
+  const cousinSchnellliste = useMemo(
+    () => getCousinenCousinsListe(personen, einstellungen.ichBinPersonId),
+    [personen, einstellungen.ichBinPersonId]
+  )
 
   const druck = searchParams.get('druck') === '1'
   const umfangFromUrl = parseDruckUmfang(searchParams.get('umfang'))
@@ -1073,6 +1079,28 @@ export default function K2FamilieStammbaumPage() {
             </div>
           </nav>
         )}
+
+        {personen.length > 0 && stammbaumBereich === 'uebersicht' && cousinSchnellliste.length > 0 ? (
+          <p
+            className="no-print meta"
+            style={{
+              margin: '0 0 1rem',
+              fontSize: '0.85rem',
+              lineHeight: 1.45,
+              color: 'rgba(226, 232, 240, 0.92)',
+              maxWidth: '42rem',
+            }}
+          >
+            <Link
+              to={`${PROJECT_ROUTES['k2-familie'].meineFamilie}#k2-familie-cousins`}
+              style={{ color: '#5eead4', fontWeight: 600, textDecoration: 'underline' }}
+            >
+              Cousinen &amp; Cousins – Schnellliste
+            </Link>
+            {' '}
+            auf Meine Familie: dieselbe Verwandtschaft wie in den Karten, ein Tipp pro Person.
+          </p>
+        ) : null}
 
         {personen.length > 0 && stammbaumBereich === 'uebersicht' && !stammbaumFuehrungAusblenden && (
           <section
