@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 20.04.26 – **K2 Familie Präsentationsmappe (Kunde) + Screenshots** – Inhalt `public/k2-familie-praesentation-mappe/`, Page `K2FamiliePraesentationsmappeKundePage`, `BenutzerHandbuchViewer` rendert Bild-Zeilen als Figure; PNGs unter `public/img/k2-familie/pm-*.png`; `scripts/capture-k2-familie-praesentation-map.mjs` setzt `localStorage` wie abgeschlossener Muster-Rundgang + Fallback „Später“. Anpassungen u. a. `App`, `navigation`, DevView, Marketing, SEO-Tests. **`npm run build:vercel` grün** (volle `test:changed` lief bei esbuild zeitweise fehl – Build ok). **Commit:** `b068fc52` ✅ GitHub
+**Letzter Stand:** 20.04.26 – **K2 Familie Präsentationsmappe (Kunde) + Screenshots** – Inhalt `public/k2-familie-praesentation-mappe/`, Page `K2FamiliePraesentationsmappeKundePage`, `BenutzerHandbuchViewer` rendert Bild-Zeilen als Figure; PNGs unter `public/img/k2-familie/pm-*.png`; `scripts/capture-k2-familie-praesentation-map.mjs` setzt `localStorage` wie abgeschlossener Muster-Rundgang + Fallback „Später“. Anpassungen u. a. `App`, `navigation`, DevView, Marketing, SEO-Tests. **`npm run build:vercel` grün** (volle `test:changed` lief bei esbuild zeitweise fehl – Build ok). **Commit:** `5e6238ed` ✅ GitHub
 
 ---
 
