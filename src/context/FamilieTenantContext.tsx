@@ -9,6 +9,7 @@ import { K2_FAMILIE_EINLADUNG_PENDING_EVENT } from '../utils/familieEinladungPen
 import { K2_FAMILIE_DEFAULT_TENANT, isValidFamilieTenantId, K2_FAMILIE_SESSION_UPDATED } from '../utils/familieStorage'
 import { isFamilieNurMusterSession } from '../utils/familieMusterSession'
 import {
+  loadFamilieTenantList,
   pickFallbackFamilieTenantId,
   readFamilieTenantCookieBackup,
   setFamilieTenantCookieBackup,
@@ -17,38 +18,8 @@ import {
 const STORAGE_CURRENT = 'k2-familie-current-tenant'
 const STORAGE_LIST = 'k2-familie-tenant-list'
 
-function loadList(): string[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_LIST)
-    let list: string[]
-    if (!raw) {
-      list = [K2_FAMILIE_DEFAULT_TENANT]
-    } else {
-      const parsed = JSON.parse(raw)
-      list = Array.isArray(parsed) && parsed.length > 0 ? parsed : [K2_FAMILIE_DEFAULT_TENANT]
-    }
-    /** PWA/neuer Kontext: localStorage leer, Cookie oft noch gesetzt → Familie wieder anbieten. */
-    const c = readFamilieTenantCookieBackup()
-    if (c && !list.includes(c)) {
-      const skipBecauseNurMuster =
-        isFamilieNurMusterSession() && c !== FAMILIE_HUBER_TENANT_ID
-      if (!skipBecauseNurMuster) {
-        list = [...list, c]
-        try {
-          localStorage.setItem(STORAGE_LIST, JSON.stringify(list))
-        } catch {
-          /* ignore */
-        }
-      }
-    }
-    return list
-  } catch {
-    return [K2_FAMILIE_DEFAULT_TENANT]
-  }
-}
-
 function loadCurrent(): string {
-  const list = loadList()
+  const list = loadFamilieTenantList()
   try {
     const id = sessionStorage.getItem(STORAGE_CURRENT)?.trim()
     if (id && list.includes(id)) return id
@@ -117,7 +88,7 @@ const FamilieTenantContext = createContext<ContextValue | null>(null)
 
 export function FamilieTenantProvider({ children }: { children: ReactNode }) {
   const [currentTenantId, setCurrentTenantIdState] = useState(loadCurrent)
-  const [tenantList, setTenantList] = useState(loadList)
+  const [tenantList, setTenantList] = useState(loadFamilieTenantList)
   const [familieStorageRevision, setFamilieStorageRevision] = useState(0)
   const bumpFamilieStorageRevision = useCallback(() => {
     setFamilieStorageRevision((n) => n + 1)
@@ -148,7 +119,7 @@ export function FamilieTenantProvider({ children }: { children: ReactNode }) {
   const ensureTenantInListAndSelect = useCallback((id: string): boolean => {
     if (isFamilieNurMusterSession() && id !== FAMILIE_HUBER_TENANT_ID) return false
     if (!isValidFamilieTenantId(id)) return false
-    const list = loadList()
+    const list = loadFamilieTenantList()
     const next = list.includes(id) ? list : [...list, id]
     if (next.length !== list.length) {
       persistList(next)
@@ -160,14 +131,14 @@ export function FamilieTenantProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const refreshFromStorage = useCallback(() => {
-    const list = loadList()
+    const list = loadFamilieTenantList()
     setTenantList(list)
     const current = loadCurrent()
     setCurrentTenantIdState(current)
   }, [])
 
   useEffect(() => {
-    const list = loadList()
+    const list = loadFamilieTenantList()
     if (list.length !== tenantList.length || list.some((id, i) => id !== tenantList[i])) {
       setTenantList(list)
     }

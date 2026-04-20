@@ -1,6 +1,7 @@
 import { useState, type CSSProperties, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { PROJECT_ROUTES, K2_GALERIE_APF_EINSTIEG, flyerEventBogenUrl } from '../config/navigation'
+import { getApfPreferredFamilieTenantId } from '../utils/familieTenantCookieBackup'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { TexteSchreibtischBoard } from '../components/TexteSchreibtischBoard'
 
@@ -324,8 +325,17 @@ const BEREICHE: Bereich[] = [
   },
 ]
 
-function zettelDragPayload(z: Zettel): string {
-  return `## ${z.titel}\n${z.zweck}\n\n[Öffnen](${z.to})`
+/** Öffnen-URL: Einladung Geschwister bekommt ?t= mit bevorzugter Familie (nicht nur letzte Muster-Demo-Sitzung). */
+function resolveZettelOeffnenHref(z: Zettel): string {
+  if (z.id === 'einladung-geschwister-k2-familie') {
+    const t = getApfPreferredFamilieTenantId()
+    return `${R_K2_FAMILIE.einladungGeschwisterBriefe}?t=${encodeURIComponent(t)}`
+  }
+  return z.to
+}
+
+function zettelDragPayload(z: Zettel, openHref: string): string {
+  return `## ${z.titel}\n${z.zweck}\n\n[Öffnen](${openHref})`
 }
 
 /** PDF/HTML unter /public: kein React-Router-Link (sonst SPA-Navigation ohne echtes Dokument). */
@@ -363,6 +373,7 @@ function HangeregisterSchublade({ b }: { b: Bereich }) {
   const n = b.zettel.length
   const safeIdx = n === 0 ? 0 : Math.min(zettelIndex, n - 1)
   const z = n > 0 ? b.zettel[safeIdx] : null
+  const zettelOpenHref = z ? resolveZettelOeffnenHref(z) : ''
   const rot = z?.rotateDeg ?? 0
 
   const goPrev = () => {
@@ -558,7 +569,7 @@ function HangeregisterSchublade({ b }: { b: Bereich }) {
             draggable
             title="Ziehen = in die Mitte legen · unten: Seite wirklich öffnen"
             onDragStart={(e) => {
-              e.dataTransfer.setData('text/plain', zettelDragPayload(z))
+              e.dataTransfer.setData('text/plain', zettelDragPayload(z, zettelOpenHref))
               e.dataTransfer.effectAllowed = 'copy'
             }}
             style={{
@@ -597,7 +608,7 @@ function HangeregisterSchublade({ b }: { b: Bereich }) {
           </div>
 
           <ZettelOeffnenLink
-            to={z.to}
+            to={zettelOpenHref}
             style={{
               display: 'block',
               textAlign: 'center',
