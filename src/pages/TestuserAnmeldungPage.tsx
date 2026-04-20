@@ -173,8 +173,15 @@ function TestuserAnmeldungForm() {
         <p style={{ margin: '0 0 0.35rem', fontSize: '0.88rem', fontWeight: 600, color: '#1c1a18' }}>Kurzinfo</p>
         <ul style={{ margin: 0, paddingLeft: '1.1rem', fontSize: '0.86rem', color: '#444', lineHeight: 1.5 }}>
           <li>
-            <strong>Gutschein:</strong> Bei erfüllten Bedingungen – nach unserer Freigabe – je{' '}
-            <strong>abgeschlossener Produktlinie ein Gutschein 250&nbsp;€</strong> für ein Kunstobjekt der K2 Galerie (kein Barauszahlungsanspruch; Einlösung nach Absprache).
+            <strong>Gratislizenz:</strong> Schwerpunkt des Programms – bei erfüllten Bedingungen und freigegebenem Testprotokoll <strong>bis zu fünf Jahre kostenfrei</strong> für die gewählte Produktlinie (siehe{' '}
+            <Link to="/zettel-testuser-produktlinien" style={{ color: '#0d9488', fontWeight: 600 }}>
+              Infos (Testuser)
+            </Link>
+            ).
+          </li>
+          <li style={{ marginTop: '0.3rem' }}>
+            <strong>Gutschein:</strong> Ergänzend – nach unserer Freigabe – je{' '}
+            <strong>abgeschlossener Produktlinie ein Gutschein 100&nbsp;€</strong> für ein Kunstobjekt der K2 Galerie (kein Barauszahlungsanspruch; Einlösung nach Absprache).
           </li>
           <li style={{ marginTop: '0.3rem' }}>
             <strong>Zugang:</strong> Den persönlichen Testzugang erhalten Sie von uns per <strong>E-Mail</strong>. Nach Ihrer Anmeldung melden wir uns <strong>bald</strong> mit den nächsten Schritten. Teilnahme begrenzt, nicht für alle zugesagt.

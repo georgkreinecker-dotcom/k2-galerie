@@ -1,6 +1,6 @@
 # Testprotokoll – Produktlinie K2 Familie
 
-**Vorlage für Testuser:innen.** Vollständig ausfüllen, an **kgm solution** einreichen. **Gutschein 250 €** pro Linie nur bei freigegebenem Protokoll – siehe Infos (Testuser).
+**Vorlage für Testuser:innen.** Vollständig ausfüllen, an **kgm solution** einreichen. **Schwerpunkt:** bis zu **fünf Jahre Gratislizenz** bei erfüllten Bedingungen; **Gutschein 100 €** pro Linie nur bei freigegebenem Protokoll – siehe Infos (Testuser).
 
 ---
 

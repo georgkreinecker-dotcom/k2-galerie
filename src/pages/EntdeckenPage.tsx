@@ -85,7 +85,7 @@ const T_DEFAULTS = {
 
   /** Kurzkampagne Testpilot (Band über den Weg-Karten) */
   testpilotKurz:
-    'Begrenztes Testpilot-Programm – mitmachen und Feedback geben. Bei erfüllten Bedingungen u. a. Gutschein 250 € für ein Kunstobjekt der K2 Galerie (Details im Formular).',
+    'Begrenztes Testpilot-Programm – mitmachen und Feedback geben. Schwerpunkt: bei erfüllten Bedingungen u. a. bis zu fünf Jahre Gratislizenz; ergänzend Gutschein 100 € für ein Kunstobjekt der K2 Galerie (Details im Formular).',
   testpilotCta: 'Zur Anmeldung →',
 
   q3: 'Wie heißt du – oder deine Galerie?',

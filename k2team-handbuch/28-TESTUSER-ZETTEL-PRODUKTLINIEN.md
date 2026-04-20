@@ -2,7 +2,7 @@
 
 **Interesse:** **[Testuser-Anmeldung](/testuser-anmeldung)** – Name, **wie die App heißen soll** (für den persönlichen Zugang), Kontakt, gewünschte Linie; Angaben an **kgm** per E-Mail. Beim internen **Laufzettel** (Mission Control → Neuer Test-Pilot) werden derselbe App-Name und die Zettel-Nr. genutzt.
 
-**Zweck:** Produkttest im Alltag → kostenlose Testlizenz; bei erfüllten Bedingungen **Gutschein 250 €** für ein Kunstobjekt der **K2 Galerie** (kein Baranspruch).
+**Zweck:** Produkttest im Alltag → kostenlose Testlizenz; **Schwerpunkt:** bei erfüllten Bedingungen **bis zu fünf Jahre Gratislizenz** für die gewählte Linie (mit vollständigem Testprotokoll, siehe unten). **Ergänzend:** bei Freigabe **Gutschein 100 €** für ein Kunstobjekt der **K2 Galerie** (kein Baranspruch).
 
 ---
 
@@ -23,8 +23,9 @@
 ## Leistungen
 
 - **Testphase:** Keine Lizenzgebühr, solange Testbedingungen eingehalten werden.
-- **Bis zu fünf Jahre kostenfrei** für die gewählte Linie – **nur** mit **vollständig ausgefülltem und eingereichtem Testprotokoll**; sonst gesondert vereinbart.
-- **Gutschein 250 €** pro **abgeschlossener** Linie – nach Freigabe – für ein Kunstobjekt der K2 Galerie (Einlösung nach Absprache).
+- **Bis zu fünf Jahre kostenfrei (Gratislizenz)** für die gewählte Linie – **nur** mit **vollständig ausgefülltem und eingereichtem Testprotokoll**; sonst gesondert vereinbart. Das ist die **zentrale Leistung** des Programms.
+- **Gutschein 100 €** pro **abgeschlossener** Linie – nach Freigabe – für ein Kunstobjekt der K2 Galerie (Einlösung nach Absprache).
+- **Ohne Protokoll:** **kein** Gutschein, **kein** Anspruch auf die **fünf Jahre kostenfrei** im beschriebenen Sinn.
 
 ---
 
@@ -40,7 +41,7 @@
 - [ ] E-Mail von kgm mit **persönlichem Link** erhalten
 - [ ] Linie: ök2 und/oder VK2 und/oder K2 Familie
 - [ ] Zugang eingerichtet und **genutzt**
-- [ ] Protokoll einreichen → Prüfung → ggf. **kostenfrei** und Gutschein
+- [ ] Protokoll einreichen → Prüfung → ggf. **Gratislizenz (bis zu fünf Jahre)** und **Gutschein 100 €**
 
 ---
 

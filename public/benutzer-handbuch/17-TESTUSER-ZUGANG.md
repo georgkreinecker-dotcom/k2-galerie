@@ -21,8 +21,9 @@
 ## Konditionen in Kürze
 
 - **Testphase:** Kostenlose Nutzung im vereinbarten Rahmen, solange die Testbedingungen eingehalten werden.
+- **Schwerpunkt:** Bei erfüllten Bedingungen und freigegebenem Protokoll **bis zu fünf Jahre Gratislizenz** für die gewählte Linie; **ergänzend** ein **Gutschein 100 €** pro abgeschlossener Linie nach Freigabe (Details in den Infos).
 - **Begrenzte Teilnahme:** Nicht jede Bewerbung führt zu einem Platz – die Auswahl trifft kgm.
-- **Testprotokoll:** Für die beschriebenen Vorteile (z. B. Dauer der kostenfreien Nutzung, Gutschein-Regelungen) ist ein **vollständig ausgefülltes und eingereichtes** Protokoll vorgesehen – siehe die **Infos (Testuser)** im K2Team-Handbuch und die E-Mail von uns.
+- **Testprotokoll:** Für die beschriebenen Vorteile (Dauer der kostenfreien Nutzung, Gutschein-Regelungen) ist ein **vollständig ausgefülltes und eingereichtes** Protokoll vorgesehen – siehe die **Infos (Testuser)** im K2Team-Handbuch und die E-Mail von uns.
 
 **Details und aktuelle Fassung:** [Infos (Testuser) – drei Produktlinien](/zettel-testuser-produktlinien) (Übersicht ök2, VK2, K2 Familie).
 

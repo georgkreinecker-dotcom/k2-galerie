@@ -17,7 +17,7 @@ Kurzreferenz für Zusammenarbeit und Betrieb der K2 Galerie. Stand: Februar 2026
 | 23 | [Notfall-Checkliste](23-NOTFALL-CHECKLISTE.md) | Cursor aus? Dialog tot? Parallelstrukturen: DIALOG-STAND, Briefing, Backup – zentral im Smart Panel |
 | 26 | [Testpilot-Einladung einrichten](26-TESTPILOT-EINLADUNG-EINRICHTUNG.md) | PILOT_INVITE_SECRET, Resend, Vercel – einmal einrichten, dann Link und optional E-Mail |
 | 27 | [Lizenznehmer: Admin-QR fürs Handy](27-LIZENZNEHMER-ADMIN-QR-MOBIL.md) | Admin vs. Galerie-QR, Stammdaten nach Registrierung, Lizenz-Erfolgsseite, QR speichern |
-| 28 | [Infos (Testuser) – drei Produktlinien](28-TESTUSER-ZETTEL-PRODUKTLINIEN.md) | ök2, VK2, K2 Familie; Testlizenz; Gutschein 250 € pro Linie; [Testuser-Anmeldung](/testuser-anmeldung) zum Eintragen; Testprotokolle: Kapitel 29–31 und Ansicht `/testprotokoll-testuser` |
+| 28 | [Infos (Testuser) – drei Produktlinien](28-TESTUSER-ZETTEL-PRODUKTLINIEN.md) | ök2, VK2, K2 Familie; Schwerpunkt bis zu fünf Jahre Gratislizenz; ergänzend Gutschein 100 € pro Linie; [Testuser-Anmeldung](/testuser-anmeldung) zum Eintragen; Testprotokolle: Kapitel 29–31 und Ansicht `/testprotokoll-testuser` |
 | 29 | [Testprotokoll ök2](29-TESTPROTOKOLL-OEK2.md) | Vorlage ök2; Ansicht `/testprotokoll-testuser?linie=oek2` |
 | 30 | [Testprotokoll VK2](30-TESTPROTOKOLL-VK2.md) | Vorlage VK2; Ansicht `/testprotokoll-testuser?linie=vk2` |
 | 31 | [Testprotokoll K2 Familie](31-TESTPROTOKOLL-K2-FAMILIE.md) | Vorlage K2 Familie; Ansicht `/testprotokoll-testuser?linie=familie` |
