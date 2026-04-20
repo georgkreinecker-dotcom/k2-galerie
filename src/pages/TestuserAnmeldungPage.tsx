@@ -21,6 +21,7 @@ import {
 } from '../utils/testuserKatalogStorage'
 import { isPilotKatalogSyncConfigured, pullAndMergePilotKatalog } from '../utils/pilotKatalogApi'
 import { clearOek2ZettelPilotVornameSessionMarker } from '../utils/zettelPilotOeffentlichPrefill'
+import { getSendTestuserAnmeldungApiUrl } from '../utils/testuserAnmeldungClient'
 
 const R = PROJECT_ROUTES['k2-galerie']
 
@@ -95,6 +96,9 @@ function TestuserAnmeldungForm() {
   const [anmerkung, setAnmerkung] = useState('')
   const [einverstanden, setEinverstanden] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [serverEmailSent, setServerEmailSent] = useState(false)
 
   const canSubmit =
     name.trim().length > 0 &&
@@ -103,9 +107,61 @@ function TestuserAnmeldungForm() {
     (oek2 || vk2 || familie) &&
     einverstanden
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const missingHints = (() => {
+    const m: string[] = []
+    if (!name.trim()) m.push('Name')
+    if (!appName.trim()) m.push('Wunsch-Name für die App')
+    if (!email.trim()) m.push('E-Mail')
+    else if (!email.trim().includes('@')) m.push('gültige E-Mail')
+    if (!oek2 && !vk2 && !familie) m.push('mindestens eine Produktlinie')
+    if (!einverstanden) m.push('Einwilligung')
+    return m
+  })()
+
+  const openMailtoAndDownloadTxt = (payload: string) => {
+    /** Adresse nicht per encodeURIComponent (würde @ zu %40 – manche Clients öffnen dann nicht). */
+    const subject = encodeURIComponent('Testuser-Anmeldung')
+    const bodyEncoded = encodeURIComponent(payload)
+    const mailtoFull = `mailto:${PRODUCT_LIZENZ_ANFRAGE_EMAIL}?subject=${subject}&body=${bodyEncoded}`
+    /** Viele Browser/OS begrenzen mailto-Länge; sonst öffnet sich kein Programm – Kurztext + volle Daten in .txt */
+    const MAILTO_MAX = 2000
+    const shortBodyForMail = [
+      'Testuser-Anmeldung (kgm solution)',
+      '',
+      `Name: ${name.trim()}`,
+      `App (Test): ${appName.trim()}`,
+      `E-Mail: ${email.trim()}`,
+      `Linien: ök2 ${oek2 ? 'ja' : 'nein'}, VK2 ${vk2 ? 'ja' : 'nein'}, K2 Familie ${familie ? 'ja' : 'nein'}`,
+      '',
+      'Vollständiger Text: siehe heruntergeladene Datei testuser-anmeldung-….txt (gleicher Klick).',
+    ].join('\n')
+    const bodyShortEncoded = encodeURIComponent(shortBodyForMail)
+    const mailtoShort = `mailto:${PRODUCT_LIZENZ_ANFRAGE_EMAIL}?subject=${subject}&body=${bodyShortEncoded}`
+    const mailto = mailtoFull.length <= MAILTO_MAX ? mailtoFull : mailtoShort
+
+    try {
+      const blob = new Blob([payload], { type: 'text/plain;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `testuser-anmeldung-${new Date().toISOString().slice(0, 10)}.txt`
+      a.rel = 'noopener'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch {
+      /* ignore */
+    }
+    /** Kurz warten, damit der Download nicht mit mailto kollidiert (Safari/Firefox). */
+    window.setTimeout(() => {
+      window.location.href = mailto
+    }, 120)
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!canSubmit) return
+    if (!canSubmit || submitting) return
     const payload = buildPayload({
       name: name.trim(),
       appName: appName.trim(),
@@ -116,29 +172,56 @@ function TestuserAnmeldungForm() {
       familie,
       anmerkung,
     })
-    const subject = encodeURIComponent('Testuser-Anmeldung')
-    const body = encodeURIComponent(payload)
-    const mailto = `mailto:${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_EMAIL)}?subject=${subject}&body=${body}`
+    setSubmitError(null)
+    setServerEmailSent(false)
+    setSubmitting(true)
     try {
-      const blob = new Blob([payload], { type: 'text/plain;charset=utf-8' })
-      const a = document.createElement('a')
-      a.href = URL.createObjectURL(blob)
-      a.download = `testuser-anmeldung-${new Date().toISOString().slice(0, 10)}.txt`
-      a.click()
-      URL.revokeObjectURL(a.href)
+      const r = await fetch(getSendTestuserAnmeldungApiUrl(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          appName: appName.trim(),
+          email: email.trim(),
+          phone: phone.trim(),
+          oek2,
+          vk2,
+          familie,
+          anmerkung,
+          einverstanden: true,
+        }),
+      })
+      const j = (await r.json().catch(() => ({}))) as {
+        sent?: boolean
+        message?: string
+        error?: string
+      }
+      if (r.ok && j.sent === true) {
+        setServerEmailSent(true)
+        setSubmitted(true)
+        return
+      }
+      if (r.status === 400 && typeof j.error === 'string') {
+        setSubmitError(j.error)
+        return
+      }
+      openMailtoAndDownloadTxt(payload)
+      setSubmitted(true)
+      if (typeof j.message === 'string') setSubmitError(j.message)
+      else if (!r.ok) setSubmitError('Server hat die Anmeldung nicht übernommen – bitte E-Mail oder Textdatei nutzen.')
     } catch {
-      /* ignore */
+      openMailtoAndDownloadTxt(payload)
+      setSubmitted(true)
+      setSubmitError('Keine Verbindung zum Server – bitte E-Mail-Programm oder die heruntergeladene Textdatei nutzen.')
+    } finally {
+      setSubmitting(false)
     }
-    if (mailto.length < 2200) {
-      window.location.href = mailto
-    }
-    setSubmitted(true)
   }
 
   return (
     <>
       <p className="tu-intro" style={{ fontSize: '0.92rem', color: '#444', lineHeight: 1.55, marginBottom: '0.75rem' }}>
-        Interessieren Sie sich für einen <strong>Produkttest</strong>? Tragen Sie sich hier ein – online oder dieses Blatt ausdrucken und ausfüllen. Kurzüberblick zu den Linien:{' '}
+        Interessieren Sie sich für einen <strong>Produkttest</strong>? Tragen Sie sich hier ein – online oder dieses Blatt ausdrucken und ausfüllen. Ist der E-Mail-Versand auf dem Server eingerichtet (wie bei der Testpilot-Einladung: Resend auf Vercel), geht Ihre Anmeldung <strong>direkt</strong> an kgm solution; sonst öffnet sich wie bisher Ihr E-Mail-Programm mit einer Vorlage und eine Textdatei wird heruntergeladen. Kurzüberblick zu den Linien:{' '}
         <Link to="/zettel-testuser-produktlinien" style={{ color: '#0d9488', fontWeight: 600 }}>
           Infos (Testuser)
         </Link>
@@ -268,19 +351,19 @@ function TestuserAnmeldungForm() {
         <div className="tu-no-print" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
           <button
             type="submit"
-            disabled={!canSubmit}
+            disabled={!canSubmit || submitting}
             style={{
               padding: '0.6rem 1.1rem',
-              background: canSubmit ? '#0d9488' : '#ccc',
+              background: canSubmit && !submitting ? '#0d9488' : '#ccc',
               color: '#fff',
               border: 'none',
               borderRadius: 6,
               fontWeight: 600,
-              cursor: canSubmit ? 'pointer' : 'not-allowed',
+              cursor: canSubmit && !submitting ? 'pointer' : 'not-allowed',
               fontSize: '0.95rem',
             }}
           >
-            Absenden (E-Mail öffnen + Textdatei)
+            {submitting ? 'Wird gesendet…' : 'Absenden'}
           </button>
           <button
             type="button"
@@ -303,13 +386,25 @@ function TestuserAnmeldungForm() {
 
       {!canSubmit && (
         <p className="tu-no-print" style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.65rem' }}>
-          Bitte Name, gewünschten App-Namen, E-Mail, mindestens eine Produktlinie und die Einwilligung ausfüllen.
+          <strong style={{ color: '#444' }}>Noch ausfüllen:</strong> {missingHints.join(' · ')}
         </p>
       )}
 
-      {submitted && (
+      {submitError && submitted && (
+        <p className="tu-no-print" style={{ fontSize: '0.86rem', color: '#92400e', marginTop: '0.65rem', lineHeight: 1.45 }}>
+          {submitError}
+        </p>
+      )}
+
+      {submitted && serverEmailSent && (
         <p className="tu-no-print" style={{ fontSize: '0.92rem', color: '#0f766e', marginTop: '0.85rem', fontWeight: 600 }}>
-          Danke – wenn Ihr E-Mail-Programm geöffnet hat, senden Sie die Nachricht ab. Zusätzlich wurde eine Textdatei mit den Daten heruntergeladen (falls der Browser das erlaubt).
+          Danke – Ihre Anmeldung wurde per E-Mail an kgm solution übermittelt. Wir melden uns bei Ihnen. (Posteingang von {PRODUCT_LIZENZ_ANFRAGE_EMAIL} prüfen; ggf. Spam-Ordner.)
+        </p>
+      )}
+
+      {submitted && !serverEmailSent && (
+        <p className="tu-no-print" style={{ fontSize: '0.92rem', color: '#0f766e', marginTop: '0.85rem', fontWeight: 600 }}>
+          Danke – Ihr E-Mail-Programm sollte sich geöffnet haben; senden Sie die Nachricht dort ab. Zusätzlich wurde eine Textdatei mit den vollständigen Daten heruntergeladen (falls der Browser Downloads erlaubt). Kein Fenster? Bitte prüfen, ob ein E-Mail-Programm eingerichtet ist, oder die .txt-Datei manuell an {PRODUCT_LIZENZ_ANFRAGE_EMAIL} senden.
         </p>
       )}
     </>
