@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 20.04.26 – **K2 Familie: QR-Sitzung + Cloud-Hinweis** – `familieEinladungPending.ts`: **Familien-QR-Kompakt** gültig **7 Tage** (vorher 15 Min, wirkte wie „geht nicht mehr“). `K2FamilieHomePage.tsx`: klarere Texte wenn **Cloud ohne Personen** (Inhaber:in speichert → Push). **`npm run build:vercel` grün.** **Commit:** (nach Push)
+**Letzter Stand:** 20.04.26 – **K2 Familie: QR-Sitzung + Cloud-Hinweis** – `familieEinladungPending.ts`: **Familien-QR-Kompakt** gültig **7 Tage** (vorher 15 Min, wirkte wie „geht nicht mehr“). `K2FamilieHomePage.tsx`: klarere Texte wenn **Cloud ohne Personen** (Inhaber:in speichert → Push). **`npm run build:vercel` grün.** **Commit:** `58de9d5f` ✅ GitHub
 
 ---
 
