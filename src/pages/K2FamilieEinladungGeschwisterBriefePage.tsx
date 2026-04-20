@@ -157,7 +157,18 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
   /** Rolle „Inhaber:in“, aber ohne bestätigte Sitzung: getFamilieEffectiveCapabilities schaltet Verwaltung aus – eigene Meldung nötig. */
   const inhaberOhneVerwaltungsrecht = !kannInstanz && rolle === 'inhaber'
   const [nurGeschwisterAst, setNurGeschwisterAst] = useState(true)
+  /** Nur ein Brief im Druckdialog (sonst null = alle). */
+  const [printSingleBranchKey, setPrintSingleBranchKey] = useState<string | null>(null)
   const { versionTimestamp } = useQrVersionTimestamp()
+
+  useEffect(() => {
+    const onAfterPrint = () => {
+      document.body.classList.remove('k2-fam-print-one-brief')
+      setPrintSingleBranchKey(null)
+    }
+    window.addEventListener('afterprint', onAfterPrint)
+    return () => window.removeEventListener('afterprint', onAfterPrint)
+  }, [])
 
   const { familienZ, familyDisplayName, personMap, zweigGruppenAst, bloecke, signaturName } = useMemo(() => {
     const einst = loadEinstellungen(currentTenantId)
@@ -246,6 +257,9 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
         }
         @media print {
           .k2-fam-einlad-no-print { display: none !important; }
+          body.k2-fam-print-one-brief .k2-fam-einlad-brief-seite:not(.k2-fam-einlad-print-include) {
+            display: none !important;
+          }
           .k2-fam-einlad-brief-wrap { background: #fff !important; }
           .k2-fam-einlad-brief-seite {
             page-break-after: always;
@@ -330,13 +344,18 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
           . Im Brief: <strong style={{ color: vp.text }}>Familien-Kennung</strong>,{' '}
           <strong style={{ color: vp.text }}>Familien-Link &amp; QR</strong> (Einstieg für alle) und pro Person{' '}
           <strong style={{ color: vp.text }}>Link &amp; QR</strong> (mit Server-Stand zum Scannen). Unter jedem QR steht der{' '}
-          <strong style={{ color: vp.text }}>kurze Link</strong> zum Einfügen in die Adresszeile am PC — gleicher Einstieg wie beim Scannen. Pro Brief ein Geschwister-Zweig; vertraulich drucken.
+          <strong style={{ color: vp.text }}>kurze Link</strong> zum Einfügen in die Adresszeile am PC — gleicher Einstieg wie beim Scannen. Pro Brief ein Geschwister-Zweig; vertraulich drucken. Pro Brief:{' '}
+          <strong style={{ color: vp.text }}>Diesen Brief drucken</strong> — nur diese eine Seite.
         </p>
 
         <div className="k2-fam-einlad-brief-screenbar k2-fam-einlad-no-print">
           <button
             type="button"
-            onClick={() => window.print()}
+            onClick={() => {
+              document.body.classList.remove('k2-fam-print-one-brief')
+              setPrintSingleBranchKey(null)
+              window.setTimeout(() => window.print(), 0)
+            }}
             style={{
               padding: '0.5rem 1rem',
               fontSize: '0.9rem',
@@ -400,6 +419,16 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
               versionTimestamp={versionTimestamp}
               isLast={idx === bloecke.length - 1}
               a={a}
+              printIncludeClass={
+                printSingleBranchKey === null || printSingleBranchKey === g.branchKey
+              }
+              onPrintThis={() => {
+                setPrintSingleBranchKey(g.branchKey)
+                window.setTimeout(() => {
+                  document.body.classList.add('k2-fam-print-one-brief')
+                  window.print()
+                }, 0)
+              }}
             />
           ))
         )}
@@ -423,6 +452,8 @@ function EinladungsBriefSeite({
   versionTimestamp,
   isLast,
   a,
+  printIncludeClass,
+  onPrintThis,
 }: {
   gruppe: MitgliederCodesZweigGruppe
   familienZ: string
@@ -433,6 +464,8 @@ function EinladungsBriefSeite({
   versionTimestamp: number
   isLast: boolean
   a: typeof adminTheme
+  printIncludeClass: boolean
+  onPrintThis: () => void
 }) {
   const astName = geschwisterAstAnkerName(gruppe.branchKey, personMap)
   const titelZeile = astName && astName !== '—' ? astName : gruppe.branchLabel.replace(/^Familienzweig ·\s*/i, '').trim() || gruppe.branchLabel
@@ -444,9 +477,24 @@ function EinladungsBriefSeite({
       : ''
   const familienUrlKurz = familienZ.trim() !== '' ? buildFamilieEinladungsUrlCanonical(tenantId, familienZ, familyDisplayName) : ''
 
+  const famNameInApp =
+    familyDisplayName.trim() !== '' ? (
+      <p style={{ margin: '0 0 0.75rem', textAlign: 'justify' }}>
+        In der App heißt unsere Familie: <strong>{familyDisplayName.trim()}</strong>.
+      </p>
+    ) : null
+
+  /** Anrede mit Namen aus dem Zweig (Anker-Person); bei „Du“ nur allgemeine Anrede. */
+  const nameFuerAnrede = (() => {
+    if (!titelZeile || titelZeile === '—') return ''
+    const vn = vornameAusAnzeigeName(titelZeile).trim()
+    if (vn === 'Du' || vn === '') return ''
+    return vn
+  })()
+
   return (
     <article
-      className="k2-fam-einlad-brief-seite"
+      className={`k2-fam-einlad-brief-seite${printIncludeClass ? ' k2-fam-einlad-print-include' : ''}`}
       style={{
         marginBottom: isLast ? 0 : '2rem',
         padding: '1.5rem 0',
@@ -457,23 +505,73 @@ function EinladungsBriefSeite({
         color: '#1a1816',
       }}
     >
-      <header style={{ textAlign: 'center', paddingBottom: '1rem', marginBottom: '1rem', borderBottom: '1px solid #c9bfb0' }}>
-        <p style={{ margin: '0 0 0.5rem', fontSize: '9pt', color: '#5c5650', fontFamily: a.fontBody }}>
-          K2 Familie · Einladung
-        </p>
-        <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 600, color: '#2c2419' }}>An die Familie um {titelZeile}</h2>
-        <p style={{ margin: '0.35rem 0 0', fontSize: '10pt', color: '#4a4035' }}>{gruppe.branchLabel}</p>
+      <header
+        style={{
+          paddingBottom: '1rem',
+          marginBottom: '1rem',
+          borderBottom: '1px solid #c9bfb0',
+        }}
+      >
+        <div
+          className="k2-fam-einlad-no-print"
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            gap: '0.5rem',
+            marginBottom: '0.65rem',
+          }}
+        >
+          <span style={{ fontSize: '9pt', color: '#5c5650', fontFamily: a.fontBody }}>K2 Familie · Einladung</span>
+          <button
+            type="button"
+            onClick={onPrintThis}
+            style={{
+              padding: '0.35rem 0.75rem',
+              fontSize: '0.82rem',
+              fontFamily: 'inherit',
+              borderRadius: a.radius,
+              border: `1px solid rgba(181, 74, 30, 0.45)`,
+              cursor: 'pointer',
+              fontWeight: 600,
+              background: a.bgCard,
+              color: '#b45309',
+            }}
+          >
+            Diesen Brief drucken
+          </button>
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 600, color: '#2c2419' }}>An die Familie um {titelZeile}</h2>
+          <p style={{ margin: '0.35rem 0 0', fontSize: '10pt', color: '#4a4035' }}>{gruppe.branchLabel}</p>
+        </div>
       </header>
 
-      <p style={{ margin: '0 0 0.75rem' }}>Liebe Familie,</p>
+      <p style={{ margin: '0 0 0.75rem' }}>
+        {nameFuerAnrede ? (
+          <>
+            Liebe Familie, <strong>ihr rund um {nameFuerAnrede}</strong>,
+          </>
+        ) : (
+          <>Liebe Familie,</>
+        )}
+      </p>
 
       <p style={{ margin: '0 0 0.75rem', textAlign: 'justify' }}>
-        ich möchte euch etwas zeigen, das ich für unsere Familie aufgebaut habe: die <strong>K2 Familie</strong> – eine geschützte,
-        private Plattform für Stammbaum, Geschichten, Termine und Erinnerungen – nur für uns, nicht für die Öffentlichkeit.
+        ich lade euch ein, die <strong>K2 Familie</strong> wirklich zu nutzen – nicht nur anzuschauen, sondern sie{' '}
+        <strong>mit euren Daten, Bildern und Geschichten zum Leben zu erwecken</strong>: Stammbaum ergänzen, Termine und
+        Erinnerungen festhalten. Das ist unser geschützter, privater Raum – nur für uns, nicht für die Öffentlichkeit.
+      </p>
+      {famNameInApp}
+      <p style={{ margin: '0 0 0.75rem', textAlign: 'justify' }}>
+        Wenn etwas noch unfertig wirkt oder ein Eintrag nicht stimmt: in der Anfangsphase kann das vorkommen –{' '}
+        <strong>bitte entschuldigt</strong> solche Fehler bei mir; ich freue mich, wenn ihr es mir sagt, damit wir es gemeinsam
+        richten können.
       </p>
       <p style={{ margin: '0 0 0.75rem', textAlign: 'justify' }}>
-        <strong>Was ich euch bitte:</strong> Schaut euch die Plattform an, wenn ihr möchtet; leitet die Einladung an eure
-        Familienmitglieder weiter, damit jeder Zweig mitmachen kann.
+        Unten findet ihr den Familien-Einstieg mit Link und QR – und pro Person die Codes in der Tabelle. Gebt den Weg gern in
+        eurem Zweig weiter, damit niemand außen vor bleibt.
       </p>
 
       <div
@@ -588,7 +686,8 @@ function EinladungsBriefSeite({
       </div>
 
       <p style={{ margin: '0.75rem 0 0', textAlign: 'justify' }}>
-        Wenn etwas unklar ist, meldet euch bei mir. Ich freue mich, wenn wir das gemeinsam nutzen.
+        Bei Fragen oder wenn etwas hakt: meldet euch bei mir – ich helfe gern. Ich freue mich, wenn wir die K2 Familie gemeinsam
+        füllen und nutzen.
       </p>
 
       <div style={{ marginTop: '1.25rem' }}>
