@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Nächste Aufgabe von Georg.  
-**Einordnung:** ök2 **Sheet-Rundgang** („ök2 Plattform · Rundgang“ / Muster-Galerie): Texte in `oek2GalerieLeitfadenSteps.ts`; auf der Demo-Galerie erscheint die **Einladungszeile** (`heroRundgangInvite` / Default) unter dem Sparten-Kasten.
+**Einordnung:** ök2 **Plattform-Rundgang**: Einladungszeile unter Sparten-Kasten = Klick startet Sheet (`openOek2PlatformRundgangGlobally`), nur auf **Plattform-Instanz**; Lizenznehmer-Klon bleibt Fließtext.
+
+---
+
+**Letzter Stand:** 20.04.26 – **ök2: Einladungszeile → Plattform-Rundgang (klickbar)** – `GaleriePage`: unter Sparten-Kasten bei `isPlatformInstance()` **Button** mit `openOek2PlatformRundgangGlobally()` (wie `Oek2PlatformLeitfadenHost`); sonst `<p>`. **Commit:** `b8cecaef` ✅ GitHub
 
 ---
 
