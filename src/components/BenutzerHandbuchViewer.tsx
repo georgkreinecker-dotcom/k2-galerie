@@ -214,6 +214,21 @@ export default function BenutzerHandbuchViewer({
         out.push(<div key={key()} className="benutzer-leerzeile" aria-hidden />)
         i++; continue
       }
+      const imgLine = trimmed.match(/^!\[([^\]]*)\]\(([^)]+)\)$/)
+      if (imgLine) {
+        const alt = imgLine[1].trim()
+        const rawSrc = imgLine[2].trim()
+        const src =
+          rawSrc.startsWith('http://') || rawSrc.startsWith('https://') || rawSrc.startsWith('/')
+            ? rawSrc
+            : `${handbuchBase.replace(/\/$/, '')}/${rawSrc.replace(/^\//, '')}`
+        out.push(
+          <figure key={key()} className="benutzer-figure">
+            <img src={src} alt={alt || 'Abbildung'} className="benutzer-md-img" loading="lazy" decoding="async" />
+          </figure>,
+        )
+        i++; continue
+      }
       if (trimmed.toUpperCase() === '[SEITENUMBRUCH]') {
         out.push(<div key={key()} className="benutzer-seitenumbruch" aria-hidden><span className="benutzer-seitenumbruch-label">— Abschnitt —</span></div>)
         i++; continue
@@ -337,6 +352,8 @@ export default function BenutzerHandbuchViewer({
     .benutzer-handbuch-wrapper .benutzer-table th { background: #f3f4f6; font-weight: 600; }
     .benutzer-handbuch-wrapper .benutzer-link { color: #2563eb; text-decoration: underline; }
     .benutzer-handbuch-wrapper .benutzer-link:hover { color: #1d4ed8; }
+    .benutzer-handbuch-wrapper .benutzer-figure { margin: 0.85rem 0; break-inside: avoid; }
+    .benutzer-handbuch-wrapper .benutzer-md-img { display: block; max-width: 100%; height: auto; border-radius: 10px; border: 1px solid #e5e7eb; box-sizing: border-box; }
     .benutzer-handbuch-wrapper .benutzer-fussnote-block { break-inside: avoid; }
     .benutzer-handbuch-wrapper .benutzer-leerzeile { height: 0.75rem; }
     .benutzer-print-preview .benutzer-no-print { display: none !important; }
@@ -445,7 +462,8 @@ export default function BenutzerHandbuchViewer({
       .benutzer-deckblatt .benutzer-deckblatt-fuss { margin-top: 0.5rem !important; padding-top: 0.35rem !important; }
       .benutzer-seitenfuss-zeile { margin-top: 0.35rem; padding-top: 0.15rem; font-size: 6.5pt; color: #6b7280; }
       .benutzer-seitenfuss-zeile::after { content: " · Seite " counter(page) " von " counter(pages); }
-      .benutzer-table-wrap, .benutzer-fussnote-block { break-inside: avoid; }
+      .benutzer-table-wrap, .benutzer-fussnote-block, .benutzer-figure { break-inside: avoid; }
+      .benutzer-handbuch-wrapper .benutzer-md-img { max-width: 100% !important; page-break-inside: avoid; }
       /* Keine harten Seitenumbrüche aus [SEITENUMBRUCH] – sonst explodiert die Seitenzahl (Handbuch kompakt) */
       .benutzer-seitenumbruch { page-break-before: auto !important; margin: 0 !important; padding: 0 !important; border: none !important; min-height: 0 !important; height: 0 !important; overflow: hidden !important; }
       .benutzer-seitenumbruch .benutzer-seitenumbruch-label { display: none !important; }

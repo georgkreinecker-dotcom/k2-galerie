@@ -36,6 +36,7 @@
     "capture:pm-admin-screenshot": "node scripts/capture-pm-admin-screenshot.mjs",
     "capture:pm-event-medien-screenshot": "node scripts/capture-pm-event-medien-screenshot.mjs",
     "capture:pm-einstellungen-screenshot": "node scripts/capture-pm-einstellungen-screenshot.mjs",
+    "capture:k2-familie-praesentation-map": "node scripts/capture-k2-familie-praesentation-map.mjs",
     "briefing": "node scripts/agenten-briefing.js",
     "backup:hard": "bash scripts/hard-backup-to-backupmicro.sh",
     "familie:db:apply": "npx supabase db query -f docs/sql/supabase-k2-familie-tabelle-einmal.sql --linked --yes",

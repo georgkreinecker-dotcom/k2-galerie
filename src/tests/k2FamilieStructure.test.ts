@@ -9,10 +9,11 @@ import { PROJECT_ROUTES } from '../config/navigation'
 const R = PROJECT_ROUTES['k2-familie']
 
 describe('getK2FamilieLeitGroups', () => {
-  it('enthält Gruppe Prospekte & Präsentationsmappen mit K2-Familie-Kurzprospekt', () => {
+  it('enthält Gruppe Prospekte mit Kundenmappe und Vertriebsunterlagen', () => {
     const groups = getK2FamilieLeitGroups()
     const prop = groups.find((g) => g.chapterTitle === 'Prospekte & Präsentationsmappen')
     expect(prop).toBeDefined()
+    expect(prop?.sections.some((s) => s.to === R.familiePraesentationsmappeKunde)).toBe(true)
     expect(prop?.sections.some((s) => s.to === R.familiePraesentationsmappe)).toBe(true)
   })
 })

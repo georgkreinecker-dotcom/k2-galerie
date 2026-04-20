@@ -29,6 +29,7 @@ import K2GalerieHandbuchPage from './K2GalerieHandbuchPage'
 import K2FamilieBenutzerHandbuchPage from './K2FamilieBenutzerHandbuchPage'
 import K2FamilieEntwicklungDokuPage from './K2FamilieEntwicklungDokuPage'
 import K2FamiliePraesentationsmappePage from './K2FamiliePraesentationsmappePage'
+import K2FamiliePraesentationsmappeKundePage from './K2FamiliePraesentationsmappeKundePage'
 import KampagneMarketingStrategiePage from './KampagneMarketingStrategiePage'
 import K2WeltStrategiePage from './K2WeltStrategiePage'
 import K2MarktPage from './K2MarktPage'
@@ -485,6 +486,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       case 'k2-familie-handbuch': return PROJECT_ROUTES['k2-familie'].benutzerHandbuch
       case 'k2-familie-doku': return PROJECT_ROUTES['k2-familie'].entwicklungDoku
       case 'k2-familie-praesentationsmappe': return PROJECT_ROUTES['k2-familie'].familiePraesentationsmappe
+      case 'k2-familie-praesentationsmappe-kunde': return PROJECT_ROUTES['k2-familie'].familiePraesentationsmappeKunde
       case 'handbuch-galerie': return '/k2-galerie-handbuch'
       case 'produkt-vorschau': return PROJECT_ROUTES['k2-galerie'].produktVorschau
       case 'platzanordnung': return PROJECT_ROUTES['k2-galerie'].platzanordnung
@@ -1105,7 +1107,8 @@ end tell`
     { id: 'handbuch-galerie', name: 'Handbuch K2 Galerie', component: K2GalerieHandbuchPage },
     { id: 'k2-familie-handbuch', name: 'K2 Familie – Handbuch', component: K2FamilieBenutzerHandbuchPage },
     { id: 'k2-familie-doku', name: 'K2 Familie – Doku & Entwicklung', component: K2FamilieEntwicklungDokuPage },
-    { id: 'k2-familie-praesentationsmappe', name: 'K2 Familie – Präsentationsmappe', component: K2FamiliePraesentationsmappePage },
+    { id: 'k2-familie-praesentationsmappe-kunde', name: 'K2 Familie – Präsentationsmappe (Kunde)', component: K2FamiliePraesentationsmappeKundePage },
+    { id: 'k2-familie-praesentationsmappe', name: 'K2 Familie – Vertriebsunterlagen', component: K2FamiliePraesentationsmappePage },
     { id: 'k2-familie', name: 'K2 Familie', component: () => <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--k2-muted)' }}>K2 Familie – im APf-Desktop im Browser</div> },
   ]
 

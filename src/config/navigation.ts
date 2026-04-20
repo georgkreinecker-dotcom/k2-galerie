@@ -276,6 +276,8 @@ export const PROJECT_ROUTES = {
     entwicklungDoku: '/projects/k2-familie/doku',
     /** Eigenständige Präsentationsmappe – public/k2-familie-praesentation/ */
     familiePraesentationsmappe: '/projects/k2-familie/praesentationsmappe',
+    /** Kundenmappe – public/k2-familie-praesentation-mappe/ (ohne interne Vertriebstexte) */
+    familiePraesentationsmappeKunde: '/projects/k2-familie/praesentationsmappe-kunde',
     /** USP & Marketing-Konzept – analog mök2, eigenständig für K2 Familie */
     familienMarketing: '/projects/k2-familie/marketing',
     sicherung: '/projects/k2-familie/sicherung',

@@ -1,7 +1,15 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nächste K2-Familie-Aufgabe nach Bedarf (Cousinen-Schnellliste ist im Stammbaum).  
-**Einordnung:** Cousinen & Cousins gehören logisch zum **Stammbaum** (Startansicht `?bereich=uebersicht`), nicht unter „Was möchtest du tun?“ auf Meine Familie; Deep-Link `#k2-familie-cousins` schaltet die Startansicht zu.
+**Was wir JETZT tun:** Offen nach Bedarf (nächste Session).  
+**Einordnung:** Präsentationsmappe Kunde + Screenshots sind im Repo; Capture ohne Muster-Rundgang-Overlay.
+
+---
+
+**Letzter Stand:** 20.04.26 – **K2 Familie Präsentationsmappe (Kunde) + Screenshots** – Inhalt `public/k2-familie-praesentation-mappe/`, Page `K2FamiliePraesentationsmappeKundePage`, `BenutzerHandbuchViewer` rendert Bild-Zeilen als Figure; PNGs unter `public/img/k2-familie/pm-*.png`; `scripts/capture-k2-familie-praesentation-map.mjs` setzt `localStorage` wie abgeschlossener Muster-Rundgang + Fallback „Später“. Anpassungen u. a. `App`, `navigation`, DevView, Marketing, SEO-Tests. **`npm run build:vercel` grün** (volle `test:changed` lief bei esbuild zeitweise fehl – Build ok). **Commit:** `b068fc52` ✅ GitHub
+
+---
+
+**Letzter Stand:** 20.04.26 – **K2 Familie Leitstruktur: einklappbare Mappen (Smart-Panel-Stil)** – `FamilieLeitstrukturPanel`: Gruppen mit 📁/▼▶, State + `localStorage` `k2-familie-leitstruktur-mappen-open`; Mappe mit aktivem Link klappt bei Navigation auf; Toggle-Logik korrigiert (`wasOpen`); `useEffect` nur `[location.pathname]`. **`npm run vite:build` grün.** **Commit:** `a01ea0d4` ✅ GitHub
 
 ---
 

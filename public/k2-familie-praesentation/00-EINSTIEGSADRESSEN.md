@@ -18,7 +18,8 @@
 | **Öffentlicher Marketing-Einstieg** – Flyer, Social, „Was ist K2 Familie?“ | `/projects/k2-familie/willkommen` | `https://k2-galerie.vercel.app/projects/k2-familie/willkommen` |
 | **Musterfamilie Huber** – direkt in die App (Demo, Pilot:innen) | `/projects/k2-familie/meine-familie?t=huber` | `https://k2-galerie.vercel.app/projects/k2-familie/meine-familie?t=huber` |
 | **Einstieg B** – Umschau-Text zur Musterfamilie (explizit Huber) | `/projects/k2-familie/einstieg?t=huber` | `https://k2-galerie.vercel.app/projects/k2-familie/einstieg?t=huber` |
-| **Vertriebsmappe** – Kurzprospekt, Prospekt, FAQ, Drehbuch (diese Sammlung) | `/projects/k2-familie/praesentationsmappe` | `https://k2-galerie.vercel.app/projects/k2-familie/praesentationsmappe` |
+| **Präsentationsmappe (Kunde)** – zum Übergeben, ohne interne Vertriebstexte | `/projects/k2-familie/praesentationsmappe-kunde` | `https://k2-galerie.vercel.app/projects/k2-familie/praesentationsmappe-kunde` |
+| **Vertriebsunterlagen** – Kurzprospekt, Prospekt, FAQ, Drehbuch (intern) | `/projects/k2-familie/praesentationsmappe` | `https://k2-galerie.vercel.app/projects/k2-familie/praesentationsmappe` |
 | **Marketing & Leitbild** – Konzept in der App | `/projects/k2-familie/marketing` | `https://k2-galerie.vercel.app/projects/k2-familie/marketing` |
 | **Benutzerhandbuch** – eigenständige Lesefassung | `/k2-familie-handbuch` | `https://k2-galerie.vercel.app/k2-familie-handbuch` |
 | **Projekt-Start** – Übersicht unter K2 Familie (APf) | `/projects/k2-familie` | `https://k2-galerie.vercel.app/projects/k2-familie` |

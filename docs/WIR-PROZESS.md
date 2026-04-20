@@ -274,6 +274,8 @@ Wenn nein: wir lassen es.
 
 ---
 
+**Session-Reflexion (20.04.26):** K2 Familie Kunden-Präsentationsmappe mit echten Screenshots und Capture-Skript ohne Rundgang-Modal – eine Quelle (`readMusterLeitfadenAbgeschlossen`) im Playwright-Kontext spiegelt.
+
 **Session-Reflexion (19.04.26):** K2 Familie: Sitzung prüft nur den Code der Person **„Du“** – Listen-Codes anderer Mitglieder sind absichtlich nicht genug; nachvollziehbare Texte + aktiver Familienname im Banner; Georg hat einen neuen Code, der passt.
 
 **Session-Reflexion (11.04.26):** AGB in der App und Doku mit Lizenzmodell (Haupt-/Nebenlizenz, Mandant, K2 Familie) abgebildet; eine Referenz-Datei gegen Textdrift; Verweise im Marketing und Handbuch angeglichen – Rechtssicherheit stützt Anwalt + konsistente Quellen.

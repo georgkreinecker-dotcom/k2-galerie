@@ -444,7 +444,10 @@ export default function K2FamilieMarketingPage() {
               <Link to={R.benutzerHandbuch} style={{ color: '#b54a1e', fontWeight: 600 }}>Benutzerhandbuch</Link> – Orientierung und Erklärung
             </li>
             <li>
-              <Link to={R.familiePraesentationsmappe} style={{ color: '#b54a1e', fontWeight: 600 }}>Präsentationsmappe</Link> – Story und Übergabe
+              <Link to={R.familiePraesentationsmappeKunde} style={{ color: '#b54a1e', fontWeight: 600 }}>Präsentationsmappe</Link> – zum Übergeben an Kund:innen
+            </li>
+            <li>
+              <Link to={R.familiePraesentationsmappe} style={{ color: '#b54a1e', fontWeight: 600 }}>Vertriebsunterlagen</Link> – Flyer, FAQ, Lizenz, intern
             </li>
             <li>
               <Link to={R.willkommen} style={{ color: '#b54a1e', fontWeight: 600 }}>Einstiegsseite (Flyer/QR)</Link> – kurzer öffentlicher Einstieg
