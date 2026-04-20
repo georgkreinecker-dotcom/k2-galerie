@@ -67,6 +67,14 @@ function readFamilieLeisteEingeklappt(tenantId: string): boolean {
   } catch {
     /* ignore */
   }
+  /** Handy: ohne explizite Nutzerwahl kompakt starten – mehr Platz für Inhalt. */
+  try {
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches) {
+      return true
+    }
+  } catch {
+    /* ignore */
+  }
   return loadIdentitaetBestaetigt(tenantId) != null
 }
 
@@ -790,6 +798,40 @@ function familieNavLeitfadenFocusForTo(to: string): string | undefined {
   return undefined
 }
 
+function isFamilieNavItemActive(item: FamilieNavItem, path: string): boolean {
+  const { to, activePrefixes } = item
+  const isFamilieHomeNavLink =
+    to === K2_FAMILIE_APP_SHORT_PATH || to === FAMILIE_MUSTER_HOME_NAV_TO
+  const isExactMatchNav =
+    to === familieRoutes.benutzerHandbuch || to === familieRoutes.einstellungen
+  const toPathOnly = to.split('?')[0] ?? to
+  if (activePrefixes?.length) {
+    return activePrefixes.some((p) => path.startsWith(p))
+  }
+  if (isFamilieHomeNavLink || isExactMatchNav) {
+    return isFamilieHomeNavLink
+      ? isK2FamilieMeineFamilieHomePath(path)
+      : path === toPathOnly || path === toPathOnly + '/'
+  }
+  return path.startsWith(toPathOnly)
+}
+
+/** Gleicher Breakpoint wie `.k2-familie-nav`-Handy-Styles in App.css */
+const FAMILIE_NAV_COMPACT_MQ = '(max-width: 768px)'
+
+function useK2FamilieCompactNavMedia(): boolean {
+  const [compact, setCompact] = useState(false)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const mq = window.matchMedia(FAMILIE_NAV_COMPACT_MQ)
+    const apply = () => setCompact(mq.matches)
+    apply()
+    mq.addEventListener('change', apply)
+    return () => mq.removeEventListener('change', apply)
+  }, [])
+  return compact
+}
+
 function FamilieNav() {
   const loc = useLocation()
   const path = loc.pathname
@@ -821,6 +863,38 @@ function FamilieNav() {
     }
     return FAMILIE_NAV
   }, [isMeineFamilieHome, isLeser, nurMusterBesuch])
+
+  const compactMedia = useK2FamilieCompactNavMedia()
+  const useCompactNavPattern = compactMedia && (!isMeineFamilieHome || navItems.length > 4)
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  useEffect(() => {
+    setMenuOpen(false)
+  }, [path, loc.search])
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [menuOpen])
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [menuOpen])
+
+  const activeNavItem = useMemo(() => {
+    const matches = navItems.filter((i) => isFamilieNavItemActive(i, path))
+    if (matches.length) return matches[matches.length - 1]
+    return navItems[0]
+  }, [navItems, path])
 
   /** Unterseiten Musterfamilie: minimal Zurück + Link zur Musterfamilie. */
   if (nurMusterBesuch && !isMeineFamilieHome) {
@@ -861,6 +935,183 @@ function FamilieNav() {
     )
   }
 
+  const renderNavLink = (item: FamilieNavItem, variant: 'bar' | 'sheet') => {
+    const { to, label } = item
+    const isActive = isFamilieNavItemActive(item, path)
+    const navMuster = isFamilieNurMusterSession()
+    const musterHint = navMuster ? musterHintForFamilieNavLink(to) : undefined
+    const leitfadenFocus = familieNavLeitfadenFocusForTo(to)
+    const base = {
+      ...(musterHint ? { 'data-muster-hint': musterHint } : {}),
+      ...(leitfadenFocus ? { 'data-leitfaden-focus': leitfadenFocus } : {}),
+    }
+    if (variant === 'sheet') {
+      return (
+        <Link
+          key={to}
+          to={to}
+          {...base}
+          onClick={() => setMenuOpen(false)}
+          className={isActive ? 'k2-familie-nav-link k2-familie-nav-link--active' : 'k2-familie-nav-link'}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            width: '100%',
+            boxSizing: 'border-box',
+            padding: '0.65rem 1rem',
+            borderRadius: t.radius,
+            fontSize: '0.95rem',
+            fontWeight: isActive ? 700 : 500,
+            textDecoration: 'none',
+            color: isActive ? '#fff' : t.text,
+            background: isActive ? t.accent : 'rgba(255, 254, 251, 0.96)',
+            fontFamily: 'inherit',
+            border: isActive ? 'none' : `1px solid ${FAMILIE_NAV_BORDER}`,
+          }}
+        >
+          {label}
+        </Link>
+      )
+    }
+    return (
+      <Link
+        key={to}
+        to={to}
+        {...base}
+        className={isActive ? 'k2-familie-nav-link k2-familie-nav-link--active' : 'k2-familie-nav-link'}
+        style={{
+          padding: '0.45rem 0.85rem',
+          borderRadius: 999,
+          fontSize: '0.88rem',
+          fontWeight: isActive ? 700 : 500,
+          textDecoration: 'none',
+          color: isActive ? '#fff' : t.text,
+          background: isActive ? t.accent : 'transparent',
+          fontFamily: 'inherit',
+          transition: 'background 0.2s, color 0.2s, transform 0.2s',
+          border: isActive ? 'none' : '1px solid transparent',
+        }}
+      >
+        {label}
+      </Link>
+    )
+  }
+
+  if (useCompactNavPattern) {
+    return (
+      <>
+        <nav
+          className="k2-familie-nav k2-familie-nav--compact k2-familie-no-print"
+          aria-label="K2 Familie"
+          style={{
+            display: 'flex',
+            flexWrap: 'nowrap',
+            gap: '0.5rem',
+            alignItems: 'center',
+            padding: '0.55rem 1rem',
+            background: t.bgDark,
+            borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
+            marginBottom: 0,
+          }}
+        >
+          {!isMeineFamilieHome ? (
+            <FamilieBackButton style={{ color: t.text, marginRight: '0.15rem', flexShrink: 0 }} />
+          ) : null}
+          <span
+            className="k2-familie-nav-current-label"
+            title={activeNavItem?.label}
+            style={{
+              flex: '1 1 auto',
+              minWidth: 0,
+              fontSize: '0.92rem',
+              fontWeight: 700,
+              color: t.text,
+              fontFamily: t.fontHeading,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {activeNavItem?.label ?? 'K2 Familie'}
+          </span>
+          <button
+            type="button"
+            className="k2-familie-nav-menu-btn"
+            aria-expanded={menuOpen}
+            aria-controls="k2-familie-nav-mobile-sheet"
+            onClick={() => setMenuOpen((o) => !o)}
+            style={{
+              flexShrink: 0,
+              padding: '0.5rem 0.85rem',
+              fontSize: '0.88rem',
+              fontWeight: 700,
+              fontFamily: 'inherit',
+              borderRadius: 999,
+              border: `1px solid rgba(181, 74, 30, 0.45)`,
+              background: menuOpen ? t.accent : '#fffefb',
+              color: menuOpen ? '#fff' : t.accent,
+              cursor: 'pointer',
+            }}
+          >
+            Menü
+          </button>
+        </nav>
+        {menuOpen ? (
+          <div
+            id="k2-familie-nav-mobile-sheet"
+            className="k2-familie-nav-mobile-sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Bereiche"
+          >
+            <button
+              type="button"
+              className="k2-familie-nav-mobile-backdrop"
+              aria-label="Menü schließen"
+              onClick={() => setMenuOpen(false)}
+            />
+            <div className="k2-familie-nav-mobile-panel">
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '0.65rem',
+                  paddingBottom: '0.5rem',
+                  borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
+                }}
+              >
+                <span style={{ fontWeight: 700, fontSize: '1rem', color: t.text, fontFamily: t.fontHeading }}>
+                  Bereiche
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen(false)}
+                  style={{
+                    padding: '0.4rem 0.75rem',
+                    fontSize: '0.86rem',
+                    fontWeight: 600,
+                    borderRadius: t.radius,
+                    border: `1px solid ${FAMILIE_NAV_BORDER}`,
+                    background: t.bgDark,
+                    color: t.muted,
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  Schließen
+                </button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                {navItems.map((item) => renderNavLink(item, 'sheet'))}
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </>
+    )
+  }
+
   return (
     <nav
       className="k2-familie-nav k2-familie-no-print"
@@ -879,46 +1130,7 @@ function FamilieNav() {
       {!isMeineFamilieHome ? (
         <FamilieBackButton style={{ color: t.text, marginRight: '0.25rem' }} />
       ) : null}
-      {navItems.map(({ to, label, activePrefixes }) => {
-        const isFamilieHomeNavLink =
-          to === K2_FAMILIE_APP_SHORT_PATH || to === FAMILIE_MUSTER_HOME_NAV_TO
-        const isExactMatchNav =
-          to === familieRoutes.benutzerHandbuch || to === familieRoutes.einstellungen
-        const toPathOnly = to.split('?')[0] ?? to
-        const isActive = activePrefixes?.length
-          ? activePrefixes.some((p) => path.startsWith(p))
-          : isFamilieHomeNavLink || isExactMatchNav
-            ? isFamilieHomeNavLink
-              ? isK2FamilieMeineFamilieHomePath(path)
-              : path === toPathOnly || path === toPathOnly + '/'
-            : path.startsWith(toPathOnly)
-        const navMuster = isFamilieNurMusterSession()
-        const musterHint = navMuster ? musterHintForFamilieNavLink(to) : undefined
-        const leitfadenFocus = familieNavLeitfadenFocusForTo(to)
-        return (
-          <Link
-            key={to}
-            to={to}
-            {...(musterHint ? { 'data-muster-hint': musterHint } : {})}
-            {...(leitfadenFocus ? { 'data-leitfaden-focus': leitfadenFocus } : {})}
-            className={isActive ? 'k2-familie-nav-link k2-familie-nav-link--active' : 'k2-familie-nav-link'}
-            style={{
-              padding: '0.45rem 0.85rem',
-              borderRadius: 999,
-              fontSize: '0.88rem',
-              fontWeight: isActive ? 700 : 500,
-              textDecoration: 'none',
-              color: isActive ? '#fff' : t.text,
-              background: isActive ? t.accent : 'transparent',
-              fontFamily: 'inherit',
-              transition: 'background 0.2s, color 0.2s, transform 0.2s',
-              border: isActive ? 'none' : '1px solid transparent',
-            }}
-          >
-            {label}
-          </Link>
-        )
-      })}
+      {navItems.map((item) => renderNavLink(item, 'bar'))}
     </nav>
   )
 }

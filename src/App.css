@@ -2530,6 +2530,44 @@ header h1 {
     box-sizing: border-box;
   }
 
+  /* Kompakte Nav: Menü-Overlay über gesamter Ansicht (nicht nur unter dem Inhalt) */
+  .k2-familie-nav-mobile-sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 10050;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0;
+    margin: 0;
+    pointer-events: auto;
+  }
+  .k2-familie-nav-mobile-backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: rgba(15, 23, 42, 0.45);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .k2-familie-nav-mobile-panel {
+    position: relative;
+    z-index: 1;
+    max-height: min(88vh, 100dvh);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: #fffefb;
+    border-radius: 1rem 1rem 0 0;
+    box-shadow: 0 -8px 32px rgba(15, 23, 42, 0.18);
+    padding: 0.75rem 1rem max(0.75rem, env(safe-area-inset-bottom));
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+
   .k2-familie-tenant-toolbar select,
   .k2-familie-tenant-toolbar button,
   .k2-familie-rolle-leiste select,
