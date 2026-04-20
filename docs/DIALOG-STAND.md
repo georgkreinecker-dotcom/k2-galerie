@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nächste Aufgabe von Georg.  
-**Einordnung:** K2 Familie Geschwister-Briefe: persönliche Anrede, Einladungstext (Daten zum Leben), Entschuldigung; Einzeldruck.
+**Was wir JETZT tun:** Geschwister-Briefe / nächste Georg-Aufgabe.  
+**Einordnung:** K2 Familie – weniger Verwechslung zwischen Sitzung und „Du“; Geschwister-Briefe: Anrede, Einladungstext, Einzeldruck.
+
+---
+
+**Letzter Stand:** 20.04.26 – **K2 Familie: Identität und „Das bin ich“ synchron** – `familieIdentitaetIchSync.ts` (`syncFamilieIdentitaetMitIchBinPerson`): gültiges **Du** → Sitzung angleichen; nur Sitzung, kein Du → Du übernehmen; Konflikt → **Du** gewinnt. `FamilieEinladungQuerySync`: bei Tenant + Speicher-Revision. Tests: `familieIdentitaetIchSync.test.ts`. **Commit:** `99175c56` ✅ GitHub
 
 ---
 

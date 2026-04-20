@@ -4,7 +4,7 @@
  * Vorher nur auf „Meine Familie“ – ein Scan auf /einstieg oder nach Index-Redirect landete ohne Umschalten.
  */
 
-import { useLayoutEffect } from 'react'
+import { useLayoutEffect, useEffect } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
@@ -21,6 +21,7 @@ import {
 import { clearFamilieNurMusterSession } from '../utils/familieMusterSession'
 import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
 import { isFamiliePilotTenantId, seedFamiliePilotIfNeeded } from '../utils/familiePilotSeed'
+import { syncFamilieIdentitaetMitIchBinPerson } from '../utils/familieIdentitaetIchSync'
 
 const R_FAM = PROJECT_ROUTES['k2-familie']
 const R_PERSONEN = R_FAM.personen
@@ -54,7 +55,14 @@ export function FamilieEinladungQuerySync() {
     setCurrentTenantId,
     ensureTenantInListAndSelect,
     bumpFamilieStorageRevision,
+    familieStorageRevision,
   } = useFamilieTenant()
+
+  /** „Du“ (ichBinPersonId) und bestätigte Sitzung gleichziehen – eine Quelle, weniger Verwechslungen. */
+  useEffect(() => {
+    syncFamilieIdentitaetMitIchBinPerson(currentTenantId)
+  }, [currentTenantId, familieStorageRevision])
+
   useLayoutEffect(() => {
     const tRaw = searchParams.get('t')?.trim()
     /** Gleiche Schreibweise wie in Keys (u. a. UUID aus Einladung in Kleinbuchstaben). */
