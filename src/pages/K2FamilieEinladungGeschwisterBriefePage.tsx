@@ -18,6 +18,7 @@ import { useFamilieRolle } from '../context/FamilieRolleContext'
 import { loadEinstellungen, loadPersonen } from '../utils/familieStorage'
 import type { K2FamiliePerson } from '../types/k2Familie'
 import { buildMitgliederCodesZweigGruppen, type MitgliederCodesZweigGruppe } from '../utils/familieMitgliedsNummer'
+import { vornameAusAnzeigeName } from '../utils/familieMitgliedInfoBriefText'
 
 const R = PROJECT_ROUTES['k2-familie']
 
@@ -167,7 +168,7 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
     const ast = gruppen.filter((g) => g.branchKey.startsWith('geschwister-ast:'))
     const bloeckeRaw = briefBloeckeWaehlen(gruppen, nurGeschwisterAst && ast.length > 0)
     const ich = einst.ichBinPersonId ? map.get(einst.ichBinPersonId) : undefined
-    const sig = ich?.name?.trim() || ''
+    const sig = ich ? vornameAusAnzeigeName(ich.name) : ''
     return {
       familienZ: z,
       familyDisplayName: (einst.familyDisplayName ?? '').trim(),
@@ -577,8 +578,17 @@ function EinladungsBriefSeite({
       </p>
 
       <div style={{ marginTop: '1.25rem' }}>
-        <p style={{ margin: '0 0 0.25rem' }}>Herzliche Grüße</p>
-        {signaturName ? <p style={{ margin: 0 }}>{signaturName}</p> : null}
+        <p style={{ margin: 0 }}>
+          {signaturName ? (
+            <>
+              Herzliche Grüße
+              <br />
+              {signaturName}
+            </>
+          ) : (
+            'Herzliche Grüße'
+          )}
+        </p>
       </div>
 
       <p

@@ -75,15 +75,23 @@ export function mitgliedsNummernImGebrauch(personen: K2FamiliePerson[]): Set<str
 
 /**
  * Findet die Personen-ID zur eingegebenen Mitgliedsnummer (Vergleich ohne Groß-/Kleinschreibung).
- * Bei mehreren Treffern: erste in der Liste (soll durch Pflege vermieden werden).
+ * Bei mehreren Treffern: **preferPersonId** zuerst, wenn diese Person denselben Code hat (z. B. Inhaber:in
+ * bei Datenkonflikten oder doppelter Vergabe – sonst erste in der Liste).
  */
 export function findPersonIdByMitgliedsNummer(
   personen: K2FamiliePerson[],
-  eingegeben: string
+  eingegeben: string,
+  preferPersonId?: string,
 ): string | null {
   const t = trimMitgliedsNummerEingabe(eingegeben)
   if (!t) return null
   const want = t.toLowerCase()
+  const pref = preferPersonId?.trim()
+  if (pref) {
+    const preferred = personen.find((p) => p.id === pref)
+    const pm = preferred ? trimMitgliedsNummerEingabe(preferred.mitgliedsNummer) : ''
+    if (pm && pm.toLowerCase() === want) return pref
+  }
   for (const p of personen) {
     const m = trimMitgliedsNummerEingabe(p.mitgliedsNummer)
     if (m && m.toLowerCase() === want) return p.id
@@ -98,9 +106,10 @@ export function findPersonIdByMitgliedsNummer(
  */
 export function resolvePersonIdFuerPersoenlichenCodeNachMerge(
   personenNachCloudMerge: K2FamiliePerson[],
-  eingegeben: string
+  eingegeben: string,
+  preferPersonId?: string,
 ): string | null {
-  return findPersonIdByMitgliedsNummer(personenNachCloudMerge, eingegeben)
+  return findPersonIdByMitgliedsNummer(personenNachCloudMerge, eingegeben, preferPersonId)
 }
 
 /**

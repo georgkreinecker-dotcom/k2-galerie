@@ -63,6 +63,12 @@ describe('familieMitgliedsNummer', () => {
     expect(findPersonIdByMitgliedsNummer(personen, '2')).toBe(null)
   })
 
+  it('findPersonIdByMitgliedsNummer: Inhaber:in bevorzugen wenn derselbe Code bei zwei Personen (Datenfehler)', () => {
+    const personen = [p('cilli', 'LI36'), p('georg', 'LI36')]
+    expect(findPersonIdByMitgliedsNummer(personen, 'LI36')).toBe('cilli')
+    expect(findPersonIdByMitgliedsNummer(personen, 'LI36', 'georg')).toBe('georg')
+  })
+
   it('ergaenzeMitgliedsNummerAusServerListe: gemergte Kopie ohne Code, Server hat Code (fremdes Gerät)', () => {
     const server = [p('x', 'AB12')]
     const mergedOhneCode = [p('x', undefined)]

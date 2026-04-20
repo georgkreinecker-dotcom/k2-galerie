@@ -254,10 +254,11 @@ export default function K2FamilieHomePage() {
       bumpFamilieStorageRevision()
       if (!data.loadMeta.ok) {
         setRegistrierungHinweis(getFamilieLoadHinweisFuerNutzer(data.loadMeta))
-        clearFamilieEinladungPending()
+        /** Pending behalten (gleicher Ablauf wie Einladungs-Sync: bei Netz/Cloud-Fehler erneut versuchen). */
         return
       }
-      const pid = resolvePersonIdFuerPersoenlichenCodeNachMerge(data.personen, mNorm)
+      const preferInhaber = loadEinstellungen(currentTenantId).inhaberPersonId?.trim()
+      const pid = resolvePersonIdFuerPersoenlichenCodeNachMerge(data.personen, mNorm, preferInhaber)
       if (pid) {
         const einst = loadEinstellungen(currentTenantId)
         if (saveEinstellungen(currentTenantId, { ...einst, ichBinPersonId: pid })) {
@@ -326,7 +327,8 @@ export default function K2FamilieHomePage() {
     if (!ich) return
     /** Immer aktuell aus dem Speicher – nicht nur useMemo-Stand (vermeidet „Code stimmt, Bestätigung fehl“). */
     const personenAktuell = loadPersonen(currentTenantId)
-    const pid = findPersonIdByMitgliedsNummer(personenAktuell, raw)
+    const preferInhaber = loadEinstellungen(currentTenantId).inhaberPersonId?.trim()
+    const pid = findPersonIdByMitgliedsNummer(personenAktuell, raw, preferInhaber)
     const ichPerson = personenAktuell.find((p) => p.id === ich)
     const codePasstZuDu =
       pid === ich || (ichPerson ? persoenlicherCodePasstZuKarte(raw, ichPerson.mitgliedsNummer) : false)
@@ -424,7 +426,8 @@ export default function K2FamilieHomePage() {
       }
       /** Gemergte Liste aus dem Ladevorgang – nicht nur loadPersonen(): Speichern nach Cloud-Laden kann auf dem Gerät fehlschlagen (Quota), die Server-Antwort ist trotzdem gültig. */
       const personenAktuell = result.personen.length > 0 ? result.personen : loadPersonen(currentTenantId)
-      const pid = resolvePersonIdFuerPersoenlichenCodeNachMerge(personenAktuell, raw)
+      const preferInhaber = loadEinstellungen(currentTenantId).inhaberPersonId?.trim()
+      const pid = resolvePersonIdFuerPersoenlichenCodeNachMerge(personenAktuell, raw, preferInhaber)
       if (personenAktuell.length === 0) {
         setRegistrierungHinweis(
           (result.loadMeta.serverPersonenCount ?? 0) === 0

@@ -59,6 +59,23 @@ function fallbackName(display: string): string {
   return t || 'eure Familie'
 }
 
+/**
+ * Freundlicher Gruß nur mit Vornamen (Briefe, Mail-Mustertext) – nicht der volle Listenname.
+ * „Nachname, Vorname“ → erster Vorname nach dem Komma; „Du“ bleibt.
+ */
+export function vornameAusAnzeigeName(raw: string | undefined | null): string {
+  const s = (raw ?? '').trim()
+  if (!s) return ''
+  if (s === 'Du') return 'Du'
+  const comma = s.indexOf(',')
+  if (comma > 0) {
+    const after = s.slice(comma + 1).trim()
+    const first = after.split(/\s+/)[0]
+    if (first) return first
+  }
+  return s.split(/\s+/)[0] ?? ''
+}
+
 /** Entfernt **markdown**-artige Sternchen für reine Text/WhatsApp-Ausgabe. */
 function stripEinfacheMarkdownStars(s: string): string {
   return s.replace(/\*\*([^*]+)\*\*/g, '$1')

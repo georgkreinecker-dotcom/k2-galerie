@@ -622,6 +622,13 @@ function FamilieRolleLeisteKompakt({ onOeffnen }: { onOeffnen: () => void }) {
       ? `${K2_FAMILIE_ROLLEN_LABELS.inhaber} · ${K2_FAMILIE_ROLLEN_LABELS[eff]}`
       : K2_FAMILIE_ROLLEN_LABELS[eff]
   const famName = getFamilieTenantDisplayName(currentTenantId, 'Standard')
+  /** Name der Person „Du“ – damit in der kompakten Leiste klar ist, wer gerade arbeitet. */
+  const duNameAnzeige = useMemo(() => {
+    const ichId = loadEinstellungen(currentTenantId).ichBinPersonId?.trim()
+    if (!ichId) return ''
+    const name = loadPersonen(currentTenantId).find((p) => p.id === ichId)?.name?.trim()
+    return name || ''
+  }, [currentTenantId, familieStorageRevision])
   return (
     <div
       key={familieStorageRevision}
@@ -650,6 +657,13 @@ function FamilieRolleLeisteKompakt({ onOeffnen }: { onOeffnen: () => void }) {
         ) : (
           <>
             <strong style={{ fontWeight: 700 }}>{famName}</strong>
+            {duNameAnzeige ? (
+              <>
+                <span style={{ color: t.muted }}> · </span>
+                <span style={{ color: t.muted }}>Du: </span>
+                <strong style={{ fontWeight: 700 }}>{duNameAnzeige}</strong>
+              </>
+            ) : null}
             <span style={{ color: t.muted }}> · </span>
             <span style={{ color: t.muted }}>Rolle: </span>
             {kurz}

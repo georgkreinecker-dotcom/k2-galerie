@@ -108,6 +108,7 @@ export function FamilieEinladungQuerySync() {
     ): Promise<string | null> => {
       const mNorm = trimMitgliedsNummerEingabe(mParam ?? '')
       if (!mNorm) return null
+      const preferInhaber = loadEinstellungen(tenantId).inhaberPersonId?.trim()
       /** Mobil / schwaches Netz: mehrere Versuche; Lite = wenig Daten pro Versuch. */
       const delaysMs = [0, 300, 700, 1400, 2400]
       for (let i = 0; i < delaysMs.length; i++) {
@@ -115,14 +116,14 @@ export function FamilieEinladungQuerySync() {
         if (cancelled) return null
         const data = await fetchFamilieIdentityLite(tenantId)
         if (data.loadMeta.ok) {
-          const pid = findPersonIdByMitgliedsNummer(data.personen, mNorm)
+          const pid = findPersonIdByMitgliedsNummer(data.personen, mNorm, preferInhaber)
           if (pid) {
             await loadFamilieFromSupabase(tenantId)
             bumpFamilieStorageRevision()
             if (persistIchBinNachCode(tenantId, pid)) return pid
           }
         }
-        const pidLocal = findPersonIdByMitgliedsNummer(loadPersonen(tenantId), mNorm)
+        const pidLocal = findPersonIdByMitgliedsNummer(loadPersonen(tenantId), mNorm, preferInhaber)
         if (pidLocal) {
           await loadFamilieFromSupabase(tenantId)
           bumpFamilieStorageRevision()
@@ -132,8 +133,8 @@ export function FamilieEinladungQuerySync() {
       if (cancelled) return null
       const full = await loadFamilieFromSupabase(tenantId)
       bumpFamilieStorageRevision()
-      let pid = findPersonIdByMitgliedsNummer(full.personen, mNorm)
-      if (!pid) pid = findPersonIdByMitgliedsNummer(loadPersonen(tenantId), mNorm)
+      let pid = findPersonIdByMitgliedsNummer(full.personen, mNorm, preferInhaber)
+      if (!pid) pid = findPersonIdByMitgliedsNummer(loadPersonen(tenantId), mNorm, preferInhaber)
       if (pid && persistIchBinNachCode(tenantId, pid)) return pid
       return null
     }

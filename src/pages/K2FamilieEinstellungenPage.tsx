@@ -16,7 +16,7 @@ import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
 import { loadEinstellungen, loadPersonen, saveEinstellungen, K2_FAMILIE_SESSION_UPDATED } from '../utils/familieStorage'
 import { mergeQuelleFamilieInZielFamilie } from '../utils/familieMergeFamilien'
-import { buildMitgliederInformationsText } from '../utils/familieMitgliedInfoBriefText'
+import { buildMitgliederInformationsText, vornameAusAnzeigeName } from '../utils/familieMitgliedInfoBriefText'
 import type { K2FamilieInhaberArbeitsansicht, K2FamilieRolle } from '../types/k2FamilieRollen'
 import {
   K2_FAMILIE_INHABER_ANSICHT,
@@ -109,7 +109,7 @@ export default function K2FamilieEinstellungenPage() {
       tenantId: currentTenantId,
       familienZ: (e.mitgliedsNummerAdmin ?? '').trim(),
       familyDisplayName: (e.familyDisplayName ?? '').trim(),
-      signaturName: ich?.name?.trim() ?? '',
+      signaturName: vornameAusAnzeigeName(ich?.name?.trim() ?? ''),
     })
   }, [currentTenantId, einstTick])
   const [infoBriefKopiert, setInfoBriefKopiert] = useState(false)

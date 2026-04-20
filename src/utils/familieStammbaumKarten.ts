@@ -11,6 +11,7 @@ import type { K2FamiliePerson } from '../types/k2Familie'
 import {
   getBeziehungenFromKarten,
   getFamilienzweigPersonen,
+  getGeschwisterAnzeigeListe,
   istDirektesKindDerWurzelLautKarten,
 } from './familieBeziehungen'
 
@@ -634,16 +635,18 @@ export function buildGrossfamilieStammbaumSektionen(
   if (!ich || ich.parentIds.length < 2) return null
 
   const byId = byIdMap(personen)
-  const elternKeyStrict = [...ich.parentIds].sort().join('|')
-  const multiElternteil = getElternteilMitMehrerenEhen(ich, personen)
   const elternPersonen = buildElternPersonenListe(ich, byId)
 
-  const geschwister = personen
-    .filter((p) => {
-      if (p.parentIds.length < 2) return false
-      if (multiElternteil) return p.parentIds.includes(multiElternteil)
-      return [...p.parentIds].sort().join('|') === elternKeyStrict
-    })
+  /**
+   * Dieselbe Geschwister-Menge wie in der Anzeige / Tooltips (gemeinsames Elternteil laut Karte,
+   * optional siblingIds). **Nicht** nur Personen mit zwei Einträgen in parentIds – sonst fehlen
+   * echte Geschwister, wenn auf einer Karte nur ein Elternteil steht (Großfamilie: zu wenige Äste).
+   */
+  const andereGeschwister = getGeschwisterAnzeigeListe(personen, ichBinPersonId)
+  const geschwisterSetIds = new Set<string>([ichBinPersonId, ...andereGeschwister.map((p) => p.id)])
+  const geschwister = [...geschwisterSetIds]
+    .map((id) => byId.get(id))
+    .filter((p): p is K2FamiliePerson => p != null)
     .sort((a, b) => compareGeschwisterNachKarten(a, b, elternPersonen))
 
   /** Gleiche Logik wie Sortierung/Farben: Kinder über parentIds, Partner ohne Eltern-Kette, … */

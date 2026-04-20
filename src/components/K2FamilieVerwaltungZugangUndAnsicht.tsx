@@ -665,6 +665,10 @@ export default function K2FamilieVerwaltungZugangUndAnsicht() {
           </div>
           <div style={{ textAlign: 'left', maxWidth: 200 }}>
             <div style={{ marginBottom: 6, fontSize: '0.82rem', color: a.muted }}>QR Familie (Einstieg)</div>
+            <p style={{ margin: '0 0 0.4rem', fontSize: '0.76rem', color: a.muted, lineHeight: 1.35 }}>
+              Nur Familie und Zugangsnummer — <strong style={{ color: a.text }}>ohne</strong> persönlichen Mitgliedscode. Mit deiner ID:{' '}
+              <strong style={{ color: a.text }}>persönlicher QR</strong> unten oder Code auf Meine Familie.
+            </p>
             {qrDataUrl ? (
               <div>
                 <img

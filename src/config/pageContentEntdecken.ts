@@ -42,6 +42,9 @@ const DEFAULTS: PageContentEntdecken = {
   ctaSub: 'Kostenlos · Keine Anmeldung · 1 Minute',
 }
 
+/** Ein Quelltext für Galerie/ök2-Fallback (Import-Bindung – nicht nur intern in DEFAULTS). */
+export const DEFAULT_HERO_RUNDGANG_INVITE = DEFAULTS.heroRundgangInvite as string
+
 export function getPageContentEntdecken(): PageContentEntdecken {
   try {
     if (typeof window === 'undefined') return DEFAULTS

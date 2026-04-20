@@ -91,6 +91,22 @@ describe('familieStammbaumKarten', () => {
     expect(getBranchKey(b)).toBe(getBranchKey(a))
   })
 
+  it('Großfamilie: Geschwister mit nur einem Elternteil auf der Karte zählt als eigener Familienzweig', () => {
+    const m = p('m', 'Mutter', ['gm', 'gv'])
+    const f = p('f', 'Vater', ['gm', 'gv'])
+    const georg = p('georg', 'Georg', ['m', 'f'], { pos: 1 })
+    const thomas = p('thomas', 'Thomas', ['m'], { pos: 2 })
+    const personen = [m, f, georg, thomas]
+
+    const sek = buildGrossfamilieStammbaumSektionen(personen, 'georg')
+    expect(sek).not.toBeNull()
+    const klein = sek!.filter((s) => s.key.startsWith('kleinfamilie-'))
+    expect(klein.length).toBe(2)
+    const keys = new Set(klein.map((s) => s.key))
+    expect(keys.has('kleinfamilie-georg')).toBe(true)
+    expect(keys.has('kleinfamilie-thomas')).toBe(true)
+  })
+
   it('Großfamilie: je Geschwister ein eigener Familienzweig-Block (z. B. viele Geschwister)', () => {
     const m = p('m', 'Mutter', ['gm', 'gv'])
     const f = p('f', 'Vater', ['gm', 'gv'])

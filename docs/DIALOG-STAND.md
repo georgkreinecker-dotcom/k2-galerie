@@ -1,7 +1,15 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Nächste Aufgabe von Georg.  
-**Einordnung:** Texte-Schreibtisch → **Einladung Geschwister** nutzt jetzt `?t=<bevorzugte Familie>` (echte Familie vor Demo `huber`).
+**Einordnung:** K2 Familie – Stand auf GitHub; weiter wie von Georg gewünscht.
+
+---
+
+**Letzter Stand:** 20.04.26 – **K2 Familie Bundle (Push):** kompakte Rolle-Leiste **„Du: {Name}“** (`ichBinPersonId`); **Einladung `m`:** `preferInhaber` wie QuerySync, Home Pending/Anmeldung; **kein** `clearFamilieEinladungPending` bei `!loadMeta.ok`; Verwaltung QR-Hinweis; **Stammbaum/Großfamilie** + Tests; **Mitgliedsnummer**/Brief-Utils; Geschwister-Briefe/Einstellungen/Entdecken-Kurztext; **`npm run build`** grün. **Commit:** `0e855d73` ✅ GitHub
+
+---
+
+**Letzter Stand:** 20.04.26 – **K2 Familie: Großfamilie – alle Geschwister-Äste wie in der Anzeige** – `buildGrossfamilieStammbaumSektionen` nutzt `getGeschwisterAnzeigeListe` + „Du“ statt nur `parentIds.length >= 2` (fehlende zweite Eltern-Zeile brach die Anzahl Familienzweige). Test: ein Elternteil auf Geschwister-Karte. **Commit:** im Bundle oben
 
 ---
 

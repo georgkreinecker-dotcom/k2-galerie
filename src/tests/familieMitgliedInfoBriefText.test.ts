@@ -3,9 +3,17 @@ import {
   buildFamilieEinladungsUrlKurz,
   buildMitgliederInformationsText,
   MUSTERTEXT_MITGLIEDER_INFORM_KERN,
+  vornameAusAnzeigeName,
 } from '../utils/familieMitgliedInfoBriefText'
 
 describe('familieMitgliedInfoBriefText', () => {
+  it('vornameAusAnzeigeName: nur Vorname für Gruß', () => {
+    expect(vornameAusAnzeigeName('Georg Kreinecker')).toBe('Georg')
+    expect(vornameAusAnzeigeName('Kreinecker, Georg')).toBe('Georg')
+    expect(vornameAusAnzeigeName('Du')).toBe('Du')
+    expect(vornameAusAnzeigeName('')).toBe('')
+  })
+
   it('Mustertext enthält alle Platzhalter', () => {
     expect(MUSTERTEXT_MITGLIEDER_INFORM_KERN).toContain('{{FAMILIENNAME}}')
     expect(MUSTERTEXT_MITGLIEDER_INFORM_KERN).toContain('{{FAMILIEN_LINK}}')
