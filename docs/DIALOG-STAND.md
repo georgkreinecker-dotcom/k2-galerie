@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Nächste Aufgabe von Georg.  
-**Einordnung:** Testuser-Formular: **Server-Resend** wie Testpilot; Vercel `RESEND_API_KEY` / `RESEND_FROM` (optional `TESTUSER_ANMELDUNG_TO_EMAIL`).
+**Einordnung:** Texte-Schreibtisch → **Einladung Geschwister** nutzt jetzt `?t=<bevorzugte Familie>` (echte Familie vor Demo `huber`).
+
+---
+
+**Letzter Stand:** 20.04.26 – **Texte-Schreibtisch: Karte „Einladung Geschwister“ → eigene Familie statt Muster huber** – `familieTenantCookieBackup.ts`: `loadFamilieTenantList`, `getApfPreferredFamilieTenantId`; `FamilieTenantContext` nutzt dieselbe Listen-Logik; `TexteSchreibtischPage` `resolveZettelOeffnenHref` + Drag-Payload mit `?t=` für Zettel `einladung-geschwister-k2-familie`. **Commit:** `f01e331c` ✅ GitHub
 
 ---
 
