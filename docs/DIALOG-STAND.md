@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 20.04.26 – **K2 Familie Home:** Ampel „Erste Schritte – zum Start“ **ausblenden**, wenn **Du + Zugangsnummer + Startpunkt** erledigt (`setupAllesErledigt`). **`npm run tsc --noEmit` grün.** **Commit:** `COMMIT_PLACEHOLDER` ✅ GitHub
+**Letzter Stand:** 20.04.26 – **K2 Familie Home:** Ampel „Erste Schritte – zum Start“ **ausblenden**, wenn **Du + Zugangsnummer + Startpunkt** erledigt (`setupAllesErledigt`). **`npm run tsc --noEmit` grün.** **Commit:** `7ca20702` ✅ GitHub
 
 ---
 
