@@ -11,6 +11,7 @@ import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTE
 import { buildVitaDocumentHtml } from '../utils/vitaDocument'
 import { getGalerieImages, getPageContentGalerie, mergePageContentGalerieFromServer } from '../config/pageContentGalerie'
 import { GalerieSocialLinks } from '../components/GalerieSocialLinks'
+import { AppVerlassenFooterLink } from '../components/AppVerlassenFooterLink'
 import { Oek2GalerieLeitfadenModal } from '../components/Oek2GalerieLeitfadenModal'
 import { getPageTexts, cleanK2PageTextsFromVk2, type GaleriePageTexts } from '../config/pageTexts'
 import { getPageContentEntdecken, DEFAULT_HERO_RUNDGANG_INVITE } from '../config/pageContentEntdecken'
@@ -4317,6 +4318,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                 <p style={{ marginTop: '0.35rem', marginBottom: 0, fontSize: 'clamp(0.72rem, 1.6vw, 0.82rem)', color: theme.muted, opacity: 0.95 }}>
                   {PRODUCT_URHEBER_ANWENDUNG}
                 </p>
+                <AppVerlassenFooterLink ziel="entdecken" accentColor={theme.accent} mutedColor={theme.muted} />
             </div>
           </section>
           )}

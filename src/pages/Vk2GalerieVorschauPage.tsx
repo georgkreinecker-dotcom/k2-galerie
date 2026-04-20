@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { initVk2DemoStammdatenIfEmpty, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, type Vk2Stammdaten, type Vk2Mitglied } from '../config/tenantConfig'
 import { PROJECT_ROUTES, ENTDECKEN_ROUTE } from '../config/navigation'
+import { AppVerlassenFooterLink } from '../components/AppVerlassenFooterLink'
 import { getPageContentGalerie, getVk2SafeDisplayImageUrl } from '../config/pageContentGalerie'
 import { getPageTexts } from '../config/pageTexts'
 import '../App.css'
@@ -346,6 +347,7 @@ const Vk2GalerieVorschauPage: React.FC = () => {
         <div style={{ color: C.textLight, fontSize: '0.78rem', marginBottom: '0.5rem' }}>© {new Date().getFullYear()} {vereinsName} · Powered by K2 Galerie</div>
         <div style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: C.textMid, letterSpacing: '0.01em' }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</div>
         <div style={{ marginTop: '0.35rem', fontSize: 'clamp(0.72rem, 1.6vw, 0.82rem)', color: C.textMid, opacity: 0.95 }}>{PRODUCT_URHEBER_ANWENDUNG}</div>
+        <AppVerlassenFooterLink ziel="entdecken" accentColor={C.accent} mutedColor={C.textMid} />
       </footer>
 
     </div>
