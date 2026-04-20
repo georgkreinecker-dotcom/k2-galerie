@@ -397,7 +397,7 @@ export default function K2FamilieHomePage() {
       if (result.personen.length === 0) {
         setRegistrierungHinweis(
           (result.loadMeta.serverPersonenCount ?? 0) === 0
-            ? 'In der Cloud sind für diese Familie noch keine Personen. Prüfen: dieselbe Familie wie am Mac (QR/URL)? Inhaber:in am Mac Personen angelegt und mit der Cloud abgeglichen?'
+            ? 'In der Cloud sind für diese Familie noch keine Personen. Prüfen: dieselbe Familie wie am Mac (QR/URL, gleiche Familie in der Leiste)? Inhaber:in am Mac: Personen anlegen oder eine Person öffnen und speichern – beim Speichern gehen die Daten in die Cloud. Ohne das bleibt der Server leer.'
             : 'Die Daten konnten nach dem Laden nicht im Gerätespeicher abgelegt werden (z. B. Speicher voll). Seite kurz neu öffnen oder Speicherplatz freigeben, dann „Daten vom Server laden“ erneut tippen.',
         )
       } else {
@@ -431,7 +431,7 @@ export default function K2FamilieHomePage() {
       if (personenAktuell.length === 0) {
         setRegistrierungHinweis(
           (result.loadMeta.serverPersonenCount ?? 0) === 0
-            ? 'Es sind noch keine Personen für diese Familie da. Prüfen: gleiche Familie wie am Mac (QR/URL)? Inhaber:in am Mac Personen angelegt und mit der Cloud abgeglichen?'
+            ? 'Es sind noch keine Personen für diese Familie da. Prüfen: gleiche Familie wie am Mac (QR/URL)? Inhaber:in am Mac: Personen speichern (damit die Cloud gefüllt wird), dann hier erneut „Daten vom Server laden“.'
             : 'Die Personenliste konnte auf diesem Gerät nicht gespeichert werden (z. B. Speicher voll). Seite neu öffnen oder Speicher freigeben, dann erneut „Bestätigen“.',
         )
         return

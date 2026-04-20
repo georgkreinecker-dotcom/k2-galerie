@@ -11,6 +11,13 @@ export const K2_FAMILIE_EINLADUNG_PENDING_EVENT = 'k2-familie-einladung-pending'
 
 const MAX_AGE_MS = 15 * 60 * 1000
 
+/**
+ * Familien-QR „kompakte Nur-Zugang-Ansicht“: nur UX nach URL-Strip (Session).
+ * Länger als Einladungs-Pending – sonst wirkt der Einstieg nach kurzer Pause „kaputt“,
+ * obwohl ein erneuter Scan dieselbe URL öffnet.
+ */
+const MAX_AGE_MS_FAMILIEN_QR_KOMPAKT = 7 * 24 * 60 * 60 * 1000
+
 export type FamilieEinladungPending = {
   t?: string
   z?: string
@@ -113,7 +120,7 @@ export function isFamilieFamilienQrKompaktSession(tenantId: string): boolean {
     if (!raw) return false
     const p = JSON.parse(raw) as FamilieFamilienQrKompakt
     if (!p.t || p.t !== tid) return false
-    if (!p.createdAt || Date.now() - p.createdAt > MAX_AGE_MS) {
+    if (!p.createdAt || Date.now() - p.createdAt > MAX_AGE_MS_FAMILIEN_QR_KOMPAKT) {
       sessionStorage.removeItem(K2_FAMILIE_FAMILIE_QR_KOMPAKT_KEY)
       return false
     }

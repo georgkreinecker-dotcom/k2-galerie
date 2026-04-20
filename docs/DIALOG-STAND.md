@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Nächste Aufgabe von Georg.  
-**Einordnung:** Footer „App verlassen“ = keine K2-Zielseite mehr; neutrale Browser-Leerseite.
+**Einordnung:** K2 Familie QR/Cloud: Familien-QR-Kompakt-Session 7 Tage; Hinweise wenn Cloud leer (Speichern am Mac).
+
+---
+
+**Letzter Stand:** 20.04.26 – **K2 Familie: QR-Sitzung + Cloud-Hinweis** – `familieEinladungPending.ts`: **Familien-QR-Kompakt** gültig **7 Tage** (vorher 15 Min, wirkte wie „geht nicht mehr“). `K2FamilieHomePage.tsx`: klarere Texte wenn **Cloud ohne Personen** (Inhaber:in speichert → Push). **`npm run build:vercel` grün.** **Commit:** (nach Push)
 
 ---
 
