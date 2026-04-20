@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 20.04.26 – **K2 Familie Bundle (Push):** kompakte Rolle-Leiste **„Du: {Name}“** (`ichBinPersonId`); **Einladung `m`:** `preferInhaber` wie QuerySync, Home Pending/Anmeldung; **kein** `clearFamilieEinladungPending` bei `!loadMeta.ok`; Verwaltung QR-Hinweis; **Stammbaum/Großfamilie** + Tests; **Mitgliedsnummer**/Brief-Utils; Geschwister-Briefe/Einstellungen/Entdecken-Kurztext; **`npm run build`** grün. **Commit:** `0e855d73` ✅ GitHub
+**Letzter Stand:** 20.04.26 – **K2 Familie Bundle (Push):** kompakte Rolle-Leiste **„Du: {Name}“** (`ichBinPersonId`); **Einladung `m`:** `preferInhaber` wie QuerySync, Home Pending/Anmeldung; **kein** `clearFamilieEinladungPending` bei `!loadMeta.ok`; Verwaltung QR-Hinweis; **Stammbaum/Großfamilie** + Tests; **Mitgliedsnummer**/Brief-Utils; Geschwister-Briefe/Einstellungen/Entdecken-Kurztext; **`npm run build`** grün. **Commit:** `38734b08` ✅ GitHub
 
 ---
 
