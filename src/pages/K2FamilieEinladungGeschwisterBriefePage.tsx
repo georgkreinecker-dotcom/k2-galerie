@@ -12,7 +12,7 @@ import { PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { adminTheme } from '../config/theme'
 import { APP_BASE_URL_SHAREABLE } from '../config/externalUrls'
-import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import { buildQrUrlWithVersionOnly, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
 import { loadEinstellungen, loadPersonen } from '../utils/familieStorage'
@@ -45,7 +45,7 @@ function buildShortEinladungsUrlForPrint(
   return base.toString()
 }
 
-/** Wie K2FamilieMitgliederCodesPage: Scan/Öffnen mit Server-Stand. */
+/** Wie K2FamilieMitgliederCodesPage: Scan/Öffnen mit Server-Stand — kurze QR-URL (nur v=), besser scannbar. */
 function buildPersonalEinladungsUrlScan(
   tenantId: string,
   familienZ: string,
@@ -56,7 +56,7 @@ function buildPersonalEinladungsUrlScan(
   base.searchParams.set('t', tenantId)
   base.searchParams.set('z', familienZ)
   base.searchParams.set('m', mitgliedsNummer)
-  return buildQrUrlWithBust(base.toString(), versionTs)
+  return buildQrUrlWithVersionOnly(base.toString(), versionTs)
 }
 
 /** Familien-Einstieg nur t+z (optional fn) — wie K2FamilieVerwaltungZugangUndAnsicht. */
@@ -74,7 +74,7 @@ function buildFamilieEinladungsUrlCanonical(
   return base.toString()
 }
 
-/** Familien-Link zum Scannen: kanonische URL + Server-Stand (wie Mitglieder & Codes). */
+/** Familien-Link zum Scannen: kanonische URL + Server-Stand — kurze QR-URL (nur v=). */
 function buildFamilieEinladungsUrlScan(
   tenantId: string,
   familienZ: string,
@@ -83,7 +83,7 @@ function buildFamilieEinladungsUrlScan(
 ): string {
   const canonical = buildFamilieEinladungsUrlCanonical(tenantId, familienZ, familyDisplayName)
   if (!canonical) return ''
-  return buildQrUrlWithBust(canonical, versionTs)
+  return buildQrUrlWithVersionOnly(canonical, versionTs)
 }
 
 function EinladungQrImg({ url, size = 112 }: { url: string; size?: number }) {
@@ -262,7 +262,14 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
           .k2-fam-einlad-qr { page-break-inside: avoid; max-width: 28mm; height: auto !important; }
         }
         @media screen {
-          .k2-fam-einlad-url-print { display: none !important; }
+          .k2-fam-einlad-url-print {
+            display: block !important;
+            font-size: 0.72rem;
+            word-break: break-all;
+            color: #4a4035 !important;
+            margin-top: 0.25rem;
+            margin-bottom: 0.35rem;
+          }
           /* Brief: Lesekontrast wie Papier — dunkler Text auf hellem Grund (nicht dunkel auf Galerie-Gradient) */
           .k2-fam-einlad-brief-seite {
             background: #fffefb;
@@ -322,7 +329,8 @@ export default function K2FamilieEinladungGeschwisterBriefePage() {
           </Link>
           . Im Brief: <strong style={{ color: vp.text }}>Familien-Kennung</strong>,{' '}
           <strong style={{ color: vp.text }}>Familien-Link &amp; QR</strong> (Einstieg für alle) und pro Person{' '}
-          <strong style={{ color: vp.text }}>Link &amp; QR</strong> (mit Server-Stand zum Scannen). Pro Brief ein Geschwister-Zweig; vertraulich drucken.
+          <strong style={{ color: vp.text }}>Link &amp; QR</strong> (mit Server-Stand zum Scannen). Unter jedem QR steht der{' '}
+          <strong style={{ color: vp.text }}>kurze Link</strong> zum Einfügen in die Adresszeile am PC — gleicher Einstieg wie beim Scannen. Pro Brief ein Geschwister-Zweig; vertraulich drucken.
         </p>
 
         <div className="k2-fam-einlad-brief-screenbar k2-fam-einlad-no-print">
@@ -500,7 +508,10 @@ function EinladungsBriefSeite({
             <span className="k2-fam-einlad-url-print" style={{ fontFamily: 'ui-monospace, monospace', fontSize: '8pt', color: '#1a1816', display: 'block', marginBottom: '0.35rem' }}>
               {familienUrlKurz}
             </span>
-            <EinladungQrImg url={familienScanUrl} size={112} />
+            <p style={{ margin: '0 0 0.45rem', fontSize: '9pt', color: '#5c5650', lineHeight: 1.45 }}>
+              <strong>Ohne Kamera:</strong> den kurzen Link in die Adresszeile am PC einfügen — gleicher Einstieg wie beim Scannen.
+            </p>
+            <EinladungQrImg url={familienScanUrl} size={128} />
           </div>
         ) : null}
       </div>
@@ -556,10 +567,13 @@ function EinladungsBriefSeite({
                           >
                             Öffnen
                           </a>
-                          <span className="k2-fam-einlad-url-print" style={{ fontFamily: 'ui-monospace, monospace', color: '#1a1816', marginBottom: '0.35rem', display: 'block' }}>
+                          <span className="k2-fam-einlad-url-print" style={{ fontFamily: 'ui-monospace, monospace', color: '#1a1816', marginBottom: '0.25rem', display: 'block' }}>
                             {urlKurz}
                           </span>
-                          <EinladungQrImg url={urlScan} size={96} />
+                          <p style={{ margin: '0 0 0.35rem', fontSize: '8.5pt', color: '#5c5650', lineHeight: 1.4 }}>
+                            <strong>Ohne Kamera:</strong> Link oben in die Adresszeile am PC.
+                          </p>
+                          <EinladungQrImg url={urlScan} size={140} />
                         </>
                       ) : (
                         '—'

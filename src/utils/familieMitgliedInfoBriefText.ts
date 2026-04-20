@@ -46,6 +46,8 @@ ich möchte euch zur K2 Familie einladen – unser geschützter, privater Raum f
 **Einstieg für alle** (Link zum Weitergeben – öffnen oder in den Browser einfügen):
 {{FAMILIEN_LINK}}
 
+**Ohne Smartphone:** denselben Link in die Adresszeile am PC einfügen — gleicher Einstieg wie beim QR-Scannen.
+
 Persönliche Zugänge mit Namen, Code und langem Link zum Scannen findet ihr unter „Mitglieder & Codes“ in den Einstellungen der K2 Familie:
 {{MITGLIEDER_CODES_LINK}}
 
