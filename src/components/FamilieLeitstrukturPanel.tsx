@@ -8,10 +8,44 @@ import { PLATFORM_ROUTES } from '../config/navigation'
 import { getK2FamilieLeitGroups, isFamilieNavSectionActive } from '../config/k2FamilieStructure'
 
 const LS_KEY = 'k2-familie-leitstruktur-minimized'
+const MAPPEN_OPEN_KEY = 'k2-familie-leitstruktur-mappen-open'
 const PANEL_WIDTH = 304
 
-const ACCENT = '#5eead4'
+const ACCENT = 'rgba(45, 212, 191, 0.95)'
 const MUTED = 'rgba(148, 163, 184, 0.95)'
+
+/** Stabile IDs für einklappbare Mappen (wie Smart Panel `MAPPEN`) */
+const CHAPTER_TO_GROUP_ID: Record<string, string> = {
+  'Start & Orientierung': 'fam-start',
+  'Stammbaum & Struktur': 'fam-stammbaum',
+  'Momente & Zeit': 'fam-momente',
+  'Lesen & Außenauftritt': 'fam-lesen',
+  'Prospekte & Präsentationsmappen': 'fam-prospekte',
+  'K2 Familien Marketing': 'fam-marketing',
+  'Entwicklung & Sicherheit': 'fam-entwicklung',
+}
+
+function groupIdForChapter(title: string, index: number): string {
+  return CHAPTER_TO_GROUP_ID[title] ?? `fam-gruppe-${index}`
+}
+
+function loadMappenOpen(): Record<string, boolean> {
+  try {
+    const v = localStorage.getItem(MAPPEN_OPEN_KEY)
+    if (v) return JSON.parse(v) as Record<string, boolean>
+  } catch {
+    /* ignore */
+  }
+  return {}
+}
+
+function saveMappenOpen(open: Record<string, boolean>) {
+  try {
+    localStorage.setItem(MAPPEN_OPEN_KEY, JSON.stringify(open))
+  } catch {
+    /* ignore */
+  }
+}
 
 export default function FamilieLeitstrukturPanel() {
   const location = useLocation()
@@ -30,6 +64,42 @@ export default function FamilieLeitstrukturPanel() {
       /* ignore */
     }
   }, [minimized])
+
+  const groups = getK2FamilieLeitGroups()
+  const [mappenOpen, setMappenOpen] = useState<Record<string, boolean>>(loadMappenOpen)
+
+  const toggleMappe = (id: string) => {
+    setMappenOpen((prev) => {
+      const wasOpen = prev[id] !== false
+      const next = { ...prev, [id]: !wasOpen }
+      saveMappenOpen(next)
+      return next
+    })
+  }
+
+  /** Mappe mit aktivem Link automatisch aufklappen (Navigation in eingeklappter Mappe) */
+  useEffect(() => {
+    const gruppen = getK2FamilieLeitGroups()
+    const toOpen: Record<string, boolean> = {}
+    gruppen.forEach((g, i) => {
+      const gid = groupIdForChapter(g.chapterTitle, i)
+      const hasActive = g.sections.some((s) => isFamilieNavSectionActive(location.pathname, s.to))
+      if (hasActive) toOpen[gid] = true
+    })
+    if (Object.keys(toOpen).length === 0) return
+    setMappenOpen((prev) => {
+      let changed = false
+      const next = { ...prev }
+      for (const [k, v] of Object.entries(toOpen)) {
+        if (next[k] === false && v) {
+          next[k] = true
+          changed = true
+        }
+      }
+      if (changed) saveMappenOpen(next)
+      return changed ? next : prev
+    })
+  }, [location.pathname])
 
   if (minimized) {
     return (
@@ -105,7 +175,7 @@ export default function FamilieLeitstrukturPanel() {
           </button>
         </div>
         <p style={{ margin: '0 0 0.85rem', fontSize: '0.78rem', color: MUTED, lineHeight: 1.45 }}>
-          Orientierung wie bei Marketing ök2: Bereiche gruppiert, ein Klick zum Ziel.
+          Wie im Smart Panel: Mappen einklappbar, ein Klick zur Überschrift klappt um.
         </p>
         <Link
           to={PLATFORM_ROUTES.projects}
@@ -124,47 +194,88 @@ export default function FamilieLeitstrukturPanel() {
         >
           ← Projekte
         </Link>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-          {getK2FamilieLeitGroups().map((group) => (
-            <div key={group.chapterTitle}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+          {groups.map((group, groupIndex) => {
+            const mapId = groupIdForChapter(group.chapterTitle, groupIndex)
+            const isOpen = mappenOpen[mapId] !== false
+            const groupHasActive = group.sections.some((s) =>
+              isFamilieNavSectionActive(location.pathname, s.to)
+            )
+            return (
               <div
+                key={group.chapterTitle}
                 style={{
-                  fontSize: '0.7rem',
-                  fontWeight: 700,
-                  color: MUTED,
-                  marginBottom: '0.3rem',
-                  paddingLeft: '0.2rem',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.04em',
+                  borderBottom: '1px solid rgba(45, 212, 191, 0.12)',
+                  paddingBottom: '0.5rem',
                 }}
               >
-                {group.chapterTitle}
+                <button
+                  type="button"
+                  onClick={() => toggleMappe(mapId)}
+                  aria-expanded={isOpen}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.45rem',
+                    padding: '0.5rem 0.55rem',
+                    background: groupHasActive ? 'rgba(45, 212, 191, 0.12)' : 'rgba(45, 212, 191, 0.05)',
+                    border: `1px solid ${groupHasActive ? 'rgba(45, 212, 191, 0.35)' : 'rgba(45, 212, 191, 0.18)'}`,
+                    borderRadius: 8,
+                    color: ACCENT,
+                    fontWeight: 600,
+                    fontSize: '0.72rem',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    textAlign: 'left',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                  }}
+                >
+                  <span style={{ fontSize: '0.95rem', lineHeight: 1 }} aria-hidden>
+                    📁
+                  </span>
+                  <span style={{ flex: 1, lineHeight: 1.35 }}>{group.chapterTitle}</span>
+                  <span style={{ fontSize: '0.75rem', opacity: 0.85 }} aria-hidden>
+                    {isOpen ? '▼' : '▶'}
+                  </span>
+                </button>
+                {isOpen && (
+                  <div
+                    style={{
+                      marginTop: '0.4rem',
+                      paddingLeft: '0.15rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.28rem',
+                    }}
+                  >
+                    {group.sections.map(({ id, label, to }) => {
+                      const active = isFamilieNavSectionActive(location.pathname, to)
+                      return (
+                        <Link
+                          key={id}
+                          to={to}
+                          style={{
+                            padding: '0.42rem 0.55rem',
+                            borderRadius: 6,
+                            fontSize: '0.84rem',
+                            textDecoration: 'none',
+                            fontWeight: active ? 700 : 500,
+                            color: active ? '#0f172a' : 'rgba(240, 253, 250, 0.92)',
+                            background: active ? 'rgba(45, 212, 191, 0.45)' : 'rgba(45, 212, 191, 0.07)',
+                            border: `1px solid ${active ? 'rgba(45, 212, 191, 0.55)' : 'rgba(45, 212, 191, 0.15)'}`,
+                          }}
+                        >
+                          {label}
+                        </Link>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.28rem' }}>
-                {group.sections.map(({ id, label, to }) => {
-                  const active = isFamilieNavSectionActive(location.pathname, to)
-                  return (
-                    <Link
-                      key={id}
-                      to={to}
-                      style={{
-                        padding: '0.42rem 0.55rem',
-                        borderRadius: 6,
-                        fontSize: '0.84rem',
-                        textDecoration: 'none',
-                        fontWeight: active ? 700 : 500,
-                        color: active ? '#0f172a' : 'rgba(240, 253, 250, 0.92)',
-                        background: active ? 'rgba(45, 212, 191, 0.45)' : 'rgba(45, 212, 191, 0.07)',
-                        border: `1px solid ${active ? 'rgba(45, 212, 191, 0.55)' : 'rgba(45, 212, 191, 0.15)'}`,
-                      }}
-                    >
-                      {label}
-                    </Link>
-                  )
-                })}
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </aside>
