@@ -16,7 +16,11 @@ import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
 import { loadEinstellungen, loadPersonen, saveEinstellungen, K2_FAMILIE_SESSION_UPDATED } from '../utils/familieStorage'
 import { mergeQuelleFamilieInZielFamilie } from '../utils/familieMergeFamilien'
-import { buildMitgliederInformationsText, vornameAusAnzeigeName } from '../utils/familieMitgliedInfoBriefText'
+import {
+  BENUTZERHANDBUCH_DOC_K2_FAMILIE_ROLLEN_MODELL,
+  buildMitgliederInformationsText,
+  vornameAusAnzeigeName,
+} from '../utils/familieMitgliedInfoBriefText'
 import type { K2FamilieInhaberArbeitsansicht, K2FamilieRolle } from '../types/k2FamilieRollen'
 import {
   K2_FAMILIE_INHABER_ANSICHT,
@@ -167,6 +171,18 @@ export default function K2FamilieEinstellungenPage() {
     }
   }
 
+  const handleInhaberEinmaligSelbstFestlegen = () => {
+    if (!ichId || designatedId) return
+    const ok = window.confirm(
+      'Nur die Person, die die Familie verwaltet und die Lizenz trägt, soll sich hier als Inhaber:in festlegen.\n\n' +
+        'Wenn du das bist: OK.\n\n' +
+        'Wenn eine andere Person die Inhaber:in ist: Abbrechen — die Person muss das einmalig auf ihrem Gerät tun, damit die Rechte für alle stimmen.',
+    )
+    if (!ok) return
+    const e0 = loadEinstellungen(currentTenantId)
+    if (saveEinstellungen(currentTenantId, { ...e0, inhaberPersonId: ichId })) setEinstTick((t) => t + 1)
+  }
+
   const handleInhaberschaftUebertragen = () => {
     if (!transferToId || transferToId === designatedId) return
     const name = personen.find((p) => p.id === transferToId)?.name?.trim() || transferToId
@@ -312,6 +328,35 @@ export default function K2FamilieEinstellungenPage() {
                 </option>
               ))}
             </select>
+          </div>
+        )}
+
+        {!designatedId && ichId && !isLeser && (
+          <div style={{ ...card, borderLeftColor: '#b45309' }}>
+            <h2
+              style={{
+                margin: '0 0 0.45rem',
+                fontSize: '1.05rem',
+                fontWeight: 700,
+                color: a.text,
+                fontFamily: a.fontHeading,
+              }}
+            >
+              Inhaber:in familienweit festlegen
+            </h2>
+            <p style={{ margin: '0 0 0.65rem', fontSize: '0.92rem', color: a.muted, lineHeight: 1.55 }}>
+              Es gibt nur <strong style={{ color: a.text }}>eine</strong> Inhaber:in (Lizenz/Verwaltung). Alle anderen sind Bearbeiter:innen oder Leser:innen — wenn hier keine Inhaber:in feststeht, kann die App das nicht zuverlässig unterscheiden.
+            </p>
+            <p style={{ margin: '0 0 0.75rem', fontSize: '0.88rem', color: a.muted, lineHeight: 1.5 }}>
+              <strong style={{ color: a.text }}>Hinweis:</strong> Zuerst von der verwaltenden Person auf <strong style={{ color: a.text }}>diesem</strong> Button bestätigen; danach Daten mit der Cloud abgleichen (oder anderen das aktualisierte Einladungs-QR geben). So sieht niemand versehentlich „Inhaber:in“, obwohl er Bearbeiter:in oder Leser:in sein soll.
+            </p>
+            <button
+              type="button"
+              onClick={handleInhaberEinmaligSelbstFestlegen}
+              style={{ ...linkBtn, marginTop: 0, border: 'none', cursor: 'pointer' }}
+            >
+              Ich bin die Inhaber:in (einmalig)
+            </button>
           </div>
         )}
 
@@ -567,7 +612,16 @@ export default function K2FamilieEinstellungenPage() {
             </h2>
             <p style={{ margin: '0 0 0.65rem', fontSize: '0.9rem', color: a.muted, lineHeight: 1.55 }}>
               <strong style={{ color: a.text }}>Inhaber:in</strong>: Mustertext für Mail, Messenger oder SMS – wird aus Familienname, Kennung, Links und deiner Signatur{' '}
-              <strong style={{ color: a.text }}>automatisch erzeugt</strong>. Einmal kopieren und verschicken; für druckfertige Briefe mit QR pro Zweig siehe unten.
+              <strong style={{ color: a.text }}>automatisch erzeugt</strong>. Enthält einen Hinweis auf das Rollenmodell und den Link zum{' '}
+              <strong style={{ color: a.text }}>Benutzerhandbuch</strong>. Einmal kopieren und verschicken; für druckfertige Briefe mit QR pro Zweig siehe unten.
+            </p>
+            <p style={{ margin: '0 0 0.65rem', fontSize: '0.88rem', color: a.muted, lineHeight: 1.5 }}>
+              <Link
+                to={`/benutzer-handbuch?doc=${encodeURIComponent(BENUTZERHANDBUCH_DOC_K2_FAMILIE_ROLLEN_MODELL)}`}
+                style={{ color: a.accent, fontWeight: 600 }}
+              >
+                → Benutzerhandbuch: K2 Familie – drei Rollen (Inhaber:in, Bearbeiter:in, Leser:in)
+              </Link>
             </p>
             <textarea
               readOnly

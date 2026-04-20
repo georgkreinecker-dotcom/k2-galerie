@@ -50,7 +50,6 @@ import { adminTheme } from '../config/theme'
 import { K2_FAMILIE_UI } from '../config/k2FamilieUiColors'
 import { K2_FAMILIE_NAV_LABEL_GESCHICHTE } from '../config/k2FamilieNavLabels'
 import { getFamilieTenantDisplayName } from '../data/familieHuberMuster'
-import { getCousinenCousinsListe } from '../utils/familieEventVerwandtschaftKategorie'
 
 const C = {
   ...K2_FAMILIE_UI,
@@ -192,12 +191,6 @@ export default function K2FamilieHomePage() {
     if (!id) return undefined
     return personen.find((p) => p.id === id)
   }, [personen, ichBinPersonId])
-
-  /** Dieselbe Verwandtschafts-Logik wie Events – nur Karten. */
-  const cousinPersonen = useMemo(
-    () => getCousinenCousinsListe(personen, ichBinPersonId),
-    [personen, ichBinPersonId]
-  )
 
   const persoenlicheMitgliedsNummerAufKarte = (meinePerson?.mitgliedsNummer ?? '').trim()
 
@@ -1211,56 +1204,6 @@ export default function K2FamilieHomePage() {
                 🕯️ Gedenkort
               </Link>
             </div>
-
-            {ichBinPersonId?.trim() && cousinPersonen.length > 0 ? (
-              <div
-                id="k2-familie-cousins"
-                className="k2-familie-no-print"
-                style={{
-                  marginTop: '0.85rem',
-                  padding: '1rem 1.1rem',
-                  borderRadius: a.radius,
-                  border: '1px solid rgba(109, 40, 217, 0.35)',
-                  background: 'rgba(109, 40, 217, 0.08)',
-                }}
-              >
-                <h3
-                  style={{
-                    margin: '0 0 0.35rem',
-                    fontSize: '1.05rem',
-                    fontWeight: 700,
-                    color: a.text,
-                    fontFamily: a.fontHeading,
-                  }}
-                >
-                  Cousinen &amp; Cousins
-                </h3>
-                <p style={{ margin: '0 0 0.65rem', fontSize: '0.82rem', lineHeight: 1.45, color: a.muted }}>
-                  Aus den Karten: Kinder deiner Tanten und Onkel. Tippe einen Namen – auf der Karte siehst du Partner und Momente.
-                </p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
-                  {cousinPersonen.map((p) => (
-                    <Link
-                      key={p.id}
-                      to={`${familieR.personen}/${p.id}`}
-                      style={{
-                        display: 'inline-block',
-                        padding: '0.4rem 0.65rem',
-                        borderRadius: 10,
-                        background: 'rgba(109, 40, 217, 0.14)',
-                        border: '1px solid rgba(109, 40, 217, 0.4)',
-                        color: a.text,
-                        fontWeight: 600,
-                        fontSize: '0.88rem',
-                        textDecoration: 'none',
-                      }}
-                    >
-                      {p.name.trim() || 'Ohne Name'}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ) : null}
           </section>
 
           {!tenantList.includes(FAMILIE_HUBER_TENANT_ID) && kannInstanz && !istEchteFamilieTenantAktiv && (

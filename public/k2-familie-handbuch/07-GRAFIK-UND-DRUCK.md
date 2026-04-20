@@ -15,7 +15,7 @@
 
 ## 2. **Drucken und PDF** (Bereich 4)
 
-**Wofür:** **Listen**, **Personenblätter**, **Katalog**, **Geburtstagsliste**, **Rechte-Übersicht** oder die **Stammbaum-Grafik** als **Papier** oder **PDF** (im Browser oft „Als PDF speichern“).
+**Wofür:** **Listen**, **Personenblätter**, **Katalog**, **Geburtstagsliste** oder die **Stammbaum-Grafik** als **Papier** oder **PDF** (im Browser oft „Als PDF speichern“).
 
 **Wer darf drucken:** **Inhaber:in** und **Bearbeiter:in** lösen den **Druck** aus; **Leser:in** sieht **Vorschau** und Einstellungen, der **Druck-Button** ist nur mit Schreibrecht aktiv (Details in der App).
 

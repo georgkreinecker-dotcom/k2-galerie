@@ -17,6 +17,7 @@ describe('familieMitgliedInfoBriefText', () => {
   it('Mustertext enthält alle Platzhalter', () => {
     expect(MUSTERTEXT_MITGLIEDER_INFORM_KERN).toContain('{{FAMILIENNAME}}')
     expect(MUSTERTEXT_MITGLIEDER_INFORM_KERN).toContain('{{FAMILIEN_LINK}}')
+    expect(MUSTERTEXT_MITGLIEDER_INFORM_KERN).toContain('{{BENUTZERHANDBUCH_ROLLEN_URL}}')
   })
 
   it('buildFamilieEinladungsUrlKurz baut t und z', () => {
@@ -39,5 +40,8 @@ describe('familieMitgliedInfoBriefText', () => {
     expect(text).not.toContain('**')
     expect(text).toContain('/projects/k2-familie/meine-familie')
     expect(text).toContain('/projects/k2-familie/mitglieder-codes')
+    expect(text).toContain('/benutzer-handbuch')
+    expect(text).toContain('doc=')
+    expect(text).toContain('18-K2-FAMILIE-ROLLEN-MODELL.md')
   })
 })

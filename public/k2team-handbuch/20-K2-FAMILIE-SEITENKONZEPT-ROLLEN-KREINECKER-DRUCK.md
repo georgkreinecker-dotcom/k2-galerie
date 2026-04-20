@@ -1,7 +1,7 @@
 # Druckfassung – Seitenkonzept Rollen & Rechte (Beispiel: Familie Kreinecker)
 
 **Stand:** 13.04.26  
-**Zweck:** Bedien- und Seitenbild für **Inhaber**, **Zweigverwalter:innen**, **Leserechte** und **eigene Karte** – Bezug **Familie Kreinecker** (nicht Muster „Huber“). Enthält eine **eigene Druckseite** „**Schreib- und Leserechte – komprimiert**“. Zum **Ausdrucken** in der App: K2 Familie → Handbuch → dieses Kapitel → **Drucken (A4)**.
+**Zweck:** Bedien- und Seitenbild für **Inhaber**, **Zweigverwalter:innen**, **Leserechte** und **eigene Karte** – Bezug **Familie Kreinecker** (nicht Muster „Huber“). Zum **Ausdrucken** in der App: K2 Familie → Handbuch → dieses Kapitel → **Drucken (A4)**.
 
 **Quellen (Technik/Doku):** `docs/K2-FAMILIE-RECHTE-ZWEIGE.md`, `docs/K2-FAMILIE-SEITENKONZEPT-ROLLEN-BEISPIEL-KREINECKER.md`
 
@@ -27,21 +27,6 @@
 | **Eigene Identität** | Jede eingeloggte Person mit **eigener Personenkarte** | Kurztext, Fotos, persönliche Momente auf der **eigenen Karte** im erlaubten Rahmen. **Beziehungen:** nach Grundfestlegung und Admin-Sperre **keine** freie Änderung mehr. |
 
 *Konkrete Namen in der App kommen aus den **Karten** (Beziehungen nur aus gespeicherten Daten). Dieses Blatt nennt keine privaten Details – nur **Rollen**.*
-
-[SEITENUMBRUCH]
-
-## Schreib- und Leserechte – komprimiert (eine Seite)
-
-**Ziel:** Auf **einer Druckseite** die wichtigsten Regeln – ohne die vollständige Technik-Doku. Details: `docs/K2-FAMILIE-RECHTE-ZWEIGE.md`.
-
-| | **Lesen** | **Schreiben** |
-|---|-----------|---------------|
-| **Administrator:in** (Instanz) | Wie global für die Instanz vorgesehen (Leseregeln, Sperren). | **Instanz:** Sicherung, Einladungen, globale Leseregeln, **Sperre „Beziehungen ändern“** nach Grundfestlegung. **Kein** Schreiben auf fremden Karten im **höchstpersönlichen** Bereich (über Namen, Geburtsdaten, Beziehungen hinaus). |
-| **Zweigverwalter:in** (automatisch: Paar/Kleinfamilie an der Spitze) | **Nach unten** im Zweig; **nach oben** nur das, was andere Zweige für diese Linie freigeben (Regel). | Personen **nach unten** anlegen/bearbeiten; **nach oben** Lesefreigaben **themenweise** setzen, soweit vorgesehen. |
-| **Lesende** | Nur das, was der **Zweigverwalter nach oben** freigibt. | **Nein** (keine fremden Karten, keine Struktur). |
-| **Eigene Karte** | Alles, was die Rolle erlaubt. | Nur **eigene** Karte: Texte, Fotos, Momente im Rahmen. **Beziehungen:** nach Festlegung + Admin-Sperre **keine** freie Änderung mehr. |
-
-**Kurz:** **Schreiben nach unten** = Zweigverwalter / nach Regel Admin. **Lesen nach oben** = nur mit Freigabe. **Höchstpersönliches** = auch Admin **nicht** auf fremden Karten. **Struktur** = nach einmaliger Festlegung und Sperre **dauerhaft** gesichert.
 
 [SEITENUMBRUCH]
 

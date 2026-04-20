@@ -1152,12 +1152,12 @@ function FamilieLayoutInner() {
       )}
       <main id="k2-familie-main" className="k2-familie-main">
         <Outlet />
+        <footer className="k2-familie-app-footer k2-familie-no-print" role="contentinfo">
+          <p className="k2-familie-app-footer__line">{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
+          <p className="k2-familie-app-footer__line k2-familie-app-footer__line--muted">{PRODUCT_URHEBER_ANWENDUNG}</p>
+          <AppVerlassenFooterLink accentColor={t.accent} mutedColor={t.muted} />
+        </footer>
       </main>
-      <footer className="k2-familie-app-footer k2-familie-no-print" role="contentinfo">
-        <p className="k2-familie-app-footer__line">{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
-        <p className="k2-familie-app-footer__line k2-familie-app-footer__line--muted">{PRODUCT_URHEBER_ANWENDUNG}</p>
-        <AppVerlassenFooterLink accentColor={t.accent} mutedColor={t.muted} />
-      </footer>
     </>
   )
 

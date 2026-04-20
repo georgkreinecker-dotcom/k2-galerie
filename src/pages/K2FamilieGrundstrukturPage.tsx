@@ -82,7 +82,14 @@ export default function K2FamilieGrundstrukturPage() {
         return
       }
       const einst = loadEinstellungen(currentTenantId)
-      saveEinstellungen(currentTenantId, { ...einst, ichBinPersonId, ichBinPositionAmongSiblings })
+      const inhaberFestlegen =
+        !einst.inhaberPersonId?.trim() ? { inhaberPersonId: ichBinPersonId } : {}
+      saveEinstellungen(currentTenantId, {
+        ...einst,
+        ichBinPersonId,
+        ichBinPositionAmongSiblings,
+        ...inhaberFestlegen,
+      })
       navigate(PROJECT_ROUTES['k2-familie'].stammbaum)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Fehler beim Anlegen.')

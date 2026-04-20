@@ -49,7 +49,7 @@ export const K2_FAMILIE_ROLLEN_AMPEL: Record<K2FamilieRolle, string> = {
   leser: '#64748b',
 }
 
-/** Druck-PDF „Schreib- und Leserechte“ – gleiche Rollen wie in der App, eine Tabelle. */
+/** Referenztexte Lesen/Schreiben pro Rolle (z. B. Tests, spätere UI). */
 export const FAMILIE_DRUCK_RECHTE_ZEILEN: readonly {
   rolle: string
   lesen: string

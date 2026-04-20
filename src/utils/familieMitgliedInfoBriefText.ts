@@ -34,9 +34,21 @@ export function buildFamilieEinladungsUrlKurz(
 /**
  * Mustertext (Platzhalter werden ersetzt). Für Anzeige in Einstellungen und Kopieren in die Zwischenablage.
  */
+/** Dateiname im Benutzerhandbuch (öffentlich) – Drei-Rollen-Modell; mit `doc=` in der App-URL. */
+export const BENUTZERHANDBUCH_DOC_K2_FAMILIE_ROLLEN_MODELL = '18-K2-FAMILIE-ROLLEN-MODELL.md'
+
+/** Vollständige URL zum Kapitel (Einladungstext, Messenger). */
+export function buildBenutzerHandbuchK2FamilieRollenAbsUrl(): string {
+  const u = new URL(`${APP_BASE_URL_SHAREABLE}/benutzer-handbuch`)
+  u.searchParams.set('doc', BENUTZERHANDBUCH_DOC_K2_FAMILIE_ROLLEN_MODELL)
+  return u.toString()
+}
+
 export const MUSTERTEXT_MITGLIEDER_INFORM_KERN = `Liebe Familie,
 
 ich möchte euch zur K2 Familie einladen – unser geschützter, privater Raum für Stammbaum, Geschichten, Termine und Erinnerungen.
+
+**Rollen in K2 Familie:** Es gibt nur **eine** Inhaber:in (Lizenz und Verwaltung der Familie). **Bearbeiter:innen** sind wir Familienmitglieder mit Schreibrechten. **Leser:innen** sind vor allem **Gäste**, die über den Link nur mitlesen. Ausführlich erklärt im **Benutzerhandbuch**: {{BENUTZERHANDBUCH_ROLLEN_URL}}
 
 **Name der Familie in der App:** {{FAMILIENNAME}}
 
@@ -91,8 +103,10 @@ export function buildMitgliederInformationsText(p: MitgliederInformationsParams)
   const link = z ? buildFamilieEinladungsUrlKurz(p.tenantId, z, p.familyDisplayName) : '(Familien-Kennung zuerst eintragen – dann erscheint der Link)'
   const mitgliederCodesLink = `${APP_BASE_URL_SHAREABLE}${R.mitgliederCodes}`
   const signatur = p.signaturName.trim() || '(Name „Ich bin …“ unter Einstellungen)'
+  const benutzerhandbuchRollenUrl = buildBenutzerHandbuchK2FamilieRollenAbsUrl()
 
   let t = MUSTERTEXT_MITGLIEDER_INFORM_KERN
+  t = t.replace(/\{\{BENUTZERHANDBUCH_ROLLEN_URL\}\}/g, benutzerhandbuchRollenUrl)
   t = t.replace(/\{\{FAMILIENNAME\}\}/g, familienName)
   t = t.replace(/\{\{FAMILIEN_Z\}\}/g, familienZDisplay)
   t = t.replace(/\{\{FAMILIEN_LINK\}\}/g, link)

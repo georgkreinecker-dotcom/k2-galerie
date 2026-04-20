@@ -6,7 +6,17 @@
 
 import { isSupabaseConfigured } from './supabaseClient'
 import type { K2FamiliePerson, K2FamilieMoment, K2FamilieEvent, K2FamilieEinstellungen } from '../types/k2Familie'
-import { loadPersonen, loadMomente, loadEvents, loadEinstellungen, savePersonen, saveMomente, saveEvents, saveEinstellungen } from './familieStorage'
+import {
+  loadPersonen,
+  loadMomente,
+  loadEvents,
+  loadEinstellungen,
+  mergeEinstellungenFromServer,
+  savePersonen,
+  saveMomente,
+  saveEvents,
+  saveEinstellungen,
+} from './familieStorage'
 import { ergaenzeMitgliedsNummerAusServerListe } from './familieMitgliedsNummer'
 
 let SUPABASE_URL = ''
@@ -227,7 +237,7 @@ export async function loadFamilieFromSupabase(tenantId: string): Promise<Familie
     if (mergedMomente.length >= localMomente.length) saveMomente(tenantId, mergedMomente, { allowReduce: true })
     if (mergedEvents.length >= localEvents.length) saveEvents(tenantId, mergedEvents, { allowReduce: true })
     if (serverEinst) {
-      const mergedEinst = { ...loadEinstellungen(tenantId), ...serverEinst }
+      const mergedEinst = mergeEinstellungenFromServer(loadEinstellungen(tenantId), serverEinst)
       saveEinstellungen(tenantId, mergedEinst)
     }
     markFamilieFullSyncDone(tenantId)

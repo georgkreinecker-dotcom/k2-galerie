@@ -1,5 +1,7 @@
 # K2 Familie – **Bearbeiter:innen** und **Leser:innen**
 
+**Zum Modell:** [K2 Familie – Die drei Rollen im Überblick](18-K2-FAMILIE-ROLLEN-MODELL.md) — **eine** Inhaber:in, Bearbeiter = Familienmitglieder mit Schreibzugriff, Leser = vor allem Gäste über den Link.
+
 Was **Bearbeiter:innen** und **Leser:innen** in **K2 Familie** dürfen – in **einer** Übersicht. Die **Inhaber:in**-Rolle und technische Details stehen im [Kapitel zur Inhaber:in](13-K2-FAMILIE-INHABER-ROLLE.md).
 
 **Öffentliche Galerie (K2 Galerie):** Besucher:innen sind dort **nur lesend** – unabhängig von den Rollen in K2 Familie.
@@ -60,4 +62,4 @@ Für **Verein** und **VK2** gelten **eigene** Regeln: [Vereinsplattform](05-VK2-
 
 ---
 
-**Weiterlesen:** [K2 Familie – Rolle Inhaber:in](13-K2-FAMILIE-INHABER-ROLLE.md) · [Admin im Überblick](03-ADMIN-UEBERBLICK.md) · [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
+**Weiterlesen:** [Die drei Rollen im Überblick](18-K2-FAMILIE-ROLLEN-MODELL.md) · [K2 Familie – Rolle Inhaber:in](13-K2-FAMILIE-INHABER-ROLLE.md) · [Admin im Überblick](03-ADMIN-UEBERBLICK.md) · [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)

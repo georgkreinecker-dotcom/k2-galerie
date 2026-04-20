@@ -299,21 +299,59 @@ export function loadEinstellungen(tenantId: string): K2FamilieEinstellungen {
 }
 
 /**
+ * Nach Cloud-Laden: Server-Einstellungen mit lokalem Stand zusammenführen.
+ * **Wer bin Du** (`ichBinPersonId` / Geschwisterposition) wird nicht vom Server überschrieben,
+ * wenn lokal bereits eine Person gewählt ist – sonst verdrängt ein verzögerter oder alter
+ * Cloud-Stand die gerade gespeicherte Wahl (Race: Speichern + „Daten vom Server laden“).
+ */
+export function mergeEinstellungenFromServer(
+  local: K2FamilieEinstellungen,
+  server: K2FamilieEinstellungen
+): K2FamilieEinstellungen {
+  const merged: K2FamilieEinstellungen = { ...local, ...server }
+  const ichLocal = local.ichBinPersonId?.trim()
+  if (ichLocal) {
+    merged.ichBinPersonId = local.ichBinPersonId
+    if (local.ichBinPositionAmongSiblings !== undefined) {
+      merged.ichBinPositionAmongSiblings = local.ichBinPositionAmongSiblings
+    }
+  }
+  return merged
+}
+
+/**
  * Speichert Einstellungen für einen Tenant.
  */
 export function saveEinstellungen(tenantId: string, data: K2FamilieEinstellungen): boolean {
   const key = getK2FamilieEinstellungenKey(tenantId)
-  const obj = data && typeof data === 'object' ? data : {}
+  const patch = data && typeof data === 'object' ? data : {}
   const prev = loadEinstellungen(tenantId)
+  let merged: K2FamilieEinstellungen = { ...prev, ...patch }
+
+  const ich = merged.ichBinPersonId?.trim()
+  const hadDesignated = prev.inhaberPersonId?.trim()
+  const designatedNow = merged.inhaberPersonId?.trim()
+  /**
+   * Erste technische Festlegung: nur wenn noch nie eine Inhaber:in gespeichert war und genau eine
+   * Person in der Familie existiert — dann ist diese Person die Inhaber:in (Ein-Personen-Fall).
+   */
+  if (ich && !designatedNow && !hadDesignated) {
+    const personen = loadPersonen(tenantId)
+    const countWithId = personen.filter((p) => p?.id?.trim()).length
+    if (countWithId === 1) {
+      merged = { ...merged, inhaberPersonId: ich }
+    }
+  }
+
   try {
-    const json = JSON.stringify(obj)
+    const json = JSON.stringify(merged)
     if (json.length > MAX_JSON_SIZE) {
       console.error('❌ familieStorage: Einstellungen zu groß')
       return false
     }
     localStorage.setItem(key, json)
     const prevIch = prev.ichBinPersonId?.trim() || ''
-    const nextIch = obj.ichBinPersonId?.trim() || ''
+    const nextIch = merged.ichBinPersonId?.trim() || ''
     /** Nur bei echtem Wechsel des „Du“ (nicht Erst-Registrierung leer → Person): sonst unnötiges Leeren + Event vor setIdentitaet – auf Mobilgeräten problematisch. */
     if (prevIch && prevIch !== nextIch) {
       clearIdentitaetBestaetigt(tenantId)
@@ -325,7 +363,7 @@ export function saveEinstellungen(tenantId: string, data: K2FamilieEinstellungen
           personen: loadPersonen(tenantId),
           momente: loadMomente(tenantId),
           events: loadEvents(tenantId),
-          einstellungen: obj,
+          einstellungen: merged,
         })
       ).catch((e) => console.warn('Supabase Push (Einstellungen) fehlgeschlagen:', e))
     }

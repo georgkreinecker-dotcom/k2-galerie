@@ -1,5 +1,7 @@
 # K2 Familie – Rolle **Inhaber:in**
 
+**Grundregel:** Es gibt **nur eine** Inhaber:in pro Familie (Lizenz und Verwaltung). **Bearbeiter:innen** sind die Familienmitglieder mit Schreibrechten; **Leser:innen** sind vor allem **Gäste über den Einladungslink**. Das **Drei-Rollen-Modell** in Kurzform: [K2 Familie – Die drei Rollen im Überblick](18-K2-FAMILIE-ROLLEN-MODELL.md).
+
 Sie tragen die Verantwortung für die **Familien-Instanz**, **Stammdaten**, **Stammbaum** und **Sicherung / Zugang / Übergabe**.
 
 **K2 Galerie** (Ausstellung online) hat **kein** gleiches Drei-Rollen-Modell; dort steuern Sie den Admin mit **Passwort und Einladung**. Die Rollen **Inhaber, Bearbeiter, Leser** in diesem Handbuch gelten für **K2 Familie**.
@@ -101,4 +103,4 @@ Technische Details ggf. im **K2 Familie Handbuch** in der App.
 
 ---
 
-**Weiterlesen:** [K2 Familie – Bearbeiter und Leser](14-K2-FAMILIE-BEARBEITER-UND-LESER.md) · [Einstellungen](10-EINSTELLUNGEN.md) · [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
+**Weiterlesen:** [Die drei Rollen im Überblick](18-K2-FAMILIE-ROLLEN-MODELL.md) · [K2 Familie – Bearbeiter und Leser](14-K2-FAMILIE-BEARBEITER-UND-LESER.md) · [Einstellungen](10-EINSTELLUNGEN.md) · [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)

@@ -3,8 +3,16 @@
  * Route: /projects/k2-familie/stammbaum
  */
 
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { useMemo, useEffect, useLayoutEffect, useCallback, useState, useRef, type MouseEvent as ReactMouseEvent } from 'react'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import {
+  useMemo,
+  useEffect,
+  useLayoutEffect,
+  useCallback,
+  useState,
+  useRef,
+  type MouseEvent as ReactMouseEvent,
+} from 'react'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { loadPersonen, savePersonen, loadEinstellungen, saveEinstellungen } from '../utils/familieStorage'
@@ -32,7 +40,6 @@ import {
   StammbaumDruckNachGenerationen,
   StammbaumDruckPersonenblaetter,
   StammbaumDruckRegister,
-  StammbaumDruckSchreibLeserechte,
   type KatalogSortierung,
 } from '../components/StammbaumDruckFormate'
 import {
@@ -55,7 +62,6 @@ type PrintStil =
   | 'register'
   | 'personenblaetter'
   | 'geburtstagsliste'
-  | 'rechte'
 
 /** Druck/PDF: ganze Familie oder nur Familienzweig von „Das bin ich“. */
 type DruckUmfang = 'alle' | 'zweig'
@@ -65,7 +71,6 @@ const PRINT_STILE: PrintStil[] = [
   'generationen',
   'register',
   'geburtstagsliste',
-  'rechte',
   'grafik',
 ]
 
@@ -98,13 +103,13 @@ const STAMMBAUM_BEREICH_TITEL: Record<Exclude<StammbaumBereich, 'uebersicht'>, s
 /** Ein Satz: was dieser Bereich *ist* – nicht nur ein Schlagwort. */
 const STAMMBAUM_BEREICH_UNTERTITEL: Record<Exclude<StammbaumBereich, 'uebersicht'>, string> = {
   karten:
-    'Jede Person eine Karte – öffnen, bearbeiten, Beziehungen pflegen. Optional nur deinen Ast (Schalter „Nur mein Zweig“, wenn „Das bin ich“ gesetzt ist). Auf Meine Familie: Schnellliste Cousinen & Cousins (wenn „Du“ gesetzt und Seitenlinien in den Karten).',
+    'Jede Person eine Karte – öffnen, bearbeiten, Beziehungen pflegen. Optional nur deinen Ast (Schalter „Nur mein Zweig“, wenn „Das bin ich“ gesetzt ist). Cousinen & Cousins: Schnellliste auf der Stammbaum-Startansicht (wenn „Du“ gesetzt ist).',
   'nach-oben':
     'Dieselben Personen wie bei „Nach unten“, aber die Liste betont die Linie nach oben: Eltern, Großeltern, weiter zu den Wurzeln.',
   grafik:
     'Den Stammbaum als Bild – zoomen, Richtung wählen, Paare erkennen. Zum Anschauen, nicht zum Eintippen von Daten.',
   pdf:
-    'Geburtstagslisten, Personenblätter, Katalog, Rechte-Übersicht – zum Drucken oder als PDF speichern.',
+    'Geburtstagslisten, Personenblätter, Katalog, Grafik – zum Drucken oder als PDF speichern.',
 }
 
 type StammbaumBereichTab = Exclude<StammbaumBereich, 'uebersicht'>
@@ -184,7 +189,7 @@ const STAMMBAUM_BEREICH_TABS: {
     label: 'Drucken',
     hint: 'Listen, A4, PDF speichern',
     info:
-      'Alles für Papier oder Datei: Geburtstagslisten, Personenblätter, Katalog, Rechte-Seite, optional die Grafik. Druckdialog oder „Als PDF speichern“ im Browser.',
+      'Alles für Papier oder Datei: Geburtstagslisten, Personenblätter, Katalog, optional die Grafik. Druckdialog oder „Als PDF speichern“ im Browser.',
   },
 ]
 
@@ -270,6 +275,7 @@ function defaultStammbaumSekOpen(
 
 export default function K2FamilieStammbaumPage() {
   const navigate = useNavigate()
+  const { hash } = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const bereichParam = searchParams.get('bereich')
   const setStammbaumBereich = useCallback(
@@ -294,6 +300,8 @@ export default function K2FamilieStammbaumPage() {
   const kannDrucken = capabilities.canEditFamiliendaten
   const kannManageFamilienInstanz = capabilities.canManageFamilienInstanz
   const [stammbaumRefresh, setStammbaumRefresh] = useState(0)
+  /** Deep-Link #k2-familie-cousins nur einmal auf Startansicht schalten – sonst fängt der Hash jeden Wechsel zu „Karten“ wieder ab. */
+  const cousinsHashHandledRef = useRef(false)
   const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId, familieStorageRevision, stammbaumRefresh])
   const stammbaumBereich = useMemo((): StammbaumBereich => {
     const p = parseStammbaumBereich(bereichParam)
@@ -313,6 +321,23 @@ export default function K2FamilieStammbaumPage() {
       )
     }
   }, [personen.length, bereichParam, setSearchParams])
+  /** Deep-Link #k2-familie-cousins: Stammbaum-Startansicht, sonst ist der Anker nicht sichtbar (Default ist „Karten“). */
+  useEffect(() => {
+    if (hash !== '#k2-familie-cousins') {
+      cousinsHashHandledRef.current = false
+      return
+    }
+    if (personen.length === 0 || cousinsHashHandledRef.current) return
+    cousinsHashHandledRef.current = true
+    setSearchParams(
+      (prev) => {
+        const n = new URLSearchParams(prev)
+        n.set('bereich', 'uebersicht')
+        return n
+      },
+      { replace: true }
+    )
+  }, [personen.length, hash, setSearchParams])
   useEffect(() => {
     if (typeof window === 'undefined') return
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -495,10 +520,6 @@ export default function K2FamilieStammbaumPage() {
   /** Nach Druck-Öffnung: Druckdialog (ganze Familie oder Familienzweig je nach umfang). */
   useEffect(() => {
     if (!druck || !kannDrucken) return
-    if (stilFromUrl === 'rechte') {
-      const t = setTimeout(() => window.print(), 300)
-      return () => clearTimeout(t)
-    }
     if (umfangFromUrl === 'alle') {
       if (personen.length === 0) return
     } else {
@@ -645,13 +666,6 @@ export default function K2FamilieStammbaumPage() {
       )
     }
     const dataFormatAttr = formatFromUrl === 'poster' ? 'poster' : formatFromUrl
-    if (stilFromUrl === 'rechte') {
-      return (
-        <div className="stammbaum-druck-view" data-format={dataFormatAttr} data-stil="rechte">
-          <StammbaumDruckSchreibLeserechte familienName={titel} />
-        </div>
-      )
-    }
     if (umfangFromUrl === 'alle') {
       if (personen.length === 0) {
         return (
@@ -1011,7 +1025,7 @@ export default function K2FamilieStammbaumPage() {
               >
                 PDF &amp; Drucken
               </button>
-              <span className="meta" style={{ marginLeft: 6 }}>– z.&nbsp;B. Schreib- und Leserechte für die Familie (eine Seite).</span>
+              <span className="meta" style={{ marginLeft: 6 }}>– Optionen und Vorschau ansehen.</span>
             </p>
           </div>
         )}
@@ -1080,26 +1094,82 @@ export default function K2FamilieStammbaumPage() {
           </nav>
         )}
 
-        {personen.length > 0 && stammbaumBereich === 'uebersicht' && cousinSchnellliste.length > 0 ? (
-          <p
-            className="no-print meta"
-            style={{
-              margin: '0 0 1rem',
-              fontSize: '0.85rem',
-              lineHeight: 1.45,
-              color: 'rgba(226, 232, 240, 0.92)',
-              maxWidth: '42rem',
-            }}
-          >
-            <Link
-              to={`${PROJECT_ROUTES['k2-familie'].meineFamilie}#k2-familie-cousins`}
-              style={{ color: '#5eead4', fontWeight: 600, textDecoration: 'underline' }}
+        {personen.length > 0 && stammbaumBereich === 'uebersicht' && einstellungen.ichBinPersonId?.trim() ? (
+          cousinSchnellliste.length > 0 ? (
+            <div
+              id="k2-familie-cousins"
+              className="no-print"
+              style={{
+                margin: '0 0 1rem',
+                padding: '1rem 1.1rem',
+                borderRadius: 12,
+                border: '1px solid rgba(94, 234, 212, 0.38)',
+                background: 'rgba(13, 148, 136, 0.14)',
+              }}
             >
-              Cousinen &amp; Cousins – Schnellliste
-            </Link>
-            {' '}
-            auf Meine Familie: dieselbe Verwandtschaft wie in den Karten, ein Tipp pro Person.
-          </p>
+              <h3
+                style={{
+                  margin: '0 0 0.35rem',
+                  fontSize: '1.05rem',
+                  fontWeight: 700,
+                  color: 'rgba(255,255,255,0.96)',
+                }}
+              >
+                Cousinen &amp; Cousins
+              </h3>
+              <p style={{ margin: '0 0 0.65rem', fontSize: '0.82rem', lineHeight: 1.45, color: 'rgba(226, 232, 240, 0.88)' }}>
+                Aus den Karten: Kinder deiner Tanten und Onkel. Tippe einen Namen – auf der Karte siehst du Partner und Momente.
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
+                {cousinSchnellliste.map((p) => (
+                  <Link
+                    key={p.id}
+                    to={`${PROJECT_ROUTES['k2-familie'].personen}/${p.id}`}
+                    style={{
+                      display: 'inline-block',
+                      padding: '0.4rem 0.65rem',
+                      borderRadius: 10,
+                      background: 'rgba(94, 234, 212, 0.12)',
+                      border: '1px solid rgba(94, 234, 212, 0.45)',
+                      color: 'rgba(255,255,255,0.95)',
+                      fontWeight: 600,
+                      fontSize: '0.88rem',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    {p.name.trim() || 'Ohne Name'}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div
+              id="k2-familie-cousins"
+              className="no-print"
+              style={{
+                margin: '0 0 1rem',
+                padding: '0.85rem 1rem',
+                borderRadius: 12,
+                border: '1px dashed rgba(148, 163, 184, 0.45)',
+                background: 'rgba(15, 23, 42, 0.35)',
+              }}
+            >
+              <h3
+                style={{
+                  margin: '0 0 0.35rem',
+                  fontSize: '1.02rem',
+                  fontWeight: 700,
+                  color: 'rgba(255,255,255,0.96)',
+                }}
+              >
+                Cousinen &amp; Cousins
+              </h3>
+              <p style={{ margin: 0, fontSize: '0.82rem', lineHeight: 1.45, color: 'rgba(226, 232, 240, 0.82)' }}>
+                Noch niemand hier: Die App erkennt Cousinen/Cousins nur aus den Karten – Geschwister deiner Eltern
+                (Onkel/Tanten) und deren Kinder. Wenn die Beziehungen fehlen, bleibt die Liste leer.
+              </p>
+            </div>
+          )
         ) : null}
 
         {personen.length > 0 && stammbaumBereich === 'uebersicht' && !stammbaumFuehrungAusblenden && (
@@ -2050,19 +2120,17 @@ export default function K2FamilieStammbaumPage() {
                 <li>Im System-Druckdialog: <strong>Als PDF speichern</strong>.</li>
               </ul>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end' }}>
-                {druckStil !== 'rechte' && (
-                  <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                    <span className="meta">Umfang</span>
-                    <select
-                      id="druck-umfang"
-                      value={druckUmfang}
-                      onChange={(e) => setDruckUmfang(e.target.value as DruckUmfang)}
-                    >
-                      <option value="alle">Ganze erfasste Familie</option>
-                      <option value="zweig">Nur mein Familienzweig</option>
-                    </select>
-                  </label>
-                )}
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <span className="meta">Umfang</span>
+                  <select
+                    id="druck-umfang"
+                    value={druckUmfang}
+                    onChange={(e) => setDruckUmfang(e.target.value as DruckUmfang)}
+                  >
+                    <option value="alle">Ganze erfasste Familie</option>
+                    <option value="zweig">Nur mein Familienzweig</option>
+                  </select>
+                </label>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                   <span className="meta">Typ</span>
                   <select
@@ -2079,9 +2147,6 @@ export default function K2FamilieStammbaumPage() {
                       <option value="generationen">Liste nach Generationen</option>
                       <option value="register">Katalog (Tabelle, Datenblätter → Druck oft Querformat)</option>
                       <option value="geburtstagsliste">Geburtstagsliste (Kalenderjahr, nach Tag sortiert)</option>
-                    </optgroup>
-                    <optgroup label="Familie">
-                      <option value="rechte">Schreib- und Leserechte (eine Seite, ohne Personendaten)</option>
                     </optgroup>
                     <optgroup label="Grafik">
                       <option value="grafik">Stammbaum als Bild (bei vielen Personen unübersichtlich)</option>
@@ -2171,21 +2236,17 @@ export default function K2FamilieStammbaumPage() {
                   className="btn"
                   disabled={
                     !kannDrucken ||
-                    (druckStil === 'rechte'
-                      ? false
-                      : personen.length === 0 ||
-                        (druckUmfang === 'zweig' && (!einstellungen.ichBinPersonId || personenFuerDruck.length === 0)))
+                    personen.length === 0 ||
+                    (druckUmfang === 'zweig' && (!einstellungen.ichBinPersonId || personenFuerDruck.length === 0))
                   }
                   title={
                     !kannDrucken
                       ? 'Drucken und PDF nur mit Schreibrecht (Inhaber:in oder Bearbeiter:in). Vorschau kannst du ansehen.'
-                      : druckStil === 'rechte'
-                        ? undefined
-                        : personen.length === 0
-                          ? 'Zuerst Personen anlegen.'
-                          : druckUmfang === 'zweig' && !einstellungen.ichBinPersonId
-                            ? 'Bei „Nur Familienzweig“: „Das bin ich“ setzen oder Umfang „Ganze Familie“ wählen.'
-                            : undefined
+                      : personen.length === 0
+                        ? 'Zuerst Personen anlegen.'
+                        : druckUmfang === 'zweig' && !einstellungen.ichBinPersonId
+                          ? 'Bei „Nur Familienzweig“: „Das bin ich“ setzen oder Umfang „Ganze Familie“ wählen.'
+                          : undefined
                   }
                   onClick={() =>
                     openDruck({
@@ -2253,19 +2314,7 @@ export default function K2FamilieStammbaumPage() {
                 <h3 style={{ margin: '0 0 0.5rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.95)' }}>
                   Vorschau
                 </h3>
-                {druckStil === 'rechte' ? (
-                  <div className="stammbaum-pdf-vorschau-scroll">
-                    <div
-                      className="stammbaum-druck-view stammbaum-druck-view--vorschau"
-                      data-format={druckFormat === 'poster' ? 'poster' : druckFormat}
-                      data-stil="rechte"
-                    >
-                      <StammbaumDruckSchreibLeserechte
-                        familienName={druckTitel.trim() || getFamilieTenantDisplayName(currentTenantId, 'Familie')}
-                      />
-                    </div>
-                  </div>
-                ) : druckUmfang === 'alle' && personen.length === 0 ? (
+                {druckUmfang === 'alle' && personen.length === 0 ? (
                   <p className="meta" style={{ margin: 0 }}>Lege zuerst Personen an, dann erscheint die Vorschau.</p>
                 ) : druckUmfang === 'zweig' && !einstellungen.ichBinPersonId ? (
                   <p className="meta" style={{ margin: 0 }}>
@@ -2349,10 +2398,6 @@ export default function K2FamilieStammbaumPage() {
                   ) : druckStil === 'geburtstagsliste' ? (
                     <>
                       <strong>Geburtstagsliste</strong>: Personen mit vollständigem Datum (TT.MM.JJJJ) erscheinen nach Kalendertag sortiert; andere am Ende der Liste. Verstorbene mit †.
-                    </>
-                  ) : druckStil === 'rechte' ? (
-                    <>
-                      <strong>Schreib- und Leserechte</strong>: eine Seite für die Familie – im Druckdialog „Als PDF speichern“ oder Papier wählen. Keine Personendaten nötig.
                     </>
                   ) : (
                     <>

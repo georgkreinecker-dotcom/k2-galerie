@@ -58,6 +58,10 @@ Für **Inhaber:innen**: Verantwortung, nur-Inhaber-Bereiche, Arbeitsansicht, Sic
 
 **Eine** Rechte-Tabelle und zwei Merksätze; persönlicher Code und Einladung; Kurzverweis Vereinsplattform; Checklisten.
 
+13a. [K2 Familie – Die drei Rollen im Überblick](18-K2-FAMILIE-ROLLEN-MODELL.md)
+
+**Eine** Inhaber:in, Bearbeiter:innen = Familie mit Schreibrechten, Leser:innen = v. a. Gäste über den Link; Verweise auf die Detailkapitel.
+
 14. [K2 Familie – Lizenz und Kündigung](15-K2-FAMILIE-LIZENZ.md)
 
 **Für alle Mitglieder:** Wer ist **Lizenznehmer:in** (Inhaber:in), **Kündigung** wie bei der Galerie – ohne Bindung, Daten vorher sichern.

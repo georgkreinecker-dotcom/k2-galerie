@@ -109,7 +109,6 @@ Mit **Strukturrecht** finden Sie u. a.:
 | **Liste nach Generationen** | Übersicht über **Generationen**. |
 | **Katalog** | **Tabelle** mit wählbaren **Spalten**; Sortierung z. B. nach Geschwisterfolge oder Geburtsjahr (je nach Auswahl). |
 | **Geburtstagsliste** | Nach **Kalendertag** sortiert, für Jahresplanung. |
-| **Schreib- und Leserechte** | **Eine Seite** zur Übersicht der Rechte – **ohne** Personendaten. |
 | **Stammbaum als Bild** | Die **Grafik** zum Drucken; bei sehr vielen Personen kann das **unübersichtlich** werden – oft sind **Personenblätter** oder **Generationen** die bessere Wahl. |
 
 ### Papier und Grafik-Druck

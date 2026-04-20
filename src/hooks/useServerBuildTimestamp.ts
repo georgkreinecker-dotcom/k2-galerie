@@ -52,6 +52,16 @@ export function buildQrUrlWithBust(baseUrl: string, versionTimestamp: number): s
   return `${baseUrl}${sep}v=${versionTimestamp}&_=${Date.now()}`
 }
 
+/**
+ * QR für lange URLs (z. B. K2 Familie Einladung t+z+m): nur Server-Stand (`v=`), kein `_=Date.now()`.
+ * Kürzer = weniger Module im QR = zuverlässigerer Kamera-Scan; URL bleibt zwischen Renders stabil.
+ * Galerie-/QR-Stand-Regel: weiterhin `buildQrUrlWithBust` (v + _) für Galerie, Mobile, Mission Control.
+ */
+export function buildQrUrlWithVersionOnly(baseUrl: string, versionTimestamp: number): string {
+  const sep = baseUrl.includes('?') ? '&' : '?'
+  return `${baseUrl}${sep}v=${versionTimestamp}`
+}
+
 /** Version für QR: Server-Stand wenn schon geladen, sonst lokaler BUILD_TIMESTAMP. refetch = QR mit aktuellem Stand neu laden. */
 export function useQrVersionTimestamp(): { versionTimestamp: number; serverLabel: string; refetch: () => void } {
   const { timestamp, serverLabel, refetch } = useServerBuildTimestamp()

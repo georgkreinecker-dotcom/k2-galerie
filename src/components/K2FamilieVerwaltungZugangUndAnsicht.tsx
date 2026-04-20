@@ -9,7 +9,7 @@ import QRCode from 'qrcode'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { adminTheme } from '../config/theme'
 import { APP_BASE_URL_SHAREABLE } from '../config/externalUrls'
-import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import { buildQrUrlWithVersionOnly, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
 import { loadEinstellungen, saveEinstellungen, loadPersonen } from '../utils/familieStorage'
@@ -157,7 +157,7 @@ export default function K2FamilieVerwaltungZugangUndAnsicht() {
 
   const familieEinladungsUrl = useMemo(() => {
     if (!familieEinladungsUrlCanonical) return ''
-    return buildQrUrlWithBust(familieEinladungsUrlCanonical, versionTimestamp)
+    return buildQrUrlWithVersionOnly(familieEinladungsUrlCanonical, versionTimestamp)
   }, [familieEinladungsUrlCanonical, versionTimestamp])
 
   const familiePersoenlicheEinladungsUrlCanonical = useMemo(() => {
@@ -175,7 +175,7 @@ export default function K2FamilieVerwaltungZugangUndAnsicht() {
 
   const familiePersoenlicheEinladungsUrl = useMemo(() => {
     if (!familiePersoenlicheEinladungsUrlCanonical) return ''
-    return buildQrUrlWithBust(familiePersoenlicheEinladungsUrlCanonical, versionTimestamp)
+    return buildQrUrlWithVersionOnly(familiePersoenlicheEinladungsUrlCanonical, versionTimestamp)
   }, [familiePersoenlicheEinladungsUrlCanonical, versionTimestamp])
 
   useEffect(() => {
@@ -184,7 +184,7 @@ export default function K2FamilieVerwaltungZugangUndAnsicht() {
       return
     }
     let cancelled = false
-    QRCode.toDataURL(familieEinladungsUrl, { width: 168, margin: 1, errorCorrectionLevel: 'M' })
+    QRCode.toDataURL(familieEinladungsUrl, { width: 200, margin: 2, errorCorrectionLevel: 'M' })
       .then((dataUrl) => {
         if (!cancelled) setQrDataUrl(dataUrl)
       })
@@ -202,7 +202,7 @@ export default function K2FamilieVerwaltungZugangUndAnsicht() {
       return
     }
     let cancelled = false
-    QRCode.toDataURL(familiePersoenlicheEinladungsUrl, { width: 168, margin: 1, errorCorrectionLevel: 'M' })
+    QRCode.toDataURL(familiePersoenlicheEinladungsUrl, { width: 200, margin: 2, errorCorrectionLevel: 'M' })
       .then((dataUrl) => {
         if (!cancelled) setPersoenlicherQrDataUrl(dataUrl)
       })
@@ -674,8 +674,8 @@ export default function K2FamilieVerwaltungZugangUndAnsicht() {
                 <img
                   src={qrDataUrl}
                   alt={`Einladung ${getFamilieTenantDisplayName(currentTenantId, 'Familie')}: App öffnen mit Zugangsnummer`}
-                  width={168}
-                  height={168}
+                  width={200}
+                  height={200}
                   style={{ display: 'block', borderRadius: 12, border: '1px solid rgba(181, 74, 30, 0.25)' }}
                 />
                 <button
@@ -788,8 +788,8 @@ export default function K2FamilieVerwaltungZugangUndAnsicht() {
                   <img
                     src={persoenlicherQrDataUrl}
                     alt={`Persönlicher Zugang ${getFamilieTenantDisplayName(currentTenantId, 'Familie')}${ichName ? `, ${ichName}` : ''}`}
-                    width={168}
-                    height={168}
+                    width={200}
+                    height={200}
                     style={{ display: 'block', borderRadius: 12, border: '1px solid rgba(181, 74, 30, 0.25)' }}
                   />
                   <button

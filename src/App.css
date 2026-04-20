@@ -2438,9 +2438,9 @@ header h1 {
     min-height: 0 !important;
   }
 }
+/* Im <main> unter dem Outlet: scrollt mit dem Inhalt (kein „fixierter“ Kasten am Handy). */
 .k2-familie-app-footer {
   flex-shrink: 0;
-  margin-top: auto;
   padding: 1rem 1.25rem 1.25rem;
   border-top: 1px solid rgba(181, 74, 30, 0.14);
   background: #ebe8e2;
@@ -2919,13 +2919,6 @@ body:has(.stammbaum-druck-view:not(.stammbaum-druck-view--vorschau)) {
 }
 .stammbaum-pdf-steuerung-hint.meta {
   font-size: 1rem;
-}
-.stammbaum-druck-view[data-stil='rechte'] .stammbaum-print-rechte-pdf-table th,
-.stammbaum-druck-view[data-stil='rechte'] .stammbaum-print-rechte-pdf-table td {
-  font-size: 8.5pt;
-  line-height: 1.35;
-  padding: 5px 6px;
-  vertical-align: top;
 }
 .stammbaum-druck-view[data-stil='register'] .stammbaum-print-table th,
 .stammbaum-druck-view[data-stil='register'] .stammbaum-print-table td {
