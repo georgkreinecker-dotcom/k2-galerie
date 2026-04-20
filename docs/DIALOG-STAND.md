@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Nächste Aufgabe von Georg.  
-**Einordnung:** K2 Familie Einladung: Kurzlink sichtbar + PC-Hinweis (Brief, Mitglieder-Liste, Mustertext).
+**Einordnung:** K2 Familie Geschwister-Briefe: persönliche Anrede, Einladungstext (Daten zum Leben), Entschuldigung; Einzeldruck.
+
+---
+
+**Letzter Stand:** 20.04.26 – **K2 Familie: Geschwister-Briefe** – Anrede „ihr rund um {Vorname}“ (bei Anker „Du“: nur „Liebe Familie,“); Text: App nutzen, Daten/Bilder/Geschichten, Familienname in App, Entschuldigung bei Unfertigem; **Diesen Brief drucken** + CSS nur eine Seite; Intro-Zeile Tippfehler Scannen. **Commit:** `6ed15622` ✅ GitHub
 
 ---
 
