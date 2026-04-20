@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Nächste Aufgabe von Georg.  
-**Einordnung:** K2 Familie – Handy: weniger Leerlauf oben (kompakte Nav + Menü), Fokus auf Inhalt.
+**Einordnung:** K2-Welt Handy – ein Standard (768px, Hooks + Menü-Sheet) für K2 Familie und VK2-Galerie; K2-Galerie öffentlich unverändert (eisernes Gesetz).
+
+---
+
+**Letzter Stand:** 20.04.26 – **K2-Welt Handy: gleiche Standards (Sportwagen)** – **`useK2WorldMobileCompact`**, **`useK2WorldMobileNavSheet`**, **`K2WorldMobileNavSheet`**; **`K2FamilieLayout`** nutzt die Komponente statt Inline-Sheet; **`Vk2GaleriePage`** ≤768px: eine Zeile (Vereinsname + Menü) + Sheet (Rundgang, Teilen, Mitglied, Admin); **`App.css`**: **`.k2-world-mobile-nav-*`** + gemeinsame Regeln mit Familie-Klassen; **`.cursor/rules/ein-standard-problem.mdc`** Tabelle. **`npm run build:vercel` grün.** **Commit:** `725a2967` ✅ GitHub
 
 ---
 
