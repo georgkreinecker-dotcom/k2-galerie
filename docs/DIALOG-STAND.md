@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Geschwister-Briefe / nächste Georg-Aufgabe.  
-**Einordnung:** K2 Familie – weniger Verwechslung zwischen Sitzung und „Du“; Geschwister-Briefe: Anrede, Einladungstext, Einzeldruck.
+**Was wir JETZT tun:** Nächste K2-Familie-Aufgabe nach Bedarf (Cousinen-Schnellliste ist im Stammbaum).  
+**Einordnung:** Cousinen & Cousins gehören logisch zum **Stammbaum** (Startansicht `?bereich=uebersicht`), nicht unter „Was möchtest du tun?“ auf Meine Familie; Deep-Link `#k2-familie-cousins` schaltet die Startansicht zu.
+
+---
+
+**Letzter Stand:** 20.04.26 – **K2 Familie: Cousinen-Schnellliste nur noch Stammbaum** – von Home entfernt; in `K2FamilieStammbaumPage` bei Startansicht + „Das bin ich“; Hash `#k2-familie-cousins` → `bereich=uebersicht`. Rollen/Doku, `familieEinstellungenMerge.test.ts`, div. Familie-Anpassungen. **`npm run qs:local` grün.** **Commit:** `6a1f97fb` ✅ GitHub
 
 ---
 
