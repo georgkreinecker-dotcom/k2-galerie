@@ -13573,9 +13573,12 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               const T_heroMini = {
                 heroTag: ec.heroTag?.trim() || PRODUCT_WERBESLOGAN,
                 heroTitle: ec.heroTitle?.trim() || PRODUCT_WERBESLOGAN_2,
+                heroRundgangInvite:
+                  ec.heroRundgangInvite?.trim() ||
+                  'Komm mit auf einen kurzen Rundgang – wir zeigen dir, wie deine Galerie wirkt.',
                 heroSub: ec.heroSub?.trim() || 'Wähle deinen Weg – dann siehst du sofort, was dich erwartet.',
                 heroDeviceHint: ec.heroDeviceHint?.trim() || 'Am besten auf Tablet oder PC – dann siehst du alles auf einen Blick.',
-                cta: ec.cta?.trim() || 'Jetzt entdecken →',
+                cta: ec.cta?.trim() || 'Rundgang starten →',
                 ctaSub: ec.ctaSub?.trim() || 'Kostenlos · Keine Anmeldung · 1 Minute',
               }
               const fh = WERBEUNTERLAGEN_STIL.fontHeading
@@ -13672,6 +13675,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         <br />
                         {T_heroMini.heroTitle}
                       </div>
+                      <p style={{ fontSize: '0.58rem', color: 'rgba(255,248,240,0.92)', lineHeight: 1.5, maxWidth: 270, margin: '0 0 0.35rem', paddingLeft: '0.35rem', borderLeft: `2px solid ${accentGlow}aa` }}>
+                        {T_heroMini.heroRundgangInvite}
+                      </p>
                       <p style={{ fontSize: '0.62rem', color: '#d4a574', lineHeight: 1.55, maxWidth: 260, margin: '0 0 0.35rem' }}>{T_heroMini.heroSub}</p>
                       <p style={{ fontSize: '0.56rem', color: 'rgba(255,248,240,0.82)', lineHeight: 1.5, maxWidth: 270, margin: '0 0 0.35rem', borderLeft: `2px solid ${accentGlow}88`, paddingLeft: '0.45rem' }}>
                         <strong style={{ color: textLight }}>Galerie gestalten</strong> ist der Mittelpunkt: Hier legst du dein <strong style={{ color: textLight }}>Corporate Design</strong> fest – eine durchgängige Linie für die Website, Einladungen und alles, was du druckst.
@@ -17548,6 +17554,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       {([
                         { key: 'heroTag' as const, label: 'Überschrift Zeile 1 (Slogan)' },
                         { key: 'heroTitle' as const, label: 'Überschrift Zeile 2' },
+                        { key: 'heroRundgangInvite' as const, label: 'Einladung zum Rundgang (unter der Überschrift)' },
                         { key: 'heroSub' as const, label: 'Untertitel' },
                         { key: 'heroDeviceHint' as const, label: 'Hinweis (Tablet/PC)' },
                         { key: 'cta' as const, label: 'Button-Text' },

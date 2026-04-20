@@ -1,7 +1,15 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nächste Session: bei Bedarf Einladungsbriefe/PM-Screenshot prüfen; offen nur falls Georg danach fragt.  
-**Einordnung:** Session 19.04.26 abgeschlossen – K2-Familie Identität („Du“ vs. Listen-Code) geklärt, neuer persönlicher Code funktioniert; Code + UI-Texte committed.
+**Was wir JETZT tun:** Bei Bedarf Entdecken/Eingangstor live prüfen; sonst nächste Aufgabe von Georg.  
+**Einordnung:** Eingangsseite **einladender**: `heroRundgangInvite` + CTA „Rundgang starten“; Admin **Design → Eingangsseite** mit gleichem Textfeld und Mini-Vorschau.
+
+---
+
+**Letzter Stand:** 20.04.26 – **Entdecken / Eingangstor: Einladung zum Rundgang (Text + Admin)** – `pageContentEntdecken` (`heroRundgangInvite`, Default-Satz; CTA **Rundgang starten →**); `EntdeckenPage` Einladungszeile + Alt-Texte; `ScreenshotExportAdmin` Mini-Vorschau + Formularfeld **Einladung zum Rundgang**. **`npm run qs:local` grün.** **Commit:** `57328e2e` ✅ GitHub
+
+---
+
+**Letzter Stand:** 20.04.26 – **Testuser/Testpilot: Gutschein 100 €; Schwerpunkt 5 Jahre Gratislizenz** – `EntdeckenPage` (`testpilotKurz`); `TestuserAnmeldungPage` Kurzinfo (Gratislizenz zuerst, Gutschein zweit); `k2team-handbuch/28`, `29–31`, `00-INDEX` + Spiegel `public/k2team-handbuch/`; `public/benutzer-handbuch/17-TESTUSER-ZUGANG.md`. **`npm run build:vercel` grün.** **Commit:** `3b4b1aba` ✅ GitHub
 
 ---
 

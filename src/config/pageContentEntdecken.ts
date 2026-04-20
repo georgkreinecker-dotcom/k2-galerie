@@ -19,6 +19,8 @@ export interface PageContentEntdecken {
   textLight?: string
   heroTag?: string
   heroTitle?: string
+  /** Einladung zum Rundgang – sichtbar unter der Überschrift, einladender Ton */
+  heroRundgangInvite?: string
   heroSub?: string
   heroDeviceHint?: string
   cta?: string
@@ -32,9 +34,11 @@ const DEFAULTS: PageContentEntdecken = {
   bgDark: '#120a06',
   bgMid: '#1e1008',
   textLight: '#fff8f0',
+  heroRundgangInvite:
+    'Komm mit auf einen kurzen Rundgang – wir zeigen dir, wie deine Galerie wirkt.',
   heroSub: 'Wähle deinen Weg – dann siehst du sofort, was dich erwartet.',
   heroDeviceHint: 'Am besten auf Tablet oder PC – dann siehst du alles auf einen Blick.',
-  cta: 'Jetzt entdecken →',
+  cta: 'Rundgang starten →',
   ctaSub: 'Kostenlos · Keine Anmeldung · 1 Minute',
 }
 

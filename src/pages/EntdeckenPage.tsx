@@ -58,9 +58,11 @@ function speichereNotiz(text: string, step: string) {
 const T_DEFAULTS = {
   heroTag: PRODUCT_WERBESLOGAN,
   heroTitle: PRODUCT_WERBESLOGAN_2,
+  heroRundgangInvite:
+    'Komm mit auf einen kurzen Rundgang – wir zeigen dir, wie deine Galerie wirkt.',
   heroSub: 'Wähle deinen Weg – dann siehst du sofort, was dich erwartet.',
   heroDeviceHint: 'Am besten auf Tablet oder PC – dann siehst du alles auf einen Blick.',
-  cta: 'Jetzt entdecken →',
+  cta: 'Rundgang starten →',
   ctaSub: 'Kostenlos · Keine Anmeldung · 1 Minute',
 
   weg: 'Wofür interessierst du dich?',
@@ -705,6 +707,7 @@ export default function EntdeckenPage() {
   const T_hero = {
     heroTag: entdeckenContent.heroTag?.trim() || T_DEFAULTS.heroTag,
     heroTitle: entdeckenContent.heroTitle?.trim() || T_DEFAULTS.heroTitle,
+    heroRundgangInvite: entdeckenContent.heroRundgangInvite?.trim() || T_DEFAULTS.heroRundgangInvite,
     heroSub: entdeckenContent.heroSub?.trim() || T_DEFAULTS.heroSub,
     heroDeviceHint: entdeckenContent.heroDeviceHint?.trim() || T_DEFAULTS.heroDeviceHint,
     cta: entdeckenContent.cta?.trim() || T_DEFAULTS.cta,
@@ -926,7 +929,7 @@ export default function EntdeckenPage() {
                       loop
                       autoPlay
                       preload="metadata"
-                      aria-label="Galerie auf dem Tablet"
+                      aria-label="Eindruck vom Rundgang – Galerie auf dem Tablet"
                       style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', opacity: 0.88 }}
                       onError={() => setHeroImageSrc('svg')}
                     />
@@ -934,7 +937,7 @@ export default function EntdeckenPage() {
                   {heroImageSrc === 'primary' && !heroIsVideo && (
                     <img
                       src={heroImageUrl}
-                      alt="Galerie auf dem Tablet"
+                      alt="Eindruck vom Rundgang – Galerie auf dem Tablet"
                       style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', opacity: 0.88 }}
                       onError={() => setHeroImageSrc('svg')}
                     />
@@ -942,7 +945,7 @@ export default function EntdeckenPage() {
                   {heroImageSrc === 'svg' && (
                     <img
                       src="/img/oeffentlich/willkommen.svg"
-                      alt="Galerie auf dem Tablet"
+                      alt="Eindruck vom Rundgang – Galerie auf dem Tablet"
                       style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', opacity: 0.88 }}
                       onError={() => setHeroImageSrc('none')}
                     />
