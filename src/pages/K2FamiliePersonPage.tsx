@@ -1362,7 +1362,7 @@ export default function K2FamiliePersonPage() {
                       <p className="meta" style={{ margin: '0 0 0.5rem', fontSize: '0.82rem', lineHeight: 1.45 }}>
                         Aktuell als „du“ eingetragen:{' '}
                         <Link
-                          to={`${PROJECT_ROUTES.k2Familie.personen}/${einstellungen.ichBinPersonId}`}
+                          to={`${PROJECT_ROUTES['k2-familie'].personen}/${einstellungen.ichBinPersonId}`}
                           style={{ color: 'rgba(94, 234, 212, 0.95)' }}
                         >
                           {ichBinAndererName}
