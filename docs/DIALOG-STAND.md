@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Nächste Aufgabe von Georg.  
-**Einordnung:** K2 Familie QR/Cloud: Familien-QR-Kompakt-Session 7 Tage; Hinweise wenn Cloud leer (Speichern am Mac).
+**Einordnung:** K2 Familie Einladung: Kurzlink sichtbar + PC-Hinweis (Brief, Mitglieder-Liste, Mustertext).
+
+---
+
+**Letzter Stand:** 20.04.26 – **K2 Familie: Einladung Kurzlink am Bildschirm + PC-Hinweis** – `K2FamilieEinladungGeschwisterBriefePage`: `.k2-fam-einlad-url-print` nicht mehr per CSS auf dem Bildschirm versteckt; Hinweis unter Familien-QR und pro Person; Intro ergänzt. `K2FamilieMitgliederCodesPage`: „Text für Mail & WhatsApp“ mit **kurzer** URL (Spalte 3). `familieMitgliedInfoBriefText`: Satz zu PC ohne Smartphone. **Commit:** `b643fa5d` ✅ GitHub
 
 ---
 
