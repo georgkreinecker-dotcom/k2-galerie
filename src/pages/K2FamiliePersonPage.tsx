@@ -4,10 +4,21 @@
  */
 
 import { useParams, Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom'
-import { useState, useEffect, useMemo, useRef, type ReactNode, type ChangeEventHandler, type CSSProperties } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef, type ReactNode, type ChangeEventHandler, type CSSProperties } from 'react'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { loadPersonen, savePersonen, loadMomente, saveMomente, loadBeitraege, saveBeitraege, deletePersonWithCleanup, loadEinstellungen } from '../utils/familieStorage'
+import {
+  loadPersonen,
+  savePersonen,
+  loadMomente,
+  saveMomente,
+  loadBeitraege,
+  saveBeitraege,
+  deletePersonWithCleanup,
+  loadEinstellungen,
+  saveEinstellungen,
+} from '../utils/familieStorage'
+import { setIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
 import type { K2FamiliePerson, K2FamilieMoment, K2FamilieBeitrag } from '../types/k2Familie'
@@ -222,7 +233,7 @@ export default function K2FamiliePersonPage() {
   const kannInstanz = capabilities.canManageFamilienInstanz
   const kannOrganisch = capabilities.canEditOrganisches
   const [edit, setEdit] = useState(false)
-  const einstellungen = useMemo(() => loadEinstellungen(currentTenantId), [currentTenantId, location.key])
+  const einstellungen = useMemo(() => loadEinstellungen(currentTenantId), [currentTenantId, location.key, familieStorageRevision])
   const istEigeneKarte = Boolean(id && einstellungen.ichBinPersonId === id)
   const rolle = capabilities.rolle
   const effectiveEditPersoenlich = Boolean(edit && istEigeneKarte && (rolle === 'bearbeiter' || rolle === 'leser'))
@@ -295,6 +306,31 @@ export default function K2FamiliePersonPage() {
     () => portraitSizeFromGraphDistance(graphDistanceFromDu),
     [graphDistanceFromDu]
   )
+  const ichBinAndererName = useMemo(() => {
+    const pid = einstellungen.ichBinPersonId?.trim()
+    if (!pid) return ''
+    return personen.find((p) => p.id === pid)?.name?.trim() ?? ''
+  }, [einstellungen.ichBinPersonId, personen])
+
+  const handleSetDasBinIch = useCallback(() => {
+    if (!kannStruktur || !id || !person) return
+    const pos = person.name?.match(/^(?:Geschwister|Kind)\s+(\d+)$/i)?.[1]
+    const einst = loadEinstellungen(currentTenantId)
+    const ichBinPositionAmongSiblings = pos ? parseInt(pos, 10) : einst.ichBinPositionAmongSiblings
+    let changed = saveEinstellungen(currentTenantId, { ...einst, ichBinPersonId: id, ichBinPositionAmongSiblings })
+    const posNum =
+      ichBinPositionAmongSiblings != null && ichBinPositionAmongSiblings >= 1 && ichBinPositionAmongSiblings <= 99
+        ? ichBinPositionAmongSiblings
+        : (person.positionAmongSiblings ?? null)
+    if (posNum != null) {
+      const updated = personen.map((x) => (x.id === id ? { ...x, positionAmongSiblings: posNum } : x))
+      if (savePersonen(currentTenantId, updated, { allowReduce: false })) changed = true
+    }
+    if (changed) {
+      setIdentitaetBestaetigt(currentTenantId, id)
+    }
+  }, [kannStruktur, id, person, currentTenantId, personen])
+
   const beziehungenKurz = useMemo(() => {
     if (!id) return { eltern: [] as K2FamiliePerson[], geschwister: [] as K2FamiliePerson[] }
     const b = getBeziehungenFromKarten(personen, id)
@@ -1295,6 +1331,58 @@ export default function K2FamiliePersonPage() {
         >
           <summary className="k2-familie-haupt-summary">Stammdaten</summary>
           <div className="k2-familie-haupt-inner">
+            {(istEigeneKarte || einstellungen.ichBinPersonId || (kannStruktur && person)) && (
+              <div
+                style={{
+                  marginBottom: '0.85rem',
+                  padding: '0.65rem 0.75rem',
+                  borderRadius: 10,
+                  background: 'rgba(0,0,0,0.2)',
+                  border: '1px solid rgba(20,184,166,0.35)',
+                }}
+              >
+                {istEigeneKarte ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <span
+                      style={{
+                        fontWeight: 700,
+                        color: 'rgba(94, 234, 212, 0.98)',
+                        fontSize: '0.95rem',
+                      }}
+                    >
+                      ✓ Das bin ich
+                    </span>
+                    <span className="meta" style={{ fontSize: '0.78rem', lineHeight: 1.4 }}>
+                      Diese Karte ist als „du“ gesetzt (Stammbaum, Sortierung, Einladung).
+                    </span>
+                  </div>
+                ) : (
+                  <>
+                    {einstellungen.ichBinPersonId && ichBinAndererName ? (
+                      <p className="meta" style={{ margin: '0 0 0.5rem', fontSize: '0.82rem', lineHeight: 1.45 }}>
+                        Aktuell als „du“ eingetragen:{' '}
+                        <Link
+                          to={`${PROJECT_ROUTES.k2Familie.personen}/${einstellungen.ichBinPersonId}`}
+                          style={{ color: 'rgba(94, 234, 212, 0.95)' }}
+                        >
+                          {ichBinAndererName}
+                        </Link>
+                      </p>
+                    ) : null}
+                    {kannStruktur && person ? (
+                      <button
+                        type="button"
+                        className="btn-outline"
+                        style={{ fontSize: '0.88rem', padding: '0.4rem 0.75rem' }}
+                        onClick={handleSetDasBinIch}
+                      >
+                        Das bin ich (diese Person)
+                      </button>
+                    ) : null}
+                  </>
+                )}
+              </div>
+            )}
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.5rem', flexWrap: 'wrap' }}>
             <div style={{ flexShrink: 0, maxWidth: Math.max(300, portraitGroessePx + 40) }}>
             <input
