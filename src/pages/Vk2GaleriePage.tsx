@@ -23,6 +23,9 @@ import { reportPublicGalleryVisit } from '../utils/reportPublicGalleryVisit'
 import { resolveVk2PublicGalleryVisitTenantId } from '../utils/publicGalleryVisitTenant'
 import { openVk2PlatformRundgangGlobally } from '../utils/vk2PlatformLeitfadenStorage'
 import { PublicTeilenFixed } from '../components/PublicTeilenFixed'
+import { K2WorldMobileNavSheet } from '../components/K2WorldMobileNavSheet'
+import { useK2WorldMobileCompact } from '../hooks/useK2WorldMobileCompact'
+import { useK2WorldMobileNavSheet } from '../hooks/useK2WorldMobileNavSheet'
 import { getVk2StammdatenKey } from '../utils/stammdatenStorage'
 import { pilotScopeVk2Key } from '../utils/vk2StorageKeys'
 import '../App.css'
@@ -128,6 +131,10 @@ const Vk2GaleriePage: React.FC = () => {
   const [events, setEvents] = useState<any[]>(() => loadVk2Events())
   const [qrDataUrl, setQrDataUrl] = useState<string>('')
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
+  const vk2CompactNav = useK2WorldMobileCompact()
+  const vk2NavSheet = useK2WorldMobileNavSheet(location.pathname, location.search)
+  const vk2NavFromAdmin = !!(location.state as { fromAdminTab?: string } | null)?.fromAdminTab
+  const vk2ShowAdminEntry = vk2NavFromAdmin || isAdminUnlocked()
 
   // Neu laden wenn localStorage sich ändert (z.B. nach Admin-Speicherung)
   useEffect(() => {
@@ -237,36 +244,89 @@ const Vk2GaleriePage: React.FC = () => {
 
       {/* Keine gelbe Leiste mit „Zurück zu Einstellungen“ – für User verboten, zur APf zu führen */}
 
-      {/* Nav: kein „Zurück“ zur APf (Georg 03.04.26). „Admin“ nur wenn Aufruf vom Admin oder Unlock – Zugang wiederherstellbar */}
-      {(() => {
-        const fromAdmin = !!(location.state as { fromAdminTab?: string } | null)?.fromAdminTab
-        const showAdminEntry = fromAdmin || isAdminUnlocked()
-        return (
-          <nav style={{
-            position: 'sticky', top: 0, zIndex: 100,
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '0.6rem 1.5rem',
-            background: 'rgba(250,248,245,0.97)',
-            backdropFilter: 'blur(12px)',
-            borderBottom: `1px solid ${C.border}`,
-            boxShadow: '0 1px 8px rgba(0,0,0,0.06)',
-          }}>
-            <div style={{ width: '4rem', flexShrink: 0 }} aria-hidden />
-            <span style={{ fontSize: '0.78rem', fontWeight: 600, color: C.textMid, letterSpacing: '0.14em', textTransform: 'uppercase', fontFamily: 'system-ui, sans-serif' }}>
+      {/* Nav: kein „Zurück“ zur APf (Georg 03.04.26). „Admin“ nur wenn Aufruf vom Admin oder Unlock – Zugang wiederherstellbar. Handy: eine Zeile + Menü-Sheet (K2-Welt-Standard). */}
+      {vk2CompactNav ? (
+        <>
+          <nav
+            style={{
+              position: 'sticky',
+              top: 0,
+              zIndex: 100,
+              display: 'flex',
+              flexWrap: 'nowrap',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.55rem 1rem',
+              paddingLeft: 'max(0.75rem, env(safe-area-inset-left))',
+              paddingRight: 'max(0.75rem, env(safe-area-inset-right))',
+              paddingTop: 'max(0.45rem, env(safe-area-inset-top))',
+              background: 'rgba(250,248,245,0.97)',
+              backdropFilter: 'blur(12px)',
+              borderBottom: `1px solid ${C.border}`,
+              boxShadow: '0 1px 8px rgba(0,0,0,0.06)',
+            }}
+          >
+            <span
+              style={{
+                flex: '1 1 auto',
+                minWidth: 0,
+                fontSize: '0.9rem',
+                fontWeight: 700,
+                color: C.text,
+                fontFamily: 'system-ui, sans-serif',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+              title={vereinsName}
+            >
               {vereinsName}
             </span>
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <button
+              type="button"
+              aria-expanded={vk2NavSheet.menuOpen}
+              aria-controls="vk2-galerie-nav-mobile-sheet"
+              onClick={() => vk2NavSheet.setMenuOpen((o) => !o)}
+              style={{
+                flexShrink: 0,
+                minHeight: 44,
+                padding: '0.5rem 0.85rem',
+                fontSize: '0.88rem',
+                fontWeight: 700,
+                fontFamily: 'system-ui, sans-serif',
+                borderRadius: 999,
+                border: `1px solid rgba(192, 86, 42, 0.35)`,
+                background: vk2NavSheet.menuOpen ? C.accent : '#fffefb',
+                color: vk2NavSheet.menuOpen ? '#fff' : C.accent,
+                cursor: 'pointer',
+              }}
+            >
+              Menü
+            </button>
+          </nav>
+          <K2WorldMobileNavSheet
+            open={vk2NavSheet.menuOpen}
+            onClose={vk2NavSheet.closeMenu}
+            title="Vereinsseite"
+            panelId="vk2-galerie-nav-mobile-sheet"
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
               {showVk2LeitfadenUi ? (
                 <button
                   type="button"
-                  onClick={() => openVk2PlatformRundgangGlobally()}
+                  onClick={() => {
+                    vk2NavSheet.closeMenu()
+                    openVk2PlatformRundgangGlobally()
+                  }}
                   style={{
+                    minHeight: 44,
+                    width: '100%',
                     background: 'rgba(192, 86, 42, 0.1)',
                     color: C.accent,
                     border: `1px solid rgba(192, 86, 42, 0.35)`,
                     borderRadius: 8,
-                    padding: '0.28rem 0.65rem',
-                    fontSize: '0.78rem',
+                    padding: '0.65rem 1rem',
+                    fontSize: '0.95rem',
                     cursor: 'pointer',
                     fontWeight: 600,
                     fontFamily: 'system-ui, sans-serif',
@@ -276,32 +336,160 @@ const Vk2GaleriePage: React.FC = () => {
                   Rundgang
                 </button>
               ) : null}
-              <PublicTeilenFixed
-                layout="inline"
-                variant="vk2"
-                displayName={vereinsName}
-                canonicalPublicUrl={getPublicGalerieUrl('vk2', 'galerie')}
-                getShareText={() => `${vereinsName} – Vereinsgalerie zum Ausprobieren`}
-              />
+              <div style={{ width: '100%' }}>
+                <PublicTeilenFixed
+                  layout="inline"
+                  variant="vk2"
+                  displayName={vereinsName}
+                  canonicalPublicUrl={getPublicGalerieUrl('vk2', 'galerie')}
+                  getShareText={() => `${vereinsName} – Vereinsgalerie zum Ausprobieren`}
+                />
+              </div>
               <button
-                onClick={() => navigate(PROJECT_ROUTES.vk2.mitgliedLogin)}
-                style={{ background: '#f0f4ff', color: '#3b5bdb', border: '1px solid #c5d0fa', borderRadius: 8, padding: '0.28rem 0.7rem', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600, fontFamily: 'system-ui, sans-serif' }}
+                type="button"
+                onClick={() => {
+                  vk2NavSheet.closeMenu()
+                  navigate(PROJECT_ROUTES.vk2.mitgliedLogin)
+                }}
+                style={{
+                  minHeight: 44,
+                  width: '100%',
+                  background: '#f0f4ff',
+                  color: '#3b5bdb',
+                  border: '1px solid #c5d0fa',
+                  borderRadius: 8,
+                  padding: '0.65rem 1rem',
+                  fontSize: '0.95rem',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  fontFamily: 'system-ui, sans-serif',
+                }}
                 title="Mitglied-Login"
               >
                 🔑 Mitglied
               </button>
-              {showAdminEntry && (
+              {vk2ShowAdminEntry ? (
                 <button
-                  onClick={() => navigate('/mein-bereich?context=vk2')}
-                  style={{ background: 'transparent', color: C.textLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '0.28rem 0.7rem', fontSize: '0.78rem', cursor: 'pointer', fontFamily: 'system-ui, sans-serif' }}
+                  type="button"
+                  onClick={() => {
+                    vk2NavSheet.closeMenu()
+                    navigate('/mein-bereich?context=vk2')
+                  }}
+                  style={{
+                    minHeight: 44,
+                    width: '100%',
+                    background: 'transparent',
+                    color: C.textLight,
+                    border: `1px solid ${C.border}`,
+                    borderRadius: 8,
+                    padding: '0.65rem 1rem',
+                    fontSize: '0.95rem',
+                    cursor: 'pointer',
+                    fontFamily: 'system-ui, sans-serif',
+                  }}
                 >
                   Admin
                 </button>
-              )}
+              ) : null}
             </div>
-          </nav>
-        )
-      })()}
+          </K2WorldMobileNavSheet>
+        </>
+      ) : (
+        <nav
+          style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 100,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0.6rem 1.5rem',
+            background: 'rgba(250,248,245,0.97)',
+            backdropFilter: 'blur(12px)',
+            borderBottom: `1px solid ${C.border}`,
+            boxShadow: '0 1px 8px rgba(0,0,0,0.06)',
+          }}
+        >
+          <div style={{ width: '4rem', flexShrink: 0 }} aria-hidden />
+          <span
+            style={{
+              fontSize: '0.78rem',
+              fontWeight: 600,
+              color: C.textMid,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              fontFamily: 'system-ui, sans-serif',
+            }}
+          >
+            {vereinsName}
+          </span>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            {showVk2LeitfadenUi ? (
+              <button
+                type="button"
+                onClick={() => openVk2PlatformRundgangGlobally()}
+                style={{
+                  background: 'rgba(192, 86, 42, 0.1)',
+                  color: C.accent,
+                  border: `1px solid rgba(192, 86, 42, 0.35)`,
+                  borderRadius: 8,
+                  padding: '0.28rem 0.65rem',
+                  fontSize: '0.78rem',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  fontFamily: 'system-ui, sans-serif',
+                }}
+                title="Geführter Rundgang durch die Beispiel-Seite"
+              >
+                Rundgang
+              </button>
+            ) : null}
+            <PublicTeilenFixed
+              layout="inline"
+              variant="vk2"
+              displayName={vereinsName}
+              canonicalPublicUrl={getPublicGalerieUrl('vk2', 'galerie')}
+              getShareText={() => `${vereinsName} – Vereinsgalerie zum Ausprobieren`}
+            />
+            <button
+              type="button"
+              onClick={() => navigate(PROJECT_ROUTES.vk2.mitgliedLogin)}
+              style={{
+                background: '#f0f4ff',
+                color: '#3b5bdb',
+                border: '1px solid #c5d0fa',
+                borderRadius: 8,
+                padding: '0.28rem 0.7rem',
+                fontSize: '0.78rem',
+                cursor: 'pointer',
+                fontWeight: 600,
+                fontFamily: 'system-ui, sans-serif',
+              }}
+              title="Mitglied-Login"
+            >
+              🔑 Mitglied
+            </button>
+            {vk2ShowAdminEntry ? (
+              <button
+                type="button"
+                onClick={() => navigate('/mein-bereich?context=vk2')}
+                style={{
+                  background: 'transparent',
+                  color: C.textLight,
+                  border: `1px solid ${C.border}`,
+                  borderRadius: 8,
+                  padding: '0.28rem 0.7rem',
+                  fontSize: '0.78rem',
+                  cursor: 'pointer',
+                  fontFamily: 'system-ui, sans-serif',
+                }}
+              >
+                Admin
+              </button>
+            ) : null}
+          </div>
+        </nav>
+      )}
 
       {/* VK2 Willkommens-Banner – Admin ohne globalen Guide (Guide abgeschaltet 20.03.26) */}
       {(() => {

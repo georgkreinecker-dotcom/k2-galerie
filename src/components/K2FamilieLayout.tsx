@@ -6,6 +6,9 @@
 
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useK2WorldMobileCompact } from '../hooks/useK2WorldMobileCompact'
+import { useK2WorldMobileNavSheet } from '../hooks/useK2WorldMobileNavSheet'
+import { K2WorldMobileNavSheet } from './K2WorldMobileNavSheet'
 import { FamilieTenantProvider, useFamilieTenant } from '../context/FamilieTenantContext'
 import { FamilieRolleProvider, useFamilieRolle } from '../context/FamilieRolleContext'
 import { PROJECT_ROUTES } from '../config/navigation'
@@ -816,22 +819,6 @@ function isFamilieNavItemActive(item: FamilieNavItem, path: string): boolean {
   return path.startsWith(toPathOnly)
 }
 
-/** Gleicher Breakpoint wie `.k2-familie-nav`-Handy-Styles in App.css */
-const FAMILIE_NAV_COMPACT_MQ = '(max-width: 768px)'
-
-function useK2FamilieCompactNavMedia(): boolean {
-  const [compact, setCompact] = useState(false)
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const mq = window.matchMedia(FAMILIE_NAV_COMPACT_MQ)
-    const apply = () => setCompact(mq.matches)
-    apply()
-    mq.addEventListener('change', apply)
-    return () => mq.removeEventListener('change', apply)
-  }, [])
-  return compact
-}
-
 function FamilieNav() {
   const loc = useLocation()
   const path = loc.pathname
@@ -864,31 +851,9 @@ function FamilieNav() {
     return FAMILIE_NAV
   }, [isMeineFamilieHome, isLeser, nurMusterBesuch])
 
-  const compactMedia = useK2FamilieCompactNavMedia()
+  const compactMedia = useK2WorldMobileCompact()
   const useCompactNavPattern = compactMedia && (!isMeineFamilieHome || navItems.length > 4)
-  const [menuOpen, setMenuOpen] = useState(false)
-
-  useEffect(() => {
-    setMenuOpen(false)
-  }, [path, loc.search])
-
-  useEffect(() => {
-    if (!menuOpen) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMenuOpen(false)
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [menuOpen])
-
-  useEffect(() => {
-    if (!menuOpen) return
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = prev
-    }
-  }, [menuOpen])
+  const { menuOpen, setMenuOpen, closeMenu } = useK2WorldMobileNavSheet(path, loc.search)
 
   const activeNavItem = useMemo(() => {
     const matches = navItems.filter((i) => isFamilieNavItemActive(i, path))
@@ -951,7 +916,7 @@ function FamilieNav() {
           key={to}
           to={to}
           {...base}
-          onClick={() => setMenuOpen(false)}
+          onClick={() => closeMenu()}
           className={isActive ? 'k2-familie-nav-link k2-familie-nav-link--active' : 'k2-familie-nav-link'}
           style={{
             display: 'flex',
@@ -1056,58 +1021,17 @@ function FamilieNav() {
             Menü
           </button>
         </nav>
-        {menuOpen ? (
-          <div
-            id="k2-familie-nav-mobile-sheet"
-            className="k2-familie-nav-mobile-sheet"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Bereiche"
-          >
-            <button
-              type="button"
-              className="k2-familie-nav-mobile-backdrop"
-              aria-label="Menü schließen"
-              onClick={() => setMenuOpen(false)}
-            />
-            <div className="k2-familie-nav-mobile-panel">
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: '0.65rem',
-                  paddingBottom: '0.5rem',
-                  borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
-                }}
-              >
-                <span style={{ fontWeight: 700, fontSize: '1rem', color: t.text, fontFamily: t.fontHeading }}>
-                  Bereiche
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setMenuOpen(false)}
-                  style={{
-                    padding: '0.4rem 0.75rem',
-                    fontSize: '0.86rem',
-                    fontWeight: 600,
-                    borderRadius: t.radius,
-                    border: `1px solid ${FAMILIE_NAV_BORDER}`,
-                    background: t.bgDark,
-                    color: t.muted,
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
-                  }}
-                >
-                  Schließen
-                </button>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
-                {navItems.map((item) => renderNavLink(item, 'sheet'))}
-              </div>
-            </div>
+        <K2WorldMobileNavSheet
+          open={menuOpen}
+          onClose={closeMenu}
+          title="Bereiche"
+          panelId="k2-familie-nav-mobile-sheet"
+          className="k2-familie-no-print"
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+            {navItems.map((item) => renderNavLink(item, 'sheet'))}
           </div>
-        ) : null}
+        </K2WorldMobileNavSheet>
       </>
     )
   }
