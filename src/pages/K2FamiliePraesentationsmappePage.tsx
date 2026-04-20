@@ -15,6 +15,11 @@ const DOCUMENTS = [
     file: '00-EINSTIEGSADRESSEN.md',
   },
   {
+    id: '01-kurzbotschaft-post-flyer',
+    name: 'Kurzbotschaft Post/Flyer (ohne URLs)',
+    file: '01-KURZBOTSCHAFT-POST-FLYER.md',
+  },
+  {
     id: '01-flyer-kurzprospekt',
     name: 'Flyer – Kurzprospekt Verkaufsargumentation',
     file: '01-FLYER-KURZPROSPEKT-VERKAUFSARGUMENTATION.md',
@@ -62,7 +67,7 @@ export default function K2FamiliePraesentationsmappePage() {
       deckblattSlogan={PRODUCT_K2_FAMILIE_WERBELINIE_DECKBLATT}
       deckblattMainTitle="Vertriebsunterlagen"
       deckblattFooterProduct="K2 Familie"
-      deckblattFooterKind="Zehn Kapitel · Inhaltsverzeichnis"
+      deckblattFooterKind="Zwölf Kapitel · Inhaltsverzeichnis"
       deckblattFooterTagline="Flyer · Prospekt · Features · FAQ · Lizenz · Onboarding · B2B · Markt · Medien · Drehbuch"
       footerPreviewLine="K2 Familie – Vertriebsunterlagen · (Seitenzahlen beim Drucken)"
       printCurrentDocPrefix="K2 Familie – Vertriebsunterlagen"

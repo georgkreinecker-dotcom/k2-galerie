@@ -1,5 +1,7 @@
 # Flyer / Kurzprospekt – Verkaufsargumentation
 
+**Kurz zum Kopieren (ohne URLs):** [01-KURZBOTSCHAFT-POST-FLYER.md](01-KURZBOTSCHAFT-POST-FLYER.md).
+
 **Gespeicherte Verkaufsargumentation** (ein Blatt, Flyer-Logik): Werbetext für Gespräche, Infostände und schnellen Druck. **kgm solution** bündelt Qualität unter einem Dach; **K2 Familie** ist ein **eigenes Produkt** – inhaltlich und technisch klar getrennt von K2 Galerie, ök2 und VK2. Familiendaten werden **niemals** wie Galerie- oder Marketingdaten behandelt.
 
 **Ableitung:** Ausführliches **Produktprospekt** mit mehr Information → [02-PROSPEKT-PRODUKTINFORMATION.md](02-PROSPEKT-PRODUKTINFORMATION.md).

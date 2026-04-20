@@ -7,7 +7,8 @@
 | Datei | Inhalt |
 |--------|--------|
 | **00-INDEX.md** | Inhaltsverzeichnis – Kurzanleitung (**alle** Kapitel) |
-| **01-…** | Flyer / Kurzprospekt – Verkaufsargumentation |
+| **01-KURZBOTSCHAFT-POST-FLYER.md** | Kurzbotschaft Post/Flyer – kopierbar, ohne URL-Flut |
+| **01-FLYER-…** | Flyer / Kurzprospekt – Verkaufsargumentation |
 | **02-…** | Prospekt – Produktinformation |
 | **03-…** | Produktfeatures – Überblick für Vertrieb |
 | **04-…** | FAQ und Einwände – Gesprächs-Spickzettel |
