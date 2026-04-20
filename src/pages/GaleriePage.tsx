@@ -13,6 +13,7 @@ import { getGalerieImages, getPageContentGalerie, mergePageContentGalerieFromSer
 import { GalerieSocialLinks } from '../components/GalerieSocialLinks'
 import { Oek2GalerieLeitfadenModal } from '../components/Oek2GalerieLeitfadenModal'
 import { getPageTexts, cleanK2PageTextsFromVk2, type GaleriePageTexts } from '../config/pageTexts'
+import { getPageContentEntdecken, DEFAULT_HERO_RUNDGANG_INVITE } from '../config/pageContentEntdecken'
 import { appendToHistory } from '../utils/artworkHistory'
 import { readArtworksRawForContext, saveArtworksForContextWithImageStore } from '../utils/artworksStorage'
 import { mergeServerWithLocal, preserveLocalImageData } from '../utils/syncMerge'
@@ -325,6 +326,20 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
   const galerieRef = React.useRef<HTMLDivElement>(null)
   const kunstschaffendeRef = React.useRef<HTMLDivElement>(null)
   const [mobileUrl, setMobileUrl] = React.useState<string>('')
+  /** ök2 Willkommensbereich: gleicher Einladungssatz wie Entdecken / Eingangstor (Admin → Design → Eingangsseite). */
+  const [oek2RundgangInviteLine, setOek2RundgangInviteLine] = useState(() => {
+    if (typeof window === 'undefined') return DEFAULT_HERO_RUNDGANG_INVITE
+    const t = getPageContentEntdecken().heroRundgangInvite?.trim()
+    return t || DEFAULT_HERO_RUNDGANG_INVITE
+  })
+  useEffect(() => {
+    const sync = () => {
+      const t = getPageContentEntdecken().heroRundgangInvite?.trim()
+      setOek2RundgangInviteLine(t || DEFAULT_HERO_RUNDGANG_INVITE)
+    }
+    window.addEventListener('k2-page-content-entdecken-updated', sync)
+    return () => window.removeEventListener('k2-page-content-entdecken-updated', sync)
+  }, [])
   // Willkommens-Fenster (nur öffentliche Galerie): nur auf Mobilgeräten (QR-Einstieg). Von Entdecken „Meine eigene Plattform“ aus nie anzeigen – Buttons „Galerie teilen“ und „Mit mir in den Admin“ müssen sichtbar bleiben.
   const [showWelcomeModal, setShowWelcomeModal] = useState(() => {
     if (typeof sessionStorage === 'undefined') return false
@@ -3394,6 +3409,22 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             }}
           >
             {renderOek2SpartenKasten()}
+            {oek2RundgangInviteLine.trim() ? (
+              <p
+                style={{
+                  margin: 'clamp(0.75rem, 2vw, 1rem) 0 0',
+                  textAlign: 'center',
+                  fontSize: 'clamp(0.9rem, 2.1vw, 1.05rem)',
+                  lineHeight: 1.45,
+                  color: theme.muted,
+                  maxWidth: '42rem',
+                  marginLeft: 'auto',
+                  marginRight: 'auto',
+                }}
+              >
+                {oek2RundgangInviteLine.trim()}
+              </p>
+            ) : null}
           </div>
         )}
         {/* ök2: „Mit mir in den Admin“ wenn kein fixer Admin-Button (z. B. Fremde per Link) – früher im Fremden-Banner, jetzt schlank darunter */}

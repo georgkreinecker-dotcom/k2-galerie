@@ -14,7 +14,7 @@ export function buildOek2GalerieLeitfadenSchritte(name: string): Oek2GalerieLeit
     {
       id: 'begruessung',
       titel: 'Willkommen',
-      stimmung: 'Diese Demo zeigt, wie eine Galerie wirken kann.',
+      stimmung: 'Einladung in die Demo – so kann eine Galerie wirken.',
       text:
         `**Schön, dass du da bist, ${n}.**\n\n` +
         'Hier siehst du eine **Muster-Galerie** – erfundene Inhalte, echte Struktur: **Willkommen**, **Künstler:in**, **Werke** in der Vorschau, **Impressum**.\n\n' +
@@ -23,9 +23,9 @@ export function buildOek2GalerieLeitfadenSchritte(name: string): Oek2GalerieLeit
     {
       id: 'willkommen',
       titel: 'Erste Seite',
-      stimmung: 'Eindruck, Farben, Einladung.',
+      stimmung: 'Eindruck, Farben, Einladung – deine erste Seite.',
       text:
-        '**Willkommensbereich:** Bild, Titel und Text – so kommen Besucher:innen an.\n\n' +
+        '**Willkommensbereich:** Bild, Titel und Text – der erste Eindruck **lädt zum Bleiben ein**.\n\n' +
         'Später legst du **alles im Admin** fest: Texte, Bilder, **Corporate Design** – eine Linie für Web und Druck.',
       focusKey: 'willkommen',
     },
