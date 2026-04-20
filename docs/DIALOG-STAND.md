@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Nächste Aufgabe von Georg.  
-**Einordnung:** K2-Welt Handy – ein Standard (768px, Hooks + Menü-Sheet) für K2 Familie und VK2-Galerie; K2-Galerie öffentlich unverändert (eisernes Gesetz).
+**Einordnung:** Footer „App verlassen“ = keine K2-Zielseite mehr; neutrale Browser-Leerseite.
+
+---
+
+**Letzter Stand:** 20.04.26 – **App verlassen: neutral (`about:blank`)** – `AppVerlassenFooterLink` ohne `ziel`-Prop; Klick → `window.location.replace('about:blank')` (kein `/entdecken`, kein Familie-Willkommen). Galerie, Vorschau, VK2, K2 Familie. **`npm run tsc:build` grün.** **Commit:** `21526c5e` ✅ GitHub
 
 ---
 
