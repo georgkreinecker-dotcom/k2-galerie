@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Bei Bedarf Entdecken/Eingangstor live prüfen; sonst nächste Aufgabe von Georg.  
-**Einordnung:** Eingangsseite **einladender**: `heroRundgangInvite` + CTA „Rundgang starten“; Admin **Design → Eingangsseite** mit gleichem Textfeld und Mini-Vorschau.
+**Was wir JETZT tun:** Nächste Aufgabe von Georg.  
+**Einordnung:** ök2 **Sheet-Rundgang** („ök2 Plattform · Rundgang“ / Muster-Galerie): Texte in `oek2GalerieLeitfadenSteps.ts`; auf der Demo-Galerie erscheint die **Einladungszeile** (`heroRundgangInvite` / Default) unter dem Sparten-Kasten.
+
+---
+
+**Letzter Stand:** 20.04.26 – **ök2 geführter Rundgang + Galerie: einladender Ton** – `oek2GalerieLeitfadenSteps.ts` (Begrüßung, Schritt „Erste Seite“); `GaleriePage` zeigt `oek2RundgangInviteLine` unter Sparten-Kasten. **`npm run qs:local` grün.** **Commit:** `be9d1707` ✅ GitHub
 
 ---
 
