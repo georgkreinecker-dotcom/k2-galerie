@@ -222,6 +222,9 @@ function stammbaumKachelRaender(p: K2FamiliePerson, st: { border: string; bg: st
  */
 const STAMMBAUM_VIELE_SEKTIONEN_AB = 2
 
+/** Ab dieser Personenzahl: Hinweis, wenn „Das bin ich“ fehlt (sonst nur flache Kachelgitter-Ansicht). */
+const STAMMBAUM_HINT_FLACHE_LISTE_AB = 3
+
 function stammbaumSektionDomId(key: string): string {
   return `stammbaum-sek-${key.replace(/[^a-zA-Z0-9_-]/g, '-')}`
 }
@@ -239,11 +242,14 @@ function stammbaumSektionTocLabel(s: StammbaumKartenSektion): string {
   return s.titel.length > 26 ? `${s.titel.slice(0, 26)}…` : s.titel
 }
 
-/** Jede Person sieht zuerst den eigenen Familienzweig – außer sie wählt ausdrücklich die ganze Familie. */
+/**
+ * „Nur mein Zweig“: wenn nie gewählt → **Aus** (ganze Familie mit Blöcken/Familienzweigen), damit die
+ * Großfamilien-Übersicht standardmäßig sichtbar ist. Nur bei ausdrücklich gesetztem Schalter gilt der gewählte Wert.
+ */
 function effectiveNurMeinFamilienzweig(einst: K2FamilieEinstellungen): boolean {
   if (!einst.ichBinPersonId) return false
   if (einst.stammbaumNurMeinFamilienzweig !== undefined) return einst.stammbaumNurMeinFamilienzweig
-  return true
+  return false
 }
 
 function defaultStammbaumSekOpen(
@@ -1714,6 +1720,29 @@ export default function K2FamilieStammbaumPage() {
             )
           })
         ) : !einstellungen.ichBinPersonId ? (
+          <>
+            {personen.length >= STAMMBAUM_HINT_FLACHE_LISTE_AB && (
+              <section
+                className="no-print"
+                role="status"
+                aria-live="polite"
+                style={{
+                  marginBottom: '1rem',
+                  padding: '0.9rem 1rem',
+                  borderRadius: 10,
+                  border: '1px solid rgba(45, 212, 191, 0.45)',
+                  background: 'linear-gradient(115deg, rgba(13, 148, 136, 0.22) 0%, rgba(15, 23, 42, 0.55) 100%)',
+                  maxWidth: '48rem',
+                }}
+              >
+                <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(45, 212, 191, 0.98)', marginBottom: '0.35rem' }}>
+                  Übersicht nach Familienzweigen
+                </div>
+                <p style={{ margin: 0, lineHeight: 1.5, color: 'rgba(248, 250, 252, 0.94)', fontSize: '0.94rem' }}>
+                  Solange <strong style={{ color: 'rgba(255,255,255,0.98)' }}>„Das bin ich“</strong> nicht gewählt ist, zeigt die App hier nur <strong style={{ color: 'rgba(255,255,255,0.98)' }}>alle Karten nebeneinander</strong> – ohne die Struktur mit Eltern, eingeklappten Familienzweigen und Sprungleiste. Legen Sie in den <Link to={PROJECT_ROUTES['k2-familie'].einstellungen} style={{ color: 'rgba(45, 212, 191, 0.98)', fontWeight: 600 }}>Einstellungen</Link> fest, <strong style={{ color: 'rgba(255,255,255,0.98)' }}>wer Sie sind</strong> (oder Rechtsklick auf Ihre Kachel → Zuordnen), sobald Ihre Karte existiert.
+                </p>
+              </section>
+            )}
           <div className="k2-familie-stammbaum-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.25rem' }}>
             {stammbaumKarten.sortedPersonen.map((p, i) => {
               const bi = stammbaumKarten.branchIndexByKey.get(stammbaumKarten.getBranchKey(p)) ?? 0
@@ -1782,6 +1811,7 @@ export default function K2FamilieStammbaumPage() {
               )
             })}
           </div>
+          </>
         ) : null}
 
         {personen.length > 0 && (

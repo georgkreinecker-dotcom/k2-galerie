@@ -37,7 +37,7 @@ Oben sehen Sie den **Anzeigenamen** Ihrer Familie (z. B. „Familie …“). M
 
 ## 4. **„Das bin ich“** und **Beziehungs-Überblick**
 
-- **Das bin ich** wählen Sie in der **Grafik** (oder über die Logik der App) auf **Ihrer** Karte – damit weiß die App, **wer Sie** in dieser Familie sind (für Sortierung, Zweig, Einladung).
+- **Das bin ich** wählen Sie in der **Grafik**, in den **Einstellungen** oder per **Rechtsklick auf Ihre Kachel** (Zuordnen) auf **Ihrer** Karte – damit weiß die App, **wer Sie** in dieser Familie sind (für Sortierung, Zweig, Einladung). **Ohne diese Wahl** zeigt die Kartenliste nur **alle Personen nebeneinander** – **nicht** die Aufteilung in Eltern- und Familienzweig-Blöcke mit Ein- und Ausklappen.
 - **Du zurücksetzen** entfernt diese Zuordnung – falls einmal die **falsche** Person gewählt wurde (nur mit Strukturrecht).
 - Der aufklappbare Block **„Deine Beziehungen aus den Karten“** zeigt **Eltern, Kinder, Geschwister, Partner** – alles **aus den gespeicherten Karten**, keine freie Erfindung.
 
@@ -49,6 +49,8 @@ Schalter **„Nur mein Zweig in der Liste“** (mit **Info**-Icon):
 
 - **Ein:** In der Liste erscheinen nur **Sie, Partner und Ihre Nachkommen** – **keine** Geschwister-Äste mit eigenen Familien. Voraussetzung: **„Das bin ich“** ist gesetzt.
 - **Aus:** **Alle** erfassten Personen der Familie erscheinen – nach **Blöcken** sortiert (siehe nächster Abschnitt).
+
+**Standard, wenn Sie den Schalter noch nie umgestellt haben:** **Aus** – also **ganze Familie** in der strukturierten Listenansicht (sofern **„Das bin ich“** gesetzt ist und die Datenlage zur Aufteilung passt). **Ein** wählen Sie, wenn Sie die Liste bewusst auf Ihren Ast begrenzen möchten.
 
 Das **blendet keine Daten aus dem Speicher** – es **filtert nur die Anzeige** der Kartenliste.
 
