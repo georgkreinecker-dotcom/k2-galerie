@@ -6,7 +6,7 @@
 import BenutzerHandbuchViewer from '../components/BenutzerHandbuchViewer'
 import { BASE_APP_URL, PROJECT_ROUTES } from '../config/navigation'
 
-/** QR im Kontakt-Kapitel: Einstieg Musterfamilie Huber (wie Capture-Skript, Demo). */
+/** QR unter Impressum: Einstieg Musterfamilie Huber (wie Capture-Skript, Demo). */
 const MUSTERFAMILIE_EINSTIEG_QR_URL = `${BASE_APP_URL}/projects/k2-familie/einstieg?t=huber`
 import {
   PRODUCT_K2_FAMILIE_WERBESLOGAN,
@@ -33,14 +33,9 @@ const DOCUMENTS = [
     file: '05-SO-SIEHT-DAS-AUS-BILDER.md',
   },
   {
-    id: '06-kontakt',
-    name: 'Kontakt',
-    file: '06-KONTAKT-UND-NAECHSTER-SCHRITT.md',
-  },
-  {
-    id: '07-technik',
+    id: '06-technik',
     name: 'Technik in Kürze',
-    file: '07-TECHNIK-IN-KUERZE.md',
+    file: '06-TECHNIK-IN-KUERZE.md',
   },
 ] as const
 
@@ -71,7 +66,7 @@ export default function K2FamiliePraesentationsmappeKundePage() {
       deckblattCoverAlt="K2 Familie Startseite, Musterfamilie Huber – Navigation, Willkommensbereich und Kacheln Was möchtest du tun"
       deckblattCoverCaption="Musterfamilie Huber – Startseite (Demo, keine echten Kundendaten)."
       prominentEingangstorQr
-      kontaktChapterQrAbsUrl={MUSTERFAMILIE_EINSTIEG_QR_URL}
+      impressumQrAbsUrl={MUSTERFAMILIE_EINSTIEG_QR_URL}
     />
   )
 }

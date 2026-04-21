@@ -1,6 +1,6 @@
 # K2 Familie – Präsentationsmappe
 
-**K2 Familie** – digitale Heimat für Beziehungen, Stammbaum und Erinnerungen. In dieser Mappe finden Sie **Versprechen**, **Produktüberblick**, **Nutzen**, **Vertrauen**, **Ansichten aus der Demo**, **Kontakt** und einen **kurzen technischen Überblick**.
+**K2 Familie** – digitale Heimat für Beziehungen, Stammbaum und Erinnerungen. In dieser Mappe finden Sie **Versprechen**, **Produktüberblick**, **Nutzen**, **Vertrauen**, **Ansichten aus der Demo** und **Technik in Kürze**. **Kontakt** und rechtliche Angaben stehen im **Impressum** am Ende der Ansicht in der App (dort auch **QR-Code** zur Demo **Musterfamilie Huber**).
 
 ## Inhaltsverzeichnis – Kurzanleitung
 
@@ -24,11 +24,7 @@ Grundhaltung zu Daten, Ethik und rechtlichem Rahmen.
 
 Beispielansichten aus der **Musterfamilie Huber** (Demo, keine echten Kundendaten).
 
-6. [Kontakt](06-KONTAKT-UND-NAECHSTER-SCHRITT.md)
-
-E-Mail und Ansprechpartner.
-
-7. [Technik in Kürze](07-TECHNIK-IN-KUERZE.md)
+6. [Technik in Kürze](06-TECHNIK-IN-KUERZE.md)
 
 Browser, Geräte, Datenabgrenzung, Sicherung und Updates – ohne Fachjargon.
 
