@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 21.04.26 – **BenutzerHandbuchViewer: Riesen-QR im Druck behoben (Selektor + Layout)** – Print: breites `img` nur noch im A4-Innenbereich, nicht für QR; QR-Block separat; vorherige Deckblatt-Kompaktierung + Safari-Hintergrund-Hinweis unverändert. **Commit:** `ac6d4370` ✅ GitHub
+**Letzter Stand:** 21.04.26 – **BenutzerHandbuchViewer: Riesen-QR im Druck behoben (Selektor + Layout)** – Print: breites `img` nur noch im A4-Innenbereich, nicht für QR; QR-Block separat; vorherige Deckblatt-Kompaktierung + Safari-Hintergrund-Hinweis unverändert. **Commit:** `bd45edf6` ✅ GitHub
 
 ---
 
