@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback, type ReactNode } from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { BASE_APP_URL, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE } from '../config/navigation'
 import { useQrVersionTimestamp, useStableQrBustedUrl } from '../hooks/useServerBuildTimestamp'
@@ -51,6 +51,10 @@ export type BenutzerHandbuchViewerProps = {
   impressumQrAbsUrl?: string
   /** Optional: eine Zeile unter dem Impressum-QR (z. B. „Musterfamilie Huber“ vs. „Entdecken“). */
   impressumQrCaption?: string
+  /** Optional: Link zum Benutzerhandbuch im Impressum (relativer Pfad, z. B. `/k2-familie-handbuch`). */
+  impressumHandbuchHref?: string
+  /** Optional: Linktext für `impressumHandbuchHref` (Standard: „Zum Benutzerhandbuch“). */
+  impressumHandbuchLabel?: string
 }
 
 const HANDBUCH_DOC_PARAM = 'doc'
@@ -162,6 +166,8 @@ export default function BenutzerHandbuchViewer({
   deckblattQrAbsUrl,
   impressumQrAbsUrl,
   impressumQrCaption,
+  impressumHandbuchHref,
+  impressumHandbuchLabel,
 }: BenutzerHandbuchViewerProps) {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -795,6 +801,13 @@ export default function BenutzerHandbuchViewer({
                   {PRODUCT_LIZENZ_ANFRAGE_EMAIL && (
                     <p style={{ margin: 0 }}><strong>Kontakt:</strong> <a href={`mailto:${PRODUCT_LIZENZ_ANFRAGE_EMAIL}`} style={{ color: '#1c1a18', textDecoration: 'underline' }}>{PRODUCT_LIZENZ_ANFRAGE_EMAIL}</a></p>
                   )}
+                  {impressumHandbuchHref ? (
+                    <p style={{ margin: '0.5rem 0 0' }}>
+                      <a href={impressumHandbuchHref} style={{ color: '#1c1a18', textDecoration: 'underline' }}>
+                        {impressumHandbuchLabel ?? 'Zum Benutzerhandbuch'}
+                      </a>
+                    </p>
+                  ) : null}
                 </div>
                 {impressumQrAbsUrl ? (
                   <div
@@ -857,7 +870,7 @@ export default function BenutzerHandbuchViewer({
             ) : (
               <>
                 <div className="benutzer-druck-inhalt">{renderMarkdown(docContent, (() => { const idx = documents.findIndex((d) => d.file === selectedDoc); return idx > 0 ? idx : undefined; })(), (path) => loadDocument(path))}</div>
-                {impressumQrAbsUrl ? (
+                {impressumQrAbsUrl || impressumHandbuchHref ? (
                   <section
                     className="benutzer-impressum-footer-screen"
                     style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid #e5e7eb' }}
@@ -891,18 +904,30 @@ export default function BenutzerHandbuchViewer({
                           </a>
                         </p>
                       ) : null}
+                      {impressumHandbuchHref ? (
+                        <p style={{ margin: '0.5rem 0 0' }}>
+                          <Link
+                            to={impressumHandbuchHref}
+                            style={{ color: '#1c1a18', textDecoration: 'underline' }}
+                          >
+                            {impressumHandbuchLabel ?? 'Zum Benutzerhandbuch'}
+                          </Link>
+                        </p>
+                      ) : null}
                     </div>
-                    <div
-                      className="benutzer-impressum-qr-wrap"
-                      style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'flex-end' }}
-                    >
-                      <div style={{ textAlign: 'center' }}>
-                        <QrNurBild absUrl={impressumQrAbsUrl} widthPx={160} variant="kontakt" />
-                        {impressumQrCaption ? (
-                          <p style={{ margin: '0.4rem 0 0', fontSize: '0.8rem', color: '#6b7280' }}>{impressumQrCaption}</p>
-                        ) : null}
+                    {impressumQrAbsUrl ? (
+                      <div
+                        className="benutzer-impressum-qr-wrap"
+                        style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'flex-end' }}
+                      >
+                        <div style={{ textAlign: 'center' }}>
+                          <QrNurBild absUrl={impressumQrAbsUrl} widthPx={160} variant="kontakt" />
+                          {impressumQrCaption ? (
+                            <p style={{ margin: '0.4rem 0 0', fontSize: '0.8rem', color: '#6b7280' }}>{impressumQrCaption}</p>
+                          ) : null}
+                        </div>
                       </div>
-                    </div>
+                    ) : null}
                   </section>
                 ) : null}
                 <div className="benutzer-seitenfuss-zeile" style={{ display: 'none' }} aria-hidden>

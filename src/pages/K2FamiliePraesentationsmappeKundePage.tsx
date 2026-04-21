@@ -71,6 +71,7 @@ export default function K2FamiliePraesentationsmappeKundePage() {
       deckblattQrAbsUrl={MUSTERFAMILIE_EINSTIEG_QR_URL}
       impressumQrAbsUrl={EINGANGSTOR_QR_URL}
       impressumQrCaption="Plattform – Entdecken (Eingangstor)"
+      impressumHandbuchHref={PROJECT_ROUTES['k2-familie'].benutzerHandbuch}
     />
   )
 }

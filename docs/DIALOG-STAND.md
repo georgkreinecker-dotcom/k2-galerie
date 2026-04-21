@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Offen nach Bedarf (nächste Session).  
-**Einordnung:** K2-Familie-Mappe Kunde: Deckblatt-QR = Musterfamilie Huber (`?t=huber`), Impressum-QR = Plattform Entdecken/Eingangstor; Cover-Overlay nutzt dasselbe Deckblatt-QR wie die übrigen Deckblatt-Stellen.
+**Einordnung:** K2-Familie Präsentationsmappe Kunde: Impressum mit Link zum Benutzerhandbuch (`/k2-familie-handbuch`).
+
+---
+
+**Letzter Stand:** 21.04.26 – **BenutzerHandbuchViewer: Impressum-Link zum Handbuch** – optional `impressumHandbuchHref` / `impressumHandbuchLabel`; Lesansicht + Druckvorschau; Kunden-Mappe: `PROJECT_ROUTES['k2-familie'].benutzerHandbuch`. **Commit:** _(nach Push)_ ⏳
 
 ---
 
