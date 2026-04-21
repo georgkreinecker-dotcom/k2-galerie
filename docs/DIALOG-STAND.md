@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Offen nach Bedarf (nächste Session).  
-**Einordnung:** K2 Familie Präsentationsmappe Kunde: kein Kontakt-Kapitel mehr; **Impressum + QR Musterfamilie** unten; Technik = Kapitel 6.
+**Einordnung:** BenutzerHandbuchViewer PDF/Druck: lesbarere Typo (9 pt, Zeilenabstand ~1,42, A4-Ränder, Impressum-Klasse, QR ohne hässlichen Umbruch).
+
+---
+
+**Letzter Stand:** 21.04.26 – **BenutzerHandbuchViewer: PDF-Druckform optimiert** – `@media print`: Fließtext 9 pt, Zeilenhöhe 1,42, Überschriften größer, Tabellen 8,5 pt, `@page` A4 mit ~12–18 mm Rand; Vorschau-A4-Padding; Impressum `.benutzer-impressum-typo`; QR-Wrap `break-inside: avoid`; Hinweistext Druckvorschau angepasst. **Commit:** `3be477bb` ✅ GitHub
 
 ---
 

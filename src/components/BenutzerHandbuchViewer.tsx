@@ -458,7 +458,7 @@ export default function BenutzerHandbuchViewer({
     .benutzer-print-preview .benutzer-handbuch-wrapper { padding: 0; background: #fff; }
     .benutzer-print-preview .benutzer-handbuch-grid { display: block !important; }
     .benutzer-print-preview .benutzer-handbuch-article { max-width: 100%; padding: 1rem 1.5rem; border: none; border-radius: 0; box-shadow: none; }
-    .benutzer-print-preview .benutzer-druck-inhalt { font-size: 10.5pt; line-height: 1.5; }
+    .benutzer-print-preview .benutzer-druck-inhalt { font-size: 10.5pt; line-height: 1.58; }
     .benutzer-print-preview .benutzer-seitenfuss-zeile { display: block !important; margin-top: 1.5rem; padding-top: 0.5rem; border-top: 1px solid #e5e7eb; font-size: 0.8rem; color: #6b7280; }
     .benutzer-deckblatt-teal { background: ${TEAL_DECKBLATT_BG}; color: #fff; text-align: center; padding: clamp(1.5rem, 4vw, 2.5rem) 1.25rem; border-radius: 12px; margin-bottom: 1rem; page-break-after: always; page-break-inside: avoid; break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .benutzer-deckblatt-teal h2 { margin: 0; font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 700; color: #fff; letter-spacing: -0.02em; line-height: 1.2; }
@@ -516,7 +516,7 @@ export default function BenutzerHandbuchViewer({
       max-width: 100%;
       margin: 0 auto 1rem;
       min-height: 0;
-      padding: 8mm 10mm 10mm;
+      padding: 10mm 12mm 12mm;
       background: #fff;
       border: 1px solid #9ca3af;
       box-shadow: 0 2px 12px rgba(0,0,0,0.12);
@@ -548,32 +548,33 @@ export default function BenutzerHandbuchViewer({
       .benutzer-no-print, .benutzer-druckvorschau-leiste, .benutzer-nur-vorschau { display: none !important; }
       .benutzer-handbuch-wrapper .benutzer-h1, .benutzer-handbuch-wrapper .benutzer-h2, .benutzer-handbuch-wrapper .benutzer-h3 { color: #1c1a18 !important; }
       .benutzer-handbuch-wrapper .benutzer-p, .benutzer-handbuch-wrapper .benutzer-li { color: #1c1a18 !important; }
-      .benutzer-handbuch-wrapper .benutzer-h1 { font-size: 1.15rem !important; margin: 0.28rem 0 0.18rem !important; }
-      .benutzer-handbuch-wrapper .benutzer-h2 { font-size: 1rem !important; margin: 0.25rem 0 0.15rem !important; }
-      .benutzer-handbuch-wrapper .benutzer-h3 { font-size: 0.9rem !important; margin: 0.2rem 0 0.12rem !important; }
-      .benutzer-handbuch-wrapper .benutzer-hr { margin: 0.2rem 0 !important; }
-      .benutzer-handbuch-wrapper .benutzer-p { margin: 0 0 0.08rem !important; line-height: 1.2 !important; font-size: 7.5pt !important; }
-      .benutzer-handbuch-wrapper .benutzer-strong, .benutzer-handbuch-wrapper .benutzer-em { margin: 0 0 0.1rem !important; }
-      .benutzer-handbuch-wrapper .benutzer-ul { margin: 0.12rem 0 0.18rem 1rem !important; padding-left: 0.2rem !important; }
-      .benutzer-handbuch-wrapper .benutzer-li { margin-bottom: 0.05rem !important; line-height: 1.3 !important; }
-      .benutzer-handbuch-wrapper .benutzer-hr { margin: 0.15rem 0 !important; }
-      .benutzer-handbuch-wrapper .benutzer-table-wrap { margin: 0.2rem 0 !important; }
-      .benutzer-handbuch-wrapper .benutzer-table th, .benutzer-handbuch-wrapper .benutzer-table td { padding: 0.08rem 0.25rem !important; font-size: 7.5pt !important; }
-      .benutzer-handbuch-wrapper .benutzer-leerzeile { height: 0.1rem !important; }
+      .benutzer-handbuch-wrapper .benutzer-h1 { font-size: 1.35rem !important; margin: 0.45rem 0 0.28rem !important; }
+      .benutzer-handbuch-wrapper .benutzer-h2 { font-size: 1.15rem !important; margin: 0.38rem 0 0.22rem !important; }
+      .benutzer-handbuch-wrapper .benutzer-h3 { font-size: 1.05rem !important; margin: 0.32rem 0 0.18rem !important; }
+      .benutzer-handbuch-wrapper .benutzer-hr { margin: 0.28rem 0 !important; }
+      .benutzer-handbuch-wrapper .benutzer-p { margin: 0 0 0.28rem !important; line-height: 1.42 !important; font-size: 9pt !important; orphans: 3; widows: 3; }
+      .benutzer-handbuch-wrapper .benutzer-strong, .benutzer-handbuch-wrapper .benutzer-em { margin: 0 0 0.15rem !important; }
+      .benutzer-handbuch-wrapper .benutzer-ul { margin: 0.2rem 0 0.28rem 1.1rem !important; padding-left: 0.25rem !important; }
+      .benutzer-handbuch-wrapper .benutzer-li { margin-bottom: 0.12rem !important; line-height: 1.38 !important; font-size: 9pt !important; }
+      .benutzer-handbuch-wrapper .benutzer-table-wrap { margin: 0.35rem 0 !important; }
+      .benutzer-handbuch-wrapper .benutzer-table th, .benutzer-handbuch-wrapper .benutzer-table td { padding: 0.2rem 0.35rem !important; font-size: 8.5pt !important; }
+      .benutzer-handbuch-wrapper .benutzer-leerzeile { height: 0.18rem !important; }
       .benutzer-handbuch-grid { display: block !important; }
       .benutzer-handbuch-article { max-width: 100% !important; padding: 0 0 4mm !important; border: none !important; box-shadow: none !important; }
-      .benutzer-druck-inhalt { font-size: 7.5pt !important; line-height: 1.2 !important; }
-      .benutzer-druck-kapitel { padding: 0.08rem 0 0.2rem !important; break-inside: auto !important; page-break-before: auto !important; }
-      .benutzer-druck-kapitel:first-of-type { padding: 0.1rem 0 0.25rem !important; }
-      .benutzer-druck-kapitel:first-of-type .benutzer-h1 { margin: 0.2rem 0 0.12rem !important; font-size: 1.1rem !important; }
-      .benutzer-druck-kapitel:first-of-type .benutzer-h2 { margin: 0.15rem 0 0.1rem !important; font-size: 0.95rem !important; padding-bottom: 0.08rem !important; }
-      .benutzer-druck-kapitel:first-of-type .benutzer-p { margin: 0 0 0.08rem !important; line-height: 1.2 !important; font-size: 7.5pt !important; }
-      .benutzer-druck-kapitel:first-of-type .benutzer-hr { margin: 0.12rem 0 !important; }
-      .benutzer-druck-kapitel:first-of-type .benutzer-table-wrap { margin: 0.12rem 0 !important; }
-      .benutzer-druck-kapitel:first-of-type .benutzer-table th, .benutzer-druck-kapitel:first-of-type .benutzer-table td { padding: 0.08rem 0.2rem !important; font-size: 7.5pt !important; }
-      .benutzer-druck-kapitel:first-of-type .benutzer-strong { margin: 0 0 0.1rem !important; }
+      .benutzer-druck-inhalt { font-size: 9pt !important; line-height: 1.42 !important; }
+      .benutzer-druck-kapitel { padding: 0.08rem 0 0.35rem !important; break-inside: auto !important; page-break-before: auto !important; }
+      .benutzer-druck-kapitel:first-of-type { padding: 0.12rem 0 0.4rem !important; }
+      .benutzer-druck-kapitel:first-of-type .benutzer-h1 { margin: 0.32rem 0 0.2rem !important; font-size: 1.25rem !important; }
+      .benutzer-druck-kapitel:first-of-type .benutzer-h2 { margin: 0.22rem 0 0.15rem !important; font-size: 1.1rem !important; padding-bottom: 0.12rem !important; }
+      .benutzer-druck-kapitel:first-of-type .benutzer-p { margin: 0 0 0.22rem !important; line-height: 1.42 !important; font-size: 9pt !important; }
+      .benutzer-druck-kapitel:first-of-type .benutzer-hr { margin: 0.2rem 0 !important; }
+      .benutzer-druck-kapitel:first-of-type .benutzer-table-wrap { margin: 0.2rem 0 !important; }
+      .benutzer-druck-kapitel:first-of-type .benutzer-table th, .benutzer-druck-kapitel:first-of-type .benutzer-table td { padding: 0.18rem 0.28rem !important; font-size: 8.5pt !important; }
+      .benutzer-druck-kapitel:first-of-type .benutzer-strong { margin: 0 0 0.15rem !important; }
       .benutzer-impressum-seite { page-break-before: auto !important; }
-      .benutzer-druck-kapitel h2 { font-size: 1rem !important; margin: 0 0 0.2rem !important; padding-bottom: 0.1rem !important; }
+      .benutzer-impressum-seite .benutzer-impressum-typo { font-size: 9pt !important; line-height: 1.45 !important; color: #1c1a18 !important; }
+      .benutzer-impressum-seite .benutzer-impressum-typo p { font-size: 9pt !important; line-height: 1.45 !important; }
+      .benutzer-druck-kapitel h2 { font-size: 1.1rem !important; margin: 0 0 0.3rem !important; padding-bottom: 0.15rem !important; }
       .benutzer-deckblatt-teal { background: ${TEAL_DECKBLATT_BG} !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color: #fff !important; padding: 5mm 8mm !important; border-radius: 0 !important; margin-bottom: 4mm !important; page-break-after: always !important; page-break-inside: avoid !important; }
       .benutzer-deckblatt-teal.benutzer-deckblatt-teal--mit-bild { page-break-after: avoid !important; margin-bottom: 2mm !important; padding: 4mm 6mm !important; }
       .benutzer-deckblatt-teal h2 { font-size: 16pt !important; margin: 0 !important; color: #fff !important; font-weight: 700 !important; }
@@ -584,7 +585,8 @@ export default function BenutzerHandbuchViewer({
       .benutzer-deckblatt-teal .benutzer-deckblatt-teal-copy { font-size: 7pt !important; margin: 3mm 0 0 !important; color: rgba(255,255,255,0.85) !important; }
       .benutzer-deckblatt-qr-eingangstor-overlay img { width: 26mm !important; height: 26mm !important; max-width: 26mm !important; object-fit: contain !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
       .benutzer-deckblatt-qr-eingangstor-overlay--teal img { width: 22mm !important; height: 22mm !important; max-width: 22mm !important; }
-    .benutzer-impressum-qr-wrap img { width: 28mm !important; height: 28mm !important; max-width: 28mm !important; object-fit: contain !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      .benutzer-impressum-qr-wrap { break-inside: avoid; page-break-inside: avoid; }
+      .benutzer-impressum-qr-wrap img { width: 28mm !important; height: 28mm !important; max-width: 28mm !important; object-fit: contain !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
       .benutzer-deckblatt { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 0.35rem 0.6rem !important; page-break-after: auto !important; }
       .benutzer-deckblatt--einstieg-a4 { padding: 0 !important; page-break-after: always !important; background: #fff !important; }
       .benutzer-deckblatt-a4-inner { max-height: none !important; aspect-ratio: auto !important; height: 277mm !important; border: none !important; background: #fff !important; }
@@ -606,9 +608,9 @@ export default function BenutzerHandbuchViewer({
       .benutzer-handbuch-wrapper .seitenfuss { display: block !important; position: fixed; bottom: 0; left: 0; right: 0; width: 100%; min-height: 5mm; padding: 2mm 8mm; font-size: 8pt; font-family: system-ui, sans-serif; color: #000 !important; background: #fff !important; border-top: 1px solid #ccc; line-height: 1.3; -webkit-print-color-adjust: exact; print-color-adjust: exact; z-index: 99999; }
       .benutzer-handbuch-wrapper .seitenfuss .seitenfuss-preview { display: none !important; }
       .benutzer-handbuch-wrapper .seitenfuss::after { content: "Seite " counter(page) " von " counter(pages); color: #000 !important; }
-      .benutzer-print-voll { padding-bottom: 6mm !important; }
+      .benutzer-print-voll { padding-bottom: 8mm !important; }
       .benutzer-a4-vorschau { min-height: 0 !important; margin: 0 !important; padding: 0 !important; border: none !important; box-shadow: none !important; width: 100% !important; max-width: 100% !important; background: #fff !important; background-image: none !important; }
-      @page { margin: 3mm 4mm 8mm 4mm; background: white; }
+      @page { size: A4; margin: 12mm 14mm 18mm 14mm; background: white; }
       html, body { background: #fff !important; color: #1c1a18 !important; }
       .benutzer-handbuch-wrapper { background: #fff !important; }
     }
@@ -649,7 +651,7 @@ export default function BenutzerHandbuchViewer({
       {printPreview ? (
         <>
           <p className="benutzer-no-print" style={{ maxWidth: '210mm', margin: '0 auto 0.75rem', fontSize: '0.85rem', color: '#374151', background: '#f3f4f6', padding: '0.5rem 0.75rem', borderRadius: 8, border: '1px solid #e5e7eb' }}>
-            <strong>Kompaktes Drucken:</strong> PDF nutzt <strong>fließenden Text</strong> (weniger Seiten). Optional eine Zeile <code style={{ background: '#e5e7eb', padding: '0.1rem 0.3rem', borderRadius: 4 }}>[SEITENUMBRUCH]</code> in <code style={{ background: '#e5e7eb', padding: '0.1rem 0.3rem', borderRadius: 4 }}>{printHintFolder}</code> nur als sichtbare <strong>Abschnittsmarkierung</strong> in der Vorschau – <strong>kein</strong> erzwungener Seitenumbruch im Druck.
+            <strong>PDF-Druck:</strong> Lesbare Schrift und normale Ränder; <strong>fließender Text</strong> (keine Mini-Schrift mehr). Optional eine Zeile <code style={{ background: '#e5e7eb', padding: '0.1rem 0.3rem', borderRadius: 4 }}>[SEITENUMBRUCH]</code> in <code style={{ background: '#e5e7eb', padding: '0.1rem 0.3rem', borderRadius: 4 }}>{printHintFolder}</code> nur als sichtbare <strong>Abschnittsmarkierung</strong> in der Vorschau – <strong>kein</strong> erzwungener Seitenumbruch im Druck.
           </p>
           <div className="benutzer-a4-vorschau">
           <div className="benutzer-print-voll" style={{ paddingBottom: '1rem' }}>
@@ -772,7 +774,7 @@ export default function BenutzerHandbuchViewer({
               ))}
               <section className="benutzer-druck-kapitel benutzer-impressum-seite">
                 <h2 style={{ fontSize: '1.25rem', margin: '0 0 1rem', color: '#1c1a18', fontWeight: 700, borderBottom: '2px solid #e5e7eb', paddingBottom: '0.5rem' }}>Impressum</h2>
-                <div className="benutzer-druck-inhalt" style={{ fontSize: '10pt', lineHeight: 1.6, color: '#1c1a18' }}>
+                <div className="benutzer-druck-inhalt benutzer-impressum-typo" style={{ fontSize: '10pt', lineHeight: 1.6, color: '#1c1a18' }}>
                   <p style={{ margin: '0 0 0.5rem' }}><strong>{PRODUCT_BRAND_NAME}</strong></p>
                   <p style={{ margin: '0 0 0.5rem' }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
                   <p style={{ margin: '0 0 0.5rem', fontSize: '9pt' }}>{PRODUCT_URHEBER_ANWENDUNG}</p>
