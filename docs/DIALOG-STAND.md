@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 21.04.26 – **K2 Familie Präsentationsmappe Kunde: Textblöcke entfernt** – `04-VERTRAUEN`: Abschnitt Abgrenzung in einem Satz weg; `06-KONTAKT`: Nächster-Schritt-Liste + Vertriebs-Hinweis weg; Titel/Index/Sidebar **Kontakt**. **Commit:** deb4f576 ✅ GitHub
+**Letzter Stand:** 21.04.26 – **K2 Familie Präsentationsmappe Kunde: Textblöcke entfernt** – `04-VERTRAUEN`: Abschnitt Abgrenzung in einem Satz weg; `06-KONTAKT`: Nächster-Schritt-Liste + Vertriebs-Hinweis weg; Titel/Index/Sidebar **Kontakt**. **Commit:** `5d058619` ✅ GitHub
 
 ---
 
