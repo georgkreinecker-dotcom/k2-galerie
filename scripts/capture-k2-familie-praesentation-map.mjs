@@ -36,6 +36,14 @@ const shots = [
     path: '/projects/k2-familie/stammbaum?t=huber',
     wait: { state: 'networkidle', timeout: 120_000 },
   },
+  /** Stammbaum Bereich „Grafik“ – Familiengrafik (Zoom/Orientierung), Musterfamilie Huber */
+  {
+    file: 'pm-familiengrafik-huber.png',
+    path: '/projects/k2-familie/stammbaum?t=huber&bereich=grafik',
+    wait: { state: 'networkidle', timeout: 120_000 },
+    waitForSelector: '#stufe-grafik',
+    postWaitMs: 900,
+  },
   {
     file: 'pm-person-beziehungen.png',
     path: '/projects/k2-familie/personen/stefan?t=huber',
@@ -103,8 +111,28 @@ async function main() {
         waitUntil: s.wait?.state || 'networkidle',
         timeout: s.wait?.timeout ?? 120_000,
       })
-      await page.waitForTimeout(600)
+      if (s.waitForSelector) {
+        try {
+          await page.waitForSelector(s.waitForSelector, { timeout: 45_000 })
+        } catch {
+          /* Grafik kann bei leerer Demo fehlen – trotzdem Screenshot */
+        }
+      }
+      await page.waitForTimeout(typeof s.postWaitMs === 'number' ? s.postWaitMs : 600)
       await ensureMusterLeitfadenClosed(page)
+      await page.waitForFunction(
+        () => document.documentElement.getAttribute('data-k2-familie-pm') === '1',
+        { timeout: 45_000 },
+      )
+      await page.waitForFunction(
+        () => document.querySelectorAll('.k2-familie-app-footer').length === 0,
+        { timeout: 15_000 },
+      )
+      await page.waitForFunction(
+        () =>
+          document.querySelectorAll('[aria-labelledby="k2-familie-muster-leitfaden-titel"]').length === 0,
+        { timeout: 15_000 },
+      )
       await page.screenshot({ path: out, type: 'png', fullPage: false })
       console.log('OK →', out)
     }

@@ -42,6 +42,7 @@ import { loadIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
 import { isK2FamilieMeineFamilieHomePath, K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
 import { K2_FAMILIE_NAV_LABEL_GESCHICHTE } from '../config/k2FamilieNavLabels'
 import { resolveFamiliePwaResumeTarget, writeFamiliePwaLastPath } from '../utils/familiePwaLastPath'
+import { useK2FamiliePresentationMode } from '../hooks/useK2FamiliePresentationMode'
 import { FamilieMusterDemoHintProvider } from '../context/FamilieMusterDemoHintContext'
 import {
   MUSTER_HINT_TOOLBAR_EIGENE_FAMILIE,
@@ -91,14 +92,8 @@ function saveFamilieLeisteEingeklappt(eingeklappt: boolean): void {
 
 function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
   const location = useLocation()
-  /** Präsentationsmappe / PNGs: kein auto-Rundgang, kein Modal (gleiches Flag wie Impressum-Footer: `?pm=1`). */
-  const hideMusterLeitfadenForPm = useMemo(() => {
-    try {
-      return new URLSearchParams(location.search).get('pm') === '1'
-    } catch {
-      return false
-    }
-  }, [location.search])
+  /** Präsentationsmappe / PNGs: kein auto-Rundgang, kein Modal (`?pm=1` + sessionStorage bei Navigation). */
+  const hideMusterLeitfadenForPm = useK2FamiliePresentationMode()
 
   const familieRoutesNav = PROJECT_ROUTES['k2-familie']
   const {
@@ -214,7 +209,7 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
       return (
         <>
           <FamilieMusterHuberLeitfadenModal
-            open={musterLeitfadenOpen}
+            open={hideMusterLeitfadenForPm ? false : musterLeitfadenOpen}
             onOpenChange={setMusterLeitfadenOpen}
             onAbgeschlossen={() => {}}
           />
@@ -1080,6 +1075,17 @@ function FamilieNav() {
 function FamilieLayoutInner() {
   const location = useLocation()
   const navigate = useNavigate()
+  const hideAppFooterImpressum = useK2FamiliePresentationMode()
+  useEffect(() => {
+    if (hideAppFooterImpressum) {
+      document.documentElement.dataset.k2FamiliePm = '1'
+    } else {
+      delete document.documentElement.dataset.k2FamiliePm
+    }
+    return () => {
+      delete document.documentElement.dataset.k2FamiliePm
+    }
+  }, [hideAppFooterImpressum])
   const nurMuster = isFamilieNurMusterSession()
   const [musterHintRoot, setMusterHintRoot] = useState<HTMLDivElement | null>(null)
   const { currentTenantId, familieStorageRevision } = useFamilieTenant()
@@ -1127,15 +1133,6 @@ function FamilieLayoutInner() {
   useEffect(() => {
     writeFamiliePwaLastPath(location.pathname, location.search)
   }, [location.pathname, location.search])
-
-  /** Präsentationsmappe / Screenshot-Modus: kein Impressum-Footer (Copyright + App verlassen), z. B. `?pm=1`. */
-  const hideAppFooterImpressum = useMemo(() => {
-    try {
-      return new URLSearchParams(location.search).get('pm') === '1'
-    } catch {
-      return false
-    }
-  }, [location.search])
 
   const columnInner = (
     <>
