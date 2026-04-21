@@ -51,10 +51,10 @@ export default function K2FamiliePraesentationsmappeKundePage() {
       deckblattTop="K2 Familie"
       deckblattKernsatz={PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ}
       deckblattSlogan={PRODUCT_K2_FAMILIE_WERBESLOGAN}
-      deckblattMainTitle="Präsentationsmappe"
+      deckblattMainTitle=""
       deckblattFooterProduct="K2 Familie"
-      deckblattFooterKind="Sieben Kapitel · Inhaltsverzeichnis"
-      deckblattFooterTagline="Versprechen · Produkt · Nutzen · Vertrauen · Bilder · Kontakt"
+      deckblattFooterKind=""
+      deckblattFooterTagline=""
       footerPreviewLine="K2 Familie – Präsentationsmappe · (Seitenzahlen beim Drucken)"
       printCurrentDocPrefix="K2 Familie – Präsentationsmappe"
       defaultDocWhenNoParam="01-DECKBLATT-UND-VERSPRECHEN.md"

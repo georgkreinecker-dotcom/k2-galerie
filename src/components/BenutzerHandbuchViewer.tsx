@@ -739,11 +739,13 @@ export default function BenutzerHandbuchViewer({
                   {deckblattKernsatz ? (
                     <p className="benutzer-deckblatt-teal-tagline">{deckblattKernsatz}</p>
                   ) : null}
-                  <p className="benutzer-deckblatt-teal-meta">
-                    {deckblattMainTitle}
-                    {deckblattFooterKind ? ` · ${deckblattFooterKind}` : ''}
-                  </p>
-                  {deckblattFooterTagline ? (
+                  {(deckblattMainTitle.trim() || deckblattFooterKind.trim()) ? (
+                    <p className="benutzer-deckblatt-teal-meta">
+                      {deckblattMainTitle}
+                      {deckblattFooterKind ? ` · ${deckblattFooterKind}` : ''}
+                    </p>
+                  ) : null}
+                  {deckblattFooterTagline.trim() ? (
                     <p className="benutzer-deckblatt-teal-footerline">{deckblattFooterTagline}</p>
                   ) : null}
                   <p className="benutzer-deckblatt-teal-copy">© kgm solution</p>
