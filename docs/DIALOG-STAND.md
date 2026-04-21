@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 21.04.26 – **K2 Familie Präsentationsmappe Kunde: Teal-Deckblatt Meta-Texte entfernt** – `K2FamiliePraesentationsmappeKundePage`: leere `deckblattMainTitle` / Footer-Zeilen; `BenutzerHandbuchViewer`: Teal-Meta und Tagline nur bei nicht-leerem Text. **Commit:** (folgt nach Push)
+**Letzter Stand:** 21.04.26 – **K2 Familie Präsentationsmappe Kunde: Teal-Deckblatt Meta-Texte entfernt** – `K2FamiliePraesentationsmappeKundePage`: leere `deckblattMainTitle` / Footer-Zeilen; `BenutzerHandbuchViewer`: Teal-Meta und Tagline nur bei nicht-leerem Text. **Commit:** `365630c0` ✅ GitHub
 
 ---
 
