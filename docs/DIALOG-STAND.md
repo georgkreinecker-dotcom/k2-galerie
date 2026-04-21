@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 21.04.26 – **K2 Familie Mappe Kunde: QR Musterfamilie im Kontakt-Kapitel** – `QrNurBild` + `kontaktChapterQrAbsUrl`; `K2FamiliePraesentationsmappeKundePage` `MUSTERFAMILIE_EINSTIEG_QR_URL`. **Commit:** (nach Push)
+**Letzter Stand:** 21.04.26 – **K2 Familie Mappe Kunde: QR Musterfamilie im Kontakt-Kapitel** – `QrNurBild` + `kontaktChapterQrAbsUrl`; `K2FamiliePraesentationsmappeKundePage` `MUSTERFAMILIE_EINSTIEG_QR_URL`. **Commit:** `07c7b392` ✅ GitHub
 
 ---
 
