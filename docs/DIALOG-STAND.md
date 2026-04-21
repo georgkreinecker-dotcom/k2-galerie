@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 21.04.26 – **K2 Familie Mappe Kunde: Kapitel Technik in Kürze** – `public/k2-familie-praesentation-mappe/07-TECHNIK-IN-KUERZE.md`, `00-INDEX.md`, `K2FamiliePraesentationsmappeKundePage` DOCUMENTS + Subtitle. **Commit:** PLACEHOLDER
+**Letzter Stand:** 21.04.26 – **K2 Familie Mappe Kunde: Kapitel Technik in Kürze** – `public/k2-familie-praesentation-mappe/07-TECHNIK-IN-KUERZE.md`, `00-INDEX.md`, `K2FamiliePraesentationsmappeKundePage` DOCUMENTS + Subtitle. **Commit:** cf4eb387
 
 ---
 
@@ -257,7 +257,7 @@
 
 ---
 
-**Letzter Stand:** 18.04.26 – **DIALOG-STAND: Commit-Hash** – `PLACEHOLDER_HASH` → `b7c16f76` (Pilot-Zettel-Zeile). **Commit:** `640d2315` ✅ GitHub
+**Letzter Stand:** 18.04.26 – **DIALOG-STAND: Commit-Hash** – `cf4eb387_HASH` → `b7c16f76` (Pilot-Zettel-Zeile). **Commit:** `640d2315` ✅ GitHub
 
 ---
 
@@ -722,7 +722,7 @@
 
 ---
 
-**Letzter Stand:** 13.04.26 (Session-Ende) – **K2 Familie Meine Familie: „Gilt für diese Familie“ + `t=` sichtbar** – Unter „Familien-Zugang“ Anzeigename (`getFamilieTenantDisplayName`) und technische Kennung `t=`; QR-`alt` mit Familienname; dazu Session-Paket: Einladungs-Query-Sync, persönliche Codes/Mitgliedsnummern, Backup-Tests, Einstellungen/Sicherung. **Commit:** **`COMMIT_PLACEHOLDER`** ✅ GitHub
+**Letzter Stand:** 13.04.26 (Session-Ende) – **K2 Familie Meine Familie: „Gilt für diese Familie“ + `t=` sichtbar** – Unter „Familien-Zugang“ Anzeigename (`getFamilieTenantDisplayName`) und technische Kennung `t=`; QR-`alt` mit Familienname; dazu Session-Paket: Einladungs-Query-Sync, persönliche Codes/Mitgliedsnummern, Backup-Tests, Einstellungen/Sicherung. **Commit:** **`COMMIT_cf4eb387`** ✅ GitHub
 
 **Was wir JETZT tun:** Nächste Session: optional **Meine Familie** im Browser prüfen (Name + `t=` stimmen für Familie Kreinecker); sonst wie geplant weiter.
 
