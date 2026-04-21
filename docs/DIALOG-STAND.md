@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 21.04.26 – **K2 Familie Mappe 05: Events + Geschichten Screenshots ergänzt** – `05-SO-SIEHT-DAS-AUS-BILDER.md` §6–8. **Commit:** (nach Push)
+**Letzter Stand:** 21.04.26 – **K2 Familie Mappe 05: Events + Geschichten Screenshots ergänzt** – `05-SO-SIEHT-DAS-AUS-BILDER.md` §6–8. **Commit:** `6a52a489` ✅ GitHub
 
 ---
 
