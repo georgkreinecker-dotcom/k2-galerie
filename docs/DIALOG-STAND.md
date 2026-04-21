@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 21.04.26 – **K2 Familie Präsentationsmappe Kunde: Deckblatt wieder mit Kernsatz + Slogan** – `BenutzerHandbuchViewer`: optional `deckblattKernsatz` über Slogan bei Coverbild; Page nutzt `PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ` + `PRODUCT_K2_FAMILIE_WERBESLOGAN`; Mappe-Kapitel 01/Index/05 ergänzt. **Commit:** `adb6cb23` ✅ GitHub
+**Letzter Stand:** 21.04.26 – **K2 Familie Präsentationsmappe Kunde: Deckblatt wieder mit Kernsatz + Slogan** – `BenutzerHandbuchViewer`: optional `deckblattKernsatz` über Slogan bei Coverbild; Page nutzt `PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ` + `PRODUCT_K2_FAMILIE_WERBESLOGAN`; Mappe-Kapitel 01/Index/05 ergänzt. **Commit:** `db581b4f` ✅ GitHub
 
 ---
 
