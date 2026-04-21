@@ -6,32 +6,34 @@
 
 ## Übersicht der Abbildungen
 
-| Nr. | Inhalt |
-|-----|--------|
-| 1 | Einstieg / Übersicht Musterfamilie |
-| 2 | Stammbaum (Ansicht) |
-| 3 | Stammbaum – **Familiengrafik** (Musterfamilie Huber) |
-| 4 | Personenkarte und Beziehungen |
-| 5 | Einstellungen – Rollen & Familie (Ausschnitt) |
-| 6 | **Events** (Geburtstage, Treffen, Feste) |
-| 7 | **Geschichten** (roter Faden, Familiengeschichte) |
-| 8 | Gedenkort |
+Die **Kapitelnummern** (1–7) stehen im Inhaltsverzeichnis der Mappe. Hier sind nur die **Abbildungen** dieses Kapitels nummeriert (**Abb. 1–8**), damit sich nichts überschneidet.
+
+| Abb. | Inhalt |
+|------|--------|
+| **Abb. 1** | Einstieg / Übersicht Musterfamilie |
+| **Abb. 2** | Stammbaum (Ansicht) |
+| **Abb. 3** | Stammbaum – **Familiengrafik** (Musterfamilie Huber) |
+| **Abb. 4** | Personenkarte und Beziehungen |
+| **Abb. 5** | Einstellungen – Rollen & Familie (Ausschnitt) |
+| **Abb. 6** | **Events** (Geburtstage, Treffen, Feste) |
+| **Abb. 7** | **Geschichten** (roter Faden, Familiengeschichte) |
+| **Abb. 8** | Gedenkort |
 
 [SEITENUMBRUCH]
 
-### 1. Einstieg Musterfamilie
+### Abb. 1 – Einstieg Musterfamilie
 
 ![Einstieg Musterfamilie Huber – Übersicht](/img/k2-familie/pm-familie-einstieg.png)
 
 [SEITENUMBRUCH]
 
-### 2. Stammbaum
+### Abb. 2 – Stammbaum
 
 ![Stammbaum (Musterfamilie)](/img/k2-familie/pm-stammbaum.png)
 
 [SEITENUMBRUCH]
 
-### 3. Familiengrafik (Stammbaum)
+### Abb. 3 – Familiengrafik (Stammbaum)
 
 Die **Grafik-Ansicht** im Stammbaum: Überblick als **Familiengrafik** (zoomen, Orientierung) – hier die **Musterfamilie Huber**.
 
@@ -39,19 +41,19 @@ Die **Grafik-Ansicht** im Stammbaum: Überblick als **Familiengrafik** (zoomen, 
 
 [SEITENUMBRUCH]
 
-### 4. Personenkarte und Beziehungen
+### Abb. 4 – Personenkarte und Beziehungen
 
 ![Personenkarte mit Beziehungen (Beispiel Stefan Huber)](/img/k2-familie/pm-person-beziehungen.png)
 
 [SEITENUMBRUCH]
 
-### 5. Rollen und Familie
+### Abb. 5 – Rollen und Familie
 
 ![Einstellungen – Rollen und Familie (Ausschnitt)](/img/k2-familie/pm-rollen.png)
 
 [SEITENUMBRUCH]
 
-### 6. Events
+### Abb. 6 – Events
 
 Geburtstage, Treffen, Feste – **Events** in der Musterfamilie.
 
@@ -59,7 +61,7 @@ Geburtstage, Treffen, Feste – **Events** in der Musterfamilie.
 
 [SEITENUMBRUCH]
 
-### 7. Geschichten
+### Abb. 7 – Geschichten
 
 **Geschichten** – roter Faden und Familiengeschichte.
 
@@ -67,7 +69,7 @@ Geburtstage, Treffen, Feste – **Events** in der Musterfamilie.
 
 [SEITENUMBRUCH]
 
-### 8. Gedenkort
+### Abb. 8 – Gedenkort
 
 ![Gedenkort – würdevoller Bereich](/img/k2-familie/pm-gedenk-oder-momente.png)
 

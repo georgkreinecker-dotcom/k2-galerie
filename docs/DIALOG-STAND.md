@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Offen nach Bedarf (nächste Session).  
-**Einordnung:** K2-Familie Präsentationsmappe Kunde: Impressum mit Link zum Benutzerhandbuch (`/k2-familie-handbuch`).
+**Einordnung:** K2-Familie Präsentationsmappe Kunde: sieben Inhalts-Kapitel (nach Index), Kontakt als Markdown; Viewer erkennt HTML-Fallback.
+
+---
+
+**Letzter Stand:** 21.04.26 – **K2 Familie Mappe Kunde: Kapitel 6 Kontakt + 7 Technik, Abb.-Überschriften, HTML-Fetch-Hinweis** – `06-KONTAKT.md`, `07-TECHNIK-IN-KUERZE.md`, `00-INDEX.md`, `05-SO-SIEHT-DAS-AUS-BILDER.md` (Abb. 1–8); `K2FamiliePraesentationsmappeKundePage` DOCUMENTS; `BenutzerHandbuchViewer`: bei HTML-Antwort statt Markdown kurze Fehlermeldung. **Commit:** `55b71521` ✅ GitHub
 
 ---
 

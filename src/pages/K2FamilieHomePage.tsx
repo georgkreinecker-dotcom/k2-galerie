@@ -50,6 +50,7 @@ import { adminTheme } from '../config/theme'
 import { K2_FAMILIE_UI } from '../config/k2FamilieUiColors'
 import { K2_FAMILIE_NAV_LABEL_GESCHICHTE } from '../config/k2FamilieNavLabels'
 import { getFamilieTenantDisplayName } from '../data/familieHuberMuster'
+import { useK2FamiliePresentationMode } from '../hooks/useK2FamiliePresentationMode'
 
 const C = {
   ...K2_FAMILIE_UI,
@@ -93,6 +94,7 @@ function computeErsteSchritteAmpel(
 
 export default function K2FamilieHomePage() {
   const a = adminTheme
+  const { deckblattMinimal } = useK2FamiliePresentationMode()
   const navigate = useNavigate()
   const location = useLocation()
   const familieR = PROJECT_ROUTES['k2-familie']
@@ -1008,14 +1010,16 @@ export default function K2FamilieHomePage() {
           )}
           <div style={{ position: 'absolute', inset: 0, background: C.heroOverlay, pointerEvents: 'none' }} />
           <div className="k2-familie-hero-shine" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.04) 45%, transparent 55%)', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: 'clamp(1.5rem, 4vw, 2.25rem) clamp(1.25rem, 5vw, 2.5rem)', pointerEvents: 'none' }}>
-            <p style={{ margin: '0 0 0.35rem', fontSize: '0.82rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.88)', fontWeight: 600 }}>
-              {texts.welcomeSubtitle}
-            </p>
-            <h1 style={{ margin: 0, fontSize: 'clamp(1.75rem, 4.5vw, 2.6rem)', fontWeight: 700, color: '#fff', lineHeight: 1.12, textShadow: '0 1px 12px rgba(0,0,0,0.45)' }}>
-              {texts.welcomeTitle}
-            </h1>
-          </div>
+          {!deckblattMinimal ? (
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: 'clamp(1.5rem, 4vw, 2.25rem) clamp(1.25rem, 5vw, 2.5rem)', pointerEvents: 'none' }}>
+              <p style={{ margin: '0 0 0.35rem', fontSize: '0.82rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.88)', fontWeight: 600 }}>
+                {texts.welcomeSubtitle}
+              </p>
+              <h1 style={{ margin: 0, fontSize: 'clamp(1.75rem, 4.5vw, 2.6rem)', fontWeight: 700, color: '#fff', lineHeight: 1.12, textShadow: '0 1px 12px rgba(0,0,0,0.45)' }}>
+                {texts.welcomeTitle}
+              </h1>
+            </div>
+          ) : null}
         </div>
 
         <div

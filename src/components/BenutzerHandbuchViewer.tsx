@@ -235,7 +235,15 @@ export default function BenutzerHandbuchViewer({
       const response = await fetch(`${handbuchBase}/${filename}`)
       if (response.ok) {
         const text = await response.text()
-        setDocContent(text)
+        const head = text.slice(0, 800).trimStart()
+        const looksLikeHtml = /^<!doctype\s+html/i.test(head) || /^<html[\s>]/i.test(head)
+        if (looksLikeHtml) {
+          setDocContent(
+            `# Kapitel konnte nicht geladen werden\n\nStatt der Textdatei wurde eine Webseite geliefert (meist fehlt die **.md**-Datei im Build oder die Adresse ist falsch). Bitte Seite neu laden oder Stand prüfen.\n\n**Erwartet:** \`${handbuchBase}/${filename}\``,
+          )
+        } else {
+          setDocContent(text)
+        }
       } else {
         setDocContent(`# Dokument nicht gefunden\n\nDie Datei konnte nicht geladen werden.`)
       }

@@ -35,9 +35,14 @@ const DOCUMENTS = [
     file: '05-SO-SIEHT-DAS-AUS-BILDER.md',
   },
   {
-    id: '06-technik',
+    id: '06-kontakt',
+    name: 'Kontakt',
+    file: '06-KONTAKT.md',
+  },
+  {
+    id: '07-technik',
     name: 'Technik in Kürze',
-    file: '06-TECHNIK-IN-KUERZE.md',
+    file: '07-TECHNIK-IN-KUERZE.md',
   },
 ] as const
 

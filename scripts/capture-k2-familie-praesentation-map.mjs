@@ -6,6 +6,7 @@
  *   BASE_URL=http://127.0.0.1:5177 node scripts/capture-k2-familie-praesentation-map.mjs
  *
  * URLs erhalten automatisch `pm=1` (ohne Impressum-Balken und ohne Huber-Rundgang in den PNGs).
+ * Deckblatt-Startseite: zusätzlich `deckblatt=1` (minimale Text-Chrome, siehe useK2FamiliePresentationMode).
  */
 import { chromium } from 'playwright'
 import { dirname, join } from 'path'
@@ -20,7 +21,13 @@ function withPm1(path) {
   const sep = path.includes('?') ? '&' : '?'
   return `${path}${sep}pm=1`
 }
+/** Wie in der App: `pm=1` + `deckblatt=1` für Deckblatt-PNG (Hero-/Nav-Texte reduziert). */
+function withPm1Deckblatt(path) {
+  const base = withPm1(path)
+  return base.includes('deckblatt=') ? base : `${base}&deckblatt=1`
+}
 const R = (path) => `${BASE_URL}${withPm1(path)}`
+const RDeck = (path) => `${BASE_URL}${withPm1Deckblatt(path)}`
 
 /** Wie `readMusterLeitfadenAbgeschlossen` in FamilieMusterHuberLeitfaden.tsx – ohne Rundgang-Modal bei Screenshots. */
 const LS_MUSTER_LEITFADEN_FERTIG = 'k2-familie-muster-huber-leitfaden-abgeschlossen'
@@ -119,7 +126,8 @@ async function main() {
     await ensureMusterLeitfadenClosed(page)
     for (const s of shots) {
       const out = join(OUT_DIR, s.file)
-      await page.goto(R(s.path), {
+      const url = s.deckblatt ? RDeck(s.path) : R(s.path)
+      await page.goto(url, {
         waitUntil: s.wait?.state || 'networkidle',
         timeout: s.wait?.timeout ?? 120_000,
       })
