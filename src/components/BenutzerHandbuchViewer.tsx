@@ -7,6 +7,9 @@ import { useState, useEffect, useRef, useCallback, type ReactNode } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, PRODUCT_LIZENZ_ANFRAGE_EMAIL } from '../config/tenantConfig'
 
+/** Wie PräsentationsmappePage / Drucksorten – kräftiges Teal für Deckblätter */
+const TEAL_DECKBLATT_BG = '#0c5c55'
+
 export type BenutzerHandbuchDoc = { id: string; name: string; file: string }
 
 export type BenutzerHandbuchViewerProps = {
@@ -33,8 +36,10 @@ export type BenutzerHandbuchViewerProps = {
   deckblattCoverImageSrc?: string
   deckblattCoverAlt?: string
   deckblattCoverCaption?: string
-  /** Optional: Kernsatz **über** der Slogan-Überschrift (nur wenn `deckblattCoverImageSrc` – z. B. K2 Familie Werbebotschaft). */
+  /** Optional: zweite Zeile unter dem Slogan (Werbebotschaft / Tagline). */
   deckblattKernsatz?: string
+  /** Deckblatt wie andere Präsentationsmappen: Teal/Weiß, ein A4-Kopf – kein Screenshot. */
+  deckblattTealCover?: boolean
 }
 
 const HANDBUCH_DOC_PARAM = 'doc'
@@ -60,6 +65,7 @@ export default function BenutzerHandbuchViewer({
   deckblattCoverAlt,
   deckblattCoverCaption,
   deckblattKernsatz,
+  deckblattTealCover,
 }: BenutzerHandbuchViewerProps) {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -372,6 +378,14 @@ export default function BenutzerHandbuchViewer({
     .benutzer-print-preview .benutzer-handbuch-article { max-width: 100%; padding: 1rem 1.5rem; border: none; border-radius: 0; box-shadow: none; }
     .benutzer-print-preview .benutzer-druck-inhalt { font-size: 10.5pt; line-height: 1.5; }
     .benutzer-print-preview .benutzer-seitenfuss-zeile { display: block !important; margin-top: 1.5rem; padding-top: 0.5rem; border-top: 1px solid #e5e7eb; font-size: 0.8rem; color: #6b7280; }
+    .benutzer-deckblatt-teal { background: ${TEAL_DECKBLATT_BG}; color: #fff; text-align: center; padding: clamp(1.5rem, 4vw, 2.5rem) 1.25rem; border-radius: 12px; margin-bottom: 1rem; page-break-after: always; page-break-inside: avoid; break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .benutzer-deckblatt-teal h2 { margin: 0; font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 700; color: #fff; letter-spacing: -0.02em; line-height: 1.2; }
+    .benutzer-deckblatt-teal .benutzer-deckblatt-teal-slogan { margin: 0.75rem 0 0; font-size: clamp(1rem, 2.5vw, 1.15rem); font-weight: 600; color: #fff; line-height: 1.4; }
+    .benutzer-deckblatt-teal .benutzer-deckblatt-teal-tagline { margin: 0.5rem 0 0; font-size: clamp(0.9rem, 2vw, 1rem); color: rgba(255,255,255,0.95); line-height: 1.5; }
+    .benutzer-deckblatt-teal .benutzer-deckblatt-teal-meta { margin: 1rem 0 0; font-size: clamp(0.82rem, 1.8vw, 0.95rem); color: rgba(255,255,255,0.92); line-height: 1.35; }
+    .benutzer-deckblatt-teal .benutzer-deckblatt-teal-footerline { margin: 0.5rem 0 0; font-size: 0.78rem; color: rgba(255,255,255,0.88); line-height: 1.35; }
+    .benutzer-deckblatt-teal .benutzer-deckblatt-teal-copy { margin: 1.25rem 0 0; font-size: 0.75rem; color: rgba(255,255,255,0.85); }
+    .benutzer-print-preview .benutzer-deckblatt-teal { margin-bottom: 0.75rem; border-radius: 8px; page-break-after: unset; }
     .benutzer-deckblatt { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2rem; page-break-after: always; background: linear-gradient(160deg, #1c1a18 0%, #2d2a26 50%, #1c1a18 100%); color: #fff; }
     .benutzer-deckblatt--einstieg-a4 { background: #fff; color: #1c1a18; min-height: 0; padding: 0.75rem 0.5rem !important; page-break-after: always; }
     .benutzer-deckblatt-a4-inner { width: 100%; max-width: 210mm; margin: 0 auto; aspect-ratio: 210 / 297; max-height: min(90vh, 297mm); display: flex; align-items: center; justify-content: center; background: #f3f4f6; border: 1px solid #e5e7eb; box-sizing: border-box; }
@@ -476,6 +490,13 @@ export default function BenutzerHandbuchViewer({
       .benutzer-druck-kapitel:first-of-type .benutzer-strong { margin: 0 0 0.1rem !important; }
       .benutzer-impressum-seite { page-break-before: auto !important; }
       .benutzer-druck-kapitel h2 { font-size: 1rem !important; margin: 0 0 0.2rem !important; padding-bottom: 0.1rem !important; }
+      .benutzer-deckblatt-teal { background: ${TEAL_DECKBLATT_BG} !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color: #fff !important; padding: 5mm 8mm !important; border-radius: 0 !important; margin-bottom: 4mm !important; page-break-after: always !important; page-break-inside: avoid !important; }
+      .benutzer-deckblatt-teal h2 { font-size: 16pt !important; margin: 0 !important; color: #fff !important; font-weight: 700 !important; }
+      .benutzer-deckblatt-teal .benutzer-deckblatt-teal-slogan { font-size: 10pt !important; margin: 2mm 0 0 !important; line-height: 1.25 !important; color: #fff !important; font-weight: 600 !important; }
+      .benutzer-deckblatt-teal .benutzer-deckblatt-teal-tagline { font-size: 9pt !important; margin: 1.5mm 0 0 !important; color: #fff !important; line-height: 1.35 !important; }
+      .benutzer-deckblatt-teal .benutzer-deckblatt-teal-meta { font-size: 8pt !important; margin: 2mm 0 0 !important; color: rgba(255,255,255,0.95) !important; }
+      .benutzer-deckblatt-teal .benutzer-deckblatt-teal-footerline { font-size: 7pt !important; margin: 1mm 0 0 !important; color: rgba(255,255,255,0.9) !important; }
+      .benutzer-deckblatt-teal .benutzer-deckblatt-teal-copy { font-size: 7pt !important; margin: 3mm 0 0 !important; color: rgba(255,255,255,0.85) !important; }
       .benutzer-deckblatt { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 0.35rem 0.6rem !important; page-break-after: auto !important; }
       .benutzer-deckblatt--einstieg-a4 { padding: 0 !important; page-break-after: always !important; background: #fff !important; }
       .benutzer-deckblatt-a4-inner { max-height: none !important; aspect-ratio: auto !important; height: 277mm !important; border: none !important; background: #fff !important; }
@@ -542,7 +563,38 @@ export default function BenutzerHandbuchViewer({
             <div style={{ textAlign: 'center', padding: '4rem 2rem', color: '#6b7280' }}>Lade alle Kapitel für die Druckvorschau…</div>
           ) : (
             <>
-              {deckblattCoverImageSrc ? (
+              {deckblattTealCover ? (
+                <div
+                  className="benutzer-deckblatt-teal"
+                  style={{
+                    background: TEAL_DECKBLATT_BG,
+                    color: '#fff',
+                    textAlign: 'center',
+                    padding: 'clamp(1.5rem, 4vw, 2.5rem) 1.25rem',
+                    borderRadius: 12,
+                    marginBottom: '1rem',
+                  }}
+                  aria-hidden
+                >
+                  <h2 style={{ margin: 0, fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em' }}>
+                    {deckblattTop}
+                  </h2>
+                  {deckblattSlogan ? (
+                    <p className="benutzer-deckblatt-teal-slogan">{deckblattSlogan}</p>
+                  ) : null}
+                  {deckblattKernsatz ? (
+                    <p className="benutzer-deckblatt-teal-tagline">{deckblattKernsatz}</p>
+                  ) : null}
+                  <p className="benutzer-deckblatt-teal-meta">
+                    {deckblattMainTitle}
+                    {deckblattFooterKind ? ` · ${deckblattFooterKind}` : ''}
+                  </p>
+                  {deckblattFooterTagline ? (
+                    <p className="benutzer-deckblatt-teal-footerline">{deckblattFooterTagline}</p>
+                  ) : null}
+                  <p className="benutzer-deckblatt-teal-copy">© kgm solution</p>
+                </div>
+              ) : deckblattCoverImageSrc ? (
                 <>
                   {deckblattKernsatz || deckblattSlogan ? (
                     <div className="benutzer-deckblatt-cover-intro">

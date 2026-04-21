@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Offen nach Bedarf (nächste Session).  
-**Einordnung:** K2 Familie Präsentationsmappe Kunde: Abschnitte **„Abgrenzung in einem Satz“** und **„Nächster Schritt für Interessenten“** entfernt; Kapitel **Kontakt** gekürzt, Sidebar/Index „Kontakt“.
+**Einordnung:** K2 Familie Präsentationsmappe Kunde: **Deckblatt** = Teal/Weiß wie andere Präsentationsmappen (`deckblattTealCover`), kein Screenshot `pm-familie-einstieg`; Index/Kapitel 01-Text angepasst.
+
+---
+
+**Letzter Stand:** 21.04.26 – **K2 Familie Präsentationsmappe: Deckblatt Teal statt App-Screenshot** – `BenutzerHandbuchViewer`: optional `deckblattTealCover`; `K2FamiliePraesentationsmappeKundePage` ohne `deckblattCoverImageSrc`; `00-INDEX` + `01-DECKBLATT` Text. **Commit:** _(folgt)_ ✅ GitHub
 
 ---
 

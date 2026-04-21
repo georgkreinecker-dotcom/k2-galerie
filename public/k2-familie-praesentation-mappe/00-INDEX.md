@@ -8,7 +8,7 @@ Diese Mappe ist für **Interessenten und Kund:innen** gedacht: **zum Lesen in de
 
 1. [Versprechen](01-DECKBLATT-UND-VERSPRECHEN.md)
 
-Das **Deckblatt** beim Drucken ist die **Eingangsseite** der App als A4-Bild; hier folgt der Text zum Nutzenversprechen.
+Beim Drucken steht zuerst das **Deckblatt** (Teal/Weiß, kgm solution); hier folgt der Text zum Nutzenversprechen.
 
 2. [Was ist K2 Familie?](02-WAS-IST-K2-FAMILIE.md)
 

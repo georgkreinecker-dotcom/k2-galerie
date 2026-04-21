@@ -58,9 +58,7 @@ export default function K2FamiliePraesentationsmappeKundePage() {
       footerPreviewLine="K2 Familie – Präsentationsmappe · (Seitenzahlen beim Drucken)"
       printCurrentDocPrefix="K2 Familie – Präsentationsmappe"
       defaultDocWhenNoParam="01-DECKBLATT-UND-VERSPRECHEN.md"
-      deckblattCoverImageSrc="/img/k2-familie/pm-familie-einstieg.png"
-      deckblattCoverAlt="Eingang K2 Familie – Musterfamilie Huber, Übersicht"
-      deckblattCoverCaption="Deckblatt: Eingangsseite in der App (Musterfamilie Huber) – eine Druckseite im Format A4."
+      deckblattTealCover
     />
   )
 }

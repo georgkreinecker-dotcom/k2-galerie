@@ -1,6 +1,6 @@
 # Versprechen
 
-Die **vorangehende Druckseite** zeigt den **Eingang** in der Musterfamilie Huber – dieselbe Übersicht wie in der App, als volle A4-Seite.
+Beim **Drucken** steht zuerst das **Deckblatt** im Erscheinungsbild **Teal/Weiß** (wie die anderen Präsentationsmappen von kgm solution): Produktname, **Slogan** und **Werbebotschaft**. **Screenshots** aus der Musterfamilie Huber gibt es im Kapitel **So sieht es aus**.
 
 **K2 Familie** · **kgm solution**
 
