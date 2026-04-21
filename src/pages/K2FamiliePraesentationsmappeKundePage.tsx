@@ -5,13 +5,16 @@
 
 import BenutzerHandbuchViewer from '../components/BenutzerHandbuchViewer'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { PRODUCT_K2_FAMILIE_WERBELINIE_DECKBLATT } from '../config/tenantConfig'
+import {
+  PRODUCT_K2_FAMILIE_WERBESLOGAN,
+  PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ,
+} from '../config/tenantConfig'
 
 const DOCUMENTS = [
   { id: '00-index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
   {
     id: '01-deckblatt',
-    name: 'Deckblatt und Versprechen',
+    name: 'Versprechen',
     file: '01-DECKBLATT-UND-VERSPRECHEN.md',
   },
   { id: '02-was-ist', name: 'Was ist K2 Familie?', file: '02-WAS-IST-K2-FAMILIE.md' },
@@ -46,7 +49,8 @@ export default function K2FamiliePraesentationsmappeKundePage() {
       headerSubtitle="Zum Lesen, Drucken und Übergeben – Versprechen, Nutzen, Vertrauen, Screenshots aus der Musterfamilie, Kontakt."
       printHintFolder="public/k2-familie-praesentation-mappe/"
       deckblattTop="K2 Familie"
-      deckblattSlogan={PRODUCT_K2_FAMILIE_WERBELINIE_DECKBLATT}
+      deckblattKernsatz={PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ}
+      deckblattSlogan={PRODUCT_K2_FAMILIE_WERBESLOGAN}
       deckblattMainTitle="Präsentationsmappe"
       deckblattFooterProduct="K2 Familie"
       deckblattFooterKind="Sieben Kapitel · Inhaltsverzeichnis"
@@ -54,6 +58,9 @@ export default function K2FamiliePraesentationsmappeKundePage() {
       footerPreviewLine="K2 Familie – Präsentationsmappe · (Seitenzahlen beim Drucken)"
       printCurrentDocPrefix="K2 Familie – Präsentationsmappe"
       defaultDocWhenNoParam="01-DECKBLATT-UND-VERSPRECHEN.md"
+      deckblattCoverImageSrc="/img/k2-familie/pm-familie-einstieg.png"
+      deckblattCoverAlt="Eingang K2 Familie – Musterfamilie Huber, Übersicht"
+      deckblattCoverCaption="Deckblatt: Eingangsseite in der App (Musterfamilie Huber) – eine Druckseite im Format A4."
     />
   )
 }

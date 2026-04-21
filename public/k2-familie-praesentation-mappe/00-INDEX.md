@@ -6,9 +6,9 @@ Diese Mappe ist für **Interessenten und Kund:innen** gedacht: **zum Lesen in de
 
 ## Inhaltsverzeichnis – Kurzanleitung
 
-1. [Deckblatt und Versprechen](01-DECKBLATT-UND-VERSPRECHEN.md)
+1. [Versprechen](01-DECKBLATT-UND-VERSPRECHEN.md)
 
-Kurz und einprägsam: Kopfzeile, Nutzenversprechen.
+Das **Deckblatt** beim Drucken ist die **Eingangsseite** der App als A4-Bild; hier folgt der Text zum Nutzenversprechen.
 
 2. [Was ist K2 Familie?](02-WAS-IST-K2-FAMILIE.md)
 

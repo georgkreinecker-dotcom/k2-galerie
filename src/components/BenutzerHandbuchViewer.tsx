@@ -29,6 +29,12 @@ export type BenutzerHandbuchViewerProps = {
   printCurrentDocPrefix: string
   /** Ohne `?doc=` in der URL dieses Kapitel laden (z. B. Inhaber-Text statt nur Inhaltsverzeichnis). */
   defaultDocWhenNoParam?: string
+  /** Optional: Deckblatt in der Druckvorschau als volle A4-Seite mit Bild (z. B. App-Eingang) statt Text-Gradient. */
+  deckblattCoverImageSrc?: string
+  deckblattCoverAlt?: string
+  deckblattCoverCaption?: string
+  /** Optional: Kernsatz **über** der Slogan-Überschrift (nur wenn `deckblattCoverImageSrc` – z. B. K2 Familie Werbebotschaft). */
+  deckblattKernsatz?: string
 }
 
 const HANDBUCH_DOC_PARAM = 'doc'
@@ -50,6 +56,10 @@ export default function BenutzerHandbuchViewer({
   footerPreviewLine,
   printCurrentDocPrefix,
   defaultDocWhenNoParam,
+  deckblattCoverImageSrc,
+  deckblattCoverAlt,
+  deckblattCoverCaption,
+  deckblattKernsatz,
 }: BenutzerHandbuchViewerProps) {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -363,6 +373,14 @@ export default function BenutzerHandbuchViewer({
     .benutzer-print-preview .benutzer-druck-inhalt { font-size: 10.5pt; line-height: 1.5; }
     .benutzer-print-preview .benutzer-seitenfuss-zeile { display: block !important; margin-top: 1.5rem; padding-top: 0.5rem; border-top: 1px solid #e5e7eb; font-size: 0.8rem; color: #6b7280; }
     .benutzer-deckblatt { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2rem; page-break-after: always; background: linear-gradient(160deg, #1c1a18 0%, #2d2a26 50%, #1c1a18 100%); color: #fff; }
+    .benutzer-deckblatt--einstieg-a4 { background: #fff; color: #1c1a18; min-height: 0; padding: 0.75rem 0.5rem !important; page-break-after: always; }
+    .benutzer-deckblatt-a4-inner { width: 100%; max-width: 210mm; margin: 0 auto; aspect-ratio: 210 / 297; max-height: min(90vh, 297mm); display: flex; align-items: center; justify-content: center; background: #f3f4f6; border: 1px solid #e5e7eb; box-sizing: border-box; }
+    .benutzer-deckblatt--einstieg-a4 img { width: 100%; height: 100%; object-fit: contain; display: block; vertical-align: top; }
+    .benutzer-deckblatt-einstieg-caption { margin: 0.5rem auto 0; max-width: 210mm; font-size: 0.8rem; color: #4b5563; text-align: center; line-height: 1.35; }
+    .benutzer-deckblatt-cover-intro { max-width: 210mm; margin: 0 auto 1rem; padding: 0 0.5rem; text-align: center; page-break-after: avoid; break-inside: avoid; }
+    .benutzer-deckblatt-cover-kernsatz { margin: 0 0 0.75rem; font-size: clamp(0.95rem, 2vw, 1.05rem); line-height: 1.55; color: #4b5563; font-weight: 500; }
+    .benutzer-deckblatt-cover-slogan { margin: 0; font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 700; color: #1c1a18; letter-spacing: -0.02em; line-height: 1.2; }
+    .benutzer-print-preview .benutzer-deckblatt-cover-intro { margin-bottom: 0.65rem; }
     .benutzer-druck-kapitel { page-break-before: auto; padding: 1.5rem 1.5rem 3rem; }
     .benutzer-druck-kapitel:first-of-type { page-break-before: auto; }
     .benutzer-impressum-seite { page-break-before: always; }
@@ -370,6 +388,8 @@ export default function BenutzerHandbuchViewer({
     .benutzer-print-preview .seitenfuss { display: block; position: fixed; bottom: 0; left: 0; right: 0; min-height: 28px; padding: 0.4rem 1.5rem; font-size: 0.8rem; color: #374151; background: #fff; border-top: 1px solid #e5e7eb; z-index: 99999; line-height: 1.3; }
     .benutzer-print-preview .seitenfuss .seitenfuss-preview { color: #6b7280; }
     .benutzer-print-preview .benutzer-deckblatt { min-height: auto; padding: 1.25rem 1.5rem; page-break-after: unset; margin-bottom: 0.5rem; border-radius: 12px; }
+    .benutzer-print-preview .benutzer-deckblatt--einstieg-a4 { padding: 0.4rem 0 !important; margin-bottom: 0.75rem; border-radius: 0; page-break-after: unset; }
+    .benutzer-print-preview .benutzer-deckblatt-a4-inner { max-height: none; border-radius: 8px; }
     .benutzer-print-preview .benutzer-deckblatt h1 { margin: 0.75rem 0 0.35rem; font-size: 1.4rem; }
     .benutzer-print-preview .benutzer-deckblatt .benutzer-deckblatt-fuss { margin-top: 1.25rem; padding-top: 1rem; }
     .benutzer-print-preview .benutzer-druck-inhalt .benutzer-h1 { font-size: 1.25rem; margin: 0.6rem 0 0.3rem; }
@@ -457,6 +477,13 @@ export default function BenutzerHandbuchViewer({
       .benutzer-impressum-seite { page-break-before: auto !important; }
       .benutzer-druck-kapitel h2 { font-size: 1rem !important; margin: 0 0 0.2rem !important; padding-bottom: 0.1rem !important; }
       .benutzer-deckblatt { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 0.35rem 0.6rem !important; page-break-after: auto !important; }
+      .benutzer-deckblatt--einstieg-a4 { padding: 0 !important; page-break-after: always !important; background: #fff !important; }
+      .benutzer-deckblatt-a4-inner { max-height: none !important; aspect-ratio: auto !important; height: 277mm !important; border: none !important; background: #fff !important; }
+      .benutzer-deckblatt--einstieg-a4 img { width: 100% !important; height: 100% !important; object-fit: contain !important; }
+      .benutzer-deckblatt-einstieg-caption { font-size: 7pt !important; margin: 2mm auto 0 !important; color: #374151 !important; }
+      .benutzer-deckblatt-cover-intro { margin-bottom: 0 !important; padding: 0 2mm 2mm !important; page-break-after: avoid !important; }
+      .benutzer-deckblatt-cover-kernsatz { font-size: 9pt !important; margin: 0 0 1.5mm !important; color: #374151 !important; line-height: 1.35 !important; }
+      .benutzer-deckblatt-cover-slogan { font-size: 14pt !important; margin: 0 0 1mm !important; color: #1c1a18 !important; }
       .benutzer-deckblatt h1 { margin: 0.4rem 0 0.25rem !important; font-size: 1.2rem !important; }
       .benutzer-deckblatt p { margin: 0 !important; }
       .benutzer-deckblatt .benutzer-deckblatt-fuss { margin-top: 0.5rem !important; padding-top: 0.35rem !important; }
@@ -515,20 +542,43 @@ export default function BenutzerHandbuchViewer({
             <div style={{ textAlign: 'center', padding: '4rem 2rem', color: '#6b7280' }}>Lade alle Kapitel für die Druckvorschau…</div>
           ) : (
             <>
-              <div className="benutzer-deckblatt" aria-hidden>
-                <div style={{ maxWidth: '28rem', margin: '0 auto' }}>
-                  <h2 style={{ margin: 0, fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: 700, color: '#fff', textAlign: 'center', letterSpacing: '-0.02em' }}>{deckblattTop}</h2>
-                  <p style={{ margin: '1rem 0 0.25rem', fontSize: 'clamp(0.9rem, 2vw, 1rem)', color: 'rgba(255,255,255,0.9)', lineHeight: 1.35 }}>{deckblattSlogan}</p>
-                  <h1 style={{ margin: '0.5rem 0 0.75rem', fontSize: 'clamp(1.75rem, 4vw, 2.25rem)', fontWeight: 700, lineHeight: 1.25 }}>
-                    {deckblattMainTitle}
-                  </h1>
-                  <div className="benutzer-deckblatt-fuss" style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.2)' }}>
-                    <p style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>{deckblattFooterProduct}</p>
-                    <p style={{ margin: '0.25rem 0 0', fontSize: '1rem', color: 'rgba(255,255,255,0.9)' }}>{deckblattFooterKind}</p>
-                    <p style={{ margin: '1.5rem 0 0', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>{deckblattFooterTagline}</p>
+              {deckblattCoverImageSrc ? (
+                <>
+                  {deckblattKernsatz || deckblattSlogan ? (
+                    <div className="benutzer-deckblatt-cover-intro">
+                      {deckblattKernsatz ? (
+                        <p className="benutzer-deckblatt-cover-kernsatz">{deckblattKernsatz}</p>
+                      ) : null}
+                      {deckblattSlogan ? (
+                        <h2 className="benutzer-deckblatt-cover-slogan">{deckblattSlogan}</h2>
+                      ) : null}
+                    </div>
+                  ) : null}
+                  <div className="benutzer-deckblatt benutzer-deckblatt--einstieg-a4" aria-hidden>
+                    <div className="benutzer-deckblatt-a4-inner">
+                      <img src={deckblattCoverImageSrc} alt={deckblattCoverAlt ?? ''} />
+                    </div>
+                    {deckblattCoverCaption ? (
+                      <p className="benutzer-deckblatt-einstieg-caption">{deckblattCoverCaption}</p>
+                    ) : null}
+                  </div>
+                </>
+              ) : (
+                <div className="benutzer-deckblatt" aria-hidden>
+                  <div style={{ maxWidth: '28rem', margin: '0 auto' }}>
+                    <h2 style={{ margin: 0, fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: 700, color: '#fff', textAlign: 'center', letterSpacing: '-0.02em' }}>{deckblattTop}</h2>
+                    <p style={{ margin: '1rem 0 0.25rem', fontSize: 'clamp(0.9rem, 2vw, 1rem)', color: 'rgba(255,255,255,0.9)', lineHeight: 1.35 }}>{deckblattSlogan}</p>
+                    <h1 style={{ margin: '0.5rem 0 0.75rem', fontSize: 'clamp(1.75rem, 4vw, 2.25rem)', fontWeight: 700, lineHeight: 1.25 }}>
+                      {deckblattMainTitle}
+                    </h1>
+                    <div className="benutzer-deckblatt-fuss" style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.2)' }}>
+                      <p style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>{deckblattFooterProduct}</p>
+                      <p style={{ margin: '0.25rem 0 0', fontSize: '1rem', color: 'rgba(255,255,255,0.9)' }}>{deckblattFooterKind}</p>
+                      <p style={{ margin: '1.5rem 0 0', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>{deckblattFooterTagline}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
               {documents.map((doc, index) => (
                 <section key={doc.file} className="benutzer-druck-kapitel">
                   <div className="benutzer-druck-inhalt">{renderMarkdown(allDocContents[doc.file] ?? '', index > 0 ? index : undefined)}</div>

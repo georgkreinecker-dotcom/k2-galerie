@@ -1,4 +1,6 @@
-# Deckblatt und Versprechen
+# Versprechen
+
+Die **vorangehende Druckseite** zeigt den **Eingang** in der Musterfamilie Huber – dieselbe Übersicht wie in der App, als volle A4-Seite.
 
 **K2 Familie** · **kgm solution**
 

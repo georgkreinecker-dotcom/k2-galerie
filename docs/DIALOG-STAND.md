@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Offen nach Bedarf (nächste Session).  
-**Einordnung:** Präsentationsmappe Kunde + Screenshots: `?pm=1` blendet Impressum-Footer und Huber-Rundgang für PNGs aus.
+**Einordnung:** K2 Familie Präsentationsmappe Kunde: Druckvorschau-Deckblatt mit Kernsatz + Slogan (`tenantConfig`) über A4-Eingangsbild; Kapitel „Versprechen“-Text angepasst.
+
+---
+
+**Letzter Stand:** 21.04.26 – **K2 Familie Präsentationsmappe Kunde: Deckblatt wieder mit Kernsatz + Slogan** – `BenutzerHandbuchViewer`: optional `deckblattKernsatz` über Slogan bei Coverbild; Page nutzt `PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ` + `PRODUCT_K2_FAMILIE_WERBESLOGAN`; Mappe-Kapitel 01/Index/05 ergänzt. **Commit:** `adb6cb23` ✅ GitHub
 
 ---
 

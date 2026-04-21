@@ -10,9 +10,10 @@ Hier sind **Screenshots** aus der **Musterfamilie Huber** (Demo), **ohne** echte
 |-----|--------|--------|
 | 1 | Einstieg / Übersicht Musterfamilie | `pm-familie-einstieg.png` |
 | 2 | Stammbaum (Ansicht) | `pm-stammbaum.png` |
-| 3 | Personenkarte und Beziehungen | `pm-person-beziehungen.png` |
-| 4 | Einstellungen – Rollen & Familie (Ausschnitt) | `pm-rollen.png` |
-| 5 | Gedenkort | `pm-gedenk-oder-momente.png` |
+| 3 | Stammbaum – **Familiengrafik** (Musterfamilie Huber, Bereich Grafik) | `pm-familiengrafik-huber.png` |
+| 4 | Personenkarte und Beziehungen | `pm-person-beziehungen.png` |
+| 5 | Einstellungen – Rollen & Familie (Ausschnitt) | `pm-rollen.png` |
+| 6 | Gedenkort | `pm-gedenk-oder-momente.png` |
 
 [SEITENUMBRUCH]
 
@@ -28,19 +29,27 @@ Hier sind **Screenshots** aus der **Musterfamilie Huber** (Demo), **ohne** echte
 
 [SEITENUMBRUCH]
 
-### 3. Personenkarte und Beziehungen
+### 3. Familiengrafik (Stammbaum)
+
+Die **Grafik-Ansicht** im Stammbaum: Überblick als **Familiengrafik** (zoomen, Orientierung) – hier die **Musterfamilie Huber**.
+
+![Stammbaum – Familiengrafik (Musterfamilie Huber)](/img/k2-familie/pm-familiengrafik-huber.png)
+
+[SEITENUMBRUCH]
+
+### 4. Personenkarte und Beziehungen
 
 ![Personenkarte mit Beziehungen (Beispiel Stefan Huber)](/img/k2-familie/pm-person-beziehungen.png)
 
 [SEITENUMBRUCH]
 
-### 4. Rollen und Familie
+### 5. Rollen und Familie
 
 ![Einstellungen – Rollen und Familie (Ausschnitt)](/img/k2-familie/pm-rollen.png)
 
 [SEITENUMBRUCH]
 
-### 5. Gedenkort
+### 6. Gedenkort
 
 ![Gedenkort – würdevoller Bereich](/img/k2-familie/pm-gedenk-oder-momente.png)
 
