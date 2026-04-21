@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Offen nach Bedarf (nächste Session).  
-**Einordnung:** K2 Familie Präsentationsmappe Kunde: Kapitel **Technik in Kürze** ergänzt (Browser/PWA, Mandantentrennung, Sicherung/Updates).
+**Einordnung:** K2 Familie Präsentationsmappe Kunde: kein Kontakt-Kapitel mehr; **Impressum + QR Musterfamilie** unten; Technik = Kapitel 6.
+
+---
+
+**Letzter Stand:** 21.04.26 – **K2 Familie Mappe Kunde: Kontakt raus, QR unter Impressum** – Kapitel 6 nur noch Technik (`06-TECHNIK-IN-KUERZE.md`); `BenutzerHandbuchViewer` Prop `impressumQrAbsUrl` statt Kontakt-Kapitel-QR; Lesansicht: Impressum-Block mit Kontakt + QR. **Commit:** `fd928973` ✅ GitHub
 
 ---
 
