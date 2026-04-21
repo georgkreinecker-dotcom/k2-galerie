@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 21.04.26 – **K2 Familie Präsentationsmappe: Screenshots Events & Geschichten** – `capture-k2-familie-praesentation-map.mjs`: Routen `/projects/k2-familie/events` und `/geschichte` (Musterfamilie Huber); `05-SO-SIEHT-DAS-AUS-BILDER.md` + README; PNGs in `public/img/k2-familie/`. **Commit:** _(folgt)_ ✅ GitHub
+**Letzter Stand:** 21.04.26 – **K2 Familie Präsentationsmappe: Screenshots Events & Geschichten** – `capture-k2-familie-praesentation-map.mjs`: Routen `/projects/k2-familie/events` und `/geschichte` (Musterfamilie Huber); `05-SO-SIEHT-DAS-AUS-BILDER.md` + README; PNGs in `public/img/k2-familie/`. **Commit:** `7067e173` ✅ GitHub
 
 ---
 
