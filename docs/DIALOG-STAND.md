@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Offen nach Bedarf (nächste Session).  
-**Einordnung:** BenutzerHandbuchViewer PDF/Druck: lesbarere Typo (9 pt, Zeilenabstand ~1,42, A4-Ränder, Impressum-Klasse, QR ohne hässlichen Umbruch).
+**Einordnung:** K2-Familie-Mappe Kunde: Deckblatt-QR = Musterfamilie Huber (`?t=huber`), Impressum-QR = Plattform Entdecken/Eingangstor; Cover-Overlay nutzt dasselbe Deckblatt-QR wie die übrigen Deckblatt-Stellen.
+
+---
+
+**Letzter Stand:** 21.04.26 – **K2 Familie Mappe Kunde: QR getauscht (Huber ↔ Eingangstor)** – `K2FamiliePraesentationsmappeKundePage`: `deckblattQrAbsUrl` Huber-Einstieg, `impressumQrAbsUrl` + Caption Entdecken; `BenutzerHandbuchViewer`: `DeckblattQrNurBild`/`deckblattQrAbsUrl`, Overlay auf Cover-Bild ebenfalls Huber-QR (Bugfix). **Commit:** `c40ba5b5` ✅ GitHub
 
 ---
 

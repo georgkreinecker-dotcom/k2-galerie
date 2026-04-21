@@ -45,8 +45,12 @@ export type BenutzerHandbuchViewerProps = {
   deckblattTealCover?: boolean
   /** QR zur Plattform-Startseite Entdecken (Eingangstor): nur Bild, unten rechts auf dem Deckblatt in der Druckvorschau; Lesansicht rechts ohne Text. */
   prominentEingangstorQr?: boolean
-  /** Optional: absoluter QR-Ziel-URL (z. B. Musterfamilie-Einstieg) – unter dem Impressum-Text (Lesansicht + Druckvorschau „gesamte Mappe“). */
+  /** Optional: eigene Ziel-URL für das Deckblatt-QR (sonst Entdecken/Eingangstor). z. B. Musterfamilie-Einstieg auf dem Deckblatt, Eingangstor unter Impressum. */
+  deckblattQrAbsUrl?: string
+  /** Optional: absoluter QR-Ziel-URL – unter dem Impressum-Text (Lesansicht + Druckvorschau „gesamte Mappe“). */
   impressumQrAbsUrl?: string
+  /** Optional: eine Zeile unter dem Impressum-QR (z. B. „Musterfamilie Huber“ vs. „Entdecken“). */
+  impressumQrCaption?: string
 }
 
 const HANDBUCH_DOC_PARAM = 'doc'
@@ -124,6 +128,14 @@ function EingangstorQrNurBild({ widthPx }: { widthPx: number }) {
   return <QrNurBild absUrl={EINGANGSTOR_ABS_URL} widthPx={widthPx} variant="deckblatt" />
 }
 
+/** Deckblatt-QR: optional eigene URL, sonst Eingangstor (Entdecken). */
+function DeckblattQrNurBild({ absUrl, widthPx }: { absUrl: string | undefined; widthPx: number }) {
+  if (absUrl) {
+    return <QrNurBild absUrl={absUrl} widthPx={widthPx} variant="deckblatt" />
+  }
+  return <EingangstorQrNurBild widthPx={widthPx} />
+}
+
 export default function BenutzerHandbuchViewer({
   handbuchBase,
   documents,
@@ -147,7 +159,9 @@ export default function BenutzerHandbuchViewer({
   deckblattKernsatz,
   deckblattTealCover,
   prominentEingangstorQr,
+  deckblattQrAbsUrl,
   impressumQrAbsUrl,
+  impressumQrCaption,
 }: BenutzerHandbuchViewerProps) {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -644,7 +658,7 @@ export default function BenutzerHandbuchViewer({
 
       {prominentEingangstorQr && !printPreview && (
         <div className="benutzer-no-print" style={{ maxWidth: '1100px', margin: '0 auto 1rem', display: 'flex', justifyContent: 'flex-end' }}>
-          <EingangstorQrNurBild widthPx={200} />
+          <DeckblattQrNurBild absUrl={deckblattQrAbsUrl} widthPx={200} />
         </div>
       )}
 
@@ -705,7 +719,7 @@ export default function BenutzerHandbuchViewer({
                         lineHeight: 0,
                       }}
                     >
-                      <EingangstorQrNurBild widthPx={112} />
+                      <DeckblattQrNurBild absUrl={deckblattQrAbsUrl} widthPx={112} />
                     </div>
                   ) : null}
                 </div>
@@ -736,7 +750,7 @@ export default function BenutzerHandbuchViewer({
                             lineHeight: 0,
                           }}
                         >
-                          <EingangstorQrNurBild widthPx={120} />
+                          <DeckblattQrNurBild absUrl={deckblattQrAbsUrl} widthPx={120} />
                         </div>
                       ) : null}
                     </div>
@@ -764,7 +778,7 @@ export default function BenutzerHandbuchViewer({
               ) : null}
               {prominentEingangstorQr && !deckblattTealCover && !deckblattCoverImageSrc ? (
                 <div className="benutzer-druck-kapitel benutzer-eingangstor-qr-fallback" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
-                  <EingangstorQrNurBild widthPx={160} />
+                  <DeckblattQrNurBild absUrl={deckblattQrAbsUrl} widthPx={160} />
                 </div>
               ) : null}
               {documents.map((doc, index) => (
@@ -794,9 +808,9 @@ export default function BenutzerHandbuchViewer({
                   >
                     <div style={{ textAlign: 'center' }}>
                       <QrNurBild absUrl={impressumQrAbsUrl} widthPx={120} variant="kontakt" />
-                      <p style={{ margin: '0.35rem 0 0', fontSize: '8pt', color: '#6b7280', lineHeight: 1.3 }}>
-                        Musterfamilie Huber (Demo)
-                      </p>
+                      {impressumQrCaption ? (
+                        <p style={{ margin: '0.35rem 0 0', fontSize: '8pt', color: '#6b7280', lineHeight: 1.3 }}>{impressumQrCaption}</p>
+                      ) : null}
                     </div>
                   </div>
                 ) : null}
@@ -884,7 +898,9 @@ export default function BenutzerHandbuchViewer({
                     >
                       <div style={{ textAlign: 'center' }}>
                         <QrNurBild absUrl={impressumQrAbsUrl} widthPx={160} variant="kontakt" />
-                        <p style={{ margin: '0.4rem 0 0', fontSize: '0.8rem', color: '#6b7280' }}>Musterfamilie Huber (Demo)</p>
+                        {impressumQrCaption ? (
+                          <p style={{ margin: '0.4rem 0 0', fontSize: '0.8rem', color: '#6b7280' }}>{impressumQrCaption}</p>
+                        ) : null}
                       </div>
                     </div>
                   </section>
