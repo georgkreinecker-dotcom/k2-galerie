@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Offen nach Bedarf (nächste Session).  
-**Einordnung:** K2 Familie Präsentationsmappe Kunde: Kontakt-Kapitel **QR Musterfamilie** (`/projects/k2-familie/einstieg?t=huber`, Server-Stand + Bust) in `BenutzerHandbuchViewer` + Page-Prop `kontaktChapterQrAbsUrl`.
+**Einordnung:** K2 Familie Präsentationsmappe Kunde: Kapitel **Technik in Kürze** ergänzt (Browser/PWA, Mandantentrennung, Sicherung/Updates).
+
+---
+
+**Letzter Stand:** 21.04.26 – **K2 Familie Mappe Kunde: Kapitel Technik in Kürze** – `public/k2-familie-praesentation-mappe/07-TECHNIK-IN-KUERZE.md`, `00-INDEX.md`, `K2FamiliePraesentationsmappeKundePage` DOCUMENTS + Subtitle. **Commit:** PLACEHOLDER
 
 ---
 

@@ -37,6 +37,11 @@ const DOCUMENTS = [
     name: 'Kontakt',
     file: '06-KONTAKT-UND-NAECHSTER-SCHRITT.md',
   },
+  {
+    id: '07-technik',
+    name: 'Technik in Kürze',
+    file: '07-TECHNIK-IN-KUERZE.md',
+  },
 ] as const
 
 const ROUTE_BACK = '/projects/k2-familie/praesentationsmappe-kunde'
@@ -49,7 +54,7 @@ export default function K2FamiliePraesentationsmappeKundePage() {
       fallbackRoute={PROJECT_ROUTES['k2-familie'].willkommen}
       routePathForBack={ROUTE_BACK}
       headerTitle="📘 K2 Familie – Präsentationsmappe"
-      headerSubtitle="Versprechen, Produktüberblick, Nutzen, Vertrauen, Beispielansichten, Kontakt."
+      headerSubtitle="Versprechen, Produktüberblick, Nutzen, Vertrauen, Beispielansichten, Kontakt, Technik in Kürze."
       printHintFolder="public/k2-familie-praesentation-mappe/"
       deckblattTop="K2 Familie"
       deckblattKernsatz={PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ}
