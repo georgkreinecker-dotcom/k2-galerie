@@ -91,7 +91,7 @@ Der **persönliche Code** (Kürzel aus Buchstaben und Ziffern) ordnet **Sie** Ih
 ## 7. Kurz-Checkliste
 
 - [ ] Ich weiß: **Eine Person = eine Karte**; der Stammbaum **zeigt** die Verknüpfungen.
-- [ ] Ich weiß **wo**: neue Karten **Stammbaum** (und **Grundstruktur** nur bei leerer Familie) bzw. **Neu als …** auf einer Personenkarte.
+- [ ] Ich weiß, **wo** ich neue Karten anlege: **Stammbaum** (und **Grundstruktur** nur bei leerer Familie) bzw. **Neu als …** auf einer Personenkarte.
 - [ ] **Beziehungen** stimmen mit den Karten überein – nicht „irgendwo im Text“.
 - [ ] **Eigene Karte** vs. **fremde Karte** vs. **Inhaber-Struktur** – ich kenne meine Rolle ([Inhaber:in](03-K2-FAMILIE-INHABER-ROLLE.md), [Bearbeiter und Leser](04-K2-FAMILIE-BEARBEITER-UND-LESER.md)).
 - [ ] **Persönlicher Code** behandle ich wie eine **Zuordnung** zu meiner Karte, nicht öffentlich.

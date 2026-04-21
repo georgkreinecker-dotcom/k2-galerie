@@ -1,6 +1,8 @@
 # Benutzerhandbuch K2 Familie
 
-Willkommen. Dieses Handbuch gehört zu **K2 Familie**. Im Zentrum steht die **Personenkarte** – daraus leiten sich **Stammbaum**, **Rollen** und **Zugang** ab. **Vertrauen:** Der Familienraum ist **privat**; **hinein** kommen Sie **nur mit Ihrer persönlichen ID** auf der Karte – das sagt die App und dieses Handbuch **überall gleich**. Ergänzend: **Grafik und Druck** (Stammbaum als Bild und Ausdruck), **Events**, **Geschichte**, **Gedenkort**, **Einstellungen** sowie **Sicherung** und **Zusammenarbeit** im Alltag.
+Willkommen. Dieses Handbuch gehört zu **K2 Familie**. Im Zentrum steht die **Personenkarte** – daraus leiten sich **Stammbaum**, **Rollen** und **Zugang** ab.
+
+**Vertrauen:** Der Familienraum ist **privat**. **Hinein** kommen Sie **nur mit Ihrer persönlichen ID** auf der Karte – das sagen die App und dieses Handbuch **überall gleich**. Daneben finden Sie **Grafik und Druck** (Stammbaum als Bild und Ausdruck), **Events**, **Geschichte**, **Gedenkort**, **Einstellungen** sowie Hinweise zu **Sicherung** und **Zusammenarbeit** im Alltag.
 
 **So navigieren Sie:** Links unter **Kapitel** tippen Sie ein Thema an; der Text erscheint rechts. Diese Seite ist die **Kurzübersicht**. Über **Inhaltsverzeichnis** kommen Sie jederzeit zurück.
 

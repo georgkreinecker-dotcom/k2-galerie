@@ -60,7 +60,7 @@ Manche Inhaber:innen möchten zeitweise **nur lesen** oder **wie ein Bearbeiter*
 Das ist eine **Ansicht** für den Alltag – kein Wechsel der **gespeicherten** Rolle. Praktisch, wenn Sie prüfen wollen, was andere sehen.
 
 
-## 4. Sicherung – ruhig und vorsichtig
+## 5. Sicherung – ruhig und vorsichtig
 
 1. **Regelmäßig** eine **Sicherungsdatei** holen (wenn die App das anbietet) und **an einem zweiten Ort** ablegen – nicht nur auf einem Gerät.
 2. Vor **großen** Schritten (viele neue Karten, Import, Wiederherstellung): **zusätzlich** sichern.
@@ -85,7 +85,7 @@ Unter **Einstellungen** in der App finden Sie **Sicherung** und die dazugehörig
 **Im Team:** Sprechen Sie **einmal** ab, wer welche Rolle hat. Viele Irritationen kommen daher, dass jemand meint, als Bearbeiter:in den **ganzen** Stammbaum ändern zu dürfen – die App verhindert das bewusst.
 
 
-## 7. Andere einbinden – ohne die Hoheit zu verlieren
+## 8. Andere einbinden – ohne die Hoheit zu verlieren
 
 Sie können **Bearbeiter:innen** und **Leser:innen** einladen und behalten die **Hoheit über Daten und Sicherung**:
 

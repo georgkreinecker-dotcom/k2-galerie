@@ -33,7 +33,7 @@ export default function K2FamilieBenutzerHandbuchPage() {
       fallbackRoute={PROJECT_ROUTES['k2-familie'].meineFamilie}
       routePathForBack="/k2-familie-handbuch"
       headerTitle="📖 Benutzerhandbuch K2 Familie"
-      headerSubtitle="Personenkarte, Stammbaum, Grafik, Druck, Events, Geschichte, Gedenkort, Einstellungen, Rollen."
+      headerSubtitle="Personenkarte und Stammbaum, Rollen, Events, Geschichte, Gedenkort, Grafik, Druck, Einstellungen."
       printHintFolder="public/k2-familie-handbuch/"
       deckblattTop="K2 Familie"
       deckblattSlogan={PRODUCT_K2_FAMILIE_WERBELINIE_DECKBLATT}
@@ -43,7 +43,7 @@ export default function K2FamilieBenutzerHandbuchPage() {
       deckblattFooterTagline="Zum Lesen und Drucken · Daten bleiben in eurem Mandantenraum"
       footerPreviewLine="K2 Familie – Benutzerhandbuch · (Seitenzahlen beim Drucken)"
       printCurrentDocPrefix="K2 Familie – Benutzerhandbuch"
-      defaultDocWhenNoParam="02-DIE-PERSONENKARTE.md"
+      defaultDocWhenNoParam="00-INDEX.md"
     />
   )
 }

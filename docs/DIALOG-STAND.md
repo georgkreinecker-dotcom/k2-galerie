@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Georg prüft Safari-Druckvorschau K2-Familie-Mappe (QR unter Caption, nicht mehr seitenbreit/doppelt).  
-**Einordnung:** Ursache „Riesen-QR“: `@media print` hatte `.benutzer-deckblatt--einstieg-a4 img { width:100% }` – griff auch den QR, sobald der unter das Bild gerückt war. Fix: nur `.benutzer-deckblatt-a4-inner img` für den Screenshot; QR eigene Regeln (z. B. ~22 mm); Einstieg ohne 100vh-Zentrierung (`justify-content: flex-start`, `min-height: 0`).
+**Was wir JETZT tun:** Offen nach Bedarf (nächste Session).  
+**Einordnung:** K2-Familie-Benutzerhandbuch: Feinschliff Text/Struktur, Einstieg Inhaltsverzeichnis, Kapitel 3 Abschnittsnummern korrigiert.
+
+---
+
+**Letzter Stand:** 21.04.26 – **K2-Familie-Benutzerhandbuch: Feinschliff** – `00-INDEX` lesbarer; Kapitel 3 doppelte §4/§7 behoben (§5 Sicherung, §8 Einbinden); Kapitel 8/9 **Weiter**-Links; Personenkarte Checkliste Sprache; `K2FamilieBenutzerHandbuchPage`: Untertitel, Standarddokument `00-INDEX.md`. **Commit:** `HANDSCHUH_HASH`
 
 ---
 

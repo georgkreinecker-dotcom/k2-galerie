@@ -26,4 +26,8 @@
 
 ---
 
-*Dieses Kapitel fasst die Produktlinie **privater Raum + Zugang nur mit persönlicher ID** in verständlicher Form zusammen. Zur Personenkarte und zu den Nummern: [Die Personenkarte](02-DIE-PERSONENKARTE.md), [Rolle Inhaber:in](03-K2-FAMILIE-INHABER-ROLLE.md) – Abschnitt Zugang.*
+*Dieses Kapitel fasst die Produktlinie **privater Raum + Zugang nur mit persönlicher ID** in verständlicher Form zusammen. Zur Personenkarte und zu den Nummern: [Die Personenkarte](02-DIE-PERSONENKARTE.md), [Rolle Inhaber:in](03-K2-FAMILIE-INHABER-ROLLE.md) – Abschnitt **Zugang, persönliche Codes, Einladungen**.*
+
+---
+
+**Weiter:** [Die Personenkarte](02-DIE-PERSONENKARTE.md) · [Lizenz und Kündigung](08-LIZENZ-UND-KUENDIGUNG.md) · [Erste Schritte](01-ERSTE-SCHRITTE.md)
