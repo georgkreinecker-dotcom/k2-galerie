@@ -43,7 +43,7 @@ export type BenutzerHandbuchViewerProps = {
   deckblattKernsatz?: string
   /** Deckblatt wie andere Präsentationsmappen: Teal/Weiß, ein A4-Kopf – kein Screenshot. */
   deckblattTealCover?: boolean
-  /** Großer QR zur Plattform-Startseite Entdecken (Eingangstor), Lesansicht + Druckvorschau. */
+  /** QR zur Plattform-Startseite Entdecken (Eingangstor): nur Bild, unten rechts auf dem Deckblatt in der Druckvorschau; Lesansicht rechts ohne Text. */
   prominentEingangstorQr?: boolean
 }
 
@@ -51,138 +51,56 @@ const HANDBUCH_DOC_PARAM = 'doc'
 
 const EINGANGSTOR_ABS_URL = `${BASE_APP_URL}${OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE}`
 
-/** QR zum Eingangstor (Entdecken) – Server-Stand + Bust wie Werbeunterlagen. */
-function EingangstorQrBlock({ variant }: { variant: 'screen' | 'print' }) {
+/** Nur QR-Bild (kein Text) – Server-Stand + Bust wie Werbeunterlagen. */
+function EingangstorQrNurBild({ widthPx }: { widthPx: number }) {
   const { versionTimestamp } = useQrVersionTimestamp()
   const { qrUrl } = useStableQrBustedUrl(EINGANGSTOR_ABS_URL, versionTimestamp)
   const [dataUrl, setDataUrl] = useState('')
   useEffect(() => {
     let cancelled = false
-    const w = variant === 'screen' ? 220 : 160
-    QRCode.toDataURL(qrUrl, { width: w, margin: 1 }).then((u) => {
+    QRCode.toDataURL(qrUrl, { width: widthPx, margin: 1 }).then((u) => {
       if (!cancelled) setDataUrl(u)
     })
     return () => {
       cancelled = true
     }
-  }, [qrUrl, variant])
+  }, [qrUrl, widthPx])
 
-  const textBlock = (
-    <div style={{ flex: '1 1 220px', minWidth: 0 }}>
-      <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: TEAL_DECKBLATT_BG }}>
-        Plattform
-      </p>
-      <h2
-        style={{
-          margin: variant === 'screen' ? '0.35rem 0 0.5rem' : '0.25rem 0 0.35rem',
-          fontSize: variant === 'screen' ? '1.35rem' : '1.1rem',
-          fontWeight: 700,
-          color: '#1c1a18',
-          lineHeight: 1.25,
-        }}
-      >
-        Zum Eingangstor
-      </h2>
-      <p style={{ margin: 0, fontSize: variant === 'screen' ? '0.95rem' : '0.85rem', color: '#5c5650', lineHeight: 1.5 }}>
-        Scannt den QR-Code mit dem Handy – öffnet die Startseite Entdecken (Plattform).
-      </p>
-      <a
-        href={qrUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{
-          display: 'inline-block',
-          marginTop: variant === 'screen' ? '0.75rem' : '0.5rem',
-          fontSize: '0.85rem',
-          color: TEAL_DECKBLATT_BG,
-          fontWeight: 600,
-          textDecoration: 'underline',
-        }}
-      >
-        Link im Browser öffnen
-      </a>
-    </div>
-  )
-
-  const qrSize = variant === 'screen' ? 220 : 160
-  const qrBlock = (
-    <div style={{ flex: '0 0 auto', textAlign: 'center' }}>
-      {dataUrl ? (
-        <img
-          src={dataUrl}
-          alt="QR-Code zum Eingangstor Entdecken"
-          width={qrSize}
-          height={qrSize}
-          style={{ display: 'block', width: qrSize, height: qrSize, borderRadius: 8, border: '1px solid #e5e7eb', background: '#fff' }}
-        />
-      ) : (
-        <div
-          style={{
-            width: qrSize,
-            height: qrSize,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: '#f3f4f6',
-            borderRadius: 8,
-            fontSize: '0.85rem',
-            color: '#6b7280',
-            margin: '0 auto',
-          }}
-        >
-          QR wird geladen…
-        </div>
-      )}
-      <p style={{ margin: '0.5rem 0 0', fontSize: '0.75rem', color: '#6b7280' }}>k2-galerie.vercel.app · Entdecken</p>
-    </div>
-  )
-
-  if (variant === 'screen') {
+  if (dataUrl) {
     return (
-      <div
-        className="benutzer-no-print benutzer-eingangstor-qr-prominent"
+      <img
+        src={dataUrl}
+        alt=""
+        width={widthPx}
+        height={widthPx}
         style={{
-          maxWidth: '1100px',
-          margin: '0 auto 1.25rem',
-          padding: '1.25rem 1.5rem',
-          background: 'linear-gradient(135deg, #f0fdf9 0%, #fffefb 100%)',
-          border: `2px solid ${TEAL_DECKBLATT_BG}`,
-          borderRadius: 12,
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '1.25rem',
-          boxShadow: '0 4px 20px rgba(12, 92, 85, 0.12)',
+          display: 'block',
+          width: widthPx,
+          height: widthPx,
+          borderRadius: 6,
+          border: '1px solid rgba(255,255,255,0.85)',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+          background: '#fff',
         }}
-      >
-        {textBlock}
-        {qrBlock}
-      </div>
+      />
     )
   }
-
   return (
-    <section
-      className="benutzer-druck-kapitel benutzer-eingangstor-qr-print"
+    <div
       style={{
-        breakInside: 'avoid',
-        pageBreakInside: 'avoid',
-        border: `2px solid ${TEAL_DECKBLATT_BG}`,
-        borderRadius: 8,
-        padding: '0.85rem 1rem',
-        marginBottom: '1rem',
-        background: '#f9fafb',
+        width: widthPx,
+        height: widthPx,
         display: 'flex',
-        flexWrap: 'wrap',
         alignItems: 'center',
-        gap: '1rem',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
+        background: 'rgba(255,255,255,0.9)',
+        borderRadius: 6,
+        fontSize: '0.7rem',
+        color: '#6b7280',
       }}
     >
-      {textBlock}
-      {qrBlock}
-    </section>
+      QR
+    </div>
   )
 }
 
@@ -533,7 +451,7 @@ export default function BenutzerHandbuchViewer({
     .benutzer-print-preview .benutzer-deckblatt-teal.benutzer-deckblatt-teal--mit-bild { page-break-after: avoid; margin-bottom: 0.5rem; }
     .benutzer-deckblatt { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2rem; page-break-after: always; background: linear-gradient(160deg, #1c1a18 0%, #2d2a26 50%, #1c1a18 100%); color: #fff; }
     .benutzer-deckblatt--einstieg-a4 { background: #fff; color: #1c1a18; min-height: 0; padding: 0.75rem 0.5rem !important; page-break-after: always; }
-    .benutzer-deckblatt-a4-inner { width: 100%; max-width: 210mm; margin: 0 auto; aspect-ratio: 210 / 297; max-height: min(90vh, 297mm); display: flex; align-items: center; justify-content: center; background: #f3f4f6; border: 1px solid #e5e7eb; box-sizing: border-box; }
+    .benutzer-deckblatt-a4-inner { position: relative; width: 100%; max-width: 210mm; margin: 0 auto; aspect-ratio: 210 / 297; max-height: min(90vh, 297mm); display: flex; align-items: center; justify-content: center; background: #f3f4f6; border: 1px solid #e5e7eb; box-sizing: border-box; }
     .benutzer-deckblatt--einstieg-a4 img { width: 100%; height: 100%; object-fit: contain; display: block; vertical-align: top; }
     .benutzer-deckblatt-einstieg-caption { margin: 0.5rem auto 0; max-width: 210mm; font-size: 0.8rem; color: #4b5563; text-align: center; line-height: 1.35; }
     .benutzer-deckblatt-cover-intro { max-width: 210mm; margin: 0 auto 1rem; padding: 0 0.5rem; text-align: center; page-break-after: avoid; break-inside: avoid; }
@@ -604,8 +522,6 @@ export default function BenutzerHandbuchViewer({
       .benutzer-handbuch-wrapper .benutzer-table th, .benutzer-handbuch-wrapper .benutzer-table td { padding: 0.4rem 0.5rem; }
       .benutzer-druckvorschau-leiste { left: 0.5rem; right: 0.5rem; transform: none; bottom: 1rem; }
       .benutzer-druckvorschau-leiste button { min-height: 44px; }
-      .benutzer-eingangstor-qr-prominent { flex-direction: column !important; text-align: center; align-items: center !important; }
-      .benutzer-eingangstor-qr-prominent > div:first-of-type { text-align: center; }
     }
     @media print {
       .benutzer-no-print, .benutzer-druckvorschau-leiste, .benutzer-nur-vorschau { display: none !important; }
@@ -645,8 +561,8 @@ export default function BenutzerHandbuchViewer({
       .benutzer-deckblatt-teal .benutzer-deckblatt-teal-meta { font-size: 8pt !important; margin: 2mm 0 0 !important; color: rgba(255,255,255,0.95) !important; }
       .benutzer-deckblatt-teal .benutzer-deckblatt-teal-footerline { font-size: 7pt !important; margin: 1mm 0 0 !important; color: rgba(255,255,255,0.9) !important; }
       .benutzer-deckblatt-teal .benutzer-deckblatt-teal-copy { font-size: 7pt !important; margin: 3mm 0 0 !important; color: rgba(255,255,255,0.85) !important; }
-      .benutzer-eingangstor-qr-print { break-inside: avoid !important; page-break-inside: avoid !important; border-color: ${TEAL_DECKBLATT_BG} !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-      .benutzer-eingangstor-qr-print img { max-width: 42mm !important; height: auto !important; }
+      .benutzer-deckblatt-qr-eingangstor-overlay img { width: 26mm !important; height: 26mm !important; max-width: 26mm !important; object-fit: contain !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      .benutzer-deckblatt-qr-eingangstor-overlay--teal img { width: 22mm !important; height: 22mm !important; max-width: 22mm !important; }
       .benutzer-deckblatt { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 0.35rem 0.6rem !important; page-break-after: auto !important; }
       .benutzer-deckblatt--einstieg-a4 { padding: 0 !important; page-break-after: always !important; background: #fff !important; }
       .benutzer-deckblatt-a4-inner { max-height: none !important; aspect-ratio: auto !important; height: 277mm !important; border: none !important; background: #fff !important; }
@@ -702,7 +618,11 @@ export default function BenutzerHandbuchViewer({
         </header>
       )}
 
-      {prominentEingangstorQr && !printPreview && <EingangstorQrBlock variant="screen" />}
+      {prominentEingangstorQr && !printPreview && (
+        <div className="benutzer-no-print" style={{ maxWidth: '1100px', margin: '0 auto 1rem', display: 'flex', justifyContent: 'flex-end' }}>
+          <EingangstorQrNurBild widthPx={200} />
+        </div>
+      )}
 
       {printPreview ? (
         <>
@@ -727,6 +647,7 @@ export default function BenutzerHandbuchViewer({
                       : 'clamp(1.5rem, 4vw, 2.5rem) 1.25rem',
                     borderRadius: 12,
                     marginBottom: deckblattCoverImageSrc ? '0.5rem' : '1rem',
+                    position: prominentEingangstorQr && !deckblattCoverImageSrc ? 'relative' : undefined,
                   }}
                   aria-hidden
                 >
@@ -749,6 +670,20 @@ export default function BenutzerHandbuchViewer({
                     <p className="benutzer-deckblatt-teal-footerline">{deckblattFooterTagline}</p>
                   ) : null}
                   <p className="benutzer-deckblatt-teal-copy">© kgm solution</p>
+                  {prominentEingangstorQr && !deckblattCoverImageSrc ? (
+                    <div
+                      className="benutzer-deckblatt-qr-eingangstor-overlay benutzer-deckblatt-qr-eingangstor-overlay--teal"
+                      style={{
+                        position: 'absolute',
+                        right: 'clamp(0.5rem, 2vw, 1rem)',
+                        bottom: 'clamp(0.5rem, 2vw, 1rem)',
+                        zIndex: 2,
+                        lineHeight: 0,
+                      }}
+                    >
+                      <EingangstorQrNurBild widthPx={112} />
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
               {deckblattCoverImageSrc ? (
@@ -766,6 +701,20 @@ export default function BenutzerHandbuchViewer({
                   <div className="benutzer-deckblatt benutzer-deckblatt--einstieg-a4" aria-hidden>
                     <div className="benutzer-deckblatt-a4-inner">
                       <img src={deckblattCoverImageSrc} alt={deckblattCoverAlt ?? ''} />
+                      {prominentEingangstorQr ? (
+                        <div
+                          className="benutzer-deckblatt-qr-eingangstor-overlay"
+                          style={{
+                            position: 'absolute',
+                            right: 'clamp(6px, 1.5vw, 14px)',
+                            bottom: 'clamp(6px, 1.5vw, 14px)',
+                            zIndex: 2,
+                            lineHeight: 0,
+                          }}
+                        >
+                          <EingangstorQrNurBild widthPx={120} />
+                        </div>
+                      ) : null}
                     </div>
                     {deckblattCoverCaption ? (
                       <p className="benutzer-deckblatt-einstieg-caption">{deckblattCoverCaption}</p>
@@ -789,7 +738,11 @@ export default function BenutzerHandbuchViewer({
                   </div>
                 </div>
               ) : null}
-              {prominentEingangstorQr && <EingangstorQrBlock variant="print" />}
+              {prominentEingangstorQr && !deckblattTealCover && !deckblattCoverImageSrc ? (
+                <div className="benutzer-druck-kapitel benutzer-eingangstor-qr-fallback" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
+                  <EingangstorQrNurBild widthPx={160} />
+                </div>
+              ) : null}
               {documents.map((doc, index) => (
                 <section key={doc.file} className="benutzer-druck-kapitel">
                   <div className="benutzer-druck-inhalt">{renderMarkdown(allDocContents[doc.file] ?? '', index > 0 ? index : undefined)}</div>

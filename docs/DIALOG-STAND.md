@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Offen nach Bedarf (nächste Session).  
-**Einordnung:** K2 Familie Präsentationsmappe Kunde: Teal-Deckblatt **ohne** Meta-Zeile „Präsentationsmappe · Kapitel …“ / Tagline; Deckblatt + Screenshot + QR wie zuvor.
+**Einordnung:** K2 Familie Präsentationsmappe Kunde: QR **nur als Bild** unten rechts auf dem Deckblatt-Screenshot (Druckvorschau); Lesansicht rechts ohne Text; `FamilieRolleLeisteKompakt`: `deckblattMinimal` aus Hook.
+
+---
+
+**Letzter Stand:** 21.04.26 – **Präsentationsmappe Kunde: QR nur auf Deckblatt + Layout-Fix deckblattMinimal** – `BenutzerHandbuchViewer` `EingangstorQrNurBild`, Overlay auf `pm-deckblatt`; `K2FamilieLayout` `FamilieRolleLeisteKompakt` nutzt `useK2FamiliePresentationMode`. **Commit:** (folgt nach Push)
 
 ---
 

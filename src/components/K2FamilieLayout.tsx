@@ -93,7 +93,7 @@ function saveFamilieLeisteEingeklappt(eingeklappt: boolean): void {
 function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
   const location = useLocation()
   /** Präsentationsmappe / PNGs: kein auto-Rundgang, kein Modal (`?pm=1` + sessionStorage bei Navigation). */
-  const hideMusterLeitfadenForPm = useK2FamiliePresentationMode()
+  const { presentationMode: hideMusterLeitfadenForPm, deckblattMinimal } = useK2FamiliePresentationMode()
 
   const familieRoutesNav = PROJECT_ROUTES['k2-familie']
   const {
@@ -155,12 +155,14 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
         role="status"
       >
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem' }}>
+          {!deckblattMinimal ? (
           <span
             style={{ fontSize: '0.88rem', fontWeight: 600, color: t.text }}
             title="Echte Familie: Einladung oder QR der Inhaber:in"
           >
             Nur Musterfamilie
           </span>
+          ) : null}
           {kannInstanz ? (
             <Link
               to={familieRoutesNav.einstellungen}
@@ -198,6 +200,29 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
 
   if (eingeschraenkteAuswahl) {
     if (nurMuster) {
+      if (deckblattMinimal) {
+        return (
+          <>
+            <FamilieMusterHuberLeitfadenModal
+              open={false}
+              onOpenChange={() => {}}
+              onAbgeschlossen={() => {}}
+            />
+            <div
+              key={familieStorageRevision}
+              className="k2-familie-tenant-toolbar k2-familie-no-print"
+              aria-hidden
+              style={{
+                minHeight: 4,
+                padding: '0.3rem 1rem',
+                background: t.bgCard,
+                borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
+                fontFamily: t.fontBody,
+              }}
+            />
+          </>
+        )
+      }
       const btnBase = {
         padding: '0.5rem 1rem',
         fontSize: '0.88rem',
@@ -449,6 +474,7 @@ function FamilieRolleLeisteHinweise() {
 }
 
 function FamilieRolleLeisteHaupt({ onEinklappen }: { onEinklappen?: () => void }) {
+  const { deckblattMinimal } = useK2FamiliePresentationMode()
   const { rolle, capabilities, inhaberArbeitsansicht, setInhaberArbeitsansicht } = useFamilieRolle()
   const eff = capabilities.rolle
   const gewaehlt = capabilities.rolleGewaehlt ?? rolle
@@ -459,6 +485,7 @@ function FamilieRolleLeisteHaupt({ onEinklappen }: { onEinklappen?: () => void }
   const inhaberAnsichtHash = `${PROJECT_ROUTES['k2-familie'].einstellungen}#k2-familie-inhaber-ansicht`
 
   if (isFamilieNurMusterSession()) {
+    if (deckblattMinimal) return null
     return (
       <div
         className="k2-familie-no-print k2-familie-rolle-leiste"
@@ -635,6 +662,7 @@ function FamilieRolleLeisteHaupt({ onEinklappen }: { onEinklappen?: () => void }
 }
 
 function FamilieRolleLeisteKompakt({ onOeffnen }: { onOeffnen: () => void }) {
+  const { deckblattMinimal } = useK2FamiliePresentationMode()
   const { rolle, capabilities } = useFamilieRolle()
   const { currentTenantId, familieStorageRevision } = useFamilieTenant()
   const eff = capabilities.rolle
@@ -654,6 +682,21 @@ function FamilieRolleLeisteKompakt({ onOeffnen }: { onOeffnen: () => void }) {
     const name = loadPersonen(currentTenantId).find((p) => p.id === ichId)?.name?.trim()
     return name || ''
   }, [currentTenantId, familieStorageRevision])
+  if (isFamilieNurMusterSession() && deckblattMinimal) {
+    return (
+      <div
+        key={familieStorageRevision}
+        className="k2-familie-no-print k2-familie-rolle-leiste"
+        aria-hidden
+        style={{
+          padding: '0.35rem 1rem',
+          background: t.bgCard,
+          borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
+          minHeight: 6,
+        }}
+      />
+    )
+  }
   return (
     <div
       key={familieStorageRevision}
@@ -835,6 +878,7 @@ function isFamilieNavItemActive(item: FamilieNavItem, path: string): boolean {
 function FamilieNav() {
   const loc = useLocation()
   const path = loc.pathname
+  const { deckblattMinimal } = useK2FamiliePresentationMode()
   const { capabilities } = useFamilieRolle()
   const isMeineFamilieHome = isK2FamilieMeineFamilieHomePath(path)
   const nurMusterBesuch = isFamilieNurMusterSession()
@@ -846,7 +890,10 @@ function FamilieNav() {
         const ohneErsteUndEinst = FAMILIE_NAV.slice(1).filter((i) => i.to !== familieRoutes.einstellungen)
         const einst = FAMILIE_NAV.find((i) => i.to === familieRoutes.einstellungen)!
         return [
-          { to: FAMILIE_MUSTER_HOME_NAV_TO, label: getFamilieTenantDisplayName(FAMILIE_HUBER_TENANT_ID) },
+          {
+            to: FAMILIE_MUSTER_HOME_NAV_TO,
+            label: deckblattMinimal ? '\u200B' : getFamilieTenantDisplayName(FAMILIE_HUBER_TENANT_ID),
+          },
           ...ohneErsteUndEinst,
           { to: familieRoutes.benutzerHandbuch, label: 'Handbuch' },
           einst,
@@ -862,7 +909,7 @@ function FamilieNav() {
       ]
     }
     return FAMILIE_NAV
-  }, [isMeineFamilieHome, isLeser, nurMusterBesuch])
+  }, [isMeineFamilieHome, isLeser, nurMusterBesuch, deckblattMinimal])
 
   const compactMedia = useK2WorldMobileCompact()
   const useCompactNavPattern = compactMedia && (!isMeineFamilieHome || navItems.length > 4)
@@ -895,6 +942,7 @@ function FamilieNav() {
         <Link
           to={FAMILIE_MUSTER_HOME_NAV_TO}
           className="k2-familie-nav-link"
+          aria-label={deckblattMinimal ? 'Zur Musterfamilie' : undefined}
           style={{
             padding: '0.45rem 0.85rem',
             borderRadius: 999,
@@ -905,9 +953,10 @@ function FamilieNav() {
             background: t.accent,
             fontFamily: 'inherit',
             border: 'none',
+            minWidth: deckblattMinimal ? '2rem' : undefined,
           }}
         >
-          Zur Musterfamilie
+          {deckblattMinimal ? '\u200B' : 'Zur Musterfamilie'}
         </Link>
       </nav>
     )
@@ -1075,7 +1124,7 @@ function FamilieNav() {
 function FamilieLayoutInner() {
   const location = useLocation()
   const navigate = useNavigate()
-  const hideAppFooterImpressum = useK2FamiliePresentationMode()
+  const { presentationMode: hideAppFooterImpressum } = useK2FamiliePresentationMode()
   useEffect(() => {
     if (hideAppFooterImpressum) {
       document.documentElement.dataset.k2FamiliePm = '1'
