@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Offen nach Bedarf (nächste Session).  
-**Einordnung:** K2 Familie Präsentationsmappe Kunde: Mappe-Texte **nur Kundeninfo zum Produkt** (keine Meta-Erklärungen zu Aufbau/Vertrieb/Technik); `public/k2-familie-praesentation-mappe/*.md` überarbeitet; Page-Untertitel/Caption gekürzt.
+**Einordnung:** K2 Familie Präsentationsmappe Kunde: **05** Übersicht = 8 Abbildungen; fehlende Screenshots **Events** + **Geschichten** (`pm-events.png`, `pm-geschichten.png`) als §6–7 ergänzt, Gedenkort §8.
+
+---
+
+**Letzter Stand:** 21.04.26 – **K2 Familie Mappe 05: Events + Geschichten Screenshots ergänzt** – `05-SO-SIEHT-DAS-AUS-BILDER.md` §6–8. **Commit:** (nach Push)
 
 ---
 

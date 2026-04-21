@@ -51,7 +51,23 @@ Die **Grafik-Ansicht** im Stammbaum: Überblick als **Familiengrafik** (zoomen, 
 
 [SEITENUMBRUCH]
 
-### 6. Gedenkort
+### 6. Events
+
+Geburtstage, Treffen, Feste – **Events** in der Musterfamilie.
+
+![Events – Kalender & Termine](/img/k2-familie/pm-events.png)
+
+[SEITENUMBRUCH]
+
+### 7. Geschichten
+
+**Geschichten** – roter Faden und Familiengeschichte.
+
+![Geschichten – Familiengeschichte](/img/k2-familie/pm-geschichten.png)
+
+[SEITENUMBRUCH]
+
+### 8. Gedenkort
 
 ![Gedenkort – würdevoller Bereich](/img/k2-familie/pm-gedenk-oder-momente.png)
 
