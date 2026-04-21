@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 21.04.26 – **K2 Familie Präsentationsmappe: Deckblatt Teal + Screenshot + Doku** – `pm-deckblatt-musterfamilie-home.png` unter Teal; `00-INDEX.md`, `01-DECKBLATT-UND-VERSPRECHEN.md`, `public/img/k2-familie/README.md` Texte; kurze Caption auf der Page. **Commit:** (folgt nach Push)
+**Letzter Stand:** 21.04.26 – **K2 Familie Präsentationsmappe: Deckblatt Teal + Screenshot + Doku** – `pm-deckblatt-musterfamilie-home.png` unter Teal; `00-INDEX.md`, `01-DECKBLATT-UND-VERSPRECHEN.md`, `public/img/k2-familie/README.md` Texte; kurze Caption auf der Page; `BenutzerHandbuchViewer` Teal+Bild kombiniert. **Commit:** `60872b9c` ✅ GitHub
 
 ---
 
