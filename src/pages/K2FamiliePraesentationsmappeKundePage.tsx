@@ -59,6 +59,10 @@ export default function K2FamiliePraesentationsmappeKundePage() {
       printCurrentDocPrefix="K2 Familie – Präsentationsmappe"
       defaultDocWhenNoParam="01-DECKBLATT-UND-VERSPRECHEN.md"
       deckblattTealCover
+      deckblattCoverImageSrc="/img/k2-familie/pm-deckblatt-musterfamilie-home.png"
+      deckblattCoverAlt="K2 Familie Startseite, Musterfamilie Huber – Navigation, Willkommensbereich und Kacheln Was möchtest du tun"
+      deckblattCoverCaption="Demo: Musterfamilie Huber – Startseite der App (keine echten Kundendaten)."
+      prominentEingangstorQr
     />
   )
 }

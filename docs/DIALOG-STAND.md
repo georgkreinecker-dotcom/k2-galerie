@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Offen nach Bedarf (nächste Session).  
-**Einordnung:** K2 Familie Präsentationsmappe Kunde: **Deckblatt** = Teal/Weiß wie andere Präsentationsmappen (`deckblattTealCover`), kein Screenshot `pm-familie-einstieg`; Index/Kapitel 01-Text angepasst.
+**Einordnung:** K2 Familie Präsentationsmappe Kunde: **Deckblatt = Teal + Screenshot** Startseite Musterfamilie Huber; QR Eingangstor prominent in Druckvorschau; Doku 00-INDEX / 01-DECKBLATT / README Bilder abgestimmt.
+
+---
+
+**Letzter Stand:** 21.04.26 – **K2 Familie Präsentationsmappe: Deckblatt Teal + Screenshot + Doku** – `pm-deckblatt-musterfamilie-home.png` unter Teal; `00-INDEX.md`, `01-DECKBLATT-UND-VERSPRECHEN.md`, `public/img/k2-familie/README.md` Texte; kurze Caption auf der Page. **Commit:** (folgt nach Push)
 
 ---
 

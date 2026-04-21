@@ -1,6 +1,6 @@
 # Versprechen
 
-Beim **Drucken** steht zuerst das **Deckblatt** im Erscheinungsbild **Teal/Weiß** (wie die anderen Präsentationsmappen von kgm solution): Produktname, **Slogan** und **Werbebotschaft**. **Screenshots** aus der Musterfamilie Huber gibt es im Kapitel **So sieht es aus**.
+Beim **Drucken** steht zuerst das **Deckblatt**: oben **Teal/Weiß** (wie die anderen Präsentationsmappen von kgm solution) mit Produktname, **Slogan** und **Werbebotschaft** – darunter ein **Screenshot** der **Startseite** in der App (Musterfamilie Huber, Demo). Weitere **Screenshots** gibt es im Kapitel **So sieht es aus**.
 
 **K2 Familie** · **kgm solution**
 
