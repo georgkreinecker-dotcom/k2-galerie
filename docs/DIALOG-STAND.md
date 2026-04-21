@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Offen nach Bedarf (nächste Session).  
-**Einordnung:** K2-Familie Präsentationsmappe Kunde: Markdown-Zugriff ohne SPA-index.html (Viewer + Vercel-Rewrite).
+**Was wir JETZT tun:** Georg prüft Safari-Druckvorschau K2-Familie-Mappe (QR unter Caption, nicht mehr seitenbreit/doppelt).  
+**Einordnung:** Ursache „Riesen-QR“: `@media print` hatte `.benutzer-deckblatt--einstieg-a4 img { width:100% }` – griff auch den QR, sobald der unter das Bild gerückt war. Fix: nur `.benutzer-deckblatt-a4-inner img` für den Screenshot; QR eigene Regeln (z. B. ~22 mm); Einstieg ohne 100vh-Zentrierung (`justify-content: flex-start`, `min-height: 0`).
+
+---
+
+**Letzter Stand:** 21.04.26 – **BenutzerHandbuchViewer: Riesen-QR im Druck behoben (Selektor + Layout)** – Print: breites `img` nur noch im A4-Innenbereich, nicht für QR; QR-Block separat; vorherige Deckblatt-Kompaktierung + Safari-Hintergrund-Hinweis unverändert. **Commit:** `ac6d4370` ✅ GitHub
 
 ---
 

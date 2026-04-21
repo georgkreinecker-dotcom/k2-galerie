@@ -524,10 +524,16 @@ export default function BenutzerHandbuchViewer({
     .benutzer-print-preview .benutzer-deckblatt-teal { margin-bottom: 0.75rem; border-radius: 8px; page-break-after: unset; }
     .benutzer-print-preview .benutzer-deckblatt-teal.benutzer-deckblatt-teal--mit-bild { page-break-after: avoid; margin-bottom: 0.5rem; }
     .benutzer-deckblatt { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2rem; page-break-after: always; background: linear-gradient(160deg, #1c1a18 0%, #2d2a26 50%, #1c1a18 100%); color: #fff; }
+    /* A4-Einstieg: keine 100vh-Zentrierung – sonst riesiger Weißraum + QR wirkt „Seiten breit“ */
+    .benutzer-deckblatt.benutzer-deckblatt--einstieg-a4 { justify-content: flex-start; align-items: stretch; min-height: 0; text-align: left; }
     .benutzer-deckblatt--einstieg-a4 { background: #fff; color: #1c1a18; min-height: 0; padding: 0.75rem 0.5rem !important; page-break-after: always; }
     .benutzer-deckblatt-a4-inner { position: relative; width: 100%; max-width: 210mm; margin: 0 auto; aspect-ratio: 210 / 297; max-height: min(90vh, 297mm); display: flex; align-items: center; justify-content: center; background: #f3f4f6; border: 1px solid #e5e7eb; box-sizing: border-box; }
-    .benutzer-deckblatt--einstieg-a4 img { width: 100%; height: 100%; object-fit: contain; display: block; vertical-align: top; }
+    .benutzer-print-preview .benutzer-deckblatt--einstieg-a4 .benutzer-deckblatt-a4-inner { aspect-ratio: auto; max-height: min(72vh, 200mm); min-height: 0; }
+    /* Nur Screenshot im A4-Rahmen – nicht jedes img (QR steht darunter) */
+    .benutzer-deckblatt--einstieg-a4 .benutzer-deckblatt-a4-inner img { width: 100%; height: 100%; object-fit: contain; display: block; vertical-align: top; }
     .benutzer-deckblatt-einstieg-caption { margin: 0.5rem auto 0; max-width: 210mm; font-size: 0.8rem; color: #4b5563; text-align: center; line-height: 1.35; }
+    /* QR nicht über dem Screenshot kleben – unter der Caption im freien Weißraum */
+    .benutzer-deckblatt-qr-eingangstor-unter-bild { width: 100%; max-width: 210mm; margin: 0.65rem auto 0; display: flex; justify-content: flex-end; line-height: 0; break-inside: avoid; page-break-inside: avoid; }
     .benutzer-deckblatt-cover-intro { max-width: 210mm; margin: 0 auto 1rem; padding: 0 0.5rem; text-align: center; page-break-after: avoid; break-inside: avoid; }
     .benutzer-deckblatt-cover-kernsatz { margin: 0 0 0.75rem; font-size: clamp(0.95rem, 2vw, 1.05rem); line-height: 1.55; color: #4b5563; font-weight: 500; }
     .benutzer-deckblatt-cover-slogan { margin: 0; font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 700; color: #1c1a18; letter-spacing: -0.02em; line-height: 1.2; }
@@ -629,7 +635,7 @@ export default function BenutzerHandbuchViewer({
       .benutzer-impressum-seite .benutzer-impressum-typo p { font-size: 9pt !important; line-height: 1.45 !important; }
       .benutzer-druck-kapitel h2 { font-size: 1.1rem !important; margin: 0 0 0.3rem !important; padding-bottom: 0.15rem !important; }
       .benutzer-deckblatt-teal { background: ${TEAL_DECKBLATT_BG} !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color: #fff !important; padding: 5mm 8mm !important; border-radius: 0 !important; margin-bottom: 4mm !important; page-break-after: always !important; page-break-inside: avoid !important; }
-      .benutzer-deckblatt-teal.benutzer-deckblatt-teal--mit-bild { page-break-after: avoid !important; margin-bottom: 2mm !important; padding: 4mm 6mm !important; }
+      .benutzer-deckblatt-teal.benutzer-deckblatt-teal--mit-bild { page-break-after: avoid !important; margin-bottom: 2mm !important; padding: 3mm 6mm !important; }
       .benutzer-deckblatt-teal h2 { font-size: 16pt !important; margin: 0 !important; color: #fff !important; font-weight: 700 !important; }
       .benutzer-deckblatt-teal .benutzer-deckblatt-teal-slogan { font-size: 10pt !important; margin: 2mm 0 0 !important; line-height: 1.25 !important; color: #fff !important; font-weight: 600 !important; }
       .benutzer-deckblatt-teal .benutzer-deckblatt-teal-tagline { font-size: 9pt !important; margin: 1.5mm 0 0 !important; color: #fff !important; line-height: 1.35 !important; }
@@ -641,10 +647,15 @@ export default function BenutzerHandbuchViewer({
       .benutzer-impressum-qr-wrap { break-inside: avoid; page-break-inside: avoid; }
       .benutzer-impressum-qr-wrap img { width: 28mm !important; height: 28mm !important; max-width: 28mm !important; object-fit: contain !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
       .benutzer-deckblatt { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 0.35rem 0.6rem !important; page-break-after: auto !important; }
-      .benutzer-deckblatt--einstieg-a4 { padding: 0 !important; page-break-after: always !important; background: #fff !important; }
-      .benutzer-deckblatt-a4-inner { max-height: none !important; aspect-ratio: auto !important; height: 277mm !important; border: none !important; background: #fff !important; }
-      .benutzer-deckblatt--einstieg-a4 img { width: 100% !important; height: 100% !important; object-fit: contain !important; }
-      .benutzer-deckblatt-einstieg-caption { font-size: 7pt !important; margin: 2mm auto 0 !important; color: #374151 !important; }
+      .benutzer-deckblatt.benutzer-deckblatt--einstieg-a4 { min-height: 0 !important; justify-content: flex-start !important; align-items: stretch !important; }
+      .benutzer-deckblatt--einstieg-a4 { padding: 0 !important; page-break-after: always !important; page-break-inside: avoid !important; break-inside: avoid-page !important; background: #fff !important; }
+      /* Keine fast-volle A4-Höhe: sonst bricht der Browser mitten im Kasten um → QR/Bild auf Seite 2, riesige Lücke auf Seite 1 */
+      .benutzer-deckblatt-a4-inner { max-height: 188mm !important; min-height: 0 !important; aspect-ratio: auto !important; height: auto !important; border: none !important; background: #fff !important; }
+      /* Nur Screenshot – nicht QR (war width:100% → QR so breit wie die Seite) */
+      .benutzer-deckblatt--einstieg-a4 .benutzer-deckblatt-a4-inner img { width: 100% !important; height: auto !important; max-height: 188mm !important; object-fit: contain !important; }
+      .benutzer-deckblatt-qr-eingangstor-unter-bild { margin-top: 2mm !important; page-break-inside: avoid !important; break-inside: avoid !important; }
+      .benutzer-deckblatt-qr-eingangstor-unter-bild img { width: 22mm !important; height: 22mm !important; max-width: 22mm !important; max-height: 22mm !important; object-fit: contain !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      .benutzer-deckblatt-einstieg-caption { font-size: 7pt !important; margin: 2mm auto 1mm !important; color: #374151 !important; }
       .benutzer-deckblatt-cover-intro { margin-bottom: 0 !important; padding: 0 2mm 2mm !important; page-break-after: avoid !important; }
       .benutzer-deckblatt-cover-kernsatz { font-size: 9pt !important; margin: 0 0 1.5mm !important; color: #374151 !important; line-height: 1.35 !important; }
       .benutzer-deckblatt-cover-slogan { font-size: 14pt !important; margin: 0 0 1mm !important; color: #1c1a18 !important; }
@@ -704,7 +715,7 @@ export default function BenutzerHandbuchViewer({
       {printPreview ? (
         <>
           <p className="benutzer-no-print" style={{ maxWidth: '210mm', margin: '0 auto 0.75rem', fontSize: '0.85rem', color: '#374151', background: '#f3f4f6', padding: '0.5rem 0.75rem', borderRadius: 8, border: '1px solid #e5e7eb' }}>
-            <strong>PDF-Druck:</strong> Lesbare Schrift und normale Ränder; <strong>fließender Text</strong> (keine Mini-Schrift mehr). Optional eine Zeile <code style={{ background: '#e5e7eb', padding: '0.1rem 0.3rem', borderRadius: 4 }}>[SEITENUMBRUCH]</code> in <code style={{ background: '#e5e7eb', padding: '0.1rem 0.3rem', borderRadius: 4 }}>{printHintFolder}</code> nur als sichtbare <strong>Abschnittsmarkierung</strong> in der Vorschau – <strong>kein</strong> erzwungener Seitenumbruch im Druck.
+            <strong>PDF-Druck:</strong> Lesbare Schrift und normale Ränder; <strong>fließender Text</strong>. <strong>Safari:</strong> bei Bedarf <strong>„Hintergrund“</strong> einschalten, damit die grüne Kopfleiste mitdruckt. Optional <code style={{ background: '#e5e7eb', padding: '0.1rem 0.3rem', borderRadius: 4 }}>[SEITENUMBRUCH]</code> in <code style={{ background: '#e5e7eb', padding: '0.1rem 0.3rem', borderRadius: 4 }}>{printHintFolder}</code> nur als <strong>Markierung</strong> in der Vorschau – <strong>kein</strong> erzwungener Umbruch im Druck.
           </p>
           <div className="benutzer-a4-vorschau">
           <div className="benutzer-print-voll" style={{ paddingBottom: '1rem' }}>
@@ -778,23 +789,14 @@ export default function BenutzerHandbuchViewer({
                   <div className="benutzer-deckblatt benutzer-deckblatt--einstieg-a4" aria-hidden>
                     <div className="benutzer-deckblatt-a4-inner">
                       <img src={deckblattCoverImageSrc} alt={deckblattCoverAlt ?? ''} />
-                      {prominentEingangstorQr ? (
-                        <div
-                          className="benutzer-deckblatt-qr-eingangstor-overlay"
-                          style={{
-                            position: 'absolute',
-                            right: 'clamp(6px, 1.5vw, 14px)',
-                            bottom: 'clamp(6px, 1.5vw, 14px)',
-                            zIndex: 2,
-                            lineHeight: 0,
-                          }}
-                        >
-                          <DeckblattQrNurBild absUrl={deckblattQrAbsUrl} widthPx={120} />
-                        </div>
-                      ) : null}
                     </div>
                     {deckblattCoverCaption ? (
                       <p className="benutzer-deckblatt-einstieg-caption">{deckblattCoverCaption}</p>
+                    ) : null}
+                    {prominentEingangstorQr ? (
+                      <div className="benutzer-deckblatt-qr-eingangstor-unter-bild">
+                        <DeckblattQrNurBild absUrl={deckblattQrAbsUrl} widthPx={120} />
+                      </div>
                     ) : null}
                   </div>
                 </>
