@@ -1,7 +1,7 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Offen nach Bedarf (nächste Session).  
-**Einordnung:** K2-Familie-Benutzerhandbuch: Feinschliff Text/Struktur, Einstieg Inhaltsverzeichnis, Kapitel 3 Abschnittsnummern korrigiert.
+**Was wir JETZT tun:** Frei für die nächste Session.  
+**Einordnung:** Session **21.04.26** beendet – **main** aktuell (**`40b719d2`**), Arbeitsbaum sauber. Zuletzt: K2-Familie-Benutzerhandbuch Feinschliff (Text, Navigation, Default-Index, Kapitel-3-Nummerierung).
 
 ---
 
