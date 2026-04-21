@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Offen nach Bedarf (nächste Session).  
-**Einordnung:** K2 Familie Präsentationsmappe „So sieht es aus“: Screenshots **Events** + **Geschichten** (`pm-events.png`, `pm-geschichten.png`), Capture-Skript erweitert, PNGs erzeugt.
+**Einordnung:** K2 Familie Präsentationsmappe Kunde: Abschnitte **„Abgrenzung in einem Satz“** und **„Nächster Schritt für Interessenten“** entfernt; Kapitel **Kontakt** gekürzt, Sidebar/Index „Kontakt“.
+
+---
+
+**Letzter Stand:** 21.04.26 – **K2 Familie Präsentationsmappe Kunde: Textblöcke entfernt** – `04-VERTRAUEN`: Abschnitt Abgrenzung in einem Satz weg; `06-KONTAKT`: Nächster-Schritt-Liste + Vertriebs-Hinweis weg; Titel/Index/Sidebar **Kontakt**. **Commit:** deb4f576 ✅ GitHub
 
 ---
 

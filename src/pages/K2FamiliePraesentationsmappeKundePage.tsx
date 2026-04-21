@@ -31,7 +31,7 @@ const DOCUMENTS = [
   },
   {
     id: '06-kontakt',
-    name: 'Kontakt und nächster Schritt',
+    name: 'Kontakt',
     file: '06-KONTAKT-UND-NAECHSTER-SCHRITT.md',
   },
 ] as const

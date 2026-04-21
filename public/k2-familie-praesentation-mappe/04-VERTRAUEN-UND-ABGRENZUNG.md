@@ -8,12 +8,6 @@
 
 [SEITENUMBRUCH]
 
-## Abgrenzung in einem Satz
-
-**K2 Familie ist keine Galerie-Lizenz und kein Vereinsprodukt** – wer Kunst vertreibt oder Vereinsstrukturen nutzt, öffnet andere Angebote. Familieninformationen und Kunst- oder Vereinsdaten werden **bewusst getrennt** gehalten.
-
-[SEITENUMBRUCH]
-
 ## Rechtlicher Rahmen
 
 Die Verarbeitung erfolgt im Rahmen der **geltenden Datenschutzregeln** (z. B. DSGVO). Details zu Export, Sicherung und Vertrag stehen in den **rechtlichen Unterlagen** und im Handbuch – **ohne** Kleingedrucktes in dieser Mappe.

@@ -26,8 +26,8 @@ Ethik, Daten, kein Vermischen mit anderen Angeboten – ohne Fachjargon.
 
 **Screenshots** aus der Musterfamilie Huber (Demo, keine echten Kundendaten).
 
-6. [Kontakt und nächster Schritt](06-KONTAKT-UND-NAECHSTER-SCHRITT.md)
+6. [Kontakt](06-KONTAKT-UND-NAECHSTER-SCHRITT.md)
 
-Eine klare Anlaufstelle – ohne Link-Liste.
+Eine klare Anlaufstelle – E-Mail und Kurztext.
 
 Button „Drucken“ in der App – einzelnes Kapitel oder **gesamte Mappe** als PDF.
