@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 21.04.26 – **Präsentationsmappe Kunde: QR nur auf Deckblatt + Layout-Fix deckblattMinimal** – `BenutzerHandbuchViewer` `EingangstorQrNurBild`, Overlay auf `pm-deckblatt`; `K2FamilieLayout` `FamilieRolleLeisteKompakt` nutzt `useK2FamiliePresentationMode`. **Commit:** (folgt nach Push)
+**Letzter Stand:** 21.04.26 – **Präsentationsmappe Kunde: QR nur auf Deckblatt + Layout-Fix deckblattMinimal** – `BenutzerHandbuchViewer` `EingangstorQrNurBild`, Overlay auf `pm-deckblatt`; `K2FamilieLayout` `FamilieRolleLeisteKompakt` nutzt `useK2FamiliePresentationMode`. **Commit:** `83518da3` ✅ GitHub
 
 ---
 
