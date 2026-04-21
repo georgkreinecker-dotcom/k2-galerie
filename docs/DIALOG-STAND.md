@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 21.04.26 – **K2 Familie Präsentationsmappe: Deckblatt Teal statt App-Screenshot** – `BenutzerHandbuchViewer`: optional `deckblattTealCover`; `K2FamiliePraesentationsmappeKundePage` ohne `deckblattCoverImageSrc`; `00-INDEX` + `01-DECKBLATT` Text. **Commit:** _(folgt)_ ✅ GitHub
+**Letzter Stand:** 21.04.26 – **K2 Familie Präsentationsmappe: Deckblatt Teal statt App-Screenshot** – `BenutzerHandbuchViewer`: optional `deckblattTealCover`; `K2FamiliePraesentationsmappeKundePage` ohne `deckblattCoverImageSrc`; `00-INDEX` + `01-DECKBLATT` Text. **Commit:** `ebfc8f43` ✅ GitHub
 
 ---
 
