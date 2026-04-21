@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 21.04.26 – **K2 Familie Mappe Kunde: Kapitel 6 Kontakt + 7 Technik, Abb.-Überschriften, HTML-Fetch-Hinweis** – `06-KONTAKT.md`, `07-TECHNIK-IN-KUERZE.md`, `00-INDEX.md`, `05-SO-SIEHT-DAS-AUS-BILDER.md` (Abb. 1–8); `K2FamiliePraesentationsmappeKundePage` DOCUMENTS; `BenutzerHandbuchViewer`: bei HTML-Antwort statt Markdown kurze Fehlermeldung. **Commit:** `55b71521` ✅ GitHub
+**Letzter Stand:** 21.04.26 – **K2 Familie Mappe Kunde: Kapitel 6 Kontakt + 7 Technik, Abb.-Überschriften, HTML-Fetch-Hinweis** – `06-KONTAKT.md`, `07-TECHNIK-IN-KUERZE.md`, `00-INDEX.md`, `05-SO-SIEHT-DAS-AUS-BILDER.md` (Abb. 1–8); `K2FamiliePraesentationsmappeKundePage` DOCUMENTS; `BenutzerHandbuchViewer`: bei HTML-Antwort statt Markdown kurze Fehlermeldung. **Commit:** `15a0ae54` ✅ GitHub
 
 ---
 
