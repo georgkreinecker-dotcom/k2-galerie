@@ -46,7 +46,7 @@ export default function K2FamiliePraesentationsmappeKundePage() {
       fallbackRoute={PROJECT_ROUTES['k2-familie'].willkommen}
       routePathForBack={ROUTE_BACK}
       headerTitle="📘 K2 Familie – Präsentationsmappe"
-      headerSubtitle="Zum Lesen, Drucken und Übergeben – Versprechen, Nutzen, Vertrauen, Screenshots aus der Musterfamilie, Kontakt."
+      headerSubtitle="Versprechen, Produktüberblick, Nutzen, Vertrauen, Beispielansichten, Kontakt."
       printHintFolder="public/k2-familie-praesentation-mappe/"
       deckblattTop="K2 Familie"
       deckblattKernsatz={PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ}
@@ -55,13 +55,13 @@ export default function K2FamiliePraesentationsmappeKundePage() {
       deckblattFooterProduct="K2 Familie"
       deckblattFooterKind=""
       deckblattFooterTagline=""
-      footerPreviewLine="K2 Familie – Präsentationsmappe · (Seitenzahlen beim Drucken)"
+      footerPreviewLine="K2 Familie – Präsentationsmappe"
       printCurrentDocPrefix="K2 Familie – Präsentationsmappe"
       defaultDocWhenNoParam="01-DECKBLATT-UND-VERSPRECHEN.md"
       deckblattTealCover
       deckblattCoverImageSrc="/img/k2-familie/pm-deckblatt-musterfamilie-home.png"
       deckblattCoverAlt="K2 Familie Startseite, Musterfamilie Huber – Navigation, Willkommensbereich und Kacheln Was möchtest du tun"
-      deckblattCoverCaption="Demo: Musterfamilie Huber – Startseite der App (keine echten Kundendaten)."
+      deckblattCoverCaption="Musterfamilie Huber – Startseite (Demo, keine echten Kundendaten)."
       prominentEingangstorQr
     />
   )

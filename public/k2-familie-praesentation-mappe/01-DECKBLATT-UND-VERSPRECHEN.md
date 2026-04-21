@@ -1,7 +1,5 @@
 # Versprechen
 
-Beim **Drucken** steht zuerst das **Deckblatt**: oben **Teal/Weiß** (wie die anderen Präsentationsmappen von kgm solution) mit Produktname, **Slogan** und **Werbebotschaft** – darunter ein **Screenshot** der **Startseite** in der App (Musterfamilie Huber, Demo). Weitere **Screenshots** gibt es im Kapitel **So sieht es aus**.
-
 **K2 Familie** · **kgm solution**
 
 **Ihre Familie verdient einen Raum, der nicht mitverkauft wird.**
@@ -18,4 +16,4 @@ K2 Familie ist Ihre **digitale Heimat** für Beziehungen, Erinnerungen und den S
 
 [SEITENUMBRUCH]
 
-*K2 Familie ist ein eigenständiges Produkt von kgm solution – getrennt von Kunst-Galerie, Demo-Angeboten und Vereinsplattformen.*
+*K2 Familie ist ein eigenständiges Produkt von kgm solution – unabhängig von anderen Angeboten der Plattform.*

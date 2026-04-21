@@ -5,9 +5,9 @@
 | **Klarheit bei Beziehungen** | Beziehungen werden **aus den Personenkarten** abgeleitet – eine nachvollziehbare Darstellung, kein Raten. |
 | **Ruhe und Übersicht** | **Rollen** (z. B. wer darf bearbeiten, wer liest mit), **Einladungen** und persönliche Zugänge – **innerhalb der Familie** geregelt. |
 | **Stammbaum & Linie** | Sichtbarkeit der Linie in einem **festen, erweiterbaren** Muster. |
-| **Erinnerung & Tiefe** | **Momente**, **Kalender**, **Geschichte** und ein **Gedenkort** – alles im gleichen gedachten Produkt. |
+| **Erinnerung & Tiefe** | **Momente**, **Kalender**, **Geschichte** und ein **Gedenkort** – alles in einem durchgängigen Konzept. |
 | **Zukunftssicherheit** | **Genom und sensible Daten:** keine kommerzielle Verwertung – **dauerhaft** ausgeschlossen. |
 
 [SEITENUMBRUCH]
 
-Technische Einzelheiten, Bedienung Schritt für Schritt und Lizenz: im **Benutzerhandbuch** in der App – in **Alltagssprache** für alle Rollen.
+Ausführliche Schritt-für-Schritt-Hilfe und Einstellungen: **Benutzerhandbuch** in der App – in **Alltagssprache** für alle Rollen.

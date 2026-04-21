@@ -4,7 +4,7 @@
 
 Sie ist **kein** weiteres Social-Netzwerk. Es geht nicht um Reichweite oder Werbung, sondern um **Struktur**, **Klarheit** und **Respekt** vor verschiedenen Lebensformen.
 
-Jede Familie arbeitet in **ihrem eigenen geschützten Bereich**. Daten aus anderen Produkten derselben Plattform (z. B. Galerie oder Verein) werden **nicht** vermischt – damit Ihre Familieninformationen dort bleiben, wo sie hingehören.
+Jede Familie arbeitet in **ihrem eigenen geschützten Bereich**. Ihre Familieninformationen bleiben dort – **getrennt** von anderen Bereichen und Angeboten, damit nichts Vermischtes entsteht.
 
 [SEITENUMBRUCH]
 

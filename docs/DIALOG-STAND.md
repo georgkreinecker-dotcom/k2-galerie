@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Offen nach Bedarf (nächste Session).  
-**Einordnung:** K2 Familie Präsentationsmappe Kunde: QR **nur als Bild** unten rechts auf dem Deckblatt-Screenshot (Druckvorschau); Lesansicht rechts ohne Text; `FamilieRolleLeisteKompakt`: `deckblattMinimal` aus Hook.
+**Einordnung:** K2 Familie Präsentationsmappe Kunde: Mappe-Texte **nur Kundeninfo zum Produkt** (keine Meta-Erklärungen zu Aufbau/Vertrieb/Technik); `public/k2-familie-praesentation-mappe/*.md` überarbeitet; Page-Untertitel/Caption gekürzt.
+
+---
+
+**Letzter Stand:** 21.04.26 – **K2 Familie Präsentationsmappe Kunde: Mappe-Texte produktnah** – Index ohne Vertrieb/Meta; 01 ohne Drucklayout-Erklärung; 02–06 ohne Technikpfade/Skripte; 05 Tabelle ohne Dateinamen, Fußnote Capture entfernt; 06 Kontakt schlank; `K2FamiliePraesentationsmappeKundePage` Subtitle/Footer/Caption. **Commit:** (nach Push)
 
 ---
 

@@ -1,21 +1,21 @@
 # So sieht es aus – Musterfamilie Huber
 
-Hier sind **Screenshots** aus der **Musterfamilie Huber** (Demo), **ohne** echte Kundendaten. Technische Ablage: **`/img/k2-familie/`** in der App.
+**Beispielansichten** aus der **Musterfamilie Huber** (Demo). Es sind **keine** echten Kundendaten abgebildet.
 
 [SEITENUMBRUCH]
 
 ## Übersicht der Abbildungen
 
-| Nr. | Inhalt | Datei |
-|-----|--------|--------|
-| 1 | Einstieg / Übersicht Musterfamilie | `pm-familie-einstieg.png` |
-| 2 | Stammbaum (Ansicht) | `pm-stammbaum.png` |
-| 3 | Stammbaum – **Familiengrafik** (Musterfamilie Huber, Bereich Grafik) | `pm-familiengrafik-huber.png` |
-| 4 | Personenkarte und Beziehungen | `pm-person-beziehungen.png` |
-| 5 | Einstellungen – Rollen & Familie (Ausschnitt) | `pm-rollen.png` |
-| 6 | **Events** (Geburtstage, Treffen, Feste) | `pm-events.png` |
-| 7 | **Geschichten** (roter Faden, Familiengeschichte) | `pm-geschichten.png` |
-| 8 | Gedenkort | `pm-gedenk-oder-momente.png` |
+| Nr. | Inhalt |
+|-----|--------|
+| 1 | Einstieg / Übersicht Musterfamilie |
+| 2 | Stammbaum (Ansicht) |
+| 3 | Stammbaum – **Familiengrafik** (Musterfamilie Huber) |
+| 4 | Personenkarte und Beziehungen |
+| 5 | Einstellungen – Rollen & Familie (Ausschnitt) |
+| 6 | **Events** (Geburtstage, Treffen, Feste) |
+| 7 | **Geschichten** (roter Faden, Familiengeschichte) |
+| 8 | Gedenkort |
 
 [SEITENUMBRUCH]
 
@@ -56,5 +56,3 @@ Die **Grafik-Ansicht** im Stammbaum: Überblick als **Familiengrafik** (zoomen, 
 ![Gedenkort – würdevoller Bereich](/img/k2-familie/pm-gedenk-oder-momente.png)
 
 [SEITENUMBRUCH]
-
-*Hinweis: Einheitlicher Bildausschnitt, keine persönlichen Namen aus Echtbetrieb. Bilder mit `npm run capture:k2-familie-praesentation-map` erzeugen (Vite auf Port 5177).*
