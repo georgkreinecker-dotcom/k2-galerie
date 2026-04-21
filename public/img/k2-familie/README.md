@@ -5,5 +5,5 @@ Screenshots für `public/k2-familie-praesentation-mappe/` – Kapitel **„So si
 - **Quelle:** Musterfamilie Huber / Demo, **keine** echten Kundendaten.
 - **Benennung:** siehe `05-SO-SIEHT-DAS-AUS-BILDER.md` (z. B. `pm-stammbaum.png`).
 - **Einbindung:** `/img/k2-familie/<dateiname>` in der Markdown-Datei.
-- **Erzeugen:** Vite auf Port **5177**, dann im Projekt: `npm run capture:k2-familie-praesentation-map` (Skript: `scripts/capture-k2-familie-praesentation-map.mjs`).
+- **Erzeugen:** Vite auf Port **5177**, dann im Projekt: `npm run capture:k2-familie-praesentation-map` (Skript hängt `pm=1` an – **ohne** unteren Impressum-Balken und **ohne** Huber-Rundgang-Modal). Manuell im Browser: dieselbe Route mit **`?pm=1`** (bzw. `&pm=1`) öffnen.
 - **Rundgang:** Das Skript setzt `localStorage` wie ein abgeschlossener Muster-Rundgang (`k2-familie-muster-huber-leitfaden-abgeschlossen`), damit die Seite **ohne** Begrüßungs-Modal fotografiert wird.

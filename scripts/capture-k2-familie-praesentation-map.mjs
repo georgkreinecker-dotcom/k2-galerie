@@ -4,6 +4,8 @@
  * Voraussetzung: Vite-Dev-Server (Port 5177), z. B. `npx vite --port 5177 --host 127.0.0.1`
  *
  *   BASE_URL=http://127.0.0.1:5177 node scripts/capture-k2-familie-praesentation-map.mjs
+ *
+ * URLs erhalten automatisch `pm=1` (ohne Impressum-Balken und ohne Huber-Rundgang in den PNGs).
  */
 import { chromium } from 'playwright'
 import { dirname, join } from 'path'
@@ -13,7 +15,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = join(__dirname, '..')
 const OUT_DIR = join(REPO_ROOT, 'public/img/k2-familie')
 const BASE_URL = (process.env.BASE_URL || 'http://127.0.0.1:5177').replace(/\/$/, '')
-const R = (path) => `${BASE_URL}${path}`
+/** Präsentations-/Screenshot-Modus: Layout blendet Impressum-Footer aus (`K2FamilieLayout` → `?pm=1`). */
+function withPm1(path) {
+  const sep = path.includes('?') ? '&' : '?'
+  return `${path}${sep}pm=1`
+}
+const R = (path) => `${BASE_URL}${withPm1(path)}`
 
 /** Wie `readMusterLeitfadenAbgeschlossen` in FamilieMusterHuberLeitfaden.tsx – ohne Rundgang-Modal bei Screenshots. */
 const LS_MUSTER_LEITFADEN_FERTIG = 'k2-familie-muster-huber-leitfaden-abgeschlossen'

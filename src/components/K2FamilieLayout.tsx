@@ -90,6 +90,16 @@ function saveFamilieLeisteEingeklappt(eingeklappt: boolean): void {
 }
 
 function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
+  const location = useLocation()
+  /** Präsentationsmappe / PNGs: kein auto-Rundgang, kein Modal (gleiches Flag wie Impressum-Footer: `?pm=1`). */
+  const hideMusterLeitfadenForPm = useMemo(() => {
+    try {
+      return new URLSearchParams(location.search).get('pm') === '1'
+    } catch {
+      return false
+    }
+  }, [location.search])
+
   const familieRoutesNav = PROJECT_ROUTES['k2-familie']
   const {
     currentTenantId,
@@ -103,15 +113,21 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
   const nurMuster = isFamilieNurMusterSession()
   const [musterLeitfadenOpen, setMusterLeitfadenOpen] = useState(false)
   useEffect(() => {
-    if (!nurMuster) return
-    if (!readMusterLeitfadenAbgeschlossen()) setMusterLeitfadenOpen(true)
-  }, [nurMuster])
+    if (hideMusterLeitfadenForPm) setMusterLeitfadenOpen(false)
+  }, [hideMusterLeitfadenForPm])
   useEffect(() => {
     if (!nurMuster) return
-    const onOpen = () => setMusterLeitfadenOpen(true)
+    if (hideMusterLeitfadenForPm) return
+    if (!readMusterLeitfadenAbgeschlossen()) setMusterLeitfadenOpen(true)
+  }, [nurMuster, hideMusterLeitfadenForPm])
+  useEffect(() => {
+    if (!nurMuster) return
+    const onOpen = () => {
+      if (!hideMusterLeitfadenForPm) setMusterLeitfadenOpen(true)
+    }
     window.addEventListener(K2_FAMILIE_OPEN_MUSTER_LEITFADEN_EVENT, onOpen)
     return () => window.removeEventListener(K2_FAMILIE_OPEN_MUSTER_LEITFADEN_EVENT, onOpen)
-  }, [nurMuster])
+  }, [nurMuster, hideMusterLeitfadenForPm])
   /** APf localhost: nur erkannte Stammfamilie (Kreinecker) – kein Huber, keine Platzhalter im Dropdown. */
   const apfStammId = !nurMuster && isK2FamilieApfLocalhost() ? resolveApfMeineFamilieTenantId() : null
   const apfNurStamm = apfStammId != null
@@ -219,7 +235,9 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem' }}>
               <button
                 type="button"
-                onClick={() => setMusterLeitfadenOpen(true)}
+                onClick={() => {
+                  if (!hideMusterLeitfadenForPm) setMusterLeitfadenOpen(true)
+                }}
                 data-leitfaden-focus="leitfaden"
                 data-muster-hint={MUSTER_HINT_TOOLBAR_LEITFADEN_BUTTON}
                 style={{
@@ -1110,6 +1128,15 @@ function FamilieLayoutInner() {
     writeFamiliePwaLastPath(location.pathname, location.search)
   }, [location.pathname, location.search])
 
+  /** Präsentationsmappe / Screenshot-Modus: kein Impressum-Footer (Copyright + App verlassen), z. B. `?pm=1`. */
+  const hideAppFooterImpressum = useMemo(() => {
+    try {
+      return new URLSearchParams(location.search).get('pm') === '1'
+    } catch {
+      return false
+    }
+  }, [location.search])
+
   const columnInner = (
     <>
       {nurMitgliedEinstieg ? (
@@ -1152,11 +1179,13 @@ function FamilieLayoutInner() {
       )}
       <main id="k2-familie-main" className="k2-familie-main">
         <Outlet />
-        <footer className="k2-familie-app-footer k2-familie-no-print" role="contentinfo">
-          <p className="k2-familie-app-footer__line">{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
-          <p className="k2-familie-app-footer__line k2-familie-app-footer__line--muted">{PRODUCT_URHEBER_ANWENDUNG}</p>
-          <AppVerlassenFooterLink accentColor={t.accent} mutedColor={t.muted} />
-        </footer>
+        {!hideAppFooterImpressum ? (
+          <footer className="k2-familie-app-footer k2-familie-no-print" role="contentinfo">
+            <p className="k2-familie-app-footer__line">{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
+            <p className="k2-familie-app-footer__line k2-familie-app-footer__line--muted">{PRODUCT_URHEBER_ANWENDUNG}</p>
+            <AppVerlassenFooterLink accentColor={t.accent} mutedColor={t.muted} />
+          </footer>
+        ) : null}
       </main>
     </>
   )

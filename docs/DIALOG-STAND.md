@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Offen nach Bedarf (nächste Session).  
-**Einordnung:** Präsentationsmappe Kunde + Screenshots sind im Repo; Capture ohne Muster-Rundgang-Overlay.
+**Einordnung:** Präsentationsmappe Kunde + Screenshots: `?pm=1` blendet Impressum-Footer und Huber-Rundgang für PNGs aus.
+
+---
+
+**Letzter Stand:** 21.04.26 – **K2 Familie `pm=1`: Huber-Rundgang nicht in Präsentations-Screenshots** – `FamilieTenantToolbar`: bei `?pm=1` kein Auto-Öffnen, Modal zu, Events öffnen nicht; gleiches URL-Flag wie Impressum-Footer (`K2FamilieLayout`). README `public/img/k2-familie/README.md`, Hinweis im Capture-Skript. **Commit:** `ee11baa8` ✅ GitHub
 
 ---
 
