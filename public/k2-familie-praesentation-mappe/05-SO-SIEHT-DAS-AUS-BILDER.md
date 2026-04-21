@@ -13,7 +13,9 @@ Hier sind **Screenshots** aus der **Musterfamilie Huber** (Demo), **ohne** echte
 | 3 | Stammbaum – **Familiengrafik** (Musterfamilie Huber, Bereich Grafik) | `pm-familiengrafik-huber.png` |
 | 4 | Personenkarte und Beziehungen | `pm-person-beziehungen.png` |
 | 5 | Einstellungen – Rollen & Familie (Ausschnitt) | `pm-rollen.png` |
-| 6 | Gedenkort | `pm-gedenk-oder-momente.png` |
+| 6 | **Events** (Geburtstage, Treffen, Feste) | `pm-events.png` |
+| 7 | **Geschichten** (roter Faden, Familiengeschichte) | `pm-geschichten.png` |
+| 8 | Gedenkort | `pm-gedenk-oder-momente.png` |
 
 [SEITENUMBRUCH]
 
@@ -55,4 +57,4 @@ Die **Grafik-Ansicht** im Stammbaum: Überblick als **Familiengrafik** (zoomen, 
 
 [SEITENUMBRUCH]
 
-*Hinweis: Einheitlicher Bildausschnitt, keine persönlichen Namen aus Echtbetrieb. Bilder mit `node scripts/capture-k2-familie-praesentation-map.mjs` erzeugen (Vite auf Port 5177).*
+*Hinweis: Einheitlicher Bildausschnitt, keine persönlichen Namen aus Echtbetrieb. Bilder mit `npm run capture:k2-familie-praesentation-map` erzeugen (Vite auf Port 5177).*

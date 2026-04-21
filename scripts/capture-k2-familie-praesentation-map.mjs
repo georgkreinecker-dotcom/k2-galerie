@@ -54,6 +54,18 @@ const shots = [
     path: '/projects/k2-familie/einstellungen?t=huber',
     wait: { state: 'networkidle', timeout: 120_000 },
   },
+  /** Familien-Events (Geburtstage, Treffen, Feste) – Musterfamilie Huber */
+  {
+    file: 'pm-events.png',
+    path: '/projects/k2-familie/events?t=huber',
+    wait: { state: 'networkidle', timeout: 120_000 },
+  },
+  /** Geschichten – roter Faden aus Events & Momenten */
+  {
+    file: 'pm-geschichten.png',
+    path: '/projects/k2-familie/geschichte?t=huber',
+    wait: { state: 'networkidle', timeout: 120_000 },
+  },
   {
     file: 'pm-gedenk-oder-momente.png',
     path: '/projects/k2-familie/gedenkort?t=huber',

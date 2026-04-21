@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Offen nach Bedarf (nächste Session).  
-**Einordnung:** K2 Familie Präsentationsmappe Kunde: Druckvorschau-Deckblatt mit Kernsatz + Slogan (`tenantConfig`) über A4-Eingangsbild; Kapitel „Versprechen“-Text angepasst.
+**Einordnung:** K2 Familie Präsentationsmappe „So sieht es aus“: Screenshots **Events** + **Geschichten** (`pm-events.png`, `pm-geschichten.png`), Capture-Skript erweitert, PNGs erzeugt.
+
+---
+
+**Letzter Stand:** 21.04.26 – **K2 Familie Präsentationsmappe: Screenshots Events & Geschichten** – `capture-k2-familie-praesentation-map.mjs`: Routen `/projects/k2-familie/events` und `/geschichte` (Musterfamilie Huber); `05-SO-SIEHT-DAS-AUS-BILDER.md` + README; PNGs in `public/img/k2-familie/`. **Commit:** _(folgt)_ ✅ GitHub
 
 ---
 
