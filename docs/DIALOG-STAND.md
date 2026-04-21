@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 21.04.26 – **K2 Familie Mappe Kunde: Kapitel Technik in Kürze** – `public/k2-familie-praesentation-mappe/07-TECHNIK-IN-KUERZE.md`, `00-INDEX.md`, `K2FamiliePraesentationsmappeKundePage` DOCUMENTS + Subtitle. **Commit:** cf4eb387
+**Letzter Stand:** 21.04.26 – **K2 Familie Mappe Kunde: Kapitel Technik in Kürze** – `public/k2-familie-praesentation-mappe/07-TECHNIK-IN-KUERZE.md`, `00-INDEX.md`, `K2FamiliePraesentationsmappeKundePage` DOCUMENTS + Subtitle. **Commit:** `cf4eb387` ✅ GitHub
 
 ---
 
