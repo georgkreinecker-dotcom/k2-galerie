@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 21.04.26 – **K2 Familie Mappe Kunde: QR getauscht (Huber ↔ Eingangstor)** – `K2FamiliePraesentationsmappeKundePage`: `deckblattQrAbsUrl` Huber-Einstieg, `impressumQrAbsUrl` + Caption Entdecken; `BenutzerHandbuchViewer`: `DeckblattQrNurBild`/`deckblattQrAbsUrl`, Overlay auf Cover-Bild ebenfalls Huber-QR (Bugfix). **Commit:** `c40ba5b5` ✅ GitHub
+**Letzter Stand:** 21.04.26 – **K2 Familie Mappe Kunde: QR getauscht (Huber ↔ Eingangstor)** – `K2FamiliePraesentationsmappeKundePage`: `deckblattQrAbsUrl` Huber-Einstieg, `impressumQrAbsUrl` + Caption Entdecken; `BenutzerHandbuchViewer`: `DeckblattQrNurBild`/`deckblattQrAbsUrl`, Overlay auf Cover-Bild ebenfalls Huber-QR (Bugfix). **Commit:** `e5e642c9` ✅ GitHub
 
 ---
 
