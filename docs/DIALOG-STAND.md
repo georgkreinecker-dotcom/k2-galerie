@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 21.04.26 – **BenutzerHandbuchViewer: SPA-/HTML-Erkennung verschärft + Vercel kein Rewrite für `*.md`** – `responseLooksLikeHtmlInsteadOfMarkdown` (Content-Type, Vite-HMR, `#!` Markdown), `fetch` mit `no-store` und absoluter URL; `vercel.json` Catch-All ohne Pfade die auf `.md` enden. **Commit:** `5bb875c0` ✅ GitHub
+**Letzter Stand:** 21.04.26 – **BenutzerHandbuchViewer: SPA-/HTML-Erkennung verschärft + Vercel kein Rewrite für `*.md`** – `responseLooksLikeHtmlInsteadOfMarkdown` (Content-Type, Vite-HMR, `#!` Markdown), `fetch` mit `no-store` und absoluter URL; `vercel.json` Catch-All ohne Pfade die auf `.md` enden. **Commit:** `c1d6d632` ✅ GitHub
 
 ---
 
