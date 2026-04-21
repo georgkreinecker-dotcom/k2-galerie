@@ -61,6 +61,20 @@ const HANDBUCH_DOC_PARAM = 'doc'
 
 const EINGANGSTOR_ABS_URL = `${BASE_APP_URL}${OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE}`
 
+/** True wenn statt Markdown die SPA-Hülle (index.html) kam – z. B. Vite-HMR, Rewrite, Cache. */
+function responseLooksLikeHtmlInsteadOfMarkdown(text: string, contentType: string | null): boolean {
+  const trimmed = text.trimStart()
+  if (trimmed.startsWith('#')) return false
+  const ct = (contentType || '').toLowerCase()
+  const head = text.slice(0, 4000).trimStart()
+  const htmlShape = /^<!doctype\s+html/i.test(head) || /^<html[\s>]/i.test(head)
+  const sniff = text.slice(0, 2500)
+  const viteSpa = /\/@vite\/client|\/@react-refresh|injectIntoGlobalHook/.test(sniff)
+  if (htmlShape || viteSpa) return true
+  if (ct.includes('text/html') || ct.includes('application/xhtml')) return htmlShape || viteSpa || /<head[\s>]/i.test(head.slice(0, 800))
+  return false
+}
+
 /** Nur QR-Bild – Server-Stand + Bust (Stand-QR-Regel). `variant`: Deckblatt-Overlay (heller Rand) vs. Kontakt (neutral). */
 function QrNurBild({
   absUrl,
@@ -232,14 +246,15 @@ export default function BenutzerHandbuchViewer({
       return next
     }, { replace: true })
     try {
-      const response = await fetch(`${handbuchBase}/${filename}`)
+      const base = handbuchBase.startsWith('/') ? handbuchBase : `/${handbuchBase}`
+      const docUrl = new URL(`${base.replace(/\/$/, '')}/${filename}`, window.location.origin).href
+      const response = await fetch(docUrl, { cache: 'no-store' })
       if (response.ok) {
         const text = await response.text()
-        const head = text.slice(0, 800).trimStart()
-        const looksLikeHtml = /^<!doctype\s+html/i.test(head) || /^<html[\s>]/i.test(head)
-        if (looksLikeHtml) {
+        const ct = response.headers.get('content-type')
+        if (responseLooksLikeHtmlInsteadOfMarkdown(text, ct)) {
           setDocContent(
-            `# Kapitel konnte nicht geladen werden\n\nStatt der Textdatei wurde eine Webseite geliefert (meist fehlt die **.md**-Datei im Build oder die Adresse ist falsch). Bitte Seite neu laden oder Stand prüfen.\n\n**Erwartet:** \`${handbuchBase}/${filename}\``,
+            `# Kapitel konnte nicht geladen werden\n\nStatt der Textdatei wurde eine Webseite geliefert (SPA-Hülle oder alter Cache). **Hard-Reload** (Cache leeren) oder **Stand** auf Vercel prüfen.\n\n**Erwartet:** Markdown unter \`${base}/${filename}\``,
           )
         } else {
           setDocContent(text)
@@ -282,8 +297,18 @@ export default function BenutzerHandbuchViewer({
       for (const doc of documents) {
         if (cancelled) return
         try {
-          const res = await fetch(`${handbuchBase}/${doc.file}`)
-          next[doc.file] = res.ok ? await res.text() : ''
+          const base = handbuchBase.startsWith('/') ? handbuchBase : `/${handbuchBase}`
+          const docUrl = new URL(`${base.replace(/\/$/, '')}/${doc.file}`, window.location.origin).href
+          const res = await fetch(docUrl, { cache: 'no-store' })
+          if (!res.ok) {
+            next[doc.file] = ''
+            continue
+          }
+          const raw = await res.text()
+          const ct = res.headers.get('content-type')
+          next[doc.file] = responseLooksLikeHtmlInsteadOfMarkdown(raw, ct)
+            ? `# Kapitel konnte nicht geladen werden\n\n(${doc.file})`
+            : raw
         } catch {
           next[doc.file] = ''
         }

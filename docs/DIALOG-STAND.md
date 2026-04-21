@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Offen nach Bedarf (nächste Session).  
-**Einordnung:** K2-Familie Präsentationsmappe Kunde: sieben Inhalts-Kapitel (nach Index), Kontakt als Markdown; Viewer erkennt HTML-Fallback.
+**Einordnung:** K2-Familie Präsentationsmappe Kunde: Markdown-Zugriff ohne SPA-index.html (Viewer + Vercel-Rewrite).
+
+---
+
+**Letzter Stand:** 21.04.26 – **BenutzerHandbuchViewer: SPA-/HTML-Erkennung verschärft + Vercel kein Rewrite für `*.md`** – `responseLooksLikeHtmlInsteadOfMarkdown` (Content-Type, Vite-HMR, `#!` Markdown), `fetch` mit `no-store` und absoluter URL; `vercel.json` Catch-All ohne Pfade die auf `.md` enden. **Commit:** `5bb875c0` ✅ GitHub
 
 ---
 
