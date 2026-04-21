@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 21.04.26 – **BenutzerHandbuchViewer: Impressum-Link zum Handbuch** – optional `impressumHandbuchHref` / `impressumHandbuchLabel`; Lesansicht + Druckvorschau; Kunden-Mappe: `PROJECT_ROUTES['k2-familie'].benutzerHandbuch`. **Commit:** _(nach Push)_ ⏳
+**Letzter Stand:** 21.04.26 – **BenutzerHandbuchViewer: Impressum-Link zum Handbuch** – optional `impressumHandbuchHref` / `impressumHandbuchLabel`; Lesansicht + Druckvorschau; Kunden-Mappe: `PROJECT_ROUTES['k2-familie'].benutzerHandbuch`. **Commit:** `a4b74533` ✅ GitHub
 
 ---
 
