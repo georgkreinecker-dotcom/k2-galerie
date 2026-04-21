@@ -1,7 +1,7 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Frei für die nächste Session.  
-**Einordnung:** Session **21.04.26** beendet – **main** aktuell (**`40b719d2`**), Arbeitsbaum sauber. Zuletzt: K2-Familie-Benutzerhandbuch Feinschliff (Text, Navigation, Default-Index, Kapitel-3-Nummerierung).
+**Einordnung:** Session **21.04.26** beendet – **main** aktuell (**`9b6338cc`**), Arbeitsbaum sauber. Zuletzt: K2-Familie-Benutzerhandbuch Feinschliff (Text, Navigation, Default-Index, Kapitel-3-Nummerierung); Session-Ende-Doku (`DIALOG-STAND` + `WIR-PROZESS`) committed.
 
 ---
 
