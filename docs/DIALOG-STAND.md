@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 21.04.26 – **BenutzerHandbuchViewer: PDF-Druckform optimiert** – `@media print`: Fließtext 9 pt, Zeilenhöhe 1,42, Überschriften größer, Tabellen 8,5 pt, `@page` A4 mit ~12–18 mm Rand; Vorschau-A4-Padding; Impressum `.benutzer-impressum-typo`; QR-Wrap `break-inside: avoid`; Hinweistext Druckvorschau angepasst. **Commit:** `3be477bb` ✅ GitHub
+**Letzter Stand:** 21.04.26 – **BenutzerHandbuchViewer: PDF-Druckform optimiert** – `@media print`: Fließtext 9 pt, Zeilenhöhe 1,42, Überschriften größer, Tabellen 8,5 pt, `@page` A4 mit ~12–18 mm Rand; Vorschau-A4-Padding; Impressum `.benutzer-impressum-typo`; QR-Wrap `break-inside: avoid`; Hinweistext Druckvorschau angepasst. **Commit:** `f9491dad` ✅ GitHub
 
 ---
 
