@@ -5,7 +5,15 @@
 
 ---
 
-**Letzter Stand:** 21.04.26 – **K2 Familie `pm=1`: Huber-Rundgang nicht in Präsentations-Screenshots** – `FamilieTenantToolbar`: bei `?pm=1` kein Auto-Öffnen, Modal zu, Events öffnen nicht; gleiches URL-Flag wie Impressum-Footer (`K2FamilieLayout`). README `public/img/k2-familie/README.md`, Hinweis im Capture-Skript. **Commit:** `ee11baa8` ✅ GitHub
+**Letzter Stand:** 19.04.26 – **K2 Familie: `pm-*.png` neu gerendert (ohne Impressum/Rundgang im Bild)** – Playwright-Capture mit `pm=1` + DOM-Checks; Vite-Port ggf. `BASE_URL` setzen wenn 5177 belegt. **Commit:** `7dd95834` ✅ GitHub
+
+---
+
+**Letzter Stand:** 19.04.26 – **K2 Familie: `pm-*.png` neu gerendert (ohne Impressum/Rundgang im Bild)** – Playwright-Capture mit `pm=1` + DOM-Checks; bei besetztem Port 5177: `BASE_URL=http://127.0.0.1:<Port> node scripts/capture-k2-familie-praesentation-map.mjs` (Playwright ggf. mit `all`-Rechten, nicht in Sandbox). **Commit:** `0fb7fe74` ✅ GitHub
+
+---
+
+**Letzter Stand:** 21.04.26 – **K2 Familie `pm=1`: Huber-Rundgang nicht in Präsentations-Screenshots** – `FamilieTenantToolbar`: bei `?pm=1` kein Auto-Öffnen, Modal zu, Events öffnen nicht; gleiches URL-Flag wie Impressum-Footer (`K2FamilieLayout`). README `public/img/k2-familie/README.md`, Hinweis im Capture-Skript. **Commit:** `fcf81a51` ✅ GitHub
 
 ---
 
