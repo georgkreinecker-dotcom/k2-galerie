@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Offen nach Bedarf (nächste Session).  
-**Einordnung:** K2 Familie Präsentationsmappe Kunde: **05** Übersicht = 8 Abbildungen; fehlende Screenshots **Events** + **Geschichten** (`pm-events.png`, `pm-geschichten.png`) als §6–7 ergänzt, Gedenkort §8.
+**Einordnung:** K2 Familie Präsentationsmappe Kunde: Kontakt-Kapitel **QR Musterfamilie** (`/projects/k2-familie/einstieg?t=huber`, Server-Stand + Bust) in `BenutzerHandbuchViewer` + Page-Prop `kontaktChapterQrAbsUrl`.
+
+---
+
+**Letzter Stand:** 21.04.26 – **K2 Familie Mappe Kunde: QR Musterfamilie im Kontakt-Kapitel** – `QrNurBild` + `kontaktChapterQrAbsUrl`; `K2FamiliePraesentationsmappeKundePage` `MUSTERFAMILIE_EINSTIEG_QR_URL`. **Commit:** (nach Push)
 
 ---
 

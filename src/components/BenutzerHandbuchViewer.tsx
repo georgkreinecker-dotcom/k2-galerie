@@ -45,16 +45,30 @@ export type BenutzerHandbuchViewerProps = {
   deckblattTealCover?: boolean
   /** QR zur Plattform-Startseite Entdecken (Eingangstor): nur Bild, unten rechts auf dem Deckblatt in der Druckvorschau; Lesansicht rechts ohne Text. */
   prominentEingangstorQr?: boolean
+  /** Optional: absoluter QR-Ziel-URL (z. B. Musterfamilie-Einstieg) – nur im Kapitel `kontaktChapterFile` angezeigt. */
+  kontaktChapterQrAbsUrl?: string
+  /** Markdown-Dateiname des Kontakt-Kapitels (Default: K2-Familie-Kundenmappe). */
+  kontaktChapterFile?: string
 }
 
 const HANDBUCH_DOC_PARAM = 'doc'
 
 const EINGANGSTOR_ABS_URL = `${BASE_APP_URL}${OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE}`
 
-/** Nur QR-Bild (kein Text) – Server-Stand + Bust wie Werbeunterlagen. */
-function EingangstorQrNurBild({ widthPx }: { widthPx: number }) {
+const DEFAULT_KONTAKT_CHAPTER_FILE = '06-KONTAKT-UND-NAECHSTER-SCHRITT.md'
+
+/** Nur QR-Bild – Server-Stand + Bust (Stand-QR-Regel). `variant`: Deckblatt-Overlay (heller Rand) vs. Kontakt (neutral). */
+function QrNurBild({
+  absUrl,
+  widthPx,
+  variant = 'deckblatt',
+}: {
+  absUrl: string
+  widthPx: number
+  variant?: 'deckblatt' | 'kontakt'
+}) {
   const { versionTimestamp } = useQrVersionTimestamp()
-  const { qrUrl } = useStableQrBustedUrl(EINGANGSTOR_ABS_URL, versionTimestamp)
+  const { qrUrl } = useStableQrBustedUrl(absUrl, versionTimestamp)
   const [dataUrl, setDataUrl] = useState('')
   useEffect(() => {
     let cancelled = false
@@ -65,6 +79,11 @@ function EingangstorQrNurBild({ widthPx }: { widthPx: number }) {
       cancelled = true
     }
   }, [qrUrl, widthPx])
+
+  const borderStyle =
+    variant === 'deckblatt'
+      ? '1px solid rgba(255,255,255,0.85)'
+      : '1px solid #e5e7eb'
 
   if (dataUrl) {
     return (
@@ -78,8 +97,8 @@ function EingangstorQrNurBild({ widthPx }: { widthPx: number }) {
           width: widthPx,
           height: widthPx,
           borderRadius: 6,
-          border: '1px solid rgba(255,255,255,0.85)',
-          boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+          border: borderStyle,
+          boxShadow: variant === 'deckblatt' ? '0 1px 4px rgba(0,0,0,0.2)' : '0 1px 3px rgba(0,0,0,0.08)',
           background: '#fff',
         }}
       />
@@ -93,15 +112,20 @@ function EingangstorQrNurBild({ widthPx }: { widthPx: number }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'rgba(255,255,255,0.9)',
+        background: '#f9fafb',
         borderRadius: 6,
         fontSize: '0.7rem',
         color: '#6b7280',
+        border: borderStyle,
       }}
     >
       QR
     </div>
   )
+}
+
+function EingangstorQrNurBild({ widthPx }: { widthPx: number }) {
+  return <QrNurBild absUrl={EINGANGSTOR_ABS_URL} widthPx={widthPx} variant="deckblatt" />
 }
 
 export default function BenutzerHandbuchViewer({
@@ -127,6 +151,8 @@ export default function BenutzerHandbuchViewer({
   deckblattKernsatz,
   deckblattTealCover,
   prominentEingangstorQr,
+  kontaktChapterQrAbsUrl,
+  kontaktChapterFile = DEFAULT_KONTAKT_CHAPTER_FILE,
 }: BenutzerHandbuchViewerProps) {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -563,6 +589,7 @@ export default function BenutzerHandbuchViewer({
       .benutzer-deckblatt-teal .benutzer-deckblatt-teal-copy { font-size: 7pt !important; margin: 3mm 0 0 !important; color: rgba(255,255,255,0.85) !important; }
       .benutzer-deckblatt-qr-eingangstor-overlay img { width: 26mm !important; height: 26mm !important; max-width: 26mm !important; object-fit: contain !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
       .benutzer-deckblatt-qr-eingangstor-overlay--teal img { width: 22mm !important; height: 22mm !important; max-width: 22mm !important; }
+    .benutzer-kontakt-qr-wrap img { width: 28mm !important; height: 28mm !important; max-width: 28mm !important; object-fit: contain !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
       .benutzer-deckblatt { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 0.35rem 0.6rem !important; page-break-after: auto !important; }
       .benutzer-deckblatt--einstieg-a4 { padding: 0 !important; page-break-after: always !important; background: #fff !important; }
       .benutzer-deckblatt-a4-inner { max-height: none !important; aspect-ratio: auto !important; height: 277mm !important; border: none !important; background: #fff !important; }
@@ -746,6 +773,24 @@ export default function BenutzerHandbuchViewer({
               {documents.map((doc, index) => (
                 <section key={doc.file} className="benutzer-druck-kapitel">
                   <div className="benutzer-druck-inhalt">{renderMarkdown(allDocContents[doc.file] ?? '', index > 0 ? index : undefined)}</div>
+                  {kontaktChapterQrAbsUrl && doc.file === kontaktChapterFile ? (
+                    <div
+                      className="benutzer-kontakt-qr-wrap"
+                      style={{
+                        marginTop: '0.75rem',
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        breakInside: 'avoid',
+                      }}
+                    >
+                      <div style={{ textAlign: 'center' }}>
+                        <QrNurBild absUrl={kontaktChapterQrAbsUrl} widthPx={120} variant="kontakt" />
+                        <p style={{ margin: '0.35rem 0 0', fontSize: '8pt', color: '#6b7280', lineHeight: 1.3 }}>
+                          Musterfamilie Huber (Demo)
+                        </p>
+                      </div>
+                    </div>
+                  ) : null}
                 </section>
               ))}
               <section className="benutzer-druck-kapitel benutzer-impressum-seite">
@@ -801,6 +846,23 @@ export default function BenutzerHandbuchViewer({
             ) : (
               <>
                 <div className="benutzer-druck-inhalt">{renderMarkdown(docContent, (() => { const idx = documents.findIndex((d) => d.file === selectedDoc); return idx > 0 ? idx : undefined; })(), (path) => loadDocument(path))}</div>
+                {kontaktChapterQrAbsUrl && selectedDoc === kontaktChapterFile ? (
+                  <div
+                    className="benutzer-kontakt-qr-wrap"
+                    style={{
+                      marginTop: '1.25rem',
+                      paddingTop: '1rem',
+                      borderTop: '1px solid #e5e7eb',
+                      display: 'flex',
+                      justifyContent: 'flex-end',
+                    }}
+                  >
+                    <div style={{ textAlign: 'center' }}>
+                      <QrNurBild absUrl={kontaktChapterQrAbsUrl} widthPx={160} variant="kontakt" />
+                      <p style={{ margin: '0.4rem 0 0', fontSize: '0.8rem', color: '#6b7280' }}>Musterfamilie Huber (Demo)</p>
+                    </div>
+                  </div>
+                ) : null}
                 <div className="benutzer-seitenfuss-zeile" style={{ display: 'none' }} aria-hidden>
                   {printCurrentDocPrefix} · {currentDocName}
                 </div>
