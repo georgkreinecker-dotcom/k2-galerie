@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 21.04.26 – **K2-Familie-Benutzerhandbuch: Feinschliff** – `00-INDEX` lesbarer; Kapitel 3 doppelte §4/§7 behoben (§5 Sicherung, §8 Einbinden); Kapitel 8/9 **Weiter**-Links; Personenkarte Checkliste Sprache; `K2FamilieBenutzerHandbuchPage`: Untertitel, Standarddokument `00-INDEX.md`. **Commit:** `HANDSCHUH_HASH`
+**Letzter Stand:** 21.04.26 – **K2-Familie-Benutzerhandbuch: Feinschliff** – `00-INDEX` lesbarer; Kapitel 3 doppelte §4/§7 behoben (§5 Sicherung, §8 Einbinden); Kapitel 8/9 **Weiter**-Links; Personenkarte Checkliste Sprache; `K2FamilieBenutzerHandbuchPage`: Untertitel, Standarddokument `00-INDEX.md`. **Commit:** `939a279d` ✅ GitHub
 
 ---
 
