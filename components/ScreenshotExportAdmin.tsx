@@ -434,11 +434,14 @@ function fitCanvasInSquareLetterbox(src: HTMLCanvasElement, side: number): HTMLC
 }
 
 /**
- * Entdecken q1 → A1-PDF für Druckerei: ~190–205 dpi effektiv auf 594 mm Breite
- * (1660×2,8 ≈ 4648 px). Höhere Werte riskieren Canvas-/Speicherlimits im Browser.
+ * Entdecken q1 → A1-PDF für Druckerei: Ziel **~250–300 dpi** auf volle A1-Breite
+ * (Innen z. B. ~584 mm → ca. 6900–8300 px sinnvoll). html2pdf legt die Canvas-Breite
+ * auf die Seitenbreite; zu kleine Canvas = kleine Datei (z. B. nur wenige hundert kB) und unscharfer Druck.
+ * Scale und Iframe-Breite müssen mit dem tatsächlichen html2canvas-`scale` übereinstimmen
+ * (früher: Konstante 2,8, Aufruf aber 2,15 → faktisch nur ~155 dpi).
  */
-const ENTDECKEN_PLAKAT_A1_IFRAME_WIDTH_PX = 1660
-const ENTDECKEN_PLAKAT_A1_HTML2CANVAS_SCALE = 2.8
+const ENTDECKEN_PLAKAT_A1_IFRAME_WIDTH_PX = 2100
+const ENTDECKEN_PLAKAT_A1_HTML2CANVAS_SCALE = 3.35
 const ENTDECKEN_PLAKAT_A1_IFRAME_MIN_HEIGHT_PX = 4000
 const ENTDECKEN_PLAKAT_A1_H2C_WINDOW_HEIGHT_MAX = 13600
 
@@ -505,9 +508,12 @@ async function captureEntdeckenPlakatA1AsPdfBlob(
 
     const h2cOpts = {
       ...HTML2PDF_WERBEMITTEL_BASE.html2canvas,
-      scale: 2.15,
+      scale: ENTDECKEN_PLAKAT_A1_HTML2CANVAS_SCALE,
       windowWidth: iframeWidthPx,
-      windowHeight: Math.min(Math.max(scrollH + 160, iframeMinHeightPx), 12000),
+      windowHeight: Math.min(
+        Math.max(scrollH + 160, iframeMinHeightPx),
+        ENTDECKEN_PLAKAT_A1_H2C_WINDOW_HEIGHT_MAX,
+      ),
       scrollX: 0,
       scrollY: 0,
       logging: false,
@@ -542,7 +548,8 @@ async function captureEntdeckenPlakatA1AsPdfBlob(
       ...HTML2PDF_WERBEMITTEL_BASE,
       filename: 'entdecken-plakat-a1.pdf',
       margin: [5, 5, 5, 5] as [number, number, number, number],
-      image: { type: 'jpeg' as const, quality: 0.98 },
+      /* PNG: keine JPEG-Blockbilder auf Text/QR; Datei deutlich größer = erwartbar für Druckerei. */
+      image: { type: 'png' as const, quality: 1 },
       jsPDF: {
         unit: 'mm' as const,
         format: 'a1' as const,
