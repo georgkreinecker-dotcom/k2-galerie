@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Frei für die nächste Session.  
-**Einordnung:** **Plakat A1 Profidruck:** höhere Rasterauflösung (Iframe 1660 px, html2canvas scale 2,8 ≈ 190–205 dpi auf A1-Breite), JPEG 0,98, Rand 5 mm, QR 280 px + größere Darstellung nur bei `printPlakat=a1`; Capture-CSS `entdeckenA1Capture` in `marketingWerbelinie.ts`.
+**Einordnung:** **Entdecken q1 Browser-Druck A4:** eine Seite durch `@page A4`, kompakte Typo/Abstände, Weg-Karten-QR 44 px im Druck, Testpilot-Spalte (Text | QR+Button) im Druck gestapelt und zentriert, Fußzeile 5–5,5 pt. A1 (`printPlakat=a1`) unverändert nur A1-@page.
+
+---
+
+**Letzter Stand:** 19.04.26 – **Entdecken q1: A4-Druck eine Seite** – `EntdeckenPage.tsx` `@media print` für `.entdecken-q1-a4-browser-print` (nicht A1), Klassen `entdecken-q1-inner`, Testpilot, Footer. **Commit:** `c219367b` (Push falls nötig nachziehen)
 
 ---
 

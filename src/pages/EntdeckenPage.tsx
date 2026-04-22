@@ -15,7 +15,15 @@ import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBui
 import { prepareFreshOek2VisitorSession } from '../utils/oek2FreshStart'
 import { isOek2PilotEntwurfQuery } from '../utils/pilotOek2GalerieUrl'
 import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_K2_FAMILIE_WERBESLOGAN, PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ } from '../config/tenantConfig'
-import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_LIZENZ_ANFRAGE_BETREFF, isPlatformInstance } from '../config/tenantConfig'
+import {
+  PRODUCT_BRAND_NAME,
+  PRODUCT_COPYRIGHT_BRAND_ONLY,
+  PRODUCT_URHEBER_ANWENDUNG,
+  PRODUCT_LIZENZ_ANFRAGE_EMAIL,
+  PRODUCT_LIZENZ_ANFRAGE_BETREFF,
+  isPlatformInstance,
+  K2_GALERIE_PUBLIC_BRAND,
+} from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import {
   getPageContentEntdecken,
@@ -24,6 +32,9 @@ import {
 } from '../config/pageContentEntdecken'
 import { ENTDECKEN_HERO_IMAGE_FALLBACK_PATH, isEntdeckenHeroVideoUrl } from '../config/entdeckenHeroMedia'
 import { loadEntdeckenHeroOverlayIfFresh } from '../utils/entdeckenHeroOverlayStorage'
+
+/** Plakat q1: große Zeile zwischen kgm solution und Produktvorstellung – Kurzform der Galerie-Marke (z. B. „K2“). */
+const ENTDECKEN_Q1_K2_KURZMARKE = K2_GALERIE_PUBLIC_BRAND.trim().split(/\s+/)[0] || 'K2'
 
 // ─── Erkundungs-Notizen ───────────────────────────────────────────────────────
 export const ERKUNDUNGS_NOTIZEN_KEY = 'k2-erkundungs-notizen'
@@ -834,7 +845,6 @@ export default function EntdeckenPage() {
     onClick,
     color,
     poster = false,
-    posterA1Print = false,
     posterQrSrc,
     posterQrLabel,
   }: {
@@ -846,9 +856,7 @@ export default function EntdeckenPage() {
     color?: string
     /** Größere Typo – Produktlaunch-Plakat (Entdecken q1) */
     poster?: boolean
-    /** A1-Druck/PDF: größere QR-Darstellung */
-    posterA1Print?: boolean
-    /** QR neben dem Punkt (Plakat) */
+    /** QR neben dem Punkt (Plakat) – eine Größe für alle Weg-Karten (wie K2 Familie) */
     posterQrSrc?: string
     posterQrLabel?: string
   }) {
@@ -872,6 +880,7 @@ export default function EntdeckenPage() {
     return (
       <button
         type="button"
+        data-poster-choice={poster || undefined}
         onClick={onClick}
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
@@ -902,11 +911,11 @@ export default function EntdeckenPage() {
           <img
             src={posterQrSrc}
             alt={posterQrLabel || ''}
-            width={posterA1Print ? 96 : 72}
-            height={posterA1Print ? 96 : 72}
+            width={72}
+            height={72}
             style={{
-              width: posterA1Print ? 'clamp(76px, 15vw, 108px)' : 'clamp(64px, 14vw, 80px)',
-              height: posterA1Print ? 'clamp(76px, 15vw, 108px)' : 'clamp(64px, 14vw, 80px)',
+              width: 'clamp(56px, 12vw, 72px)',
+              height: 'clamp(56px, 12vw, 72px)',
               flexShrink: 0,
               alignSelf: 'center',
               objectFit: 'contain',
@@ -1067,11 +1076,13 @@ export default function EntdeckenPage() {
       {step === 'q1' && (
         <div
           className={
-            isPlakatA1PrintMode
-              ? 'entdecken-plakat-a1-capture'
-              : isPlakatSocialPrintMode
-                ? 'entdecken-plakat-social-capture'
-                : undefined
+            [
+              isPlakatA1PrintMode && 'entdecken-plakat-a1-capture',
+              isPlakatSocialPrintMode && 'entdecken-plakat-social-capture',
+              !isPlakatA1PrintMode && 'entdecken-q1-a4-browser-print',
+            ]
+              .filter(Boolean)
+              .join(' ') || undefined
           }
           style={{
             minHeight: '100vh',
@@ -1087,19 +1098,110 @@ export default function EntdeckenPage() {
             background: isEntdeckenPlakatCapture ? bgLight : undefined,
           }}
         >
-          {isPlakatA1PrintMode && (
-            <style>
-              {`
+          <style>
+            {isPlakatA1PrintMode
+              ? `
                 @media print {
                   @page { size: A1 portrait; margin: 12mm; }
                   html, body { background: #fff !important; }
                   .no-print { display: none !important; }
                 }
+              `
+              : `
+                @media print {
+                  @page { size: A4 portrait; margin: 5mm; }
+                  html, body { background: #fff !important; }
+                  .no-print { display: none !important; }
+                  .entdecken-page-root { min-height: 0 !important; }
+                  .entdecken-q1-a4-browser-print {
+                    min-height: 0 !important;
+                    padding: 0 2mm 1mm !important;
+                    justify-content: flex-start !important;
+                  }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-inner > div:first-child { margin-bottom: 0.1rem !important; }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-inner > div:first-child span { font-size: 0.82rem !important; }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-inner > div:first-child > div { margin: 0.3rem auto 0 !important; }
+                  .entdecken-q1-a4-browser-print .entdecken-plakat-k2-marke {
+                    font-size: 1.45rem !important;
+                    margin-bottom: 0.15rem !important;
+                    line-height: 1 !important;
+                  }
+                  .entdecken-q1-a4-browser-print h2 {
+                    font-size: 0.92rem !important;
+                    margin-bottom: 0.06rem !important;
+                    line-height: 1.15 !important;
+                  }
+                  .entdecken-q1-a4-browser-print h3 {
+                    font-size: 0.82rem !important;
+                    margin-bottom: 0.06rem !important;
+                    line-height: 1.15 !important;
+                  }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-weginleitung {
+                    font-size: 0.68rem !important;
+                    margin-bottom: 0.28rem !important;
+                    line-height: 1.32 !important;
+                  }
+                  .entdecken-q1-a4-browser-print button[data-poster-choice] {
+                    padding: 0.22rem 0.38rem !important;
+                    margin-bottom: 0.22rem !important;
+                    gap: 0.32rem !important;
+                    border-radius: 8px !important;
+                  }
+                  .entdecken-q1-a4-browser-print button[data-poster-choice] > span:first-child { font-size: 1.05rem !important; }
+                  .entdecken-q1-a4-browser-print button[data-poster-choice] > span:nth-child(2) > span:first-child {
+                    font-size: 0.74rem !important;
+                    margin-bottom: 0.06rem !important;
+                  }
+                  .entdecken-q1-a4-browser-print button[data-poster-choice] > span:nth-child(2) > span:last-child {
+                    font-size: 0.62rem !important;
+                    line-height: 1.32 !important;
+                  }
+                  .entdecken-q1-a4-browser-print button[data-poster-choice] > img {
+                    width: 44px !important;
+                    height: 44px !important;
+                    border-radius: 6px !important;
+                  }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot {
+                    margin-top: 0.12rem !important;
+                    margin-bottom: 0 !important;
+                    padding: 0.28rem 0.4rem !important;
+                    gap: 0.28rem !important;
+                    flex-direction: column !important;
+                    align-items: stretch !important;
+                  }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot > div:first-child { align-items: flex-start !important; }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot > div:first-child p {
+                    font-size: 0.66rem !important;
+                    line-height: 1.3 !important;
+                  }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot > div:first-child span[aria-hidden] { font-size: 0.95rem !important; }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot-actions {
+                    justify-content: center !important;
+                    gap: 0.28rem !important;
+                  }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot-actions img {
+                    width: 22px !important;
+                    height: 22px !important;
+                  }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot-actions a {
+                    font-size: 0.58rem !important;
+                    padding: 0.16rem 0.38rem !important;
+                    border-radius: 6px !important;
+                  }
+                  .entdecken-page-root > .entdecken-q1-a4-footer {
+                    padding: 0.15rem 0.2rem !important;
+                    font-size: 5.5pt !important;
+                    line-height: 1.15 !important;
+                    border-top: none !important;
+                    background: transparent !important;
+                  }
+                  .entdecken-page-root > .entdecken-q1-a4-footer a { font-size: inherit !important; }
+                  .entdecken-page-root > .entdecken-q1-a4-footer > div { margin-top: 0.08rem !important; font-size: 5pt !important; }
+                }
               `}
-            </style>
-          )}
+          </style>
           <div
-            className={isPlakatSocialPrintMode ? 'entdecken-plakat-social-inner' : undefined}
+            className={['entdecken-q1-inner', isPlakatSocialPrintMode ? 'entdecken-plakat-social-inner' : ''].filter(Boolean).join(' ')}
             style={{
               maxWidth: isPlakatA1PrintMode
                 ? 'min(94vw, 980px)'
@@ -1111,9 +1213,26 @@ export default function EntdeckenPage() {
           >
 
             {/* Logo – Plakat: größer */}
-            <div style={{ textAlign: 'center', marginBottom: 'clamp(1.25rem, 3vw, 2rem)' }}>
+            <div className="entdecken-q1-logo-wrap" style={{ textAlign: 'center', marginBottom: 'clamp(0.65rem, 2vw, 1rem)' }}>
               <span style={{ fontFamily: fontHeading, fontSize: 'clamp(1.25rem, 3.8vw, 1.65rem)', color: accent, fontWeight: 700, letterSpacing: '-0.02em' }}>{PRODUCT_BRAND_NAME}</span>
               <div style={{ width: 44, height: 3, borderRadius: 2, background: accent, opacity: 0.75, margin: '0.65rem auto 0' }} aria-hidden />
+            </div>
+
+            <div
+              className="entdecken-plakat-k2-marke"
+              aria-label={K2_GALERIE_PUBLIC_BRAND}
+              style={{
+                textAlign: 'center',
+                marginBottom: 'clamp(0.85rem, 2.5vw, 1.35rem)',
+                fontFamily: fontHeading,
+                fontSize: 'clamp(2.35rem, 8.5vw, 4rem)',
+                fontWeight: 800,
+                color: text,
+                letterSpacing: '-0.045em',
+                lineHeight: 1.05,
+              }}
+            >
+              {ENTDECKEN_Q1_K2_KURZMARKE}
             </div>
 
             {galerieReturnTo && (
@@ -1148,7 +1267,7 @@ export default function EntdeckenPage() {
               {T.weg}
             </h3>
             <p
-              className={isPlakatA1PrintMode ? 'entdecken-plakat-a1-weginleitung' : undefined}
+              className={['entdecken-q1-weginleitung', isPlakatA1PrintMode ? 'entdecken-plakat-a1-weginleitung' : ''].filter(Boolean).join(' ') || undefined}
               style={{ fontSize: 'clamp(0.92rem, 2.2vw, 1.08rem)', color: muted, textAlign: 'center', lineHeight: 1.55, marginBottom: 'clamp(1.35rem, 3.5vw, 2rem)', maxWidth: 560, marginLeft: 'auto', marginRight: 'auto' }}
             >
               {T.wegIntro}
@@ -1156,7 +1275,6 @@ export default function EntdeckenPage() {
 
             <ChoiceCard
               poster
-              posterA1Print={isPlakatA1PrintMode}
               posterQrSrc={plakatQrDataUrl.solo}
               posterQrLabel={`QR: ${T.wegSolo.label}`}
               {...T.wegSolo}
@@ -1166,7 +1284,6 @@ export default function EntdeckenPage() {
             />
             <ChoiceCard
               poster
-              posterA1Print={isPlakatA1PrintMode}
               posterQrSrc={plakatQrDataUrl.verein}
               posterQrLabel={`QR: ${T.wegVerein.label}`}
               {...T.wegVerein}
@@ -1187,8 +1304,9 @@ export default function EntdeckenPage() {
               color="#0d9488"
             />
 
-            {/* Testpilot – unter den Programm-Karten (Plakat-Reihenfolge) */}
+            {/* Testpilot – nur Text oben; QR + Anmelde-Button unten zentriert, beides ~halb so groß wie Weg-Karten-QR */}
             <div
+              className="entdecken-q1-testpilot"
               role="region"
               aria-label="Testpilot-Programm"
               style={{
@@ -1199,13 +1317,12 @@ export default function EntdeckenPage() {
                 border: `2px solid ${accent}45`,
                 borderRadius: 16,
                 display: 'flex',
-                flexWrap: 'wrap',
-                alignItems: 'center',
-                gap: '0.85rem 1.1rem',
-                justifyContent: 'space-between',
+                flexDirection: 'column',
+                alignItems: 'stretch',
+                gap: '0.65rem',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.55rem', minWidth: 0, flex: '1 1 14rem' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.55rem', minWidth: 0 }}>
                 <span style={{ fontSize: 'clamp(1.1rem, 2.8vw, 1.35rem)', lineHeight: 1.2, flexShrink: 0 }} aria-hidden title="Pilot">
                   🚩
                 </span>
@@ -1213,43 +1330,56 @@ export default function EntdeckenPage() {
                   {T.testpilotKurz}
                 </p>
               </div>
-              {plakatQrDataUrl.testpilot ? (
-                <img
-                  src={plakatQrDataUrl.testpilot}
-                  alt="QR: Testpilot-Anmeldung"
-                  width={isPlakatA1PrintMode ? 96 : 72}
-                  height={isPlakatA1PrintMode ? 96 : 72}
-                  style={{
-                    width: isPlakatA1PrintMode ? 'clamp(76px, 15vw, 108px)' : 'clamp(64px, 14vw, 80px)',
-                    height: isPlakatA1PrintMode ? 'clamp(76px, 15vw, 108px)' : 'clamp(64px, 14vw, 80px)',
-                    flexShrink: 0,
-                    objectFit: 'contain',
-                    borderRadius: 10,
-                    border: `1px solid ${accent}45`,
-                    background: '#fff',
-                  }}
-                />
-              ) : null}
-              <Link
-                to={PROJECT_ROUTES['k2-galerie'].testuserAnmeldung}
+              <div
+                className="entdecken-q1-testpilot-actions"
                 style={{
-                  display: 'inline-flex',
+                  display: 'flex',
+                  flexWrap: 'wrap',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  flexShrink: 0,
-                  padding: '0.55rem 1.15rem',
-                  background: accent,
-                  color: '#fff',
-                  fontWeight: 700,
-                  fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-                  borderRadius: 11,
-                  textDecoration: 'none',
-                  fontFamily: fontBody,
-                  boxShadow: `0 3px 14px ${accent}44`,
+                  gap: 'clamp(0.45rem, 2vw, 0.65rem)',
+                  width: '100%',
                 }}
               >
-                {T.testpilotCta}
-              </Link>
+                {plakatQrDataUrl.testpilot ? (
+                  <img
+                    src={plakatQrDataUrl.testpilot}
+                    alt="QR: Testpilot-Anmeldung"
+                    width={36}
+                    height={36}
+                    style={{
+                      width: 'clamp(28px, 6vw, 36px)',
+                      height: 'clamp(28px, 6vw, 36px)',
+                      flexShrink: 0,
+                      objectFit: 'contain',
+                      borderRadius: 8,
+                      border: `1px solid ${accent}45`,
+                      background: '#fff',
+                    }}
+                  />
+                ) : null}
+                <Link
+                  to={PROJECT_ROUTES['k2-galerie'].testuserAnmeldung}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    padding: 'clamp(0.28rem, 1.2vw, 0.38rem) clamp(0.55rem, 2vw, 0.72rem)',
+                    background: accent,
+                    color: '#fff',
+                    fontWeight: 700,
+                    fontSize: 'clamp(0.68rem, 1.65vw, 0.78rem)',
+                    borderRadius: 8,
+                    textDecoration: 'none',
+                    fontFamily: fontBody,
+                    boxShadow: `0 2px 8px ${accent}40`,
+                    lineHeight: 1.25,
+                  }}
+                >
+                  {T.testpilotCta}
+                </Link>
+              </div>
             </div>
           </div>
 
@@ -1312,7 +1442,10 @@ export default function EntdeckenPage() {
 
       {/* Fußzeile – eiserne Regel: Copyright wie definiert (K2/ök2/VK2); nicht auf Hero/Result */}
       {step !== 'result' && step !== 'hero' && !(step === 'q1' && isEntdeckenPlakatCapture) && (
-        <div style={{ textAlign: 'center', padding: '0.75rem 1rem', fontSize: '0.72rem', color: muted, borderTop: '1px solid #e8ddd0', background: bgCard }}>
+        <div
+          className={step === 'q1' && !isEntdeckenPlakatCapture ? 'entdecken-q1-a4-footer' : undefined}
+          style={{ textAlign: 'center', padding: '0.75rem 1rem', fontSize: '0.72rem', color: muted, borderTop: '1px solid #e8ddd0', background: bgCard }}
+        >
           <Link to={AGB_ROUTE} state={{ returnTo: location.pathname }} style={{ color: muted, textDecoration: 'none' }}>AGB</Link>
           {' · '}
           {PRODUCT_BRAND_NAME}
