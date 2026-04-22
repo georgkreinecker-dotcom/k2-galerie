@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 22.04.26 – **Mobil K2: Speichern neuer Werke schneller (prepareArtworksForStorage, kanonischer imageRef)** – `src/utils/artworkImageStore.ts`, Test `artworkImageStore.test.ts`. **Commit:** _(nach Push)_
+**Letzter Stand:** 22.04.26 – **Mobil K2: Speichern neuer Werke schneller (prepareArtworksForStorage, kanonischer imageRef)** – `src/utils/artworkImageStore.ts`, Test `artworkImageStore.test.ts`. **Commit:** `263600bd` ✅ GitHub
 
 ---
 
