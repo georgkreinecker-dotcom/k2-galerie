@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 22.04.26 – **Entdecken q1 A4-Druck: Pilot lesbar (pt nach Zoom), weniger 2. Seite** – `EntdeckenPage.tsx` (Print-CSS + fix Pilot `fontSize` im JSX). **Commit:** `cffa766a` (Push mit ausstehenden lokalen Commits)
+**Letzter Stand:** 22.04.26 – **Entdecken q1 A4-Druck: Pilot lesbar (pt nach Zoom), weniger 2. Seite** – `EntdeckenPage.tsx` (Print-CSS + fix Pilot `fontSize` im JSX). **Commit:** `cffa766a` ✅ GitHub
 
 ---
 
