@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 22.04.26 – **Entdecken q1 A4: oberer Abstand (wirklich weg, nicht nur CSS-Override)** – A4 ohne 100vh/center-Inline; Screen in `index.css`; injiziertes @page; `@page entdecken-q1-clean` 3/6/6/6. **Commit:** (nach Push)
+**Letzter Stand:** 22.04.26 – **Entdecken q1 A4: oberer Abstand (wirklich weg, nicht nur CSS-Override)** – A4 ohne 100vh/center-Inline; Screen in `index.css`; injiziertes @page; `@page entdecken-q1-clean` 3/6/6/6. **Commit:** `cd06d417` ✅ GitHub
 
 ---
 
