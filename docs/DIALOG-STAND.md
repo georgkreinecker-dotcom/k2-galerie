@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 22.04.26 – **Launch-Board: K2 Familie vs. Stammbaum = direkte Links, kein ?go=** – `public/launch-praesentation-board.html`, `scripts/write-build-info.js` (`VITE_…KREINECKER…`), `LaunchPraesentationBoardPage.tsx`. **Commit:** _(nach Push)_
+**Letzter Stand:** 22.04.26 – **Launch-Board: K2 Familie vs. Stammbaum = direkte Links, kein ?go=** – `public/launch-praesentation-board.html`, `scripts/write-build-info.js` (`VITE_…KREINECKER…`), `LaunchPraesentationBoardPage.tsx`. **Commit:** `e50fe1a0` ✅ GitHub
 
 ---
 
