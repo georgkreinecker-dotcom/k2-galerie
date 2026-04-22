@@ -1334,42 +1334,40 @@ export default function EntdeckenPage() {
                     width: 100% !important;
                     max-width: 100% !important;
                     margin: 0.3rem 0 0.15rem !important;
-                    margin-left: auto !important;
-                    margin-right: auto !important;
                     padding: 0.25rem 0.35rem 0.3rem !important;
-                    gap: 0.15rem !important;
-                    flex-direction: column !important;
+                    gap: 0.28rem !important;
+                    flex-direction: row !important;
                     flex-wrap: nowrap !important;
-                    align-items: stretch !important;
+                    align-items: flex-start !important;
                     box-sizing: border-box !important;
                     border-radius: 9px !important;
                   }
-                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot > div:first-child {
-                    flex: 0 0 auto !important;
-                    width: 100% !important;
+                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot > span[aria-hidden] {
+                    font-size: 0.6rem !important;
+                    flex-shrink: 0 !important;
+                    margin-top: 0.05em !important;
+                  }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot-body {
+                    flex: 1 1 auto !important;
                     min-width: 0 !important;
+                    display: flex !important;
+                    flex-direction: column !important;
                     align-items: flex-start !important;
-                    gap: 0.12rem !important;
+                    gap: 0.2rem !important;
                   }
                   .entdecken-q1-a4-browser-print .entdecken-q1-testpilot-text {
                     font-size: 0.7rem !important;
                     line-height: 1.28 !important;
                     font-weight: 600 !important;
                   }
-                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot > div:first-child span[aria-hidden] { font-size: 0.6rem !important; }
-                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot-actions {
-                    width: 100% !important;
-                    flex: 0 0 auto !important;
-                    justify-content: center !important;
-                    flex-wrap: nowrap !important;
-                    gap: 0.35rem !important;
-                  }
-                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot-actions img {
-                    width: 40px !important;
-                    height: 40px !important;
+                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot > img {
+                    width: 52px !important;
+                    height: 52px !important;
                     border-radius: 5px !important;
+                    flex-shrink: 0 !important;
+                    align-self: center !important;
                   }
-                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot-actions a {
+                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot-cta {
                     font-size: 0.63rem !important;
                     line-height: 1.2 !important;
                     padding: 0.16rem 0.4rem !important;
@@ -1492,16 +1490,14 @@ export default function EntdeckenPage() {
             />
             </div>
 
-            {/* Testpilot – ganze Karte halb so breit wie Weg-Karten, zentriert; QR + CTA unten zentriert, QR ~halb wie Weg-QR */}
+            {/* Testpilot – eine Zeile wie Weg-Karten: Icon | Text + CTA | QR */}
             <div
               className="entdecken-q1-testpilot"
               role="region"
               aria-label="Testpilot-Programm"
               style={{
                 width: '100%',
-                maxWidth: '50%',
-                marginLeft: 'auto',
-                marginRight: 'auto',
+                maxWidth: '100%',
                 boxSizing: 'border-box',
                 marginTop: 'clamp(0.5rem, 2vw, 1rem)',
                 marginBottom: '0.25rem',
@@ -1510,15 +1506,23 @@ export default function EntdeckenPage() {
                 border: `2px solid ${accent}45`,
                 borderRadius: 16,
                 display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'stretch',
-                gap: '0.65rem',
+                flexDirection: 'row',
+                flexWrap: 'nowrap',
+                alignItems: 'flex-start',
+                gap: 'clamp(0.45rem, 1.8vw, 0.65rem)',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.55rem', minWidth: 0 }}>
-                <span style={{ fontSize: 'clamp(0.55rem, 1.4vw, 0.68rem)', lineHeight: 1.2, flexShrink: 0 }} aria-hidden title="Pilot">
-                  🚩
-                </span>
+              <span
+                style={{ fontSize: 'clamp(0.55rem, 1.4vw, 0.68rem)', lineHeight: 1.2, flexShrink: 0, marginTop: '0.08em' }}
+                aria-hidden
+                title="Pilot"
+              >
+                🚩
+              </span>
+              <div
+                className="entdecken-q1-testpilot-body"
+                style={{ flex: '1 1 auto', minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.4rem' }}
+              >
                 <p
                   className="entdecken-q1-testpilot-text"
                   style={{
@@ -1532,37 +1536,9 @@ export default function EntdeckenPage() {
                 >
                   {T.testpilotKurz}
                 </p>
-              </div>
-              <div
-                className="entdecken-q1-testpilot-actions"
-                style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 'clamp(0.45rem, 2vw, 0.65rem)',
-                  width: '100%',
-                }}
-              >
-                {plakatQrDataUrl.testpilot ? (
-                  <img
-                    src={plakatQrDataUrl.testpilot}
-                    alt="QR: Testpilot-Anmeldung"
-                    width={36}
-                    height={36}
-                    style={{
-                      width: 'clamp(28px, 6vw, 36px)',
-                      height: 'clamp(28px, 6vw, 36px)',
-                      flexShrink: 0,
-                      objectFit: 'contain',
-                      borderRadius: 8,
-                      border: `1px solid ${accent}45`,
-                      background: '#fff',
-                    }}
-                  />
-                ) : null}
                 <Link
                   to={PROJECT_ROUTES['k2-galerie'].testuserAnmeldung}
+                  className="entdecken-q1-testpilot-cta"
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -1583,6 +1559,24 @@ export default function EntdeckenPage() {
                   {T.testpilotCta}
                 </Link>
               </div>
+              {plakatQrDataUrl.testpilot ? (
+                <img
+                  src={plakatQrDataUrl.testpilot}
+                  alt="QR: Testpilot-Anmeldung"
+                  width={72}
+                  height={72}
+                  style={{
+                    width: 'clamp(56px, 12vw, 72px)',
+                    height: 'clamp(56px, 12vw, 72px)',
+                    flexShrink: 0,
+                    alignSelf: 'center',
+                    objectFit: 'contain',
+                    borderRadius: 10,
+                    border: `1px solid ${accent}45`,
+                    background: '#fff',
+                  }}
+                />
+              ) : null}
             </div>
 
             {!isEntdeckenPlakatCapture && (

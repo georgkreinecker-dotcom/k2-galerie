@@ -283,6 +283,10 @@ a {
   }
   html.k2-print-entdecken-q1 .entdecken-q1-testpilot {
     max-width: 100% !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: flex-start !important;
   }
   /* Kompakte Typografie für alle druckbaren Inhaltsseiten (weniger Seiten beim PDF-Export) */
   .print-compact { font-size: 9pt; line-height: 1.32; }
