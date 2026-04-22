@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 22.04.26 – **Entdecken q1 A4: nach oben schieben, eine Seite** – `index.css` (`html.k2-print-entdecken-q1` …), `EntdeckenPage` @page-Margin. **Commit:** (nach Push)
+**Letzter Stand:** 22.04.26 – **Entdecken q1 A4: nach oben schieben, eine Seite** – `index.css` (`html.k2-print-entdecken-q1` …), `EntdeckenPage` @page-Margin. **Commit:** `767526e1` ✅ GitHub
 
 ---
 
