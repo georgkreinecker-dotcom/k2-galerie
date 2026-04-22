@@ -66,6 +66,8 @@ const T_DEFAULTS = {
   ctaSub: 'Kostenlos · Keine Anmeldung · 1 Minute',
 
   weg: 'Wofür interessierst du dich?',
+  /** Plakat-Kopf (Entdecken Schritt Wegwahl) */
+  plakatHeader: 'Produktvorstellung Software',
   wegSolo: {
     emoji: '💡',
     label: 'Meine eigene Plattform',
@@ -85,9 +87,9 @@ const T_DEFAULTS = {
   /** Kurzer Hinweis unter der Überschrift – ohne Präsentationsmappe (später ergänzbar) */
   wegIntro: 'Ein Klick – du siehst sofort, was dich erwartet.',
 
-  /** Kurzkampagne Testpilot (Band über den Weg-Karten) */
+  /** Kurzkampagne Testpilot (Band unter den Weg-Karten – Plakat-Layout) */
   testpilotKurz:
-    'Begrenztes Testpilot-Programm – mitmachen und Feedback geben. Schwerpunkt: bei erfüllten Bedingungen u. a. bis zu fünf Jahre Gratislizenz; ergänzend Gutschein 100 € für ein Kunstobjekt der K2 Galerie (Details im Formular).',
+    'Begrenztes Pilot-Programm: mitmachen, kurz Feedback – bei Teilnahme u. a. Gratislizenz und 100 € Gutschein (K2 Galerie). Alles im Formular.',
   testpilotCta: 'Zur Anmeldung →',
 
   q3: 'Wie heißt du – oder deine Galerie?',
@@ -748,6 +750,39 @@ export default function EntdeckenPage() {
     return () => { cancelled = true }
   }, [qrVersionTs])
 
+  /** Absolute Ziel-URLs für Plakat-QRs (Server-Stand + Bust – wie Galerie-QR) */
+  const plakatQrAbsoluteUrls = useMemo(() => {
+    const base = BASE_APP_URL.replace(/\/$/, '')
+    return {
+      solo: base + PROJECT_ROUTES['k2-galerie'].galerieOeffentlich,
+      verein: base + PROJECT_ROUTES.vk2.galerie,
+      familie: base + PROJECT_ROUTES['k2-familie'].willkommen,
+      testpilot: base + PROJECT_ROUTES['k2-galerie'].testuserAnmeldung,
+    }
+  }, [])
+
+  type PlakatQrKey = keyof typeof plakatQrAbsoluteUrls
+  const [plakatQrDataUrl, setPlakatQrDataUrl] = useState<Partial<Record<PlakatQrKey, string>>>({})
+  useEffect(() => {
+    let cancelled = false
+    const keys: PlakatQrKey[] = ['solo', 'verein', 'familie', 'testpilot']
+    const opts = { width: 128, margin: 1 }
+    Promise.all(
+      keys.map((k) =>
+        QRCode.toDataURL(buildQrUrlWithBust(plakatQrAbsoluteUrls[k], qrVersionTs), opts).then((d) => [k, d] as const),
+      ),
+    )
+      .then((pairs) => {
+        if (!cancelled) setPlakatQrDataUrl(Object.fromEntries(pairs) as Record<PlakatQrKey, string>)
+      })
+      .catch(() => {
+        if (!cancelled) setPlakatQrDataUrl({})
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [qrVersionTs, plakatQrAbsoluteUrls])
+
   /** Nach Galerie-Entscheidung: Fremde zuerst auf die ök2-/VK2-Willkommensseite („WILLKOMMEN BEI Galerie Muster“) – nirgends sonst */
   const openByChoice = (weg: 'solo' | 'verein') => {
     // Einheitlicher Standard: jede Besucher-Session frisch setzen
@@ -764,7 +799,29 @@ export default function EntdeckenPage() {
   }
 
   // ─── Hilfs-Komponente: Auswahl-Karte (eigene Akzentfarbe + Hover) ────────────
-  function ChoiceCard({ emoji, label, sub, selected, onClick, color }: { emoji: string; label: string; sub: string; selected: boolean; onClick: () => void; color?: string }) {
+  function ChoiceCard({
+    emoji,
+    label,
+    sub,
+    selected,
+    onClick,
+    color,
+    poster = false,
+    posterQrSrc,
+    posterQrLabel,
+  }: {
+    emoji: string
+    label: string
+    sub: string
+    selected: boolean
+    onClick: () => void
+    color?: string
+    /** Größere Typo – Produktlaunch-Plakat (Entdecken q1) */
+    poster?: boolean
+    /** QR neben dem Punkt (Plakat) */
+    posterQrSrc?: string
+    posterQrLabel?: string
+  }) {
     const c = color ?? accent
     const [hover, setHover] = useState(false)
     const border = selected ? c : hover ? `${c}88` : `${c}40`
@@ -775,6 +832,13 @@ export default function EntdeckenPage() {
         ? `0 8px 24px ${c}28`
         : `0 2px 8px ${c}12`
     const lift = hover || selected ? 'translateY(-2px)' : 'translateY(0)'
+    const pad = poster ? 'clamp(1.2rem, 3.5vw, 1.55rem) clamp(1.25rem, 3.5vw, 1.75rem)' : '1.1rem 1.25rem'
+    const gap = poster ? 'clamp(1rem, 2.5vw, 1.25rem)' : '1rem'
+    const rad = poster ? 18 : 14
+    const fzEmoji = poster ? 'clamp(1.85rem, 5vw, 2.35rem)' : '1.6rem'
+    const fzLabel = poster ? 'clamp(1.08rem, 3vw, 1.32rem)' : '0.98rem'
+    const fzSub = poster ? 'clamp(0.9rem, 2.3vw, 1.05rem)' : '0.82rem'
+    const mb = poster ? 'clamp(0.75rem, 2vw, 1rem)' : '0.65rem'
     return (
       <button
         type="button"
@@ -785,40 +849,45 @@ export default function EntdeckenPage() {
           width: '100%',
           display: 'flex',
           alignItems: 'flex-start',
-          gap: '1rem',
-          padding: '1.1rem 1.25rem',
+          gap,
+          padding: pad,
           background,
           border: `2px solid ${border}`,
-          borderRadius: '14px',
+          borderRadius: `${rad}px`,
           cursor: 'pointer',
           fontFamily: fontBody,
           textAlign: 'left',
-          marginBottom: '0.65rem',
+          marginBottom: mb,
           transition: 'background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease',
           boxShadow: shadow,
           transform: lift,
         }}
       >
-        <span style={{ fontSize: '1.6rem', lineHeight: 1, flexShrink: 0, marginTop: '0.1rem' }}>{emoji}</span>
-        <span>
-          <span style={{ display: 'block', fontWeight: 700, fontSize: '0.98rem', color: selected || hover ? c : text, marginBottom: '0.18rem', transition: 'color 0.2s ease' }}>{label}</span>
-          <span style={{ fontSize: '0.82rem', color: muted, lineHeight: 1.45 }}>{sub}</span>
+        <span style={{ fontSize: fzEmoji, lineHeight: 1, flexShrink: 0, marginTop: poster ? '0.12rem' : '0.1rem' }}>{emoji}</span>
+        <span style={{ minWidth: 0, flex: '1 1 auto' }}>
+          <span style={{ display: 'block', fontWeight: 700, fontSize: fzLabel, color: selected || hover ? c : text, marginBottom: poster ? '0.28rem' : '0.18rem', transition: 'color 0.2s ease', lineHeight: 1.25 }}>{label}</span>
+          <span style={{ fontSize: fzSub, color: muted, lineHeight: 1.5 }}>{sub}</span>
         </span>
-        {selected && <span style={{ marginLeft: 'auto', color: c, fontSize: '1.2rem', flexShrink: 0, alignSelf: 'center' }}>✓</span>}
+        {poster && posterQrSrc ? (
+          <img
+            src={posterQrSrc}
+            alt={posterQrLabel || ''}
+            width={72}
+            height={72}
+            style={{
+              width: 'clamp(64px, 14vw, 80px)',
+              height: 'clamp(64px, 14vw, 80px)',
+              flexShrink: 0,
+              alignSelf: 'center',
+              objectFit: 'contain',
+              borderRadius: 10,
+              border: `1px solid ${border}`,
+              background: '#fff',
+            }}
+          />
+        ) : null}
+        {selected && <span style={{ marginLeft: poster && posterQrSrc ? '0.35rem' : 'auto', color: c, fontSize: poster ? '1.35rem' : '1.2rem', flexShrink: 0, alignSelf: 'center' }}>✓</span>}
       </button>
-    )
-  }
-
-  // ─── Progress-Punkte ────────────────────────────────────────────────────────
-  function Progress() {
-    const steps: Step[] = ['q1']
-    const current = steps.indexOf(step as Step)
-    return (
-      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginBottom: '1.75rem' }}>
-        {steps.map((s, i) => (
-          <div key={s} style={{ width: i <= current ? 24 : 8, height: 8, borderRadius: 4, background: i <= current ? accent : '#e0d5c5', transition: 'all 0.3s' }} />
-        ))}
-      </div>
     )
   }
 
@@ -966,15 +1035,14 @@ export default function EntdeckenPage() {
 
       {/* ── FRAGEN-FLOW ──────────────────────────────────────────────────────── */}
       {step === 'q1' && (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'clamp(2rem, 5vw, 4rem) clamp(1rem, 4vw, 2rem)' }}>
-          <div style={{ maxWidth: 540, width: '100%' }}>
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'clamp(2rem, 6vw, 4.5rem) clamp(1rem, 4vw, 2rem)' }}>
+          <div style={{ maxWidth: 'min(92vw, 720px)', width: '100%' }}>
 
-            {/* Logo */}
-            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-              <span style={{ fontFamily: fontHeading, fontSize: '1.1rem', color: accent, fontWeight: 700 }}>{PRODUCT_BRAND_NAME}</span>
+            {/* Logo – Plakat: größer */}
+            <div style={{ textAlign: 'center', marginBottom: 'clamp(1.25rem, 3vw, 2rem)' }}>
+              <span style={{ fontFamily: fontHeading, fontSize: 'clamp(1.25rem, 3.8vw, 1.65rem)', color: accent, fontWeight: 700, letterSpacing: '-0.02em' }}>{PRODUCT_BRAND_NAME}</span>
+              <div style={{ width: 44, height: 3, borderRadius: 2, background: accent, opacity: 0.75, margin: '0.65rem auto 0' }} aria-hidden />
             </div>
-
-            <Progress />
 
             {galerieReturnTo && (
               <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
@@ -1000,64 +1068,39 @@ export default function EntdeckenPage() {
               </div>
             )}
 
-            {/* Ein Klick auf die Karte öffnet direkt ök2 oder VK2 – kein Zusatzbutton */}
-            <h2 style={{ fontFamily: fontHeading, fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', fontWeight: 700, color: text, textAlign: 'center', marginBottom: '0.65rem', lineHeight: 1.3 }}>
-              {T.weg}
+            {/* Produktlaunch-Plakat: Kopf, Wegwahl, QR je Punkt, Testpilot unten (ohne Zurück) */}
+            <h2 style={{ fontFamily: fontHeading, fontSize: 'clamp(1.45rem, 4.2vw, 2.1rem)', fontWeight: 700, color: text, textAlign: 'center', marginBottom: '0.55rem', lineHeight: 1.2 }}>
+              {T.plakatHeader}
             </h2>
-            <p style={{ fontSize: '0.82rem', color: muted, textAlign: 'center', lineHeight: 1.5, marginBottom: '1.25rem', maxWidth: 500, marginLeft: 'auto', marginRight: 'auto' }}>
+            <h3 style={{ fontFamily: fontHeading, fontSize: 'clamp(1.2rem, 3.2vw, 1.55rem)', fontWeight: 700, color: text, textAlign: 'center', marginBottom: '0.65rem', lineHeight: 1.25 }}>
+              {T.weg}
+            </h3>
+            <p style={{ fontSize: 'clamp(0.92rem, 2.2vw, 1.08rem)', color: muted, textAlign: 'center', lineHeight: 1.55, marginBottom: 'clamp(1.35rem, 3.5vw, 2rem)', maxWidth: 560, marginLeft: 'auto', marginRight: 'auto' }}>
               {T.wegIntro}
             </p>
 
-            {/* Testpilot – schmales Aktionsband (ein Versuch: Symbol + Kurztext + Link) */}
-            <div
-              role="region"
-              aria-label="Testpilot-Programm"
-              style={{
-                marginBottom: '1.25rem',
-                padding: '0.75rem 1rem',
-                background: `linear-gradient(135deg, ${accent}14, ${accent}08)`,
-                border: `1px solid ${accent}40`,
-                borderRadius: 14,
-                display: 'flex',
-                flexWrap: 'wrap',
-                alignItems: 'center',
-                gap: '0.75rem 1rem',
-                justifyContent: 'space-between',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', minWidth: 0, flex: '1 1 12rem' }}>
-                <span style={{ fontSize: '1rem', lineHeight: 1.2, flexShrink: 0 }} aria-hidden title="Pilot">
-                  🚩
-                </span>
-                <p style={{ margin: 0, fontSize: '0.78rem', color: text, lineHeight: 1.45, fontWeight: 600, fontFamily: fontBody }}>
-                  {T.testpilotKurz}
-                </p>
-              </div>
-              <Link
-                to={PROJECT_ROUTES['k2-galerie'].testuserAnmeldung}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                  padding: '0.5rem 1rem',
-                  background: accent,
-                  color: '#fff',
-                  fontWeight: 700,
-                  fontSize: '0.82rem',
-                  borderRadius: 10,
-                  textDecoration: 'none',
-                  fontFamily: fontBody,
-                  boxShadow: `0 2px 10px ${accent}44`,
-                }}
-              >
-                {T.testpilotCta}
-              </Link>
-            </div>
-
-            <ChoiceCard {...T.wegSolo} selected={answers.q1 === 'solo'} onClick={() => { setAnswers(a => ({ ...a, q1: 'solo' })); openByChoice('solo'); }} color="#c2410c" />
-            <ChoiceCard {...T.wegVerein} selected={answers.q1 === 'verein'} onClick={() => { setAnswers(a => ({ ...a, q1: 'verein' })); openByChoice('verein'); }} color="#1e5cb5" />
             <ChoiceCard
+              poster
+              posterQrSrc={plakatQrDataUrl.solo}
+              posterQrLabel={`QR: ${T.wegSolo.label}`}
+              {...T.wegSolo}
+              selected={answers.q1 === 'solo'}
+              onClick={() => { setAnswers(a => ({ ...a, q1: 'solo' })); openByChoice('solo'); }}
+              color="#c2410c"
+            />
+            <ChoiceCard
+              poster
+              posterQrSrc={plakatQrDataUrl.verein}
+              posterQrLabel={`QR: ${T.wegVerein.label}`}
+              {...T.wegVerein}
+              selected={answers.q1 === 'verein'}
+              onClick={() => { setAnswers(a => ({ ...a, q1: 'verein' })); openByChoice('verein'); }}
+              color="#1e5cb5"
+            />
+            <ChoiceCard
+              poster
+              posterQrSrc={plakatQrDataUrl.familie}
+              posterQrLabel={`QR: ${T.wegFamilie.label}`}
               {...T.wegFamilie}
               selected={answers.q1 === 'familie'}
               onClick={() => {
@@ -1066,8 +1109,70 @@ export default function EntdeckenPage() {
               }}
               color="#0d9488"
             />
-            <div style={{ marginTop: '1rem' }}>
-              <button type="button" onClick={() => setStep('hero')} style={{ padding: '0.7rem 1.25rem', background: 'transparent', color: muted, border: `1px solid #e0d5c5`, borderRadius: '10px', cursor: 'pointer', fontFamily: fontBody, fontSize: '0.9rem' }}>{T.btnBack}</button>
+
+            {/* Testpilot – unter den Programm-Karten (Plakat-Reihenfolge) */}
+            <div
+              role="region"
+              aria-label="Testpilot-Programm"
+              style={{
+                marginTop: 'clamp(0.5rem, 2vw, 1rem)',
+                marginBottom: '0.25rem',
+                padding: 'clamp(0.85rem, 2.5vw, 1.1rem) clamp(1rem, 3vw, 1.35rem)',
+                background: `linear-gradient(135deg, ${accent}16, ${accent}0a)`,
+                border: `2px solid ${accent}45`,
+                borderRadius: 16,
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                gap: '0.85rem 1.1rem',
+                justifyContent: 'space-between',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.55rem', minWidth: 0, flex: '1 1 14rem' }}>
+                <span style={{ fontSize: 'clamp(1.1rem, 2.8vw, 1.35rem)', lineHeight: 1.2, flexShrink: 0 }} aria-hidden title="Pilot">
+                  🚩
+                </span>
+                <p style={{ margin: 0, fontSize: 'clamp(0.88rem, 2.1vw, 1.02rem)', color: text, lineHeight: 1.5, fontWeight: 600, fontFamily: fontBody }}>
+                  {T.testpilotKurz}
+                </p>
+              </div>
+              {plakatQrDataUrl.testpilot ? (
+                <img
+                  src={plakatQrDataUrl.testpilot}
+                  alt="QR: Testpilot-Anmeldung"
+                  width={72}
+                  height={72}
+                  style={{
+                    width: 'clamp(64px, 14vw, 80px)',
+                    height: 'clamp(64px, 14vw, 80px)',
+                    flexShrink: 0,
+                    objectFit: 'contain',
+                    borderRadius: 10,
+                    border: `1px solid ${accent}45`,
+                    background: '#fff',
+                  }}
+                />
+              ) : null}
+              <Link
+                to={PROJECT_ROUTES['k2-galerie'].testuserAnmeldung}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  padding: '0.55rem 1.15rem',
+                  background: accent,
+                  color: '#fff',
+                  fontWeight: 700,
+                  fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                  borderRadius: 11,
+                  textDecoration: 'none',
+                  fontFamily: fontBody,
+                  boxShadow: `0 3px 14px ${accent}44`,
+                }}
+              >
+                {T.testpilotCta}
+              </Link>
             </div>
           </div>
         </div>
