@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 22.04.26 – **Plakat: Social-PDF Quadrat zum Versand/Teilen** – Route `/entdecken?step=q1&printPlakat=social`, Admin-Karte „Social PDF (Quadrat, Produktvorstellung)“, `captureEntdeckenPlakatSocialAsPdfBlob` + `fitCanvasInSquareLetterbox`, `getWerbemittelHtml2canvasCaptureCss` Format `social`. **Commit:** `216ce8d7` ✅ GitHub 
+**Letzter Stand:** 22.04.26 – **Plakat: Social-PDF Quadrat zum Versand/Teilen** – Route `/entdecken?step=q1&printPlakat=social`, Admin-Karte „Social PDF (Quadrat, Produktvorstellung)“, `captureEntdeckenPlakatSocialAsPdfBlob` + `fitCanvasInSquareLetterbox`, `getWerbemittelHtml2canvasCaptureCss` Format `social`. **Commit:** `c5bb6d26` ✅ GitHub
 
 ---
 
