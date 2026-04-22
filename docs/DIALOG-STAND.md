@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Entdecken q1 A4: Georg prüft **Druck 100%** = eine Seite **ohne** manuelle 76%-Skalierung.  
-**Einordnung:** `zoom: 0.76` am `.entdecken-q1-a4-scale-wrap` nur `@media print` = früher nötige Browserskalierung; `@page` 4mm; `beforeprint`-Margin angeglichen; Hinweistext.
+**Was wir JETZT tun:** Präsentationsboard: In **Vercel** `VITE_K2_FAMILIE_KREINECKER_STAMMBAUM_TENANT_ID` = `t=…` aus K2-Familie-Einladung setzen, deployen; Stammbaum-Kachel testen (`/launch-praesentation-board`).  
+**Einordnung:** Ohne `?t=` kann der Stammbaum je nach Gerät die Musterfamilie zeigen; Env baut die URL zentral (`k2FamiliePresentation.ts`).
+
+---
+
+**Letzter Stand:** 22.04.26 – **Launch-Präsentationsboard: Stammbaum Kreinecker mit `?t=` über Vercel-Env** – Route `/launch-praesentation-board`, `getK2FamilieStammbaumKreineckerPublicUrl`, `?go=stammbaum-kreinecker` → Redirect; `public/launch-praesentation-board.html` angepasst; `.env.example`. **Commit:** *(nach Push eintragen)*
 
 ---
 

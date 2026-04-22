@@ -117,6 +117,7 @@ import { Vk2PlatformLeitfadenHost } from './components/Vk2PlatformLeitfadenHost'
 import { Oek2PlatformLeitfadenHost } from './components/Oek2PlatformLeitfadenHost'
 import WillkommenPage from './pages/WillkommenPage'
 import EntdeckenPage from './pages/EntdeckenPage'
+import LaunchPraesentationBoardPage from './pages/LaunchPraesentationBoardPage'
 import AGBPage from './pages/AGBPage'
 import SeitengestaltungPage from './pages/SeitengestaltungPage'
 import { BUILD_LABEL, BUILD_TIMESTAMP } from './buildInfo.generated'
@@ -893,6 +894,7 @@ function App() {
       {/* Willkommensseite (Werbung/Flyer): Zugangsbereich, Anmelden, Erster Entwurf – mök2-Stil */}
       <Route path={WILLKOMMEN_ROUTE} element={<WillkommenPage />} />
       <Route path={ENTDECKEN_ROUTE} element={<EntdeckenPage />} />
+      <Route path="/launch-praesentation-board" element={<LaunchPraesentationBoardPage />} />
       {/* Kreativwerkstatt = K2-Markt-Oberfläche (Leitvision, Ablauf, Studio, Tor) – kurze URL für Homepage/Link */}
       <Route path={KREATIVWERKSTATT_ROUTE} element={<K2MarktSchichtPage />} />
       {/* Allgemeine Geschäftsbedingungen – rechtliche Absicherung */}
