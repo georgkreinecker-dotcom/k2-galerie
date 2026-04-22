@@ -59,6 +59,19 @@ a {
   color: inherit;
 }
 
+/* Entdecken q1 A4: Screen zentriert (100vh) – NUR @media screen, nie inline (Safari-Druck ignoriert !important sonst) */
+@media screen {
+  .entdecken-q1-a4-browser-print {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    padding: clamp(2rem, 6vw, 4.5rem) clamp(1rem, 4vw, 2rem);
+  }
+}
+
 /* Entdecken: 3 Weg-Karten umschließen – nur am Bildschirm; im Druck echte Box für 3-spaltiges Grid (Safari) */
 @media not print {
   .entdecken-q1-poster-choices {
@@ -126,7 +139,9 @@ a {
     pointer-events: none !important;
   }
   html.k2-print-entdecken-q1 #root {
+    padding: 0 !important;
     padding-bottom: 0 !important;
+    min-height: 0 !important;
   }
   body.k2-print-entdecken-q1 #print-footer,
   body.k2-print-entdecken-q1 #root #print-footer {
@@ -151,8 +166,8 @@ a {
     padding-bottom: 0 !important;
   }
   @page entdecken-q1-clean {
-    /* Weniger Rand oben → Inhalt rutscht nach oben, Fuß passt auf eine A4-Seite */
-    margin: 5mm 8mm 7mm 8mm;
+    /* Rand oben minimal – Fuß/AGB bleiben auf Seite 1 */
+    margin: 3mm 6mm 6mm 6mm;
     size: A4 portrait;
     @top-left {
       content: none;

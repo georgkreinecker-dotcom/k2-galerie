@@ -739,10 +739,12 @@ export default function EntdeckenPage() {
         document.head.appendChild(el)
       }
       const size = isPlakatA1PrintMode ? 'A1 portrait' : isPlakatSocialPrintMode ? '210mm 210mm' : 'A4 portrait'
+      /* A4: gleiche Ränder wie @page entdecken-q1-clean (3/6/6/6) – alles „8mm“ drückte + vertikal zu viel */
+      const pageMargin = isPlakatA1PrintMode || isPlakatSocialPrintMode ? '2mm' : '3mm 6mm 6mm 6mm'
       el.textContent = `@media print {
         @page {
           size: ${size};
-          margin: ${isPlakatA1PrintMode || isPlakatSocialPrintMode ? '2mm' : '8mm'};
+          margin: ${pageMargin};
           @top-left { content: none !important; }
           @top-center { content: none !important; }
           @top-right { content: none !important; }
@@ -1155,19 +1157,30 @@ export default function EntdeckenPage() {
               .filter(Boolean)
               .join(' ') || undefined
           }
-          style={{
-            minHeight: '100vh',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: isPlakatSocialPrintMode
-              ? 'clamp(1rem, 3vw, 1.5rem) clamp(0.75rem, 2.5vw, 1.25rem) clamp(1.25rem, 4vw, 2rem)'
+          style={
+            isPlakatSocialPrintMode
+              ? {
+                  minHeight: '100vh',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 'clamp(1rem, 3vw, 1.5rem) clamp(0.75rem, 2.5vw, 1.25rem) clamp(1.25rem, 4vw, 2rem)',
+                  background: isEntdeckenPlakatCapture ? bgLight : undefined,
+                }
               : isPlakatA1PrintMode
-                ? 'clamp(1.5rem, 4vw, 3rem) clamp(1rem, 3vw, 2rem) clamp(2rem, 5vw, 3.5rem)'
-                : 'clamp(2rem, 6vw, 4.5rem) clamp(1rem, 4vw, 2rem)',
-            background: isEntdeckenPlakatCapture ? bgLight : undefined,
-          }}
+                ? {
+                    minHeight: '100vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 'clamp(1.5rem, 4vw, 3rem) clamp(1rem, 3vw, 2rem) clamp(2rem, 5vw, 3.5rem)',
+                    background: isEntdeckenPlakatCapture ? bgLight : undefined,
+                  }
+                : /* A4: kein 100vh/center/padding inline – index.css @media screen + Druck sauber */
+                  {}
+          }
         >
           <style>
             {isPlakatA1PrintMode
@@ -1187,8 +1200,8 @@ export default function EntdeckenPage() {
                 @media print {
                   @page {
                     size: A4 portrait;
-                    /* Mit index.css: weniger Rand oben, eine Seite A4 */
-                    margin: 5mm 8mm 7mm 8mm;
+                    /* Wie @page entdecken-q1-clean: wenig oben, eine Seite */
+                    margin: 3mm 6mm 6mm 6mm;
                     @top-left { content: none !important; }
                     @top-center { content: none !important; }
                     @top-right { content: none !important; }

@@ -1,7 +1,13 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Entdecken q1 A4: Georg druckt/Vorschau – alles **eine Seite** (AGB unten).  
-**Einordnung:** Weißraum oben = **100vh + `justify-content: center`**. Druck: `flex-start`, kein min-height, `@page` oben 5 mm, Legal-Zeile enger.
+**Was wir JETZT tun:** Entdecken q1 A4: Druckvorschau – oben kein riesiger Abstand, **eine Seite**.  
+**Einordnung:** **Safari:** Inline `100vh`+`center` schlug Druck-`!important` – A4-Layout nur **`@media screen` in index.css**; `beforeprint`-@page `8mm` → **`3/6/6/6`**.
+
+---
+
+**Letzter Stand:** 22.04.26 – **Entdecken q1 A4: oberer Abstand (wirklich weg, nicht nur CSS-Override)** – A4 ohne 100vh/center-Inline; Screen in `index.css`; injiziertes @page; `@page entdecken-q1-clean` 3/6/6/6. **Commit:** (nach Push)
+
+---
 
 ---
 
