@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 22.04.26 – **Launch-Board: K2-Familie-Kachel = Meine Familie + `?t=` (nicht nur Stammbaum)** – `k2FamilieUrlWithPresentationTenant`, `getK2FamilieMeineFamilieKreineckerPublicUrl`, Redirect `go=meine-familie`; `public/launch-praesentation-board.html`. **Commit:** *(nach Push)*
+**Letzter Stand:** 22.04.26 – **Launch-Board: K2-Familie-Kachel = Meine Familie + `?t=` (nicht nur Stammbaum)** – `k2FamilieUrlWithPresentationTenant`, `getK2FamilieMeineFamilieKreineckerPublicUrl`, Redirect `go=meine-familie`; `public/launch-praesentation-board.html`. **Commit:** `a04a5a7a` ✅ GitHub
 
 ---
 
