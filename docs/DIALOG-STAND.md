@@ -1,7 +1,16 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Entdecken q1 A4-Druck: Georg prüft im Browser (eine Seite, Pilot gut lesbar).  
-**Einordnung:** **Entdecken q1 A4:** `zoom` 0,57; Pilot-Absatz **19 pt** / CTA **16 pt** (wirkt nach Skalierung ≈10–9 pt auf dem Blatt – vorher 8 pt wirkte wie ~4,8 pt wegen `zoom:0,6`); Bildschirm: `entdecken-q1-testpilot-text` nicht mehr `0,22rem`; Testpilot max. **78 %** Breite (weniger Zeilenumbruch); engerer vertikaler Rhythmus; `break-inside: avoid` am Wrap. **Hinweis:** Zwei Seiten + „Fusstext“ oft **Kopf-/Fußzeilen im System-Druckdialog** – deaktivieren. `.entdecken-q1-a4-footer` bleibt im A4-Druck aus.
+**Was wir JETZT tun:** Entdecken A1 optimierter Druck: PDF erneut erzeugen (Datei soll deutlich größer als ~150 kB sein, klare Kante/QR).  
+**Einordnung:** A1-„Mini-PDF“ kam von **niedrigem** html2canvas-`scale` (2,15) + JPEG. Fix: Iframe 2100 px, **Scale 3,35** (~250–300 dpi), **PNG** in der PDF; Push `86bab280`.
+
+---
+
+**Letzter Stand:** 22.04.26 – **Entdecken A1 Plakat: Druckqualität (nicht 150 kB-Datei)** – `ScreenshotExportAdmin` `captureEntdeckenPlakatA1AsPdfBlob`: `ENTDECKEN_PLAKAT_A1_IFRAME_WIDTH_PX=2100`, `ENTDECKEN_PLAKAT_A1_HTML2CANVAS_SCALE=3.35`, einheitlich genutzt; `image: { type: 'png', quality: 1 }`; `windowHeight` Cap 13600. **Commit:** `86bab280` ✅ GitHub
+
+---
+
+**Was wir JETZT tun (vorig):** Entdecken q1 A4-Druck: Georg prüft im Browser (eine Seite, Pilot gut lesbar).  
+**Einordnung (vorig):** **Entdecken q1 A4:** `zoom` 0,57; Pilot-Absatz **19 pt** / CTA **16 pt** (wirkt nach Skalierung ≈10–9 pt auf dem Blatt – vorher 8 pt wirkte wie ~4,8 pt wegen `zoom:0,6`); Bildschirm: `entdecken-q1-testpilot-text` nicht mehr `0,22rem`; Testpilot max. **78 %** Breite (weniger Zeilenumbruch); engerer vertikaler Rhythmus; `break-inside: avoid` am Wrap. **Hinweis:** Zwei Seiten + „Fusstext“ oft **Kopf-/Fußzeilen im System-Druckdialog** – deaktivieren. `.entdecken-q1-a4-footer` bleibt im A4-Druck aus.
 
 ---
 
