@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Georg testet **Vorschau mobil + Admin**: Beim Speichern erscheint oben **⏳ Wird gespeichert …** (cyan), danach **✅ Werk … gespeichert** oder **❌** bei Fehler – sichtbar über dem Modal (z-index).  
-**Einordnung:** Keine stille Falle mehr („erst merken wenn kein neues Werk“); Ton **work / ok / err**; Admin gleicher Toast (`werkSaveToast`, z-index 50000).
+**Was wir JETZT tun:** Georg prüft **Präsentationsboard**: Kachel **K2 Familie** → **/meine-familie**; **Stammbaum Kreinecker** → **/stammbaum** (getrennte Pfade; `?t=` setzt Vercel beim Build). Dazu gern: Speichern-Feedback wie zuletzt.  
+**Einordnung:** Alte Kacheln gingen über `?go=`-Redirect (konnte wie „dasselbe“ wirken) – jetzt direkte URLs in `public/…html` + `write-build-info.js`.
+
+---
+
+**Letzter Stand:** 22.04.26 – **Launch-Board: K2 Familie vs. Stammbaum = direkte Links, kein ?go=** – `public/launch-praesentation-board.html`, `scripts/write-build-info.js` (`VITE_…KREINECKER…`), `LaunchPraesentationBoardPage.tsx`. **Commit:** _(nach Push)_
 
 ---
 

@@ -10,20 +10,19 @@ import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../conf
 const s = (path: string) => `${BASE_APP_URL}${path}`
 
 export default function LaunchPraesentationBoardPage() {
-  const [params] = useSearchParams()
+  const [searchParams] = useSearchParams()
   const meineFamilieUrl = getK2FamilieMeineFamilieKreineckerPublicUrl()
   const stammbaumUrl = getK2FamilieStammbaumKreineckerPublicUrl()
 
+  /** Alte Lesezeichen / QR mit ?go= – leitet auf dieselben Ziele wie die Kacheln (direkte Pfade, nicht zwei Mal dieselbe Route). */
   useLayoutEffect(() => {
-    const go = params.get('go')
+    const go = (searchParams.get('go') || '').trim().toLowerCase()
     if (go === 'stammbaum-kreinecker' || go === 'stammbaum') {
       window.location.replace(getK2FamilieStammbaumKreineckerPublicUrl())
-      return
-    }
-    if (go === 'meine-familie' || go === 'k2-familie-meine') {
+    } else if (go === 'meine-familie' || go === 'k2-familie-meine') {
       window.location.replace(getK2FamilieMeineFamilieKreineckerPublicUrl())
     }
-  }, [params])
+  }, [searchParams])
 
   const hasTenant = Boolean(
     String(
@@ -122,13 +121,14 @@ export default function LaunchPraesentationBoardPage() {
             emoji="👨‍👩‍👧"
             label="K2 Familie"
             hint="Meine Familie – mit Mandant aus Vercel (nicht Muster Huber, wenn t gesetzt)"
+            id="launch-tile-k2-familie-meine"
           />
           <Tile
             href={stammbaumUrl}
             emoji="🌳"
             label="Stammbaum Kreinecker"
             hint="K2 Familie – interaktiver Stammbaum (Mandant aus Server-Konfiguration)"
-            id="stammbaum-kreinecker"
+            id="launch-tile-stammbaum-kreinecker"
           />
         </nav>
 

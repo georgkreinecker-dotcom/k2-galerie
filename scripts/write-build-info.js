@@ -104,6 +104,36 @@ let indexChanged = false
   }
 }
 
+/**
+ * public/launch-praesentation-board.html: K2-Familie-Kacheln = immer unterschiedliche Zielpfade
+ * (meine-familie vs. stammbaum), optional identisches ?t= aus Vercel-Env – kein ?go=-Redirect mehr nötig.
+ */
+;(function patchLaunchPraesentationBoardHtml() {
+  const launchPath = path.join(__dirname, '..', 'public', 'launch-praesentation-board.html')
+  let html
+  try {
+    html = fs.readFileSync(launchPath, 'utf8')
+  } catch {
+    return
+  }
+  const t = String(process.env.VITE_K2_FAMILIE_KREINECKER_STAMMBAUM_TENANT_ID || '').trim()
+  const base = 'https://k2-galerie.vercel.app'
+  const meineBare = `${base}/projects/k2-familie/meine-familie`
+  const stammBare = `${base}/projects/k2-familie/stammbaum`
+  const meineFinal = t ? `${meineBare}?${new URLSearchParams({ t }).toString()}` : meineBare
+  const stammFinal = t ? `${stammBare}?${new URLSearchParams({ t }).toString()}` : stammBare
+  const reMeine =
+    /href="https:\/\/k2-galerie\.vercel\.app\/(?:launch-praesentation-board\?go=meine-familie|projects\/k2-familie\/meine-familie[^"]*)"/
+  const reStamm =
+    /href="https:\/\/k2-galerie\.vercel\.app\/(?:launch-praesentation-board\?go=stammbaum-kreinecker|projects\/k2-familie\/stammbaum[^"]*)"/
+  const next = html
+    .replace(reMeine, `href="${meineFinal}"`)
+    .replace(reStamm, `href="${stammFinal}"`)
+  if (next !== html) {
+    fs.writeFileSync(launchPath, next, 'utf8')
+  }
+})()
+
 if (tsChanged || jsonChanged || apiChanged || indexChanged) {
   console.log('✅ Build-Info geschrieben:', label)
 } else {
