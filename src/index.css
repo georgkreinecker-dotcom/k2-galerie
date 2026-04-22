@@ -79,7 +79,7 @@ a {
   }
 }
 
-/* Entdecken: 3 Weg-Karten umschließen – nur am Bildschirm; im Druck echte Box für 3-spaltiges Grid (Safari) */
+/* Entdecken: 3 Weg-Karten umschließen – Screen: contents (fließt im inner-Layout); Druck: Spalte mit 3 Karten übereinander */
 @media not print {
   .entdecken-q1-poster-choices {
     display: contents;
@@ -258,6 +258,28 @@ a {
   html.k2-print-entdecken-q1 .entdecken-q1-inner {
     margin-top: 0 !important;
     padding-top: 0 !important;
+  }
+  /* 3 Weg-Karten: untereinander, je Karte Zeile Icon | Text | QR (EntdeckenPage eingebettete @media print ergänzt) */
+  html.k2-print-entdecken-q1 .entdecken-q1-poster-choices {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.22rem !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  html.k2-print-entdecken-q1 .entdecken-q1-poster-choices button[data-poster-choice] {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+    box-shadow: none !important;
+  }
+  html.k2-print-entdecken-q1 .entdecken-q1-testpilot {
+    max-width: 100% !important;
   }
   /* Kompakte Typografie für alle druckbaren Inhaltsseiten (weniger Seiten beim PDF-Export) */
   .print-compact { font-size: 9pt; line-height: 1.32; }
