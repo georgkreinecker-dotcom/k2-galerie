@@ -643,7 +643,9 @@ export default function EntdeckenPage() {
   // ?q1=verein → Vereins-Antwort vorausfüllen
   const initialStep: Step = (() => {
     try {
-      const p = new URLSearchParams(window.location.search).get('step')
+      const sp = new URLSearchParams(window.location.search)
+      if (sp.get('printPlakat') === 'a1' || sp.get('printPlakat') === 'social') return 'q1'
+      const p = sp.get('step')
       if (p === 'hub') return 'hub'
     } catch (_) {}
     return 'hero'
@@ -659,6 +661,31 @@ export default function EntdeckenPage() {
   })()
   const [step, setStep] = useState<Step>(initialStep)
   const [answers, setAnswers] = useState<Answers>({ q1: initialQ1, q2: '', q3: '' })
+  const isPlakatA1PrintMode = useMemo(() => {
+    try {
+      return new URLSearchParams(location.search).get('printPlakat') === 'a1'
+    } catch {
+      return false
+    }
+  }, [location.search])
+  const isPlakatSocialPrintMode = useMemo(() => {
+    try {
+      return new URLSearchParams(location.search).get('printPlakat') === 'social'
+    } catch {
+      return false
+    }
+  }, [location.search])
+  const isEntdeckenPlakatCapture = isPlakatA1PrintMode || isPlakatSocialPrintMode
+
+  useEffect(() => {
+    try {
+      const p = new URLSearchParams(location.search).get('printPlakat')
+      if (p !== 'a1' && p !== 'social') return
+      setStep((s) => (s === 'q1' ? s : 'q1'))
+    } catch {
+      /* ignore */
+    }
+  }, [location.search])
   /** Hero-Bild: primary → SVG-Fallback → kein Bild (nie Fragezeichen-Icon) */
   const [heroImageSrc, setHeroImageSrc] = useState<'primary' | 'svg' | 'none'>('primary')
   /** Eingangsseite-Design aus Admin (Design → Eingangsseite); bei Update neu laden */
@@ -1035,8 +1062,50 @@ export default function EntdeckenPage() {
 
       {/* ── FRAGEN-FLOW ──────────────────────────────────────────────────────── */}
       {step === 'q1' && (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'clamp(2rem, 6vw, 4.5rem) clamp(1rem, 4vw, 2rem)' }}>
-          <div style={{ maxWidth: 'min(92vw, 720px)', width: '100%' }}>
+        <div
+          className={
+            isPlakatA1PrintMode
+              ? 'entdecken-plakat-a1-capture'
+              : isPlakatSocialPrintMode
+                ? 'entdecken-plakat-social-capture'
+                : undefined
+          }
+          style={{
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: isPlakatSocialPrintMode
+              ? 'clamp(1rem, 3vw, 1.5rem) clamp(0.75rem, 2.5vw, 1.25rem) clamp(1.25rem, 4vw, 2rem)'
+              : isPlakatA1PrintMode
+                ? 'clamp(1.5rem, 4vw, 3rem) clamp(1rem, 3vw, 2rem) clamp(2rem, 5vw, 3.5rem)'
+                : 'clamp(2rem, 6vw, 4.5rem) clamp(1rem, 4vw, 2rem)',
+            background: isEntdeckenPlakatCapture ? bgLight : undefined,
+          }}
+        >
+          {isPlakatA1PrintMode && (
+            <style>
+              {`
+                @media print {
+                  @page { size: A1 portrait; margin: 12mm; }
+                  html, body { background: #fff !important; }
+                  .no-print { display: none !important; }
+                }
+              `}
+            </style>
+          )}
+          <div
+            className={isPlakatSocialPrintMode ? 'entdecken-plakat-social-inner' : undefined}
+            style={{
+              maxWidth: isPlakatA1PrintMode
+                ? 'min(94vw, 980px)'
+                : isPlakatSocialPrintMode
+                  ? '100%'
+                  : 'min(92vw, 720px)',
+              width: '100%',
+            }}
+          >
 
             {/* Logo – Plakat: größer */}
             <div style={{ textAlign: 'center', marginBottom: 'clamp(1.25rem, 3vw, 2rem)' }}>
@@ -1045,7 +1114,7 @@ export default function EntdeckenPage() {
             </div>
 
             {galerieReturnTo && (
-              <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+              <div className={isEntdeckenPlakatCapture ? 'no-print' : undefined} style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
                 <Link
                   to={galerieReturnTo}
                   onClick={clearEntdeckenReturnHint}
@@ -1175,6 +1244,31 @@ export default function EntdeckenPage() {
               </Link>
             </div>
           </div>
+
+          {isEntdeckenPlakatCapture && (
+            <div
+              style={{
+                marginTop: 'clamp(1.25rem, 3vw, 2rem)',
+                textAlign: 'center',
+                padding: '0.75rem 1rem',
+                fontSize: '0.72rem',
+                color: muted,
+                borderTop: '1px solid #e8ddd0',
+                width: '100%',
+                maxWidth: isPlakatSocialPrintMode ? '100%' : 'min(94vw, 980px)',
+              }}
+            >
+              <Link to={AGB_ROUTE} state={{ returnTo: location.pathname }} style={{ color: muted, textDecoration: 'none' }}>
+                AGB
+              </Link>
+              {' · '}
+              {PRODUCT_BRAND_NAME}
+              {' · '}
+              <span>Kein Erwerb nötig</span>
+              <div style={{ marginTop: '0.5rem', fontSize: '0.7rem', opacity: 0.95 }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</div>
+              <div style={{ marginTop: '0.2rem', fontSize: '0.65rem', opacity: 0.9 }}>{PRODUCT_URHEBER_ANWENDUNG}</div>
+            </div>
+          )}
         </div>
       )}
 
@@ -1209,7 +1303,7 @@ export default function EntdeckenPage() {
       )}
 
       {/* Fußzeile – eiserne Regel: Copyright wie definiert (K2/ök2/VK2); nicht auf Hero/Result */}
-      {step !== 'result' && step !== 'hero' && (
+      {step !== 'result' && step !== 'hero' && !(step === 'q1' && isEntdeckenPlakatCapture) && (
         <div style={{ textAlign: 'center', padding: '0.75rem 1rem', fontSize: '0.72rem', color: muted, borderTop: '1px solid #e8ddd0', background: bgCard }}>
           <Link to={AGB_ROUTE} state={{ returnTo: location.pathname }} style={{ color: muted, textDecoration: 'none' }}>AGB</Link>
           {' · '}

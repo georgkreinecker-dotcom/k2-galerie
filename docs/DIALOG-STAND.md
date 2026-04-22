@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Frei für die nächste Session.  
-**Einordnung:** K2 Familie **Musterfamilie Huber**: Besucher werden intern gezählt (`visits.tenant_id` **`k2-familie-muster`**), Anzeige nur Übersicht-Board + Arbeitsplattform – keine Besucher-Anzeige in der Demo-Oberfläche.
+**Einordnung:** **Plakat & Druckformate:** zweites virtuelles PDF **Social-Quadrat** (1080×1080 px, Letterbox) zum Produktvorstellung-Plakat – gleiche Pipeline wie A1-Capture (`buildWerbemittelPdfBlobFromDoc`, Druckerei-Mail-Bündel).
+
+---
+
+**Letzter Stand:** 22.04.26 – **Plakat: Social-PDF Quadrat zum Versand/Teilen** – Route `/entdecken?step=q1&printPlakat=social`, Admin-Karte „Social PDF (Quadrat, Produktvorstellung)“, `captureEntdeckenPlakatSocialAsPdfBlob` + `fitCanvasInSquareLetterbox`, `getWerbemittelHtml2canvasCaptureCss` Format `social`. **Commit:** `216ce8d7` ✅ GitHub 
 
 ---
 

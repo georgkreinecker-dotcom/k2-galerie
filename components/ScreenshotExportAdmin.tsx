@@ -13,6 +13,8 @@ import {
   BENUTZER_HANDBUCH_ROUTE,
   VK2_HANDBUCH_ROUTE,
   ENTDECKEN_ROUTE,
+  entdeckenProduktvorstellungPlakatA1Url,
+  entdeckenProduktvorstellungPlakatSocialUrl,
   flyerEventBogenUrl,
   type FlyerEventBogenTenantContext,
 } from '../src/config/navigation'
@@ -371,6 +373,16 @@ function pickFlyerMasterCaptureRoot(body: HTMLElement): HTMLElement {
   return b
 }
 
+type Html2PdfWorker = {
+  set: (o: object) => {
+    /** Zweites Arg z. B. `'canvas'`, wenn Quelle schon ein gerendertes Canvas ist (kein DOM-Klon). */
+    from: (el: HTMLElement, sourceType?: string) => {
+      save: () => Promise<void>
+      outputPdf: (type: string) => Promise<Blob | string>
+    }
+  }
+}
+
 async function waitForFlyerMasterRootInIframe(idoc: Document | null, timeoutMs: number): Promise<boolean> {
   if (!idoc) return false
   const deadline = Date.now() + timeoutMs
@@ -380,6 +392,291 @@ async function waitForFlyerMasterRootInIframe(idoc: Document | null, timeoutMs: 
     await new Promise<void>(r => setTimeout(r, 100))
   }
   return false
+}
+
+async function waitForEntdeckenPlakatRootInIframe(
+  idoc: Document | null,
+  rootSelector: string,
+  timeoutMs: number,
+): Promise<boolean> {
+  if (!idoc) return false
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    const root = idoc.querySelector(rootSelector)
+    if (root && root instanceof HTMLElement && root.scrollHeight > 200) {
+      await new Promise<void>((r) => setTimeout(r, 900))
+      return true
+    }
+    await new Promise<void>((r) => setTimeout(r, 100))
+  }
+  return false
+}
+
+/** Vollständiges Plakat in ein Quadrat (z. B. 1080×1080) – gleichmäßig skaliert, weißer Rand. */
+function fitCanvasInSquareLetterbox(src: HTMLCanvasElement, side: number): HTMLCanvasElement {
+  const w = src.width
+  const h = src.height
+  if (w < 1 || h < 1) return src
+  const scale = Math.min(side / w, side / h)
+  const dw = Math.max(1, Math.round(w * scale))
+  const dh = Math.max(1, Math.round(h * scale))
+  const ox = Math.floor((side - dw) / 2)
+  const oy = Math.floor((side - dh) / 2)
+  const out = document.createElement('canvas')
+  out.width = side
+  out.height = side
+  const ctx = out.getContext('2d')
+  if (!ctx) return src
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(0, 0, side, side)
+  ctx.drawImage(src, 0, 0, w, h, ox, oy, dw, dh)
+  return out
+}
+
+/** Entdecken-Route mit Produktvorstellung-Plakat (q1) → PDF A1 (Druckerei-Mail). */
+async function captureEntdeckenPlakatA1AsPdfBlob(
+  absoluteUrl: string,
+  capture: WerbemittelPdfCaptureOptions | undefined
+): Promise<Blob | null> {
+  if (typeof document === 'undefined') return null
+  const iframeWidthPx = 1280
+  const iframeMinHeightPx = 3800
+  const safeHtmlHint = '<div class="entdecken-plakat-a1-capture"></div>'
+
+  const iframe = document.createElement('iframe')
+  iframe.setAttribute('title', 'entdecken-plakat-a1-pdf-capture')
+  iframe.style.cssText = `position:fixed;left:-9999px;top:0;width:${iframeWidthPx}px;height:${iframeMinHeightPx}px;border:none;margin:0;padding:0;background:#fff;`
+  document.body.appendChild(iframe)
+
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const t = window.setTimeout(() => resolve(), 22000)
+      iframe.onload = () => {
+        window.clearTimeout(t)
+        resolve()
+      }
+      iframe.onerror = () => {
+        window.clearTimeout(t)
+        reject(new Error('iframe onerror'))
+      }
+      iframe.src = appendK2DocViewerParamToSameOriginUrl(absoluteUrl)
+    })
+
+    const idoc = iframe.contentDocument
+    const ready = await waitForEntdeckenPlakatRootInIframe(idoc, '.entdecken-plakat-a1-capture', 16000)
+    if (!ready || !idoc?.body) return null
+
+    const rootBody = idoc.body
+    try {
+      rootBody.style.setProperty('-webkit-print-color-adjust', 'exact')
+      rootBody.style.setProperty('print-color-adjust', 'exact')
+      rootBody.style.setProperty('color-adjust', 'exact')
+    } catch {
+      /* ignore */
+    }
+
+    const head = idoc.head
+    if (head) {
+      const captureStyle = idoc.createElement('style')
+      captureStyle.setAttribute('id', 'k2-entdecken-plakat-a1-pdf-capture')
+      captureStyle.textContent = getWerbemittelHtml2canvasCaptureCss(safeHtmlHint, 'a1', capture)
+      head.appendChild(captureStyle)
+    }
+
+    const captureRoot =
+      (idoc.querySelector('.entdecken-plakat-a1-capture') as HTMLElement | null) ?? rootBody
+    await waitForWerbemittelIframePaint(idoc, 12000)
+    await new Promise<void>((r) => setTimeout(r, 500))
+
+    const scrollH = Math.max(1, Math.ceil(captureRoot.scrollHeight))
+
+    const html2canvasMod = await import('html2canvas')
+    const runHtml2Canvas = (html2canvasMod as { default?: unknown }).default ?? html2canvasMod
+    if (typeof runHtml2Canvas !== 'function') return null
+
+    const h2cOpts = {
+      ...HTML2PDF_WERBEMITTEL_BASE.html2canvas,
+      scale: 2.15,
+      windowWidth: iframeWidthPx,
+      windowHeight: Math.min(Math.max(scrollH + 160, iframeMinHeightPx), 12000),
+      scrollX: 0,
+      scrollY: 0,
+      logging: false,
+      letterRendering: true,
+      backgroundColor: '#ffffff',
+      useCORS: true,
+      allowTaint: true,
+      onclone: (clonedDoc: Document) => {
+        try {
+          clonedDoc.querySelectorAll('.no-print').forEach((n) => {
+            ;(n as HTMLElement).style.setProperty('display', 'none', 'important')
+          })
+          applyWerbemittelCaptureToClone(clonedDoc, safeHtmlHint, 'a1', capture)
+        } catch {
+          /* ignore */
+        }
+      },
+    }
+
+    const canvas = await (runHtml2Canvas as (el: HTMLElement, o: typeof h2cOpts) => Promise<HTMLCanvasElement>)(
+      captureRoot,
+      h2cOpts
+    )
+    if (!canvas || canvas.width < 1 || canvas.height < 1) return null
+
+    const html2pdfMod = await import('html2pdf.js')
+    const html2pdfRaw = (html2pdfMod as { default?: unknown }).default ?? html2pdfMod
+    if (typeof html2pdfRaw !== 'function') return null
+    const worker = (html2pdfRaw as unknown as () => Html2PdfWorker)()
+
+    const pdfOpts = {
+      ...HTML2PDF_WERBEMITTEL_BASE,
+      filename: 'entdecken-plakat-a1.pdf',
+      margin: [2, 2, 2, 2] as [number, number, number, number],
+      jsPDF: {
+        unit: 'mm' as const,
+        format: 'a1' as const,
+        orientation: 'portrait' as const,
+      },
+      html2canvas: {
+        ...HTML2PDF_WERBEMITTEL_BASE.html2canvas,
+        scale: 2.15,
+      },
+    }
+
+    const out = await worker.set(pdfOpts).from(canvas, 'canvas').outputPdf('blob')
+    return out instanceof Blob ? out : null
+  } catch (e) {
+    console.warn('captureEntdeckenPlakatA1AsPdfBlob', e)
+    return null
+  } finally {
+    iframe.remove()
+  }
+}
+
+const ENTDECKEN_PLAKAT_SOCIAL_PDF_PX = 1080
+
+/** Entdecken q1 Produktvorstellung → quadratisches PDF (Social Feed, Versand / Teilen). */
+async function captureEntdeckenPlakatSocialAsPdfBlob(
+  absoluteUrl: string,
+  capture: WerbemittelPdfCaptureOptions | undefined,
+): Promise<Blob | null> {
+  if (typeof document === 'undefined') return null
+  const iframeWidthPx = ENTDECKEN_PLAKAT_SOCIAL_PDF_PX
+  const iframeMinHeightPx = 3600
+  const safeHtmlHint = '<div class="entdecken-plakat-social-capture"></div>'
+
+  const iframe = document.createElement('iframe')
+  iframe.setAttribute('title', 'entdecken-plakat-social-pdf-capture')
+  iframe.style.cssText = `position:fixed;left:-9999px;top:0;width:${iframeWidthPx}px;height:${iframeMinHeightPx}px;border:none;margin:0;padding:0;background:#fff;`
+  document.body.appendChild(iframe)
+
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const t = window.setTimeout(() => resolve(), 22000)
+      iframe.onload = () => {
+        window.clearTimeout(t)
+        resolve()
+      }
+      iframe.onerror = () => {
+        window.clearTimeout(t)
+        reject(new Error('iframe onerror'))
+      }
+      iframe.src = appendK2DocViewerParamToSameOriginUrl(absoluteUrl)
+    })
+
+    const idoc = iframe.contentDocument
+    const ready = await waitForEntdeckenPlakatRootInIframe(idoc, '.entdecken-plakat-social-capture', 16000)
+    if (!ready || !idoc?.body) return null
+
+    const rootBody = idoc.body
+    try {
+      rootBody.style.setProperty('-webkit-print-color-adjust', 'exact')
+      rootBody.style.setProperty('print-color-adjust', 'exact')
+      rootBody.style.setProperty('color-adjust', 'exact')
+    } catch {
+      /* ignore */
+    }
+
+    const head = idoc.head
+    if (head) {
+      const captureStyle = idoc.createElement('style')
+      captureStyle.setAttribute('id', 'k2-entdecken-plakat-social-pdf-capture')
+      captureStyle.textContent = getWerbemittelHtml2canvasCaptureCss(safeHtmlHint, 'social', capture)
+      head.appendChild(captureStyle)
+    }
+
+    const captureRoot =
+      (idoc.querySelector('.entdecken-plakat-social-capture') as HTMLElement | null) ?? rootBody
+    await waitForWerbemittelIframePaint(idoc, 12000)
+    await new Promise<void>((r) => setTimeout(r, 500))
+
+    const scrollH = Math.max(1, Math.ceil(captureRoot.scrollHeight))
+
+    const html2canvasMod = await import('html2canvas')
+    const runHtml2Canvas = (html2canvasMod as { default?: unknown }).default ?? html2canvasMod
+    if (typeof runHtml2Canvas !== 'function') return null
+
+    const h2cOpts = {
+      ...HTML2PDF_WERBEMITTEL_BASE.html2canvas,
+      scale: 2,
+      windowWidth: iframeWidthPx,
+      windowHeight: Math.min(Math.max(scrollH + 120, iframeMinHeightPx), 12000),
+      scrollX: 0,
+      scrollY: 0,
+      logging: false,
+      letterRendering: true,
+      backgroundColor: '#ffffff',
+      useCORS: true,
+      allowTaint: true,
+      onclone: (clonedDoc: Document) => {
+        try {
+          clonedDoc.querySelectorAll('.no-print').forEach((n) => {
+            ;(n as HTMLElement).style.setProperty('display', 'none', 'important')
+          })
+          applyWerbemittelCaptureToClone(clonedDoc, safeHtmlHint, 'social', capture)
+        } catch {
+          /* ignore */
+        }
+      },
+    }
+
+    const canvas = await (runHtml2Canvas as (el: HTMLElement, o: typeof h2cOpts) => Promise<HTMLCanvasElement>)(
+      captureRoot,
+      h2cOpts,
+    )
+    if (!canvas || canvas.width < 1 || canvas.height < 1) return null
+
+    const squareCanvas = fitCanvasInSquareLetterbox(canvas, ENTDECKEN_PLAKAT_SOCIAL_PDF_PX)
+
+    const html2pdfMod = await import('html2pdf.js')
+    const html2pdfRaw = (html2pdfMod as { default?: unknown }).default ?? html2pdfMod
+    if (typeof html2pdfRaw !== 'function') return null
+    const worker = (html2pdfRaw as unknown as () => Html2PdfWorker)()
+
+    const pdfOpts = {
+      ...HTML2PDF_WERBEMITTEL_BASE,
+      filename: 'entdecken-plakat-social.pdf',
+      margin: [0, 0, 0, 0] as [number, number, number, number],
+      jsPDF: {
+        unit: 'px' as const,
+        format: [ENTDECKEN_PLAKAT_SOCIAL_PDF_PX, ENTDECKEN_PLAKAT_SOCIAL_PDF_PX] as [number, number],
+        orientation: 'portrait' as const,
+      },
+      html2canvas: {
+        ...HTML2PDF_WERBEMITTEL_BASE.html2canvas,
+        scale: 2,
+      },
+    }
+
+    const out = await worker.set(pdfOpts).from(squareCanvas, 'canvas').outputPdf('blob')
+    return out instanceof Blob ? out : null
+  } catch (e) {
+    console.warn('captureEntdeckenPlakatSocialAsPdfBlob', e)
+    return null
+  } finally {
+    iframe.remove()
+  }
 }
 
 /**
@@ -503,16 +800,6 @@ async function captureFlyerMasterLiveRouteAsPdfBlob(
     return null
   } finally {
     iframe.remove()
-  }
-}
-
-type Html2PdfWorker = {
-  set: (o: object) => {
-    /** Zweites Arg z. B. `'canvas'`, wenn Quelle schon ein gerendertes Canvas ist (kein DOM-Klon). */
-    from: (el: HTMLElement, sourceType?: string) => {
-      save: () => Promise<void>
-      outputPdf: (type: string) => Promise<Blob | string>
-    }
   }
 }
 
@@ -784,6 +1071,46 @@ async function buildWerbemittelPdfBlobFromDoc(
   capture?: WerbemittelPdfCaptureOptions,
   fallbackPlainForPdf?: string
 ): Promise<{ blob: Blob; fileName: string } | null> {
+  if (doc?.entdeckenPlakatSocialSlot && doc?.documentUrl && typeof window !== 'undefined') {
+    try {
+      const path = String(doc.documentUrl)
+      const hasOwnScheme = /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(path)
+      const abs =
+        window.location.origin && !hasOwnScheme
+          ? window.location.origin + (path.startsWith('/') ? path : '/' + path)
+          : path
+      const blob = await captureEntdeckenPlakatSocialAsPdfBlob(abs, capture)
+      if (blob && blob.size > 0) {
+        const rawBaseName = String(doc?.fileName || doc?.name || 'entdecken-plakat-social')
+        const baseName = rawBaseName.replace(/\.[a-z0-9]{2,5}$/i, '').replace(/[^\w\-]+/g, '_')
+        return { blob, fileName: `${baseName || 'entdecken-plakat-social'}.pdf` }
+      }
+    } catch (e) {
+      console.warn('buildWerbemittelPdfBlobFromDoc entdeckenPlakatSocialSlot', e)
+    }
+    return null
+  }
+
+  if (doc?.entdeckenPlakatA1Slot && doc?.documentUrl && typeof window !== 'undefined') {
+    try {
+      const path = String(doc.documentUrl)
+      const hasOwnScheme = /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(path)
+      const abs =
+        window.location.origin && !hasOwnScheme
+          ? window.location.origin + (path.startsWith('/') ? path : '/' + path)
+          : path
+      const blob = await captureEntdeckenPlakatA1AsPdfBlob(abs, capture)
+      if (blob && blob.size > 0) {
+        const rawBaseName = String(doc?.fileName || doc?.name || 'entdecken-plakat-a1')
+        const baseName = rawBaseName.replace(/\.[a-z0-9]{2,5}$/i, '').replace(/[^\w\-]+/g, '_')
+        return { blob, fileName: `${baseName || 'entdecken-plakat-a1'}.pdf` }
+      }
+    } catch (e) {
+      console.warn('buildWerbemittelPdfBlobFromDoc entdeckenPlakatA1Slot', e)
+    }
+    return null
+  }
+
   if (doc?.flyerMasterSlot && doc?.documentUrl && typeof window !== 'undefined') {
     try {
       const path = String(doc.documentUrl)
@@ -1800,6 +2127,35 @@ function buildFlyerMasterPlakatVirtualDocs(ev: any, flyerTenant: FlyerEventBogen
     mk('a3', `A3 Plakat – ${titleShort}`, 'flyer-a3-plakat'),
     mk('a6', `A6 Werbekarte – ${titleShort}`, 'flyer-a6-karte'),
     mk('card', `Visitenkarten – ${titleShort}`, 'flyer-visitenkarten'),
+  ]
+}
+
+/** A1 + Social-Quadrat: Produktvorstellung Entdecken q1 – Druckerei bzw. Teilen in Social Media. */
+function buildEntdeckenPlakatVirtualDocs(ev: any): any[] {
+  const eid = ev?.id
+  if (eid == null || String(eid).trim() === '') return []
+  const titleShort = String(ev?.title || 'Event').trim() || 'Event'
+  return [
+    {
+      id: `entdecken-plakat-a1-slot-${eid}`,
+      name: `A1 Produktvorstellung (Entdecken-Plakat) – ${titleShort}`,
+      fileName: 'entdecken-produktvorstellung-a1.pdf',
+      documentUrl: entdeckenProduktvorstellungPlakatA1Url(),
+      category: 'pr-dokumente',
+      eventId: eid,
+      werbematerialTyp: 'entdecken-plakat-a1',
+      entdeckenPlakatA1Slot: true,
+    },
+    {
+      id: `entdecken-plakat-social-slot-${eid}`,
+      name: `Social PDF (Quadrat, Produktvorstellung) – ${titleShort}`,
+      fileName: 'entdecken-produktvorstellung-social.pdf',
+      documentUrl: entdeckenProduktvorstellungPlakatSocialUrl(),
+      category: 'pr-dokumente',
+      eventId: eid,
+      werbematerialTyp: 'entdecken-plakat-social',
+      entdeckenPlakatSocialSlot: true,
+    },
   ]
 }
 
@@ -24377,7 +24733,10 @@ ${name}`
                           {/* Arbeitsplattform-Header: Event + Fortschritt auf einen Blick */}
                           {(() => {
                             const evForFlyerPlakat = resolveEventForMediengeneratorCard(events, event)
-                            const plakatFlyerMasterDocs = buildFlyerMasterPlakatVirtualDocs(evForFlyerPlakat, flyerTenant)
+                            const plakatFlyerMasterDocs = [
+                              ...buildFlyerMasterPlakatVirtualDocs(evForFlyerPlakat, flyerTenant),
+                              ...buildEntdeckenPlakatVirtualDocs(evForFlyerPlakat),
+                            ]
                             const DOKUMENT_KARTEN = [
                               {
                                 typ: 'newsletter' as const,
@@ -24399,11 +24758,12 @@ ${name}`
                                 icon: '🖼️',
                                 titel: 'Plakat & Druckformate',
                                 beschreibung:
-                                  'A5 bis Visitenkarten wie im Flyer-Master. Checkboxen, dann Druckerei.',
+                                  'A5, A3, A6, Visitenkarten wie im Flyer-Master; plus A1 Produktvorstellung und Social-PDF Quadrat zum Teilen. Checkboxen, dann Druckerei bzw. Versand.',
                                 docs: plakatFlyerMasterDocs,
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => {
-                                  if (doc?.flyerMasterSlot) return
+                                  if (doc?.flyerMasterSlot || doc?.entdeckenPlakatA1Slot || doc?.entdeckenPlakatSocialSlot)
+                                    return
                                   handleDeleteWerbematerialDocument(doc.id)
                                 },
                                 onErstellen: () => {
@@ -25011,7 +25371,9 @@ ${name}`
                                                         >
                                                           {doc.name || doc.fileName || 'Dokument'}
                                                         </button>
-                                                        {doc.flyerMasterSlot ? (
+                                                        {doc.flyerMasterSlot ||
+                                                        doc.entdeckenPlakatA1Slot ||
+                                                        doc.entdeckenPlakatSocialSlot ? (
                                                           <span style={{ width: '1.85rem', flexShrink: 0 }} aria-hidden />
                                                         ) : (
                                                           <button

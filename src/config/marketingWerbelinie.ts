@@ -666,7 +666,7 @@ export type WerbemittelPdfCaptureOptions = {
 
 export function getWerbemittelHtml2canvasCaptureCss(
   safeHtml: string,
-  pdfFormat: 'a4' | 'a3',
+  pdfFormat: 'a4' | 'a3' | 'a1' | 'social',
   capture?: WerbemittelPdfCaptureOptions
 ): string {
   const isVk2PrDoc = pdfFormat === 'a4' && /\bvk2-pr-doc\b/i.test(safeHtml)
@@ -676,12 +676,12 @@ export function getWerbemittelHtml2canvasCaptureCss(
     (/width:\s*min\(100%,\s*760px\)/i.test(safeHtml) || /plakatWidth:\s*['"]min\(100%,\s*760px\)/i.test(safeHtml))
 
   const bodyPdfCapture =
-    pdfFormat === 'a3'
+    pdfFormat === 'a3' || pdfFormat === 'a1' || pdfFormat === 'social'
       ? `html, body { margin: 0 !important; padding: 0 !important; min-height: auto !important; }`
       : `html, body { margin: 0 !important; padding: 0 !important; background: #ffffff !important; min-height: auto !important; }`
 
   const plakatH1Raster =
-    pdfFormat === 'a3'
+    pdfFormat === 'a3' || pdfFormat === 'a1' || pdfFormat === 'social'
       ? `
         .plakat h1 {
           color: var(--k2-plakat-pdf-accent, ${PLAKAT_PDF_ACCENT_FALLBACK}) !important;
@@ -690,6 +690,32 @@ export function getWerbemittelHtml2canvasCaptureCss(
           -webkit-text-fill-color: var(--k2-plakat-pdf-accent, ${PLAKAT_PDF_ACCENT_FALLBACK}) !important;
           background-clip: border-box !important;
           -webkit-background-clip: border-box !important;
+        }
+      `
+      : ''
+
+  /** Entdecken q1 – Social-PDF: etwas kompakter, volle Breite im 1080px-Iframe. */
+  const entdeckenSocialCapture =
+    pdfFormat === 'social'
+      ? `
+        .entdecken-plakat-social-capture {
+          padding: 14px 12px 18px !important;
+          justify-content: flex-start !important;
+        }
+        .entdecken-plakat-social-inner {
+          max-width: 100% !important;
+        }
+        .entdecken-plakat-social-capture h2 {
+          font-size: clamp(1.15rem, 3.2vw, 1.55rem) !important;
+          margin-bottom: 0.35rem !important;
+        }
+        .entdecken-plakat-social-capture h3 {
+          font-size: clamp(1rem, 2.6vw, 1.2rem) !important;
+          margin-bottom: 0.4rem !important;
+        }
+        .entdecken-plakat-social-capture p {
+          font-size: clamp(0.8rem, 1.9vw, 0.95rem) !important;
+          margin-bottom: 0.75rem !important;
         }
       `
       : ''
@@ -721,6 +747,7 @@ export function getWerbemittelHtml2canvasCaptureCss(
         .no-print { display: none !important; }
         ${bodyPdfCapture}
         ${plakatH1Raster}
+        ${entdeckenSocialCapture}
         ${extraPlakat}
         ${prDocCapture}
       `.trim()
@@ -741,10 +768,10 @@ function solidifyHeadingOnClone(el: HTMLElement, color: string): void {
 export function applyWerbemittelCaptureToClone(
   clonedDoc: Document,
   safeHtml: string,
-  pdfFormat: 'a4' | 'a3',
+  pdfFormat: 'a4' | 'a3' | 'a1' | 'social',
   capture?: WerbemittelPdfCaptureOptions
 ): void {
-  if (pdfFormat === 'a3') {
+  if (pdfFormat === 'a3' || pdfFormat === 'a1' || pdfFormat === 'social') {
     let accent = ''
     try {
       accent = getComputedStyle(clonedDoc.documentElement).getPropertyValue('--k2-plakat-pdf-accent').trim()

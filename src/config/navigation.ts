@@ -21,6 +21,22 @@ export const AGB_ROUTE = '/agb'
 export const ENTDECKEN_ROUTE = '/entdecken'
 
 /**
+ * Produktvorstellung-Plakat (Wegwahl mit QR) – Druck **A1** und PDF-Capture aus dem Admin
+ * (Event- und Medienplanung → Plakat & Druckformate).
+ */
+export function entdeckenProduktvorstellungPlakatA1Url(): string {
+  return `${ENTDECKEN_ROUTE}?step=q1&printPlakat=a1`
+}
+
+/**
+ * Produktvorstellung fürs Teilen: quadratisches PDF (ca. 1080×1080 px) – gleicher Inhalt wie A1-Plakat.
+ * Admin: Plakat & Druckformate → „Social-Quadrat PDF“.
+ */
+export function entdeckenProduktvorstellungPlakatSocialUrl(): string {
+  return `${ENTDECKEN_ROUTE}?step=q1&printPlakat=social`
+}
+
+/**
  * Root `https://k2-galerie.vercel.app/` (Einladung, QR, Link ohne Pfad) = Besucher-Einstieg → Entdecken.
  * Localhost + Vite-Devserver: `/` bleibt APf (DevView) für Georgs Arbeitsstart am Mac.
  * Produktions-Build auf jeder anderen Origin: immer umleiten (keine Domain-Whitelist – vermeidet „falsche Seite“ bei Alias/Preview).
