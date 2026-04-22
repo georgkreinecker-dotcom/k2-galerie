@@ -743,12 +743,12 @@ export default function EntdeckenPage() {
         @page {
           size: ${size};
           margin: 2mm;
-          @top-left { content: "" !important; }
-          @top-center { content: "" !important; }
-          @top-right { content: "" !important; }
-          @bottom-left { content: "" !important; }
-          @bottom-center { content: "" !important; }
-          @bottom-right { content: "" !important; }
+          @top-left { content: none !important; }
+          @top-center { content: none !important; }
+          @top-right { content: none !important; }
+          @bottom-left { content: none !important; }
+          @bottom-center { content: none !important; }
+          @bottom-right { content: none !important; }
         }
       }`
     }
@@ -1188,12 +1188,12 @@ export default function EntdeckenPage() {
                   @page {
                     size: A4 portrait;
                     margin: 2mm;
-                    @top-left { content: ""; }
-                    @top-center { content: ""; }
-                    @top-right { content: ""; }
-                    @bottom-left { content: ""; }
-                    @bottom-center { content: ""; }
-                    @bottom-right { content: ""; }
+                    @top-left { content: none !important; }
+                    @top-center { content: none !important; }
+                    @top-right { content: none !important; }
+                    @bottom-left { content: none !important; }
+                    @bottom-center { content: none !important; }
+                    @bottom-right { content: none !important; }
                   }
                   html, body {
                     background: #fff !important;
@@ -1210,16 +1210,27 @@ export default function EntdeckenPage() {
                     min-height: 0 !important;
                     padding: 0 1mm 0 !important;
                     justify-content: flex-start !important;
+                    box-sizing: border-box !important;
                   }
-                  /* Eine Seite A4: Impressum mit in .inner (zoom) – sonst große Fußzeile → 2. Seite */
+                  .entdecken-q1-a4-browser-print .entdecken-q1-a4-scale-wrap {
+                    break-inside: avoid;
+                    page-break-inside: avoid;
+                  }
+                  /* Eine Seite A4: Inhalt gezoomt; AGB/Copyright-Fuß im Druck weg (kein „Fusstext“-Block) */
+                  /* Zoom skaliert ALLE Längen: Pilot-Text muss in pt deutlich größer gewählt werden (Soll ~10pt auf Papier). */
                   .entdecken-q1-a4-browser-print .entdecken-q1-inner {
-                    zoom: 0.56;
+                    zoom: 0.57;
+                    break-inside: avoid;
+                    page-break-inside: avoid;
                   }
                   @supports not (zoom: 1) {
                     .entdecken-q1-a4-browser-print .entdecken-q1-inner {
-                      transform: scale(0.56);
+                      transform: scale(0.57);
                       transform-origin: top center;
                     }
+                  }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-a4-footer {
+                    display: none !important;
                   }
                   .entdecken-q1-a4-browser-print .entdecken-q1-inner > div:first-of-type { margin-bottom: 0.06rem !important; }
                   .entdecken-q1-a4-browser-print .entdecken-q1-inner > div:first-child span { font-size: 0.72rem !important; }
@@ -1278,36 +1289,27 @@ export default function EntdeckenPage() {
                     align-items: stretch !important;
                   }
                   .entdecken-q1-a4-browser-print .entdecken-q1-testpilot > div:first-child { align-items: flex-start !important; gap: 0.12rem !important; }
-                  /* Pilot-Fließtext: rem-basiert, eine Zeile A4. */
-                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot > div:first-child p.entdecken-q1-testpilot-text {
-                    font-size: 0.13rem !important;
-                    line-height: 1.2 !important;
+                  /* Pilot: pt für Lesbarkeit auf A4 (Zoom 0.6) */
+                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot-text {
+                    font-size: 8pt !important;
+                    line-height: 1.3 !important;
                     font-weight: 600 !important;
                   }
-                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot > div:first-child span[aria-hidden] { font-size: 0.175rem !important; line-height: 1 !important; }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot > div:first-child span[aria-hidden] { font-size: 7pt !important; line-height: 1 !important; }
                   .entdecken-q1-a4-browser-print .entdecken-q1-testpilot-actions {
                     justify-content: center !important;
                     gap: 0.1rem !important;
                   }
                   .entdecken-q1-a4-browser-print .entdecken-q1-testpilot-actions img {
-                    width: 14px !important;
-                    height: 14px !important;
+                    width: 40px !important;
+                    height: 40px !important;
                   }
                   .entdecken-q1-a4-browser-print .entdecken-q1-testpilot-actions a {
-                    font-size: 0.34rem !important;
-                    padding: 0.06rem 0.18rem !important;
-                    border-radius: 4px !important;
+                    font-size: 10pt !important;
+                    line-height: 1.2 !important;
+                    padding: 6pt 14pt !important;
+                    border-radius: 5px !important;
                   }
-                  .entdecken-q1-a4-browser-print .entdecken-q1-a4-footer {
-                    padding: 0.08rem 0.12rem !important;
-                    font-size: 4.5pt !important;
-                    line-height: 1.1 !important;
-                    border-top: none !important;
-                    background: transparent !important;
-                    margin-top: 0 !important;
-                  }
-                  .entdecken-q1-a4-browser-print .entdecken-q1-a4-footer a { font-size: inherit !important; }
-                  .entdecken-q1-a4-browser-print .entdecken-q1-a4-footer > div { margin-top: 0.04rem !important; font-size: 4pt !important; line-height: 1.12 !important; }
                 }
               `}
           </style>
@@ -1444,9 +1446,10 @@ export default function EntdeckenPage() {
                   🚩
                 </span>
                 <p
+                  className="entdecken-q1-testpilot-text"
                   style={{
                     margin: 0,
-                    fontSize: 'clamp(0.22rem, 0.52vw, 0.255rem)',
+                    fontSize: 'clamp(0.8rem, 1.9vw, 0.95rem)',
                     color: text,
                     lineHeight: 1.45,
                     fontWeight: 600,

@@ -1,11 +1,15 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Frei für die nächste Session.  
-**Einordnung:** **Entdecken q1:** A4-Browserdruck kompakt (Scale); Pilot-Fließtext Bildschirm lesbar (`entdecken-q1-testpilot-text`), Druck stark klein; PDF-Capture A1/Social: `#print-footer` per CSS + Klon entfernen, Pilot-Text in Capture ~50 % der vorigen clamp-Werte. **Safari:** Browser-Kopf/Fuß (URL) nur in Druckdialog aus.
+**Was wir JETZT tun:** Entdecken q1 A4-Druck: Georg prüft im Browser (eine Seite, Pilot gut lesbar).  
+**Einordnung:** **Entdecken q1 A4:** `zoom` 0,57; Pilot-Absatz **19 pt** / CTA **16 pt** (wirkt nach Skalierung ≈10–9 pt auf dem Blatt – vorher 8 pt wirkte wie ~4,8 pt wegen `zoom:0,6`); Bildschirm: `entdecken-q1-testpilot-text` nicht mehr `0,22rem`; Testpilot max. **78 %** Breite (weniger Zeilenumbruch); engerer vertikaler Rhythmus; `break-inside: avoid` am Wrap. **Hinweis:** Zwei Seiten + „Fusstext“ oft **Kopf-/Fußzeilen im System-Druckdialog** – deaktivieren. `.entdecken-q1-a4-footer` bleibt im A4-Druck aus.
 
 ---
 
-**Letzter Stand:** 22.04.26 – **Entdecken q1: Pilot-Screen lesbar, Capture ohne print-footer, Pilot im PDF halb so groß** – `EntdeckenPage.tsx`, `marketingWerbelinie.ts`, `marketingWerbelinie-k2-pr-doc-capture.test.ts`. **Git:** Spitze `main`, Nachricht „Entdecken q1: Pilot-Text Screen+Capture, print-footer im PDF-Klon weg“; Push im Cursor Terminal noch ausführen wenn nötig.
+**Letzter Stand:** 22.04.26 – **Entdecken q1 A4-Druck: Pilot lesbar (pt nach Zoom), weniger 2. Seite** – `EntdeckenPage.tsx` (Print-CSS + fix Pilot `fontSize` im JSX). **Commit:** (nach Push eintragen)
+
+---
+
+**Letzter Stand:** 19.04.26 – **Entdecken q1 A4: Fußtexte Druck aus, @page-Seitenzahl none, Pilot CTA größer** – `EntdeckenPage.tsx`, `src/index.css`. **Git:** nach `npm run qs:local` bzw. `npm run build` committen/pushen (Commit-Hash hier eintragen).
 
 ---
 
