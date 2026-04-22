@@ -1,6 +1,9 @@
 import { useLayoutEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { getK2FamilieStammbaumKreineckerPublicUrl } from '../config/k2FamiliePresentation'
+import {
+  getK2FamilieMeineFamilieKreineckerPublicUrl,
+  getK2FamilieStammbaumKreineckerPublicUrl,
+} from '../config/k2FamiliePresentation'
 import { BASE_APP_URL, ENTDECKEN_ROUTE, PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 
@@ -8,12 +11,17 @@ const s = (path: string) => `${BASE_APP_URL}${path}`
 
 export default function LaunchPraesentationBoardPage() {
   const [params] = useSearchParams()
+  const meineFamilieUrl = getK2FamilieMeineFamilieKreineckerPublicUrl()
   const stammbaumUrl = getK2FamilieStammbaumKreineckerPublicUrl()
 
   useLayoutEffect(() => {
     const go = params.get('go')
     if (go === 'stammbaum-kreinecker' || go === 'stammbaum') {
       window.location.replace(getK2FamilieStammbaumKreineckerPublicUrl())
+      return
+    }
+    if (go === 'meine-familie' || go === 'k2-familie-meine') {
+      window.location.replace(getK2FamilieMeineFamilieKreineckerPublicUrl())
     }
   }, [params])
 
@@ -110,10 +118,10 @@ export default function LaunchPraesentationBoardPage() {
             hint="Vereinsplattform – Demo-Galerie"
           />
           <Tile
-            href={s(PROJECT_ROUTES['k2-familie'].home)}
+            href={meineFamilieUrl}
             emoji="👨‍👩‍👧"
             label="K2 Familie"
-            hint="Eigenes Produkt – Familienbereich"
+            hint="Meine Familie – mit Mandant aus Vercel (nicht Muster Huber, wenn t gesetzt)"
           />
           <Tile
             href={stammbaumUrl}
@@ -133,9 +141,9 @@ export default function LaunchPraesentationBoardPage() {
               lineHeight: 1.5,
             }}
           >
-            Hinweis: Ohne Vercel-Variable <code style={{ color: '#5ffbf1' }}>VITE_K2_FAMILIE_KREINECKER_STAMMBAUM_TENANT_ID</code> kann
-            der Stammbaum je nach Rechner die Musterfamilie zeigen. Wert = Parameter{' '}
-            <code style={{ color: '#5ffbf1' }}>t=…</code> aus der K2-Familie-Einladung.
+            Hinweis: Ohne dieselbe Variable können die Kacheln K2 Familie und Stammbaum je nach Rechner die
+            Musterfamilie Huber zeigen. Wert = nur{' '}
+            <code style={{ color: '#5ffbf1' }}>t=…</code> aus der Einladung (z.&nbsp;B. <code style={{ color: '#5ffbf1' }}>familie-…</code>).
           </p>
         )}
 

@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Präsentationsboard: In **Vercel** `VITE_K2_FAMILIE_KREINECKER_STAMMBAUM_TENANT_ID` = `t=…` aus K2-Familie-Einladung setzen, deployen; Stammbaum-Kachel testen (`/launch-praesentation-board`).  
-**Einordnung:** Ohne `?t=` kann der Stammbaum je nach Gerät die Musterfamilie zeigen; Env baut die URL zentral (`k2FamiliePresentation.ts`).
+**Was wir JETZT tun:** Nach Deploy: Präsentationsboard – Kacheln **K2 Familie** + **Stammbaum** testen (soll **nicht** Huber sein, wenn `VITE_K2_FAMILIE_KREINECKER_STAMMBAUM_TENANT_ID` in Vercel = `familie-…`).  
+**Einordnung:** Kachel „K2 Familie“ zeigt jetzt **Meine Familie** mit `?t=` (gleiche Env wie Stammbaum); statische HTML nutzt `?go=meine-familie`.
+
+---
+
+**Letzter Stand:** 22.04.26 – **Launch-Board: K2-Familie-Kachel = Meine Familie + `?t=` (nicht nur Stammbaum)** – `k2FamilieUrlWithPresentationTenant`, `getK2FamilieMeineFamilieKreineckerPublicUrl`, Redirect `go=meine-familie`; `public/launch-praesentation-board.html`. **Commit:** *(nach Push)*
 
 ---
 
