@@ -740,7 +740,7 @@ export default function EntdeckenPage() {
       }
       const size = isPlakatA1PrintMode ? 'A1 portrait' : isPlakatSocialPrintMode ? '210mm 210mm' : 'A4 portrait'
       /* A4: nur Rand oben 0 – kein generisches @page (hätte alle Seiten überschrieben). Benannte Seite = Entdecken q1. */
-      const pageMargin = isPlakatA1PrintMode || isPlakatSocialPrintMode ? '2mm' : '0mm 6mm 6mm 6mm'
+      const pageMargin = isPlakatA1PrintMode || isPlakatSocialPrintMode ? '2mm' : '0mm 4mm 4mm 4mm'
       const pageSel =
         isPlakatA1PrintMode || isPlakatSocialPrintMode ? '@page' : '@page entdecken-q1-clean'
       el.textContent = `@media print {
@@ -1202,8 +1202,8 @@ export default function EntdeckenPage() {
                 @media print {
                   @page entdecken-q1-clean {
                     size: A4 portrait;
-                    /* Nur Abstand nach oben weg – keine Schrift verkleinern */
-                    margin: 0mm 6mm 6mm 6mm;
+                    /* Engerer Rand; Inhalt: zoom im Wrap (entspricht ~76% Browserskalierung) */
+                    margin: 0mm 4mm 4mm 4mm;
                     @top-left { content: none !important; }
                     @top-center { content: none !important; }
                     @top-right { content: none !important; }
@@ -1241,6 +1241,8 @@ export default function EntdeckenPage() {
                     width: 100% !important;
                     max-width: 100% !important;
                     box-sizing: border-box;
+                    /* Passt Prospekt auf eine A4 bei Druck-„100%“; entspricht früher manuell ~76% */
+                    zoom: 0.76;
                   }
                   .entdecken-q1-a4-browser-print .entdecken-q1-inner {
                     display: block !important;
@@ -1653,7 +1655,7 @@ export default function EntdeckenPage() {
                 padding: '0 0.75rem 0.5rem',
               }}
             >
-              <strong>Druck:</strong> Im System-Dialog <em>Kopf- und Fußzeilen</em> aus (frisst sonst viel Fläche). Wenn noch 2 Seiten: <em>Skalierung</em> z. B. 90 %.
+              <strong>Druck:</strong> Im System-Dialog <em>Kopf- und Fußzeilen</em> aus. <em>Skalierung 100 %</em> reicht – das Layout ist dafür eingestellt. Wenn dein System trotzdem 2 Seiten zeigt, einmal 95–100 % prüfen.
             </p>
           )}
         </div>

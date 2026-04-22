@@ -173,8 +173,7 @@ a {
     padding-bottom: 0 !important;
   }
   @page entdecken-q1-clean {
-    /* Nur Rand nach oben minimal – kein Inhalt skalieren */
-    margin: 0mm 5mm 6mm 5mm;
+    margin: 0mm 4mm 4mm 4mm;
     size: A4 portrait;
     @top-left {
       content: none;
@@ -258,6 +257,10 @@ a {
   html.k2-print-entdecken-q1 .entdecken-q1-inner {
     margin-top: 0 !important;
     padding-top: 0 !important;
+  }
+  /* Eine A4-Seite bei 100% Dialog-Skalierung (entspricht früher ~76% manuell) */
+  html.k2-print-entdecken-q1 .entdecken-q1-a4-scale-wrap {
+    zoom: 0.76;
   }
   /* 3 Weg-Karten: untereinander, je Karte Zeile Icon | Text | QR (EntdeckenPage eingebettete @media print ergänzt) */
   html.k2-print-entdecken-q1 .entdecken-q1-poster-choices {
