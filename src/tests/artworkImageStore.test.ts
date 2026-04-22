@@ -4,7 +4,12 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { getArtworkImageRefVariants, getArtworkImageRef, resolveArtworkImages } from '../utils/artworkImageStore'
+import {
+  getArtworkImageRefVariants,
+  getArtworkImageRef,
+  resolveArtworkImages,
+  prepareArtworksForStorage,
+} from '../utils/artworkImageStore'
 
 describe('artworkImageStore: getArtworkImageRefVariants', () => {
 
@@ -34,6 +39,16 @@ describe('artworkImageStore: getArtworkImageRefVariants', () => {
   it('getArtworkImageRef: number/id wird zu k2-img-{id}', () => {
     expect(getArtworkImageRef({ number: 'K2-K-0030' })).toBe('k2-img-K2-K-0030')
     expect(getArtworkImageRef({ number: '0030' })).toBe('k2-img-0030')
+  })
+})
+
+describe('prepareArtworksForStorage', () => {
+  it('bei kanonischem imageRef und leerer imageUrl: kein unnötiger IDB-Pfad (schneller Save bei vielen Werken)', async () => {
+    const a = { number: 'K2-K-0999', imageUrl: '', imageRef: 'k2-img-K2-K-0999' }
+    const out = await prepareArtworksForStorage([a])
+    expect(out).toHaveLength(1)
+    expect(out[0].imageRef).toBe('k2-img-K2-K-0999')
+    expect(out[0].imageUrl).toBe('')
   })
 })
 

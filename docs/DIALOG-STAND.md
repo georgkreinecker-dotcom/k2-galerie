@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nach Deploy: Präsentationsboard – Kacheln **K2 Familie** + **Stammbaum** testen (soll **nicht** Huber sein, wenn `VITE_K2_FAMILIE_KREINECKER_STAMMBAUM_TENANT_ID` in Vercel = `familie-…`).  
-**Einordnung:** Kachel „K2 Familie“ zeigt jetzt **Meine Familie** mit `?t=` (gleiche Env wie Stammbaum); statische HTML nutzt `?go=meine-familie`.
+**Was wir JETZT tun:** Nach Push: K2 **mobil / Neues Werk** – Speichern soll nicht mehr ewig dauern (viele Werke: `prepareArtworksForStorage` ohne IDB-Doppelrunde pro Werk). Georg kurz testen.  
+**Einordnung:** Ursache: bei jedem Speichern wurde die **gesamte** Werkliste erneut aus IndexedDB gelesen+geschrieben, sobald `imageRef` schon kanonisch war – auf dem Handy Minuten/Quota. Fix: Schnellpfad in `artworkImageStore.ts`.
+
+---
+
+**Letzter Stand:** 22.04.26 – **Mobil K2: Speichern neuer Werke schneller (prepareArtworksForStorage, kanonischer imageRef)** – `src/utils/artworkImageStore.ts`, Test `artworkImageStore.test.ts`. **Commit:** _(nach Push)_
 
 ---
 

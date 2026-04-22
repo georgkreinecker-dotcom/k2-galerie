@@ -253,6 +253,21 @@ export async function prepareArtworksForStorage(artworks: any[]): Promise<any[]>
     if (!a) { out.push(a); continue }
     const canonicalRef = getArtworkImageRef(a)
     const url = a.imageUrl
+    // Schnell: Bereits im Zielformat (Bild in IDB unter kanonischem Ref, Liste ohne data-URL) –
+    // sonst würde bei jedem Speichern die GESAMTE Liste erneut aus IDB gelesen+geschrieben (mobile: Minuten, Quota-Stress).
+    const refStr = typeof a.imageRef === 'string' ? a.imageRef : ''
+    if (
+      (!url || url === '') &&
+      refStr &&
+      refStr === canonicalRef &&
+      !refStr.startsWith('http://') &&
+      !refStr.startsWith('https://')
+    ) {
+      let nextFast: any = { ...a, imageUrl: '', imageRef: canonicalRef }
+      if (isBase64ImageUrl(nextFast.previewUrl)) nextFast = { ...nextFast, previewUrl: '' }
+      out.push(nextFast)
+      continue
+    }
     let next = a
     // 1) Frisches data:image → unter kanonischem Ref in IndexedDB, Liste imageRef = kanonisch
     if (typeof url === 'string' && url.startsWith('data:image') && url.length > MOVE_TO_IDB_THRESHOLD) {
