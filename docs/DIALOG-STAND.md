@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Frei für die nächste Session.  
-**Einordnung:** **Entdecken q1 Browser-Druck A4:** eine Seite durch `@page A4`, kompakte Typo/Abstände, Weg-Karten-QR 44 px im Druck, Testpilot-Spalte (Text | QR+Button) im Druck gestapelt und zentriert, Fußzeile 5–5,5 pt. A1 (`printPlakat=a1`) unverändert nur A1-@page.
+**Einordnung:** **Entdecken q1 Plakat:** Pilot-Programm-Karte = **halbe Breite** der Weg-Karten (50 %), **zentriert** – gesamter Block inkl. Text, QR, Button „Zur Anmeldung“; Screen, A4-Browserdruck (`entdecken-q1-a4-browser-print`) und PDF-Capture social/A1 (`marketingWerbelinie.ts`).
+
+---
+
+**Letzter Stand:** 22.04.26 – **Entdecken Plakat: Pilot-Karte 50 % Breite, zentriert** – `EntdeckenPage.tsx`, `marketingWerbelinie.ts`, Test `marketingWerbelinie-k2-pr-doc-capture.test.ts`. **Commit:** `bbba09b5` ✅ GitHub (nach Push)
 
 ---
 

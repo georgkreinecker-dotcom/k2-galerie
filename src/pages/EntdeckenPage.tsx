@@ -1162,6 +1162,11 @@ export default function EntdeckenPage() {
                     border-radius: 6px !important;
                   }
                   .entdecken-q1-a4-browser-print .entdecken-q1-testpilot {
+                    width: 100% !important;
+                    max-width: 50% !important;
+                    margin-left: auto !important;
+                    margin-right: auto !important;
+                    box-sizing: border-box !important;
                     margin-top: 0.12rem !important;
                     margin-bottom: 0 !important;
                     padding: 0.28rem 0.4rem !important;
@@ -1304,12 +1309,17 @@ export default function EntdeckenPage() {
               color="#0d9488"
             />
 
-            {/* Testpilot – nur Text oben; QR + Anmelde-Button unten zentriert, beides ~halb so groß wie Weg-Karten-QR */}
+            {/* Testpilot – ganze Karte halb so breit wie Weg-Karten, zentriert; QR + CTA unten zentriert, QR ~halb wie Weg-QR */}
             <div
               className="entdecken-q1-testpilot"
               role="region"
               aria-label="Testpilot-Programm"
               style={{
+                width: '100%',
+                maxWidth: '50%',
+                marginLeft: 'auto',
+                marginRight: 'auto',
+                boxSizing: 'border-box',
                 marginTop: 'clamp(0.5rem, 2vw, 1rem)',
                 marginBottom: '0.25rem',
                 padding: 'clamp(0.85rem, 2.5vw, 1.1rem) clamp(1rem, 3vw, 1.35rem)',

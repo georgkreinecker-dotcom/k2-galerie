@@ -55,12 +55,18 @@ describe('Sportwagenmodus Werbemittel-Capture (eine Quelle)', () => {
     const css = getWerbemittelHtml2canvasCaptureCss('<div class="entdecken-plakat-social-capture">', 'social')
     expect(css).toContain('.entdecken-plakat-social-capture')
     expect(css).toContain('.entdecken-plakat-social-inner')
+    expect(css).toContain('.entdecken-plakat-k2-marke')
+    expect(css).toContain('.entdecken-plakat-social-capture .entdecken-q1-testpilot')
+    expect(css).toContain('max-width: 50%')
     expect(css).toContain('.no-print')
   })
   it('getWerbemittelHtml2canvasCaptureCss: a1 + Entdecken A1 Hi-Res', () => {
     const css = getWerbemittelHtml2canvasCaptureCss('<div class="entdecken-plakat-a1-capture">', 'a1')
     expect(css).toContain('.entdecken-plakat-a1-inner')
     expect(css).toContain('.entdecken-plakat-a1-weginleitung')
+    expect(css).toContain('.entdecken-plakat-k2-marke')
+    expect(css).toContain('.entdecken-plakat-a1-capture .entdecken-q1-testpilot')
+    expect(css).toContain('max-width: 50%')
     expect(css).toContain('.no-print')
   })
   it('getPlakatPosterPrintCss: gleiche Druck-Kontrast-Logik wie PR-Dok (.plakat)', () => {

@@ -717,6 +717,17 @@ export function getWerbemittelHtml2canvasCaptureCss(
           font-size: clamp(0.8rem, 1.9vw, 0.95rem) !important;
           margin-bottom: 0.75rem !important;
         }
+        .entdecken-plakat-social-capture .entdecken-plakat-k2-marke {
+          font-size: clamp(1.85rem, 5.5vw, 2.85rem) !important;
+          margin-bottom: 0.4rem !important;
+        }
+        .entdecken-plakat-social-capture .entdecken-q1-testpilot {
+          width: 100% !important;
+          max-width: 50% !important;
+          margin-left: auto !important;
+          margin-right: auto !important;
+          box-sizing: border-box !important;
+        }
       `
       : ''
 
@@ -736,6 +747,18 @@ export function getWerbemittelHtml2canvasCaptureCss(
         .entdecken-plakat-a1-capture .entdecken-plakat-a1-weginleitung {
           font-size: clamp(0.95rem, 2.35vw, 1.12rem) !important;
           max-width: 620px !important;
+        }
+        .entdecken-plakat-a1-capture .entdecken-plakat-k2-marke {
+          font-size: clamp(2.6rem, 9vw, 4.5rem) !important;
+          font-weight: 800 !important;
+          margin-bottom: 0.5rem !important;
+        }
+        .entdecken-plakat-a1-capture .entdecken-q1-testpilot {
+          width: 100% !important;
+          max-width: 50% !important;
+          margin-left: auto !important;
+          margin-right: auto !important;
+          box-sizing: border-box !important;
         }
       `
       : ''
