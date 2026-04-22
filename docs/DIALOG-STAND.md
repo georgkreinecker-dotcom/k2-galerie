@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 22.04.26 – **Launch-Präsentationsboard: Stammbaum Kreinecker mit `?t=` über Vercel-Env** – Route `/launch-praesentation-board`, `getK2FamilieStammbaumKreineckerPublicUrl`, `?go=stammbaum-kreinecker` → Redirect; `public/launch-praesentation-board.html` angepasst; `.env.example`. **Commit:** `32b39aca` ✅ (nach Push GitHub prüfen)
+**Letzter Stand:** 22.04.26 – **Launch-Präsentationsboard: Stammbaum Kreinecker mit `?t=` über Vercel-Env** – Route `/launch-praesentation-board`, `getK2FamilieStammbaumKreineckerPublicUrl`, `?go=stammbaum-kreinecker` → Redirect; `public/launch-praesentation-board.html` angepasst; `.env.example`. **Commit:** `32b39aca` ✅ GitHub (DIALOG-Hash-Update: `0c340990`)
 
 ---
 
