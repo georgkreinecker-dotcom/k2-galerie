@@ -651,7 +651,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
     return () => window.removeEventListener('keydown', handleKey)
   }, [lightboxImage])
   const [isLoading, setIsLoading] = useState(false)
-  const [loadStatus, setLoadStatus] = useState<{ message: string; success: boolean } | null>(null)
+  const [loadStatus, setLoadStatus] = useState<{ message: string; success: boolean; tone?: 'work' | 'ok' | 'err' } | null>(null)
   
   // Mobile-First Admin: Neues Objekt hinzufügen / Bearbeiten
   const [showMobileAdmin, setShowMobileAdmin] = useState(false)
@@ -1883,16 +1883,21 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
         </div>
       )}
       {/* Synchronisierungs-Status-Balken für Mobile */}
-      {loadStatus && (
+      {loadStatus && (() => {
+        const t = loadStatus.tone ?? (loadStatus.success ? 'ok' : 'err')
+        const bg = t === 'work'
+          ? 'linear-gradient(120deg, #0e7490, #06b6d4)'
+          : t === 'ok'
+            ? 'linear-gradient(120deg, #10b981, #059669)'
+            : 'linear-gradient(120deg, #ef4444, #dc2626)'
+        return (
         <div style={{
           position: 'fixed',
           top: '1rem',
           left: '50%',
           transform: 'translateX(-50%)',
-          zIndex: 10000,
-          background: loadStatus.success 
-            ? 'linear-gradient(120deg, #10b981, #059669)' 
-            : 'linear-gradient(120deg, #ef4444, #dc2626)',
+          zIndex: 35000,
+          background: bg,
           color: '#fff',
           padding: '0.75rem 1rem',
           borderRadius: '12px',
@@ -1905,7 +1910,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
         }}>
           {loadStatus.message}
         </div>
-      )}
+        )
+      })()}
       
       <style>{`
         @keyframes slideDown {
@@ -3806,6 +3812,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
                 }
                 
                 setIsSaving(true)
+                setLoadStatus({ message: '⏳ Wird gespeichert …', success: true, tone: 'work' })
                 
                 try {
                   const artworks = loadArtworks()
@@ -3922,10 +3929,19 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
                       
                       if (!saved) {
                         console.error('❌ Speichern fehlgeschlagen!')
+                        setLoadStatus({ message: '❌ Speichern fehlgeschlagen. Bitte erneut versuchen.', success: false, tone: 'err' })
+                        setTimeout(() => setLoadStatus(null), 8000)
                         alert('❌ Fehler beim Speichern! Bitte versuche es erneut.')
                         setIsSaving(false)
                         return
                       }
+                      
+                      setLoadStatus({
+                        message: `✅ Werk ${String(updatedArtwork?.number ?? updatedArtwork?.id ?? '')} gespeichert`,
+                        success: true,
+                        tone: 'ok'
+                      })
+                      setTimeout(() => setLoadStatus(null), 5000)
                       
                       // SOFORT: Karte aktualisieren – bei Bearbeitung: gleicher Key wie beim Speichern (String+trim), bei leerem prev Liste aus localStorage
                       const updatedKey = String(updatedArtwork?.number ?? updatedArtwork?.id ?? '').trim()
@@ -3953,7 +3969,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
                       // Sportwagen: Veröffentlichen im Hintergrund – blockiert nicht, beim Testen muss man nicht warten
                       setTimeout(async () => {
                         try {
-                          setLoadStatus({ message: 'Gespeichert. Veröffentlichen läuft im Hintergrund …', success: true })
+                          setLoadStatus({ message: 'Gespeichert. Veröffentlichen läuft im Hintergrund …', success: true, tone: 'ok' })
                           setTimeout(() => setLoadStatus(null), 3000)
                           const withImages = await readArtworksForContextWithResolvedImages(false, false)
                           const allArtworks = filterK2OnlyStorage(withImages || [])
@@ -3963,7 +3979,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
                             // Schutz: Beim automatischen Hintergrund-Senden niemals Stammdaten/Events/Design „zurückdrehen“
                             // (ein Stand = ein Stand). Nur Werke ersetzen, Meta vom Server übernehmen.
                             preserveServerMeta: true,
-                            onProgress: (done, total, phase) => setLoadStatus({ message: phase === 'chunks' ? `Teil ${done} von ${total} senden …` : `Bilder hochladen … ${done}/${total} (im Hintergrund)`, success: false })
+                            onProgress: (done, total, phase) => setLoadStatus({ message: phase === 'chunks' ? `Teil ${done} von ${total} senden …` : `Bilder hochladen … ${done}/${total} (im Hintergrund)`, success: true, tone: 'work' })
                           }).then((result) => {
                             if (result.success) {
                               const sentAtIso = new Date().toISOString()
@@ -3980,20 +3996,20 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
                               const hint = (result.imagesResolved != null && result.artworksCount != null && result.imagesResolved < result.artworksCount)
                                 ? ' Bei einigen Werken fehlt auf diesem Gerät das Bild – vom Gerät mit den Fotos erneut senden.'
                                 : ''
-                              setLoadStatus({ message: `✅ Gesendet: ${result.artworksCount} Werke${imgInfo}${sizeInfo}.${serverInfo} Im Admin „Aktuellen Stand holen“.${hint}`, success: true })
+                              setLoadStatus({ message: `✅ Gesendet: ${result.artworksCount} Werke${imgInfo}${sizeInfo}.${serverInfo} Im Admin „Aktuellen Stand holen“.${hint}`, success: true, tone: 'ok' })
                               setTimeout(() => setLoadStatus(null), 6000)
                             } else {
-                              setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${result.error || 'Unbekannt'}`, success: false })
+                              setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${result.error || 'Unbekannt'}`, success: false, tone: 'err' })
                               setTimeout(() => setLoadStatus(null), 8000)
                             }
                           }).catch((error) => {
                             console.warn('⚠️ Veröffentlichung fehlgeschlagen:', error)
-                            setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${error instanceof Error ? error.message : String(error)}`, success: false })
+                            setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${error instanceof Error ? error.message : String(error)}`, success: false, tone: 'err' })
                             setTimeout(() => setLoadStatus(null), 8000)
                           })
                         } catch (err) {
                           console.warn('⚠️ Veröffentlichung fehlgeschlagen:', err)
-                          setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`, success: false })
+                          setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`, success: false, tone: 'err' })
                           setTimeout(() => setLoadStatus(null), 8000)
                         }
                       }, 1500) // Warte 1.5 Sekunden damit localStorage sicher gespeichert ist
@@ -4022,6 +4038,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
                       })))
                       
                       const availableIds = artworks.map((a: any) => a.number || a.id).join(', ')
+                      setLoadStatus({ message: '❌ Werk in der Liste nicht gefunden. Bitte Vorschau neu öffnen oder im Admin speichern.', success: false, tone: 'err' })
+                      setTimeout(() => setLoadStatus(null), 10000)
                       alert(`❌ Objekt nicht gefunden!\n\nGesucht: ${editingArtwork.number || editingArtwork.id}\n\nVerfügbare: ${availableIds || 'Keine'}\n\nGesamt: ${artworks.length} Objekte`)
                     }
                   } else {
@@ -4160,10 +4178,15 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
                     
                     if (!saved) {
                       console.error('❌ Speichern fehlgeschlagen!')
+                      setLoadStatus({ message: '❌ Speichern fehlgeschlagen. Bitte erneut versuchen.', success: false, tone: 'err' })
+                      setTimeout(() => setLoadStatus(null), 8000)
                       alert('❌ Fehler beim Speichern! Bitte versuche es erneut.')
                       setIsSaving(false)
                       return
                     }
+                    
+                    setLoadStatus({ message: `✅ Werk ${newNumber} gespeichert`, success: true, tone: 'ok' })
+                    setTimeout(() => setLoadStatus(null), 6000)
                     
                     // SOFORT: Neue Karte mit Foto anzeigen – Karten lesen aus artworks-State
                     if (newNumber && mobilePhoto && typeof mobilePhoto === 'string') {
@@ -4222,7 +4245,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
                     // Sportwagen: Veröffentlichen im Hintergrund – blockiert nicht, beim Testen muss man nicht warten
                     setTimeout(async () => {
                       try {
-                        setLoadStatus({ message: 'Gespeichert. Veröffentlichen läuft im Hintergrund …', success: true })
+                        setLoadStatus({ message: 'Gespeichert. Veröffentlichen läuft im Hintergrund …', success: true, tone: 'ok' })
                         setTimeout(() => setLoadStatus(null), 3000)
                         const withImages = await readArtworksForContextWithResolvedImages(false, false)
                         const allArtworks = filterK2OnlyStorage(withImages || [])
@@ -4231,7 +4254,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
                           tenantId: 'k2',
                           // Schutz: „Schnell senden“ (nicht explizit Stammdaten veröffentlichen) → Meta vom Server behalten
                           preserveServerMeta: true,
-                          onProgress: (done, total, phase) => setLoadStatus({ message: phase === 'chunks' ? `Teil ${done} von ${total} senden …` : `Bilder hochladen … ${done}/${total} (im Hintergrund)`, success: false })
+                          onProgress: (done, total, phase) => setLoadStatus({ message: phase === 'chunks' ? `Teil ${done} von ${total} senden …` : `Bilder hochladen … ${done}/${total} (im Hintergrund)`, success: true, tone: 'work' })
                         }).then((result) => {
                           if (result.success) {
                             const sentAtIso = new Date().toISOString()
@@ -4251,20 +4274,20 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
                             window.dispatchEvent(new CustomEvent('gallery-data-published', {
                               detail: { success: true, artworksCount: result.artworksCount, imagesResolved: result.imagesResolved, serverArtworksCount: result.serverArtworksCount, serverImagesCount: result.serverImagesCount, size: result.result?.size }
                             }))
-                            setLoadStatus({ message: `✅ Gesendet: ${result.artworksCount} Werke${imgInfo}${sizeInfo}.${serverInfo} Im Admin „Aktuellen Stand holen“.${hint}`, success: true })
+                            setLoadStatus({ message: `✅ Gesendet: ${result.artworksCount} Werke${imgInfo}${sizeInfo}.${serverInfo} Im Admin „Aktuellen Stand holen“.${hint}`, success: true, tone: 'ok' })
                             setTimeout(() => setLoadStatus(null), 6000)
                           } else {
-                            setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${result.error || 'Unbekannt'}`, success: false })
+                            setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${result.error || 'Unbekannt'}`, success: false, tone: 'err' })
                             setTimeout(() => setLoadStatus(null), 8000)
                           }
                         }).catch((error) => {
                           console.warn('⚠️ Veröffentlichung fehlgeschlagen:', error)
-                          setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${error instanceof Error ? error.message : String(error)}`, success: false })
+                          setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${error instanceof Error ? error.message : String(error)}`, success: false, tone: 'err' })
                           setTimeout(() => setLoadStatus(null), 8000)
                         })
                       } catch (err) {
                         console.warn('⚠️ Veröffentlichung fehlgeschlagen:', err)
-                        setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`, success: false })
+                        setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`, success: false, tone: 'err' })
                         setTimeout(() => setLoadStatus(null), 8000)
                       }
                     }, 1500) // Warte 1.5 Sekunden damit localStorage sicher gespeichert ist
@@ -4305,6 +4328,12 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
                   // NICHT nochmal setArtworks aufrufen - wurde bereits oben gemacht!
                 } catch (error) {
                   console.error('Fehler beim Speichern:', error)
+                  setLoadStatus({
+                    message: `❌ Fehler: ${error instanceof Error ? error.message : String(error)}`,
+                    success: false,
+                    tone: 'err'
+                  })
+                  setTimeout(() => setLoadStatus(null), 10000)
                   alert('❌ Fehler beim Speichern. Bitte versuche es erneut.')
                 } finally {
                   setIsSaving(false)

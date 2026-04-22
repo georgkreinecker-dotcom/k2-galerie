@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nach Push: K2 **mobil / Neues Werk** – Speichern soll nicht mehr ewig dauern (viele Werke: `prepareArtworksForStorage` ohne IDB-Doppelrunde pro Werk). Georg kurz testen.  
-**Einordnung:** Ursache: bei jedem Speichern wurde die **gesamte** Werkliste erneut aus IndexedDB gelesen+geschrieben, sobald `imageRef` schon kanonisch war – auf dem Handy Minuten/Quota. Fix: Schnellpfad in `artworkImageStore.ts`.
+**Was wir JETZT tun:** Georg testet **Vorschau mobil + Admin**: Beim Speichern erscheint oben **⏳ Wird gespeichert …** (cyan), danach **✅ Werk … gespeichert** oder **❌** bei Fehler – sichtbar über dem Modal (z-index).  
+**Einordnung:** Keine stille Falle mehr („erst merken wenn kein neues Werk“); Ton **work / ok / err**; Admin gleicher Toast (`werkSaveToast`, z-index 50000).
+
+---
+
+**Letzter Stand:** 22.04.26 – **Rückmeldung Speichern: „in Arbeit / fertig / Fehler“ (Vorschau + Admin, über Modals)** – `GalerieVorschauPage` (`loadStatus` + `tone`, z-index 35000); `ScreenshotExportAdmin` (`werkSaveToast`, z-index 50000). **Commit:** _(wird nach Push ergänzt)_
 
 ---
 

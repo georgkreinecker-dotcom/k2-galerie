@@ -3291,6 +3291,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [etikettQueue, setEtikettQueue] = useState<any[]>([])
   const [etikettQueueIndex, setEtikettQueueIndex] = useState(0)
   const [isSavingArtwork, setIsSavingArtwork] = useState(false)
+  /** Sichtbar über Modals: Speichern läuft / OK / Fehler (nicht still hinter Overlay) */
+  const [werkSaveToast, setWerkSaveToast] = useState<{ kind: 'work' | 'ok' | 'bad'; text: string } | null>(null)
   const [showSaleModal, setShowSaleModal] = useState(false)
   const [saleInput, setSaleInput] = useState('')
   const [saleMethod, setSaleMethod] = useState<'scan' | 'manual'>('scan')
@@ -12125,12 +12127,15 @@ ${'='.repeat(60)}
   const handleSaveArtwork = async () => {
     if (isSavingArtwork) return
     setIsSavingArtwork(true)
+    setWerkSaveToast({ kind: 'work', text: '⏳ Wird gespeichert …' })
     const forOek2 = tenant.isOeffentlich
     
     // Bild-Quelle: Datei, Kamera-Vorschau (previewUrl/Ref) oder beim Bearbeiten bestehendes Bild – nur ablehnen wenn wirklich kein Bild da ist
     const hasPreviewDataUrl = (previewUrl?.startsWith('data:') || pendingImageDataUrlRef.current?.startsWith('data:'))
     const hasImage = editingArtwork?.imageUrl || selectedFile || hasPreviewDataUrl
     if (!editingArtwork && !hasImage) {
+      setWerkSaveToast({ kind: 'bad', text: 'Bitte zuerst ein Bild auswählen.' })
+      setTimeout(() => setWerkSaveToast(null), 5000)
       setIsSavingArtwork(false)
       alert('Bitte ein Bild auswählen')
       return
@@ -12265,6 +12270,8 @@ ${'='.repeat(60)}
       await saveArtworkData(imageDataUrl, newArtworkNumber)
     } catch (error) {
       console.error('Fehler beim Komprimieren:', error)
+      setWerkSaveToast({ kind: 'bad', text: '❌ Bild konnte nicht verarbeitet werden. Bitte erneut versuchen.' })
+      setTimeout(() => setWerkSaveToast(null), 8000)
       setIsSavingArtwork(false)
       alert('Fehler beim Verarbeiten des Bildes. Bitte versuche es erneut.')
     } finally {
@@ -12398,6 +12405,8 @@ ${'='.repeat(60)}
       } catch (_) {}
     }
     if (!forOek2 && !tenant.isVk2 && artworks.length === 0 && editingArtwork) {
+      setWerkSaveToast({ kind: 'bad', text: '❌ Werkliste leer. Seite neu laden, dann erneut speichern.' })
+      setTimeout(() => setWerkSaveToast(null), 10000)
       alert('⚠️ Aktuelle Werkliste konnte nicht geladen werden. Bitte Seite neu laden (Stand tippen oder Cmd+R) und erneut speichern.')
       return
     }
@@ -12468,6 +12477,8 @@ ${'='.repeat(60)}
         artworks[index] = artworkData
       } else {
         // 🔒 Bearbeiten darf niemals eine neue „Version“ anlegen – sonst Doppel-Einträge.
+        setWerkSaveToast({ kind: 'bad', text: '❌ Werk zum Bearbeiten nicht gefunden. Seite neu laden.' })
+        setTimeout(() => setWerkSaveToast(null), 10000)
         alert(
           `⚠️ Bearbeiten abgebrochen: Das Werk konnte in der aktuellen Liste nicht gefunden werden.\n\nGesucht: ${norm(editingArtwork?.number ?? editingArtwork?.id)}\n\nBitte Seite neu laden („Stand“ tippen oder Cmd+R) und dann nochmal bearbeiten/speichern.`
         )
@@ -12479,6 +12490,8 @@ ${'='.repeat(60)}
       if (existing) {
         // 🔒 K2: Kein Timestamp-Fallback (würde „neue Version“ erzeugen). Lieber abbrechen und sichtbar machen.
         if (!forOek2 && !tenant.isVk2) {
+          setWerkSaveToast({ kind: 'bad', text: `❌ Nummer ${finalArtworkNumber} existiert schon. Stand neu laden oder Doppler bereinigen.` })
+          setTimeout(() => setWerkSaveToast(null), 10000)
           alert(
             `⚠️ Neues Werk abgebrochen: Die Nummer ${finalArtworkNumber} existiert bereits.\n\nBitte Stand neu laden und dann erneut anlegen. Wenn Doppler existieren: zuerst „Malerei-Doppler zusammenführen“.`
           )
@@ -12610,7 +12623,11 @@ ${'='.repeat(60)}
       }
       lastArtworkSaveRef.current = (lastArtworkSaveRef.current ?? Promise.resolve(true)).then(() => doSerializedWrite())
       const writeOk = await lastArtworkSaveRef.current
-      if (!writeOk) return
+      if (!writeOk) {
+        setWerkSaveToast({ kind: 'bad', text: '❌ Schreiben fehlgeschlagen. Bitte erneut versuchen.' })
+        setTimeout(() => setWerkSaveToast(null), 8000)
+        return
+      }
 
       console.log('✅ Werk gespeichert:', {
         number: artworkData.number,
@@ -12642,6 +12659,8 @@ ${'='.repeat(60)}
           gesucht: artworkData?.number || artworkData?.id,
           anzahlRoh: verifyRaw.length
         })
+        setWerkSaveToast({ kind: 'bad', text: `❌ Werk ${String(artworkData?.number ?? '')} wurde nicht in den Speicher übernommen.` })
+        setTimeout(() => setWerkSaveToast(null), 10000)
         alert(`⚠️ Fehler: Werk konnte nicht gespeichert werden!\n\nNummer: ${artworkData?.number ?? ''}\n\nBitte versuche es erneut.`)
         return
       }
@@ -12721,6 +12740,8 @@ ${'='.repeat(60)}
       }
       if (!containsNewArtwork) {
         console.error('❌ KRITISCH: Neues Werk nicht in localStorage gefunden (roh):', artworkData?.number)
+        setWerkSaveToast({ kind: 'bad', text: `⚠️ Nummer ${String(artworkData?.number ?? '')}: bitte „Speichern“ nochmals tippen.` })
+        setTimeout(() => setWerkSaveToast(null), 10000)
         alert(`⚠️ Werk wurde gespeichert, aber nicht in der Liste gefunden.\n\nNummer: ${artworkData?.number ?? ''}\n\nBitte einmal erneut auf „Speichern“ tippen – dann erscheint es.`)
         return
       }
@@ -12894,15 +12915,21 @@ ${'='.repeat(60)}
       if (printerCfg.openEtikettAfterSave) {
         setTimeout(() => setShowPrintModal(true), 200)
       }
+      setWerkSaveToast({ kind: 'ok', text: `✅ Werk ${String(artworkData?.number ?? '')} gespeichert` })
+      setTimeout(() => setWerkSaveToast(null), 6000)
     } catch (error: any) {
       console.error('Fehler beim Speichern:', error)
       if (error?.name === 'QuotaExceededError') {
         tryFreeLocalStorageSpace()
+        setWerkSaveToast({ kind: 'bad', text: '❌ Speicher voll. Bitte Platz schaffen (siehe Meldung).' })
+        setTimeout(() => setWerkSaveToast(null), 12000)
         alert('⚠️ ' + SPEICHER_VOLL_MELDUNG)
       } else {
         const msg = error?.message || error?.toString?.() || String(error)
-        const detail = msg && msg !== 'Error' ? `\n\nGrund: ${msg}` : ''
-        alert('Fehler beim Speichern. Bitte versuche es erneut.' + detail)
+        const detail = msg && msg !== 'Error' ? ` (${msg})` : ''
+        setWerkSaveToast({ kind: 'bad', text: '❌ Speichern fehlgeschlagen.' + detail })
+        setTimeout(() => setWerkSaveToast(null), 10000)
+        alert('Fehler beim Speichern. Bitte versuche es erneut.' + (msg && msg !== 'Error' ? `\n\nGrund: ${msg}` : ''))
       }
     } finally {
       setIsSavingArtwork(false)
@@ -14961,6 +14988,36 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
       width: '100%',
       fontFamily: s.fontBody
     }}>
+      {werkSaveToast && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            position: 'fixed',
+            top: '1rem',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 50000,
+            maxWidth: 'min(90vw, 32rem)',
+            padding: '0.8rem 1.15rem',
+            borderRadius: 12,
+            fontWeight: 600,
+            fontSize: '0.95rem',
+            textAlign: 'center',
+            color: '#fff',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.35)',
+            pointerEvents: 'none',
+            background:
+              werkSaveToast.kind === 'ok'
+                ? 'linear-gradient(120deg, #10b981, #059669)'
+                : werkSaveToast.kind === 'work'
+                  ? 'linear-gradient(120deg, #0e7490, #06b6d4)'
+                  : 'linear-gradient(120deg, #b91c1c, #dc2626)',
+          }}
+        >
+          {werkSaveToast.text}
+        </div>
+      )}
       <link rel="stylesheet" href={PROMO_FONTS_URL} />
 
       {/* Nur im Vollfenster-Admin: festes Entsperren. In der APf (iframe) denselben Button nicht doppelt – dort „🔓 APf entsperren“ in DevView + Escape/postMessage. */}
