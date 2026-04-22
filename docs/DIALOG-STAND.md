@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 19.04.26 – **K2 Familie Musterfamilie: interner Besucherzähler** – `POST /api/visit` wie Galerie; `k2FamilieMusterVisit.ts` + `K2FamilieLayout`; Übersicht + Mission Control zeigen **Familie-Muster**; Test-Slug. **Commit:** `eb506072` ✅ GitHub
+**Letzter Stand:** 19.04.26 – **K2 Familie Musterfamilie: interner Besucherzähler** – `POST /api/visit` wie Galerie; `k2FamilieMusterVisit.ts` + `K2FamilieLayout`; Übersicht + Mission Control zeigen **Familie-Muster**; Test-Slug. **Commit:** `2f8ebdf6` ✅ GitHub
 
 ---
 
