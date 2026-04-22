@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Entdecken q1 A4: Druckvorschau – oben kein riesiger Abstand, **eine Seite**.  
-**Einordnung:** **Safari:** Inline `100vh`+`center` schlug Druck-`!important` – A4-Layout nur **`@media screen` in index.css**; `beforeprint`-@page `8mm` → **`3/6/6/6`**.
+**Was wir JETZT tun:** Entdecken q1 A4: Georg prüft **Druckvorschau** = Zielbild (3 Karten **untereinander**, je Karte Zeile; Pilot + Fuß auf **einer** Seite).  
+**Einordnung:** Falsch war **3 Spalten nebeneinander**; Soll: **Spalte** + kompaktere Drucktypo, Fuß inkl. `PRODUCT_URHEBER_ANWENDUNG`. **index.css** + eingebettetes `@media print` in `EntdeckenPage`.
+
+---
+
+**Letzter Stand:** 22.04.26 – **Entdecken A4 = Zielbild: 3 Weg-Karten übereinander, nicht 3er-Reihe; Druck kompakt; druckbarer Fuß mit Urheberzeile** – `EntdeckenPage.tsx`, `index.css`. **Commit:** `7fbd9ae5` ✅ GitHub
 
 ---
 
