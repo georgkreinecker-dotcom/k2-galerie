@@ -10,6 +10,7 @@ describe('reportPublicGalleryVisit / Mandanten-Slug', () => {
     expect(isValidVisitTenantId('oeffentlich-pilot-v-anna-muster')).toBe(true)
     expect(isValidVisitTenantId('vk2-pilot-14')).toBe(true)
     expect(isValidVisitTenantId('meine-galerie-2026')).toBe(true)
+    expect(isValidVisitTenantId('k2-familie-muster')).toBe(true)
   })
   it('lehnt ungültige Zeichen oder Länge ab', () => {
     expect(isValidVisitTenantId('')).toBe(false)

@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Frei für die nächste Session.  
-**Einordnung:** Session **21.04.26** beendet – **main** aktuell (**`9b6338cc`**), Arbeitsbaum sauber. Zuletzt: K2-Familie-Benutzerhandbuch Feinschliff (Text, Navigation, Default-Index, Kapitel-3-Nummerierung); Session-Ende-Doku (`DIALOG-STAND` + `WIR-PROZESS`) committed.
+**Einordnung:** K2 Familie **Musterfamilie Huber**: Besucher werden intern gezählt (`visits.tenant_id` **`k2-familie-muster`**), Anzeige nur Übersicht-Board + Arbeitsplattform – keine Besucher-Anzeige in der Demo-Oberfläche.
+
+---
+
+**Letzter Stand:** 19.04.26 – **K2 Familie Musterfamilie: interner Besucherzähler** – `POST /api/visit` wie Galerie; `k2FamilieMusterVisit.ts` + `K2FamilieLayout`; Übersicht + Mission Control zeigen **Familie-Muster**; Test-Slug. **Commit:** `eb506072` ✅ GitHub
 
 ---
 
