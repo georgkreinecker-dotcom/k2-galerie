@@ -1,11 +1,15 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Frei für die nächste Session.  
-**Einordnung:** **Entdecken q1 Plakat:** Pilot-Programm-Karte = **halbe Breite** der Weg-Karten (50 %), **zentriert** – gesamter Block inkl. Text, QR, Button „Zur Anmeldung“; Screen, A4-Browserdruck (`entdecken-q1-a4-browser-print`) und PDF-Capture social/A1 (`marketingWerbelinie.ts`).
+**Einordnung:** **Entdecken q1 Prospekt/Plakat:** Keine störende **globale** Druckzeile mehr unter dem Impressum (`#print-footer` „… \| Druck: …“ und `@page` „Seite x von y“) – nur noch Inhalt inkl. Impressum; A1-`@page` ebenfalls ohne Rand-Seitenzahl.
 
 ---
 
-**Letzter Stand:** 22.04.26 – **Entdecken Plakat: Pilot-Karte 50 % Breite, zentriert** – `EntdeckenPage.tsx`, `marketingWerbelinie.ts`, Test `marketingWerbelinie-k2-pr-doc-capture.test.ts`. **Commit:** `bbba09b5` ✅ GitHub (nach Push)
+**Letzter Stand:** 22.04.26 – **Entdecken q1 Druck: globale Fußzeile + Seitenzahl aus** – `html.k2-print-entdecken-q1`, `@page entdecken-q1-clean`, Klasse `entdecken-q1-print-page` + `entdecken-page-root` am Wrapper; A1-Print-Block `@bottom-right` leer. **Commit:** `bfd888dd` ✅ GitHub (nach Push)
+
+---
+
+**Letzter Stand:** 22.04.26 – **Entdecken Plakat: Pilot-Karte 50 % Breite, zentriert** – `EntdeckenPage.tsx`, `marketingWerbelinie.ts`, Test `marketingWerbelinie-k2-pr-doc-capture.test.ts`. **Commit:** `28becf3c` ✅ GitHub (nach Push)
 
 ---
 

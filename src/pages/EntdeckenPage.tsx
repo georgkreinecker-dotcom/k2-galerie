@@ -697,6 +697,20 @@ export default function EntdeckenPage() {
       /* ignore */
     }
   }, [location.search])
+
+  /** Browser-Druck q1: globale App-Druckfußzeile + @page-Seitenzahl aus (nur Plakat-Impressum). */
+  useEffect(() => {
+    const on = step === 'q1'
+    try {
+      document.documentElement.classList.toggle('k2-print-entdecken-q1', on)
+    } catch (_) {}
+    return () => {
+      try {
+        document.documentElement.classList.remove('k2-print-entdecken-q1')
+      } catch (_) {}
+    }
+  }, [step])
+
   /** Hero-Bild: primary → SVG-Fallback → kein Bild (nie Fragezeichen-Icon) */
   const [heroImageSrc, setHeroImageSrc] = useState<'primary' | 'svg' | 'none'>('primary')
   /** Eingangsseite-Design aus Admin (Design → Eingangsseite); bei Update neu laden */
@@ -932,7 +946,10 @@ export default function EntdeckenPage() {
 
   // ─── Wrapper ────────────────────────────────────────────────────────────────
   return (
-    <div style={{ background: bgLight, minHeight: '100vh', fontFamily: fontBody, color: text }}>
+    <div
+      className={['entdecken-page-root', step === 'q1' ? 'entdecken-q1-print-page' : ''].filter(Boolean).join(' ')}
+      style={{ background: bgLight, minHeight: '100vh', fontFamily: fontBody, color: text }}
+    >
       <link rel="stylesheet" href={PROMO_FONTS_URL} />
 
       {/* ── HERO: Dunkler Eingang mit Galerie-Foto ───────────────────────────── */}
@@ -1102,7 +1119,11 @@ export default function EntdeckenPage() {
             {isPlakatA1PrintMode
               ? `
                 @media print {
-                  @page { size: A1 portrait; margin: 12mm; }
+                  @page {
+                    size: A1 portrait;
+                    margin: 12mm;
+                    @bottom-right { content: none; }
+                  }
                   html, body { background: #fff !important; }
                   .no-print { display: none !important; }
                 }

@@ -100,6 +100,27 @@ a {
   }
   /* Bei Etikett/Kassenbon-Druck keine App-Fußzeile */
   body:has(#k2-print-label) #print-footer { display: none !important; }
+  /*
+   * Entdecken Schritt q1 (A4-Prospekt, A1-Plakat): nur Impressum im Inhalt –
+   * keine globale Zeile „Marke | Druck: …“ und keine @page-Seitenzahl (stört Prospekt-Layout).
+   */
+  html.k2-print-entdecken-q1 #print-footer {
+    display: none !important;
+  }
+  html.k2-print-entdecken-q1 #root {
+    padding-bottom: 0 !important;
+  }
+  @page entdecken-q1-clean {
+    margin: 6mm;
+    margin-bottom: 8mm;
+    size: A4 portrait;
+    @bottom-right {
+      content: none;
+    }
+  }
+  .entdecken-q1-print-page {
+    page: entdecken-q1-clean;
+  }
   /* Kompakte Typografie für alle druckbaren Inhaltsseiten (weniger Seiten beim PDF-Export) */
   .print-compact { font-size: 9pt; line-height: 1.32; }
   .print-compact h1 { font-size: 1.15rem; margin: 0.4rem 0 0.25rem 0 !important; }
