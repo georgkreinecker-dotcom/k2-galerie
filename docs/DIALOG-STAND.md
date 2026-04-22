@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Frei für die nächste Session.  
-**Einordnung:** **Plakat & Druckformate:** zweites virtuelles PDF **Social-Quadrat** (1080×1080 px, Letterbox) zum Produktvorstellung-Plakat – gleiche Pipeline wie A1-Capture (`buildWerbemittelPdfBlobFromDoc`, Druckerei-Mail-Bündel).
+**Einordnung:** **Plakat A1 Profidruck:** höhere Rasterauflösung (Iframe 1660 px, html2canvas scale 2,8 ≈ 190–205 dpi auf A1-Breite), JPEG 0,98, Rand 5 mm, QR 280 px + größere Darstellung nur bei `printPlakat=a1`; Capture-CSS `entdeckenA1Capture` in `marketingWerbelinie.ts`.
+
+---
+
+**Letzter Stand:** 22.04.26 – **Entdecken A1-Plakat: Hi-Res für Druckerei** – `captureEntdeckenPlakatA1AsPdfBlob` Konstanten, `EntdeckenPage` QR/Layout A1, `getWerbemittelHtml2canvasCaptureCss` a1-Block, Test ergänzt. **Commit:** _(nach Push eintragen)_
 
 ---
 

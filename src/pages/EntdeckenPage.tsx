@@ -793,7 +793,7 @@ export default function EntdeckenPage() {
   useEffect(() => {
     let cancelled = false
     const keys: PlakatQrKey[] = ['solo', 'verein', 'familie', 'testpilot']
-    const opts = { width: 128, margin: 1 }
+    const opts = isPlakatA1PrintMode ? { width: 280, margin: 2 } : { width: 128, margin: 1 }
     Promise.all(
       keys.map((k) =>
         QRCode.toDataURL(buildQrUrlWithBust(plakatQrAbsoluteUrls[k], qrVersionTs), opts).then((d) => [k, d] as const),
@@ -808,7 +808,7 @@ export default function EntdeckenPage() {
     return () => {
       cancelled = true
     }
-  }, [qrVersionTs, plakatQrAbsoluteUrls])
+  }, [qrVersionTs, plakatQrAbsoluteUrls, isPlakatA1PrintMode])
 
   /** Nach Galerie-Entscheidung: Fremde zuerst auf die ök2-/VK2-Willkommensseite („WILLKOMMEN BEI Galerie Muster“) – nirgends sonst */
   const openByChoice = (weg: 'solo' | 'verein') => {
@@ -834,6 +834,7 @@ export default function EntdeckenPage() {
     onClick,
     color,
     poster = false,
+    posterA1Print = false,
     posterQrSrc,
     posterQrLabel,
   }: {
@@ -845,6 +846,8 @@ export default function EntdeckenPage() {
     color?: string
     /** Größere Typo – Produktlaunch-Plakat (Entdecken q1) */
     poster?: boolean
+    /** A1-Druck/PDF: größere QR-Darstellung */
+    posterA1Print?: boolean
     /** QR neben dem Punkt (Plakat) */
     posterQrSrc?: string
     posterQrLabel?: string
@@ -899,11 +902,11 @@ export default function EntdeckenPage() {
           <img
             src={posterQrSrc}
             alt={posterQrLabel || ''}
-            width={72}
-            height={72}
+            width={posterA1Print ? 96 : 72}
+            height={posterA1Print ? 96 : 72}
             style={{
-              width: 'clamp(64px, 14vw, 80px)',
-              height: 'clamp(64px, 14vw, 80px)',
+              width: posterA1Print ? 'clamp(76px, 15vw, 108px)' : 'clamp(64px, 14vw, 80px)',
+              height: posterA1Print ? 'clamp(76px, 15vw, 108px)' : 'clamp(64px, 14vw, 80px)',
               flexShrink: 0,
               alignSelf: 'center',
               objectFit: 'contain',
@@ -1144,12 +1147,16 @@ export default function EntdeckenPage() {
             <h3 style={{ fontFamily: fontHeading, fontSize: 'clamp(1.2rem, 3.2vw, 1.55rem)', fontWeight: 700, color: text, textAlign: 'center', marginBottom: '0.65rem', lineHeight: 1.25 }}>
               {T.weg}
             </h3>
-            <p style={{ fontSize: 'clamp(0.92rem, 2.2vw, 1.08rem)', color: muted, textAlign: 'center', lineHeight: 1.55, marginBottom: 'clamp(1.35rem, 3.5vw, 2rem)', maxWidth: 560, marginLeft: 'auto', marginRight: 'auto' }}>
+            <p
+              className={isPlakatA1PrintMode ? 'entdecken-plakat-a1-weginleitung' : undefined}
+              style={{ fontSize: 'clamp(0.92rem, 2.2vw, 1.08rem)', color: muted, textAlign: 'center', lineHeight: 1.55, marginBottom: 'clamp(1.35rem, 3.5vw, 2rem)', maxWidth: 560, marginLeft: 'auto', marginRight: 'auto' }}
+            >
               {T.wegIntro}
             </p>
 
             <ChoiceCard
               poster
+              posterA1Print={isPlakatA1PrintMode}
               posterQrSrc={plakatQrDataUrl.solo}
               posterQrLabel={`QR: ${T.wegSolo.label}`}
               {...T.wegSolo}
@@ -1159,6 +1166,7 @@ export default function EntdeckenPage() {
             />
             <ChoiceCard
               poster
+              posterA1Print={isPlakatA1PrintMode}
               posterQrSrc={plakatQrDataUrl.verein}
               posterQrLabel={`QR: ${T.wegVerein.label}`}
               {...T.wegVerein}
@@ -1209,11 +1217,11 @@ export default function EntdeckenPage() {
                 <img
                   src={plakatQrDataUrl.testpilot}
                   alt="QR: Testpilot-Anmeldung"
-                  width={72}
-                  height={72}
+                  width={isPlakatA1PrintMode ? 96 : 72}
+                  height={isPlakatA1PrintMode ? 96 : 72}
                   style={{
-                    width: 'clamp(64px, 14vw, 80px)',
-                    height: 'clamp(64px, 14vw, 80px)',
+                    width: isPlakatA1PrintMode ? 'clamp(76px, 15vw, 108px)' : 'clamp(64px, 14vw, 80px)',
+                    height: isPlakatA1PrintMode ? 'clamp(76px, 15vw, 108px)' : 'clamp(64px, 14vw, 80px)',
                     flexShrink: 0,
                     objectFit: 'contain',
                     borderRadius: 10,

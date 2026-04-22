@@ -433,14 +433,23 @@ function fitCanvasInSquareLetterbox(src: HTMLCanvasElement, side: number): HTMLC
   return out
 }
 
+/**
+ * Entdecken q1 → A1-PDF für Druckerei: ~190–205 dpi effektiv auf 594 mm Breite
+ * (1660×2,8 ≈ 4648 px). Höhere Werte riskieren Canvas-/Speicherlimits im Browser.
+ */
+const ENTDECKEN_PLAKAT_A1_IFRAME_WIDTH_PX = 1660
+const ENTDECKEN_PLAKAT_A1_HTML2CANVAS_SCALE = 2.8
+const ENTDECKEN_PLAKAT_A1_IFRAME_MIN_HEIGHT_PX = 4000
+const ENTDECKEN_PLAKAT_A1_H2C_WINDOW_HEIGHT_MAX = 13600
+
 /** Entdecken-Route mit Produktvorstellung-Plakat (q1) → PDF A1 (Druckerei-Mail). */
 async function captureEntdeckenPlakatA1AsPdfBlob(
   absoluteUrl: string,
   capture: WerbemittelPdfCaptureOptions | undefined
 ): Promise<Blob | null> {
   if (typeof document === 'undefined') return null
-  const iframeWidthPx = 1280
-  const iframeMinHeightPx = 3800
+  const iframeWidthPx = ENTDECKEN_PLAKAT_A1_IFRAME_WIDTH_PX
+  const iframeMinHeightPx = ENTDECKEN_PLAKAT_A1_IFRAME_MIN_HEIGHT_PX
   const safeHtmlHint = '<div class="entdecken-plakat-a1-capture"></div>'
 
   const iframe = document.createElement('iframe')
@@ -532,7 +541,8 @@ async function captureEntdeckenPlakatA1AsPdfBlob(
     const pdfOpts = {
       ...HTML2PDF_WERBEMITTEL_BASE,
       filename: 'entdecken-plakat-a1.pdf',
-      margin: [2, 2, 2, 2] as [number, number, number, number],
+      margin: [5, 5, 5, 5] as [number, number, number, number],
+      image: { type: 'jpeg' as const, quality: 0.98 },
       jsPDF: {
         unit: 'mm' as const,
         format: 'a1' as const,
@@ -540,7 +550,7 @@ async function captureEntdeckenPlakatA1AsPdfBlob(
       },
       html2canvas: {
         ...HTML2PDF_WERBEMITTEL_BASE.html2canvas,
-        scale: 2.15,
+        scale: ENTDECKEN_PLAKAT_A1_HTML2CANVAS_SCALE,
       },
     }
 

@@ -720,6 +720,26 @@ export function getWerbemittelHtml2canvasCaptureCss(
       `
       : ''
 
+  /** Entdecken q1 – A1-Druck: breitere Spalte + etwas größere Überschriften im Hi-Res-Iframe. */
+  const entdeckenA1Capture =
+    pdfFormat === 'a1'
+      ? `
+        .entdecken-plakat-a1-inner {
+          max-width: 1200px !important;
+        }
+        .entdecken-plakat-a1-capture h2 {
+          font-size: clamp(1.5rem, 4.4vw, 2.25rem) !important;
+        }
+        .entdecken-plakat-a1-capture h3 {
+          font-size: clamp(1.25rem, 3.5vw, 1.65rem) !important;
+        }
+        .entdecken-plakat-a1-capture .entdecken-plakat-a1-weginleitung {
+          font-size: clamp(0.95rem, 2.35vw, 1.12rem) !important;
+          max-width: 620px !important;
+        }
+      `
+      : ''
+
   const extraPlakat = isPlakatPreviewScale
     ? `
           body { padding: 0.5rem !important; }
@@ -748,6 +768,7 @@ export function getWerbemittelHtml2canvasCaptureCss(
         ${bodyPdfCapture}
         ${plakatH1Raster}
         ${entdeckenSocialCapture}
+        ${entdeckenA1Capture}
         ${extraPlakat}
         ${prDocCapture}
       `.trim()
