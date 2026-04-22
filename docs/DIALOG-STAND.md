@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 22.04.26 – **Präsentationsboard: Mandant t= – Fallback APf-Env + loadEnv in write-build-info** (gegen doppelte Huber-Musterfamilie) – `src/config/k2FamiliePresentation.ts`, `scripts/write-build-info.js`, `.env.example`. **Commit:** (nach Push)
+**Letzter Stand:** 22.04.26 – **Präsentationsboard: Mandant t= – Fallback APf-Env + loadEnv in write-build-info** (gegen doppelte Huber-Musterfamilie) – `src/config/k2FamiliePresentation.ts`, `scripts/write-build-info.js`, `.env.example`. **Commit:** `331e1fec` ✅ GitHub
 
 ---
 
