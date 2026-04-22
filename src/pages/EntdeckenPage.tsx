@@ -739,10 +739,12 @@ export default function EntdeckenPage() {
         document.head.appendChild(el)
       }
       const size = isPlakatA1PrintMode ? 'A1 portrait' : isPlakatSocialPrintMode ? '210mm 210mm' : 'A4 portrait'
-      /* A4: gleiche Ränder wie @page entdecken-q1-clean (3/6/6/6) – alles „8mm“ drückte + vertikal zu viel */
-      const pageMargin = isPlakatA1PrintMode || isPlakatSocialPrintMode ? '2mm' : '3mm 6mm 6mm 6mm'
+      /* A4: nur Rand oben 0 – kein generisches @page (hätte alle Seiten überschrieben). Benannte Seite = Entdecken q1. */
+      const pageMargin = isPlakatA1PrintMode || isPlakatSocialPrintMode ? '2mm' : '0mm 6mm 6mm 6mm'
+      const pageSel =
+        isPlakatA1PrintMode || isPlakatSocialPrintMode ? '@page' : '@page entdecken-q1-clean'
       el.textContent = `@media print {
-        @page {
+        ${pageSel} {
           size: ${size};
           margin: ${pageMargin};
           @top-left { content: none !important; }
@@ -1004,7 +1006,7 @@ export default function EntdeckenPage() {
   return (
     <div
       className={['entdecken-page-root', step === 'q1' ? 'entdecken-q1-print-page' : ''].filter(Boolean).join(' ')}
-      style={{ background: bgLight, minHeight: '100vh', fontFamily: fontBody, color: text }}
+      style={{ background: bgLight, fontFamily: fontBody, color: text }}
     >
       <link rel="stylesheet" href={PROMO_FONTS_URL} />
 
@@ -1198,10 +1200,10 @@ export default function EntdeckenPage() {
               `
               : `
                 @media print {
-                  @page {
+                  @page entdecken-q1-clean {
                     size: A4 portrait;
-                    /* Wie @page entdecken-q1-clean: wenig oben, eine Seite */
-                    margin: 3mm 6mm 6mm 6mm;
+                    /* Nur Abstand nach oben weg – keine Schrift verkleinern */
+                    margin: 0mm 6mm 6mm 6mm;
                     @top-left { content: none !important; }
                     @top-center { content: none !important; }
                     @top-right { content: none !important; }
@@ -1213,6 +1215,8 @@ export default function EntdeckenPage() {
                     background: #fff !important;
                     margin: 0 !important;
                     padding: 0 !important;
+                    min-height: 0 !important;
+                    height: auto !important;
                     -webkit-print-color-adjust: exact !important;
                     print-color-adjust: exact !important;
                   }
@@ -1221,26 +1225,29 @@ export default function EntdeckenPage() {
                   #root { padding-bottom: 0 !important; margin: 0 !important; }
                   .entdecken-page-root { min-height: 0 !important; }
                   .entdecken-q1-a4-browser-print {
+                    display: block !important;
                     min-height: 0 !important;
                     width: 100% !important;
                     max-width: 100% !important;
                     padding: 0 !important;
-                    justify-content: flex-start !important;
-                    align-items: stretch !important;
                     box-sizing: border-box !important;
                     overflow: visible !important;
                     -webkit-text-size-adjust: 100% !important;
                     text-size-adjust: 100% !important;
                   }
                   .entdecken-q1-a4-browser-print .entdecken-q1-a4-scale-wrap {
+                    display: block !important;
                     overflow: visible;
                     width: 100% !important;
                     max-width: 100% !important;
                     box-sizing: border-box;
                   }
                   .entdecken-q1-a4-browser-print .entdecken-q1-inner {
+                    display: block !important;
                     max-width: 100% !important;
                     width: 100% !important;
+                    margin-left: auto !important;
+                    margin-right: auto !important;
                     box-sizing: border-box;
                   }
                   .entdecken-q1-a4-browser-print .entdecken-q1-a4-footer { display: none !important; }
