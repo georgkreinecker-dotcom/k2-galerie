@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nach **Push/Deploy** Präsentationsboard: beide Kacheln mit **`?t=`** in der Adresse (Kreinecker) – nicht mehr nackt → nicht mehr Muster **Huber**. Wenn nötig: in Vercel mindestens **`VITE_K2_FAMILIE_APF_MEINE_FAMILIE_TENANT_ID`** (oder `VITE_…KREINECKER_STAMMBAUM…`) setzen.  
-**Einordnung:** `?t=` fehlte oft, weil nur ein Env-Name gesetzt war – **Fallback + loadEnv** wie bei Vite-Build: `k2FamiliePresentation.ts`, `write-build-info.js`.
+**Was wir JETZT tun:** Georg kann nach Deploy prüfen: **Musterfamilie Huber** auf Vercel sollte **Hero-Fotos** zeigen (Fallback), **Kreinecker** weiter: Bilder nur wo Seitengestaltung im **selben Browser** gespeichert ist (oder öffentliche Bild-URL).  
+**Einordnung:** Hero = `getFamilyPageContent` = **localStorage** pro Origin; APf = oft `localhost` mit Daten; **Huber** jetzt mit **Anzeige-Fallback** ohne Seed.
+
+---
+
+**Letzter Stand:** 22.04.26 – **K2 Familie: Huber-Muster Hero/Karten-Bilder Fallback** (leerer Speicher auf Vercel/Handy) – `pageContentFamilie.ts`, Test. **Commit:** `911293d4` ✅ GitHub
 
 ---
 
