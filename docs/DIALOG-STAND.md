@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 22.04.26 – **Entdecken q1 Druck: globale Fußzeile + Seitenzahl aus** – `html.k2-print-entdecken-q1`, `@page entdecken-q1-clean`, Klasse `entdecken-q1-print-page` + `entdecken-page-root` am Wrapper; A1-Print-Block `@bottom-right` leer. **Commit:** `bfd888dd` ✅ GitHub (nach Push)
+**Letzter Stand:** 22.04.26 – **Entdecken q1 Druck: globale Fußzeile + Seitenzahl aus** – `html.k2-print-entdecken-q1`, `@page entdecken-q1-clean`, Klasse `entdecken-q1-print-page` + `entdecken-page-root` am Wrapper; A1-Print-Block `@bottom-right` leer. **Commit:** `96dbad6e` ✅ GitHub (nach Push)
 
 ---
 
