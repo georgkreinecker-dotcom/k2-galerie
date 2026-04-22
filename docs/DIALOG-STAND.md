@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 22.04.26 – **Entdecken A1-Plakat: Hi-Res für Druckerei** – `captureEntdeckenPlakatA1AsPdfBlob` Konstanten, `EntdeckenPage` QR/Layout A1, `getWerbemittelHtml2canvasCaptureCss` a1-Block, Test ergänzt. **Commit:** _(nach Push eintragen)_
+**Letzter Stand:** 22.04.26 – **Entdecken A1-Plakat: Hi-Res für Druckerei** – `captureEntdeckenPlakatA1AsPdfBlob` Konstanten, `EntdeckenPage` QR/Layout A1, `getWerbemittelHtml2canvasCaptureCss` a1-Block, Test ergänzt. **Commit:** `be0eb100` ✅ GitHub
 
 ---
 
