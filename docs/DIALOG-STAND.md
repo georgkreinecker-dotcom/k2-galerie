@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 19.04.26 – **Entdecken q1: A4-Druck eine Seite** – `EntdeckenPage.tsx` `@media print` für `.entdecken-q1-a4-browser-print` (nicht A1), Klassen `entdecken-q1-inner`, Testpilot, Footer. **Commit:** `c219367b` (Push falls nötig nachziehen)
+**Letzter Stand:** 19.04.26 – **Entdecken q1: A4-Druck eine Seite** – `EntdeckenPage.tsx` `@media print` für `.entdecken-q1-a4-browser-print` (nicht A1), Klassen `entdecken-q1-inner`, Testpilot, Footer. **Commit:** `8171818e` (Push falls nötig nachziehen)
 
 ---
 
