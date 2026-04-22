@@ -15,6 +15,17 @@ function getStorageKey(tenantId: string): string {
 
 const DEFAULTS: PageContentFamilie = {}
 
+/**
+ * Musterfamilie Huber – gleiche URLs wie in seedFamilieHuber (familieHuberMuster).
+ * Anzeige-Fallback: auf Vercel/anderem Gerät ist localStorage leer → ohne Fallback kein Hero-Foto,
+ * obwohl auf der APf (localhost, voller Speicher) die Bilder sichtbar sind.
+ */
+const HUBER_TENANT_ID = 'huber'
+const HUBER_FALLBACK: PageContentFamilie = {
+  welcomeImage: 'https://picsum.photos/seed/huber-family/1200/500',
+  cardImage: 'https://picsum.photos/seed/huber-card/800/400',
+}
+
 /** Liest Seitengestaltung (Bilder) für eine Familie. */
 export function getFamilyPageContent(tenantId: string): PageContentFamilie {
   try {
@@ -22,12 +33,22 @@ export function getFamilyPageContent(tenantId: string): PageContentFamilie {
     const raw = typeof window !== 'undefined' ? localStorage.getItem(key) : null
     if (raw && raw.length > 0) {
       const parsed = JSON.parse(raw) as Partial<PageContentFamilie>
-      return {
+      const base: PageContentFamilie = {
         welcomeImage: parsed.welcomeImage ?? DEFAULTS.welcomeImage,
         cardImage: parsed.cardImage ?? DEFAULTS.cardImage,
       }
+      if (tenantId === HUBER_TENANT_ID) {
+        return {
+          welcomeImage: base.welcomeImage || HUBER_FALLBACK.welcomeImage,
+          cardImage: base.cardImage || HUBER_FALLBACK.cardImage,
+        }
+      }
+      return base
     }
   } catch (_) {}
+  if (tenantId === HUBER_TENANT_ID) {
+    return { ...HUBER_FALLBACK }
+  }
   return { ...DEFAULTS }
 }
 

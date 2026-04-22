@@ -23,4 +23,10 @@ describe('pageContentFamilie', () => {
     const c = getFamilyPageContent('tenant-b')
     expect(c.welcomeImage).toBe('')
   })
+
+  it('Muster huber: ohne Speicher = Standard-Hero-URLs (Vercel/anderes Gerät)', () => {
+    const c = getFamilyPageContent('huber')
+    expect(c.welcomeImage).toMatch(/^https:\/\/picsum\.photos/)
+    expect(c.cardImage).toMatch(/^https:\/\/picsum\.photos/)
+  })
 })
