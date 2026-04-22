@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Georg prüft **Präsentationsboard**: Kachel **K2 Familie** → **/meine-familie**; **Stammbaum Kreinecker** → **/stammbaum** (getrennte Pfade; `?t=` setzt Vercel beim Build). Dazu gern: Speichern-Feedback wie zuletzt.  
-**Einordnung:** Alte Kacheln gingen über `?go=`-Redirect (konnte wie „dasselbe“ wirken) – jetzt direkte URLs in `public/…html` + `write-build-info.js`.
+**Was wir JETZT tun:** Nach **Push/Deploy** Präsentationsboard: beide Kacheln mit **`?t=`** in der Adresse (Kreinecker) – nicht mehr nackt → nicht mehr Muster **Huber**. Wenn nötig: in Vercel mindestens **`VITE_K2_FAMILIE_APF_MEINE_FAMILIE_TENANT_ID`** (oder `VITE_…KREINECKER_STAMMBAUM…`) setzen.  
+**Einordnung:** `?t=` fehlte oft, weil nur ein Env-Name gesetzt war – **Fallback + loadEnv** wie bei Vite-Build: `k2FamiliePresentation.ts`, `write-build-info.js`.
+
+---
+
+**Letzter Stand:** 22.04.26 – **Präsentationsboard: Mandant t= – Fallback APf-Env + loadEnv in write-build-info** (gegen doppelte Huber-Musterfamilie) – `src/config/k2FamiliePresentation.ts`, `scripts/write-build-info.js`, `.env.example`. **Commit:** (nach Push)
 
 ---
 

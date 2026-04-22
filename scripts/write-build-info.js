@@ -105,6 +105,42 @@ let indexChanged = false
 }
 
 /**
+ * Wie in src/config/k2FamiliePresentation.ts: mandant t= aus Stammbaum-Env oder APf-Meine-Familie-Env
+ * (plus loadEnv aus Vite, damit lokales .env wie beim Vite-Build greift).
+ */
+function getK2FamiliePresentationTenantIdForHtmlPatch() {
+  const keys = [
+    'VITE_K2_FAMILIE_KREINECKER_STAMMBAUM_TENANT_ID',
+    'VITE_K2_FAMILIE_APF_MEINE_FAMILIE_TENANT_ID',
+  ]
+  const tryValue = (v) => {
+    const raw = String(v || '').trim()
+    if (!raw || raw.length > 64) return ''
+    const lower = raw.toLowerCase()
+    if (lower === '00000000-0000-0000-0000-000000000000') return ''
+    if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(lower)) return ''
+    return raw
+  }
+  for (const k of keys) {
+    const fromShell = tryValue(process.env[k])
+    if (fromShell) return fromShell
+  }
+  let fromFiles = {}
+  try {
+    const { loadEnv } = require('vite')
+    const mode = process.env.NODE_ENV === 'production' ? 'production' : 'development'
+    fromFiles = loadEnv(mode, path.join(__dirname, '..'), '')
+  } catch {
+    fromFiles = {}
+  }
+  for (const k of keys) {
+    const fromFile = tryValue(fromFiles[k])
+    if (fromFile) return fromFile
+  }
+  return ''
+}
+
+/**
  * public/launch-praesentation-board.html: K2-Familie-Kacheln = immer unterschiedliche Zielpfade
  * (meine-familie vs. stammbaum), optional identisches ?t= aus Vercel-Env – kein ?go=-Redirect mehr nötig.
  */
@@ -116,7 +152,7 @@ let indexChanged = false
   } catch {
     return
   }
-  const t = String(process.env.VITE_K2_FAMILIE_KREINECKER_STAMMBAUM_TENANT_ID || '').trim()
+  const t = getK2FamiliePresentationTenantIdForHtmlPatch()
   const base = 'https://k2-galerie.vercel.app'
   const meineBare = `${base}/projects/k2-familie/meine-familie`
   const stammBare = `${base}/projects/k2-familie/stammbaum`
