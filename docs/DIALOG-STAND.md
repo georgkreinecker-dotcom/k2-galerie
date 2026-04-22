@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 22.04.26 – **Rückmeldung Speichern: „in Arbeit / fertig / Fehler“ (Vorschau + Admin, über Modals)** – `GalerieVorschauPage` (`loadStatus` + `tone`, z-index 35000); `ScreenshotExportAdmin` (`werkSaveToast`, z-index 50000). **Commit:** _(wird nach Push ergänzt)_
+**Letzter Stand:** 22.04.26 – **Rückmeldung Speichern: „in Arbeit / fertig / Fehler“ (Vorschau + Admin, über Modals)** – `GalerieVorschauPage` (`loadStatus` + `tone`, z-index 35000); `ScreenshotExportAdmin` (`werkSaveToast`, z-index 50000). **Commit:** `8361a216` ✅ GitHub
 
 ---
 
