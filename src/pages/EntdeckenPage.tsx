@@ -1187,7 +1187,8 @@ export default function EntdeckenPage() {
                 @media print {
                   @page {
                     size: A4 portrait;
-                    margin: 8mm;
+                    /* Mit index.css: weniger Rand oben, eine Seite A4 */
+                    margin: 5mm 8mm 7mm 8mm;
                     @top-left { content: none !important; }
                     @top-center { content: none !important; }
                     @top-right { content: none !important; }

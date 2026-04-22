@@ -1,7 +1,13 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Entdecken A1 optimierter Druck: PDF erneut erzeugen (Datei soll deutlich größer als ~150 kB sein, klare Kante/QR).  
-**Einordnung:** A1-„Mini-PDF“ kam von **niedrigem** html2canvas-`scale` (2,15) + JPEG. Fix: Iframe 2100 px, **Scale 3,35** (~250–300 dpi), **PNG** in der PDF; Push `86bab280`.
+**Was wir JETZT tun:** Entdecken q1 A4: Georg druckt/Vorschau – alles **eine Seite** (AGB unten).  
+**Einordnung:** Weißraum oben = **100vh + `justify-content: center`**. Druck: `flex-start`, kein min-height, `@page` oben 5 mm, Legal-Zeile enger.
+
+---
+
+**Letzter Stand:** 22.04.26 – **Entdecken q1 A4: nach oben schieben, eine Seite** – `index.css` (`html.k2-print-entdecken-q1` …), `EntdeckenPage` @page-Margin. **Commit:** (nach Push)
+
+---
 
 ---
 
