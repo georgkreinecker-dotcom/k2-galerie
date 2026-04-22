@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Entdecken q1 A4: Georg prüft **Druckvorschau** = Zielbild (3 Karten **untereinander**, je Karte Zeile; Pilot + Fuß auf **einer** Seite).  
-**Einordnung:** Falsch war **3 Spalten nebeneinander**; Soll: **Spalte** + kompaktere Drucktypo, Fuß inkl. `PRODUCT_URHEBER_ANWENDUNG`. **index.css** + eingebettetes `@media print` in `EntdeckenPage`.
+**Was wir JETZT tun:** Entdecken q1 A4: Georg prüft **Druck 100%** = eine Seite **ohne** manuelle 76%-Skalierung.  
+**Einordnung:** `zoom: 0.76` am `.entdecken-q1-a4-scale-wrap` nur `@media print` = früher nötige Browserskalierung; `@page` 4mm; `beforeprint`-Margin angeglichen; Hinweistext.
+
+---
+
+**Letzter Stand:** 22.04.26 – **Entdecken A4-Druck: 100% = früher ~76% (zoom 0,76 + engere Ränder)** – `EntdeckenPage.tsx` (eingebettet + `k2-entdecken-print-page-margin-kill`, `index.css`. **Commit:** `9040134f` ✅ GitHub
 
 ---
 
