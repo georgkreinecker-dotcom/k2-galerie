@@ -32,6 +32,7 @@ import {
 } from '../config/pageContentEntdecken'
 import { ENTDECKEN_HERO_IMAGE_FALLBACK_PATH, isEntdeckenHeroVideoUrl } from '../config/entdeckenHeroMedia'
 import { loadEntdeckenHeroOverlayIfFresh } from '../utils/entdeckenHeroOverlayStorage'
+import { setEntdeckenQ1PrintFooterSuppress } from '../utils/entdeckenQ1PrintFooterSuppress'
 
 /** Plakat q1: große Zeile zwischen kgm solution und Produktvorstellung – Kurzform der Galerie-Marke (z. B. „K2“). */
 const ENTDECKEN_Q1_K2_KURZMARKE = K2_GALERIE_PUBLIC_BRAND.trim().split(/\s+/)[0] || 'K2'
@@ -657,6 +658,7 @@ export default function EntdeckenPage() {
       const sp = new URLSearchParams(window.location.search)
       if (sp.get('printPlakat') === 'a1' || sp.get('printPlakat') === 'social') return 'q1'
       const p = sp.get('step')
+      if (p === 'q1') return 'q1'
       if (p === 'hub') return 'hub'
     } catch (_) {}
     return 'hero'
@@ -698,18 +700,70 @@ export default function EntdeckenPage() {
     }
   }, [location.search])
 
-  /** Browser-Druck q1: globale App-Druckfußzeile + @page-Seitenzahl aus (nur Plakat-Impressum). */
-  useEffect(() => {
+  /** Browser-Druck q1: globale #print-footer nicht rendern (nur Plakat-Impressum im Inhalt). */
+  useLayoutEffect(() => {
     const on = step === 'q1'
+    setEntdeckenQ1PrintFooterSuppress(on)
+    return () => {
+      setEntdeckenQ1PrintFooterSuppress(false)
+    }
+  }, [step])
+
+  /** q1: Klasse auf html + body für globale Druck-Styles (index.css). */
+  useLayoutEffect(() => {
+    if (step !== 'q1') return
     try {
-      document.documentElement.classList.toggle('k2-print-entdecken-q1', on)
+      document.documentElement.classList.add('k2-print-entdecken-q1')
+      document.body.classList.add('k2-print-entdecken-q1')
     } catch (_) {}
     return () => {
       try {
         document.documentElement.classList.remove('k2-print-entdecken-q1')
+        document.body.classList.remove('k2-print-entdecken-q1')
       } catch (_) {}
     }
   }, [step])
+
+  /**
+   * Browser-Druck: index.css setzt global @page @bottom-right „Seite x von y“.
+   * WebKit wendet das oft trotz named page an – kurz vor Druck letzte @page-Regel ohne Margin-Boxen.
+   */
+  useEffect(() => {
+    if (step !== 'q1') return
+    const id = 'k2-entdecken-print-page-margin-kill'
+    const apply = () => {
+      let el = document.getElementById(id) as HTMLStyleElement | null
+      if (!el) {
+        el = document.createElement('style')
+        el.id = id
+        document.head.appendChild(el)
+      }
+      const size = isPlakatA1PrintMode ? 'A1 portrait' : isPlakatSocialPrintMode ? '210mm 210mm' : 'A4 portrait'
+      el.textContent = `@media print {
+        @page {
+          size: ${size};
+          margin: 2mm;
+          @top-left { content: "" !important; }
+          @top-center { content: "" !important; }
+          @top-right { content: "" !important; }
+          @bottom-left { content: "" !important; }
+          @bottom-center { content: "" !important; }
+          @bottom-right { content: "" !important; }
+        }
+      }`
+    }
+    const remove = () => {
+      document.getElementById(id)?.remove()
+    }
+    apply()
+    window.addEventListener('beforeprint', apply)
+    window.addEventListener('afterprint', remove)
+    return () => {
+      window.removeEventListener('beforeprint', apply)
+      window.removeEventListener('afterprint', remove)
+      remove()
+    }
+  }, [step, isPlakatA1PrintMode, isPlakatSocialPrintMode])
 
   /** Hero-Bild: primary → SVG-Fallback → kein Bild (nie Fragezeichen-Icon) */
   const [heroImageSrc, setHeroImageSrc] = useState<'primary' | 'svg' | 'none'>('primary')
@@ -1126,61 +1180,89 @@ export default function EntdeckenPage() {
                   }
                   html, body { background: #fff !important; }
                   .no-print { display: none !important; }
+                  #print-footer { display: none !important; }
                 }
               `
               : `
                 @media print {
-                  @page { size: A4 portrait; margin: 5mm; }
-                  html, body { background: #fff !important; }
+                  @page {
+                    size: A4 portrait;
+                    margin: 2mm;
+                    @top-left { content: ""; }
+                    @top-center { content: ""; }
+                    @top-right { content: ""; }
+                    @bottom-left { content: ""; }
+                    @bottom-center { content: ""; }
+                    @bottom-right { content: ""; }
+                  }
+                  html, body {
+                    background: #fff !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    -webkit-print-color-adjust: exact !important;
+                    print-color-adjust: exact !important;
+                  }
                   .no-print { display: none !important; }
+                  #print-footer { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; }
+                  #root { padding-bottom: 0 !important; margin: 0 !important; }
                   .entdecken-page-root { min-height: 0 !important; }
                   .entdecken-q1-a4-browser-print {
                     min-height: 0 !important;
-                    padding: 0 2mm 1mm !important;
+                    padding: 0 1mm 0 !important;
                     justify-content: flex-start !important;
                   }
-                  .entdecken-q1-a4-browser-print .entdecken-q1-inner > div:first-child { margin-bottom: 0.1rem !important; }
-                  .entdecken-q1-a4-browser-print .entdecken-q1-inner > div:first-child span { font-size: 0.82rem !important; }
-                  .entdecken-q1-a4-browser-print .entdecken-q1-inner > div:first-child > div { margin: 0.3rem auto 0 !important; }
+                  /* Eine Seite A4: Impressum mit in .inner (zoom) – sonst große Fußzeile → 2. Seite */
+                  .entdecken-q1-a4-browser-print .entdecken-q1-inner {
+                    zoom: 0.56;
+                  }
+                  @supports not (zoom: 1) {
+                    .entdecken-q1-a4-browser-print .entdecken-q1-inner {
+                      transform: scale(0.56);
+                      transform-origin: top center;
+                    }
+                  }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-inner > div:first-of-type { margin-bottom: 0.06rem !important; }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-inner > div:first-child span { font-size: 0.72rem !important; }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-inner > div:first-child > div { margin: 0.2rem auto 0 !important; }
                   .entdecken-q1-a4-browser-print .entdecken-plakat-k2-marke {
-                    font-size: 1.45rem !important;
-                    margin-bottom: 0.15rem !important;
+                    font-size: 1.2rem !important;
+                    margin-bottom: 0.08rem !important;
                     line-height: 1 !important;
                   }
                   .entdecken-q1-a4-browser-print h2 {
-                    font-size: 0.92rem !important;
-                    margin-bottom: 0.06rem !important;
-                    line-height: 1.15 !important;
+                    font-size: 0.78rem !important;
+                    margin-bottom: 0.04rem !important;
+                    line-height: 1.12 !important;
                   }
                   .entdecken-q1-a4-browser-print h3 {
-                    font-size: 0.82rem !important;
-                    margin-bottom: 0.06rem !important;
-                    line-height: 1.15 !important;
+                    font-size: 0.7rem !important;
+                    margin-bottom: 0.04rem !important;
+                    line-height: 1.12 !important;
                   }
                   .entdecken-q1-a4-browser-print .entdecken-q1-weginleitung {
-                    font-size: 0.68rem !important;
-                    margin-bottom: 0.28rem !important;
-                    line-height: 1.32 !important;
+                    font-size: 0.58rem !important;
+                    margin-bottom: 0.16rem !important;
+                    line-height: 1.25 !important;
                   }
                   .entdecken-q1-a4-browser-print button[data-poster-choice] {
-                    padding: 0.22rem 0.38rem !important;
-                    margin-bottom: 0.22rem !important;
-                    gap: 0.32rem !important;
-                    border-radius: 8px !important;
+                    padding: 0.14rem 0.28rem !important;
+                    margin-bottom: 0.14rem !important;
+                    gap: 0.22rem !important;
+                    border-radius: 6px !important;
                   }
-                  .entdecken-q1-a4-browser-print button[data-poster-choice] > span:first-child { font-size: 1.05rem !important; }
+                  .entdecken-q1-a4-browser-print button[data-poster-choice] > span:first-child { font-size: 0.88rem !important; }
                   .entdecken-q1-a4-browser-print button[data-poster-choice] > span:nth-child(2) > span:first-child {
-                    font-size: 0.74rem !important;
-                    margin-bottom: 0.06rem !important;
+                    font-size: 0.62rem !important;
+                    margin-bottom: 0.04rem !important;
                   }
                   .entdecken-q1-a4-browser-print button[data-poster-choice] > span:nth-child(2) > span:last-child {
-                    font-size: 0.62rem !important;
-                    line-height: 1.32 !important;
+                    font-size: 0.52rem !important;
+                    line-height: 1.28 !important;
                   }
                   .entdecken-q1-a4-browser-print button[data-poster-choice] > img {
-                    width: 44px !important;
-                    height: 44px !important;
-                    border-radius: 6px !important;
+                    width: 36px !important;
+                    height: 36px !important;
+                    border-radius: 5px !important;
                   }
                   .entdecken-q1-a4-browser-print .entdecken-q1-testpilot {
                     width: 100% !important;
@@ -1188,44 +1270,48 @@ export default function EntdeckenPage() {
                     margin-left: auto !important;
                     margin-right: auto !important;
                     box-sizing: border-box !important;
-                    margin-top: 0.12rem !important;
+                    margin-top: 0.04rem !important;
                     margin-bottom: 0 !important;
-                    padding: 0.28rem 0.4rem !important;
-                    gap: 0.28rem !important;
+                    padding: 0.08rem 0.14rem !important;
+                    gap: 0.06rem !important;
                     flex-direction: column !important;
                     align-items: stretch !important;
                   }
-                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot > div:first-child { align-items: flex-start !important; }
-                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot > div:first-child p {
-                    font-size: 0.66rem !important;
-                    line-height: 1.3 !important;
+                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot > div:first-child { align-items: flex-start !important; gap: 0.12rem !important; }
+                  /* Pilot-Fließtext: rem-basiert, eine Zeile A4. */
+                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot > div:first-child p.entdecken-q1-testpilot-text {
+                    font-size: 0.13rem !important;
+                    line-height: 1.2 !important;
+                    font-weight: 600 !important;
                   }
-                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot > div:first-child span[aria-hidden] { font-size: 0.95rem !important; }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot > div:first-child span[aria-hidden] { font-size: 0.175rem !important; line-height: 1 !important; }
                   .entdecken-q1-a4-browser-print .entdecken-q1-testpilot-actions {
                     justify-content: center !important;
-                    gap: 0.28rem !important;
+                    gap: 0.1rem !important;
                   }
                   .entdecken-q1-a4-browser-print .entdecken-q1-testpilot-actions img {
-                    width: 22px !important;
-                    height: 22px !important;
+                    width: 14px !important;
+                    height: 14px !important;
                   }
                   .entdecken-q1-a4-browser-print .entdecken-q1-testpilot-actions a {
-                    font-size: 0.58rem !important;
-                    padding: 0.16rem 0.38rem !important;
-                    border-radius: 6px !important;
+                    font-size: 0.34rem !important;
+                    padding: 0.06rem 0.18rem !important;
+                    border-radius: 4px !important;
                   }
-                  .entdecken-page-root > .entdecken-q1-a4-footer {
-                    padding: 0.15rem 0.2rem !important;
-                    font-size: 5.5pt !important;
-                    line-height: 1.15 !important;
+                  .entdecken-q1-a4-browser-print .entdecken-q1-a4-footer {
+                    padding: 0.08rem 0.12rem !important;
+                    font-size: 4.5pt !important;
+                    line-height: 1.1 !important;
                     border-top: none !important;
                     background: transparent !important;
+                    margin-top: 0 !important;
                   }
-                  .entdecken-page-root > .entdecken-q1-a4-footer a { font-size: inherit !important; }
-                  .entdecken-page-root > .entdecken-q1-a4-footer > div { margin-top: 0.08rem !important; font-size: 5pt !important; }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-a4-footer a { font-size: inherit !important; }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-a4-footer > div { margin-top: 0.04rem !important; font-size: 4pt !important; line-height: 1.12 !important; }
                 }
               `}
           </style>
+          <div className="entdecken-q1-a4-scale-wrap">
           <div
             className={['entdecken-q1-inner', isPlakatSocialPrintMode ? 'entdecken-plakat-social-inner' : ''].filter(Boolean).join(' ')}
             style={{
@@ -1354,10 +1440,19 @@ export default function EntdeckenPage() {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.55rem', minWidth: 0 }}>
-                <span style={{ fontSize: 'clamp(1.1rem, 2.8vw, 1.35rem)', lineHeight: 1.2, flexShrink: 0 }} aria-hidden title="Pilot">
+                <span style={{ fontSize: 'clamp(0.55rem, 1.4vw, 0.68rem)', lineHeight: 1.2, flexShrink: 0 }} aria-hidden title="Pilot">
                   🚩
                 </span>
-                <p style={{ margin: 0, fontSize: 'clamp(0.88rem, 2.1vw, 1.02rem)', color: text, lineHeight: 1.5, fontWeight: 600, fontFamily: fontBody }}>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: 'clamp(0.22rem, 0.52vw, 0.255rem)',
+                    color: text,
+                    lineHeight: 1.45,
+                    fontWeight: 600,
+                    fontFamily: fontBody,
+                  }}
+                >
                   {T.testpilotKurz}
                 </p>
               </div>
@@ -1412,32 +1507,50 @@ export default function EntdeckenPage() {
                 </Link>
               </div>
             </div>
-          </div>
 
-          {isEntdeckenPlakatCapture && (
-            <div
-              style={{
-                marginTop: 'clamp(1.25rem, 3vw, 2rem)',
-                textAlign: 'center',
-                padding: '0.75rem 1rem',
-                fontSize: '0.72rem',
-                color: muted,
-                borderTop: '1px solid #e8ddd0',
-                width: '100%',
-                maxWidth: isPlakatSocialPrintMode ? '100%' : 'min(94vw, 980px)',
-              }}
-            >
-              <Link to={AGB_ROUTE} state={{ returnTo: location.pathname }} style={{ color: muted, textDecoration: 'none' }}>
-                AGB
-              </Link>
-              {' · '}
-              {PRODUCT_BRAND_NAME}
-              {' · '}
-              <span>Kein Erwerb nötig</span>
-              <div style={{ marginTop: '0.5rem', fontSize: '0.7rem', opacity: 0.95 }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</div>
-              <div style={{ marginTop: '0.2rem', fontSize: '0.65rem', opacity: 0.9 }}>{PRODUCT_URHEBER_ANWENDUNG}</div>
-            </div>
-          )}
+            {isEntdeckenPlakatCapture && (
+              <div
+                style={{
+                  marginTop: 'clamp(1.25rem, 3vw, 2rem)',
+                  textAlign: 'center',
+                  padding: '0.75rem 1rem',
+                  fontSize: '0.72rem',
+                  color: muted,
+                  borderTop: '1px solid #e8ddd0',
+                  width: '100%',
+                  maxWidth: isPlakatSocialPrintMode ? '100%' : 'min(94vw, 980px)',
+                }}
+              >
+                <Link to={AGB_ROUTE} state={{ returnTo: location.pathname }} style={{ color: muted, textDecoration: 'none' }}>
+                  AGB
+                </Link>
+                {' · '}
+                {PRODUCT_BRAND_NAME}
+                {' · '}
+                <span>Kein Erwerb nötig</span>
+                <div style={{ marginTop: '0.5rem', fontSize: '0.7rem', opacity: 0.95 }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</div>
+                <div style={{ marginTop: '0.2rem', fontSize: '0.65rem', opacity: 0.9 }}>{PRODUCT_URHEBER_ANWENDUNG}</div>
+              </div>
+            )}
+
+            {!isEntdeckenPlakatCapture && (
+              <div
+                className="entdecken-q1-a4-footer"
+                style={{ textAlign: 'center', padding: '0.75rem 1rem', fontSize: '0.72rem', color: muted, borderTop: '1px solid #e8ddd0', background: bgCard }}
+              >
+                <Link to={AGB_ROUTE} state={{ returnTo: location.pathname }} style={{ color: muted, textDecoration: 'none' }}>
+                  AGB
+                </Link>
+                {' · '}
+                {PRODUCT_BRAND_NAME}
+                {' · '}
+                <span>Kein Erwerb nötig</span>
+                <div style={{ marginTop: '0.5rem', fontSize: '0.7rem', opacity: 0.95 }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</div>
+                <div style={{ marginTop: '0.2rem', fontSize: '0.65rem', opacity: 0.9 }}>{PRODUCT_URHEBER_ANWENDUNG}</div>
+              </div>
+            )}
+          </div>
+          </div>
         </div>
       )}
 
@@ -1471,10 +1584,9 @@ export default function EntdeckenPage() {
         </div>
       )}
 
-      {/* Fußzeile – eiserne Regel: Copyright wie definiert (K2/ök2/VK2); nicht auf Hero/Result */}
-      {step !== 'result' && step !== 'hero' && !(step === 'q1' && isEntdeckenPlakatCapture) && (
+      {/* Fußzeile – q1: Impressum liegt im Zoom-Wrapper (eine A4-Seite); hier nur hub & andere Schritte */}
+      {step !== 'result' && step !== 'hero' && step !== 'q1' && (
         <div
-          className={step === 'q1' && !isEntdeckenPlakatCapture ? 'entdecken-q1-a4-footer' : undefined}
           style={{ textAlign: 'center', padding: '0.75rem 1rem', fontSize: '0.72rem', color: muted, borderTop: '1px solid #e8ddd0', background: bgCard }}
         >
           <Link to={AGB_ROUTE} state={{ returnTo: location.pathname }} style={{ color: muted, textDecoration: 'none' }}>AGB</Link>

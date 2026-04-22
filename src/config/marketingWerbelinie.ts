@@ -698,6 +698,7 @@ export function getWerbemittelHtml2canvasCaptureCss(
   const entdeckenSocialCapture =
     pdfFormat === 'social'
       ? `
+        #print-footer { display: none !important; height: 0 !important; overflow: hidden !important; }
         .entdecken-plakat-social-capture {
           padding: 14px 12px 18px !important;
           justify-content: flex-start !important;
@@ -728,6 +729,10 @@ export function getWerbemittelHtml2canvasCaptureCss(
           margin-right: auto !important;
           box-sizing: border-box !important;
         }
+        .entdecken-plakat-social-capture .entdecken-q1-testpilot p.entdecken-q1-testpilot-text {
+          font-size: clamp(0.2rem, 0.5vw, 0.24rem) !important;
+          line-height: 1.35 !important;
+        }
       `
       : ''
 
@@ -735,6 +740,7 @@ export function getWerbemittelHtml2canvasCaptureCss(
   const entdeckenA1Capture =
     pdfFormat === 'a1'
       ? `
+        #print-footer { display: none !important; height: 0 !important; overflow: hidden !important; }
         .entdecken-plakat-a1-inner {
           max-width: 1200px !important;
         }
@@ -759,6 +765,10 @@ export function getWerbemittelHtml2canvasCaptureCss(
           margin-left: auto !important;
           margin-right: auto !important;
           box-sizing: border-box !important;
+        }
+        .entdecken-plakat-a1-capture .entdecken-q1-testpilot p.entdecken-q1-testpilot-text {
+          font-size: clamp(0.24rem, 0.575vw, 0.31rem) !important;
+          line-height: 1.35 !important;
         }
       `
       : ''
@@ -905,6 +915,13 @@ export function applyWerbemittelCaptureToClone(
       el.style.setProperty('color', p.text, 'important')
       el.style.setProperty('-webkit-text-fill-color', p.text, 'important')
     })
+  }
+
+  if (
+    (pdfFormat === 'a1' || pdfFormat === 'social') &&
+    /entdecken-plakat-(a1|social)-capture|entdecken-q1-testpilot/i.test(safeHtml)
+  ) {
+    clonedDoc.querySelectorAll('#print-footer').forEach(n => n.remove())
   }
 }
 

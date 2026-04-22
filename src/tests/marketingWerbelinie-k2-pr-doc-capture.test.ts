@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  applyWerbemittelCaptureToClone,
   getK2PrDocHtml2canvasCaptureCss,
   getVk2PrDocHtml2canvasCaptureCss,
   getPlakatPosterPrintCss,
@@ -57,6 +58,8 @@ describe('Sportwagenmodus Werbemittel-Capture (eine Quelle)', () => {
     expect(css).toContain('.entdecken-plakat-social-inner')
     expect(css).toContain('.entdecken-plakat-k2-marke')
     expect(css).toContain('.entdecken-plakat-social-capture .entdecken-q1-testpilot')
+    expect(css).toContain('p.entdecken-q1-testpilot-text')
+    expect(css).toContain('#print-footer')
     expect(css).toContain('max-width: 50%')
     expect(css).toContain('.no-print')
   })
@@ -66,6 +69,8 @@ describe('Sportwagenmodus Werbemittel-Capture (eine Quelle)', () => {
     expect(css).toContain('.entdecken-plakat-a1-weginleitung')
     expect(css).toContain('.entdecken-plakat-k2-marke')
     expect(css).toContain('.entdecken-plakat-a1-capture .entdecken-q1-testpilot')
+    expect(css).toContain('p.entdecken-q1-testpilot-text')
+    expect(css).toContain('#print-footer')
     expect(css).toContain('max-width: 50%')
     expect(css).toContain('.no-print')
   })
@@ -74,5 +79,27 @@ describe('Sportwagenmodus Werbemittel-Capture (eine Quelle)', () => {
     expect(css).toContain('@media print')
     expect(css).toContain('.plakat h1')
     expect(css).toContain('#1a1f3a')
+  })
+  it('applyWerbemittelCaptureToClone: Entdecken social/a1 entfernt #print-footer im Klon', () => {
+    const doc = document.implementation.createHTMLDocument('t')
+    const footer = doc.createElement('div')
+    footer.id = 'print-footer'
+    doc.body.appendChild(footer)
+    applyWerbemittelCaptureToClone(doc, '<div class="entdecken-plakat-social-capture">', 'social')
+    expect(doc.querySelector('#print-footer')).toBeNull()
+    const doc2 = document.implementation.createHTMLDocument('t2')
+    const f2 = doc2.createElement('div')
+    f2.id = 'print-footer'
+    doc2.body.appendChild(f2)
+    applyWerbemittelCaptureToClone(doc2, '<div class="entdecken-plakat-a1-capture">', 'a1')
+    expect(doc2.querySelector('#print-footer')).toBeNull()
+  })
+  it('applyWerbemittelCaptureToClone: Plakat ohne Entdecken behält #print-footer', () => {
+    const doc = document.implementation.createHTMLDocument('t')
+    const footer = doc.createElement('div')
+    footer.id = 'print-footer'
+    doc.body.appendChild(footer)
+    applyWerbemittelCaptureToClone(doc, '<div class="plakat">', 'social')
+    expect(doc.querySelector('#print-footer')).not.toBeNull()
   })
 })

@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Frei für die nächste Session.  
-**Einordnung:** **Entdecken q1 Prospekt/Plakat:** Keine störende **globale** Druckzeile mehr unter dem Impressum (`#print-footer` „… \| Druck: …“ und `@page` „Seite x von y“) – nur noch Inhalt inkl. Impressum; A1-`@page` ebenfalls ohne Rand-Seitenzahl.
+**Einordnung:** **Entdecken q1:** A4-Browserdruck kompakt (Scale); Pilot-Fließtext Bildschirm lesbar (`entdecken-q1-testpilot-text`), Druck stark klein; PDF-Capture A1/Social: `#print-footer` per CSS + Klon entfernen, Pilot-Text in Capture ~50 % der vorigen clamp-Werte. **Safari:** Browser-Kopf/Fuß (URL) nur in Druckdialog aus.
+
+---
+
+**Letzter Stand:** 22.04.26 – **Entdecken q1: Pilot-Screen lesbar, Capture ohne print-footer, Pilot im PDF halb so groß** – `EntdeckenPage.tsx`, `marketingWerbelinie.ts`, `marketingWerbelinie-k2-pr-doc-capture.test.ts`. **Git:** Spitze `main`, Nachricht „Entdecken q1: Pilot-Text Screen+Capture, print-footer im PDF-Klon weg“; Push im Cursor Terminal noch ausführen wenn nötig.
 
 ---
 
