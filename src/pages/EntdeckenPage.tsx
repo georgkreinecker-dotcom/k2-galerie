@@ -742,7 +742,7 @@ export default function EntdeckenPage() {
       el.textContent = `@media print {
         @page {
           size: ${size};
-          margin: 2mm;
+          margin: ${isPlakatA1PrintMode || isPlakatSocialPrintMode ? '2mm' : '8mm'};
           @top-left { content: none !important; }
           @top-center { content: none !important; }
           @top-right { content: none !important; }
@@ -1187,7 +1187,7 @@ export default function EntdeckenPage() {
                 @media print {
                   @page {
                     size: A4 portrait;
-                    margin: 2mm;
+                    margin: 8mm;
                     @top-left { content: none !important; }
                     @top-center { content: none !important; }
                     @top-right { content: none !important; }
@@ -1208,106 +1208,129 @@ export default function EntdeckenPage() {
                   .entdecken-page-root { min-height: 0 !important; }
                   .entdecken-q1-a4-browser-print {
                     min-height: 0 !important;
-                    padding: 0 1mm 0 !important;
+                    width: 100% !important;
+                    max-width: 100% !important;
+                    padding: 0 !important;
                     justify-content: flex-start !important;
+                    align-items: stretch !important;
                     box-sizing: border-box !important;
+                    overflow: visible !important;
+                    -webkit-text-size-adjust: 100% !important;
+                    text-size-adjust: 100% !important;
                   }
                   .entdecken-q1-a4-browser-print .entdecken-q1-a4-scale-wrap {
-                    break-inside: avoid;
-                    page-break-inside: avoid;
+                    overflow: visible;
+                    width: 100% !important;
+                    max-width: 100% !important;
+                    box-sizing: border-box;
                   }
-                  /* Eine Seite A4: Inhalt gezoomt; AGB/Copyright-Fuß im Druck weg (kein „Fusstext“-Block) */
-                  /* Zoom skaliert ALLE Längen: Pilot-Text muss in pt deutlich größer gewählt werden (Soll ~10pt auf Papier). */
                   .entdecken-q1-a4-browser-print .entdecken-q1-inner {
-                    zoom: 0.57;
-                    break-inside: avoid;
-                    page-break-inside: avoid;
+                    max-width: 100% !important;
+                    width: 100% !important;
+                    box-sizing: border-box;
                   }
-                  @supports not (zoom: 1) {
-                    .entdecken-q1-a4-browser-print .entdecken-q1-inner {
-                      transform: scale(0.57);
-                      transform-origin: top center;
-                    }
-                  }
-                  .entdecken-q1-a4-browser-print .entdecken-q1-a4-footer {
-                    display: none !important;
-                  }
-                  .entdecken-q1-a4-browser-print .entdecken-q1-inner > div:first-of-type { margin-bottom: 0.06rem !important; }
-                  .entdecken-q1-a4-browser-print .entdecken-q1-inner > div:first-child span { font-size: 0.72rem !important; }
-                  .entdecken-q1-a4-browser-print .entdecken-q1-inner > div:first-child > div { margin: 0.2rem auto 0 !important; }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-a4-footer { display: none !important; }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-logo-wrap { margin-bottom: 0.35rem !important; }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-inner > div:first-of-type { margin-bottom: 0.2rem !important; }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-inner > div.entdecken-q1-logo-wrap span { font-size: 0.95rem !important; }
                   .entdecken-q1-a4-browser-print .entdecken-plakat-k2-marke {
-                    font-size: 1.2rem !important;
-                    margin-bottom: 0.08rem !important;
-                    line-height: 1 !important;
+                    font-size: 1.75rem !important;
+                    margin-bottom: 0.2rem !important;
+                    line-height: 1.05 !important;
                   }
                   .entdecken-q1-a4-browser-print h2 {
-                    font-size: 0.78rem !important;
-                    margin-bottom: 0.04rem !important;
-                    line-height: 1.12 !important;
+                    font-size: 1.05rem !important;
+                    margin-bottom: 0.2rem !important;
+                    line-height: 1.2 !important;
                   }
                   .entdecken-q1-a4-browser-print h3 {
-                    font-size: 0.7rem !important;
-                    margin-bottom: 0.04rem !important;
-                    line-height: 1.12 !important;
+                    font-size: 0.95rem !important;
+                    margin-bottom: 0.2rem !important;
+                    line-height: 1.2 !important;
                   }
                   .entdecken-q1-a4-browser-print .entdecken-q1-weginleitung {
-                    font-size: 0.58rem !important;
-                    margin-bottom: 0.16rem !important;
-                    line-height: 1.25 !important;
+                    font-size: 0.78rem !important;
+                    max-width: 100% !important;
+                    margin-bottom: 0.35rem !important;
+                    line-height: 1.35 !important;
                   }
-                  .entdecken-q1-a4-browser-print button[data-poster-choice] {
-                    padding: 0.14rem 0.28rem !important;
-                    margin-bottom: 0.14rem !important;
-                    gap: 0.22rem !important;
-                    border-radius: 6px !important;
+                  .entdecken-q1-a4-browser-print .entdecken-q1-poster-choices {
+                    display: grid !important;
+                    grid-template-columns: 1fr 1fr 1fr !important;
+                    gap: 0.3rem 0.35rem !important;
+                    width: 100% !important;
+                    align-items: stretch !important;
                   }
-                  .entdecken-q1-a4-browser-print button[data-poster-choice] > span:first-child { font-size: 0.88rem !important; }
-                  .entdecken-q1-a4-browser-print button[data-poster-choice] > span:nth-child(2) > span:first-child {
+                  .entdecken-q1-a4-browser-print .entdecken-q1-poster-choices button[data-poster-choice] {
+                    width: 100% !important;
+                    margin-bottom: 0 !important;
+                    box-sizing: border-box !important;
+                    flex-direction: column !important;
+                    align-items: center !important;
+                    text-align: center !important;
+                    padding: 0.28rem 0.2rem 0.32rem !important;
+                    gap: 0.2rem !important;
+                    border-radius: 7px !important;
+                  }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-poster-choices button[data-poster-choice] > span:first-child {
+                    font-size: 1.15rem !important;
+                  }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-poster-choices button[data-poster-choice] > span:nth-child(2) {
+                    text-align: center !important;
+                    width: 100%;
+                  }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-poster-choices button[data-poster-choice] > span:nth-child(2) > span:first-child {
+                    font-size: 0.72rem !important;
+                    margin-bottom: 0.1rem !important;
+                  }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-poster-choices button[data-poster-choice] > span:nth-child(2) > span:last-child {
                     font-size: 0.62rem !important;
-                    margin-bottom: 0.04rem !important;
+                    line-height: 1.3 !important;
                   }
-                  .entdecken-q1-a4-browser-print button[data-poster-choice] > span:nth-child(2) > span:last-child {
-                    font-size: 0.52rem !important;
-                    line-height: 1.28 !important;
-                  }
-                  .entdecken-q1-a4-browser-print button[data-poster-choice] > img {
-                    width: 36px !important;
-                    height: 36px !important;
-                    border-radius: 5px !important;
+                  .entdecken-q1-a4-browser-print .entdecken-q1-poster-choices button[data-poster-choice] > img {
+                    width: 64px !important;
+                    height: 64px !important;
+                    border-radius: 6px !important;
                   }
                   .entdecken-q1-a4-browser-print .entdecken-q1-testpilot {
                     width: 100% !important;
-                    max-width: 50% !important;
-                    margin-left: auto !important;
-                    margin-right: auto !important;
+                    max-width: 100% !important;
+                    margin: 0.4rem 0 0 !important;
+                    padding: 0.3rem 0.35rem 0.35rem !important;
+                    gap: 0.2rem !important;
+                    flex-direction: row !important;
+                    flex-wrap: wrap !important;
+                    align-items: center !important;
+                    justify-content: space-between !important;
                     box-sizing: border-box !important;
-                    margin-top: 0.04rem !important;
-                    margin-bottom: 0 !important;
-                    padding: 0.08rem 0.14rem !important;
-                    gap: 0.06rem !important;
-                    flex-direction: column !important;
-                    align-items: stretch !important;
+                    border-radius: 10px !important;
                   }
-                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot > div:first-child { align-items: flex-start !important; gap: 0.12rem !important; }
-                  /* Pilot: pt für Lesbarkeit auf A4 (Zoom 0.6) */
+                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot > div:first-child {
+                    flex: 1 1 45% !important;
+                    min-width: 0 !important;
+                    align-items: flex-start !important;
+                    gap: 0.15rem !important;
+                  }
                   .entdecken-q1-a4-browser-print .entdecken-q1-testpilot-text {
-                    font-size: 8pt !important;
+                    font-size: 0.75rem !important;
                     line-height: 1.3 !important;
                     font-weight: 600 !important;
                   }
-                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot > div:first-child span[aria-hidden] { font-size: 7pt !important; line-height: 1 !important; }
+                  .entdecken-q1-a4-browser-print .entdecken-q1-testpilot > div:first-child span[aria-hidden] { font-size: 0.65rem !important; }
                   .entdecken-q1-a4-browser-print .entdecken-q1-testpilot-actions {
-                    justify-content: center !important;
-                    gap: 0.1rem !important;
+                    flex: 0 0 auto !important;
+                    justify-content: flex-end !important;
+                    gap: 0.25rem !important;
                   }
                   .entdecken-q1-a4-browser-print .entdecken-q1-testpilot-actions img {
-                    width: 40px !important;
-                    height: 40px !important;
+                    width: 52px !important;
+                    height: 52px !important;
+                    border-radius: 6px !important;
                   }
                   .entdecken-q1-a4-browser-print .entdecken-q1-testpilot-actions a {
-                    font-size: 10pt !important;
+                    font-size: 0.68rem !important;
                     line-height: 1.2 !important;
-                    padding: 6pt 14pt !important;
+                    padding: 0.2rem 0.45rem !important;
                     border-radius: 5px !important;
                   }
                 }
@@ -1387,6 +1410,7 @@ export default function EntdeckenPage() {
               {T.wegIntro}
             </p>
 
+            <div className="entdecken-q1-poster-choices">
             <ChoiceCard
               poster
               posterQrSrc={plakatQrDataUrl.solo}
@@ -1417,6 +1441,7 @@ export default function EntdeckenPage() {
               }}
               color="#0d9488"
             />
+            </div>
 
             {/* Testpilot – ganze Karte halb so breit wie Weg-Karten, zentriert; QR + CTA unten zentriert, QR ~halb wie Weg-QR */}
             <div
@@ -1511,6 +1536,19 @@ export default function EntdeckenPage() {
               </div>
             </div>
 
+            {!isEntdeckenPlakatCapture && (
+              <div className="entdecken-q1-legal-print-only">
+                <Link to={AGB_ROUTE} state={{ returnTo: location.pathname }} style={{ color: muted, textDecoration: 'none' }}>
+                  AGB
+                </Link>
+                {' · '}
+                {PRODUCT_BRAND_NAME}
+                {' · '}
+                <span>Kein Erwerb nötig</span>
+                <div style={{ marginTop: '0.12rem', opacity: 0.95 }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</div>
+              </div>
+            )}
+
             {isEntdeckenPlakatCapture && (
               <div
                 style={{
@@ -1538,7 +1576,7 @@ export default function EntdeckenPage() {
 
             {!isEntdeckenPlakatCapture && (
               <div
-                className="entdecken-q1-a4-footer"
+                className="entdecken-q1-a4-footer no-print"
                 style={{ textAlign: 'center', padding: '0.75rem 1rem', fontSize: '0.72rem', color: muted, borderTop: '1px solid #e8ddd0', background: bgCard }}
               >
                 <Link to={AGB_ROUTE} state={{ returnTo: location.pathname }} style={{ color: muted, textDecoration: 'none' }}>
@@ -1554,6 +1592,22 @@ export default function EntdeckenPage() {
             )}
           </div>
           </div>
+          {!isEntdeckenPlakatCapture && (
+            <p
+              className="no-print"
+              style={{
+                textAlign: 'center',
+                fontSize: '0.78rem',
+                color: muted,
+                maxWidth: 520,
+                margin: '0.4rem auto 0',
+                lineHeight: 1.45,
+                padding: '0 0.75rem 0.5rem',
+              }}
+            >
+              <strong>Druck:</strong> Im System-Dialog <em>Kopf- und Fußzeilen</em> aus (frisst sonst viel Fläche). Wenn noch 2 Seiten: <em>Skalierung</em> z. B. 90 %.
+            </p>
+          )}
         </div>
       )}
 

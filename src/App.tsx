@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState, useRef, lazy, Suspense } from 'react'
+import { useEffect, useLayoutEffect, useState, useRef, lazy, Suspense, useSyncExternalStore } from 'react'
 import { safeReload, safeReloadWithCacheBypass, getRefreshUrl } from './utils/env'
 import { K2_ADMIN_UNLOCKED_KEY, clearAdminUnlockIfExpired } from './utils/adminUnlockStorage'
 import { Routes, Route, Navigate, useLocation, useSearchParams } from 'react-router-dom'
@@ -121,6 +121,10 @@ import AGBPage from './pages/AGBPage'
 import SeitengestaltungPage from './pages/SeitengestaltungPage'
 import { BUILD_LABEL, BUILD_TIMESTAMP } from './buildInfo.generated'
 import { PRODUCT_BRAND_NAME } from './config/tenantConfig'
+import {
+  getEntdeckenQ1PrintFooterSuppress,
+  subscribeEntdeckenQ1PrintFooterSuppress,
+} from './utils/entdeckenQ1PrintFooterSuppress'
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 
 // Error Boundary für gesamte App
@@ -752,6 +756,23 @@ function restoreAdminSessionIfNeeded() {
 
 /** Druck-Fußzeile: Dokumentenersteller + Druckdatum (nur im Druck sichtbar, Seitenzahl kommt aus @page) */
 function PrintFooter() {
+  const location = useLocation()
+  const entdeckenQ1Suppress = useSyncExternalStore(
+    subscribeEntdeckenQ1PrintFooterSuppress,
+    getEntdeckenQ1PrintFooterSuppress,
+    () => false,
+  )
+  const entdeckenPlakatPrintSuppress =
+    (() => {
+      try {
+        const p = new URLSearchParams(location.search).get('printPlakat')
+        if (p !== 'a1' && p !== 'social') return false
+        const path = location.pathname
+        return path === ENTDECKEN_ROUTE || path === '/'
+      } catch {
+        return false
+      }
+    })()
   const ref = useRef<HTMLDivElement>(null)
   const update = () => {
     if (ref.current) {
@@ -764,6 +785,7 @@ function PrintFooter() {
     window.addEventListener('beforeprint', update)
     return () => window.removeEventListener('beforeprint', update)
   }, [])
+  if (entdeckenQ1Suppress || entdeckenPlakatPrintSuppress) return null
   return <div id="print-footer" ref={ref} aria-hidden />
 }
 

@@ -59,6 +59,16 @@ a {
   color: inherit;
 }
 
+/* Entdecken: 3 Weg-Karten umschließen, Layout wie ohne Wrapper (Bildschirm) */
+.entdecken-q1-poster-choices {
+  display: contents;
+}
+
+/* Entdecken A4: kompakte Rechtszeile nur im PDF/Druck, nicht am Bildschirm */
+.entdecken-q1-legal-print-only {
+  display: none !important;
+}
+
 /* Druck-Fußzeile: nur beim Drucken sichtbar */
 #print-footer {
   display: none;
@@ -104,22 +114,102 @@ a {
    * Entdecken Schritt q1 (A4-Prospekt, A1-Plakat): nur Impressum im Inhalt –
    * keine globale Zeile „Marke | Druck: …“ und keine @page-Seitenzahl (stört Prospekt-Layout).
    */
-  html.k2-print-entdecken-q1 #print-footer {
+  html.k2-print-entdecken-q1 #print-footer,
+  html.k2-print-entdecken-q1 #root #print-footer {
     display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+    pointer-events: none !important;
   }
   html.k2-print-entdecken-q1 #root {
     padding-bottom: 0 !important;
   }
+  body.k2-print-entdecken-q1 #print-footer,
+  body.k2-print-entdecken-q1 #root #print-footer {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+    pointer-events: none !important;
+  }
+  html.k2-print-entdecken-q1 #root > div > *:not(.entdecken-page-root) {
+    display: none !important;
+  }
+  body.k2-print-entdecken-q1 #root > div > *:not(.entdecken-page-root) {
+    display: none !important;
+  }
+  /* Gleiche Wirkung ohne JS: Fußzeile sitzt außerhalb .entdecken-q1-print-page (Geschwister in #root). */
+  body:has(.entdecken-q1-print-page) #print-footer {
+    display: none !important;
+  }
+  body:has(.entdecken-q1-print-page) #root {
+    padding-bottom: 0 !important;
+  }
   @page entdecken-q1-clean {
-    margin: 6mm;
-    margin-bottom: 8mm;
+    margin: 8mm;
     size: A4 portrait;
+    @top-left {
+      content: none;
+    }
+    @top-center {
+      content: none;
+    }
+    @top-right {
+      content: none;
+    }
+    @bottom-left {
+      content: none;
+    }
+    @bottom-center {
+      content: none;
+    }
     @bottom-right {
       content: none;
     }
   }
+  /* Entdecken q1: verhindert Zusammenführung mit globalem @page „Seite x von y“ (WebKit/Chrome). */
+  /* Prospekt A4: Zeilenumbruch folgt *unskaliertem* Fluss; zoom half hier kaum. Stattdessen: html font-size
+     senken (alle rem-Größen) – eine messbare, für Safari nachvollziehbare Eine-Seite-Strategie. */
+  html.k2-print-entdecken-q1 {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    /* Nach Layout-Fix (Druck: oben starten, nicht zentrieren): etwas größer lesbar, passt weiterhin A4. */
+    font-size: 6.45px !important;
+  }
   .entdecken-q1-print-page {
     page: entdecken-q1-clean;
+  }
+  /* Prospekt (Entdecken q1) A4: Bildschirm-Fußzeile aus; kompakte Rechtszeile nur im Druck */
+  html.k2-print-entdecken-q1 .entdecken-q1-a4-footer,
+  body.k2-print-entdecken-q1 .entdecken-q1-a4-footer {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    content-visibility: hidden !important;
+  }
+  html.k2-print-entdecken-q1 .entdecken-q1-legal-print-only {
+    display: block !important;
+    text-align: center;
+    margin-top: 0.4rem;
+    padding-top: 0.25rem;
+    line-height: 1.25;
+    color: #3a3632;
+    font-size: 0.6rem;
+    border-top: 0.5px solid #c9c2b8;
+  }
+  html.k2-print-entdecken-q1 .entdecken-q1-legal-print-only a {
+    color: inherit;
+    text-decoration: none;
+  }
+  /* Prospekt A4: kein Abschneiden durch Scroll-Container; WebKit-Druck braucht sichtbaren Overflow */
+  html.k2-print-entdecken-q1 .entdecken-page-root,
+  html.k2-print-entdecken-q1 .entdecken-q1-a4-browser-print,
+  html.k2-print-entdecken-q1 .entdecken-q1-a4-scale-wrap {
+    overflow: visible !important;
   }
   /* Kompakte Typografie für alle druckbaren Inhaltsseiten (weniger Seiten beim PDF-Export) */
   .print-compact { font-size: 9pt; line-height: 1.32; }
