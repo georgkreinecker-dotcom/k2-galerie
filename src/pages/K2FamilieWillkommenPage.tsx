@@ -15,6 +15,7 @@ import {
   PRODUCT_URHEBER_ANWENDUNG,
 } from '../config/tenantConfig'
 import { setFamilieNurMusterSession } from '../utils/familieMusterSession'
+import { getMusterfamilieHuberMeineFamiliePathWithQuery } from '../data/k2FamilieMusterHuberQuelle'
 
 const BG = 'linear-gradient(160deg, #042f2e 0%, #0f172a 48%, #134e4a 100%)'
 const CARD = 'rgba(15, 23, 42, 0.55)'
@@ -85,7 +86,7 @@ export default function K2FamilieWillkommenPage() {
           <p style={{ fontWeight: 700, marginBottom: '0.85rem', color: ACCENT }}>Ein Klick weiter</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
             <Link
-              to={`${R.meineFamilie}?t=huber`}
+              to={getMusterfamilieHuberMeineFamiliePathWithQuery()}
               style={{
                 display: 'block',
                 textAlign: 'center',

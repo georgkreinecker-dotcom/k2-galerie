@@ -40,6 +40,7 @@ Nichts wurde weggeschmissen oder verlegt – nur diese Übersicht zum Wiederfind
 | **docs/K2-FAMILIE-ROADMAP.md** | K2 Familie – Vision & Phasen | Raumschiff-Phasen (Fundament → Stammbaum → Momente → Skalierung). Startseite: /projects/k2-familie. |
 | **docs/K2-FAMILIE-EIGENBEREICH-MODULE-OEK2-VK2.md** | K2 Familie – Eigenbereich | Eigenes „Fahrzeug“: keine Vermischung mit ök2/VK2/Galerie-Daten; nur fertige Module als Muster; Sportwagenmodus; klare Projektgrenzen. |
 | **docs/K2-FAMILIE-DATENMODELL.md** | K2 Familie – Datenmodell | Person, PartnerRef (Zeitraum), Moment, Speicher-Keys. Typen: src/types/k2Familie.ts. |
+| **docs/K2-FAMILIE-MANDANT-CODE-ORIENTIERUNG.md** | K2 Familie – **Mandant-Code: eine Orientierung** | Warum Durcheinander (Huber vs. Kreinecker vs. APf), **eine Tabelle** welche Quelldatei wofür – für Mensch + KI vor jeder Suche. |
 
 ### Texte-Schreibtisch · texts/ (Andenken, druckfertig)
 

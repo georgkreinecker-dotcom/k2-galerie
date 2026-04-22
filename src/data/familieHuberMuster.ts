@@ -16,8 +16,12 @@ import {
 import { assignMissingMitgliedsNummern } from '../utils/familieMitgliedsNummer'
 import { setFamilyPageTexts } from '../config/pageTextsFamilie'
 import { setFamilyPageContent } from '../config/pageContentFamilie'
+import {
+  FAMILIE_HUBER_TENANT_ID,
+  FAMILIE_HUBER_DEFAULT_PAGE_CONTENT,
+} from './k2FamilieMusterHuberQuelle'
 
-export const FAMILIE_HUBER_TENANT_ID = 'huber'
+export { FAMILIE_HUBER_TENANT_ID } from './k2FamilieMusterHuberQuelle'
 
 /** Muster-Demo: Inhaber und „Du“ = Stefan Huber (Personen-ID), konsistent zur UI-Leiste. */
 export const FAMILIE_HUBER_INHABER_PERSON_ID = 'stefan'
@@ -172,10 +176,7 @@ export function seedFamilieHuber(): boolean {
     buttonKalender: 'Kalender & Übersicht',
   })
 
-  setFamilyPageContent(tenantId, {
-    welcomeImage: 'https://picsum.photos/seed/huber-family/1200/500',
-    cardImage: 'https://picsum.photos/seed/huber-card/800/400',
-  })
+  setFamilyPageContent(tenantId, { ...FAMILIE_HUBER_DEFAULT_PAGE_CONTENT })
 
   addTenantToList(tenantId)
   return true

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { getFamilyPageContent, setFamilyPageContent } from '../config/pageContentFamilie'
+import { FAMILIE_HUBER_TENANT_ID } from '../data/k2FamilieMusterHuberQuelle'
 
 describe('pageContentFamilie', () => {
   beforeEach(() => {
@@ -25,7 +26,7 @@ describe('pageContentFamilie', () => {
   })
 
   it('Muster huber: ohne Speicher = Standard-Hero-URLs (Vercel/anderes Gerät)', () => {
-    const c = getFamilyPageContent('huber')
+    const c = getFamilyPageContent(FAMILIE_HUBER_TENANT_ID)
     expect(c.welcomeImage).toMatch(/^https:\/\/picsum\.photos/)
     expect(c.cardImage).toMatch(/^https:\/\/picsum\.photos/)
   })

@@ -5,7 +5,7 @@
 
 import { PROJECT_ROUTES } from './navigation'
 import { K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
-import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
+import { getMusterfamilieHuberMeineFamiliePathWithQuery } from '../data/k2FamilieMusterHuberQuelle'
 
 const R = PROJECT_ROUTES['k2-familie']
 
@@ -66,7 +66,7 @@ export function musterHintForFamilieNavLink(to: string): string | undefined {
   const path = to.replace(/\/$/, '') || '/'
   const map: Record<string, string> = {
     [K2_FAMILIE_APP_SHORT_PATH]: MUSTER_HINT_NAV_MEINE_FAMILIE,
-    [`${R.meineFamilie}?t=${FAMILIE_HUBER_TENANT_ID}`]: MUSTER_HINT_NAV_MUSTERFAMILIE_HOME,
+    [getMusterfamilieHuberMeineFamiliePathWithQuery()]: MUSTER_HINT_NAV_MUSTERFAMILIE_HOME,
     [R.stammbaum]: MUSTER_HINT_NAV_STAMMBAUM,
     [R.events]: MUSTER_HINT_NAV_EVENTS,
     [R.kalender]: MUSTER_HINT_NAV_KALENDER,

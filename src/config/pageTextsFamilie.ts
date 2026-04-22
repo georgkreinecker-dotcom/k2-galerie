@@ -4,10 +4,8 @@
  * Analog zu pageTexts (Galerie), nur für Familie und pro tenantId.
  */
 
+import { FAMILIE_HUBER_TENANT_ID } from '../data/k2FamilieMusterHuberQuelle'
 import { loadEinstellungen } from '../utils/familieStorage'
-
-/** Muss mit seedFamilieHuber / familieHuberMuster übereinstimmen (Tenant huber). */
-const HUBER_TENANT_ID = 'huber'
 /** Früher „Familie Huber“ – in Sanitize und Migration noch erkannt. */
 const HUBER_LEGACY_WELCOME_TITLE = 'Familie Huber'
 const HUBER_SEED_WELCOME_TITLE = 'Musterfamilie Huber'
@@ -44,11 +42,11 @@ export function getFamilyPageTexts(tenantId: string): PageTextsFamilie {
       const parsed = JSON.parse(raw) as Partial<PageTextsFamilie>
       let welcomeTitle = parsed.welcomeTitle?.trim() || DEFAULT_TEXTS.welcomeTitle
       let welcomeSubtitle = parsed.welcomeSubtitle?.trim() || DEFAULT_TEXTS.welcomeSubtitle
-      if (tenantId === HUBER_TENANT_ID && welcomeTitle === HUBER_LEGACY_WELCOME_TITLE) {
+      if (tenantId === FAMILIE_HUBER_TENANT_ID && welcomeTitle === HUBER_LEGACY_WELCOME_TITLE) {
         welcomeTitle = HUBER_SEED_WELCOME_TITLE
       }
       // Huber-Muster-Überschrift darf nicht unter echter familie-*-ID angezeigt werden (nur Anzeige; Speicher bleibt).
-      if (tenantId !== HUBER_TENANT_ID) {
+      if (tenantId !== FAMILIE_HUBER_TENANT_ID) {
         if (welcomeTitle === HUBER_SEED_WELCOME_TITLE || welcomeTitle === HUBER_LEGACY_WELCOME_TITLE) {
           const name = loadEinstellungen(tenantId).familyDisplayName?.trim()
           welcomeTitle = name || DEFAULT_TEXTS.welcomeTitle

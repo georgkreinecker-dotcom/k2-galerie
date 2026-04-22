@@ -2,7 +2,13 @@
  * K2 Familie – Seitengestaltung pro Tenant (Fertige Homepage).
  * Keys: k2-familie-{tenantId}-page-content.
  * Analog zu pageContentGalerie, nur für Familie und pro tenantId.
+ * Muster Huber: Bild-Defaults nur in k2FamilieMusterHuberQuelle (eine Quelle).
  */
+
+import {
+  FAMILIE_HUBER_TENANT_ID,
+  FAMILIE_HUBER_DEFAULT_PAGE_CONTENT,
+} from '../data/k2FamilieMusterHuberQuelle'
 
 export interface PageContentFamilie {
   welcomeImage?: string
@@ -15,17 +21,6 @@ function getStorageKey(tenantId: string): string {
 
 const DEFAULTS: PageContentFamilie = {}
 
-/**
- * Musterfamilie Huber – gleiche URLs wie in seedFamilieHuber (familieHuberMuster).
- * Anzeige-Fallback: auf Vercel/anderem Gerät ist localStorage leer → ohne Fallback kein Hero-Foto,
- * obwohl auf der APf (localhost, voller Speicher) die Bilder sichtbar sind.
- */
-const HUBER_TENANT_ID = 'huber'
-const HUBER_FALLBACK: PageContentFamilie = {
-  welcomeImage: 'https://picsum.photos/seed/huber-family/1200/500',
-  cardImage: 'https://picsum.photos/seed/huber-card/800/400',
-}
-
 /** Liest Seitengestaltung (Bilder) für eine Familie. */
 export function getFamilyPageContent(tenantId: string): PageContentFamilie {
   try {
@@ -37,17 +32,17 @@ export function getFamilyPageContent(tenantId: string): PageContentFamilie {
         welcomeImage: parsed.welcomeImage ?? DEFAULTS.welcomeImage,
         cardImage: parsed.cardImage ?? DEFAULTS.cardImage,
       }
-      if (tenantId === HUBER_TENANT_ID) {
+      if (tenantId === FAMILIE_HUBER_TENANT_ID) {
         return {
-          welcomeImage: base.welcomeImage || HUBER_FALLBACK.welcomeImage,
-          cardImage: base.cardImage || HUBER_FALLBACK.cardImage,
+          welcomeImage: base.welcomeImage || FAMILIE_HUBER_DEFAULT_PAGE_CONTENT.welcomeImage,
+          cardImage: base.cardImage || FAMILIE_HUBER_DEFAULT_PAGE_CONTENT.cardImage,
         }
       }
       return base
     }
   } catch (_) {}
-  if (tenantId === HUBER_TENANT_ID) {
-    return { ...HUBER_FALLBACK }
+  if (tenantId === FAMILIE_HUBER_TENANT_ID) {
+    return { ...FAMILIE_HUBER_DEFAULT_PAGE_CONTENT }
   }
   return { ...DEFAULTS }
 }

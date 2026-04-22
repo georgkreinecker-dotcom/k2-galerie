@@ -1,10 +1,13 @@
 /**
  * APf (localhost): „Meine Familie“ soll die echte Stammfamilie (z. B. Kreinecker) wählen,
- * nicht die Musterfamilie Huber. Optional: VITE_K2_FAMILIE_APF_MEINE_FAMILIE_TENANT_ID setzen;
- * sonst wird anhand des Anzeigenamens in den Einstellungen gesucht (kreinecker + stamm|alkoven).
+ * nicht die Musterfamilie Huber.
+ * **Gleiche Mandanten-Priorität wie Präsentation/Stammbaum-Links:** zuerst Build-Env
+ * (`k2FamilieKreineckerStammbaumQuelle`), sonst Suche per Anzeigename (kreinecker + stamm|alkoven).
  */
 
-import { loadEinstellungen, K2_FAMILIE_DEFAULT_TENANT, isValidFamilieTenantId } from '../utils/familieStorage'
+import { resolveKreineckerPresentationTenantIdFromEnv } from '../data/k2FamilieKreineckerStammbaumQuelle'
+import { FAMILIE_HUBER_TENANT_ID } from '../data/k2FamilieMusterHuberQuelle'
+import { loadEinstellungen, K2_FAMILIE_DEFAULT_TENANT } from '../utils/familieStorage'
 
 const STORAGE_LIST = 'k2-familie-tenant-list'
 
@@ -27,21 +30,15 @@ export function isK2FamilieApfLocalhost(): boolean {
 
 /**
  * Mandanten-ID für Georgs Stammfamilie auf der APf.
- * 1) VITE_K2_FAMILIE_APF_MEINE_FAMILIE_TENANT_ID (z. B. familie-1738…)
+ * 1) Dasselbe wie Präsentation: `resolveKreineckerPresentationTenantIdFromEnv` (KREINECKER_STAMMBAUM, dann APF_MEINE_FAMILIE)
  * 2) Erster Eintrag, dessen familyDisplayName „Kreinecker“ und „Stamm“ oder „Alkoven“ enthält
  */
 export function resolveApfMeineFamilieTenantId(): string | null {
-  try {
-    const env = import.meta.env?.VITE_K2_FAMILIE_APF_MEINE_FAMILIE_TENANT_ID?.trim()
-    if (env && isValidFamilieTenantId(env)) {
-      return env.toLowerCase()
-    }
-  } catch {
-    /* ignore */
-  }
+  const fromEnv = resolveKreineckerPresentationTenantIdFromEnv()
+  if (fromEnv) return fromEnv
   const ids = loadTenantIdsFromStorage()
   for (const id of ids) {
-    if (id === 'huber' || id === K2_FAMILIE_DEFAULT_TENANT) continue
+    if (id === FAMILIE_HUBER_TENANT_ID || id === K2_FAMILIE_DEFAULT_TENANT) continue
     const name = loadEinstellungen(id).familyDisplayName?.toLowerCase() ?? ''
     if (name.includes('kreinecker') && (name.includes('stamm') || name.includes('alkoven'))) {
       return id

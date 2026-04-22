@@ -5,6 +5,7 @@
 
 import { PROJECT_ROUTES } from './navigation'
 import { K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
+import { getMusterfamilieHuberMeineFamiliePathWithQuery } from '../data/k2FamilieMusterHuberQuelle'
 import { K2_FAMILIE_NAV_LABEL_GESCHICHTE } from './k2FamilieNavLabels'
 
 const R = PROJECT_ROUTES['k2-familie']
@@ -22,7 +23,7 @@ const k2FamilieLeitGroupsHead: FamilieLeitGroup[] = [
     chapterTitle: 'Start & Orientierung',
     sections: [
       { id: 'fam-willkommen', label: 'Einstiegsseite (Flyer/QR)', to: R.willkommen },
-      { id: 'fam-einstieg', label: 'Musterfamilie (Umschauen)', to: `${R.meineFamilie}?t=huber` },
+      { id: 'fam-einstieg', label: 'Musterfamilie (Umschauen)', to: getMusterfamilieHuberMeineFamiliePathWithQuery() },
       { id: 'fam-home', label: 'Meine Familie', to: K2_FAMILIE_APP_SHORT_PATH },
       { id: 'fam-uebersicht', label: 'Projekt & Leitbild', to: `${R.uebersicht}#k2-familie-lizenz-bruecke` },
     ],

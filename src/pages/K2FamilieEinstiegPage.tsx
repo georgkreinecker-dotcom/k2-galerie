@@ -9,6 +9,7 @@ import { PROJECT_ROUTES } from '../config/navigation'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { getFamilieEinstiegContent, getFamilieEinstiegTexts } from '../config/einstiegContentFamilie'
 import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
+import { getMusterfamilieHuberMeineFamiliePathWithQuery } from '../data/k2FamilieMusterHuberQuelle'
 import { isFamilieNurMusterSession, setFamilieNurMusterSession } from '../utils/familieMusterSession'
 import '../App.css'
 import { K2_FAMILIE_UI } from '../config/k2FamilieUiColors'
@@ -89,7 +90,7 @@ export default function K2FamilieEinstiegPage() {
           </p>
         ) : (
           <Link
-            to={`${R.meineFamilie}?t=huber`}
+            to={getMusterfamilieHuberMeineFamiliePathWithQuery()}
             className="btn"
             style={{
               display: 'block',

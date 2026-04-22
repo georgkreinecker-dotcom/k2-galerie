@@ -4,6 +4,7 @@ import {
   getK2FamilieMeineFamilieKreineckerPublicUrl,
   getK2FamilieStammbaumKreineckerPublicUrl,
 } from '../config/k2FamiliePresentation'
+import { hasKreineckerStammbaumTenantInBuildEnv } from '../data/k2FamilieKreineckerStammbaumQuelle'
 import { BASE_APP_URL, ENTDECKEN_ROUTE, PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 
@@ -24,11 +25,7 @@ export default function LaunchPraesentationBoardPage() {
     }
   }, [searchParams])
 
-  const hasTenant = Boolean(
-    String(
-      import.meta.env.VITE_K2_FAMILIE_KREINECKER_STAMMBAUM_TENANT_ID ?? '',
-    ).trim(),
-  )
+  const hasTenant = hasKreineckerStammbaumTenantInBuildEnv()
 
   return (
     <div

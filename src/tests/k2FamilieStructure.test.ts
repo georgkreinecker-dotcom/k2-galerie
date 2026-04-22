@@ -5,6 +5,7 @@ import {
   isFamilieNavSectionActive,
 } from '../config/k2FamilieStructure'
 import { PROJECT_ROUTES } from '../config/navigation'
+import { getMusterfamilieHuberEinstiegPathWithQuery } from '../data/k2FamilieMusterHuberQuelle'
 
 const R = PROJECT_ROUTES['k2-familie']
 
@@ -43,7 +44,7 @@ describe('isFamilieNavSectionActive', () => {
   })
 
   it('Link mit Query: Pfad für Aktiv-Vergleich ohne ?t=…', () => {
-    const to = `${R.einstieg}?t=huber`
+    const to = getMusterfamilieHuberEinstiegPathWithQuery()
     expect(familiePathWithoutHash(to)).toBe(R.einstieg)
     expect(isFamilieNavSectionActive(R.einstieg, to)).toBe(true)
   })

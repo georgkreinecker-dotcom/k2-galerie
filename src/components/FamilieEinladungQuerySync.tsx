@@ -183,6 +183,14 @@ export function FamilieEinladungQuerySync() {
           goMeineFamilieIfNeeded()
           return
         }
+        /**
+         * Muster ↔ Stamm: bei t=huber niemals z/m/fn in den Speicher schreiben (sonst vermischen sich
+         * echte Einladungsdaten mit der Demo-tenant).
+         */
+        if (t === FAMILIE_HUBER_TENANT_ID) {
+          strip()
+          return
+        }
         /** Einladung: `z` gilt für alle (Gäste brauchen die Nummer im Speicher, nicht nur Inhaber:innen). */
         if (z) {
           const einst = loadEinstellungen(t)

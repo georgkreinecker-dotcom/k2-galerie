@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Georg kann nach Deploy prüfen: **Musterfamilie Huber** auf Vercel sollte **Hero-Fotos** zeigen (Fallback), **Kreinecker** weiter: Bilder nur wo Seitengestaltung im **selben Browser** gespeichert ist (oder öffentliche Bild-URL).  
-**Einordnung:** Hero = `getFamilyPageContent` = **localStorage** pro Origin; APf = oft `localhost` mit Daten; **Huber** jetzt mit **Anzeige-Fallback** ohne Seed.
+**Was wir JETZT tun:** Nächste Session: optional `familieMandantTrennung.test.ts` + Doku-Zeile in `K2-FAMILIE-MANDANT-CODE-ORIENTIERUNG.md` (Tabelle → `familieMandantTrennung.ts`). Georg: Stand kommt mit Vercel nach Push.  
+**Einordnung:** K2 Familie – harte Trennung **Muster `huber`** vs. **Stamm/Präsentation** (VITE/Links); `?t=huber` schreibt keine Einladungs-Parameter in den Demo-Speicher.
+
+---
+
+**Letzter Stand:** 22.04.26 – **K2 Familie: Mandanten-Trennlinie (Huber vs. Kreinecker-Kette)** – `familieMandantTrennung.ts`, `k2FamilieKreineckerStammbaumQuelle` (VITE verweigert `huber`), `FamilieEinladungQuerySync` (kein z/m/fn auf Muster), `pageTextsFamilie`/`k2FamilieApfDefaults` (eine Quelle für ID), Quell-Dateien Huber/Kreinecker, Doku `K2-FAMILIE-MANDANT-CODE-ORIENTIERUNG.md`. **Commit:** `PLACEHOLDER_COMMIT` ✅ GitHub
 
 ---
 

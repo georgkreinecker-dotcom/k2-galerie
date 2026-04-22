@@ -5,9 +5,10 @@
 
 import BenutzerHandbuchViewer from '../components/BenutzerHandbuchViewer'
 import { BASE_APP_URL, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, PROJECT_ROUTES } from '../config/navigation'
+import { getMusterfamilieHuberEinstiegPathWithQuery } from '../data/k2FamilieMusterHuberQuelle'
 
-/** QR auf dem Deckblatt: Musterfamilie Huber (Demo-Einstieg). */
-const MUSTERFAMILIE_EINSTIEG_QR_URL = `${BASE_APP_URL}/projects/k2-familie/einstieg?t=huber`
+/** QR auf dem Deckblatt: Musterfamilie Huber (Demo-Einstieg) – Pfad+Query aus einer Quelle. */
+const MUSTERFAMILIE_EINSTIEG_QR_URL = `${String(BASE_APP_URL).replace(/\/$/, '')}${getMusterfamilieHuberEinstiegPathWithQuery()}`
 /** QR unter Impressum: Plattform Entdecken (Eingangstor), gleiche Logik wie Standard-Deckblatt-QR. */
 const EINGANGSTOR_QR_URL = `${BASE_APP_URL}${OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE}`
 import {
