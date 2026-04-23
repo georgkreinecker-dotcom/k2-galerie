@@ -6,7 +6,8 @@
 
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import '../App.css'
-import { PROJECT_ROUTES } from '../config/navigation'
+import { OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, PROJECT_ROUTES } from '../config/navigation'
+import { PRODUCT_BRAND_NAME } from '../config/tenantConfig'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
 import { getFamilyPageContent } from '../config/pageContentFamilie'
@@ -51,6 +52,8 @@ import { K2_FAMILIE_UI } from '../config/k2FamilieUiColors'
 import { K2_FAMILIE_NAV_LABEL_GESCHICHTE } from '../config/k2FamilieNavLabels'
 import { getFamilieTenantDisplayName } from '../data/familieHuberMuster'
 import { useK2FamiliePresentationMode } from '../hooks/useK2FamiliePresentationMode'
+import { PublicTeilenFixed } from '../components/PublicTeilenFixed'
+import { getPublicK2FamilieMeineFamilieUrl } from '../utils/publicLinks'
 
 const C = {
   ...K2_FAMILIE_UI,
@@ -1010,6 +1013,84 @@ export default function K2FamilieHomePage() {
           )}
           <div style={{ position: 'absolute', inset: 0, background: C.heroOverlay, pointerEvents: 'none' }} />
           <div className="k2-familie-hero-shine" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.04) 45%, transparent 55%)', pointerEvents: 'none' }} />
+          {!deckblattMinimal ? (
+            <div
+              className="k2-familie-no-print"
+              style={{
+                position: 'absolute',
+                top: 'max(0.65rem, env(safe-area-inset-top, 0px))',
+                left: 'clamp(0.75rem, 3vw, 1.25rem)',
+                right: 'clamp(0.75rem, 3vw, 1.25rem)',
+                zIndex: 5,
+                display: 'flex',
+                flexWrap: 'wrap',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                gap: '0.5rem',
+                pointerEvents: 'none',
+              }}
+            >
+              <div style={{ pointerEvents: 'auto' }}>
+                <Link
+                  to={OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE}
+                  state={!nurMusterDemo ? { returnTo: `${location.pathname}${location.search || ''}` } : undefined}
+                  onClick={
+                    nurMusterDemo
+                      ? (e) => {
+                          const st = location.state as { returnTo?: string } | null
+                          const r = st?.returnTo
+                          if (r && typeof r === 'string' && r.startsWith('/') && !r.startsWith('//') && !r.includes('..')) {
+                            e.preventDefault()
+                            navigate(r)
+                            return
+                          }
+                          if (typeof window !== 'undefined' && window.history.length > 1) {
+                            e.preventDefault()
+                            navigate(-1)
+                          }
+                        }
+                      : () => {
+                          try {
+                            sessionStorage.setItem('k2-entdecken-return-to', `${location.pathname}${location.search || ''}`)
+                          } catch (_) {
+                            /* ignore */
+                          }
+                        }
+                  }
+                  style={{
+                    fontSize: 'clamp(0.78rem, 1.6vw, 0.9rem)',
+                    fontWeight: 500,
+                    color: 'rgba(255,255,255,0.95)',
+                    letterSpacing: '0.02em',
+                    lineHeight: 1.25,
+                    textShadow: '0 1px 2px rgba(0,0,0,0.45)',
+                    opacity: 0.95,
+                    textDecoration: 'none',
+                    cursor: 'pointer',
+                    display: 'inline-block',
+                  }}
+                  title={
+                    nurMusterDemo
+                      ? 'Zurück zur vorherigen Seite oder zum Eingangstor (Entdecken)'
+                      : 'Zum Eingangstor (Entdecken) – mit Zurück-Navigation zur Familie'
+                  }
+                >
+                  {PRODUCT_BRAND_NAME} <span style={{ fontSize: '0.85em', opacity: 0.9 }}>©</span>
+                </Link>
+              </div>
+              <div style={{ pointerEvents: 'auto' }}>
+                <PublicTeilenFixed
+                  layout="inline"
+                  variant="familie"
+                  displayName={getFamilieTenantDisplayName(currentTenantId, 'K2 Familie')}
+                  canonicalPublicUrl={getPublicK2FamilieMeineFamilieUrl()}
+                  includeSearchInShare
+                  buttonLabel="📤 Teilen"
+                  getShareText={() => `${getFamilieTenantDisplayName(currentTenantId, 'K2 Familie')} – K2 Familie entdecken`}
+                />
+              </div>
+            </div>
+          ) : null}
           {!deckblattMinimal ? (
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: 'clamp(1.5rem, 4vw, 2.25rem) clamp(1.25rem, 5vw, 2.5rem)', pointerEvents: 'none' }}>
               <p style={{ margin: '0 0 0.35rem', fontSize: '0.82rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.88)', fontWeight: 600 }}>

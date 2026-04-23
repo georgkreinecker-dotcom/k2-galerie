@@ -4,6 +4,7 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react'
+import { APP_BASE_URL_SHAREABLE } from '../config/externalUrls'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { isLocalOrPrivateOrigin } from '../utils/publicShare'
 
@@ -15,6 +16,11 @@ export interface PublicTeilenFixedProps {
   displayName: string
   /** Kanonische Produktions-URL – bei localhost/LAN wird diese geteilt statt lokaler Origin */
   canonicalPublicUrl: string
+  /**
+   * Wenn true: geteilter Link = Pfad + Query der aktuellen Seite (z. B. ?t= für K2 Familie).
+   * Auf Dev-Hosts: Host wird durch APP_BASE_URL_SHAREABLE ersetzt, damit der Link per Handy erreichbar ist.
+   */
+  includeSearchInShare?: boolean
   /** z. B. wenn rechts noch ein Admin-Button sitzt */
   fixedRight?: string
   buttonLabel?: string
@@ -65,6 +71,7 @@ export function PublicTeilenFixed(props: PublicTeilenFixedProps) {
     buttonLabel = '📤 Galerie teilen',
     getShareText,
     layout = 'fixed',
+    includeSearchInShare = false,
   } = props
   const isInline = layout === 'inline'
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
@@ -74,6 +81,11 @@ export function PublicTeilenFixed(props: PublicTeilenFixedProps) {
 
   const getShareUrl = () => {
     if (typeof window === 'undefined') return ''
+    if (includeSearchInShare) {
+      const pathWithSearch = `${window.location.pathname}${window.location.search || ''}`
+      const base = isLocalOrPrivateOrigin() ? `${APP_BASE_URL_SHAREABLE}${pathWithSearch}` : `${window.location.origin}${pathWithSearch}`
+      return buildQrUrlWithBust(base, qrVersionTs)
+    }
     const base = isLocalOrPrivateOrigin()
       ? canonicalPublicUrl
       : `${window.location.origin}${window.location.pathname}`

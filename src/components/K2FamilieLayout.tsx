@@ -285,14 +285,16 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
               >
                 Eigene Familie anlegen
               </Link>
-              <PublicTeilenFixed
-                layout="inline"
-                variant="familie"
-                displayName="K2 Familie Musterfamilie"
-                canonicalPublicUrl={getPublicK2FamilieMusterEntryUrl()}
-                buttonLabel="📤 Teilen"
-                getShareText={() => 'K2 Familie Musterfamilie – Schau dir die Beispiel-Familie an'}
-              />
+              {location.pathname !== familieRoutesNav.meineFamilie ? (
+                <PublicTeilenFixed
+                  layout="inline"
+                  variant="familie"
+                  displayName="K2 Familie Musterfamilie"
+                  canonicalPublicUrl={getPublicK2FamilieMusterEntryUrl()}
+                  buttonLabel="📤 Teilen"
+                  getShareText={() => 'K2 Familie Musterfamilie – Schau dir die Beispiel-Familie an'}
+                />
+              ) : null}
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem', marginLeft: 'auto' }}>
               <select
