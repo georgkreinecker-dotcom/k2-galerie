@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 23.04.26 – **Stammbaum Kreinecker / Präsentationsboard: kein Auto-Redirect zu Huber ohne `t=`** – `LaunchPraesentationBoardPage`: bei `?go=stammbaum` / `meine-familie` nur `location.replace`, wenn Ziel-URL `?t=` hat; sonst `go` per Router entfernen, Nutzer sieht Kachel + Hinweis. `write-build-info.js` (`getK2FamiliePresentationTenantIdForHtmlPatch`): VITE-Wert `huber` ignorieren. Build-Artefakte (build-info, index.html) mitgeliefert. **Commit:** _(folgt nach Push)_
+**Letzter Stand:** 23.04.26 – **Stammbaum Kreinecker / Präsentationsboard: kein Auto-Redirect zu Huber ohne `t=`** – `LaunchPraesentationBoardPage`: bei `?go=stammbaum` / `meine-familie` nur `location.replace`, wenn Ziel-URL `?t=` hat; sonst `go` per Router entfernen, Nutzer sieht Kachel + Hinweis. `write-build-info.js` (`getK2FamiliePresentationTenantIdForHtmlPatch`): VITE-Wert `huber` ignorieren. Build-Artefakte (build-info, index.html) mitgeliefert. **Commit:** `f8decf3d` ✅ GitHub
 
 ---
 
