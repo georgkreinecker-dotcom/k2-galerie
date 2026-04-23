@@ -1,11 +1,15 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Kurz prüfen: K2 Familie, Leiste **aufgeklappt** → Zeile *Aktive Familie: …* sichtbar (auch nur eine Familie, ohne Mandanten-Dropdown).  
-**Einordnung:** Raumschiff **M4** – Mandant für die Nutzer:in klar, nicht optional.
+**Was wir JETZT tun:** Nach Deploy: Präsentationsboard ohne Vercel-`VITE_…KREINECKER…` → orangener Kasten + Kacheln ohne Huber-Falle; mit gesetztem `t` → Kacheln öffnen K2 Familie in neuem Tab wie zuvor.  
+**Einordnung:** Ohne `?t=` in der **Build**-URL war die Stammbaum-Kachel faktisch ein Link auf Muster Huber; jetzt abgefangen.
 
 ---
 
-**Letzter Stand:** 23.04.26 – **K2 Familie: „Aktive Familie“ in aufgeklappter Rolle-Leiste (M4)** – `FamilieRolleLeisteHaupt` in `K2FamilieLayout.tsx` (inkl. optional *Du:*); `docs/K2-FAMILIE-RAUMSCHIFF-KRITERIEN-UND-SELBSTKLAERUNG.md` §1a. **Commit:** _(nach Push)_
+**Letzter Stand:** 23.04.26 – **Präsentationsboard: kein nackter Stammbaum ohne Mandant; Hinweis Vercel-Env; `?go=` → Anker statt Huber** – `LaunchPraesentationBoardPage.tsx`. **Commit:** _(nach Push)_
+
+---
+
+**Letzter Stand:** 23.04.26 – **K2 Familie: „Aktive Familie“ in aufgeklappter Rolle-Leiste (M4)** – `FamilieRolleLeisteHaupt` in `K2FamilieLayout.tsx` (inkl. optional *Du:*); `docs/K2-FAMILIE-RAUMSCHIFF-KRITERIEN-UND-SELBSTKLAERUNG.md` §1a. **Commit:** `499baf9f` ✅ GitHub
 
 ---
 

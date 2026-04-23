@@ -10,6 +10,9 @@ import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../conf
 
 const s = (path: string) => `${BASE_APP_URL}${path}`
 
+/** Anker: sichtbarer Hinweis, wenn im Build kein Mandant für Kreinecker gesetzt ist (sonst Huber-Falle). */
+const LAUNCH_PRAESENTATION_BOARD_KEIN_KREINECKER_T_ANKER = 'k2-familie-mandant-env' as const
+
 /** Öffentlicher Link mit Kreinecker-Mandant: muss ?t=familie-… haben, sonst zeigt die App oft Muster Huber. */
 function publicK2FamilieUrlHasTenantT(absUrl: string): boolean {
   try {
@@ -36,13 +39,9 @@ export default function LaunchPraesentationBoardPage() {
       if (publicK2FamilieUrlHasTenantT(target)) {
         window.location.replace(target)
       } else {
-        setSearchParams(
-          (prev) => {
-            const n = new URLSearchParams(prev)
-            n.delete('go')
-            return n
-          },
-          { replace: true },
+        /** Kein `t` im Build: nicht auf nackten Stammbaum – Huber. Stattdessen Hinweis-Anker. */
+        window.location.replace(
+          `${s('/launch-praesentation-board')}#${LAUNCH_PRAESENTATION_BOARD_KEIN_KREINECKER_T_ANKER}`,
         )
       }
     } else if (go === 'meine-familie' || go === 'k2-familie-meine') {
@@ -50,19 +49,18 @@ export default function LaunchPraesentationBoardPage() {
       if (publicK2FamilieUrlHasTenantT(target)) {
         window.location.replace(target)
       } else {
-        setSearchParams(
-          (prev) => {
-            const n = new URLSearchParams(prev)
-            n.delete('go')
-            return n
-          },
-          { replace: true },
+        window.location.replace(
+          `${s('/launch-praesentation-board')}#${LAUNCH_PRAESENTATION_BOARD_KEIN_KREINECKER_T_ANKER}`,
         )
       }
     }
   }, [searchParams, setSearchParams])
 
   const hasTenant = hasKreineckerStammbaumTenantInBuildEnv()
+  const boardMitAnkerOhneT = `${s('/launch-praesentation-board')}#${LAUNCH_PRAESENTATION_BOARD_KEIN_KREINECKER_T_ANKER}`
+  /** Ohne gültiges `t` im Build: Kacheln dürfen nicht auf nackten Stammbaum/Meine Familie zeigen. */
+  const stammbaumTileHref = hasTenant ? stammbaumUrl : boardMitAnkerOhneT
+  const meineFamilieTileHref = hasTenant ? meineFamilieUrl : boardMitAnkerOhneT
 
   return (
     <div
@@ -117,6 +115,34 @@ export default function LaunchPraesentationBoardPage() {
           </p>
         </header>
 
+        {!hasTenant && (
+          <div
+            id={LAUNCH_PRAESENTATION_BOARD_KEIN_KREINECKER_T_ANKER}
+            role="status"
+            style={{
+              marginBottom: '1.25rem',
+              padding: '0.9rem 1rem',
+              borderRadius: 12,
+              border: '1px solid rgba(220, 120, 80, 0.55)',
+              background: 'rgba(40, 24, 18, 0.75)',
+              color: '#f0e6e0',
+              fontSize: '0.88rem',
+              lineHeight: 1.55,
+            }}
+          >
+            <strong style={{ display: 'block', marginBottom: '0.35rem', color: '#ffb59a' }}>
+              Mandant für „Kreinecker“ / Stammbaum fehlt im Server-Build
+            </strong>
+            Ohne <code style={{ color: '#5ffbf1' }}>?t=familie-…</code> in der URL zeigt K2 Familie die{' '}
+            <strong>Musterfamilie Huber</strong> – auch wenn die Kachel „Kreinecker“ heißt. In Vercel →
+            Environment → <code style={{ color: '#5ffbf1' }}>VITE_K2_FAMILIE_KREINECKER_STAMMBAUM_TENANT_ID</code>{' '}
+            (oder <code style={{ color: '#5ffbf1' }}>VITE_K2_FAMILIE_APF_MEINE_FAMILIE_TENANT_ID</code>) auf die
+            echte Familien-ID setzen, neu deployen. Dann führen die Kacheln mit dem richtigen Mandanten in die App –{' '}
+            <strong>nicht</strong> die Arbeitsplattform; ein zweiter Tab bleibt nur, wenn der Browser „Neues
+            Fenster“ für den Link nutzt.
+          </div>
+        )}
+
         <nav
           className="grid"
           aria-label="Einstiege"
@@ -151,35 +177,22 @@ export default function LaunchPraesentationBoardPage() {
             hint="Vereinsplattform – Demo-Galerie"
           />
           <Tile
-            href={meineFamilieUrl}
+            href={meineFamilieTileHref}
             emoji="👨‍👩‍👧"
             label="K2 Familie"
             hint="Meine Familie – mit Mandant aus Vercel (nicht Muster Huber, wenn t gesetzt)"
             id="launch-tile-k2-familie-meine"
+            openInNewTab={hasTenant}
           />
           <Tile
-            href={stammbaumUrl}
+            href={stammbaumTileHref}
             emoji="🌳"
             label="Stammbaum Kreinecker"
             hint="K2 Familie – interaktiver Stammbaum (Mandant aus Server-Konfiguration)"
             id="launch-tile-stammbaum-kreinecker"
+            openInNewTab={hasTenant}
           />
         </nav>
-
-        {!hasTenant && (
-          <p
-            style={{
-              marginTop: '1.25rem',
-              fontSize: '0.8rem',
-              color: '#8a9ba8',
-              lineHeight: 1.5,
-            }}
-          >
-            Hinweis: Ohne dieselbe Variable können die Kacheln K2 Familie und Stammbaum je nach Rechner die
-            Musterfamilie Huber zeigen. Wert = nur{' '}
-            <code style={{ color: '#5ffbf1' }}>t=…</code> aus der Einladung (z.&nbsp;B. <code style={{ color: '#5ffbf1' }}>familie-…</code>).
-          </p>
-        )}
 
         <footer
           style={{
@@ -214,14 +227,16 @@ function Tile(p: {
   label: string
   hint: string
   id?: string
+  /** Ohne Mandant im Build: gleicher Tab + Anker, damit kein Leer-Tab und Hinweis sichtbar. */
+  openInNewTab?: boolean
 }) {
+  const openInNewTab = p.openInNewTab !== false
   return (
     <a
       className="tile"
       id={p.id}
       href={p.href}
-      target="_blank"
-      rel="noopener noreferrer"
+      {...(openInNewTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
       style={{
         display: 'flex',
         flexDirection: 'column',
