@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nach Deploy: Präsentationsboard ohne Vercel-`VITE_…KREINECKER…` → orangener Kasten + Kacheln ohne Huber-Falle; mit gesetztem `t` → Kacheln öffnen K2 Familie in neuem Tab wie zuvor.  
-**Einordnung:** Ohne `?t=` in der **Build**-URL war die Stammbaum-Kachel faktisch ein Link auf Muster Huber; jetzt abgefangen.
+**Was wir JETZT tun:** Präsentationsboard: nach Vercel-Deploy einmal neu laden; Kacheln ök2-Mappe, K2-Familie-Mappe, K2-Familie-Label Musterfamilie Huber live.  
+**Einordnung:** `LaunchPraesentationBoardPage` + `public/launch-praesentation-board.html` im Einklang.
+
+---
+
+**Letzter Stand:** 23.04.26 – **Präsentationsboard: Kacheln Präsentationsmappe ök2 + K2 Familie; K2-Familie „Musterfamilie Huber“** – `LaunchPraesentationBoardPage.tsx`, `public/launch-praesentation-board.html`, Build-Infos mit Commit. **Commit:** `14e2a887` ✅ GitHub
 
 ---
 
