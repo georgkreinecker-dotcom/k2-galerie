@@ -123,7 +123,7 @@ function getK2FamiliePresentationTenantIdForHtmlPatch() {
   }
   for (const k of keys) {
     const fromShell = tryValue(process.env[k])
-    if (fromShell) return fromShell
+    if (fromShell && fromShell.toLowerCase() !== 'huber') return fromShell
   }
   let fromFiles = {}
   try {
@@ -135,14 +135,16 @@ function getK2FamiliePresentationTenantIdForHtmlPatch() {
   }
   for (const k of keys) {
     const fromFile = tryValue(fromFiles[k])
-    if (fromFile) return fromFile
+    if (fromFile && fromFile.toLowerCase() !== 'huber') return fromFile
   }
   return ''
 }
 
 /**
- * public/launch-praesentation-board.html: K2-Familie-Kacheln = immer unterschiedliche Zielpfade
- * (meine-familie vs. stammbaum), optional identisches ?t= aus Vercel-Env – kein ?go=-Redirect mehr nötig.
+ * public/launch-praesentation-board.html: K2-Familie-Kacheln
+ * – Mit VITE_Mandant: direkter Link …/stammbaum?t=… (wie k2FamiliePresentation.ts)
+ * – Ohne Mandant im Build: ?go=… beibehalten → SPA ersetzt zu gleicher Ziel-URL; nicht nackt /stammbaum
+ *   (sonst Fallback = oft Muster Huber)
  */
 ;(function patchLaunchPraesentationBoardHtml() {
   const launchPath = path.join(__dirname, '..', 'public', 'launch-praesentation-board.html')
@@ -156,8 +158,14 @@ function getK2FamiliePresentationTenantIdForHtmlPatch() {
   const base = 'https://k2-galerie.vercel.app'
   const meineBare = `${base}/projects/k2-familie/meine-familie`
   const stammBare = `${base}/projects/k2-familie/stammbaum`
-  const meineFinal = t ? `${meineBare}?${new URLSearchParams({ t }).toString()}` : meineBare
-  const stammFinal = t ? `${stammBare}?${new URLSearchParams({ t }).toString()}` : stammBare
+  const goMeine = `${base}/launch-praesentation-board?go=meine-familie`
+  const goStamm = `${base}/launch-praesentation-board?go=stammbaum-kreinecker`
+  const meineFinal = t
+    ? `${meineBare}?${new URLSearchParams({ t }).toString()}`
+    : goMeine
+  const stammFinal = t
+    ? `${stammBare}?${new URLSearchParams({ t }).toString()}`
+    : goStamm
   const reMeine =
     /href="https:\/\/k2-galerie\.vercel\.app\/(?:launch-praesentation-board\?go=meine-familie|projects\/k2-familie\/meine-familie[^"]*)"/
   const reStamm =

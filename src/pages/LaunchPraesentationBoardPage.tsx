@@ -10,20 +10,57 @@ import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../conf
 
 const s = (path: string) => `${BASE_APP_URL}${path}`
 
+/** Öffentlicher Link mit Kreinecker-Mandant: muss ?t=familie-… haben, sonst zeigt die App oft Muster Huber. */
+function publicK2FamilieUrlHasTenantT(absUrl: string): boolean {
+  try {
+    const u = new URL(absUrl)
+    return Boolean(u.searchParams.get('t')?.trim())
+  } catch {
+    return false
+  }
+}
+
 export default function LaunchPraesentationBoardPage() {
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const meineFamilieUrl = getK2FamilieMeineFamilieKreineckerPublicUrl()
   const stammbaumUrl = getK2FamilieStammbaumKreineckerPublicUrl()
 
-  /** Alte Lesezeichen / QR mit ?go= – leitet auf dieselben Ziele wie die Kacheln (direkte Pfade, nicht zwei Mal dieselbe Route). */
+  /**
+   * ?go= aus Lesezeichen/QR/statischer HTML: nur ersetzen, wenn Ziel-URL `t` hat (Vercel-Env).
+   * Ohne `t` nicht auf nackten Stammbaum/Meine Familie – sonst Fallback Huber.
+   */
   useLayoutEffect(() => {
     const go = (searchParams.get('go') || '').trim().toLowerCase()
     if (go === 'stammbaum-kreinecker' || go === 'stammbaum') {
-      window.location.replace(getK2FamilieStammbaumKreineckerPublicUrl())
+      const target = getK2FamilieStammbaumKreineckerPublicUrl()
+      if (publicK2FamilieUrlHasTenantT(target)) {
+        window.location.replace(target)
+      } else {
+        setSearchParams(
+          (prev) => {
+            const n = new URLSearchParams(prev)
+            n.delete('go')
+            return n
+          },
+          { replace: true },
+        )
+      }
     } else if (go === 'meine-familie' || go === 'k2-familie-meine') {
-      window.location.replace(getK2FamilieMeineFamilieKreineckerPublicUrl())
+      const target = getK2FamilieMeineFamilieKreineckerPublicUrl()
+      if (publicK2FamilieUrlHasTenantT(target)) {
+        window.location.replace(target)
+      } else {
+        setSearchParams(
+          (prev) => {
+            const n = new URLSearchParams(prev)
+            n.delete('go')
+            return n
+          },
+          { replace: true },
+        )
+      }
     }
-  }, [searchParams])
+  }, [searchParams, setSearchParams])
 
   const hasTenant = hasKreineckerStammbaumTenantInBuildEnv()
 

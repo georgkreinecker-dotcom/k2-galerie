@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nächste Session: optional `familieMandantTrennung.test.ts` + Doku-Zeile in `K2-FAMILIE-MANDANT-CODE-ORIENTIERUNG.md` (Tabelle → `familieMandantTrennung.ts`). Georg: Stand kommt mit Vercel nach Push.  
-**Einordnung:** K2 Familie – harte Trennung **Muster `huber`** vs. **Stamm/Präsentation** (VITE/Links); `?t=huber` schreibt keine Einladungs-Parameter in den Demo-Speicher.
+**Was wir JETZT tun:** Optional: Vercel **Production** → `VITE_K2_FAMILIE_KREINECKER_STAMMBAUM_TENANT_ID` = echtes `familie-…` (Stammbaum-Kachel dann mit `?t=` inkl. statischer `public/launch-praesentation-board.html` nach Build). Stand kommt mit Push/Build.  
+**Einordnung:** Präsentationsboard – ohne `?t=` würde K2 Familie auf **Muster Huber** fallen; Redirect mit `?go=` macht das nicht schlimmer, sondern bleibt auf dem Board + Hinweis, bis Env gesetzt ist.
+
+---
+
+**Letzter Stand:** 23.04.26 – **Stammbaum Kreinecker / Präsentationsboard: kein Auto-Redirect zu Huber ohne `t=`** – `LaunchPraesentationBoardPage`: bei `?go=stammbaum` / `meine-familie` nur `location.replace`, wenn Ziel-URL `?t=` hat; sonst `go` per Router entfernen, Nutzer sieht Kachel + Hinweis. `write-build-info.js` (`getK2FamiliePresentationTenantIdForHtmlPatch`): VITE-Wert `huber` ignorieren. Build-Artefakte (build-info, index.html) mitgeliefert. **Commit:** _(folgt nach Push)_
 
 ---
 
