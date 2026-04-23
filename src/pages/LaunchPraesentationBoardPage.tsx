@@ -6,6 +6,7 @@ import {
 } from '../config/k2FamiliePresentation'
 import { hasKreineckerStammbaumTenantInBuildEnv } from '../data/k2FamilieKreineckerStammbaumQuelle'
 import { BASE_APP_URL, ENTDECKEN_ROUTE, PROJECT_ROUTES } from '../config/navigation'
+import { BUILD_LABEL } from '../buildInfo.generated'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 
 const s = (path: string) => `${BASE_APP_URL}${path}`
@@ -114,6 +115,20 @@ export default function LaunchPraesentationBoardPage() {
           >
             Live-Seiten <strong style={{ color: '#c4a574', fontWeight: 600 }}>kgm solution</strong> – ein Klick
             öffnet den Browser. USB oder PC, Internet erforderlich.
+          </p>
+          <p
+            style={{
+              fontSize: '0.8rem',
+              color: '#6a7d8a',
+              margin: '0.75rem 0 0 0',
+              lineHeight: 1.4,
+            }}
+          >
+            Stand:{' '}
+            <strong style={{ color: '#5ffbf1', fontWeight: 600 }}>{BUILD_LABEL}</strong>
+            <span style={{ color: '#5c6670' }}> · Zeigt der Browser hier etwas anderes: </span>
+            <strong style={{ color: '#c4a574' }}>Seite neu laden</strong>
+            <span style={{ color: '#5c6670' }}> (Wischen/Safari) oder Zwischenspeicher leeren</span>
           </p>
         </header>
 
