@@ -1,7 +1,19 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Optional: Vercel **Production** → `VITE_K2_FAMILIE_KREINECKER_STAMMBAUM_TENANT_ID` = echtes `familie-…` (Stammbaum-Kachel dann mit `?t=` inkl. statischer `public/launch-praesentation-board.html` nach Build). Stand kommt mit Push/Build.  
-**Einordnung:** Präsentationsboard – ohne `?t=` würde K2 Familie auf **Muster Huber** fallen; Redirect mit `?go=` macht das nicht schlimmer, sondern bleibt auf dem Board + Hinweis, bis Env gesetzt ist.
+**Was wir JETZT tun:** Kurz prüfen: K2 Familie, Leiste **aufgeklappt** → Zeile *Aktive Familie: …* sichtbar (auch nur eine Familie, ohne Mandanten-Dropdown).  
+**Einordnung:** Raumschiff **M4** – Mandant für die Nutzer:in klar, nicht optional.
+
+---
+
+**Letzter Stand:** 23.04.26 – **K2 Familie: „Aktive Familie“ in aufgeklappter Rolle-Leiste (M4)** – `FamilieRolleLeisteHaupt` in `K2FamilieLayout.tsx` (inkl. optional *Du:*); `docs/K2-FAMILIE-RAUMSCHIFF-KRITERIEN-UND-SELBSTKLAERUNG.md` §1a. **Commit:** _(nach Push)_
+
+---
+
+**Letzter Stand:** 23.04.26 – **Lizenznehmer: Admin-Kontext bei /admin /mein-bereich setzen (Galerie: Admin-Button nach Admin-QR)** – `src/context/TenantContext.tsx` (`syncStorageFromUrl` für `!isPlatformInstance()`). **Commit:** _(nach Push)_
+
+---
+
+**Letzter Stand:** 23.04.26 – **K2 Familie Meine-Familie-Start: kgm solution + Teilen (Hero), Teilen mit Query (`includeSearchInShare`)** – `K2FamilieHomePage`, `PublicTeilenFixed`, `getPublicK2FamilieMeineFamilieUrl` in `publicLinks.ts`, Muster-Toolbar ohne doppeltes Teilen auf `meine-familie`. **Commit:** `58a55878` ✅ GitHub
 
 ---
 

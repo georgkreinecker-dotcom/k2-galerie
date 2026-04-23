@@ -478,6 +478,13 @@ function FamilieRolleLeisteHinweise() {
 
 function FamilieRolleLeisteHaupt({ onEinklappen }: { onEinklappen?: () => void }) {
   const { deckblattMinimal } = useK2FamiliePresentationMode()
+  const { currentTenantId, familieStorageRevision } = useFamilieTenant()
+  const famNameHaupt = getFamilieTenantDisplayName(currentTenantId, 'Standard')
+  const duNameHaupt = useMemo(() => {
+    const ichId = loadEinstellungen(currentTenantId).ichBinPersonId?.trim()
+    if (!ichId) return ''
+    return loadPersonen(currentTenantId).find((p) => p.id === ichId)?.name?.trim() || ''
+  }, [currentTenantId, familieStorageRevision])
   const { rolle, capabilities, inhaberArbeitsansicht, setInhaberArbeitsansicht } = useFamilieRolle()
   const eff = capabilities.rolle
   const gewaehlt = capabilities.rolleGewaehlt ?? rolle
@@ -554,6 +561,47 @@ function FamilieRolleLeisteHaupt({ onEinklappen }: { onEinklappen?: () => void }
         borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
       }}
     >
+      {/*
+        Immer sichtbar: welche Familie (Mandant) aktiv ist – auch bei nur einer Familie,
+        wenn die Tenant-Toolbar kein Dropdown zeigt (return null).
+      */}
+      <span className="meta" style={{ color: t.muted, fontSize: '0.82rem' }}>
+        Aktive Familie:
+      </span>
+      <strong
+        style={{
+          fontSize: '0.9rem',
+          fontWeight: 700,
+          color: t.text,
+          fontFamily: t.fontHeading,
+        }}
+        title="Stammdaten und Karten gelten für diese Familie. Bei mehreren Familien wählst du in der Leiste oben die Familie."
+      >
+        {famNameHaupt}
+      </strong>
+      {duNameHaupt ? (
+        <>
+          <span style={{ color: t.muted }} aria-hidden>
+            ·
+          </span>
+          <span className="meta" style={{ color: t.muted, fontSize: '0.82rem' }}>
+            Du:
+          </span>
+          <strong
+            style={{
+              fontSize: '0.88rem',
+              fontWeight: 700,
+              color: t.text,
+              fontFamily: t.fontHeading,
+            }}
+          >
+            {duNameHaupt}
+          </strong>
+        </>
+      ) : null}
+      <span style={{ color: t.muted }} aria-hidden>
+        ·
+      </span>
       <span className="meta" style={{ color: t.muted, fontSize: '0.82rem' }}>
         Deine Rolle:
       </span>

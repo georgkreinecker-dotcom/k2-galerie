@@ -119,6 +119,10 @@ function syncStorageFromUrl(pathname: string, search: string): void {
     if (!isPlatformInstance()) {
       const s = sessionStorage.getItem(ADMIN_CONTEXT_KEY)
       if (s === 'oeffentlich' || s === 'vk2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'k2')
+      /** Lizenznehmer: Einstieg /admin bzw. /mein-bereich = K2-Admin. Kontext setzen, damit z. B. Galerie den Admin-Button anzeigen kann (GaleriePage showAdminEntryOnGalerie). Plattform-Variante setzt das bei jeder /admin-Navigation; bei Lizenznehmer fehlte es (früher return). */
+      if (pathname === '/admin' || pathname === '/mein-bereich') {
+        sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'k2')
+      }
       return
     }
     const params = new URLSearchParams(search || '')

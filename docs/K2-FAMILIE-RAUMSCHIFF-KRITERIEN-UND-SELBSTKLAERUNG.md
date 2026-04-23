@@ -39,7 +39,7 @@ Jede Zeile bezieht sich auf die zitierte Stelle in der Grundbotschaft oder auf v
 | Kriterium | Trifft zu? | Festlegung |
 |-----------|------------|------------|
 | **M3** | **Ja, technische Schicht** | Vermischen von Mandanten wäre faktisch **still falsch** (falsche Personen/Stories). Absicherung: getrennte Quellen (`k2FamilieMusterHuberQuelle` vs. `k2FamilieKreineckerStammbaumQuelle`), `familieMandantTrennung.ts`, Speicher/Keys über `tenantId` (`docs/K2-FAMILIE-DATENMODELL.md`, `familieStorage.ts`), Einladung ohne unkontrolliertes Mischen (`FamilieEinladungQuerySync`). |
-| **M4** | **Teilweise** | **Technisch:** Ein Mandant pro konsistenter Session-Pfad; Huber vs. Kreinecker-Kette trennbar; `t=` / Präsentation / Launch-Board (`k2FamiliePresentation.ts`, `LaunchPraesentationBoardPage`, `write-build-info`-Patch) ohne Doppel-Huber. **Nutzer-Orientierung** („ich sehe, welche Familie aktiv ist“) bleibt eigener Hebel – siehe Abschnitt 2–3, ggf. „Du bist hier“-Zeile. |
+| **M4** | **Ja (techn. + sichtbar)** | **Technisch:** Ein Mandant pro konsistenter Session-Pfad; Huber vs. Kreinecker-Kette trennbar; `t=` / Präsentation / Launch-Board ohne Doppel-Huber. **Sichtbar:** In der **aufgeklappten** Rolle-Leiste (`FamilieRolleLeisteHaupt` in `K2FamilieLayout.tsx`) steht **immer** *Aktive Familie: [Anzeigename]* (plus optional *Du:*), auch wenn die Mandanten-Toolbar kein Dropdown zeigt (nur eine Familie). Kompaktleiste bleibt ergänzend. Tief-Links/„Du bist hier“-Extra aus Abschnitt 3 B.3 kann später kommen, ist kein Blocker für M4. |
 | **M6** | **Stützt** | Einladung/Query-Sync: keine freien `z`/`m`/`fn` auf Muster, wenn `t` gesetzt – **eine** Wahrheitskette fürs Vertrauen. |
 | **M8** | **Ja** | DIALOG-STAND, `K2-FAMILIE-MANDANT-CODE-ORIENTIERUNG.md`, dieses Kapitel – **keine** reine Chat-Wahrheit. |
 
@@ -108,5 +108,5 @@ Bei **neuen** Einstiegen (Board, `?t=`, Einladung, Muster-Seed): zuerst **Mandan
 
 ---
 
-**Stand:** 23.04.26 – Abschnitt **1a** ergänzt: Mandanten-Datensicherheit den Raumschiff-Kriterien **M3, M4 (techn./teilw.), M6, M8** zugeordnet; Regressions-Hinweis.  
+**Stand:** 23.04.26 – **1a** M4: Mandanten-Name in aufgeklappter Rolle-Leiste verbindlich sichtbar (Code + diese Zeile). Zuvor: Mandanten-Datensicherheit **M3, M4, M6, M8**; Regressions-Hinweis.  
 **Vorher:** 15.04.26 – abgeleitet aus der Grundbotschaft; Selbsterklärung als Arbeitshypothese; Lösungsvorschläge bewusst **eine Quelle pro Aussage** (Info-Block + Handbuch), kein zweites paralleles Romankapitel in der App.
