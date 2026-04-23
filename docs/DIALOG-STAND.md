@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 23.04.26 – **Präsentationsboard: kein nackter Stammbaum ohne Mandant; Hinweis Vercel-Env; `?go=` → Anker statt Huber** – `LaunchPraesentationBoardPage.tsx`. **Commit:** _(nach Push)_
+**Letzter Stand:** 23.04.26 – **Präsentationsboard: kein nackter Stammbaum ohne Mandant; Hinweis Vercel-Env; `?go=` → Anker statt Huber** – `LaunchPraesentationBoardPage.tsx`. **Commit:** `5c1391c4` ✅ GitHub
 
 ---
 
