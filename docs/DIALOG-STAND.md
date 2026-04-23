@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Offen je nach Georg; zuletzt: **Besucherliste** 5 Interessen (Galerie, Ausstellung, Software, Vereinsplattform, K2 Familie).  
+**Was wir JETZT tun:** Offen je nach Georg; zuletzt: **Besucherliste** Galerie/Ausstellung ein Kästchen, 10 pro Quer-Seite.  
 **Einordnung:** Gästeliste / Texte-Schreibtisch Sammelordner.
+
+---
+
+**Letzter Stand:** 23.04.26 – **Besucherliste: Galerie/Ausstellung ein Punkt; A4 Quer; 10 Zeilen pro Seite (vorerst 2 Seiten = 20 Einträge); `SEITEN` im Script vermehrbar** – `besucherliste-vorname-name-interesse-a4.html`. **Commit:** `fff00fa9` ✅ GitHub
 
 ---
 
