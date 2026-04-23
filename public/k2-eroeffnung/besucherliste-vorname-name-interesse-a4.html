@@ -88,12 +88,12 @@
       font-weight: 800;
       text-align: left;
     }
-    col.nr { width: 3.5%; }
-    col.vn { width: 12%; }
-    col.nn { width: 12%; }
-    col.tel { width: 14%; }
-    col.mail { width: 17%; }
-    col.in { width: 41.5%; }
+    col.nr { width: 3.2%; }
+    col.vn { width: 11.5%; }
+    col.nn { width: 11.5%; }
+    col.tel { width: 13%; }
+    col.mail { width: 16%; }
+    col.in { width: 44.8%; }
     td.nr { text-align: center; color: var(--muted); font-weight: 600; }
     .th-sub {
       display: block;
@@ -137,9 +137,26 @@
       color: var(--muted);
       text-align: center;
     }
+    /* Langer Text am Bildschirm, kurze Zeile im Druck → passt auf 1× A4 Quer */
+    .einleitung--druck {
+      display: none;
+    }
+    /* Druck: niedrigere Ränder + kompakte Tabelle, damit 10 Zeilen + Kopf wirklich auf 1 Blatt passen */
     @media print {
-      @page { size: A4 landscape; margin: 8mm; }
-      body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      @page {
+        size: A4 landscape;
+        margin: 8mm 10mm;
+      }
+      html,
+      body {
+        width: 100%;
+        height: auto;
+        margin: 0;
+        background: #fff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color-adjust: exact;
+      }
       .page {
         box-shadow: none;
         min-height: auto;
@@ -147,11 +164,61 @@
         padding: 0;
         max-width: none;
         page-break-after: always;
-        page-break-inside: avoid;
+        /* nicht „alles auf ein Blatt vermeiden“ – sonst bricht WebKit mitten in der Tabelle (4 Druckseiten) */
+        page-break-inside: auto;
+        break-inside: auto;
+        overflow: visible;
       }
       .page:last-of-type { page-break-after: auto; }
       .no-print { display: none !important; }
-      tr { page-break-inside: avoid; }
+      .einleitung--bildschirm { display: none !important; }
+      .einleitung--druck {
+        display: block !important;
+        font-size: 7.5pt;
+        line-height: 1.3;
+        margin: 0 0 1.5mm;
+        max-width: 100%;
+      }
+      .sub { display: none !important; }
+      h1 { font-size: 10.5pt; margin: 0 0 1.2mm; }
+      h2.h2-fort { font-size: 9.5pt; margin: 0 0 1mm; }
+      .seitenhinweis { font-size: 7pt; margin: 0 0 1.2mm; }
+      table.liste {
+        width: 100%;
+        max-width: 100%;
+        font-size: 6.5pt;
+        table-layout: fixed;
+      }
+      table.liste thead {
+        display: table-header-group;
+      }
+      table.liste th,
+      table.liste td {
+        padding: 0.45mm 1mm;
+        border: 0.35pt solid var(--line);
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .th-sub { font-size: 5.5pt; margin-top: 0.2mm; }
+      .inter-cell {
+        min-height: 0;
+        gap: 0.28mm;
+        padding: 0.15mm 0 0.2mm;
+      }
+      .k {
+        font-size: 5.4pt;
+        line-height: 1.1;
+        gap: 0.4mm;
+      }
+      .k-long { font-size: 5.1pt; }
+      .k i {
+        width: 2.5mm;
+        height: 2.5mm;
+        border-width: 0.4pt;
+        margin-top: 0.1mm;
+      }
+      .fuss { margin-top: 1mm; font-size: 5.5pt; }
+      tr { page-break-inside: avoid; break-inside: avoid; }
     }
   </style>
 </head>
@@ -160,6 +227,7 @@
   <p class="no-print" style="text-align: center; padding: 10px; font-size: 10pt; color: #5c5650">
     <a href="javascript:window.print()" style="color: #0f766e; font-weight: 700">Drucken</a>
     &nbsp;·&nbsp; A4 Quer · 10 Zeilen pro Seite
+    &nbsp;·&nbsp; Grauer Tabellenkopf: im Druckdialog <strong>Hintergrund drucken</strong> aktivieren
     &nbsp;·&nbsp;
     <code style="font-size: 0.9em">/k2-eroeffnung/besucherliste-vorname-name-interesse-a4.html</code>
   </p>
@@ -204,11 +272,15 @@
         if (p === 0) {
           page.innerHTML =
             '<h1>Herzlich willkommen – danke für deinen Besuch</h1>' +
-            '<p class="einleitung">' +
+            '<p class="einleitung einleitung--bildschirm">' +
             'Schön, dass du in der <strong>K2 Galerie Kunst&amp;Keramik</strong> bei uns vorbeischaust. ' +
             '<strong>Bitte</strong> trag – wenn du magst – deine Daten ein und kreuz an, wofür du dich interessierst: ' +
             '<strong>Galerie / Ausstellung</strong>, <strong>Software (eigene Plattform)</strong>, <strong>Vereinsplattform</strong> oder <strong>K2 Familie</strong> – gerne auch mehrere. ' +
             'Dann können wir uns bei dir melden und dich passend informieren. Danke.</p>' +
+            '<p class="einleitung einleitung--druck" aria-hidden="true">' +
+            'Willkommen in der <strong>K2 Galerie Kunst&amp;Keramik</strong>. ' +
+            'Bitte eintragen und ankreuzen, wofür du dich interessierst' +
+            ' (Galerie/Ausstellung, Software, Vereinsplattform, K2 Familie) – gern mehrere. Danke.</p>' +
             '<p class="sub">Zum Ausfüllen am Tisch · Handschrift · je 10 Personen pro Seite</p>' +
             '<p class="hinweis no-print"><strong>Drucken:</strong> A4 <strong>Querformat</strong>. ' +
             '<strong>Seite 1 + 2</strong> – weitere Seiten: in diesem HTML <code>SEITEN</code> in der &lt;script&gt;-Sektion erhöhen (je +10 Zeilen).</p>' +
