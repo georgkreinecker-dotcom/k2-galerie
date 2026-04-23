@@ -15020,31 +15020,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
       )}
       <link rel="stylesheet" href={PROMO_FONTS_URL} />
 
-      {/* Nur im Vollfenster-Admin: festes Entsperren. In der APf (iframe) denselben Button nicht doppelt – dort „🔓 APf entsperren“ in DevView + Escape/postMessage. */}
-      {typeof window !== 'undefined' && window.self === window.top ? (
-        <button
-          type="button"
-          onClick={forceCloseBlockingOverlays}
-          title="Wenn etwas blockiert: alle Overlays schließen"
-          style={{
-            position: 'fixed',
-            right: '0.75rem',
-            bottom: '0.75rem',
-            zIndex: 2500000,
-            padding: '0.5rem 0.8rem',
-            borderRadius: '999px',
-            border: `1px solid ${s.accent}66`,
-            background: '#b54a1e',
-            color: '#fff',
-            fontSize: '0.8rem',
-            fontWeight: 700,
-            cursor: 'pointer',
-            boxShadow: '0 8px 20px rgba(0,0,0,0.28)'
-          }}
-        >
-          🔓 Entsperren
-        </button>
-      ) : null}
+      {/* Notfall-Entsperrung: Escape + k2-force-unblock (App/DevView) – kein fixer 🔓-Button mehr unten rechts. */}
 
       {/* Dynamischer Mandant: Ladeanzeige bis Daten von API da sind */}
       {tenant.dynamicTenantId && dynamicTenantLoading && (

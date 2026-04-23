@@ -5,7 +5,11 @@
 
 ---
 
-**Letzter Stand:** 22.04.26 – **K2 Familie: Mandanten-Trennlinie (Huber vs. Kreinecker-Kette)** – `familieMandantTrennung.ts`, `k2FamilieKreineckerStammbaumQuelle` (VITE verweigert `huber`), `FamilieEinladungQuerySync` (kein z/m/fn auf Muster), `pageTextsFamilie`/`k2FamilieApfDefaults` (eine Quelle für ID), Quell-Dateien Huber/Kreinecker, Doku `K2-FAMILIE-MANDANT-CODE-ORIENTIERUNG.md`. **Commit:** `PLACEHOLDER_COMMIT` ✅ GitHub
+**Letzter Stand:** 23.04.26 – **Entsperren-Button entfernt (K2/ök2/VK2 Admin + Stand-Badge)** – Fix **unten rechts** im Vollfenster-Admin (`ScreenshotExportAdmin`); **🔓** neben Stand und **?** auf K2-Galerie+AGB (`StandBadgeSync` in `App.tsx`). **Notfall unverändert:** **Escape** im Admin, `k2-force-unblock` / **„APf entsperren“** in der APf. **Commit:** `126a83ef` ✅ GitHub
+
+---
+
+**Letzter Stand:** 22.04.26 – **K2 Familie: Mandanten-Trennlinie (Huber vs. Kreinecker-Kette)** – `familieMandantTrennung.ts`, `k2FamilieKreineckerStammbaumQuelle` (VITE verweigert `huber`), `FamilieEinladungQuerySync` (kein z/m/fn auf Muster), `pageTextsFamilie`/`k2FamilieApfDefaults` (eine Quelle für ID), Quell-Dateien Huber/Kreinecker, Doku `K2-FAMILIE-MANDANT-CODE-ORIENTIERUNG.md`. **Commit:** `a6f792b6` ✅ GitHub
 
 ---
 
