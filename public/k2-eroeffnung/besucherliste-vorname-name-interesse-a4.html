@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Besucherliste – Vorname, Name, Interesse (A4)</title>
+  <style>
+    :root {
+      --teal: #0f766e;
+      --teal-d: #0c5c55;
+      --ink: #1c1a18;
+      --muted: #5c5650;
+      --line: #c4bfb8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #e8e4df;
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Source Sans 3', sans-serif;
+      font-size: 10.5pt;
+      line-height: 1.4;
+    }
+    .page {
+      max-width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: #fffefb;
+      padding: 14mm 16mm 16mm;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+    h1 {
+      font-size: 16pt;
+      font-weight: 800;
+      color: var(--teal-d);
+      margin: 0 0 2mm;
+      letter-spacing: -0.02em;
+    }
+    .sub {
+      font-size: 9.5pt;
+      color: var(--muted);
+      margin: 0 0 6mm;
+    }
+    .hinweis {
+      font-size: 9pt;
+      color: var(--muted);
+      background: rgba(15, 118, 110, 0.08);
+      border-left: 3px solid var(--teal);
+      padding: 2.5mm 3.5mm;
+      margin: 0 0 5mm;
+    }
+    .no-print { }
+    table.liste {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9.2pt;
+      table-layout: fixed;
+    }
+    table.liste th,
+    table.liste td {
+      border: 1px solid var(--line);
+      padding: 2mm 2.5mm;
+      vertical-align: middle;
+    }
+    table.liste th {
+      background: rgba(15, 118, 110, 0.12);
+      color: var(--teal-d);
+      font-weight: 800;
+      text-align: left;
+    }
+    col.nr { width: 7%; }
+    col.vn { width: 26%; }
+    col.nn { width: 26%; }
+    col.in { width: 41%; }
+    td.nr { text-align: center; color: var(--muted); font-weight: 600; }
+    .inter-cell {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 3mm 5mm;
+      min-height: 6mm;
+    }
+    .k {
+      display: inline-flex;
+      align-items: center;
+      gap: 1.2mm;
+      font-size: 8.5pt;
+      font-weight: 600;
+      color: var(--teal-d);
+    }
+    .k i {
+      display: inline-block;
+      width: 3.8mm;
+      height: 3.8mm;
+      border: 1.2px solid var(--teal);
+      border-radius: 1px;
+      flex-shrink: 0;
+    }
+    .fuss {
+      margin-top: 5mm;
+      font-size: 7.5pt;
+      color: var(--muted);
+      text-align: center;
+    }
+    @media print {
+      @page { size: A4 portrait; margin: 10mm; }
+      body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .page { box-shadow: none; min-height: auto; padding: 0; }
+      .no-print { display: none !important; }
+      tr { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Besucherliste</h1>
+    <p class="sub">K2 Galerie Kunst&amp;Keramik · zum Ausfüllen und Abhaken (Handschrift / Kopie)</p>
+    <p class="hinweis no-print">
+      <strong>Drucken:</strong> A4 hoch. In den Spalten <strong>Interesse</strong> die passenden Kästchen am Tisch ankreuzen.
+    </p>
+
+    <table class="liste" aria-label="Besucherliste mit Vorname, Name, Interesse">
+      <colgroup>
+        <col class="nr" /><col class="vn" /><col class="nn" /><col class="in" />
+      </colgroup>
+      <thead>
+        <tr>
+          <th scope="col">Nr.</th>
+          <th scope="col">Vorname</th>
+          <th scope="col">Name</th>
+          <th scope="col">Interesse <span style="font-weight:600; font-size:8.5pt; color:var(--muted)">(ankreuzen)</span></th>
+        </tr>
+      </thead>
+      <tbody id="zeilen">
+        <!-- Zeilen per JS duplizierbar; Standard: 24 -->
+      </tbody>
+    </table>
+
+    <footer class="fuss">
+      kgm solution · K2 Galerie – intern / Veranstaltung
+    </footer>
+  </div>
+  <p class="no-print" style="text-align: center; padding: 10px; font-size: 10pt; color: #5c5650">
+    <a href="javascript:window.print()" style="color: #0f766e; font-weight: 700">Drucken</a>
+    &nbsp;·&nbsp;
+    <code style="font-size: 0.9em">/k2-eroeffnung/besucherliste-vorname-name-interesse-a4.html</code>
+  </p>
+  <script>
+    (function () {
+      var n = 24
+      var tb = document.getElementById('zeilen')
+      var interesse =
+        '<span class="k"><i aria-hidden="true"></i> Galerie</span>' +
+        '<span class="k"><i aria-hidden="true"></i> K2 / Plattform</span>' +
+        '<span class="k"><i aria-hidden="true"></i> beides</span>' +
+        '<span class="k"><i aria-hidden="true"></i> noch offen</span>'
+      for (var i = 1; i <= n; i++) {
+        var tr = document.createElement('tr')
+        tr.innerHTML =
+          '<td class="nr">' +
+          i +
+          '</td><td></td><td></td><td><div class="inter-cell">' +
+          interesse +
+          '</div></td>'
+        tb.appendChild(tr)
+      }
+    })()
+  </script>
+</body>
+</html>

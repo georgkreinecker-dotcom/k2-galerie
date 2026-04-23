@@ -92,6 +92,37 @@ const BEREICHE: Bereich[] = [
     ],
   },
   {
+    id: 'druckbares-sammel',
+    titel: 'Druckbares – Sammelordner',
+    untertitel:
+      'Statische Vorlagen (HTML/PDF) zum Drucken. Regel: Neue druckfertige Dateien unter public/… immer hier als Zettel eintragen, sortiert. Handbücher und Präsentationsmappen: Texts – Kommunikation. Vitas: K2 – Kurzbiographien. Live-Flyer und Plakate: Eröffnung & Freund:innen.',
+    akzent: '#7c2d12',
+    zoneBg: 'linear-gradient(145deg, rgba(124,45,18,0.1), rgba(255,250,245,0.98))',
+    zettel: [
+      {
+        id: 'druck-besucherliste-vn-nn-interesse',
+        titel: 'Besucherliste · Vorname, Name, Interesse',
+        zweck: 'A4 · Zeilen · Kästchen zum Ankreuzen (Galerie, Plattform, beides, offen)',
+        to: '/k2-eroeffnung/besucherliste-vorname-name-interesse-a4.html',
+        rotateDeg: 0.1,
+      },
+      {
+        id: 'druck-besucherliste-a4',
+        titel: 'Besucherliste A4 (Vorschlag & Text)',
+        zweck: 'Musterformular, Erklärungen, längere Tabelle',
+        to: '/k2-eroeffnung/besucherliste-vorschlag-a4.html',
+        rotateDeg: 0.12,
+      },
+      {
+        id: 'druck-oeffnungszeiten-flyer-a5-k2',
+        titel: 'Flyer Öffnungszeiten A5',
+        zweck: 'K2 · druckfertig · QR, Besuch vereinbaren',
+        to: '/plakate-druckformate-k2/oeffnungszeiten-flyer-a5-k2.html',
+        rotateDeg: -0.14,
+      },
+    ],
+  },
+  {
     id: 'pilot-testuser',
     titel: 'Pilot & Testuser',
     untertitel:
