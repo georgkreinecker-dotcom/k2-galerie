@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Offen je nach Georg; zuletzt: **Besucherliste** Galerie/Ausstellung ein Kästchen, 10 pro Quer-Seite.  
+**Was wir JETZT tun:** Offen je nach Georg; zuletzt: **Besucherliste** Druck = 2× A4 Quer (kein 4-Seiten-Umbruch mitten in der Tabelle).  
 **Einordnung:** Gästeliste / Texte-Schreibtisch Sammelordner.
+
+---
+
+**Letzter Stand:** 23.04.26 – **Besucherliste Druck: Safari/HP teilte in 4 Seiten (zu hoch); Fix = Kurz-Intro nur im Druck, engere Tabelle, `thead` gruppieren, `break-inside` auf Seite offen, Hinweis Hintergrund drucken** – `public/k2-eroeffnung/besucherliste-vorname-name-interesse-a4.html`. **Commit:** `b777c8aa` ✅ GitHub
 
 ---
 
