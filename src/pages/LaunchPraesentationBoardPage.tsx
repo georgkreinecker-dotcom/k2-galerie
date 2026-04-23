@@ -61,6 +61,8 @@ export default function LaunchPraesentationBoardPage() {
   /** Ohne gültiges `t` im Build: Kacheln dürfen nicht auf nackten Stammbaum/Meine Familie zeigen. */
   const stammbaumTileHref = hasTenant ? stammbaumUrl : boardMitAnkerOhneT
   const meineFamilieTileHref = hasTenant ? meineFamilieUrl : boardMitAnkerOhneT
+  const oek2PraesentationsmappeUrl = `${s(PROJECT_ROUTES['k2-galerie'].praesentationsmappe)}?context=oeffentlich`
+  const k2FamiliePraesentationsmappeUrl = s(PROJECT_ROUTES['k2-familie'].familiePraesentationsmappe)
 
   return (
     <div
@@ -179,8 +181,8 @@ export default function LaunchPraesentationBoardPage() {
           <Tile
             href={meineFamilieTileHref}
             emoji="👨‍👩‍👧"
-            label="K2 Familie"
-            hint="Meine Familie – mit Mandant aus Vercel (nicht Muster Huber, wenn t gesetzt)"
+            label="K2 Familie – Musterfamilie Huber"
+            hint="Meine Familie – Standard-Demo ist Musterfamilie Huber; mit Mandant t= aus Vercel die echte Familie"
             id="launch-tile-k2-familie-meine"
             openInNewTab={hasTenant}
           />
@@ -191,6 +193,20 @@ export default function LaunchPraesentationBoardPage() {
             hint="K2 Familie – interaktiver Stammbaum (Mandant aus Server-Konfiguration)"
             id="launch-tile-stammbaum-kreinecker"
             openInNewTab={hasTenant}
+          />
+          <Tile
+            href={oek2PraesentationsmappeUrl}
+            emoji="📑"
+            label="Präsentationsmappe ök2"
+            hint="Vertriebs- und Produktmappe im ök2-Demo-Kontext (Muster-Galerie)"
+            id="launch-tile-praesentationsmappe-oek2"
+          />
+          <Tile
+            href={k2FamiliePraesentationsmappeUrl}
+            emoji="📂"
+            label="Präsentationsmappe K2 Familie"
+            hint="Eigene Mappe zum Produkt K2 Familie – inhaltlich getrennt von K2 Galerie/ök2"
+            id="launch-tile-praesentationsmappe-k2-familie"
           />
         </nav>
 
