@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Offen je nach Georg; zuletzt: **Besucherliste** A4 Quer, Tel./E-Mail, Begrüßungstext.  
+**Was wir JETZT tun:** Offen je nach Georg; zuletzt: **Besucherliste** Du, Galerie/K2/Software-Kästchen untereinander.  
 **Einordnung:** Gästeliste / Texte-Schreibtisch Sammelordner.
+
+---
+
+**Letzter Stand:** 23.04.26 – **Besucherliste: Du-Ansprache; Interesse Galerie / K2 / Software (3 Kästchen untereinander, höhere Zeile); 15 Zeilen** – `besucherliste-vorname-name-interesse-a4.html`, `TexteSchreibtischPage`. **Commit:** `add74c92` ✅ GitHub
 
 ---
 
