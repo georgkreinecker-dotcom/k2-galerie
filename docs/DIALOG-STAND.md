@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Offen je nach Georg; zuletzt: **Besucherliste** Du, Galerie/K2/Software-Kästchen untereinander.  
+**Was wir JETZT tun:** Offen je nach Georg; zuletzt: **Besucherliste** 5 Interessen (Galerie, Ausstellung, Software, Vereinsplattform, K2 Familie).  
 **Einordnung:** Gästeliste / Texte-Schreibtisch Sammelordner.
+
+---
+
+**Letzter Stand:** 23.04.26 – **Besucherliste: 5 Kästchen (Galerie, Ausstellung, Software – meine eigene Plattform, Vereinsplattform, K2 Familie); 11 Zeilen** – `besucherliste-vorname-name-interesse-a4.html`. **Commit:** `249a078b` ✅ GitHub
 
 ---
 
