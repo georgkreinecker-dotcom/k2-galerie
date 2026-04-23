@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 23.04.26 – **Entsperren-Button entfernt (K2/ök2/VK2 Admin + Stand-Badge)** – Fix **unten rechts** im Vollfenster-Admin (`ScreenshotExportAdmin`); **🔓** neben Stand und **?** auf K2-Galerie+AGB (`StandBadgeSync` in `App.tsx`). **Notfall unverändert:** **Escape** im Admin, `k2-force-unblock` / **„APf entsperren“** in der APf. **Commit:** `126a83ef` ✅ GitHub
+**Letzter Stand:** 23.04.26 – **Entsperren-Button entfernt (K2/ök2/VK2 Admin + Stand-Badge)** – Fix **unten rechts** im Vollfenster-Admin (`ScreenshotExportAdmin`); **🔓** neben Stand und **?** auf K2-Galerie+AGB (`StandBadgeSync` in `App.tsx`). **Notfall unverändert:** **Escape** im Admin, `k2-force-unblock` / **„APf entsperren“** in der APf. **Commit:** `24e5b417` ✅ GitHub
 
 ---
 
