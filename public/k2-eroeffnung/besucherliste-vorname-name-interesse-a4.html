@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Besucherliste – Querformat (Vorname, Name, Tel., E-Mail, Interesse)</title>
+  <title>Besucherliste – A4 Quer, 10 pro Seite</title>
   <style>
     :root {
       --teal: #0f766e;
@@ -24,9 +24,9 @@
     .page {
       max-width: 297mm;
       min-height: 210mm;
-      margin: 0 auto;
+      margin: 0 auto 12px;
       background: #fffefb;
-      padding: 10mm 12mm 12mm;
+      padding: 10mm 12mm 10mm;
       box-shadow: 0 4px 24px rgba(0,0,0,0.08);
     }
     h1 {
@@ -35,6 +35,12 @@
       color: var(--teal-d);
       margin: 0 0 3mm;
       letter-spacing: -0.02em;
+    }
+    .h2-fort {
+      font-size: 12pt;
+      font-weight: 800;
+      color: var(--teal-d);
+      margin: 0 0 2mm;
     }
     .einleitung {
       font-size: 10pt;
@@ -47,6 +53,12 @@
     .sub {
       font-size: 9pt;
       color: var(--muted);
+      margin: 0 0 4mm;
+    }
+    .seitenhinweis {
+      font-size: 8.5pt;
+      color: var(--teal-d);
+      font-weight: 700;
       margin: 0 0 4mm;
     }
     .hinweis {
@@ -96,8 +108,8 @@
       align-items: flex-start;
       justify-content: center;
       gap: 1.1mm;
-      min-height: 22mm;
-      padding: 0.6mm 0 0.8mm;
+      min-height: 18mm;
+      padding: 0.5mm 0 0.6mm;
     }
     .k {
       display: flex;
@@ -117,6 +129,7 @@
       border: 1.2px solid var(--teal);
       border-radius: 1px;
       flex-shrink: 0;
+      margin-top: 0.2mm;
     }
     .fuss {
       margin-top: 3mm;
@@ -127,75 +140,98 @@
     @media print {
       @page { size: A4 landscape; margin: 8mm; }
       body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .page { box-shadow: none; min-height: auto; padding: 0; max-width: none; }
+      .page {
+        box-shadow: none;
+        min-height: auto;
+        margin: 0;
+        padding: 0;
+        max-width: none;
+        page-break-after: always;
+        page-break-inside: avoid;
+      }
+      .page:last-of-type { page-break-after: auto; }
       .no-print { display: none !important; }
       tr { page-break-inside: avoid; }
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <h1>Herzlich willkommen – danke für deinen Besuch</h1>
-    <p class="einleitung">
-      Schön, dass du in der <strong>K2 Galerie Kunst&amp;Keramik</strong> bei uns vorbeischaust.
-      <strong>Bitte</strong> trag – wenn du magst – deine Daten ein und kreuz an, wofür du dich interessierst: <strong>Galerie</strong>, <strong>Ausstellung</strong>, <strong>Software (eigene Plattform)</strong>, <strong>Vereinsplattform</strong> oder <strong>K2 Familie</strong> – gerne auch mehrere.
-      Dann können wir uns bei dir melden und dich passend informieren. Danke.
-    </p>
-    <p class="sub">Zum Ausfüllen am Tisch · Handschrift</p>
-    <p class="hinweis no-print">
-      <strong>Drucken:</strong> A4 <strong>Querformat</strong>. Im Druckdialog „Quer“ wählen, falls nötig.
-    </p>
-
-    <table class="liste" aria-label="Besucherliste: Vorname, Name, Telefon, E-Mail, Interesse fünf Bereiche">
-      <colgroup>
-        <col class="nr" />
-        <col class="vn" />
-        <col class="nn" />
-        <col class="tel" />
-        <col class="mail" />
-        <col class="in" />
-      </colgroup>
-      <thead>
-        <tr>
-          <th scope="col">Nr.</th>
-          <th scope="col">Vorname</th>
-          <th scope="col">Name</th>
-          <th scope="col">Tel.</th>
-          <th scope="col">E-Mail</th>
-          <th scope="col">Interesse <span class="th-sub">Galerie, Ausstellung, Software, Vereinsplattform, K2 Familie</span></th>
-        </tr>
-      </thead>
-      <tbody id="zeilen"></tbody>
-    </table>
-
-    <footer class="fuss">
-      kgm solution · K2 Galerie – intern / Veranstaltung
-    </footer>
-  </div>
+  <div id="seiten"></div>
   <p class="no-print" style="text-align: center; padding: 10px; font-size: 10pt; color: #5c5650">
     <a href="javascript:window.print()" style="color: #0f766e; font-weight: 700">Drucken</a>
+    &nbsp;·&nbsp; A4 Quer · 10 Zeilen pro Seite
     &nbsp;·&nbsp;
     <code style="font-size: 0.9em">/k2-eroeffnung/besucherliste-vorname-name-interesse-a4.html</code>
   </p>
   <script>
     (function () {
-      var n = 11
-      var tb = document.getElementById('zeilen')
+      var ZEILEN_PRO_SEITE = 10
+      var SEITEN = 2
       var interesse =
-        '<span class="k"><i aria-hidden="true"></i> Galerie</span>' +
-        '<span class="k"><i aria-hidden="true"></i> Ausstellung</span>' +
+        '<span class="k"><i aria-hidden="true"></i> Galerie / Ausstellung</span>' +
         '<span class="k k-long"><i aria-hidden="true"></i> Software – meine eigene Plattform</span>' +
         '<span class="k"><i aria-hidden="true"></i> Vereinsplattform</span>' +
         '<span class="k"><i aria-hidden="true"></i> K2 Familie</span>'
-      for (var i = 1; i <= n; i++) {
-        var tr = document.createElement('tr')
-        tr.innerHTML =
-          '<td class="nr">' +
-          i +
-          '</td><td></td><td></td><td></td><td></td><td><div class="inter-cell">' +
-          interesse +
-          '</div></td>'
-        tb.appendChild(tr)
+
+      var colgroup =
+        '<colgroup><col class="nr" /><col class="vn" /><col class="nn" /><col class="tel" /><col class="mail" /><col class="in" /></colgroup>'
+
+      var thead =
+        '<thead><tr>' +
+        '<th scope="col">Nr.</th><th scope="col">Vorname</th><th scope="col">Name</th>' +
+        '<th scope="col">Tel.</th><th scope="col">E-Mail</th>' +
+        '<th scope="col">Interesse <span class="th-sub">Galerie/Ausstellung, Software, Vereinsplattform, K2 Familie</span></th>' +
+        '</tr></thead>'
+
+      function zeilenHtml(startNr, anzahl) {
+        var s = '<tbody>'
+        for (var j = 0; j < anzahl; j++) {
+          var nr = startNr + j
+          s +=
+            '<tr><td class="nr">' +
+            nr +
+            '</td><td></td><td></td><td></td><td></td><td><div class="inter-cell">' +
+            interesse +
+            '</div></td></tr>'
+        }
+        return s + '</tbody>'
+      }
+
+      var host = document.getElementById('seiten')
+      for (var p = 0; p < SEITEN; p++) {
+        var page = document.createElement('div')
+        page.className = 'page'
+        if (p === 0) {
+          page.innerHTML =
+            '<h1>Herzlich willkommen – danke für deinen Besuch</h1>' +
+            '<p class="einleitung">' +
+            'Schön, dass du in der <strong>K2 Galerie Kunst&amp;Keramik</strong> bei uns vorbeischaust. ' +
+            '<strong>Bitte</strong> trag – wenn du magst – deine Daten ein und kreuz an, wofür du dich interessierst: ' +
+            '<strong>Galerie / Ausstellung</strong>, <strong>Software (eigene Plattform)</strong>, <strong>Vereinsplattform</strong> oder <strong>K2 Familie</strong> – gerne auch mehrere. ' +
+            'Dann können wir uns bei dir melden und dich passend informieren. Danke.</p>' +
+            '<p class="sub">Zum Ausfüllen am Tisch · Handschrift · je 10 Personen pro Seite</p>' +
+            '<p class="hinweis no-print"><strong>Drucken:</strong> A4 <strong>Querformat</strong>. ' +
+            '<strong>Seite 1 + 2</strong> – weitere Seiten: in diesem HTML <code>SEITEN</code> in der &lt;script&gt;-Sektion erhöhen (je +10 Zeilen).</p>' +
+            '<p class="seitenhinweis">Seite 1</p>' +
+            '<table class="liste" aria-label="Besucherliste Seite 1">' +
+            colgroup +
+            thead +
+            zeilenHtml(1, ZEILEN_PRO_SEITE) +
+            '</table>' +
+            '<footer class="fuss">kgm solution · K2 Galerie – intern / Veranstaltung</footer>'
+        } else {
+          var seite = p + 1
+          page.innerHTML =
+            '<h2 class="h2-fort">Besucherliste – Fortsetzung</h2>' +
+            '<p class="seitenhinweis">Seite ' + seite + ' · A4 Quer</p>' +
+            '<table class="liste" aria-label="Besucherliste Seite ' + seite + '">' +
+            colgroup +
+            thead +
+            zeilenHtml(p * ZEILEN_PRO_SEITE + 1, ZEILEN_PRO_SEITE) +
+            '</table>' +
+            '<footer class="fuss">kgm solution · K2 Galerie – intern / Veranstaltung</footer>'
+        }
+        host.appendChild(page)
       }
     })()
   </script>
