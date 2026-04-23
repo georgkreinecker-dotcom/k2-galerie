@@ -1,7 +1,15 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Präsentationsboard: nach Vercel-Deploy einmal neu laden; Kacheln ök2-Mappe, K2-Familie-Mappe, K2-Familie-Label Musterfamilie Huber live.  
-**Einordnung:** `LaunchPraesentationBoardPage` + `public/launch-praesentation-board.html` im Einklang.
+**Was wir JETZT tun:** Offen je nach Georg; zuletzt: **Druck-Besucherliste** (Vorname, Name, Interesse-Kästchen) + Zettel Texte-Schreibtisch.  
+**Einordnung:** Eröffnung / Gästeliste am Tisch, ein Ort für druckbare Vorlagen = Texte-Schreibtisch Sammelordner.
+
+---
+
+**Letzter Stand:** 23.04.26 – **Druck: Besucherliste A4 (Vorname, Name, Interesse-Kästchen) + Zettel** – `public/k2-eroeffnung/besucherliste-vorname-name-interesse-a4.html`, `TexteSchreibtischPage` (Sammelordner). **Commit:** `d4159d14` ✅ GitHub
+
+---
+
+**Letzter Stand:** 23.04.26 – **Präsentationsboard: Build-Stand sichtbar + Cache-Hinweis (8 Kacheln / Musterfamilie prüfbar)** – `LaunchPraesentationBoardPage`, `public/launch-praesentation-board.html`. **Commit:** `8c22e6be` ✅ GitHub
 
 ---
 
