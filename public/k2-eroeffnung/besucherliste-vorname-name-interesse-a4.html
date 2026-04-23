@@ -76,12 +76,12 @@
       font-weight: 800;
       text-align: left;
     }
-    col.nr { width: 4%; }
-    col.vn { width: 14%; }
-    col.nn { width: 14%; }
-    col.tel { width: 16%; }
-    col.mail { width: 20%; }
-    col.in { width: 32%; }
+    col.nr { width: 3.5%; }
+    col.vn { width: 12%; }
+    col.nn { width: 12%; }
+    col.tel { width: 14%; }
+    col.mail { width: 17%; }
+    col.in { width: 41.5%; }
     td.nr { text-align: center; color: var(--muted); font-weight: 600; }
     .th-sub {
       display: block;
@@ -95,18 +95,21 @@
       flex-direction: column;
       align-items: flex-start;
       justify-content: center;
-      gap: 1.4mm;
-      min-height: 14mm;
-      padding: 0.8mm 0 1mm;
+      gap: 1.1mm;
+      min-height: 22mm;
+      padding: 0.6mm 0 0.8mm;
     }
     .k {
-      display: inline-flex;
-      align-items: center;
+      display: flex;
+      align-items: flex-start;
       gap: 1.2mm;
-      font-size: 8.2pt;
+      font-size: 7.5pt;
       font-weight: 600;
       color: var(--teal-d);
+      line-height: 1.25;
+      max-width: 100%;
     }
+    .k-long { font-size: 7.1pt; }
     .k i {
       display: inline-block;
       width: 3.5mm;
@@ -135,7 +138,7 @@
     <h1>Herzlich willkommen – danke für deinen Besuch</h1>
     <p class="einleitung">
       Schön, dass du in der <strong>K2 Galerie Kunst&amp;Keramik</strong> bei uns vorbeischaust.
-      <strong>Bitte</strong> trag – wenn du magst – deine Daten ein und kreuz an, wofür du dich interessierst: <strong>Galerie</strong>, <strong>K2</strong> oder <strong>Software</strong> (du kannst auch mehreres ankreuzen).
+      <strong>Bitte</strong> trag – wenn du magst – deine Daten ein und kreuz an, wofür du dich interessierst: <strong>Galerie</strong>, <strong>Ausstellung</strong>, <strong>Software (eigene Plattform)</strong>, <strong>Vereinsplattform</strong> oder <strong>K2 Familie</strong> – gerne auch mehrere.
       Dann können wir uns bei dir melden und dich passend informieren. Danke.
     </p>
     <p class="sub">Zum Ausfüllen am Tisch · Handschrift</p>
@@ -143,7 +146,7 @@
       <strong>Drucken:</strong> A4 <strong>Querformat</strong>. Im Druckdialog „Quer“ wählen, falls nötig.
     </p>
 
-    <table class="liste" aria-label="Besucherliste: Vorname, Name, Telefon, E-Mail, Interesse Galerie K2 Software">
+    <table class="liste" aria-label="Besucherliste: Vorname, Name, Telefon, E-Mail, Interesse fünf Bereiche">
       <colgroup>
         <col class="nr" />
         <col class="vn" />
@@ -159,7 +162,7 @@
           <th scope="col">Name</th>
           <th scope="col">Tel.</th>
           <th scope="col">E-Mail</th>
-          <th scope="col">Interesse <span class="th-sub">Galerie · K2 · Software – bitte ankreuzen</span></th>
+          <th scope="col">Interesse <span class="th-sub">Galerie, Ausstellung, Software, Vereinsplattform, K2 Familie</span></th>
         </tr>
       </thead>
       <tbody id="zeilen"></tbody>
@@ -176,12 +179,14 @@
   </p>
   <script>
     (function () {
-      var n = 15
+      var n = 11
       var tb = document.getElementById('zeilen')
       var interesse =
         '<span class="k"><i aria-hidden="true"></i> Galerie</span>' +
-        '<span class="k"><i aria-hidden="true"></i> K2</span>' +
-        '<span class="k"><i aria-hidden="true"></i> Software</span>'
+        '<span class="k"><i aria-hidden="true"></i> Ausstellung</span>' +
+        '<span class="k k-long"><i aria-hidden="true"></i> Software – meine eigene Plattform</span>' +
+        '<span class="k"><i aria-hidden="true"></i> Vereinsplattform</span>' +
+        '<span class="k"><i aria-hidden="true"></i> K2 Familie</span>'
       for (var i = 1; i <= n; i++) {
         var tr = document.createElement('tr')
         tr.innerHTML =
