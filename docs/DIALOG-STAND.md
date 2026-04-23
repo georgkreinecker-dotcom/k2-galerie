@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Offen je nach Georg; zuletzt: **Besucherliste** Druck = 2× A4 Quer (kein 4-Seiten-Umbruch mitten in der Tabelle).  
-**Einordnung:** Gästeliste / Texte-Schreibtisch Sammelordner.
+**Was wir JETZT tun:** Offen beim nächsten Start; letzter Abend-Stand ist auf **main** (Session 23.04. gepusht, siehe `git log -1`).  
+**Einordnung:** Raum aufgeräumt – Vercel kann mitziehen.
+
+---
+
+**Letzter Stand:** 23.04.26 (Abend) – **Session-Ende:** Lokal-Stand inkl. K2-Familie/Admin/Launch-Board, **Test** `pageContentFamilie` an Huber-`/img`-Quelle, **`npm test` + voll `build` grün** – nach Push: siehe neuesten **Commit** auf `main` (Doku: `WIR-PROZESS` Session-Reflexion).
 
 ---
 

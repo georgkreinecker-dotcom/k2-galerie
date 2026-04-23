@@ -412,6 +412,24 @@ async function waitForEntdeckenPlakatRootInIframe(
   return false
 }
 
+/** Statische A5-Öffnungszeiten-HTML (K2) – Root `.a5` für PDF-Capture. */
+async function waitForOeffnungszeitenFlyerA5RootInIframe(
+  idoc: Document | null,
+  timeoutMs: number,
+): Promise<HTMLElement | null> {
+  if (!idoc) return null
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    const root = idoc.querySelector('.a5')
+    if (root && root instanceof HTMLElement && root.offsetHeight > 40) {
+      await new Promise<void>(r => setTimeout(r, 500))
+      return root
+    }
+    await new Promise<void>(r => setTimeout(r, 100))
+  }
+  return null
+}
+
 /** Vollständiges Plakat in ein Quadrat (z. B. 1080×1080) – gleichmäßig skaliert, weißer Rand. */
 function fitCanvasInSquareLetterbox(src: HTMLCanvasElement, side: number): HTMLCanvasElement {
   const w = src.width
@@ -820,6 +838,127 @@ async function captureFlyerMasterLiveRouteAsPdfBlob(
   }
 }
 
+const OEFFNUNGSZEITEN_FLYER_A5_K2_IFRAME_W = 820
+
+/** Statische A5 Öffnungszeiten (public/plakate-druckformate-k2) → PDF für Druckerei-Mail. */
+async function captureOeffnungszeitenFlyerA5K2AsPdfBlob(
+  absoluteUrl: string,
+  capture: WerbemittelPdfCaptureOptions | undefined,
+): Promise<Blob | null> {
+  if (typeof document === 'undefined') return null
+  const iframeWidthPx = OEFFNUNGSZEITEN_FLYER_A5_K2_IFRAME_W
+  const iframeMinHeightPx = 1200
+  const safeHtmlHint = '<div class="a5"></div>'
+
+  const iframe = document.createElement('iframe')
+  iframe.setAttribute('title', 'oeffnungszeiten-flyer-a5-k2-pdf-capture')
+  iframe.style.cssText = `position:fixed;left:-9999px;top:0;width:${iframeWidthPx}px;height:${iframeMinHeightPx}px;border:none;margin:0;padding:0;background:#e8e4df;`
+  document.body.appendChild(iframe)
+
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const t = window.setTimeout(() => resolve(), 22000)
+      iframe.onload = () => {
+        window.clearTimeout(t)
+        resolve()
+      }
+      iframe.onerror = () => {
+        window.clearTimeout(t)
+        reject(new Error('iframe onerror'))
+      }
+      iframe.src = appendK2DocViewerParamToSameOriginUrl(absoluteUrl)
+    })
+
+    const idoc = iframe.contentDocument
+    const captureRoot = await waitForOeffnungszeitenFlyerA5RootInIframe(idoc, 18000)
+    if (!captureRoot || !idoc?.body) return null
+
+    try {
+      idoc.body.style.setProperty('-webkit-print-color-adjust', 'exact')
+      idoc.body.style.setProperty('print-color-adjust', 'exact')
+      idoc.body.style.setProperty('color-adjust', 'exact')
+    } catch {
+      /* ignore */
+    }
+
+    const head = idoc.head
+    if (head) {
+      const captureStyle = idoc.createElement('style')
+      captureStyle.setAttribute('id', 'k2-oeffnungszeiten-flyer-a5-pdf-capture')
+      captureStyle.textContent = getWerbemittelHtml2canvasCaptureCss(safeHtmlHint, 'a4', capture)
+      head.appendChild(captureStyle)
+    }
+
+    await waitForWerbemittelIframePaint(idoc, 12000)
+    await new Promise<void>(r => setTimeout(r, 500))
+
+    const scrollH = Math.max(1, Math.ceil(captureRoot.scrollHeight))
+    const hScale = 2.2
+
+    const html2canvasMod = await import('html2canvas')
+    const runHtml2Canvas = (html2canvasMod as { default?: unknown }).default ?? html2canvasMod
+    if (typeof runHtml2Canvas !== 'function') return null
+
+    const h2cOpts = {
+      ...HTML2PDF_WERBEMITTEL_BASE.html2canvas,
+      scale: hScale,
+      windowWidth: iframeWidthPx,
+      windowHeight: Math.min(Math.max(scrollH + 80, 800), 4000),
+      scrollX: 0,
+      scrollY: 0,
+      logging: false,
+      letterRendering: true,
+      backgroundColor: '#fffefb',
+      useCORS: true,
+      allowTaint: true,
+      onclone: (clonedDoc: Document) => {
+        try {
+          clonedDoc.querySelectorAll('.no-print').forEach((n) => {
+            ;(n as HTMLElement).style.setProperty('display', 'none', 'important')
+          })
+          applyWerbemittelCaptureToClone(clonedDoc, safeHtmlHint, 'a4', capture)
+        } catch {
+          /* ignore */
+        }
+      },
+    }
+
+    const canvas = await (runHtml2Canvas as (el: HTMLElement, o: typeof h2cOpts) => Promise<HTMLCanvasElement>)(
+      captureRoot,
+      h2cOpts,
+    )
+    if (!canvas || canvas.width < 1 || canvas.height < 1) return null
+
+    const html2pdfMod = await import('html2pdf.js')
+    const html2pdfRaw = (html2pdfMod as { default?: unknown }).default ?? html2pdfMod
+    if (typeof html2pdfRaw !== 'function') return null
+    const worker = (html2pdfRaw as unknown as () => Html2PdfWorker)()
+
+    const pdfOpts = {
+      ...HTML2PDF_WERBEMITTEL_BASE,
+      filename: 'oeffnungszeiten-flyer-a5-k2.pdf',
+      margin: [3, 3, 3, 3] as [number, number, number, number],
+      jsPDF: {
+        unit: 'mm' as const,
+        format: 'a5' as const,
+        orientation: 'portrait' as const,
+      },
+      html2canvas: {
+        ...HTML2PDF_WERBEMITTEL_BASE.html2canvas,
+        scale: hScale,
+      },
+    }
+
+    const out = await worker.set(pdfOpts).from(canvas, 'canvas').outputPdf('blob')
+    return out instanceof Blob ? out : null
+  } catch (e) {
+    console.warn('captureOeffnungszeitenFlyerA5K2AsPdfBlob', e)
+    return null
+  } finally {
+    iframe.remove()
+  }
+}
+
 /**
  * PDF mit Layout, Farben (html2canvas → jsPDF) als Blob – für Web Share / Download.
  */
@@ -1124,6 +1263,26 @@ async function buildWerbemittelPdfBlobFromDoc(
       }
     } catch (e) {
       console.warn('buildWerbemittelPdfBlobFromDoc entdeckenPlakatA1Slot', e)
+    }
+    return null
+  }
+
+  if (doc?.oeffnungszeitenFlyerA5K2Slot && doc?.documentUrl && typeof window !== 'undefined') {
+    try {
+      const path = String(doc.documentUrl)
+      const hasOwnScheme = /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(path)
+      const abs =
+        window.location.origin && !hasOwnScheme
+          ? window.location.origin + (path.startsWith('/') ? path : '/' + path)
+          : path
+      const blob = await captureOeffnungszeitenFlyerA5K2AsPdfBlob(abs, capture)
+      if (blob && blob.size > 0) {
+        const rawBaseName = String(doc?.fileName || doc?.name || 'oeffnungszeiten-flyer-a5-k2')
+        const baseName = rawBaseName.replace(/\.[a-z0-9]{2,5}$/i, '').replace(/[^\w\-]+/g, '_')
+        return { blob, fileName: `${baseName || 'oeffnungszeiten-flyer-a5-k2'}.pdf` }
+      }
+    } catch (e) {
+      console.warn('buildWerbemittelPdfBlobFromDoc oeffnungszeitenFlyerA5K2Slot', e)
     }
     return null
   }
@@ -2172,6 +2331,25 @@ function buildEntdeckenPlakatVirtualDocs(ev: any): any[] {
       eventId: eid,
       werbematerialTyp: 'entdecken-plakat-social',
       entdeckenPlakatSocialSlot: true,
+    },
+  ]
+}
+
+/** A5 Öffnungszeiten – statische K2-HTML, nur echte K2-Galerie (keine ök2/VK2-Stammdaten). */
+function buildOeffnungszeitenFlyerA5K2VirtualDocs(ev: any): any[] {
+  const eid = ev?.id
+  if (eid == null || String(eid).trim() === '') return []
+  const titleShort = String(ev?.title || 'Event').trim() || 'Event'
+  return [
+    {
+      id: `oeffnungszeiten-flyer-a5-k2-slot-${eid}`,
+      name: `A5 Flyer – Öffnungszeiten (K2) – ${titleShort}`,
+      fileName: 'oeffnungszeiten-flyer-a5-k2.pdf',
+      documentUrl: '/plakate-druckformate-k2/oeffnungszeiten-flyer-a5-k2.html',
+      category: 'pr-dokumente',
+      eventId: eid,
+      werbematerialTyp: 'oeffnungszeiten-flyer-a5-k2',
+      oeffnungszeitenFlyerA5K2Slot: true,
     },
   ]
 }
@@ -24786,6 +24964,9 @@ ${name}`
                             const plakatFlyerMasterDocs = [
                               ...buildFlyerMasterPlakatVirtualDocs(evForFlyerPlakat, flyerTenant),
                               ...buildEntdeckenPlakatVirtualDocs(evForFlyerPlakat),
+                              ...(!tenant.isOeffentlich && !tenant.isVk2
+                                ? buildOeffnungszeitenFlyerA5K2VirtualDocs(evForFlyerPlakat)
+                                : []),
                             ]
                             const DOKUMENT_KARTEN = [
                               {
@@ -24808,11 +24989,16 @@ ${name}`
                                 icon: '🖼️',
                                 titel: 'Plakat & Druckformate',
                                 beschreibung:
-                                  'A5, A3, A6, Visitenkarten wie im Flyer-Master; plus A1 Produktvorstellung und Social-PDF Quadrat zum Teilen. Checkboxen, dann Druckerei bzw. Versand.',
+                                  'A5, A3, A6, Visitenkarten wie im Flyer-Master; A5 Öffnungszeiten K2; plus A1 Produktvorstellung und Social-PDF Quadrat zum Teilen. Checkboxen, dann Druckerei bzw. Versand.',
                                 docs: plakatFlyerMasterDocs,
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => {
-                                  if (doc?.flyerMasterSlot || doc?.entdeckenPlakatA1Slot || doc?.entdeckenPlakatSocialSlot)
+                                  if (
+                                    doc?.flyerMasterSlot ||
+                                    doc?.entdeckenPlakatA1Slot ||
+                                    doc?.entdeckenPlakatSocialSlot ||
+                                    doc?.oeffnungszeitenFlyerA5K2Slot
+                                  )
                                     return
                                   handleDeleteWerbematerialDocument(doc.id)
                                 },
@@ -25423,7 +25609,8 @@ ${name}`
                                                         </button>
                                                         {doc.flyerMasterSlot ||
                                                         doc.entdeckenPlakatA1Slot ||
-                                                        doc.entdeckenPlakatSocialSlot ? (
+                                                        doc.entdeckenPlakatSocialSlot ||
+                                                        doc.oeffnungszeitenFlyerA5K2Slot ? (
                                                           <span style={{ width: '1.85rem', flexShrink: 0 }} aria-hidden />
                                                         ) : (
                                                           <button

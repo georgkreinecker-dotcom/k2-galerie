@@ -8,6 +8,7 @@
 import {
   FAMILIE_HUBER_TENANT_ID,
   FAMILIE_HUBER_DEFAULT_PAGE_CONTENT,
+  K2_FAMILIE_DEFAULT_WELCOME_IMAGE,
 } from '../data/k2FamilieMusterHuberQuelle'
 
 export interface PageContentFamilie {
@@ -44,7 +45,7 @@ export function getFamilyPageContent(tenantId: string): PageContentFamilie {
   if (tenantId === FAMILIE_HUBER_TENANT_ID) {
     return { ...FAMILIE_HUBER_DEFAULT_PAGE_CONTENT }
   }
-  return { ...DEFAULTS }
+  return { welcomeImage: K2_FAMILIE_DEFAULT_WELCOME_IMAGE, ...DEFAULTS }
 }
 
 /** Speichert Seitengestaltung (nur nach expliziter User-Aktion). */

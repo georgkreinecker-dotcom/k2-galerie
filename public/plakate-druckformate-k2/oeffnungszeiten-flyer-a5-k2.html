@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>K2 Galerie – Öffnungszeiten (A5)</title>
+  <style>
+    :root {
+      --teal-dark: #0c5c55;
+      --teal: #0f766e;
+      --paper: #fffefb;
+      --text: #1c1a18;
+      --muted: #5c5650;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Source Sans 3', sans-serif;
+      background: #e8e4df;
+      color: var(--text);
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .wrap {
+      max-width: 148mm;
+      margin: 0 auto;
+      padding: 12px;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .a5 {
+      width: 148mm;
+      min-height: 210mm;
+      background: var(--paper);
+      box-shadow: 0 6px 32px rgba(0,0,0,0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .head-slim {
+      background: linear-gradient(165deg, var(--teal-dark) 0%, var(--teal) 100%);
+      color: #fff;
+      text-align: center;
+      padding: 5mm 10mm 4.5mm;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      opacity: 0.95;
+    }
+    .body {
+      flex: 1;
+      padding: 8mm 12mm 8mm;
+      display: flex;
+      flex-direction: column;
+    }
+    .body h2 {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--teal);
+      margin: 0 0 5mm;
+      text-align: center;
+    }
+    .zeiten-box {
+      background: linear-gradient(180deg, rgba(13, 148, 136, 0.1) 0%, rgba(13, 148, 136, 0.05) 100%);
+      border: 1px solid rgba(15, 118, 110, 0.25);
+      border-radius: 14px;
+      padding: 7mm 8mm 6mm;
+      text-align: center;
+    }
+    .zeiten-box .tag {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--teal-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 0 0 4px;
+    }
+    .zeiten-box .time {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.2;
+      margin: 0;
+    }
+    .zeiten-box .time small {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .hinweis {
+      font-size: 11.5px;
+      line-height: 1.5;
+      color: var(--muted);
+      text-align: center;
+      margin: 5mm 0 0;
+    }
+    .besuch-vereinbaren {
+      margin-top: 6mm;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--teal-dark);
+      letter-spacing: -0.02em;
+    }
+    .kontakt {
+      margin-top: 2.5mm;
+      padding-top: 4mm;
+      border-top: 1px solid rgba(15, 118, 110, 0.2);
+    }
+    .kontakt p {
+      margin: 0 0 3px;
+      font-size: 11.5px;
+      line-height: 1.45;
+    }
+    .kontakt .name { font-weight: 700; color: var(--text); }
+    .kontakt a { color: var(--teal); text-decoration: none; }
+    .kontakt a:hover { text-decoration: underline; }
+    .qr-block {
+      margin-top: 5mm;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2.5mm;
+    }
+    .qr-block img {
+      width: 36mm;
+      height: 36mm;
+      display: block;
+    }
+    .qr-block p {
+      margin: 0;
+      font-size: 10.5px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.35;
+    }
+    .adresse {
+      margin: 4mm 0 0;
+      font-size: 10.5px;
+      line-height: 1.45;
+      color: var(--muted);
+      text-align: center;
+    }
+    .fuss {
+      margin-top: auto;
+      padding-top: 3.5mm;
+      font-size: 8.5px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.4;
+    }
+    @media print {
+      @page { size: A5 portrait; margin: 0; }
+      body { background: #fff !important; }
+      .wrap { padding: 0; min-height: 0; }
+      .a5 {
+        box-shadow: none !important;
+        min-height: 210mm;
+      }
+      .head-slim, .zeiten-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <article class="a5 flyer" aria-label="K2 Galerie Öffnungszeiten A5">
+      <div class="head-slim">K2 Galerie · Kunst &amp; Keramik</div>
+      <div class="body">
+        <h2>Öffnungszeiten</h2>
+        <div class="zeiten-box">
+          <p class="tag">Jeden Samstag</p>
+          <p class="time">9:30 <small>bis</small> 13:00 <small>Uhr</small></p>
+        </div>
+        <p class="hinweis">
+          Außerhalb der Samstagszeiten: Besuch nach <strong>telefonischer Vereinbarung</strong> – rufen Sie uns gerne an.
+        </p>
+        <p class="besuch-vereinbaren">Besuch vereinbaren</p>
+        <div class="kontakt">
+          <p><span class="name">Martina Kreinecker</span> · Tel. <a href="tel:+436767519162">0676 7519162</a></p>
+          <p><span class="name">Georg Kreinecker</span> · Tel. <a href="tel:+436641046337">0664 1046337</a></p>
+        </div>
+        <div class="qr-block">
+          <img
+            src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&amp;data=https%3A%2F%2Fk2-galerie.vercel.app%2Fgalerie"
+            width="180"
+            height="180"
+            alt="QR-Code: Galerie-Website"
+          />
+          <p>Besuchen Sie uns online</p>
+        </div>
+        <p class="adresse">
+          <strong>K2 Galerie Kunst&amp;Keramik</strong><br />
+          Schlossergasse 4 · 4070 Eferding · Österreich · <a href="mailto:info@kgm.at" style="color: var(--teal);">info@kgm.at</a>
+        </p>
+        <footer class="fuss">
+          Copyright © <span id="y"></span> kgm solution. Alle Rechte vorbehalten.<br />
+          Konzept, Design: kgm solution (G. Kreinecker).
+        </footer>
+      </div>
+    </article>
+  </div>
+  <script>
+    document.getElementById('y').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

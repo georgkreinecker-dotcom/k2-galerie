@@ -126,6 +126,7 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 
 | Datum | Was ich gelernt habe |
 |---|---|
+| 23.04.26 (Abend) | **Schluss für heute:** **Besucherliste-Druck** (2× A4 Quer) stand schon auf **main**; offener **Mac-Stand** = u. a. K2-Familie-Huber-Assets, Präsentationsboard, **pageContent**-**Test** musste von Picsum auf stabile **`/img/k2-familie/`-Pfade** – eine Quelle wie in `k2FamilieMusterHuberQuelle`. Session-Ende: **`npm test` + `npm run build` grün**, alles gepusht, Raum bereit. |
 | 21.04.26 (Abend) | **Schluss für heute:** K2-Familie-**Benutzerhandbuch** mit **Feinschliff** (Index, §-Nummern, **Weiter**-Links, Einstieg `00-INDEX`) – Lesbarkeit und ein durchgängiger Einstieg ohne Extra-Klicks-Suche; **Session-Ende:** Git **main** = Referenz (**`40b719d2`**), nichts offen lokal. |
 | 19.04.26 (Abend) | **K2 Familie Sitzungsbestätigung:** Der persönliche Code gilt nur für **„Du“**, nicht für jeden Listen-Eintrag – Verwechslung erklärt „Code laut Liste stimmt, App sagt nein“; klare UI + **neuer Code** an „Du“ löst es. Session-Ende: **qs:local grün**, DIALOG-STAND, commit + push. |
 | 16.04.26 (Spät) | **Schluss für heute:** Georg priorisiert **Optimierung, die Nutzer spüren** (Medien in `public/`); Session-Ende = **alles Offene** mit **Tests + Build grün** auf **main**, damit nichts auf dem Mac hängen bleibt. |

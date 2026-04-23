@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Besucherliste – Vorschlag Eröffnung (A4)</title>
+  <style>
+    :root {
+      --teal: #0f766e;
+      --teal-d: #0c5c55;
+      --ink: #1c1a18;
+      --muted: #5c5650;
+      --line: #c4bfb8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #e8e4df;
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Source Sans 3', sans-serif;
+      font-size: 11pt;
+      line-height: 1.45;
+    }
+    .page {
+      max-width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: #fffefb;
+      padding: 16mm 18mm 18mm;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+    h1 {
+      font-size: 18pt;
+      font-weight: 800;
+      color: var(--teal-d);
+      margin: 0 0 4mm;
+      letter-spacing: -0.02em;
+    }
+    .sub {
+      font-size: 10pt;
+      color: var(--muted);
+      margin: 0 0 8mm;
+      line-height: 1.4;
+    }
+    h2 {
+      font-size: 12pt;
+      font-weight: 800;
+      color: var(--teal-d);
+      margin: 5mm 0 3mm;
+      border-bottom: 2px solid rgba(15, 118, 110, 0.35);
+      padding-bottom: 2px;
+    }
+    ul.idee {
+      margin: 0 0 6mm 1.1em;
+      padding: 0;
+    }
+    ul.idee li { margin-bottom: 2mm; }
+    .hinweis {
+      font-size: 9.5pt;
+      color: var(--muted);
+      background: rgba(15, 118, 110, 0.08);
+      border-left: 3px solid var(--teal);
+      padding: 3mm 4mm;
+      margin: 0 0 7mm;
+    }
+    .form-block {
+      margin-top: 2mm;
+    }
+    .zeile {
+      display: flex;
+      align-items: flex-end;
+      gap: 3mm;
+      margin-bottom: 5mm;
+      page-break-inside: avoid;
+    }
+    .zeile label {
+      font-size: 9.5pt;
+      font-weight: 700;
+      color: var(--teal-d);
+      white-space: nowrap;
+      min-width: 4.2em;
+    }
+    .linie {
+      flex: 1;
+      border-bottom: 1px solid var(--line);
+      min-height: 1.1em;
+    }
+    .interesse {
+      margin: 2mm 0 6mm;
+    }
+    .interesse p {
+      font-size: 9.5pt;
+      font-weight: 700;
+      color: var(--teal-d);
+      margin: 0 0 2.5mm;
+    }
+    .kästen {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2mm 6mm;
+      font-size: 9.5pt;
+    }
+    .kästen label { font-weight: 600; }
+    .kasten {
+      display: inline-flex;
+      align-items: center;
+      gap: 1.5mm;
+    }
+    .kasten i {
+      display: inline-block;
+      width: 4mm;
+      height: 4mm;
+      border: 1.2px solid var(--teal);
+      border-radius: 1px;
+      flex-shrink: 0;
+    }
+    table.muster {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8.8pt;
+      margin-top: 4mm;
+    }
+    table.muster th,
+    table.muster td {
+      border: 1px solid var(--line);
+      padding: 1.5mm 2.5mm;
+      text-align: left;
+      vertical-align: top;
+    }
+    table.muster th {
+      background: rgba(15, 118, 110, 0.12);
+      color: var(--teal-d);
+      font-weight: 800;
+    }
+    .fuss {
+      margin-top: 6mm;
+      font-size: 8pt;
+      color: var(--muted);
+      text-align: center;
+    }
+    .no-print { }
+    @media print {
+      @page { size: A4 portrait; margin: 12mm; }
+      body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .page { box-shadow: none; min-height: auto; padding: 0; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Besucherliste – Vorschlag für die Eröffnung</h1>
+    <p class="sub">K2 Galerie Kunst&amp;Keramik · Muster für ein Eintragungsformular (digital später in der App; hier zum Anschauen und ggf. als Papier-Entwurf).</p>
+
+    <p class="hinweis no-print" style="margin-bottom: 5mm">
+      <strong>So nutzt du das:</strong> Im Browser <strong>Drucken</strong> (A4) – oder nur die untere Tabelle ab Fotokopie für morgen.
+    </p>
+
+    <h2>Was die Funktion leisten kann</h2>
+    <ul class="idee">
+      <li>Einmalige Eingabemaske auf der <strong>Website</strong> (nur Name, Telefon, E-Mail Pflicht, Rest optional).</li>
+      <li><strong>Interesse:</strong> Galerie (Kunst &amp; Keramik) · Software / K2-Plattform · beides · nur neugierig – zum Auswählen, nicht Zwang.</li>
+      <li>Daten <strong>verschlüsselt / datenschutzkonform</strong> speichern, Export als Liste für euch, keine Weitergabe an Dritte (AGB-Text bündeln wir).</li>
+      <li><strong>Kein Doppel-Spam:</strong> optional „Ein Eintrag pro Gerät/Session“ als einfache Bremse fürs Erste.</li>
+    </ul>
+
+    <h2>Druckbares Muster (ein Besucher)</h2>
+    <p class="sub" style="margin-bottom: 3mm">So könnte das Formular auf dem Bildschirm und auf Papier aussehen:</p>
+    <div class="form-block">
+      <div class="zeile">
+        <label>Name</label>
+        <span class="linie" aria-hidden="true"></span>
+      </div>
+      <div class="zeile">
+        <label>Telefon</label>
+        <span class="linie" aria-hidden="true"></span>
+      </div>
+      <div class="zeile">
+        <label>E-Mail</label>
+        <span class="linie" aria-hidden="true"></span>
+      </div>
+      <div class="interesse">
+        <p>Interesse</p>
+        <div class="kästen">
+          <span class="kasten"><i></i> Galerie (Kunst &amp; Keramik)</span>
+          <span class="kasten"><i></i> Software / K2-Plattform</span>
+          <span class="kasten"><i></i> Beides</span>
+          <span class="kasten"><i></i> Nur neugierig / noch offen</span>
+        </div>
+      </div>
+      <div class="zeile" style="align-items: flex-start">
+        <label style="padding-top: 0.2em">Anmerkung</label>
+        <span class="linie" style="min-height: 5em; border: 1px solid var(--line); border-radius: 4px; background: rgba(0,0,0,0.02);"></span>
+      </div>
+    </div>
+
+    <h2>Tabelle für morgen (Kopie / Handschrift)</h2>
+    <p class="sub" style="margin-bottom: 2mm">Leere Zeilen nach Bedarf an Fotokopie anhängen.</p>
+    <table class="muster" aria-label="Muster-Besucherliste">
+      <thead>
+        <tr>
+          <th style="width: 8%">Nr.</th>
+          <th style="width: 22%">Name</th>
+          <th style="width: 18%">Telefon</th>
+          <th style="width: 22%">E-Mail</th>
+          <th style="width: 30%">Interesse (Galerie / Software / …)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>2</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>3</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>4</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>5</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>6</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>7</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>8</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>9</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>10</td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+
+    <footer class="fuss">
+      Vorschlag kgm solution · K2 Galerie – nur intern / zur Abstimmung, nicht der finale Datenschutz-Text.
+    </footer>
+  </div>
+  <p class="no-print" style="text-align: center; padding: 10px; font-size: 10pt; color: #5c5650">
+    <a href="javascript:window.print()" style="color: #0f766e; font-weight: 700">Drucken</a>
+    &nbsp;·&nbsp; Datei: <code style="font-size: 0.9em">/k2-eroeffnung/besucherliste-vorschlag-a4.html</code>
+  </p>
+</body>
+</html>

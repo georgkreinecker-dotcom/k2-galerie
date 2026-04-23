@@ -63,7 +63,8 @@ export default function LaunchPraesentationBoardPage() {
   const stammbaumTileHref = hasTenant ? stammbaumUrl : boardMitAnkerOhneT
   const meineFamilieTileHref = hasTenant ? meineFamilieUrl : boardMitAnkerOhneT
   const oek2PraesentationsmappeUrl = `${s(PROJECT_ROUTES['k2-galerie'].praesentationsmappe)}?context=oeffentlich`
-  const k2FamiliePraesentationsmappeUrl = s(PROJECT_ROUTES['k2-familie'].familiePraesentationsmappe)
+  /** Kundenmappe, nicht /praesentationsmappe (das sind interne Vertriebsunterlagen). */
+  const k2FamiliePraesentationsmappeUrl = s(PROJECT_ROUTES['k2-familie'].familiePraesentationsmappeKunde)
 
   return (
     <div
@@ -219,8 +220,8 @@ export default function LaunchPraesentationBoardPage() {
           <Tile
             href={k2FamiliePraesentationsmappeUrl}
             emoji="📂"
-            label="Präsentationsmappe K2 Familie"
-            hint="Eigene Mappe zum Produkt K2 Familie – inhaltlich getrennt von K2 Galerie/ök2"
+            label="K2 Familie – Präsentationsmappe (Kunde)"
+            hint="Für Kund:innen zum Weitergeben – nicht die internen Vertriebsunterlagen (liegen separat unter …/praesentationsmappe)"
             id="launch-tile-praesentationsmappe-k2-familie"
           />
         </nav>

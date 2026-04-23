@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { getFamilyPageContent, setFamilyPageContent } from '../config/pageContentFamilie'
-import { FAMILIE_HUBER_TENANT_ID } from '../data/k2FamilieMusterHuberQuelle'
+import {
+  FAMILIE_HUBER_TENANT_ID,
+  K2_FAMILIE_DEFAULT_WELCOME_IMAGE,
+} from '../data/k2FamilieMusterHuberQuelle'
 
 describe('pageContentFamilie', () => {
   beforeEach(() => {
@@ -25,9 +28,9 @@ describe('pageContentFamilie', () => {
     expect(c.welcomeImage).toBe('')
   })
 
-  it('Muster huber: ohne Speicher = Standard-Hero-URLs (Vercel/anderes Gerät)', () => {
+  it('Muster huber: ohne Speicher = Standard-Hero unter /img/k2-familie (Vercel/ohne Netz)', () => {
     const c = getFamilyPageContent(FAMILIE_HUBER_TENANT_ID)
-    expect(c.welcomeImage).toMatch(/^https:\/\/picsum\.photos/)
-    expect(c.cardImage).toMatch(/^https:\/\/picsum\.photos/)
+    expect(c.welcomeImage).toMatch(/^\/img\/k2-familie\//)
+    expect(c.cardImage).toMatch(/^\/img\/k2-familie\//)
   })
 })

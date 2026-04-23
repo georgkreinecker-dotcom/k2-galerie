@@ -13,9 +13,9 @@
  * 3) `seedFamilieHuber()`: schreibt Stammdaten + **FAMILIE_HUBER_DEFAULT_PAGE_CONTENT** per
  *    `setFamilyPageContent` → `k2-familie-huber-page-content` (localStorage).
  * 4) Ohne Speicher (Vercel, neues Gerät): `getFamilyPageContent` liefert **dieselben** Bild-URLs
- *    aus FAMILIE_HUBER_DEFAULT_PAGE_CONTENT.
+ *    aus FAMILIE_HUBER_DEFAULT_PAGE_CONTENT (stabile Pfade unter /img/k2-familie/, kein Picsum).
  *
- * Nur diese Datei pflegen: keine zweiten String-Kopien für `huber` / dieselben Picsum-URLs.
+ * Nur diese Datei pflegen: keine zweiten String-Kopien für `huber` / dieselben Asset-Pfade.
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
@@ -25,13 +25,19 @@ const R = PROJECT_ROUTES['k2-familie']
 
 export const FAMILIE_HUBER_TENANT_ID = 'huber' as const
 
-/** Picsum mit festen Seeds – identisch in Seed & Lese-Fallback. */
+/** Wenn für einen Mandanten noch keine Homepage-Gestaltung im Speicher steht: ein sichtbares Hero (Kreinecker, Pilot, …). */
+export const K2_FAMILIE_DEFAULT_WELCOME_IMAGE = '/img/k2-familie/pm-deckblatt-musterfamilie-home.png' as const
+
+/** Muster-Einstieg B (Route einstieg): Hero, wenn kein k2-familie-huber-einstieg-content. */
+export const FAMILIE_HUBER_DEFAULT_EINSTIEG_HERO = '/img/k2-familie/pm-familie-einstieg.png' as const
+
+/** Repo-Assets – identisch in Seed & Lese-Fallback; funktionieren ohne externes Netz. */
 export const FAMILIE_HUBER_DEFAULT_PAGE_CONTENT: Readonly<{
   welcomeImage: string
   cardImage: string
 }> = {
-  welcomeImage: 'https://picsum.photos/seed/huber-family/1200/500',
-  cardImage: 'https://picsum.photos/seed/huber-card/800/400',
+  welcomeImage: K2_FAMILIE_DEFAULT_WELCOME_IMAGE,
+  cardImage: '/img/k2-familie/pm-familiengrafik-huber.png',
 }
 
 /** Muster-Demo: „Meine Familie“ mit Mandanten-Query (Umschauen). */

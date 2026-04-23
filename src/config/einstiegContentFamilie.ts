@@ -5,6 +5,7 @@
  */
 
 import { PRODUCT_K2_FAMILIE_WERBESLOGAN, PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ } from './tenantConfig'
+import { FAMILIE_HUBER_DEFAULT_EINSTIEG_HERO, FAMILIE_HUBER_TENANT_ID } from '../data/k2FamilieMusterHuberQuelle'
 
 export interface FamilieEinstiegTexts {
   title: string
@@ -64,9 +65,16 @@ export function getFamilieEinstiegContent(tenantId: string): FamilieEinstiegCont
     const raw = typeof window !== 'undefined' ? localStorage.getItem(contentKey(tenantId)) : null
     if (raw && raw.length > 0) {
       const parsed = JSON.parse(raw) as Partial<FamilieEinstiegContent>
+      const hero = parsed.heroImage?.trim() || ''
+      if (tenantId === FAMILIE_HUBER_TENANT_ID && !hero) {
+        return { heroImage: FAMILIE_HUBER_DEFAULT_EINSTIEG_HERO }
+      }
       return { heroImage: parsed.heroImage }
     }
   } catch (_) {}
+  if (tenantId === FAMILIE_HUBER_TENANT_ID) {
+    return { heroImage: FAMILIE_HUBER_DEFAULT_EINSTIEG_HERO }
+  }
   return {}
 }
 
