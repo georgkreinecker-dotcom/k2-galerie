@@ -26,6 +26,31 @@ Jede Zeile bezieht sich auf die zitierte Stelle in der Grundbotschaft oder auf v
 
 ---
 
+## 1a. Mandanten-Datensicherheit – Festlegung (Raumschiff-Bezug)
+
+**Zweck:** Die Arbeit ab **22.04.26** (und unmittelbar davor/danach) zur **technischen Trennung** der Mandanten (Musterfamilie Huber vs. Präsentations-/Stammbaum-Kreinecker, saubere `t=`-Kette, keine Vermischung der Quellen) **in dieselben Kriterien** übersetzen – damit „Raumschiff“ nicht nur Metapher ist, sondern **messbar** bleibt.
+
+### Was damit gemeint ist (eine Zeile)
+
+**Mandanten-Datensicherheit** = *keine fremde „Familie“ in Speicher, Anzeige oder Einladungskette; ein aktiver `tenantId` pro logischer Sitzung; nachvollziehbare Quellen (Huber-Dateien vs. Kreinecker-Env), keine stillen Doppelwahrheiten durch Board/URL/Build.*
+
+### Zuordnung zu M1–M9 (nur was hier her gehört)
+
+| Kriterium | Trifft zu? | Festlegung |
+|-----------|------------|------------|
+| **M3** | **Ja, technische Schicht** | Vermischen von Mandanten wäre faktisch **still falsch** (falsche Personen/Stories). Absicherung: getrennte Quellen (`k2FamilieMusterHuberQuelle` vs. `k2FamilieKreineckerStammbaumQuelle`), `familieMandantTrennung.ts`, Speicher/Keys über `tenantId` (`docs/K2-FAMILIE-DATENMODELL.md`, `familieStorage.ts`), Einladung ohne unkontrolliertes Mischen (`FamilieEinladungQuerySync`). |
+| **M4** | **Teilweise** | **Technisch:** Ein Mandant pro konsistenter Session-Pfad; Huber vs. Kreinecker-Kette trennbar; `t=` / Präsentation / Launch-Board (`k2FamiliePresentation.ts`, `LaunchPraesentationBoardPage`, `write-build-info`-Patch) ohne Doppel-Huber. **Nutzer-Orientierung** („ich sehe, welche Familie aktiv ist“) bleibt eigener Hebel – siehe Abschnitt 2–3, ggf. „Du bist hier“-Zeile. |
+| **M6** | **Stützt** | Einladung/Query-Sync: keine freien `z`/`m`/`fn` auf Muster, wenn `t` gesetzt – **eine** Wahrheitskette fürs Vertrauen. |
+| **M8** | **Ja** | DIALOG-STAND, `K2-FAMILIE-MANDANT-CODE-ORIENTIERUNG.md`, dieses Kapitel – **keine** reine Chat-Wahrheit. |
+
+**Nicht in diesem Paket** (bewusst andere Hebel): **M1, M2, M5, M7, M9** – bleiben wie in Tabelle Abschnitt 1; ggf. Roadmap/Supabase/AGB/Export.
+
+### Regressions-Hinweis (Sportwagenmodus)
+
+Bei **neuen** Einstiegen (Board, `?t=`, Einladung, Muster-Seed): zuerst **Mandant-Orientierung** lesen, dann coden: **K2-FAMILIE-MANDANT-CODE-ORIENTIERUNG.md**; Änderungen an `FamilieEinladungQuerySync` / Präsentation-Env: **Diese Tabelle** nicht aus den Augen verlieren.
+
+---
+
 ## 2. Selbsterklärung – Analyse (Nutzerperspektive)
 
 **Selbsterklärung** hier: *Ohne externes Handbuch und ohne Support versteht eine verständige Person in wenigen Minuten: Was ist das? Wo bin ich? Was passiert mit meinen Daten? Was ist der nächste sinnvolle Schritt?*
@@ -75,6 +100,7 @@ Jede Zeile bezieht sich auf die zitierte Stelle in der Grundbotschaft oder auf v
 ## 4. Verknüpfungen
 
 - Grundbotschaft & Raumschiff-Metapher: **K2-FAMILIE-GRUNDBOTSCHAFT.md**
+- **Mandant & Code (eine Orientierung):** **K2-FAMILIE-MANDANT-CODE-ORIENTIERUNG.md** – mit Abschnitt **1a** (hier) verzahnt
 - Cloud-Technik: **K2-FAMILIE-SUPABASE-EINBAU.md**
 - Datensouveränität & Export: **K2-FAMILIE-DATENSOUVERAENITAET.md**
 - Lehren technisch: **K2-FAMILIE-LEHREN-AUS-K2-GALERIE.md**
@@ -82,4 +108,5 @@ Jede Zeile bezieht sich auf die zitierte Stelle in der Grundbotschaft oder auf v
 
 ---
 
-**Stand:** 15.04.26 – abgeleitet aus der Grundbotschaft; Selbsterklärung als Arbeitshypothese; Lösungsvorschläge bewusst **eine Quelle pro Aussage** (Info-Block + Handbuch), kein zweites paralleles Romankapitel in der App.
+**Stand:** 23.04.26 – Abschnitt **1a** ergänzt: Mandanten-Datensicherheit den Raumschiff-Kriterien **M3, M4 (techn./teilw.), M6, M8** zugeordnet; Regressions-Hinweis.  
+**Vorher:** 15.04.26 – abgeleitet aus der Grundbotschaft; Selbsterklärung als Arbeitshypothese; Lösungsvorschläge bewusst **eine Quelle pro Aussage** (Info-Block + Handbuch), kein zweites paralleles Romankapitel in der App.

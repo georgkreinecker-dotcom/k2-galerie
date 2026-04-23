@@ -41,6 +41,7 @@
 
 - **Skalierung & Zusammengehörigkeit (viele Lizenznutzer:innen):** Antwort: Mandant = `tenantId` + getrennte Keys; Instanz/Domain trennt Kund:innen. Details siehe eure Doku/Dialog zur Skalierungs-Frage (kein einziges Mega-`localStorage` für alle).
 - **Eiserne Regel Beziehungen:** `k2-familie-beziehungen-nur-aus-karten.mdc`, `K2-FAMILIE-BEZIEHUNGEN-QUELLE-WAHRHEIT.md`
+- **Raumschiff-Kriterien (M3/M4/M6/M8) zur Mandanten-Absicherung:** `K2-FAMILIE-RAUMSCHIFF-KRITERIEN-UND-SELBSTKLAERUNG.md` – Abschnitt **1a**
 
 ---
 
