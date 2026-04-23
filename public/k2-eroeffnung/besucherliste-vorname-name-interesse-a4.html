@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Besucherliste – Vorname, Name, Interesse (A4)</title>
+  <title>Besucherliste – Querformat (Vorname, Name, Tel., E-Mail, Interesse)</title>
   <style>
     :root {
       --teal: #0f766e;
@@ -18,48 +18,56 @@
       background: #e8e4df;
       color: var(--ink);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Source Sans 3', sans-serif;
-      font-size: 10.5pt;
+      font-size: 10pt;
       line-height: 1.4;
     }
     .page {
-      max-width: 210mm;
-      min-height: 297mm;
+      max-width: 297mm;
+      min-height: 210mm;
       margin: 0 auto;
       background: #fffefb;
-      padding: 14mm 16mm 16mm;
+      padding: 10mm 12mm 12mm;
       box-shadow: 0 4px 24px rgba(0,0,0,0.08);
     }
     h1 {
-      font-size: 16pt;
+      font-size: 15pt;
       font-weight: 800;
       color: var(--teal-d);
-      margin: 0 0 2mm;
+      margin: 0 0 3mm;
       letter-spacing: -0.02em;
     }
+    .einleitung {
+      font-size: 10pt;
+      color: var(--ink);
+      margin: 0 0 5mm;
+      line-height: 1.5;
+      max-width: 99%;
+    }
+    .einleitung strong { color: var(--teal-d); }
     .sub {
-      font-size: 9.5pt;
+      font-size: 9pt;
       color: var(--muted);
-      margin: 0 0 6mm;
+      margin: 0 0 4mm;
     }
     .hinweis {
-      font-size: 9pt;
+      font-size: 8.5pt;
       color: var(--muted);
       background: rgba(15, 118, 110, 0.08);
       border-left: 3px solid var(--teal);
-      padding: 2.5mm 3.5mm;
-      margin: 0 0 5mm;
+      padding: 2mm 3mm;
+      margin: 0 0 4mm;
     }
     .no-print { }
     table.liste {
       width: 100%;
       border-collapse: collapse;
-      font-size: 9.2pt;
+      font-size: 8.5pt;
       table-layout: fixed;
     }
     table.liste th,
     table.liste td {
       border: 1px solid var(--line);
-      padding: 2mm 2.5mm;
+      padding: 1.4mm 2mm;
       vertical-align: middle;
     }
     table.liste th {
@@ -68,45 +76,47 @@
       font-weight: 800;
       text-align: left;
     }
-    col.nr { width: 7%; }
-    col.vn { width: 26%; }
-    col.nn { width: 26%; }
-    col.in { width: 41%; }
+    col.nr { width: 4%; }
+    col.vn { width: 14%; }
+    col.nn { width: 14%; }
+    col.tel { width: 16%; }
+    col.mail { width: 20%; }
+    col.in { width: 32%; }
     td.nr { text-align: center; color: var(--muted); font-weight: 600; }
     .inter-cell {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: flex-start;
-      gap: 3mm 5mm;
-      min-height: 6mm;
+      gap: 2mm 4mm;
+      min-height: 5mm;
     }
     .k {
       display: inline-flex;
       align-items: center;
-      gap: 1.2mm;
-      font-size: 8.5pt;
+      gap: 1mm;
+      font-size: 7.8pt;
       font-weight: 600;
       color: var(--teal-d);
     }
     .k i {
       display: inline-block;
-      width: 3.8mm;
-      height: 3.8mm;
+      width: 3.5mm;
+      height: 3.5mm;
       border: 1.2px solid var(--teal);
       border-radius: 1px;
       flex-shrink: 0;
     }
     .fuss {
-      margin-top: 5mm;
-      font-size: 7.5pt;
+      margin-top: 3mm;
+      font-size: 7pt;
       color: var(--muted);
       text-align: center;
     }
     @media print {
-      @page { size: A4 portrait; margin: 10mm; }
+      @page { size: A4 landscape; margin: 8mm; }
       body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .page { box-shadow: none; min-height: auto; padding: 0; }
+      .page { box-shadow: none; min-height: auto; padding: 0; max-width: none; }
       .no-print { display: none !important; }
       tr { page-break-inside: avoid; }
     }
@@ -114,27 +124,37 @@
 </head>
 <body>
   <div class="page">
-    <h1>Besucherliste</h1>
-    <p class="sub">K2 Galerie Kunst&amp;Keramik · zum Ausfüllen und Abhaken (Handschrift / Kopie)</p>
+    <h1>Herzlich willkommen – herzlichen Dank für Ihren Besuch</h1>
+    <p class="einleitung">
+      Wir freuen uns, dass Sie in der <strong>K2 Galerie Kunst&amp;Keramik</strong> bei uns vorbeischauen.
+      <strong>Bitte</strong> tragen Sie – wenn Sie mögen – Ihre Daten in die Liste ein und kreuzen an, wofür Sie sich interessieren.
+      So können wir uns bei Ihnen melden und Sie gezielt informieren. Vielen Dank.
+    </p>
+    <p class="sub">Zum Ausfüllen am Tisch · Handschrift</p>
     <p class="hinweis no-print">
-      <strong>Drucken:</strong> A4 hoch. In den Spalten <strong>Interesse</strong> die passenden Kästchen am Tisch ankreuzen.
+      <strong>Drucken:</strong> A4 <strong>Querformat</strong>. Im Druckdialog „Quer“ wählen, falls nötig.
     </p>
 
-    <table class="liste" aria-label="Besucherliste mit Vorname, Name, Interesse">
+    <table class="liste" aria-label="Besucherliste: Vorname, Name, Telefon, E-Mail, Interesse">
       <colgroup>
-        <col class="nr" /><col class="vn" /><col class="nn" /><col class="in" />
+        <col class="nr" />
+        <col class="vn" />
+        <col class="nn" />
+        <col class="tel" />
+        <col class="mail" />
+        <col class="in" />
       </colgroup>
       <thead>
         <tr>
           <th scope="col">Nr.</th>
           <th scope="col">Vorname</th>
           <th scope="col">Name</th>
-          <th scope="col">Interesse <span style="font-weight:600; font-size:8.5pt; color:var(--muted)">(ankreuzen)</span></th>
+          <th scope="col">Tel.</th>
+          <th scope="col">E-Mail</th>
+          <th scope="col">Interesse <span style="font-weight:600; font-size:7.5pt; color:var(--muted)">(ankreuzen)</span></th>
         </tr>
       </thead>
-      <tbody id="zeilen">
-        <!-- Zeilen per JS duplizierbar; Standard: 24 -->
-      </tbody>
+      <tbody id="zeilen"></tbody>
     </table>
 
     <footer class="fuss">
@@ -148,19 +168,18 @@
   </p>
   <script>
     (function () {
-      var n = 24
+      var n = 18
       var tb = document.getElementById('zeilen')
       var interesse =
         '<span class="k"><i aria-hidden="true"></i> Galerie</span>' +
         '<span class="k"><i aria-hidden="true"></i> K2 / Plattform</span>' +
-        '<span class="k"><i aria-hidden="true"></i> beides</span>' +
-        '<span class="k"><i aria-hidden="true"></i> noch offen</span>'
+        '<span class="k"><i aria-hidden="true"></i> beides</span>'
       for (var i = 1; i <= n; i++) {
         var tr = document.createElement('tr')
         tr.innerHTML =
           '<td class="nr">' +
           i +
-          '</td><td></td><td></td><td><div class="inter-cell">' +
+          '</td><td></td><td></td><td></td><td></td><td><div class="inter-cell">' +
           interesse +
           '</div></td>'
         tb.appendChild(tr)

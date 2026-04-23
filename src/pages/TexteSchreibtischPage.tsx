@@ -102,7 +102,7 @@ const BEREICHE: Bereich[] = [
       {
         id: 'druck-besucherliste-vn-nn-interesse',
         titel: 'Besucherliste · Vorname, Name, Interesse',
-        zweck: 'A4 · Zeilen · Kästchen zum Ankreuzen (Galerie, Plattform, beides, offen)',
+        zweck: 'A4 Quer · Tel. · E-Mail · Begrüßung · Kästchen Galerie / Plattform / beides',
         to: '/k2-eroeffnung/besucherliste-vorname-name-interesse-a4.html',
         rotateDeg: 0.1,
       },
