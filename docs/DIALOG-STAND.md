@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Offen je nach Georg; zuletzt: **Druck-Besucherliste** (Vorname, Name, Interesse-Kästchen) + Zettel Texte-Schreibtisch.  
-**Einordnung:** Eröffnung / Gästeliste am Tisch, ein Ort für druckbare Vorlagen = Texte-Schreibtisch Sammelordner.
+**Was wir JETZT tun:** Offen je nach Georg; zuletzt: **Besucherliste** A4 Quer, Tel./E-Mail, Begrüßungstext.  
+**Einordnung:** Gästeliste / Texte-Schreibtisch Sammelordner.
+
+---
+
+**Letzter Stand:** 23.04.26 – **Besucherliste: Querformat, Tel., E-Mail, Begrüßung + Dank + Bitte; Interesse ohne „noch offen“** – `besucherliste-vorname-name-interesse-a4.html`, Zettel-Text `TexteSchreibtischPage`. **Commit:** `89514ea9` ✅ GitHub
 
 ---
 
