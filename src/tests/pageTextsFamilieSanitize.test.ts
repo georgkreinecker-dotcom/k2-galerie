@@ -27,6 +27,30 @@ describe('getFamilyPageTexts – Huber-Muster nicht unter fremder tenantId', () 
     expect(t.welcomeSubtitle).toBe('Zusammenleben sichtbar machen')
   })
 
+  it('ersetzt „familie Huber“/Groß-klein-Variante durch familyDisplayName (BUG Vermischung)', () => {
+    localStorage.setItem(
+      `k2-familie-${TID}-page-texts`,
+      JSON.stringify({ welcomeTitle: 'familie Huber' }),
+    )
+    localStorage.setItem(
+      `k2-familie-${TID}-einstellungen`,
+      JSON.stringify({ familyDisplayName: 'Familie Kreinecker' }),
+    )
+    expect(getFamilyPageTexts(TID).welcomeTitle).toBe('Familie Kreinecker')
+  })
+
+  it('ersetzt MUSTERFAMILIE HUBER (nur case) durch familyDisplayName', () => {
+    localStorage.setItem(
+      `k2-familie-${TID}-page-texts`,
+      JSON.stringify({ welcomeTitle: 'MUSTERFAMILIE HUBER' }),
+    )
+    localStorage.setItem(
+      `k2-familie-${TID}-einstellungen`,
+      JSON.stringify({ familyDisplayName: 'Familie Kreinecker' }),
+    )
+    expect(getFamilyPageTexts(TID).welcomeTitle).toBe('Familie Kreinecker')
+  })
+
   it('Tenant huber behält gespeicherten Familie-Huber-Titel', () => {
     localStorage.setItem(
       'k2-familie-huber-page-texts',

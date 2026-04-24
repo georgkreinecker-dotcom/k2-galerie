@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Offen beim nächsten Start; letzter Stand siehe **erster „Letzter Stand“-Block** unten (nach Commit-Push).  
-**Einordnung:** PWA (iPhone App-Icon): Admin-Einstieg auf K2-Galerie wieder sichtbar (`display-mode: standalone` / iOS `navigator.standalone`).
+**Was wir JETZT tun:** –  
+**Einordnung:** K2 Familie: Huber-Muster-Strings/Bilder dürfen unter echtem Mandanten (z. B. Kreinecker) nicht in Hero/Page-Texten erscheinen – Lese-Sanitize in `pageTextsFamilie` / `pageContentFamilie`.
+
+---
+
+**Letzter Stand:** 24.04.26 – **K2 Familie Datenvermischung (Kreinecker vs. Muster-Huber):** `getFamilyPageTexts` ersetzt normalisiert alle Huber-Demo-Titelvarianten (inkl. `familie Huber`); Untertitel Huber-Seed flexibler; `getFamilyPageContent` liefert kein `familiengrafik-huber` unter fremder `tenantId`; Tests; **`qs:local` grün** – **Commit:** _(nach Push)_ ✅ **main**
 
 ---
 

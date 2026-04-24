@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { getFamilyPageContent, setFamilyPageContent } from '../config/pageContentFamilie'
 import {
   FAMILIE_HUBER_TENANT_ID,
+  FAMILIE_HUBER_DEFAULT_PAGE_CONTENT,
   K2_FAMILIE_DEFAULT_WELCOME_IMAGE,
 } from '../data/k2FamilieMusterHuberQuelle'
 
@@ -32,5 +33,19 @@ describe('pageContentFamilie', () => {
     const c = getFamilyPageContent(FAMILIE_HUBER_TENANT_ID)
     expect(c.welcomeImage).toMatch(/^\/img\/k2-familie\//)
     expect(c.cardImage).toMatch(/^\/img\/k2-familie\//)
+  })
+
+  it('fremde Mandanten-ID: Huber-nur Kartenbild im Speicher wird beim Lesen ignoriert (Vermischung)', () => {
+    const tid = 'familie-kreinecker-xyz'
+    localStorage.setItem(
+      `k2-familie-${tid}-page-content`,
+      JSON.stringify({
+        welcomeImage: K2_FAMILIE_DEFAULT_WELCOME_IMAGE,
+        cardImage: FAMILIE_HUBER_DEFAULT_PAGE_CONTENT.cardImage,
+      }),
+    )
+    const c = getFamilyPageContent(tid)
+    expect(c.welcomeImage).toBe(K2_FAMILIE_DEFAULT_WELCOME_IMAGE)
+    expect(c.cardImage).toBeUndefined()
   })
 })

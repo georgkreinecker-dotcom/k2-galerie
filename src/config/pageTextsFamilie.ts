@@ -11,6 +11,27 @@ const HUBER_LEGACY_WELCOME_TITLE = 'Familie Huber'
 const HUBER_SEED_WELCOME_TITLE = 'Musterfamilie Huber'
 const HUBER_SEED_WELCOME_SUBTITLE = 'Vier Generationen – bunt und verbunden'
 
+function normalizePageText(s: string): string {
+  return s.trim().toLowerCase().replace(/\s+/g, ' ')
+}
+
+/** Muster-Huber-Titel-Varianten (Tippfehler, Groß/klein) – niemals unter echter mandanten-ID anzeigen. */
+function isHuberDemoWelcomeTitleLooksLike(welcomeTitle: string): boolean {
+  const k = normalizePageText(welcomeTitle)
+  return k === 'musterfamilie huber' || k === 'familie huber'
+}
+
+function isHuberDemoWelcomeSubtitleLooksLike(welcomeSubtitle: string): boolean {
+  if (welcomeSubtitle === HUBER_SEED_WELCOME_SUBTITLE) return true
+  const norm = (s: string) =>
+    s
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .replace(/[\u2013\u2014-]/g, '-')
+  return norm(welcomeSubtitle) === norm(HUBER_SEED_WELCOME_SUBTITLE)
+}
+
 export interface PageTextsFamilie {
   welcomeTitle: string
   welcomeSubtitle: string
@@ -47,11 +68,15 @@ export function getFamilyPageTexts(tenantId: string): PageTextsFamilie {
       }
       // Huber-Muster-Überschrift darf nicht unter echter familie-*-ID angezeigt werden (nur Anzeige; Speicher bleibt).
       if (tenantId !== FAMILIE_HUBER_TENANT_ID) {
-        if (welcomeTitle === HUBER_SEED_WELCOME_TITLE || welcomeTitle === HUBER_LEGACY_WELCOME_TITLE) {
+        if (
+          welcomeTitle === HUBER_SEED_WELCOME_TITLE ||
+          welcomeTitle === HUBER_LEGACY_WELCOME_TITLE ||
+          isHuberDemoWelcomeTitleLooksLike(welcomeTitle)
+        ) {
           const name = loadEinstellungen(tenantId).familyDisplayName?.trim()
           welcomeTitle = name || DEFAULT_TEXTS.welcomeTitle
         }
-        if (welcomeSubtitle === HUBER_SEED_WELCOME_SUBTITLE) {
+        if (isHuberDemoWelcomeSubtitleLooksLike(welcomeSubtitle)) {
           welcomeSubtitle = DEFAULT_TEXTS.welcomeSubtitle
         }
       }

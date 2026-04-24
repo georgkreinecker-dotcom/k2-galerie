@@ -39,6 +39,12 @@ export function getFamilyPageContent(tenantId: string): PageContentFamilie {
           cardImage: base.cardImage || FAMILIE_HUBER_DEFAULT_PAGE_CONTENT.cardImage,
         }
       }
+      // Huber-nur-Grafik nicht unter fremder Mandanten-ID (Read-Pfad; kein stilles Löschen im Speicher)
+      const cardLower = (base.cardImage ?? '').toLowerCase()
+      const huberCardLower = FAMILIE_HUBER_DEFAULT_PAGE_CONTENT.cardImage.toLowerCase()
+      if (cardLower && (cardLower.includes('familiengrafik-huber') || cardLower === huberCardLower)) {
+        return { welcomeImage: base.welcomeImage }
+      }
       return base
     }
   } catch (_) {}
