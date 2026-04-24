@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 24.04.26 – **K2 Familie Datenvermischung (Kreinecker vs. Muster-Huber):** `getFamilyPageTexts` ersetzt normalisiert alle Huber-Demo-Titelvarianten (inkl. `familie Huber`); Untertitel Huber-Seed flexibler; `getFamilyPageContent` liefert kein `familiengrafik-huber` unter fremder `tenantId`; Tests; **`qs:local` grün** – **Commit:** _(nach Push)_ ✅ **main**
+**Letzter Stand:** 24.04.26 – **K2 Familie Datenvermischung (Kreinecker vs. Muster-Huber):** `getFamilyPageTexts` ersetzt normalisiert alle Huber-Demo-Titelvarianten (inkl. `familie Huber`); Untertitel Huber-Seed flexibler; `getFamilyPageContent` liefert kein `familiengrafik-huber` unter fremder `tenantId`; Tests; **`qs:local` grün** – **Commit:** `5df5ae5b` ✅ **main** gepusht
 
 ---
 
