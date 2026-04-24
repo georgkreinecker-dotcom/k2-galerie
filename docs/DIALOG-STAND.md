@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 24.04.26 – **Texte-Schreibtisch:** druckbare HTML **Handbuch Softwareentwicklung – Standards & Nachweis** (`public/texte-schreibtisch/handbuch-softwareentwicklung-standards-nachweis.html`), Zettel **Druckbares – Sammelordner**; Doku-Verweis in **HANDBUCH-SOFTWAREENTWICKLUNG-STANDARDS-NACHWEIS.md** – **`npm run tsc:build` + `vite:build` grün** – **Commit:** (nach Push) ✅ GitHub
+**Letzter Stand:** 24.04.26 – **Texte-Schreibtisch:** druckbare HTML **Handbuch Softwareentwicklung – Standards & Nachweis** (`public/texte-schreibtisch/handbuch-softwareentwicklung-standards-nachweis.html`), Zettel **Druckbares – Sammelordner**; Doku-Verweis in **HANDBUCH-SOFTWAREENTWICKLUNG-STANDARDS-NACHWEIS.md** – **`npm run tsc:build` + `vite:build` grün** – **Commit:** `b3f9dbc0` ✅ GitHub
 
 ---
 
