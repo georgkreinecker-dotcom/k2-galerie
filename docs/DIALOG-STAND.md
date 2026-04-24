@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** –  
-**Einordnung:** Präsentationsboard → K2 Familie: dieselbe Live-Ansicht (Hero) wie in der App; Muster-Huber mit `t=huber` + `pm=0&d=0`.
+**Was wir JETZT tun:** Nach Vercel **Ready** – K2 Familie **Muster-Huber** auf Handy/online testen: voller Hero wie APf; bei Bedarf **Stand-Badge tippen** (Cache).  
+**Einordnung:** Alte `sessionStorage`-Präsi (`k2-familie-pm` / `deckblatt-minimal`) auf derselben Origin → bei Live-URL **`t=huber`** ohne `pm=1` wird die Session jetzt beim Laden geleert; Präsentationsboard verlinkt direkt **`/meine-familie?t=huber&pm=0&d=0`**.
+
+---
+
+**Letzter Stand:** 24.04.26 – **K2 Familie online/Handy ≠ APf (Hero komprimiert):** `useK2FamiliePresentationMode` – bei **`?t=huber`** und **`pm` nicht `1`**: `k2-familie-pm` + `k2-familie-deckblatt-minimal` entfernen (hängen gebliebene Präsi-Session); `public/launch-praesentation-board.html` Kachel = direkte **Meine-Familie**-URL; Test `k2FamiliePresentationMode` – **`npm run build` grün** – **Commit:** `bef45e1d` ✅ **main** gepusht
 
 ---
 
