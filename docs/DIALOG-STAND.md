@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Offen beim nächsten Start; letzter Stand siehe **erster „Letzter Stand“-Block** unten (nach Commit-Push).  
-**Einordnung:** **Handbuch** „Standards & Nachweis“ für Diskussionen mit Fachleuten; verlinkt in **EINSTIEG-INFORMATIKER** + **00-INDEX** – kein Doppeltes zu EINSTIEG, nur Matrix + Fundstellen.
+**Einordnung:** Druckfassung **Standards-Nachweis** im **Texte-Schreibtisch · Druckbares – Sammelordner** (HTML unter `public/texte-schreibtisch/`).
+
+---
+
+**Letzter Stand:** 24.04.26 – **Texte-Schreibtisch:** druckbare HTML **Handbuch Softwareentwicklung – Standards & Nachweis** (`public/texte-schreibtisch/handbuch-softwareentwicklung-standards-nachweis.html`), Zettel **Druckbares – Sammelordner**; Doku-Verweis in **HANDBUCH-SOFTWAREENTWICKLUNG-STANDARDS-NACHWEIS.md** – **`npm run tsc:build` + `vite:build` grün** – **Commit:** (nach Push) ✅ GitHub
 
 ---
 

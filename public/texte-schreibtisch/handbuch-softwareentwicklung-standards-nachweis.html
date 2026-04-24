@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Handbuch Softwareentwicklung – Standards und Nachweis (K2 Galerie, kgm solution)" />
+  <title>Handbuch Softwareentwicklung – Standards &amp; Nachweis</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 14mm 16mm 22mm 16mm;
+    }
+    * { box-sizing: border-box; }
+    html {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    body {
+      margin: 0;
+      padding: 2rem 1.25rem 3rem;
+      font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, "Times New Roman", serif;
+      font-size: 10.5pt;
+      line-height: 1.55;
+      color: #1a1816;
+      background: #f6f2eb;
+      max-width: 48rem;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .hinweis-screen {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 9pt;
+      color: #64748b;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      padding: 0.5rem 0.75rem;
+      background: #e8e4dc;
+      border-radius: 4px;
+    }
+    .deckblatt {
+      text-align: center;
+      padding: 1.5rem 0 1.75rem;
+      border-bottom: 1px solid #c4b8a8;
+      margin-bottom: 1.5rem;
+    }
+    .deckblatt .linie {
+      width: 4rem;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #7a5c3e, transparent);
+      margin: 0 auto 1rem;
+    }
+    .deckblatt h1 {
+      font-size: 1.35rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      margin: 0 0 0.4rem;
+      color: #2c2419;
+    }
+    .deckblatt .untertitel {
+      font-size: 0.95rem;
+      color: #4a4035;
+      margin: 0 0 0.5rem;
+    }
+    .deckblatt .meta {
+      font-size: 9.5pt;
+      color: #6b5d4d;
+      margin: 0;
+    }
+    h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #3d2e1f;
+      margin: 1.5rem 0 0.55rem;
+      padding-top: 0.2rem;
+      page-break-after: avoid;
+      break-after: avoid;
+    }
+    h2 .nr { color: #7a5c3e; font-weight: 600; margin-right: 0.35rem; }
+    p {
+      margin: 0 0 0.75rem;
+      text-align: justify;
+      hyphens: auto;
+    }
+    .kasten {
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid #d4c9b8;
+      padding: 0.75rem 0.9rem;
+      margin: 0.85rem 0;
+      font-size: 10pt;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .kasten strong { color: #3d2e1f; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8.5pt;
+      margin: 0.65rem 0 0.9rem;
+    }
+    th, td {
+      border: 1px solid #c9bfb2;
+      padding: 0.35rem 0.4rem;
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: #ebe4d8;
+      font-weight: 600;
+      color: #2c2419;
+    }
+    tr:nth-child(even) td { background: rgba(255, 255, 255, 0.4); }
+    .matrix-thema { font-weight: 600; color: #3d2e1f; }
+    code {
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: 8pt;
+      word-break: break-word;
+    }
+    ul {
+      margin: 0.35rem 0 0.8rem;
+      padding-left: 1.2rem;
+    }
+    li { margin-bottom: 0.3rem; }
+    .fuss {
+      margin-top: 1.5rem;
+      padding-top: 0.9rem;
+      border-top: 1px solid #c4b8a8;
+      font-size: 8.5pt;
+      color: #5c5044;
+      text-align: center;
+    }
+    .fuss-urheber { margin-top: 0.35rem; font-size: 8.25pt; }
+    .seitenfuss { display: none; }
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+        max-width: none;
+        font-size: 10pt;
+      }
+      .hinweis-screen { display: none !important; }
+      .seitenfuss {
+        display: block;
+        position: fixed;
+        bottom: 6mm;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 8.5pt;
+        color: #666;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+      }
+      .seitenfuss::after {
+        content: "Seite " counter(page);
+      }
+      h2 { page-break-after: avoid; }
+      .deckblatt { page-break-after: avoid; }
+      .kasten { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <p class="hinweis-screen">Zum Drucken: im Browser <strong>Drucken</strong> (z. B. Cmd+P) → als PDF speichern oder auf Papier. Vollständige Doku-Quellen liegen im Projektordner <code>docs/</code> – diese Seite fasst den Nachweis zusammen.</p>
+
+  <header class="deckblatt">
+    <div class="linie" aria-hidden="true"></div>
+    <h1>Handbuch Softwareentwicklung</h1>
+    <p class="untertitel">Standards &amp; Nachweis</p>
+    <p class="meta">K2 Galerie · kgm solution · Druckfassung April 2026</p>
+  </header>
+
+  <div class="kasten">
+    <strong>Zweck:</strong> Bündel für Gespräche (z. B. mit Informatiker:innen) – was technisch und prozessual bewusst eingehalten wird und <strong>wo</strong> das im Repository nachlesbar ist.<br />
+    <strong>Kein</strong> Zertifikat, <strong>kein</strong> ISO-Audit, <strong>kein Ersatz</strong> für Steuerrecht, Vertragsrecht oder spezialisierte Security-Gutachten.
+  </div>
+
+  <h2><span class="nr">1</span>Wie das Handbuch gedacht ist</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Aspekt</th>
+        <th>Inhalt</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="matrix-thema">Was</td>
+        <td>Qualität, Sicherheit, Tests, Deployment, Datentrennung, Wartbarkeit.</td>
+      </tr>
+      <tr>
+        <td class="matrix-thema">Nachweis</td>
+        <td>Verweis auf Doku, Regeln (`.cursor/rules`), <code>package.json</code> (Build mit Tests), zentrale Utils im Code.</td>
+      </tr>
+      <tr>
+        <td class="matrix-thema">Ehrlichkeit</td>
+        <td>Offen benannt: was noch offen ist (z. B. Go-Live Drittanbieter – siehe <code>STRIPE-LIZENZEN-GO-LIVE.md</code>).</td>
+      </tr>
+    </tbody>
+  </table>
+  <p><strong>Führende Quellen im Projekt:</strong> <code>docs/EINSTIEG-INFORMATIKER-SYSTEM-WARTUNG.md</code>, <code>docs/PRODUKT-STANDARD-NACH-SPORTWAGEN.md</code>, <code>docs/00-INDEX.md</code>.</p>
+
+  <h2><span class="nr">2</span>Standards-Matrix (Kurz)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Thema</th>
+        <th>Kurz</th>
+        <th>Nachweis (wo nachlesen)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="matrix-thema">Architektur</td>
+        <td>Ein Standard pro Problemstellung; Schichten Tenant, Sync, API.</td>
+        <td><code>PRODUKT-STANDARD…</code> §1; <code>ein-standard-problem.mdc</code>; EINSTIEG §3 Tabelle</td>
+      </tr>
+      <tr>
+        <td class="matrix-thema">QS vor Release</td>
+        <td>Tests + Build; volle Suite im Vercel-Build.</td>
+        <td><code>package.json</code> <code>build</code>; <code>qs-standard-vor-commit.mdc</code>; <code>SERVICE-ARBEIT-DATEN-TESTS.md</code></td>
+      </tr>
+      <tr>
+        <td class="matrix-thema">Multi-Tenant / Trennung</td>
+        <td>K2, ök2, VK2 getrennt; Mandanten-Lebenszyklus.</td>
+        <td><code>K2-OEK2-DATENTRENNUNG.md</code>; <code>k2-oek2-trennung.mdc</code>; eiserne Regel ök2-Daten</td>
+      </tr>
+      <tr>
+        <td class="matrix-thema">Kundendaten</td>
+        <td>Kein stilles Löschen; Merge-Regeln.</td>
+        <td><code>niemals-kundendaten-loeschen.mdc</code>; <code>src/tests/</code> (u. a. datentrennung)</td>
+      </tr>
+      <tr>
+        <td class="matrix-thema">Deployment / Stand</td>
+        <td>Branch <code>main</code>; QR mit Server-Stand + Cache-Bust.</td>
+        <td><code>DEPLOYMENT-EIN-BRANCH.md</code>; <code>stand-qr-niemals-zurueck.mdc</code>; <code>vercel.json</code></td>
+      </tr>
+      <tr>
+        <td class="matrix-thema">Sicherheit (App)</td>
+        <td>Plattform vs. Lizenz; Besucher ohne Schreibzugriff auf Kundendaten.</td>
+        <td><code>SICHERHEIT-…</code> in docs; <code>AUDIT-PROZESS-…</code> / <code>SICHERHEIT-VOR-GO-LIVE.md</code></td>
+      </tr>
+      <tr>
+        <td class="matrix-thema">Backup</td>
+        <td>Sichtbarer Weg; Wiederherstellung mit Bestätigung.</td>
+        <td><code>KRITISCHE-ABLAEUFE.md</code> §11; k2team-handbuch Backup</td>
+      </tr>
+      <tr>
+        <td class="matrix-thema">Dokumentation</td>
+        <td>Zentrale Indizes; Entscheidungen festgehalten.</td>
+        <td><code>HAUS-INDEX.md</code>; <code>docs/00-INDEX.md</code>; <code>GELOESTE-BUGS.md</code></td>
+      </tr>
+      <tr>
+        <td class="matrix-thema">Regelwerk</td>
+        <td>Arbeitsregeln KI + Mensch im Repo.</td>
+        <td><code>.cursorrules</code>; <code>.cursor/rules/*.mdc</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2><span class="nr">3</span>Typische Fachfragen</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Frage (Kurz)</th>
+        <th>Antwort (Kurz)</th>
+        <th>Fundstelle</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Professionell entwickelt?</td>
+        <td>üblicher Stack (React/TS), Tests im Build, Mandanten, API-Schichten.</td>
+        <td>EINSTIEG, PRODUKT-STANDARD</td>
+      </tr>
+      <tr>
+        <td>Tests vorhanden?</td>
+        <td>ja; <code>npm run test</code> im Build.</td>
+        <td><code>src/tests/</code>, <code>package.json</code></td>
+      </tr>
+      <tr>
+        <td>Pflege in Jahren?</td>
+        <td>Doku, eine Quelle pro Thema, EINSTIEG für Fachleute.</td>
+        <td><code>EINSTIEG-INFORMATIKER…</code>, <code>WARTUNG-PROJEKT.md</code></td>
+      </tr>
+      <tr>
+        <td>Datenschutz / Trennung?</td>
+        <td>Modell, Keys, Tests, Regeln.</td>
+        <td><code>K2-OEK2-DATENTRENNUNG.md</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2><span class="nr">4</span>Vorschlag Vorführ / Anhänge</h2>
+  <ul>
+    <li>Deckblatt (Produkt, Stand) – diese Seite ersetzt das Kurz-Deckblatt fürs Gespräch.</li>
+    <li>Anhang: Auszug EINSTIEG-INFORMATIKER (System + Prozesstabelle), PRODUKT-STANDARD nach Bedarf.</li>
+    <li>Online-Referenz: <code>/build-info.json</code> auf der betriebenen Instanz (Stand der Auslieferung).</li>
+  </ul>
+
+  <h2><span class="nr">5</span>Pflege</h2>
+  <p>Bei neuem zentralen Standard: <code>PRODUKT-STANDARD-NACH-SPORTWAGEN.md</code> und <code>docs/HANDBUCH-SOFTWAREENTWICKLUNG-STANDARDS-NACHWEIS.md</code> (Markdown-Quelle) anpassen; diese Druckfassung ggf. spiegeln. Keine doppelte Wahrheit – die Markdown-Doku im Ordner <code>docs/</code> ist der redaktionelle Leitfaden.</p>
+
+  <div class="fuss">
+    <div>Copyright © 2026 kgm solution. Alle Rechte vorbehalten.</div>
+    <div class="fuss-urheber">Konzept, Design und technische Umsetzung: kgm solution (G. Kreinecker). Alle Rechte vorbehalten.</div>
+  </div>
+  <div class="seitenfuss" aria-hidden="true"></div>
+</body>
+</html>

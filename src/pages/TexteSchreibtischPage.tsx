@@ -100,6 +100,13 @@ const BEREICHE: Bereich[] = [
     zoneBg: 'linear-gradient(145deg, rgba(124,45,18,0.1), rgba(255,250,245,0.98))',
     zettel: [
       {
+        id: 'druck-handbuch-standards-nachweis',
+        titel: 'Handbuch Softwareentwicklung – Standards & Nachweis',
+        zweck: 'Fachgespräch: Matrix, FAQ, Doku-Verweise (Browser → Drucken / PDF)',
+        to: '/texte-schreibtisch/handbuch-softwareentwicklung-standards-nachweis.html',
+        rotateDeg: 0.18,
+      },
+      {
         id: 'druck-besucherliste-vn-nn-interesse',
         titel: 'Besucherliste · Vorname, Name, Interesse',
         zweck: 'A4 Quer · 10 Zeilen/Seite · Galerie/Ausstellung, Software, Vereinsplattform, K2 Familie',

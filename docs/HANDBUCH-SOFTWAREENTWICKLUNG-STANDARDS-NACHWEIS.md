@@ -5,6 +5,8 @@
 
 **Stand:** 23.04.26
 
+**Druckfassung (Texte-Schreibtisch, Sammelordner):** [public/texte-schreibtisch/handbuch-softwareentwicklung-standards-nachweis.html](../public/texte-schreibtisch/handbuch-softwareentwicklung-standards-nachweis.html) – im Browser öffnen → Drucken / PDF. Zettel in der APf unter **Druckbares – Sammelordner**.
+
 ---
 
 ## 1. Wie dieses Handbuch gedacht ist
