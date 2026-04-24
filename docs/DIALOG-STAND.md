@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 24.04.26 – **Handbuch Softwareentwicklung – Standards & Nachweis:** `public/texte-schreibtisch/handbuch-softwareentwicklung-standards-nachweis.html` (Abschnitt **Zum Weiterleiten**), `docs/HANDBUCH-SOFTWAREENTWICKLUNG-STANDARDS-NACHWEIS.md` (Satz Weiterleiten) – **`npm run qs:local` grün** – **Commit:** `3b5f7e74` ✅ GitHub
+**Letzter Stand:** 24.04.26 – **Handbuch Softwareentwicklung – Standards & Nachweis:** `public/texte-schreibtisch/handbuch-softwareentwicklung-standards-nachweis.html` (Abschnitt **Zum Weiterleiten**), `docs/HANDBUCH-SOFTWAREENTWICKLUNG-STANDARDS-NACHWEIS.md` (Satz Weiterleiten) – **`npm run qs:local` grün** – **Commit:** `bcd8c365` ✅ GitHub
 
 ---
 
