@@ -83,7 +83,9 @@ export default function FamilieLeitstrukturPanel() {
     const toOpen: Record<string, boolean> = {}
     gruppen.forEach((g, i) => {
       const gid = groupIdForChapter(g.chapterTitle, i)
-      const hasActive = g.sections.some((s) => isFamilieNavSectionActive(location.pathname, s.to))
+      const hasActive = g.sections.some((s) =>
+        isFamilieNavSectionActive(location.pathname, s.to, location.search),
+      )
       if (hasActive) toOpen[gid] = true
     })
     if (Object.keys(toOpen).length === 0) return
@@ -99,7 +101,7 @@ export default function FamilieLeitstrukturPanel() {
       if (changed) saveMappenOpen(next)
       return changed ? next : prev
     })
-  }, [location.pathname])
+  }, [location.pathname, location.search])
 
   if (minimized) {
     return (
@@ -199,7 +201,7 @@ export default function FamilieLeitstrukturPanel() {
             const mapId = groupIdForChapter(group.chapterTitle, groupIndex)
             const isOpen = mappenOpen[mapId] !== false
             const groupHasActive = group.sections.some((s) =>
-              isFamilieNavSectionActive(location.pathname, s.to)
+              isFamilieNavSectionActive(location.pathname, s.to, location.search),
             )
             return (
               <div
@@ -251,7 +253,7 @@ export default function FamilieLeitstrukturPanel() {
                     }}
                   >
                     {group.sections.map(({ id, label, to }) => {
-                      const active = isFamilieNavSectionActive(location.pathname, to)
+                      const active = isFamilieNavSectionActive(location.pathname, to, location.search)
                       return (
                         <Link
                           key={id}

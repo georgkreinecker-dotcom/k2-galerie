@@ -4,8 +4,8 @@
  */
 
 import { PROJECT_ROUTES } from './navigation'
-import { K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
-import { getMusterfamilieHuberMeineFamiliePathWithQuery } from '../data/k2FamilieMusterHuberQuelle'
+import { isK2FamilieMeineFamilieHomePath, K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
+import { FAMILIE_HUBER_TENANT_ID, getMusterfamilieHuberMeineFamiliePathWithQuery } from '../data/k2FamilieMusterHuberQuelle'
 import { K2_FAMILIE_NAV_LABEL_GESCHICHTE } from './k2FamilieNavLabels'
 
 const R = PROJECT_ROUTES['k2-familie']
@@ -100,9 +100,45 @@ export function familiePathWithoutHash(to: string): string {
   return hi >= 0 ? s.slice(0, hi) : s
 }
 
-/** Aktiver Eintrag: eine Regel für horizontale Nav und Leitstruktur-Panel */
-export function isFamilieNavSectionActive(pathname: string, to: string): boolean {
+function getTenantTFromLinkString(to: string): string {
+  const q = to.indexOf('?')
+  if (q < 0) return ''
+  const after = to.slice(q + 1)
+  const h = after.indexOf('#')
+  return new URLSearchParams(h >= 0 ? after.slice(0, h) : after).get('t')?.toLowerCase().trim() ?? ''
+}
+
+function parseTFromSearch(search: string): string {
+  if (!search) return ''
+  const raw = search.startsWith('?') ? search.slice(1) : search
+  return new URLSearchParams(raw).get('t')?.toLowerCase().trim() ?? ''
+}
+
+/**
+ * Aktiver Eintrag: eine Regel für horizontale Nav und Leitstruktur-Panel.
+ * `search` = `location.search` (z. B. `?t=huber`), damit **Musterfamilie** (`…/meine-familie?t=huber`)
+ * und **Meine Familie** (gleicher Pfad ohne / mit anderem `t`) sich nicht gegenseitig fälschlich markieren.
+ */
+export function isFamilieNavSectionActive(
+  pathname: string,
+  to: string,
+  search: string = '',
+): boolean {
   const pathTo = familiePathWithoutHash(to)
+  const tCurrent = parseTFromSearch(search)
+  const tInLink = getTenantTFromLinkString(to)
+
+  // Musterfamilie (Umschauen) → nur wenn URL wirklich t=huber
+  if (pathTo === R.meineFamilie && tInLink === FAMILIE_HUBER_TENANT_ID) {
+    return isK2FamilieMeineFamilieHomePath(pathname) && tCurrent === FAMILIE_HUBER_TENANT_ID
+  }
+
+  // Meine Familie (Kurz-URL) – /familie ODER lange meine-familie, aber nicht die Huber-Demo
+  if (pathTo === K2_FAMILIE_APP_SHORT_PATH) {
+    if (!isK2FamilieMeineFamilieHomePath(pathname)) return false
+    return tCurrent !== FAMILIE_HUBER_TENANT_ID
+  }
+
   if (pathTo === R.home) {
     return pathname === R.home || pathname === `${R.home}/`
   }

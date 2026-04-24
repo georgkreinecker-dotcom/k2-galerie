@@ -5,7 +5,12 @@ import {
   isFamilieNavSectionActive,
 } from '../config/k2FamilieStructure'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { getMusterfamilieHuberEinstiegPathWithQuery } from '../data/k2FamilieMusterHuberQuelle'
+import { K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
+import {
+  FAMILIE_HUBER_TENANT_ID,
+  getMusterfamilieHuberEinstiegPathWithQuery,
+  getMusterfamilieHuberMeineFamiliePathWithQuery,
+} from '../data/k2FamilieMusterHuberQuelle'
 
 const R = PROJECT_ROUTES['k2-familie']
 
@@ -47,5 +52,25 @@ describe('isFamilieNavSectionActive', () => {
     const to = getMusterfamilieHuberEinstiegPathWithQuery()
     expect(familiePathWithoutHash(to)).toBe(R.einstieg)
     expect(isFamilieNavSectionActive(R.einstieg, to)).toBe(true)
+  })
+
+  it('Musterfamilie meine-familie: nur aktiv bei t=huber in der URL', () => {
+    const toHuber = getMusterfamilieHuberMeineFamiliePathWithQuery()
+    expect(familiePathWithoutHash(toHuber)).toBe(R.meineFamilie)
+    expect(isFamilieNavSectionActive(R.meineFamilie, toHuber, '')).toBe(false)
+    expect(isFamilieNavSectionActive(R.meineFamilie, toHuber, `?t=${FAMILIE_HUBER_TENANT_ID}`)).toBe(true)
+    expect(isFamilieNavSectionActive('/familie', toHuber, '')).toBe(false)
+  })
+
+  it('Meine Familie: aktiv auf kurzer/langer Home-URL wenn nicht Huber-Demo', () => {
+    expect(
+      isFamilieNavSectionActive(R.meineFamilie, K2_FAMILIE_APP_SHORT_PATH, ''),
+    ).toBe(true)
+    expect(
+      isFamilieNavSectionActive('/familie', K2_FAMILIE_APP_SHORT_PATH, ''),
+    ).toBe(true)
+    expect(
+      isFamilieNavSectionActive(R.meineFamilie, K2_FAMILIE_APP_SHORT_PATH, `?t=${FAMILIE_HUBER_TENANT_ID}`),
+    ).toBe(false)
   })
 })

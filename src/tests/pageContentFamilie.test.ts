@@ -51,6 +51,16 @@ describe('pageContentFamilie', () => {
     expect(c.cardImage).toBeUndefined()
   })
 
+  it('fremde Mandanten-ID: gleiches Huber-PNG als volle Origin-URL → Hero entfernt (nicht nur Pfad-Vergleich)', () => {
+    const tid = 'familie-kreinecker-stamm-alkoven'
+    const absolut = `https://k2-galerie.vercel.app${FAMILIE_HUBER_DEFAULT_EINSTIEG_HERO}`
+    localStorage.setItem(
+      `k2-familie-${tid}-page-content`,
+      JSON.stringify({ welcomeImage: absolut }),
+    )
+    expect(getFamilyPageContent(tid).welcomeImage).toBeUndefined()
+  })
+
   it('fremde Mandanten-ID: ohne Speicher = kein Default-Willkommensbild (kein Huber-Marketing-PNG)', () => {
     const c = getFamilyPageContent('familie-nur-lokal-001')
     expect(c.welcomeImage).toBeUndefined()

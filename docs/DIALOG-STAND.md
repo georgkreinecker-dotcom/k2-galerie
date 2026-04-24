@@ -1,11 +1,15 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** –  
-**Einordnung:** K2 Familie echte Mandanten: kein Huber-Marketing-PNG (`pm-familie-einstieg`) als Default-Hero; nur `huber` + Lese-Sanitize fremde IDs.
+**Einordnung:** K2 Familie: Sidebar „Musterfamilie (Umschauen)“ vs. „Meine Familie“ per `location.search` (`t=huber`) entkoppelt; Willkommensbild-Sanitize inkl. voller Vercel-URL.
 
 ---
 
-**Letzter Stand:** 24.04.26 – **K2 Familie Kreinecker/echte Familien falsches Hero-Bild:** `pm-familie-einstieg.png` = Muster-Marketing **im** PNG – war fälschlich globaler Default; jetzt nur Mandant `huber`; sonst kein Foto (Verlauf) + Strip dieses/Deckblatt-Pfads bei fremder `tenantId` (`sanitizeWelcomeImageRead`); Tests; README – **`qs:local` grün** – **Commit:** `7254ec9b` ✅ **main** gepusht
+**Letzter Stand:** 24.04.26 – **K2 Familie Leitstruktur:** `isFamilieNavSectionActive` wertet **`?t=huber`** aus (Sidebar markierte fälschlich „Musterfamilie“ auf `/meine-familie` ohne Query); `FamilieLeitstrukturPanel` übergibt `location.search`; `sanitizeWelcomeImageRead` vergleicht Huber-Deckblatt/Einstiegs-PNG per Pfad auch bei `https://…/img/...` (Tests) – **`qs:local` grün** – **Commit:** `bfd7b231` ✅ **main** gepusht
+
+---
+
+**Letzter Stand:** 24.04.26 – **K2 Familie Kreinecker/echte Familien falsches Hero-Bild:** `pm-familie-einstieg.png` = Muster-Marketing **im** PNG – war fälschlich globaler Default; jetzt nur Mandant `huber`; sonst kein Foto (Verlauf) + Strip dieses/Deckblatt-Pfads bei fremder `tenantId` (`sanitizeWelcomeImageRead`); Tests; README – **`qs:local` grün** – **Commit:** `13dd35d5` ✅ **main** gepusht
 
 ---
 
@@ -13,11 +17,11 @@
 
 ---
 
-**Letzter Stand:** 24.04.26 – **K2 Familie Datenvermischung (Kreinecker vs. Muster-Huber):** `getFamilyPageTexts` ersetzt normalisiert alle Huber-Demo-Titelvarianten (inkl. `familie Huber`); Untertitel Huber-Seed flexibler; `getFamilyPageContent` liefert kein `familiengrafik-huber` unter fremder `tenantId`; Tests; **`qs:local` grün** – **Commit:** `5df5ae5b` ✅ **main** gepusht
+**Letzter Stand:** 24.04.26 – **K2 Familie Datenvermischung (Kreinecker vs. Muster-Huber):** `getFamilyPageTexts` ersetzt normalisiert alle Huber-Demo-Titelvarianten (inkl. `familie Huber`); Untertitel Huber-Seed flexibler; `getFamilyPageContent` liefert kein `familiengrafik-huber` unter fremder `tenantId`; Tests; **`qs:local` grün** – **Commit:** `13dd35d5` ✅ **main** gepusht
 
 ---
 
-**Letzter Stand:** 24.04.26 – **PWA / iPhone:** K2-Galerie + VK2: **Admin-Button** auch wenn die App vom **Startbildschirm** geöffnet wird (kein Referrer, kein APf) – `GaleriePage` `isGaleriePwaStandalone`, `Vk2GaleriePage` `vk2PwaStandalone`; **`tsc:build` grün** – **Commit:** `b9acfea1` ✅ **main** gepusht
+**Letzter Stand:** 24.04.26 – **PWA / iPhone:** K2-Galerie + VK2: **Admin-Button** auch wenn die App vom **Startbildschirm** geöffnet wird (kein Referrer, kein APf) – `GaleriePage` `isGaleriePwaStandalone`, `Vk2GaleriePage` `vk2PwaStandalone`; **`tsc:build` grün** – **Commit:** `13dd35d5` ✅ **main** gepusht
 
 ---
 

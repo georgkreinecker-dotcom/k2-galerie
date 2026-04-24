@@ -12,6 +12,29 @@ import {
   K2_FAMILIE_DECKBLATT_HOME_PNG,
 } from '../data/k2FamilieMusterHuberQuelle'
 
+/** Nur Pfad (ohne Query); bei absoluter URL `pathname` – sonst schlägt `===` mit Vercel-URL fehl. */
+function familieBildPathForVergleich(url: string): string {
+  const s = url.trim()
+  if (!s) return ''
+  try {
+    if (/^https?:\/\//i.test(s)) {
+      return new URL(s).pathname
+    }
+  } catch {
+    /* ignore */
+  }
+  const noQuery = s.split('?')[0] ?? s
+  return noQuery
+}
+
+function isDeckblattHomePath(path: string): boolean {
+  return path === K2_FAMILIE_DECKBLATT_HOME_PNG || path.endsWith('/pm-deckblatt-musterfamilie-home.png')
+}
+
+function isHuberEinstiegHeroPath(path: string): boolean {
+  return path === FAMILIE_HUBER_DEFAULT_EINSTIEG_HERO || path.endsWith('/pm-familie-einstieg.png')
+}
+
 /**
  * Huber-Präsentations-Screenshots im localStorage: nur für `t=huber` anzeigen.
  * Sonst Verlauf / eigenes Foto – nicht `pm-familie-einstieg` (enthält Musterfamilie-Marketing-Text im PNG).
@@ -19,10 +42,11 @@ import {
  */
 function sanitizeWelcomeImageRead(url: string | undefined, tenantId: string): string | undefined {
   if (url === undefined || url === '') return url
-  if (url === K2_FAMILIE_DECKBLATT_HOME_PNG) {
+  const path = familieBildPathForVergleich(url)
+  if (isDeckblattHomePath(path)) {
     return tenantId === FAMILIE_HUBER_TENANT_ID ? FAMILIE_HUBER_DEFAULT_EINSTIEG_HERO : undefined
   }
-  if (tenantId !== FAMILIE_HUBER_TENANT_ID && url === FAMILIE_HUBER_DEFAULT_EINSTIEG_HERO) {
+  if (tenantId !== FAMILIE_HUBER_TENANT_ID && isHuberEinstiegHeroPath(path)) {
     return undefined
   }
   return url
