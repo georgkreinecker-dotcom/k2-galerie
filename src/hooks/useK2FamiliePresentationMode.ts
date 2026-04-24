@@ -6,9 +6,13 @@
  * sessionStorage nur, wenn `pm=1` oder bestehende pm-Sitzung (Playwright/Mappe).
  * `?d=1` ohne `pm` → nur **diese** URL minimal, **kein** dauerhaftes Speichern (alte Falle: Hero wirkte dauerhaft leer).
  * Verwaistes Deckblatt-Flag (ohne pm) wird entfernt, sobald `d` fehlt.
+ *
+ * **Muster-Huber (`?t=huber`) ohne `pm=1`:** Präsi-/Deckblatt-Flags aus der Session entfernen (Vercel/Handy
+ * oft alter Stand; lokal/ APf meist leere Session – sonst wirkte der Hero online „falsch“).
  */
 import { useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
+import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
 
 const SESSION_KEY_PM = 'k2-familie-pm'
 const SESSION_KEY_DECKBLATT = 'k2-familie-deckblatt-minimal'
@@ -30,14 +34,24 @@ export function applyK2FamiliePresentationFromSearch(
 ): K2FamiliePresentationModeState {
   const q = search.startsWith('?') ? search.slice(1) : search
   const params = new URLSearchParams(q)
+  const tParam = params.get('t')?.trim().toLowerCase()
+  const dParam = params.get('deckblatt') ?? params.get('d')
   const pm = params.get('pm')
+  /**
+   * Musterfamilie Huber live (Vercel/Handy): oft bleibt von früher `pm=1` / Deckblatt in sessionStorage
+   * hängen – lokal (APf) meist leer, online wirkt der Hero „falsch“. `?t=huber` ohne aktives
+   * `pm=1` in der URL = normaler Start → Session zurücksetzen (Präsi nur mit explizitem `pm=1`).
+   */
+  if (tParam === FAMILIE_HUBER_TENANT_ID && pm !== '1') {
+    store.removeItem(SESSION_KEY_PM)
+    store.removeItem(SESSION_KEY_DECKBLATT)
+  }
   if (pm === '1') {
     store.setItem(SESSION_KEY_PM, '1')
   } else if (pm === '0') {
     store.removeItem(SESSION_KEY_PM)
   }
   const pmSitzungAktiv = store.getItem(SESSION_KEY_PM) === '1'
-  const dParam = params.get('deckblatt') ?? params.get('d')
   if (dParam === '1') {
     if (pm === '1' || pmSitzungAktiv) {
       store.setItem(SESSION_KEY_DECKBLATT, '1')

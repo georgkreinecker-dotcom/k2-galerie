@@ -53,4 +53,16 @@ describe('K2 Familie Präsi / Deckblatt', () => {
     expect(r.presentationMode).toBe(true)
     expect(r.deckblattMinimal).toBe(true)
   })
+
+  it('?t=huber ohne pm=1: hängen gebliebene Präsi-Session (online/Handy) wird geleert', () => {
+    const s = makeMemoryStore({
+      'k2-familie-pm': '1',
+      'k2-familie-deckblatt-minimal': '1',
+    })
+    const r = applyK2FamiliePresentationFromSearch('?t=huber&pm=0&d=0', s)
+    expect(s.getItem('k2-familie-pm')).toBeNull()
+    expect(s.getItem('k2-familie-deckblatt-minimal')).toBeNull()
+    expect(r.presentationMode).toBe(false)
+    expect(r.deckblattMinimal).toBe(false)
+  })
 })
