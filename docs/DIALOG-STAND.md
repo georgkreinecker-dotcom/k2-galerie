@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 24.04.26 – **Präsentationsboard = gleiche K2-Familie-Ansicht:** Kachel/Redirect „Meine Familie“ = **`getK2FamilieMeineFamilieMusterHuberPublicUrl()`** (`t=huber`, nicht Kreinecker-Env); alle Board-Exit-Links mit **`pm=0&d=0`** (Session-Reset, voller Hero); Tests `k2FamiliePresentationUrls.test.ts` – **`qs:local` grün** – **Commit:** _(nach Push)_
+**Letzter Stand:** 24.04.26 – **Präsentationsboard = gleiche K2-Familie-Ansicht:** Kachel/Redirect „Meine Familie“ = **`getK2FamilieMeineFamilieMusterHuberPublicUrl()`** (`t=huber`, nicht Kreinecker-Env); alle Board-Exit-Links mit **`pm=0&d=0`** (Session-Reset, voller Hero); Tests `k2FamiliePresentationUrls.test.ts` – **`qs:local` grün** – **Commit:** `6270b746` ✅ **main** gepusht
 
 ---
 
