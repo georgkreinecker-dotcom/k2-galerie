@@ -7,6 +7,8 @@
 
 **Druckfassung (Texte-Schreibtisch, Sammelordner):** [public/texte-schreibtisch/handbuch-softwareentwicklung-standards-nachweis.html](../public/texte-schreibtisch/handbuch-softwareentwicklung-standards-nachweis.html) – im Browser öffnen → Drucken / PDF. Zettel in der APf unter **Druckbares – Sammelordner**.
 
+**Zum Weiterleiten (klickbare URLs):** In der HTML-Datei **Abschnitt „Zum Weiterleiten“** – öffentliche Vercel-URL derselben Seite, `build-info.json`, plus direkte GitHub-`blob/main`-Links zu den wichtigsten `docs/…`-Dateien. Dateinamen allein in den Tabellen sind **keine** klickbaren Internet-Links.
+
 ---
 
 ## 1. Wie dieses Handbuch gedacht ist

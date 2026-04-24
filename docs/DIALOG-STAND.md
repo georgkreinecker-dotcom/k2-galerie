@@ -1,15 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Offen beim nächsten Start; letzter Stand siehe **erster „Letzter Stand“-Block** unten (nach Commit-Push).  
-**Einordnung:** Druckfassung **Standards-Nachweis** im **Texte-Schreibtisch · Druckbares – Sammelordner** (HTML unter `public/texte-schreibtisch/`).
+**Einordnung:** Handbuch-Nachweis: **Zum Weiterleiten** (Vercel + GitHub) + Doku-Zeile – klickbare URLs.
 
 ---
 
-**Letzter Stand:** 24.04.26 – **Texte-Schreibtisch:** druckbare HTML **Handbuch Softwareentwicklung – Standards & Nachweis** (`public/texte-schreibtisch/handbuch-softwareentwicklung-standards-nachweis.html`), Zettel **Druckbares – Sammelordner**; Doku-Verweis in **HANDBUCH-SOFTWAREENTWICKLUNG-STANDARDS-NACHWEIS.md** – **`npm run tsc:build` + `vite:build` grün** – **Commit:** `b3f9dbc0` ✅ GitHub
-
----
-
-**Letzter Stand:** 24.04.26 – **Doku:** `docs/HANDBUCH-SOFTWAREENTWICKLUNG-STANDARDS-NACHWEIS.md` (Thema–Nachweis–Matrix, Fachfragen, Druck-Struktur) + Einträge **00-INDEX.md**, **EINSTIEG-INFORMATIKER-SYSTEM-WARTUNG.md** – **`npm run build:vercel` grün** – **Commit:** `d7b65db6` ✅ GitHub
+**Letzter Stand:** 24.04.26 – **Handbuch Softwareentwicklung – Standards & Nachweis:** `public/texte-schreibtisch/handbuch-softwareentwicklung-standards-nachweis.html` (Abschnitt **Zum Weiterleiten**), `docs/HANDBUCH-SOFTWAREENTWICKLUNG-STANDARDS-NACHWEIS.md` (Satz Weiterleiten) – **`npm run qs:local` grün** – **Commit:** `3b5f7e74` ✅ GitHub
 
 ---
 

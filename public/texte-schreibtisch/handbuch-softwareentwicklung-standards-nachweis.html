@@ -130,6 +130,33 @@
     }
     .fuss-urheber { margin-top: 0.35rem; font-size: 8.25pt; }
     .seitenfuss { display: none; }
+    a {
+      color: #1e3a5f;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    a:hover { color: #0f172a; }
+    .weiterleiten {
+      list-style: none;
+      margin: 0.5rem 0 1rem;
+      padding: 0;
+      font-size: 9.5pt;
+    }
+    .weiterleiten li {
+      margin-bottom: 0.55rem;
+      padding-left: 0;
+    }
+    .weiterleiten .label {
+      display: block;
+      font-weight: 600;
+      color: #3d2e1f;
+      margin-bottom: 0.1rem;
+    }
+    .weiterleiten a {
+      word-break: break-all;
+      font-size: 8.5pt;
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+    }
     @media print {
       body {
         background: #fff;
@@ -159,7 +186,7 @@
   </style>
 </head>
 <body>
-  <p class="hinweis-screen">Zum Drucken: im Browser <strong>Drucken</strong> (z. B. Cmd+P) → als PDF speichern oder auf Papier. Vollständige Doku-Quellen liegen im Projektordner <code>docs/</code> – diese Seite fasst den Nachweis zusammen.</p>
+  <p class="hinweis-screen">Zum <strong>Drucken</strong>: Browser → Drucken (z. B. Cmd+P) → PDF oder Papier. Zum <strong>Weiterleiten</strong> mit klickbaren Links: unten den Block „Zum Weiterleiten“ nutzen oder die gleiche Seite im Netz per Link teilen (nicht nur die lokale Datei).</p>
 
   <header class="deckblatt">
     <div class="linie" aria-hidden="true"></div>
@@ -172,6 +199,40 @@
     <strong>Zweck:</strong> Bündel für Gespräche (z. B. mit Informatiker:innen) – was technisch und prozessual bewusst eingehalten wird und <strong>wo</strong> das im Repository nachlesbar ist.<br />
     <strong>Kein</strong> Zertifikat, <strong>kein</strong> ISO-Audit, <strong>kein Ersatz</strong> für Steuerrecht, Vertragsrecht oder spezialisierte Security-Gutachten.
   </div>
+
+  <h2><span class="nr">0</span>Zum Weiterleiten (klickbare Links)</h2>
+  <p>Die Tabellen oben nennen <strong>Dateinamen im Repo</strong> – die sind für den Empfänger ohne Projekt <strong>nicht verlinkt</strong>. Wenn du das Dokument <strong>per E-Mail, Messenger oder PDF</strong> senden willst, nutze deshalb die folgenden <strong>festen Internet-Adressen</strong> (Anzeige in Browser und meist in PDF-Exporten klickbar).</p>
+  <ul class="weiterleiten">
+    <li>
+      <span class="label">Diese Seite (gleicher Inhalt, öffentlich – zum Teilen)</span>
+      <a href="https://k2-galerie.vercel.app/texte-schreibtisch/handbuch-softwareentwicklung-standards-nachweis.html">https://k2-galerie.vercel.app/texte-schreibtisch/handbuch-softwareentwicklung-standards-nachweis.html</a>
+    </li>
+    <li>
+      <span class="label">Aktueller Build-Stand (Server, JSON)</span>
+      <a href="https://k2-galerie.vercel.app/build-info.json">https://k2-galerie.vercel.app/build-info.json</a>
+    </li>
+    <li>
+      <span class="label">Doku-Quelle (Markdown, GitHub <code>main</code>)</span>
+      <a href="https://github.com/georgkreinecker-dotcom/k2-galerie/blob/main/docs/HANDBUCH-SOFTWAREENTWICKLUNG-STANDARDS-NACHWEIS.md">docs/HANDBUCH-SOFTWAREENTWICKLUNG-STANDARDS-NACHWEIS.md</a>
+    </li>
+    <li>
+      <span class="label">Einstieg Informatiker (System &amp; Wartung)</span>
+      <a href="https://github.com/georgkreinecker-dotcom/k2-galerie/blob/main/docs/EINSTIEG-INFORMATIKER-SYSTEM-WARTUNG.md">docs/EINSTIEG-INFORMATIKER-SYSTEM-WARTUNG.md</a>
+    </li>
+    <li>
+      <span class="label">Produkt-Standard (Sportwagen)</span>
+      <a href="https://github.com/georgkreinecker-dotcom/k2-galerie/blob/main/docs/PRODUKT-STANDARD-NACH-SPORTWAGEN.md">docs/PRODUKT-STANDARD-NACH-SPORTWAGEN.md</a>
+    </li>
+    <li>
+      <span class="label">Doku-Index</span>
+      <a href="https://github.com/georgkreinecker-dotcom/k2-galerie/blob/main/docs/00-INDEX.md">docs/00-INDEX.md</a>
+    </li>
+    <li>
+      <span class="label">K2 / ök2 Datentrennung</span>
+      <a href="https://github.com/georgkreinecker-dotcom/k2-galerie/blob/main/docs/K2-OEK2-DATENTRENNUNG.md">docs/K2-OEK2-DATENTRENNUNG.md</a>
+    </li>
+  </ul>
+  <p class="kasten" style="font-size: 9.5pt;"><strong>Hinweis:</strong> GitHub-Links setzen voraus, dass das Repository für die Person <strong>sichtbar</strong> ist (öffentlich oder eingeladen). Ohne Repo-Zugriff reichen die <strong>Vercel</strong>-Links (erste Zeilen) und der PDF-Export aus dem Browser. Private Regel-Dateien unter <code>.cursor/rules/</code> sind bewusst <strong>nicht</strong> im Web; der Nachweis dazu bleibt in Doku + diesen verlinkten <code>docs</code>-Texten.</p>
 
   <h2><span class="nr">1</span>Wie das Handbuch gedacht ist</h2>
   <table>
