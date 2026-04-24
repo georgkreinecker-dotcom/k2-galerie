@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 24.04.26 – **Handbuch Softwareentwicklung:** neuer Abschnitt **1a Produktvorstellung (Entdecken)** + **Block 0** mit klickbaren Vercel-URLs (Eingang, `?step=q1`, ök2, VK2, K2 Familie, Testpilot); Matrix-Zeile „Produktvorstellung“ – `docs/HANDBUCH-…`, `public/texte-schreibtisch/handbuch-…html` – **`qs:local` grün** – **Commit:** _(folgt nach Push)_
+**Letzter Stand:** 24.04.26 – **Handbuch Softwareentwicklung:** neuer Abschnitt **1a Produktvorstellung (Entdecken)** + **Block 0** mit klickbaren Vercel-URLs (Eingang, `?step=q1`, ök2, VK2, K2 Familie, Testpilot); Matrix-Zeile „Produktvorstellung“ – `docs/HANDBUCH-…`, `public/texte-schreibtisch/handbuch-…html` – **`qs:local` grün** – **Commit:** `ea37e836` ✅ GitHub (nach Push)
 
 ---
 
