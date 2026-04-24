@@ -28,6 +28,26 @@ Dieses Handbuch ist die **Kurzlandkarte + Nachweis-Matrix**; Details bleiben in 
 
 ---
 
+## 1a. Produktvorstellung (Seite **Entdecken**) – verlinkbare Live-Quellen
+
+Die **Produktvorstellung Software** (Wegwahl zu den sichtbaren Produkten) steckt in der App unter **Entdecken**.  
+Die gleiche Logik wie die Karten auf dem Plakat (Q1) führt im Live-Betrieb zu diesen Zielen – **jeweils öffentlich auf k2-galerie.vercel.app** (klickbar beim Weiterleiten, z. B. E-Mail):
+
+| Stelle | Inhalt (Kurz) | Öffentliche Adresse (Vercel) |
+|--------|-----------------|------------------------------|
+| **Eingang Entdecken** | Einstiegsseite, Hinweise, QR zum Eingang | `https://k2-galerie.vercel.app/entdecken` |
+| **Produktvorstellung / Wegwahl** | Die drei Wege: Solo, Verein, K2 Familie (wie Plakat `q1`) | `https://k2-galerie.vercel.app/entdecken?step=q1` |
+| **ök2 (Demo-Galerie)** | Nach Wahl „Solo / Plattform“ – öffentliche Demo, keine K2-Stammdaten | `https://k2-galerie.vercel.app/projects/k2-galerie/galerie-oeffentlich` |
+| **VK2 (Vereinsplattform)** | Nach Wahl „Verein / Kunstverein“ – öffentliche Galerie-Seite des Vereins-Musters | `https://k2-galerie.vercel.app/projects/vk2/galerie` |
+| **K2 Familie** | Eigener Einstieg – getrennter Produktbereich, keine Galerie-ök2-Vermischung | `https://k2-galerie.vercel.app/projects/k2-familie/willkommen` |
+| **Testpilot (optional)** | Zusätzlich auf dem A1-Plakat als vierter QR – Anmeldung | `https://k2-galerie.vercel.app/testuser-anmeldung` |
+
+**Technische Zuordnung:** Die Navigationsziele entsprechen `openByChoice` / `openK2FamilieFromEntdecken` und den QR-Pfaden in **EntdeckenPage** (Plakat-QR). Nicht: echte K2-Händlergalerie vermischen – dafür sind andere Routen; hier nur **öffentliche Demo- und Produkt-Einstiege** wie in Entdecken.
+
+**Druck-HTML:** derselbe Inhalt in **public/texte-schreibtisch/handbuch-softwareentwicklung-standards-nachweis.html** (Abschnitt **1a** + Block **0** – Weiterleiten).
+
+---
+
 ## 2. Standards-Matrix (Thema → Nachweis)
 
 | Thema | Was wir meinen (Kurz) | Wo nachlesen / nachweisen |
@@ -42,6 +62,7 @@ Dieses Handbuch ist die **Kurzlandkarte + Nachweis-Matrix**; Details bleiben in 
 | **Dokumentation & Reproduzierbarkeit** | Zentrale Indizes, eine Quelle pro Thema, Entscheidungen festgehalten. | **HAUS-INDEX.md**; **docs/00-INDEX.md**; **STRUKTUR-HANDELN-QUELLEN.md**; **FEHLERANALYSEPROTOKOLL.md** / **GELOESTE-BUGS.md**. |
 | **Regelwerk (KI + Mensch)** | Verbindliche Arbeitsregeln im Repo. | **.cursorrules**; **.cursor/rules/*.mdc** (viele `alwaysApply`). |
 | **Externe Dienste (markttypisch)** | Vercel (Hosting/Serverless), Supabase, Stripe – dokumentiert, nicht versteckt. | **EINSTIEG-INFORMATIKER** §1; **Zahlungs-/Stripe-Dokumentation** in docs/ (z. B. **STRIPE-LIZENZEN-GO-LIVE.md**). |
+| **Produktvorstellung (Apps sichtbar)** | Entdecken: Einstieg + Wegwahl zu ök2-Demo, VK2, K2 Familie. | **Abschnitt 1a** in diesem Handbuch; Live-Links Block **0** in der Druck-HTML. |
 
 **Limitierung offen sagen:** Z. B. **STRIPE-LIZENZEN-GO-LIVE.md** / **START-NUR-NOCH-OFFEN.md** – was für produktives Abrechnen noch zu konfigurieren ist, steht dort **explizit** (kein „tun wir schon alles“-Schein).
 

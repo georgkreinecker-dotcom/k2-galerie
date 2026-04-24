@@ -231,6 +231,30 @@
       <span class="label">K2 / ök2 Datentrennung</span>
       <a href="https://github.com/georgkreinecker-dotcom/k2-galerie/blob/main/docs/K2-OEK2-DATENTRENNUNG.md">docs/K2-OEK2-DATENTRENNUNG.md</a>
     </li>
+    <li>
+      <span class="label">Entdecken (Eingang)</span>
+      <a href="https://k2-galerie.vercel.app/entdecken">https://k2-galerie.vercel.app/entdecken</a>
+    </li>
+    <li>
+      <span class="label">Produktvorstellung / Wegwahl (ök2, VK2, K2 Familie)</span>
+      <a href="https://k2-galerie.vercel.app/entdecken?step=q1">https://k2-galerie.vercel.app/entdecken?step=q1</a>
+    </li>
+    <li>
+      <span class="label">Produkt: ök2-Demo (öffentliche Galerie)</span>
+      <a href="https://k2-galerie.vercel.app/projects/k2-galerie/galerie-oeffentlich">https://k2-galerie.vercel.app/projects/k2-galerie/galerie-oeffentlich</a>
+    </li>
+    <li>
+      <span class="label">Produkt: VK2 Vereinsplattform (Galerie)</span>
+      <a href="https://k2-galerie.vercel.app/projects/vk2/galerie">https://k2-galerie.vercel.app/projects/vk2/galerie</a>
+    </li>
+    <li>
+      <span class="label">Produkt: K2 Familie (Willkommen)</span>
+      <a href="https://k2-galerie.vercel.app/projects/k2-familie/willkommen">https://k2-galerie.vercel.app/projects/k2-familie/willkommen</a>
+    </li>
+    <li>
+      <span class="label">Testpilot-Anmeldung (Plakat-QR, optional)</span>
+      <a href="https://k2-galerie.vercel.app/testuser-anmeldung">https://k2-galerie.vercel.app/testuser-anmeldung</a>
+    </li>
   </ul>
   <p class="kasten" style="font-size: 9.5pt;"><strong>Hinweis:</strong> GitHub-Links setzen voraus, dass das Repository für die Person <strong>sichtbar</strong> ist (öffentlich oder eingeladen). Ohne Repo-Zugriff reichen die <strong>Vercel</strong>-Links (erste Zeilen) und der PDF-Export aus dem Browser. Private Regel-Dateien unter <code>.cursor/rules/</code> sind bewusst <strong>nicht</strong> im Web; der Nachweis dazu bleibt in Doku + diesen verlinkten <code>docs</code>-Texten.</p>
 
@@ -258,6 +282,51 @@
     </tbody>
   </table>
   <p><strong>Führende Quellen im Projekt:</strong> <code>docs/EINSTIEG-INFORMATIKER-SYSTEM-WARTUNG.md</code>, <code>docs/PRODUKT-STANDARD-NACH-SPORTWAGEN.md</code>, <code>docs/00-INDEX.md</code>.</p>
+
+  <h2><span class="nr">1a</span>Produktvorstellung (Entdecken) – Live-Links zu den Produkten</h2>
+  <p>Die <strong>Produktvorstellung Software</strong> (Wegwahl) liegt unter <strong>Entdecken</strong>. Klickbare Vercel-Adressen stehen oben im Block <strong>„0 – Zum Weiterleiten“</strong>; hier die Zuordnung in Kurzform:</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Stelle / Produkt</th>
+        <th>Kurz</th>
+        <th>Live (Vercel, gleiche Zeile wie in Block 0)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="matrix-thema">Eingang Entdecken</td>
+        <td>Start, Hinweise, QR Eingang</td>
+        <td><a href="https://k2-galerie.vercel.app/entdecken">/entdecken</a></td>
+      </tr>
+      <tr>
+        <td class="matrix-thema">Wegwahl (q1)</td>
+        <td>Drei Karten: Solo, Verein, K2 Familie</td>
+        <td><a href="https://k2-galerie.vercel.app/entdecken?step=q1">/entdecken?step=q1</a></td>
+      </tr>
+      <tr>
+        <td class="matrix-thema">ök2 (Demo)</td>
+        <td>Nach „Solo / Plattform“</td>
+        <td><a href="https://k2-galerie.vercel.app/projects/k2-galerie/galerie-oeffentlich">…/galerie-oeffentlich</a></td>
+      </tr>
+      <tr>
+        <td class="matrix-thema">VK2</td>
+        <td>Nach „Verein / Kunstverein“</td>
+        <td><a href="https://k2-galerie.vercel.app/projects/vk2/galerie">…/vk2/galerie</a></td>
+      </tr>
+      <tr>
+        <td class="matrix-thema">K2 Familie</td>
+        <td>Eigener Marketing-Einstieg</td>
+        <td><a href="https://k2-galerie.vercel.app/projects/k2-familie/willkommen">…/k2-familie/willkommen</a></td>
+      </tr>
+      <tr>
+        <td class="matrix-thema">Testpilot (optional)</td>
+        <td>Vierte QR-Variante A1-Plakat</td>
+        <td><a href="https://k2-galerie.vercel.app/testuser-anmeldung">/testuser-anmeldung</a></td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="kasten" style="font-size: 9.5pt;"><strong>Zuordnung im Code:</strong> <code>EntdeckenPage.tsx</code> – <code>openByChoice</code> (Solo → ök2, Verein → VK2), <code>openK2FamilieFromEntdecken</code>. Keine K2-Händler-Stammdaten in ök2; Demo bleibt getrennt (siehe Doku <strong>K2-OEK2-DATENTRENNUNG</strong>).</p>
 
   <h2><span class="nr">2</span>Standards-Matrix (Kurz)</h2>
   <table>
@@ -313,6 +382,11 @@
         <td class="matrix-thema">Regelwerk</td>
         <td>Arbeitsregeln KI + Mensch im Repo.</td>
         <td><code>.cursorrules</code>; <code>.cursor/rules/*.mdc</code></td>
+      </tr>
+      <tr>
+        <td class="matrix-thema">Produktvorstellung</td>
+        <td>Entdecken: Einstieg + Wegwahl; Live-Links zu ök2, VK2, K2 Familie.</td>
+        <td>Abschnitt <strong>1a</strong>; Block <strong>0</strong> (klickbare URLs); <code>EntdeckenPage.tsx</code></td>
       </tr>
     </tbody>
   </table>
