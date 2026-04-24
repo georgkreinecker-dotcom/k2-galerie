@@ -1,11 +1,15 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Offen beim nächsten Start; letzter Abend-Stand ist auf **main** (Session 23.04. gepusht, siehe `git log -1`).  
-**Einordnung:** Raum aufgeräumt – Vercel kann mitziehen.
+**Was wir JETZT tun:** Offen beim nächsten Start; letzter Stand siehe **erster „Letzter Stand“-Block** unten (nach Commit-Push).  
+**Einordnung:** **Handbuch** „Standards & Nachweis“ für Diskussionen mit Fachleuten; verlinkt in **EINSTIEG-INFORMATIKER** + **00-INDEX** – kein Doppeltes zu EINSTIEG, nur Matrix + Fundstellen.
 
 ---
 
-**Letzter Stand:** 23.04.26 (Abend) – **Session-Ende:** Lokal-Stand inkl. K2-Familie/Admin/Launch-Board, **Test** `pageContentFamilie` an Huber-`/img`-Quelle, **`npm test` + voll `build` grün** – nach Push: siehe neuesten **Commit** auf `main` (Doku: `WIR-PROZESS` Session-Reflexion).
+**Letzter Stand:** 24.04.26 – **Doku:** `docs/HANDBUCH-SOFTWAREENTWICKLUNG-STANDARDS-NACHWEIS.md` (Thema–Nachweis–Matrix, Fachfragen, Druck-Struktur) + Einträge **00-INDEX.md**, **EINSTIEG-INFORMATIKER-SYSTEM-WARTUNG.md** – **`npm run build:vercel` grün** – **Commit:** (nach Push hier eintragen) ✅ GitHub
+
+---
+
+**Letzter Stand:** 23.04.26 (Abend) – **Session-Ende:** Lokal-Stand inkl. K2-Familie/Admin/Launch-Board, **Test** `pageContentFamilie` an Huber-`/img`, **`npm test` + voll `build` grün** – **Commit:** `4d80150e` ✅ GitHub
 
 ---
 

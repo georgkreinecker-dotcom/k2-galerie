@@ -29,6 +29,7 @@
 | **Steuerung / nächste Schritte** | **docs/KOMMANDOZENTRALE.md** | DIALOG-STAND, GRAFIKER-TISCH, Definitionen, Roadmap – Steuerung für Georg und KI. |
 | **Struktur & Quellen (verbindlich)** | **docs/STRUKTUR-HANDELN-QUELLEN.md** | Wo AGB, Handbuch, Doku liegen; Regeln (ein Standard pro Problem, Ablage). |
 | **Regeln (Cursor/AI und Menschen)** | **.cursor/rules/*.mdc** | Architektur-, Prozess- und Sicherheitsregeln; viele mit `alwaysApply`. |
+| **Standards & Nachweis (Argumentation, nicht Zertifikat)** | **docs/HANDBUCH-SOFTWAREENTWICKLUNG-STANDARDS-NACHWEIS.md** | Thema–Nachweis–Matrix, typische Fachfragen, Druck-Struktur; verweist auf PRODUKT-STANDARD, 00-INDEX, Sicherheitsdokus. Kein Rechts- oder Ersatz-Audit. |
 | **Setup (lokal)** | **docs/SETUP-ANLEITUNG.md**, **README.md** | Supabase, Env, Migrationen, App starten. |
 
 ---
