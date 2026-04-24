@@ -134,7 +134,11 @@ const Vk2GaleriePage: React.FC = () => {
   const vk2CompactNav = useK2WorldMobileCompact()
   const vk2NavSheet = useK2WorldMobileNavSheet(location.pathname, location.search)
   const vk2NavFromAdmin = !!(location.state as { fromAdminTab?: string } | null)?.fromAdminTab
-  const vk2ShowAdminEntry = vk2NavFromAdmin || isAdminUnlocked()
+  const vk2PwaStandalone =
+    typeof window !== 'undefined' &&
+    ((typeof navigator !== 'undefined' && (navigator as { standalone?: boolean }).standalone === true) ||
+      (typeof window.matchMedia === 'function' && window.matchMedia('(display-mode: standalone)').matches))
+  const vk2ShowAdminEntry = vk2NavFromAdmin || isAdminUnlocked() || vk2PwaStandalone
 
   // Neu laden wenn localStorage sich ändert (z.B. nach Admin-Speicherung)
   useEffect(() => {

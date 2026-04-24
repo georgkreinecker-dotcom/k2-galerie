@@ -424,10 +424,17 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
     } catch (_) {}
   }, [location.state])
 
+  /** PWA: Start aus „Zum Home-Bildschirm“ – iOS: navigator.standalone; sonst: display-mode standalone. Kein Referrer, aber bewusst installiert (Eigentümer-Handy). */
+  const isGaleriePwaStandalone =
+    typeof window !== 'undefined' &&
+    ((typeof navigator !== 'undefined' && (navigator as { standalone?: boolean }).standalone === true) ||
+      (typeof window.matchMedia === 'function' && window.matchMedia('(display-mode: standalone)').matches))
+
   /** K2: Admin nur anzeigen wenn von APf/Admin kommend oder entsperrt – nicht bei geteiltem Link (WhatsApp etc.). ök2/VK2: nur wenn von APf oder im Kontext. */
   const showAdminEntryOnGalerie = (() => {
     try {
       if (!musterOnly && !vk2) {
+        if (isGaleriePwaStandalone) return true
         /** APf: DevView rendert Galerie mit fromApf; Iframe-Vorschau hängt ?embedded=1 an (Referrer oft unzuverlässig). */
         if (fromApf) return true
         if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embedded') === '1') return true

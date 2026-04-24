@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Offen beim nächsten Start; letzter Stand siehe **erster „Letzter Stand“-Block** unten (nach Commit-Push).  
-**Einordnung:** Präsentationsboard: nur **Kurzfassung** Softwareentwicklung (volle Doku per Links auf der Seite) – 9 Kacheln.
+**Einordnung:** PWA (iPhone App-Icon): Admin-Einstieg auf K2-Galerie wieder sichtbar (`display-mode: standalone` / iOS `navigator.standalone`).
+
+---
+
+**Letzter Stand:** 24.04.26 – **PWA / iPhone:** K2-Galerie + VK2: **Admin-Button** auch wenn die App vom **Startbildschirm** geöffnet wird (kein Referrer, kein APf) – `GaleriePage` `isGaleriePwaStandalone`, `Vk2GaleriePage` `vk2PwaStandalone`; **`tsc:build` grün** – **Commit:** `cf0ea1e4` ✅ **main**
 
 ---
 
