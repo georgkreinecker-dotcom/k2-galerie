@@ -38,7 +38,7 @@ BEGIN
 
   EXECUTE $c$
     ALTER TABLE public.k2_familie_data ADD CONSTRAINT k2_familie_data_data_type_check
-    CHECK (data_type IN ('personen', 'momente', 'events', 'einstellungen'))
+    CHECK (data_type IN ('personen', 'momente', 'events', 'einstellungen', 'page_content', 'page_texts'))
   $c$;
 END $$;
 

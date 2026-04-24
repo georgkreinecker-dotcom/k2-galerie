@@ -5,7 +5,7 @@
  */
 
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useK2WorldMobileCompact } from '../hooks/useK2WorldMobileCompact'
 import { useK2WorldMobileNavSheet } from '../hooks/useK2WorldMobileNavSheet'
 import { K2WorldMobileNavSheet } from './K2WorldMobileNavSheet'
@@ -60,6 +60,19 @@ const FAMILIE_SESSION_UPDATED_EVENT = 'k2-familie-einstellungen-updated'
 
 const t = adminTheme
 const FAMILIE_NAV_BORDER = 'rgba(181, 74, 30, 0.14)'
+
+/** iOS-Notch: Inline-padding überschreibt sonst App.css (safe-area) – Nutzer:innen sehen Uhr über den Pillen. */
+const FAMILIE_NAV_SHELL: CSSProperties = {
+  paddingLeft: 'max(1rem, env(safe-area-inset-left, 0px))',
+  paddingRight: 'max(1rem, env(safe-area-inset-right, 0px))',
+  paddingTop: 'max(0.65rem, env(safe-area-inset-top, 0px))',
+  paddingBottom: '0.65rem',
+}
+const FAMILIE_NAV_SHELL_COMPACT: CSSProperties = {
+  ...FAMILIE_NAV_SHELL,
+  paddingTop: 'max(0.55rem, env(safe-area-inset-top, 0px))',
+  paddingBottom: '0.55rem',
+}
 
 /** Oben: Familienwahl + Rolle – Nutzer kann einklappen; Standard: zu bei bestätigter Identität (siehe Leselogik). */
 const LS_FAMILIE_LEISTE_EINGEKLAPPT = 'k2-familie-layout-familie-rolle-leiste-eingeklappt'
@@ -504,7 +517,10 @@ function FamilieRolleLeisteHaupt({ onEinklappen }: { onEinklappen?: () => void }
           flexWrap: 'wrap',
           alignItems: 'center',
           gap: '0.5rem 1rem',
-          padding: '0.45rem 1rem',
+          paddingTop: '0.45rem',
+          paddingBottom: '0.45rem',
+          paddingLeft: 'max(1rem, env(safe-area-inset-left, 0px))',
+          paddingRight: 'max(1rem, env(safe-area-inset-right, 0px))',
           background: t.bgElevated,
           borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
         }}
@@ -556,7 +572,10 @@ function FamilieRolleLeisteHaupt({ onEinklappen }: { onEinklappen?: () => void }
         flexWrap: 'wrap',
         alignItems: 'center',
         gap: '0.5rem 1rem',
-        padding: '0.45rem 1rem',
+        paddingTop: '0.45rem',
+        paddingBottom: '0.45rem',
+        paddingLeft: 'max(1rem, env(safe-area-inset-left, 0px))',
+        paddingRight: 'max(1rem, env(safe-area-inset-right, 0px))',
         background: t.bgElevated,
         borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
       }}
@@ -963,7 +982,8 @@ function FamilieNav() {
   }, [isMeineFamilieHome, isLeser, nurMusterBesuch, deckblattMinimal])
 
   const compactMedia = useK2WorldMobileCompact()
-  const useCompactNavPattern = compactMedia && (!isMeineFamilieHome || navItems.length > 4)
+  /** Schmale Viewports: immer „Menü“+Sheet – weniger Pillen nebeneinander unter der Statusleiste. */
+  const useCompactNavPattern = compactMedia
   const { menuOpen, setMenuOpen, closeMenu } = useK2WorldMobileNavSheet(path, loc.search)
 
   const activeNavItem = useMemo(() => {
@@ -983,7 +1003,7 @@ function FamilieNav() {
           flexWrap: 'wrap',
           gap: '0.5rem',
           alignItems: 'center',
-          padding: '0.65rem 1rem',
+          ...FAMILIE_NAV_SHELL,
           background: t.bgDark,
           borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
           marginBottom: 0,
@@ -1086,7 +1106,7 @@ function FamilieNav() {
             flexWrap: 'nowrap',
             gap: '0.5rem',
             alignItems: 'center',
-            padding: '0.55rem 1rem',
+            ...FAMILIE_NAV_SHELL_COMPACT,
             background: t.bgDark,
             borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
             marginBottom: 0,
@@ -1158,7 +1178,7 @@ function FamilieNav() {
         flexWrap: 'wrap',
         gap: '0.5rem',
         alignItems: 'center',
-        padding: '0.65rem 1rem',
+        ...FAMILIE_NAV_SHELL,
         background: t.bgDark,
         borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
         marginBottom: 0,
@@ -1247,7 +1267,7 @@ function FamilieLayoutInner() {
         <div
           className="k2-familie-no-print"
           style={{
-            padding: '0.65rem 1rem',
+            ...FAMILIE_NAV_SHELL,
             background: t.bgDark,
             borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
             fontFamily: t.fontHeading,

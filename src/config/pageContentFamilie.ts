@@ -96,6 +96,30 @@ export function getFamilyPageContent(tenantId: string): PageContentFamilie {
   return { ...DEFAULTS }
 }
 
+/**
+ * Nach Cloud-Laden: Server-Stand mit lokalem mergen.
+ * Leere Server-Felder überschreiben kein lokales Bild (kein stilles Löschen bei altem/externem Server-Stand).
+ */
+export function mergeFamilyPageContentFromServer(
+  local: PageContentFamilie,
+  server: Partial<PageContentFamilie> | null | undefined,
+  tenantId: string
+): PageContentFamilie {
+  if (!server || typeof server !== 'object') return local
+  const out: PageContentFamilie = { ...local }
+  for (const key of ['welcomeImage', 'cardImage'] as const) {
+    const sv = server[key]
+    if (sv === undefined) continue
+    const s = typeof sv === 'string' ? sv : ''
+    if (s.length > 0) {
+      const sanitized = sanitizeWelcomeImageRead(s, tenantId) ?? s
+      out[key] = sanitized
+    }
+    // Leerer Server-Wert: lokales Bild behalten (kein stilles Löschen)
+  }
+  return out
+}
+
 /** Speichert Seitengestaltung (nur nach expliziter User-Aktion). */
 export function setFamilyPageContent(tenantId: string, data: Partial<PageContentFamilie>): void {
   try {

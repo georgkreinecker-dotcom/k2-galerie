@@ -1,7 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nach Vercel **Ready** – K2 Familie **Muster-Huber** auf Handy/online testen: voller Hero wie APf; bei Bedarf **Stand-Badge tippen** (Cache).  
-**Einordnung:** Alte `sessionStorage`-Präsi (`k2-familie-pm` / `deckblatt-minimal`) auf derselben Origin → bei Live-URL **`t=huber`** ohne `pm=1` wird die Session jetzt beim Laden geleert; Präsentationsboard verlinkt direkt **`/meine-familie?t=huber&pm=0&d=0`**.
+**Was wir JETZT tun:** **Supabase (produktiv):** Migration **015** ausführen, Edge Function **`familie`** neu deployen. Danach einmal **„Startseite gestalten“ speichern** (Mac) oder Cloud-Pull – dann erscheint das **Hero-Bild** auch auf dem Handy. **Vercel Ready** abwarten, ggf. Stand-Badge tippen.  
+**Einordnung:** `page_content` / `page_texts` sind jetzt wie andere Familie-Daten in der Cloud; ohne DB-Migration + Deploy liefert die API die Felder nicht. Mobile: **Safe-Area** + kompaktes **Menü** – nach Deploy testen.
+
+---
+
+**Letzter Stand:** 24.04.26 – **K2 Familie Hero aus Einstellungen + Handy-Navigation:** Cloud-Sync Startseite (**`page_content` / `page_texts`**) – Migration `015_k2_familie_data_type_page_startseite.sql`, `supabase/functions/familie` GET/POST, `mergeFamilyPageContentFromServer` / `mergeFamilyPageTextsFromServer`, `pushFamilieStartseiteDesignToSupabase` nach Speichern in `K2FamilieStartseiteGestalten`. **K2FamilieLayout:** `FAMILIE_NAV_SHELL` mit `env(safe-area-inset-*)`, kompakte Nav auf schmalen Viewports (`useCompactNavPattern`). Tests `pageContentFamilie`, **`npm run vite:build` grün** – **Commit:** `eaa6006d` ✅ **main** gepusht
 
 ---
 

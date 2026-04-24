@@ -18,6 +18,14 @@ import {
   saveEinstellungen,
 } from './familieStorage'
 import { ergaenzeMitgliedsNummerAusServerListe } from './familieMitgliedsNummer'
+import type { PageContentFamilie } from '../config/pageContentFamilie'
+import type { PageTextsFamilie } from '../config/pageTextsFamilie'
+import {
+  getFamilyPageContent,
+  mergeFamilyPageContentFromServer,
+  setFamilyPageContent,
+} from '../config/pageContentFamilie'
+import { getFamilyPageTexts, mergeFamilyPageTextsFromServer, setFamilyPageTexts } from '../config/pageTextsFamilie'
 
 let SUPABASE_URL = ''
 let SUPABASE_ANON = ''
@@ -108,6 +116,10 @@ export interface FamilieData {
   events: K2FamilieEvent[]
   /** Optional: Familien-Einstellungen (u. a. Inhaber:in) – ein Objekt pro Tenant. */
   einstellungen?: K2FamilieEinstellungen
+  /** Optional: Meine-Familie-Start: Hero / Kartenbilder (k2-familie-*-page-content). */
+  pageContent?: PageContentFamilie
+  /** Optional: Meine-Familie-Start: Titel, Intro, Button-Texte. */
+  pageTexts?: PageTextsFamilie
 }
 
 /** Ob und wie der letzte Ladevorgang lief (für sichtbare Hinweise – nicht nur „leere Liste“). */
@@ -216,6 +228,14 @@ export async function loadFamilieFromSupabase(tenantId: string): Promise<Familie
       d.einstellungen && typeof d.einstellungen === 'object' && !Array.isArray(d.einstellungen)
         ? (d.einstellungen as K2FamilieEinstellungen)
         : null
+    const serverPageContent: Partial<PageContentFamilie> | null =
+      d.page_content && typeof d.page_content === 'object' && !Array.isArray(d.page_content)
+        ? (d.page_content as Partial<PageContentFamilie>)
+        : null
+    const serverPageTexts: Partial<PageTextsFamilie> | null =
+      d.page_texts && typeof d.page_texts === 'object' && !Array.isArray(d.page_texts)
+        ? (d.page_texts as Partial<PageTextsFamilie>)
+        : null
     const localPersonen = loadPersonen(tenantId)
     const localMomente = loadMomente(tenantId)
     const localEvents = loadEvents(tenantId)
@@ -239,6 +259,14 @@ export async function loadFamilieFromSupabase(tenantId: string): Promise<Familie
     if (serverEinst) {
       const mergedEinst = mergeEinstellungenFromServer(loadEinstellungen(tenantId), serverEinst)
       saveEinstellungen(tenantId, mergedEinst)
+    }
+    if (serverPageContent) {
+      const mergedPc = mergeFamilyPageContentFromServer(getFamilyPageContent(tenantId), serverPageContent, tenantId)
+      setFamilyPageContent(tenantId, mergedPc)
+    }
+    if (serverPageTexts) {
+      const mergedPt = mergeFamilyPageTextsFromServer(getFamilyPageTexts(tenantId), serverPageTexts)
+      setFamilyPageTexts(tenantId, mergedPt)
     }
     markFamilieFullSyncDone(tenantId)
     return withMeta(
@@ -347,6 +375,12 @@ export async function saveFamilieToSupabase(tenantId: string, payload: FamilieDa
         ...(payload.einstellungen && typeof payload.einstellungen === 'object' && !Array.isArray(payload.einstellungen)
           ? { einstellungen: payload.einstellungen }
           : {}),
+        ...(payload.pageContent && typeof payload.pageContent === 'object' && !Array.isArray(payload.pageContent)
+          ? { page_content: payload.pageContent }
+          : {}),
+        ...(payload.pageTexts && typeof payload.pageTexts === 'object' && !Array.isArray(payload.pageTexts)
+          ? { page_texts: payload.pageTexts }
+          : {}),
       }),
     })
     if (!res.ok) {
@@ -364,4 +398,19 @@ export async function saveFamilieToSupabase(tenantId: string, payload: FamilieDa
     console.warn('saveFamilieToSupabase fehlgeschlagen:', e)
     return false
   }
+}
+
+/**
+ * Pusht Startseitengestaltung (Texte + Hero) wie die übrigen Familiendaten – nach Speichern in Einstellungen.
+ * Nutzt die gleiche POST-Route; Personen/Momente/Events + Einstellungen = aktueller lokaler Speicher.
+ */
+export async function pushFamilieStartseiteDesignToSupabase(tenantId: string): Promise<boolean> {
+  return saveFamilieToSupabase(tenantId, {
+    personen: loadPersonen(tenantId),
+    momente: loadMomente(tenantId),
+    events: loadEvents(tenantId),
+    einstellungen: loadEinstellungen(tenantId),
+    pageContent: getFamilyPageContent(tenantId),
+    pageTexts: getFamilyPageTexts(tenantId),
+  })
 }

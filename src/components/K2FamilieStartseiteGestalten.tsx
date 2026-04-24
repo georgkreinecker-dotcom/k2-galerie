@@ -13,6 +13,7 @@ import { getFamilyPageContent, setFamilyPageContent } from '../config/pageConten
 import { getFamilyPageTexts, setFamilyPageTexts } from '../config/pageTextsFamilie'
 import { K2_FAMILIE_SESSION_UPDATED } from '../utils/familieStorage'
 import { compressImageForStorage } from '../utils/compressImageForStorage'
+import { pushFamilieStartseiteDesignToSupabase } from '../utils/familieSupabaseClient'
 
 const a = adminTheme
 const R = PROJECT_ROUTES['k2-familie']
@@ -126,6 +127,9 @@ export default function K2FamilieStartseiteGestalten() {
           new CustomEvent(K2_FAMILIE_SESSION_UPDATED, { detail: { tenantId: currentTenantId } }),
         )
       }
+      void pushFamilieStartseiteDesignToSupabase(currentTenantId).catch(() => {
+        /* Cloud optional – lokal ist gespeichert */
+      })
       setSaveStatus('ok')
       setSaveMsg('Gespeichert. Die Startseite zeigt die neuen Texte und das Bild – nach „Meine Familie“ wechseln oder Seite neu laden.')
     } catch {

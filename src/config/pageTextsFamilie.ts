@@ -93,6 +93,15 @@ export function getFamilyPageTexts(tenantId: string): PageTextsFamilie {
   return { ...DEFAULT_TEXTS }
 }
 
+/** Nach Cloud-Laden: nur gesetzte Server-Felder anwenden (Partials). */
+export function mergeFamilyPageTextsFromServer(
+  local: PageTextsFamilie,
+  server: Partial<PageTextsFamilie> | null | undefined
+): PageTextsFamilie {
+  if (!server || typeof server !== 'object') return local
+  return { ...local, ...server }
+}
+
 /** Speichert Seitentexte (nur nach expliziter User-Aktion). */
 export function setFamilyPageTexts(tenantId: string, data: Partial<PageTextsFamilie>): void {
   try {

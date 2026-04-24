@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { getFamilyPageContent, setFamilyPageContent } from '../config/pageContentFamilie'
+import { getFamilyPageContent, mergeFamilyPageContentFromServer, setFamilyPageContent } from '../config/pageContentFamilie'
 import {
   FAMILIE_HUBER_TENANT_ID,
   FAMILIE_HUBER_DEFAULT_PAGE_CONTENT,
@@ -64,6 +64,23 @@ describe('pageContentFamilie', () => {
   it('fremde Mandanten-ID: ohne Speicher = kein Default-Willkommensbild (kein Huber-Marketing-PNG)', () => {
     const c = getFamilyPageContent('familie-nur-lokal-001')
     expect(c.welcomeImage).toBeUndefined()
+  })
+
+  it('mergeFamilyPageContentFromServer: Server liefert Bild, lokal leer → übernehmen', () => {
+    const tid = 'familie-merge-cloud-001'
+    const merged = mergeFamilyPageContentFromServer(
+      {},
+      { welcomeImage: 'https://example.org/hero.jpg' },
+      tid,
+    )
+    expect(merged.welcomeImage).toBe('https://example.org/hero.jpg')
+  })
+
+  it('mergeFamilyPageContentFromServer: Server leer, lokal mit data-URL → lokal behalten', () => {
+    const tid = 'familie-merge-cloud-002'
+    const local = { welcomeImage: 'data:image/jpeg;base64,abcd' }
+    const merged = mergeFamilyPageContentFromServer(local, { welcomeImage: '' }, tid)
+    expect(merged.welcomeImage).toBe('data:image/jpeg;base64,abcd')
   })
 
   it('Deckblatt-Voll-Screenshot: huber → Einstiegs-PNG; sonst kein Bild', () => {

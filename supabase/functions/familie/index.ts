@@ -129,10 +129,20 @@ serve(async (req) => {
       if (error) throw error
       const byType: Record<string, unknown[]> = { personen: [], momente: [], events: [] }
       let einstellungen: Record<string, unknown> | null = null
+      let pageContent: Record<string, unknown> | null = null
+      let pageTexts: Record<string, unknown> | null = null
       for (const row of rows || []) {
         const t = row.data_type
         if (t === 'einstellungen' && row.payload && typeof row.payload === 'object' && !Array.isArray(row.payload)) {
           einstellungen = row.payload as Record<string, unknown>
+          continue
+        }
+        if (t === 'page_content' && row.payload && typeof row.payload === 'object' && !Array.isArray(row.payload)) {
+          pageContent = row.payload as Record<string, unknown>
+          continue
+        }
+        if (t === 'page_texts' && row.payload && typeof row.payload === 'object' && !Array.isArray(row.payload)) {
+          pageTexts = row.payload as Record<string, unknown>
           continue
         }
         if (t && Array.isArray(row.payload)) byType[t] = row.payload
@@ -145,6 +155,8 @@ serve(async (req) => {
           momente: lite ? [] : byType.momente || [],
           events: lite ? [] : byType.events || [],
           ...(einstellungen ? { einstellungen } : {}),
+          ...(pageContent ? { page_content: pageContent } : {}),
+          ...(pageTexts ? { page_texts: pageTexts } : {}),
           timestamp: new Date().toISOString(),
           ...(lite ? { lite: true } : {}),
         }),
@@ -183,6 +195,24 @@ serve(async (req) => {
           tenant_id: tenantId,
           data_type: 'einstellungen',
           payload: einst,
+          updated_at: now,
+        })
+      }
+      const pageContent = body.page_content
+      if (pageContent && typeof pageContent === 'object' && !Array.isArray(pageContent)) {
+        toUpsert.push({
+          tenant_id: tenantId,
+          data_type: 'page_content',
+          payload: pageContent,
+          updated_at: now,
+        })
+      }
+      const pageTexts = body.page_texts
+      if (pageTexts && typeof pageTexts === 'object' && !Array.isArray(pageTexts)) {
+        toUpsert.push({
+          tenant_id: tenantId,
+          data_type: 'page_texts',
+          payload: pageTexts,
           updated_at: now,
         })
       }
