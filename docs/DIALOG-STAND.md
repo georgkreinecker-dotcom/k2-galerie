@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 24.04.26 – **K2 Familie „zwei Schichten“ Meine Familie:** Deckblatt-PNG (`pm-deckblatt-musterfamilie-home`) nicht als Default-Willkommensbild; Standard = `pm-familie-einstieg.png`; `replaceDeckblattPngWithLiveHero` beim Lesen; Tests; Präsentationsmappe nutzt `K2_FAMILIE_DECKBLATT_HOME_PNG`; README – **`qs:local` grün** – **Commit:** `9a60056c` ✅ **main** gepusht
+**Letzter Stand:** 24.04.26 – **K2 Familie „zwei Schichten“ Meine Familie:** Deckblatt-PNG (`pm-deckblatt-musterfamilie-home`) nicht als Default-Willkommensbild; Standard = `pm-familie-einstieg.png`; `replaceDeckblattPngWithLiveHero` beim Lesen; Tests; Präsentationsmappe nutzt `K2_FAMILIE_DECKBLATT_HOME_PNG`; README – **`qs:local` grün** – **Commit:** `269d45fe` ✅ **main** gepusht
 
 ---
 
