@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 24.04.26 – **Präsentationsboard:** separate Kachel Informatiker entfernt; eine Kachel **Handbuch Softwareentwicklung (Kurzfassung)** – Einstieg Informatiker & Co. bleiben klickbar auf der HTML-Seite; static HTML **9 Kacheln**; SW-Seite/Texte-Schreibtisch: Druck/Teilen über `staticPageDruckWeiterleiten` – **`build:vercel` grün** – **Commit:** `24fd279d` ✅ **main**
+**Letzter Stand:** 24.04.26 – **Präsentationsboard:** separate Kachel Informatiker entfernt; eine Kachel **Handbuch Softwareentwicklung (Kurzfassung)** – Einstieg Informatiker & Co. bleiben klickbar auf der HTML-Seite; static HTML **9 Kacheln**; SW-Seite/Texte-Schreibtisch: Druck/Teilen über `staticPageDruckWeiterleiten` – **`build:vercel` grün** – **Commit:** `eb08b23b` ✅ **main**
 
 ---
 
