@@ -8,13 +8,23 @@
 import {
   FAMILIE_HUBER_TENANT_ID,
   FAMILIE_HUBER_DEFAULT_PAGE_CONTENT,
+  FAMILIE_HUBER_DEFAULT_EINSTIEG_HERO,
   K2_FAMILIE_DECKBLATT_HOME_PNG,
-  K2_FAMILIE_DEFAULT_WELCOME_IMAGE,
 } from '../data/k2FamilieMusterHuberQuelle'
 
-/** Voll-Deckblatt-Screenshot in localStorage → Live-Hero-Standard (nur Lese-Sanitize; kein setItem). */
-function replaceDeckblattPngWithLiveHero(url: string | undefined): string | undefined {
-  if (url && url === K2_FAMILIE_DECKBLATT_HOME_PNG) return K2_FAMILIE_DEFAULT_WELCOME_IMAGE
+/**
+ * Huber-Präsentations-Screenshots im localStorage: nur für `t=huber` anzeigen.
+ * Sonst Verlauf / eigenes Foto – nicht `pm-familie-einstieg` (enthält Musterfamilie-Marketing-Text im PNG).
+ * Lese-Sanitize, kein setItem.
+ */
+function sanitizeWelcomeImageRead(url: string | undefined, tenantId: string): string | undefined {
+  if (url === undefined || url === '') return url
+  if (url === K2_FAMILIE_DECKBLATT_HOME_PNG) {
+    return tenantId === FAMILIE_HUBER_TENANT_ID ? FAMILIE_HUBER_DEFAULT_EINSTIEG_HERO : undefined
+  }
+  if (tenantId !== FAMILIE_HUBER_TENANT_ID && url === FAMILIE_HUBER_DEFAULT_EINSTIEG_HERO) {
+    return undefined
+  }
   return url
 }
 
@@ -37,7 +47,7 @@ export function getFamilyPageContent(tenantId: string): PageContentFamilie {
     if (raw && raw.length > 0) {
       const parsed = JSON.parse(raw) as Partial<PageContentFamilie>
       const base: PageContentFamilie = {
-        welcomeImage: replaceDeckblattPngWithLiveHero(parsed.welcomeImage) ?? DEFAULTS.welcomeImage,
+        welcomeImage: sanitizeWelcomeImageRead(parsed.welcomeImage, tenantId) ?? DEFAULTS.welcomeImage,
         cardImage: parsed.cardImage ?? DEFAULTS.cardImage,
       }
       if (tenantId === FAMILIE_HUBER_TENANT_ID) {
@@ -58,7 +68,8 @@ export function getFamilyPageContent(tenantId: string): PageContentFamilie {
   if (tenantId === FAMILIE_HUBER_TENANT_ID) {
     return { ...FAMILIE_HUBER_DEFAULT_PAGE_CONTENT }
   }
-  return { welcomeImage: K2_FAMILIE_DEFAULT_WELCOME_IMAGE, ...DEFAULTS }
+  // Echte Familie: kein Default-Foto (Huber-Screenshot wäre falsches Marketing im Bild)
+  return { ...DEFAULTS }
 }
 
 /** Speichert Seitengestaltung (nur nach expliziter User-Aktion). */

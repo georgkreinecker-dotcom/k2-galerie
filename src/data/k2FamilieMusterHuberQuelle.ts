@@ -12,8 +12,8 @@
  * 2) `FamilieTenantContext` + Sync-Komponenten: Query `t` setzt `currentTenantId === FAMILIE_HUBER_TENANT_ID`.
  * 3) `seedFamilieHuber()`: schreibt Stammdaten + **FAMILIE_HUBER_DEFAULT_PAGE_CONTENT** per
  *    `setFamilyPageContent` → `k2-familie-huber-page-content` (localStorage).
- * 4) Ohne Speicher (Vercel, neues Gerät): `getFamilyPageContent` liefert **dieselben** Bild-URLs
- *    aus FAMILIE_HUBER_DEFAULT_PAGE_CONTENT (stabile Pfade unter /img/k2-familie/, kein Picsum).
+ * 4) Ohne Speicher: `getFamilyPageContent('huber')` = FAMILIE_HUBER_DEFAULT_PAGE_CONTENT; **andere** Mandanten = kein
+ *    Default-Willkommensbild (Huber-PNGs enthalten Muster-Marketing im Bild).
  *    **Hinweis:** `pm-deckblatt-…` ist der **Voll-Startseiten-Screenshot** inkl. Kacheln (nur Präsentationsmappe) –
  *    **nicht** als Live-Willkommensbild: sonst doppelte Schichten mit der echten UI darunter.
  *
@@ -27,7 +27,11 @@ const R = PROJECT_ROUTES['k2-familie']
 
 export const FAMILIE_HUBER_TENANT_ID = 'huber' as const
 
-/** Muster-Einstieg B (Route einstieg) – auch **Live-Willkommen**-Standard: Foto/Übersicht, keine eingebettete Kachel-Startseite. */
+/**
+ * Muster-Einstieg B (Route einstieg) – Screenshot mit Marketing-Text „Musterfamilie“.
+ * **Nur** Mandant `huber` als Standard-Willkommensbild; echte Familien bekommen kein Default-Foto (nur Verlauf),
+ * sonst wirkt das Huber-Marketing im Hintergrund unter fremdem Namen.
+ */
 export const FAMILIE_HUBER_DEFAULT_EINSTIEG_HERO = '/img/k2-familie/pm-familie-einstieg.png' as const
 
 /**
@@ -36,15 +40,12 @@ export const FAMILIE_HUBER_DEFAULT_EINSTIEG_HERO = '/img/k2-familie/pm-familie-e
  */
 export const K2_FAMILIE_DECKBLATT_HOME_PNG = '/img/k2-familie/pm-deckblatt-musterfamilie-home.png' as const
 
-/** Wenn für einen Mandanten noch keine Homepage-Gestaltung im Speicher steht: sichtbares Hero ohne Doppel-UI. */
-export const K2_FAMILIE_DEFAULT_WELCOME_IMAGE = FAMILIE_HUBER_DEFAULT_EINSTIEG_HERO
-
 /** Repo-Assets – identisch in Seed & Lese-Fallback; funktionieren ohne externes Netz. */
 export const FAMILIE_HUBER_DEFAULT_PAGE_CONTENT: Readonly<{
   welcomeImage: string
   cardImage: string
 }> = {
-  welcomeImage: K2_FAMILIE_DEFAULT_WELCOME_IMAGE,
+  welcomeImage: FAMILIE_HUBER_DEFAULT_EINSTIEG_HERO,
   cardImage: '/img/k2-familie/pm-familiengrafik-huber.png',
 }
 

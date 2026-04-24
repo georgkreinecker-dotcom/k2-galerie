@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** –  
-**Einordnung:** K2 Familie Meine Familie: Live-Hero ohne Deckblatt-Voll-Screenshot (keine zwei Schichten PNG + UI); Lesen mappt altes `pm-deckblatt` im Speicher auf `pm-familie-einstieg`.
+**Einordnung:** K2 Familie echte Mandanten: kein Huber-Marketing-PNG (`pm-familie-einstieg`) als Default-Hero; nur `huber` + Lese-Sanitize fremde IDs.
+
+---
+
+**Letzter Stand:** 24.04.26 – **K2 Familie Kreinecker/echte Familien falsches Hero-Bild:** `pm-familie-einstieg.png` = Muster-Marketing **im** PNG – war fälschlich globaler Default; jetzt nur Mandant `huber`; sonst kein Foto (Verlauf) + Strip dieses/Deckblatt-Pfads bei fremder `tenantId` (`sanitizeWelcomeImageRead`); Tests; README – **`qs:local` grün** – **Commit:** `7254ec9b` ✅ **main** gepusht
 
 ---
 

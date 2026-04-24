@@ -3,8 +3,8 @@ import { getFamilyPageContent, setFamilyPageContent } from '../config/pageConten
 import {
   FAMILIE_HUBER_TENANT_ID,
   FAMILIE_HUBER_DEFAULT_PAGE_CONTENT,
+  FAMILIE_HUBER_DEFAULT_EINSTIEG_HERO,
   K2_FAMILIE_DECKBLATT_HOME_PNG,
-  K2_FAMILIE_DEFAULT_WELCOME_IMAGE,
 } from '../data/k2FamilieMusterHuberQuelle'
 
 describe('pageContentFamilie', () => {
@@ -32,32 +32,44 @@ describe('pageContentFamilie', () => {
 
   it('Muster huber: ohne Speicher = Standard-Hero unter /img/k2-familie (Vercel/ohne Netz)', () => {
     const c = getFamilyPageContent(FAMILIE_HUBER_TENANT_ID)
+    expect(c.welcomeImage).toBe(FAMILIE_HUBER_DEFAULT_EINSTIEG_HERO)
     expect(c.welcomeImage).toMatch(/^\/img\/k2-familie\//)
     expect(c.cardImage).toMatch(/^\/img\/k2-familie\//)
   })
 
-  it('fremde Mandanten-ID: Huber-nur Kartenbild im Speicher wird beim Lesen ignoriert (Vermischung)', () => {
+  it('fremde Mandanten-ID: Huber-Screenshot + Huber-Kartenbild im Speicher → Hero-Bild entfernt (Vermischung)', () => {
     const tid = 'familie-kreinecker-xyz'
     localStorage.setItem(
       `k2-familie-${tid}-page-content`,
       JSON.stringify({
-        welcomeImage: K2_FAMILIE_DEFAULT_WELCOME_IMAGE,
+        welcomeImage: FAMILIE_HUBER_DEFAULT_EINSTIEG_HERO,
         cardImage: FAMILIE_HUBER_DEFAULT_PAGE_CONTENT.cardImage,
       }),
     )
     const c = getFamilyPageContent(tid)
-    expect(c.welcomeImage).toBe(K2_FAMILIE_DEFAULT_WELCOME_IMAGE)
+    expect(c.welcomeImage).toBeUndefined()
     expect(c.cardImage).toBeUndefined()
   })
 
-  it('Deckblatt-Voll-Screenshot im Speicher wird beim Lesen auf Live-Hero ersetzt (keine doppelte UI-Schicht)', () => {
-    const tid = 'familie-hat-noch-deckblatt'
+  it('fremde Mandanten-ID: ohne Speicher = kein Default-Willkommensbild (kein Huber-Marketing-PNG)', () => {
+    const c = getFamilyPageContent('familie-nur-lokal-001')
+    expect(c.welcomeImage).toBeUndefined()
+  })
+
+  it('Deckblatt-Voll-Screenshot: huber → Einstiegs-PNG; sonst kein Bild', () => {
+    const tidFremd = 'familie-hat-deckblatt'
     localStorage.setItem(
-      `k2-familie-${tid}-page-content`,
+      `k2-familie-${tidFremd}-page-content`,
       JSON.stringify({ welcomeImage: K2_FAMILIE_DECKBLATT_HOME_PNG }),
     )
-    const c = getFamilyPageContent(tid)
-    expect(c.welcomeImage).toBe(K2_FAMILIE_DEFAULT_WELCOME_IMAGE)
-    expect(c.welcomeImage).not.toBe(K2_FAMILIE_DECKBLATT_HOME_PNG)
+    expect(getFamilyPageContent(tidFremd).welcomeImage).toBeUndefined()
+
+    localStorage.setItem(
+      `k2-familie-${FAMILIE_HUBER_TENANT_ID}-page-content`,
+      JSON.stringify({ welcomeImage: K2_FAMILIE_DECKBLATT_HOME_PNG }),
+    )
+    const h = getFamilyPageContent(FAMILIE_HUBER_TENANT_ID)
+    expect(h.welcomeImage).toBe(FAMILIE_HUBER_DEFAULT_EINSTIEG_HERO)
+    expect(h.welcomeImage).not.toBe(K2_FAMILIE_DECKBLATT_HOME_PNG)
   })
 })
