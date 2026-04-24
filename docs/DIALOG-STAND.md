@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 24.04.26 – **Doku:** `docs/HANDBUCH-SOFTWAREENTWICKLUNG-STANDARDS-NACHWEIS.md` (Thema–Nachweis–Matrix, Fachfragen, Druck-Struktur) + Einträge **00-INDEX.md**, **EINSTIEG-INFORMATIKER-SYSTEM-WARTUNG.md** – **`npm run build:vercel` grün** – **Commit:** (nach Push hier eintragen) ✅ GitHub
+**Letzter Stand:** 24.04.26 – **Doku:** `docs/HANDBUCH-SOFTWAREENTWICKLUNG-STANDARDS-NACHWEIS.md` (Thema–Nachweis–Matrix, Fachfragen, Druck-Struktur) + Einträge **00-INDEX.md**, **EINSTIEG-INFORMATIKER-SYSTEM-WARTUNG.md** – **`npm run build:vercel` grün** – **Commit:** `d7b65db6` ✅ GitHub
 
 ---
 
