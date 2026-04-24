@@ -1,7 +1,8 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** **Supabase (produktiv):** Migration **015** ausführen, Edge Function **`familie`** neu deployen. Danach einmal **„Startseite gestalten“ speichern** (Mac) oder Cloud-Pull – dann erscheint das **Hero-Bild** auch auf dem Handy. **Vercel Ready** abwarten, ggf. Stand-Badge tippen.  
-**Einordnung:** `page_content` / `page_texts` sind jetzt wie andere Familie-Daten in der Cloud; ohne DB-Migration + Deploy liefert die API die Felder nicht. Mobile: **Safe-Area** + kompaktes **Menü** – nach Deploy testen.
+**Einordnung:** `page_content` / `page_texts` sind jetzt wie andere Familie-Daten in der Cloud; ohne DB-Migration + Deploy liefert die API die Felder nicht. Mobile: **Safe-Area** + kompaktes **Menü** – nach Deploy testen.  
+**Session-Ende 24.04.26:** Arbeitsbaum sauber, **main** = **`59c66fb4`** (K2-Familie-Feature **`689d2370`**).
 
 ---
 
