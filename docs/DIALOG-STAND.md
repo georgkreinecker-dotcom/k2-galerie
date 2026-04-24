@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 24.04.26 – **PWA / iPhone:** K2-Galerie + VK2: **Admin-Button** auch wenn die App vom **Startbildschirm** geöffnet wird (kein Referrer, kein APf) – `GaleriePage` `isGaleriePwaStandalone`, `Vk2GaleriePage` `vk2PwaStandalone`; **`tsc:build` grün** – **Commit:** `cf0ea1e4` ✅ **main**
+**Letzter Stand:** 24.04.26 – **PWA / iPhone:** K2-Galerie + VK2: **Admin-Button** auch wenn die App vom **Startbildschirm** geöffnet wird (kein Referrer, kein APf) – `GaleriePage` `isGaleriePwaStandalone`, `Vk2GaleriePage` `vk2PwaStandalone`; **`tsc:build` grün** – **Commit:** `b9acfea1` ✅ **main** gepusht
 
 ---
 
