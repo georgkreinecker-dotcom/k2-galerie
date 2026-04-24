@@ -1,7 +1,7 @@
 import { useLayoutEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
-  getK2FamilieMeineFamilieKreineckerPublicUrl,
+  getK2FamilieMeineFamilieMusterHuberPublicUrl,
   getK2FamilieStammbaumKreineckerPublicUrl,
 } from '../config/k2FamiliePresentation'
 import { hasKreineckerStammbaumTenantInBuildEnv } from '../data/k2FamilieKreineckerStammbaumQuelle'
@@ -26,7 +26,8 @@ function publicK2FamilieUrlHasTenantT(absUrl: string): boolean {
 
 export default function LaunchPraesentationBoardPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const meineFamilieUrl = getK2FamilieMeineFamilieKreineckerPublicUrl()
+  /** Musterfamilie Huber (`t=huber`) + pm=0&d=0 – kein Screenshot-Minimal; gleiche Live-Ansicht wie in der App. */
+  const meineFamilieUrl = getK2FamilieMeineFamilieMusterHuberPublicUrl()
   const stammbaumUrl = getK2FamilieStammbaumKreineckerPublicUrl()
 
   /**
@@ -46,7 +47,7 @@ export default function LaunchPraesentationBoardPage() {
         )
       }
     } else if (go === 'meine-familie' || go === 'k2-familie-meine') {
-      const target = getK2FamilieMeineFamilieKreineckerPublicUrl()
+      const target = getK2FamilieMeineFamilieMusterHuberPublicUrl()
       if (publicK2FamilieUrlHasTenantT(target)) {
         window.location.replace(target)
       } else {
@@ -61,7 +62,8 @@ export default function LaunchPraesentationBoardPage() {
   const boardMitAnkerOhneT = `${s('/launch-praesentation-board')}#${LAUNCH_PRAESENTATION_BOARD_KEIN_KREINECKER_T_ANKER}`
   /** Ohne gültiges `t` im Build: Kacheln dürfen nicht auf nackten Stammbaum/Meine Familie zeigen. */
   const stammbaumTileHref = hasTenant ? stammbaumUrl : boardMitAnkerOhneT
-  const meineFamilieTileHref = hasTenant ? meineFamilieUrl : boardMitAnkerOhneT
+  /** Muster-Huber immer mit t=huber; nicht von Vercel-Env abhängig. */
+  const meineFamilieTileHref = meineFamilieUrl
   const oek2PraesentationsmappeUrl = `${s(PROJECT_ROUTES['k2-galerie'].praesentationsmappe)}?context=oeffentlich`
   /** Kundenmappe, nicht /praesentationsmappe (das sind interne Vertriebsunterlagen). */
   const k2FamiliePraesentationsmappeUrl = s(PROJECT_ROUTES['k2-familie'].familiePraesentationsmappeKunde)
@@ -200,7 +202,7 @@ export default function LaunchPraesentationBoardPage() {
             label="K2 Familie – Musterfamilie Huber"
             hint="Meine Familie – Standard-Demo ist Musterfamilie Huber; mit Mandant t= aus Vercel die echte Familie"
             id="launch-tile-k2-familie-meine"
-            openInNewTab={hasTenant}
+            openInNewTab
           />
           <Tile
             href={stammbaumTileHref}

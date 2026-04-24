@@ -8,7 +8,8 @@
  * 1) **Build / Vercel** – in `.env` (lokal) bzw. Vercel → Environment (Production):
  *    zuerst `VITE_K2_FAMILIE_KREINECKER_STAMMBAUM_TENANT_ID`, sonst
  *    `VITE_K2_FAMILIE_APF_MEINE_FAMILIE_TENANT_ID` (dasselbe `t=…` wie in der Familien-Einladung).
- * 2) **Präsentationsboard** → `k2FamilieUrlWithPresentationTenant` / `getK2FamilieStammbaumKreineckerPublicUrl`
+ * 2) **Präsentationsboard** → `k2FamilieUrlWithPresentationTenant` (u. a. `getK2FamilieStammbaumKreineckerPublicUrl`,
+ *    `getK2FamilieMeineFamilieMusterHuberPublicUrl` für Muster-Huber + `pm=0&d=0` Live-Reset)
  *    hängt `?t=<id>` an Stammbaum- bzw. Meine-Familie-Pfad.
  * 3) **App** – `?t=` setzt den Mandanten (`FamilieTenantContext`); **Stammbaum**-Seite zeigt die Daten
  *    dieses Mandanten.

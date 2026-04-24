@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** –  
-**Einordnung:** K2 Familie Fertige Homepage: Hero/Zeilen/Teilen durch `deckblatt`-Session-Falle; Fix + Tests; H1 nutzt Stammname statt nur „Unsere Familie“ wenn Default.
+**Einordnung:** Präsentationsboard → K2 Familie: dieselbe Live-Ansicht (Hero) wie in der App; Muster-Huber mit `t=huber` + `pm=0&d=0`.
+
+---
+
+**Letzter Stand:** 24.04.26 – **Präsentationsboard = gleiche K2-Familie-Ansicht:** Kachel/Redirect „Meine Familie“ = **`getK2FamilieMeineFamilieMusterHuberPublicUrl()`** (`t=huber`, nicht Kreinecker-Env); alle Board-Exit-Links mit **`pm=0&d=0`** (Session-Reset, voller Hero); Tests `k2FamiliePresentationUrls.test.ts` – **`qs:local` grün** – **Commit:** _(nach Push)_
 
 ---
 
