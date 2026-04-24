@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** –  
-**Einordnung:** K2 Familie: Huber-Muster-Strings/Bilder dürfen unter echtem Mandanten (z. B. Kreinecker) nicht in Hero/Page-Texten erscheinen – Lese-Sanitize in `pageTextsFamilie` / `pageContentFamilie`.
+**Einordnung:** K2 Familie Meine Familie: Live-Hero ohne Deckblatt-Voll-Screenshot (keine zwei Schichten PNG + UI); Lesen mappt altes `pm-deckblatt` im Speicher auf `pm-familie-einstieg`.
+
+---
+
+**Letzter Stand:** 24.04.26 – **K2 Familie „zwei Schichten“ Meine Familie:** Deckblatt-PNG (`pm-deckblatt-musterfamilie-home`) nicht als Default-Willkommensbild; Standard = `pm-familie-einstieg.png`; `replaceDeckblattPngWithLiveHero` beim Lesen; Tests; Präsentationsmappe nutzt `K2_FAMILIE_DECKBLATT_HOME_PNG`; README – **`qs:local` grün** – **Commit:** `9a60056c` ✅ **main** gepusht
 
 ---
 

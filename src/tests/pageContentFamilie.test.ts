@@ -3,6 +3,7 @@ import { getFamilyPageContent, setFamilyPageContent } from '../config/pageConten
 import {
   FAMILIE_HUBER_TENANT_ID,
   FAMILIE_HUBER_DEFAULT_PAGE_CONTENT,
+  K2_FAMILIE_DECKBLATT_HOME_PNG,
   K2_FAMILIE_DEFAULT_WELCOME_IMAGE,
 } from '../data/k2FamilieMusterHuberQuelle'
 
@@ -47,5 +48,16 @@ describe('pageContentFamilie', () => {
     const c = getFamilyPageContent(tid)
     expect(c.welcomeImage).toBe(K2_FAMILIE_DEFAULT_WELCOME_IMAGE)
     expect(c.cardImage).toBeUndefined()
+  })
+
+  it('Deckblatt-Voll-Screenshot im Speicher wird beim Lesen auf Live-Hero ersetzt (keine doppelte UI-Schicht)', () => {
+    const tid = 'familie-hat-noch-deckblatt'
+    localStorage.setItem(
+      `k2-familie-${tid}-page-content`,
+      JSON.stringify({ welcomeImage: K2_FAMILIE_DECKBLATT_HOME_PNG }),
+    )
+    const c = getFamilyPageContent(tid)
+    expect(c.welcomeImage).toBe(K2_FAMILIE_DEFAULT_WELCOME_IMAGE)
+    expect(c.welcomeImage).not.toBe(K2_FAMILIE_DECKBLATT_HOME_PNG)
   })
 })

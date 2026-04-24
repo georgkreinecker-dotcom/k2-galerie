@@ -8,8 +8,15 @@
 import {
   FAMILIE_HUBER_TENANT_ID,
   FAMILIE_HUBER_DEFAULT_PAGE_CONTENT,
+  K2_FAMILIE_DECKBLATT_HOME_PNG,
   K2_FAMILIE_DEFAULT_WELCOME_IMAGE,
 } from '../data/k2FamilieMusterHuberQuelle'
+
+/** Voll-Deckblatt-Screenshot in localStorage → Live-Hero-Standard (nur Lese-Sanitize; kein setItem). */
+function replaceDeckblattPngWithLiveHero(url: string | undefined): string | undefined {
+  if (url && url === K2_FAMILIE_DECKBLATT_HOME_PNG) return K2_FAMILIE_DEFAULT_WELCOME_IMAGE
+  return url
+}
 
 export interface PageContentFamilie {
   welcomeImage?: string
@@ -30,7 +37,7 @@ export function getFamilyPageContent(tenantId: string): PageContentFamilie {
     if (raw && raw.length > 0) {
       const parsed = JSON.parse(raw) as Partial<PageContentFamilie>
       const base: PageContentFamilie = {
-        welcomeImage: parsed.welcomeImage ?? DEFAULTS.welcomeImage,
+        welcomeImage: replaceDeckblattPngWithLiveHero(parsed.welcomeImage) ?? DEFAULTS.welcomeImage,
         cardImage: parsed.cardImage ?? DEFAULTS.cardImage,
       }
       if (tenantId === FAMILIE_HUBER_TENANT_ID) {

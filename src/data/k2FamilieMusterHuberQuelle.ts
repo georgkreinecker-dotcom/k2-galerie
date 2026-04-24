@@ -14,6 +14,8 @@
  *    `setFamilyPageContent` → `k2-familie-huber-page-content` (localStorage).
  * 4) Ohne Speicher (Vercel, neues Gerät): `getFamilyPageContent` liefert **dieselben** Bild-URLs
  *    aus FAMILIE_HUBER_DEFAULT_PAGE_CONTENT (stabile Pfade unter /img/k2-familie/, kein Picsum).
+ *    **Hinweis:** `pm-deckblatt-…` ist der **Voll-Startseiten-Screenshot** inkl. Kacheln (nur Präsentationsmappe) –
+ *    **nicht** als Live-Willkommensbild: sonst doppelte Schichten mit der echten UI darunter.
  *
  * Nur diese Datei pflegen: keine zweiten String-Kopien für `huber` / dieselben Asset-Pfade.
  * ═══════════════════════════════════════════════════════════════════════════
@@ -25,11 +27,17 @@ const R = PROJECT_ROUTES['k2-familie']
 
 export const FAMILIE_HUBER_TENANT_ID = 'huber' as const
 
-/** Wenn für einen Mandanten noch keine Homepage-Gestaltung im Speicher steht: ein sichtbares Hero (Kreinecker, Pilot, …). */
-export const K2_FAMILIE_DEFAULT_WELCOME_IMAGE = '/img/k2-familie/pm-deckblatt-musterfamilie-home.png' as const
-
-/** Muster-Einstieg B (Route einstieg): Hero, wenn kein k2-familie-huber-einstieg-content. */
+/** Muster-Einstieg B (Route einstieg) – auch **Live-Willkommen**-Standard: Foto/Übersicht, keine eingebettete Kachel-Startseite. */
 export const FAMILIE_HUBER_DEFAULT_EINSTIEG_HERO = '/img/k2-familie/pm-familie-einstieg.png' as const
+
+/**
+ * Voll-Startseiten-Screenshot (Nav + Hero + Kacheln) – **nur** Präsentationsmappe / A4, nicht `meine-familie`-Hero
+ * (sonst zwei Schichten: PNG + echte Kacheln).
+ */
+export const K2_FAMILIE_DECKBLATT_HOME_PNG = '/img/k2-familie/pm-deckblatt-musterfamilie-home.png' as const
+
+/** Wenn für einen Mandanten noch keine Homepage-Gestaltung im Speicher steht: sichtbares Hero ohne Doppel-UI. */
+export const K2_FAMILIE_DEFAULT_WELCOME_IMAGE = FAMILIE_HUBER_DEFAULT_EINSTIEG_HERO
 
 /** Repo-Assets – identisch in Seed & Lese-Fallback; funktionieren ohne externes Netz. */
 export const FAMILIE_HUBER_DEFAULT_PAGE_CONTENT: Readonly<{

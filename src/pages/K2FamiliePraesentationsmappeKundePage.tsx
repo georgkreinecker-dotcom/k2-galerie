@@ -5,7 +5,10 @@
 
 import BenutzerHandbuchViewer from '../components/BenutzerHandbuchViewer'
 import { BASE_APP_URL, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, PROJECT_ROUTES } from '../config/navigation'
-import { getMusterfamilieHuberEinstiegPathWithQuery } from '../data/k2FamilieMusterHuberQuelle'
+import {
+  getMusterfamilieHuberEinstiegPathWithQuery,
+  K2_FAMILIE_DECKBLATT_HOME_PNG,
+} from '../data/k2FamilieMusterHuberQuelle'
 
 /** QR auf dem Deckblatt: Musterfamilie Huber (Demo-Einstieg) – Pfad+Query aus einer Quelle. */
 const MUSTERFAMILIE_EINSTIEG_QR_URL = `${String(BASE_APP_URL).replace(/\/$/, '')}${getMusterfamilieHuberEinstiegPathWithQuery()}`
@@ -70,7 +73,7 @@ export default function K2FamiliePraesentationsmappeKundePage() {
       printCurrentDocPrefix="K2 Familie – Präsentationsmappe"
       defaultDocWhenNoParam="01-DECKBLATT-UND-VERSPRECHEN.md"
       deckblattTealCover
-      deckblattCoverImageSrc="/img/k2-familie/pm-deckblatt-musterfamilie-home.png"
+      deckblattCoverImageSrc={K2_FAMILIE_DECKBLATT_HOME_PNG}
       deckblattCoverAlt="K2 Familie Startseite, Musterfamilie Huber – Navigation, Willkommensbereich und Kacheln Was möchtest du tun"
       deckblattCoverCaption="Musterfamilie Huber – Startseite (Demo, keine echten Kundendaten)."
       prominentEingangstorQr
