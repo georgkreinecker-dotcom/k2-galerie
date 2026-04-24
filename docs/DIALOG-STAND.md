@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 24.04.26 – **K2 Familie Leitstruktur:** `isFamilieNavSectionActive` wertet **`?t=huber`** aus (Sidebar markierte fälschlich „Musterfamilie“ auf `/meine-familie` ohne Query); `FamilieLeitstrukturPanel` übergibt `location.search`; `sanitizeWelcomeImageRead` vergleicht Huber-Deckblatt/Einstiegs-PNG per Pfad auch bei `https://…/img/...` (Tests) – **`qs:local` grün** – **Commit:** `bfd7b231` ✅ **main** gepusht
+**Letzter Stand:** 24.04.26 – **K2 Familie Leitstruktur:** `isFamilieNavSectionActive` wertet **`?t=huber`** aus (Sidebar markierte fälschlich „Musterfamilie“ auf `/meine-familie` ohne Query); `FamilieLeitstrukturPanel` übergibt `location.search`; `sanitizeWelcomeImageRead` vergleicht Huber-Deckblatt/Einstiegs-PNG per Pfad auch bei `https://…/img/...` (Tests) – **`qs:local` grün** – **Commit:** `ff9fbe08` ✅ **main** gepusht
 
 ---
 
