@@ -142,6 +142,13 @@ export default function K2FamilieHomePage() {
   const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId, familieStorageRevision])
   const content = useMemo(() => getFamilyPageContent(currentTenantId), [currentTenantId, familieStorageRevision])
   const texts = useMemo(() => getFamilyPageTexts(currentTenantId), [currentTenantId, familieStorageRevision])
+  /** Wenn noch Standard-Überschrift und Stammname gesetzt: gleicher Name wie in der Leiste (nicht nur „Unsere Familie“). */
+  const heroWelcomeTitle = useMemo(() => {
+    if (currentTenantId === FAMILIE_HUBER_TENANT_ID) return texts.welcomeTitle
+    const n = (einstAmpel.familyDisplayName ?? '').trim()
+    if (n && texts.welcomeTitle === 'Unsere Familie') return n
+    return texts.welcomeTitle
+  }, [currentTenantId, einstAmpel.familyDisplayName, texts.welcomeTitle])
   /** Erste Seite: Leser minimal, Bearbeiter mittel, Inhaber voller Text aus den Seitentexten. */
   const introForRole = useMemo(() => {
     if (isInhaber) return texts.introText
@@ -1097,7 +1104,7 @@ export default function K2FamilieHomePage() {
                 {texts.welcomeSubtitle}
               </p>
               <h1 style={{ margin: 0, fontSize: 'clamp(1.75rem, 4.5vw, 2.6rem)', fontWeight: 700, color: '#fff', lineHeight: 1.12, textShadow: '0 1px 12px rgba(0,0,0,0.45)' }}>
-                {texts.welcomeTitle}
+                {heroWelcomeTitle}
               </h1>
             </div>
           ) : null}

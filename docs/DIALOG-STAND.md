@@ -1,7 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** –  
-**Einordnung:** K2 Familie: Sidebar „Musterfamilie (Umschauen)“ vs. „Meine Familie“ per `location.search` (`t=huber`) entkoppelt; Willkommensbild-Sanitize inkl. voller Vercel-URL.
+**Einordnung:** K2 Familie Fertige Homepage: Hero/Zeilen/Teilen durch `deckblatt`-Session-Falle; Fix + Tests; H1 nutzt Stammname statt nur „Unsere Familie“ wenn Default.
+
+---
+
+**Letzter Stand:** 24.04.26 – **K2 Familie Hero/Deckblatt (kein Kreis mehr):** `applyK2FamiliePresentationFromSearch` (rein, getestet): `?d=1` ohne `pm` schreibt **kein** `k2-familie-deckblatt-minimal` dauerhaft; verwaistes Flag ohne pm wird entfernt; `K2FamilieHomePage` **heroWelcomeTitle** = `familyDisplayName` wenn Seitentext noch Default „Unsere Familie“ (nicht Huber) – **`qs:local` grün** – **Commit:** _(nach Push)_
 
 ---
 
