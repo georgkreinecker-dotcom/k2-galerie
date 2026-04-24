@@ -1,11 +1,15 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Offen beim nächsten Start; letzter Stand siehe **erster „Letzter Stand“-Block** unten (nach Commit-Push).  
-**Einordnung:** Handbuch-Nachweis: **Produktvorstellung Entdecken** (Abschnitt **1a**, Block **0** mit Live-Links zu ök2 / VK2 / K2 Familie) + **Zum Weiterleiten**.
+**Einordnung:** Präsentationsboard: **Informatiker-Handbuch**-Kachel (EINSTIEG-INFORMATIKER) + static HTML 10 Kacheln.
 
 ---
 
-**Letzter Stand:** 24.04.26 – **Handbuch Softwareentwicklung:** neuer Abschnitt **1a Produktvorstellung (Entdecken)** + **Block 0** mit klickbaren Vercel-URLs (Eingang, `?step=q1`, ök2, VK2, K2 Familie, Testpilot); Matrix-Zeile „Produktvorstellung“ – `docs/HANDBUCH-…`, `public/texte-schreibtisch/handbuch-…html` – **`qs:local` grün** – **Commit:** `ea37e836` ✅ GitHub (nach Push)
+**Letzter Stand:** 24.04.26 – **Präsentationsboard:** Kachel **Informatiker-Handbuch (Einstieg)** → GitHub `docs/EINSTIEG-INFORMATIKER-SYSTEM-WARTUNG.md`; `public/launch-praesentation-board.html` um Informatiker + Standards-Handbuch ergänzt (10 Kacheln); Hint **Handbuch Softwareentwicklung** – **`build:vercel` grün** – **Commit:** _(folgt)_
+
+---
+
+**Letzter Stand:** 24.04.26 – **Handbuch Softwareentwicklung:** neuer Abschnitt **1a Produktvorstellung (Entdecken)** + **Block 0** mit klickbaren Vercel-URLs (Eingang, `?step=q1`, ök2, VK2, K2 Familie, Testpilot); Matrix-Zeile „Produktvorstellung“ – `docs/HANDBUCH-…`, `public/texte-schreibtisch/handbuch-…html` – **`qs:local` grün** – **Commit:** Inhalt `ea37e836`, DIALOG-Hash `5b5139fa` – **main** gepusht ✅
 
 ---
 
