@@ -1,11 +1,11 @@
 # Dialog-Stand
 
 **Was wir JETZT tun:** Offen beim nächsten Start; letzter Stand siehe **erster „Letzter Stand“-Block** unten (nach Commit-Push).  
-**Einordnung:** Präsentationsboard: **Informatiker-Handbuch**-Kachel (EINSTIEG-INFORMATIKER) + static HTML 10 Kacheln.
+**Einordnung:** Präsentationsboard: nur **Kurzfassung** Softwareentwicklung (volle Doku per Links auf der Seite) – 9 Kacheln.
 
 ---
 
-**Letzter Stand:** 24.04.26 – **Präsentationsboard:** Kachel **Informatiker-Handbuch (Einstieg)** → GitHub `docs/EINSTIEG-INFORMATIKER-SYSTEM-WARTUNG.md`; `public/launch-praesentation-board.html` um Informatiker + Standards-Handbuch ergänzt (10 Kacheln); Hint **Handbuch Softwareentwicklung** – **`build:vercel` grün** – **Commit:** Inhalt `a05ab94f`, DIALOG-Hash `3a769bd7` – **main** gepusht ✅
+**Letzter Stand:** 24.04.26 – **Präsentationsboard:** separate Kachel Informatiker entfernt; eine Kachel **Handbuch Softwareentwicklung (Kurzfassung)** – Einstieg Informatiker & Co. bleiben klickbar auf der HTML-Seite; static HTML **9 Kacheln**; SW-Seite/Texte-Schreibtisch: Druck/Teilen über `staticPageDruckWeiterleiten` – **`build:vercel` grün** – **Commit:** `24fd279d` ✅ **main**
 
 ---
 

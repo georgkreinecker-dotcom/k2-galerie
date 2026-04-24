@@ -11,10 +11,6 @@ import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../conf
 
 const s = (path: string) => `${BASE_APP_URL}${path}`
 
-/** Zentraler Wartungs- und Systemeinstieg (Markdown auf GitHub, im Browser lesbar). */
-const EINSTIEG_INFORMATIKER_HANDBUCH_URL =
-  'https://github.com/georgkreinecker-dotcom/k2-galerie/blob/main/docs/EINSTIEG-INFORMATIKER-SYSTEM-WARTUNG.md' as const
-
 /** Anker: sichtbarer Hinweis, wenn im Build kein Mandant für Kreinecker gesetzt ist (sonst Huber-Falle). */
 const LAUNCH_PRAESENTATION_BOARD_KEIN_KREINECKER_T_ANKER = 'k2-familie-mandant-env' as const
 
@@ -229,17 +225,10 @@ export default function LaunchPraesentationBoardPage() {
             id="launch-tile-praesentationsmappe-k2-familie"
           />
           <Tile
-            href={EINSTIEG_INFORMATIKER_HANDBUCH_URL}
-            emoji="🧭"
-            label="Informatiker-Handbuch (Einstieg)"
-            hint="Systemüberblick, Mandanten, Prozesstabelle, Wartung – zentrale Doku (GitHub, im Browser lesen)"
-            id="launch-tile-informatiker-handbuch"
-          />
-          <Tile
             href={s('/texte-schreibtisch/handbuch-softwareentwicklung-standards-nachweis.html')}
             emoji="📋"
-            label="Handbuch Softwareentwicklung"
-            hint="Standards, Nachweis, Matrix & Doku-Links – ergänzt den Informatiker-Einstieg; drucken und weiterleiten auch auf der K2-Softwareentwicklung-Seite"
+            label="Handbuch Softwareentwicklung (Kurzfassung)"
+            hint="Standards, Nachweis, Matrix; von dort klickbar zu Einstieg Informatiker und allen Langfassungen – drucken und weiterleiten"
             id="launch-tile-handbuch-softwareentwicklung-standards"
           />
         </nav>

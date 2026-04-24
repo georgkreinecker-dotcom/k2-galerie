@@ -3,11 +3,20 @@
  * Deployment und technischen Checklisten zu tun hat (nicht Marketing).
  */
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { BASE_APP_URL, PROJECT_ROUTES, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
+import {
+  absoluteUrlVonPath,
+  oeffneDruckdialogFuerUrl,
+  weiterleitenTitelUrl,
+} from '../utils/staticPageDruckWeiterleiten'
+
+const HANDBUCH_SW_NACHWEIS_PATH = '/texte-schreibtisch/handbuch-softwareentwicklung-standards-nachweis.html' as const
+const HANDBUCH_SW_TITEL = 'Handbuch Softwareentwicklung – Standards & Nachweis'
 
 export default function K2SoftwareentwicklungPage() {
+  const [handbuchHinweis, setHandbuchHinweis] = useState<string | null>(null)
   useEffect(() => {
     try {
       const id = (window.location.hash || '').replace(/^#/, '')
@@ -39,6 +48,85 @@ export default function K2SoftwareentwicklungPage() {
           <Link to={K2_GALERIE_APF_EINSTIEG} style={{ color: '#5ffbf1', textDecoration: 'none' }}>Projekt-Start</Link>
         </p>
       </div>
+
+      <section
+        id="handbuch-softwareentwicklung-standards"
+        style={{
+          marginBottom: '2rem',
+          padding: '1rem 1.1rem',
+          background: 'rgba(95,251,241,0.07)',
+          borderRadius: 12,
+          border: '1px solid rgba(95,251,241,0.25)',
+        }}
+      >
+        <h2 style={{ fontSize: '1.15rem', color: '#5ffbf1', margin: '0 0 0.4rem' }}>{HANDBUCH_SW_TITEL}</h2>
+        <p style={{ margin: '0 0 0.9rem', lineHeight: 1.55, fontSize: '0.9rem', color: 'rgba(255,245,240,0.9)' }}>
+          Druckfassung: Thema–Nachweis-Matrix, FAQ, klickbare Links zu Doku &amp; Regeln. Gleiche Seite wie Texte-Schreibtisch (Sammelordner).
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+          <a
+            href={HANDBUCH_SW_NACHWEIS_PATH}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-block',
+              padding: '0.5rem 0.85rem',
+              borderRadius: 8,
+              background: '#5ffbf1',
+              color: '#0a0e12',
+              fontWeight: 800,
+              fontSize: '0.88rem',
+              textDecoration: 'none',
+            }}
+          >
+            Handbuch öffnen
+          </a>
+          <button
+            type="button"
+            onClick={() => oeffneDruckdialogFuerUrl(absoluteUrlVonPath(HANDBUCH_SW_NACHWEIS_PATH))}
+            style={{
+              padding: '0.5rem 0.85rem',
+              borderRadius: 8,
+              border: '1px solid rgba(95,251,241,0.5)',
+              background: 'rgba(18,28,38,0.9)',
+              color: '#5ffbf1',
+              fontWeight: 700,
+              fontSize: '0.88rem',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+            }}
+          >
+            🖨️ Drucken
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              const u = absoluteUrlVonPath(HANDBUCH_SW_NACHWEIS_PATH)
+              const r = await weiterleitenTitelUrl(HANDBUCH_SW_TITEL, u)
+              if (r === 'geteilt') setHandbuchHinweis('Teilen war möglich.')
+              else if (r === 'kopiert') setHandbuchHinweis('Link in die Zwischenablage kopiert.')
+              else setHandbuchHinweis(`Link: ${u}`)
+              setTimeout(() => setHandbuchHinweis(null), 3500)
+            }}
+            style={{
+              padding: '0.5rem 0.85rem',
+              borderRadius: 8,
+              border: '1px solid rgba(196,165,116,0.5)',
+              background: 'rgba(40,32,24,0.85)',
+              color: '#fde68a',
+              fontWeight: 700,
+              fontSize: '0.88rem',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+            }}
+          >
+            🔗 Weiterleiten
+          </button>
+        </div>
+        {handbuchHinweis && (
+          <p style={{ margin: '0.65rem 0 0', fontSize: '0.82rem', color: '#a7f3d0' }}>✓ {handbuchHinweis}</p>
+        )}
+      </section>
 
       {/* Smart Panel: Mappe „K2 Ready to go“ – dieselben Anker (#k2-ready-*) */}
       <section

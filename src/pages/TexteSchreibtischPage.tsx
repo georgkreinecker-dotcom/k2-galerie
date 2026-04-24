@@ -4,6 +4,11 @@ import { PROJECT_ROUTES, K2_GALERIE_APF_EINSTIEG, flyerEventBogenUrl } from '../
 import { getApfPreferredFamilieTenantId } from '../utils/familieTenantCookieBackup'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { TexteSchreibtischBoard } from '../components/TexteSchreibtischBoard'
+import {
+  absoluteUrlVonPath,
+  oeffneDruckdialogFuerUrl,
+  weiterleitenTitelUrl,
+} from '../utils/staticPageDruckWeiterleiten'
 
 const R = PROJECT_ROUTES['k2-galerie']
 const R_K2_FAMILIE = PROJECT_ROUTES['k2-familie']
@@ -21,6 +26,8 @@ type Zettel = {
   zweck: string
   to: string
   rotateDeg?: number
+  /** Drucken + Weiterleiten unter dem Zettel (statisches HTML) */
+  showDruckWeiterleiten?: boolean
 }
 
 type Bereich = {
@@ -105,6 +112,7 @@ const BEREICHE: Bereich[] = [
         zweck: 'Fachgespräch: Matrix, FAQ, Doku-Verweise (Browser → Drucken / PDF)',
         to: '/texte-schreibtisch/handbuch-softwareentwicklung-standards-nachweis.html',
         rotateDeg: 0.18,
+        showDruckWeiterleiten: true,
       },
       {
         id: 'druck-besucherliste-vn-nn-interesse',
@@ -404,6 +412,54 @@ function ZettelOeffnenLink({
   )
 }
 
+const BTN_ZETTEL_SEC: CSSProperties = {
+  padding: '0.4rem 0.65rem',
+  borderRadius: 8,
+  border: '1px solid rgba(28,26,24,0.15)',
+  background: '#fffefb',
+  color: '#1c1a18',
+  fontWeight: 700,
+  fontSize: '0.78rem',
+  cursor: 'pointer',
+  fontFamily: 'inherit',
+}
+
+function ZettelDruckWeiterleitenLeiste({ titel, openPath }: { titel: string; openPath: string }) {
+  const [hinweis, setHinweis] = useState<string | null>(null)
+  const abs = absoluteUrlVonPath(openPath)
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', justifyContent: 'center' }}>
+        <button
+          type="button"
+          onClick={() => oeffneDruckdialogFuerUrl(abs)}
+          style={BTN_ZETTEL_SEC}
+          title="Seite in neuem Tab öffnen und Druckdialog (PDF/Papier)"
+        >
+          🖨️ Drucken
+        </button>
+        <button
+          type="button"
+          onClick={async () => {
+            const r = await weiterleitenTitelUrl(titel, abs)
+            if (r === 'geteilt') setHinweis('Teilen war möglich.')
+            else if (r === 'kopiert') setHinweis('Link in die Zwischenablage kopiert.')
+            else setHinweis('Link: ' + abs)
+            setTimeout(() => setHinweis(null), 3200)
+          }}
+          style={{ ...BTN_ZETTEL_SEC, background: '#1c1917', color: '#fff', border: '1px solid #292524' }}
+          title="System-Teilen oder Link kopieren"
+        >
+          🔗 Weiterleiten
+        </button>
+      </div>
+      {hinweis && (
+        <span style={{ fontSize: '0.72rem', textAlign: 'center', color: '#166534', fontWeight: 600 }}>✓ {hinweis}</span>
+      )}
+    </div>
+  )
+}
+
 /** Eine Schublade im Hängeordner: Zettelzahl von außen sichtbar, einklappbar, innen blättern ohne sofort die volle Seite zu öffnen */
 function HangeregisterSchublade({ b }: { b: Bereich }) {
   const [eingeklappt, setEingeklappt] = useState(false)
@@ -662,6 +718,7 @@ function HangeregisterSchublade({ b }: { b: Bereich }) {
           >
             Diese Seite öffnen →
           </ZettelOeffnenLink>
+          {z.showDruckWeiterleiten && <ZettelDruckWeiterleitenLeiste titel={z.titel} openPath={zettelOpenHref} />}
         </div>
       )}
     </section>
