@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 24.04.26 – **Präsentationsboard:** Kachel **Informatiker-Handbuch (Einstieg)** → GitHub `docs/EINSTIEG-INFORMATIKER-SYSTEM-WARTUNG.md`; `public/launch-praesentation-board.html` um Informatiker + Standards-Handbuch ergänzt (10 Kacheln); Hint **Handbuch Softwareentwicklung** – **`build:vercel` grün** – **Commit:** `a05ab94f` ✅ GitHub (nach Push)
+**Letzter Stand:** 24.04.26 – **Präsentationsboard:** Kachel **Informatiker-Handbuch (Einstieg)** → GitHub `docs/EINSTIEG-INFORMATIKER-SYSTEM-WARTUNG.md`; `public/launch-praesentation-board.html` um Informatiker + Standards-Handbuch ergänzt (10 Kacheln); Hint **Handbuch Softwareentwicklung** – **`build:vercel` grün** – **Commit:** Inhalt `a05ab94f`, DIALOG-Hash `3a769bd7` – **main** gepusht ✅
 
 ---
 
