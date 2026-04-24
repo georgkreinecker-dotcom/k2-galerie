@@ -5,7 +5,7 @@
 
 ---
 
-**Letzter Stand:** 24.04.26 – **K2 Familie Hero aus Einstellungen + Handy-Navigation:** Cloud-Sync Startseite (**`page_content` / `page_texts`**) – Migration `015_k2_familie_data_type_page_startseite.sql`, `supabase/functions/familie` GET/POST, `mergeFamilyPageContentFromServer` / `mergeFamilyPageTextsFromServer`, `pushFamilieStartseiteDesignToSupabase` nach Speichern in `K2FamilieStartseiteGestalten`. **K2FamilieLayout:** `FAMILIE_NAV_SHELL` mit `env(safe-area-inset-*)`, kompakte Nav auf schmalen Viewports (`useCompactNavPattern`). Tests `pageContentFamilie`, **`npm run vite:build` grün** – **Commit:** `eaa6006d` ✅ **main** gepusht
+**Letzter Stand:** 24.04.26 – **K2 Familie Hero aus Einstellungen + Handy-Navigation:** Cloud-Sync Startseite (**`page_content` / `page_texts`**) – Migration `015_k2_familie_data_type_page_startseite.sql`, `supabase/functions/familie` GET/POST, `mergeFamilyPageContentFromServer` / `mergeFamilyPageTextsFromServer`, `pushFamilieStartseiteDesignToSupabase` nach Speichern in `K2FamilieStartseiteGestalten`. **K2FamilieLayout:** `FAMILIE_NAV_SHELL` mit `env(safe-area-inset-*)`, kompakte Nav auf schmalen Viewports (`useCompactNavPattern`). Tests `pageContentFamilie`, **`npm run vite:build` grün** – **Commit:** `689d2370` ✅ **main** gepusht
 
 ---
 
