@@ -35,6 +35,50 @@ function parseArtworkPriceEur(raw: unknown): number {
 }
 
 /**
+ * Werknummer aus Kasse-QR/Handeingabe: reiner Text, Galerie-URL mit ?werk=, ?q= (Etikett) oder #werk=.
+ */
+function extractSerialFromKasseQr(raw: string): string {
+  const data = raw.trim()
+  if (!data) return ''
+  const looksUrl =
+    /^https?:\/\//i.test(data) ||
+    (data.startsWith('//') && data.length > 2) ||
+    (data.startsWith('/') && data.includes('?')) ||
+    (data.startsWith('?') && data.length > 1)
+  if (!looksUrl) {
+    return data.toUpperCase()
+  }
+  try {
+    const base =
+      typeof window !== 'undefined' && window.location?.href
+        ? window.location.href
+        : 'https://k2-galerie.vercel.app/'
+    const url = new URL(data, base)
+    const fromParam = url.searchParams.get('werk') || url.searchParams.get('q')
+    if (fromParam && fromParam.trim()) {
+      return fromParam.trim().toUpperCase()
+    }
+    const h = url.hash.replace(/^#/, '')
+    if (h) {
+      const m = h.match(/(?:^|&)werk=([^&]+)/i) || h.match(/^werk=(.+)$/i)
+      if (m && m[1]) {
+        try {
+          return decodeURIComponent(m[1].trim()).toUpperCase()
+        } catch {
+          return m[1].trim().toUpperCase()
+        }
+      }
+    }
+  } catch {
+    /* kein parsebarer URL-String */
+  }
+  if (/^https?:\/\//i.test(data) || /^\/\//.test(data)) {
+    return ''
+  }
+  return data.toUpperCase()
+}
+
+/**
  * Handy/iPad: „Bon im neuen Tab“ + Fokus aufs Pop-up kann Vollbild-Overlay hängen lassen / Bedienung blockieren.
  * Druckdialog bleibt der zuverlässige Weg (Teilen → Drucken).
  */
@@ -1239,27 +1283,22 @@ const ShopPage = () => {
     setShowScanner(true)
   }
 
-  // QR-Code aus URL oder Text verarbeiten
+  // QR-Code aus URL oder Text verarbeiten (Etikett nutzt ?q=…, ältere Links ?werk=, Lightbox #werk=)
   const processQRCode = (qrData: string) => {
     if (!qrData || !qrData.trim()) return
 
     const data = qrData.trim()
-    let serial = data.toUpperCase()
-    
-    try {
-      // Versuche URL zu parsen – ?werk=K2-001 oder ähnlich
-      const url = new URL(data)
-      const werkParam = url.searchParams.get('werk')
-      if (werkParam) {
-        serial = werkParam.toUpperCase()
-      }
-    } catch (_) {
-      // Keine URL – direkt als Seriennummer
-    }
-    
+    const serial = extractSerialFromKasseQr(data)
     setShowScanner(false)
+    if (!serial) {
+      if (/[?#]/.test(data) || /^https?:/i.test(data) || (data.startsWith('/') && data.includes('?'))) {
+        alert(
+          'Im QR-Code war keine Werknummer erkennbar. Etikett- und Galerie-Links enthalten meist ?q=… oder ?werk=…'
+        )
+      }
+      return
+    }
     setSerialInput(serial)
-    // Direkt mit dem gescannten Wert aufrufen (nicht auf State-Update warten)
     addBySerialNumber(serial)
   }
 
