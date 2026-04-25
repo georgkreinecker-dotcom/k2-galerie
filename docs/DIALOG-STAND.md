@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 25.04.26 – **Shop-Kasse: QR vom Etikett** – `ShopPage.tsx` `extractSerialFromKasseQr`: Werknummer aus **`?q=`** (Etikett-Galerie-Vorschau), **`?werk=`**, Hash **`#werk=`**; relative URLs per `new URL(…, location)`; bei reiner URL ohne Parameter klare Hinweis-Meldung statt ganzer String als „Seriennummer“. **Commit:** `467379c5` ✅ **main** gepusht
+
+---
+
 **Was wir JETZT tun:** **Supabase (produktiv):** Migration **015** ausführen, Edge Function **`familie`** neu deployen. Danach einmal **„Startseite gestalten“ speichern** (Mac) oder Cloud-Pull – dann erscheint das **Hero-Bild** auch auf dem Handy. **Vercel Ready** abwarten, ggf. Stand-Badge tippen.  
 **Einordnung:** `page_content` / `page_texts` sind jetzt wie andere Familie-Daten in der Cloud; ohne DB-Migration + Deploy liefert die API die Felder nicht. Mobile: **Safe-Area** + kompaktes **Menü** – nach Deploy testen.  
 **Session-Ende 24.04.26:** Alles gepusht, Arbeitsbaum sauber. K2-Familie-**Feature-Commit:** **`689d2370`** (danach nur Doku/Hash-Session-Ende).
