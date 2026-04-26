@@ -403,7 +403,7 @@ export default function K2FamilieHomePage() {
       if (result.personen.length === 0) {
         setRegistrierungHinweis(
           (result.loadMeta.serverPersonenCount ?? 0) === 0
-            ? 'Noch keine Daten in der Cloud. Verwaltung speichert einmal auf k2-galerie.vercel.app, dann hier erneut laden.'
+            ? 'Noch keine Daten in der Cloud. Verwaltung speichert einmal online, dann hier erneut laden.'
             : 'Speichern auf dem Handy klappte nicht. Seite neu öffnen, dann erneut laden.',
         )
       } else {
