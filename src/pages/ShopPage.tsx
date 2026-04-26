@@ -17,6 +17,7 @@ import { getCustomers, getCustomerById, createCustomer, updateCustomer, type Cus
 import { readKuenstlerFallbackShop, resolveArtistLabelForGalerieStatistik } from '../utils/artworkArtistDisplay'
 import { sortArtworksCategoryBlocksThenNumberAsc } from '../utils/artworkSort'
 import { hasKassa, hasKassabuchVoll, isKassabuchAktiv, addKassabuchEintrag, loadKassabuch, saveKassabuch, type KassabuchEintrag } from '../utils/kassabuchStorage'
+import { uploadKassaSnapshotToServer, fetchKassaSnapshotAndMergeLocal } from '../utils/kassaServerSync'
 import { PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import { useGamificationChecklistsUi } from '../hooks/useGamificationChecklistsUi'
 import '../App.css'
@@ -314,6 +315,8 @@ interface CartItem {
   number: string
   /** Level 5: stabile technische Identität – Nummer kann sich ändern, uid nicht */
   artworkUid?: string
+  /** Stückzahl dieser Position (Einzelpreis = price). Fehlt/alt: 1. */
+  quantity?: number
   title: string
   price: number
   category: string
@@ -328,6 +331,23 @@ interface CartItem {
   ceramicSurface?: string
   ceramicDescription?: string
   ceramicSubcategory?: string
+}
+
+function getCartLineQuantity(item: CartItem): number {
+  const q = item.quantity
+  if (q == null || !Number.isFinite(Number(q))) return 1
+  return Math.max(1, Math.min(9999, Math.floor(Number(q))))
+}
+
+/** Laut Werkstamm: verfügbare Stückzahl (0 = leer; ohne Angabe = 1 wie beim Verkaufs-Abzug). */
+function getArtworkStockPieces(artwork: { quantity?: unknown } | null | undefined): number {
+  if (artwork == null) return 0
+  if (artwork.quantity == null) return 1
+  return Math.max(0, Math.floor(Number(artwork.quantity)))
+}
+
+function cartLineSubtotalEur(item: CartItem): number {
+  return parseArtworkPriceEur(item.price) * getCartLineQuantity(item)
 }
 
 /** HTML K2/ök2 Kassenbon schmal (mm) – eine Quelle für Druckdialog und „Bon im neuen Tab“ (wie Etikett). */
@@ -376,7 +396,7 @@ function buildK2Oek2ReceiptHtml(
   const items = Array.isArray(order.items) ? order.items : []
   const itemsRows = items
     .map((item: CartItem, idx: number) => {
-      const menge = 1
+      const menge = getCartLineQuantity(item)
       const ep = parseArtworkPriceEur(item.price)
       const betrag = menge * ep
       const title = (item.title || item.number || '').replace(/</g, '&lt;')
@@ -604,6 +624,9 @@ const ShopPage = () => {
   const [showNummernListe, setShowNummernListe] = useState(false)
   const [showVerkaufsliste, setShowVerkaufsliste] = useState(false)
   const [soldEntriesList, setSoldEntriesList] = useState<Array<{ number: string; artworkUid?: string; soldAt?: string; orderId?: string; title: string; price: number }>>([])
+  /** Nach Kassa-Sync: Listen/Orders neu einlesen (Merge vom Server, Upload ok). */
+  const [kassaServerTick, setKassaServerTick] = useState(0)
+  const [kassaSyncBusy, setKassaSyncBusy] = useState(false)
   // Kurze Bestätigung „zur Auswahl hinzugefügt“ – auto-schließend, kein Schließen-Button
   const [addedToast, setAddedToast] = useState<string | null>(null)
   const addedToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -961,7 +984,7 @@ const ShopPage = () => {
         }
       }
     } catch (_) {}
-  }, [ordersKey])
+  }, [ordersKey, kassaServerTick])
 
   // Kunden für Zuordnung beim Verkauf
   useEffect(() => {
@@ -1005,8 +1028,9 @@ const ShopPage = () => {
       const artworks = readArtworksRawByKey(artworkKey)
       if (Array.isArray(artworks) && order.items && order.items.length > 0) {
         let changed = false
-        order.items.forEach((item: { number: string; artworkUid?: string }) => {
+        order.items.forEach((item: CartItem) => {
           const uid = String((item as any)?.artworkUid ?? '').trim()
+          const stueck = getCartLineQuantity(item)
           const idx = artworks.findIndex((a: any) => {
             const aUid = String(a?.uid ?? '').trim()
             if (uid && aUid && aUid === uid) return true
@@ -1015,7 +1039,7 @@ const ShopPage = () => {
           if (idx !== -1) {
             const a = artworks[idx]
             const q = a.quantity != null ? Number(a.quantity) : 0
-            artworks[idx] = { ...a, quantity: q + 1, inShop: true }
+            artworks[idx] = { ...a, quantity: q + stueck, inShop: true }
             changed = true
           }
         })
@@ -1075,6 +1099,11 @@ const ShopPage = () => {
     }
   }
 
+  useEffect(() => {
+    if (kassaServerTick === 0) return
+    loadVerkaufslisteForStorno()
+  }, [kassaServerTick, allArtworks, soldArtworksKey])
+
   // Einzelnen Verkauf stornieren (nach Index in der Anzeige, max 15)
   const handleStornoSingle = (index: number) => {
     const entry = soldEntriesList[index]
@@ -1116,6 +1145,62 @@ const ShopPage = () => {
     }
   }
 
+  const handleKassaSchliessenSync = async () => {
+    if (kassaSyncBusy) return
+    setKassaSyncBusy(true)
+    try {
+      const r = await uploadKassaSnapshotToServer(fromOeffentlich, fromVk2)
+      if (r.success) {
+        setKassaServerTick((t) => t + 1)
+        try {
+          window.dispatchEvent(new CustomEvent('customers-updated'))
+        } catch {
+          /* ignore */
+        }
+        alert(
+          `✅ Kassa-Stand ist auf dem Server (Vercel).\n\nBestellungen: ${r.result?.ordersCount ?? '–'} · Verkauft-Einträge: ${r.result?.soldCount ?? '–'}`
+        )
+      } else {
+        alert(`⚠️ ${r.error || 'Senden fehlgeschlagen'}`)
+      }
+    } finally {
+      setKassaSyncBusy(false)
+    }
+  }
+
+  const handleKassaVomServerHolen = async () => {
+    if (kassaSyncBusy) return
+    if (
+      !confirm(
+        'Kassa-Daten vom Server holen und mit diesem Gerät zusammenführen?\n\nBereits vorhandene Einträge bleiben, neue werden ergänzt (kein Leerlöschen).'
+      )
+    ) {
+      return
+    }
+    setKassaSyncBusy(true)
+    try {
+      const r = await fetchKassaSnapshotAndMergeLocal(fromOeffentlich, fromVk2)
+      if (r.success) {
+        setKassaServerTick((t) => t + 1)
+        try {
+          window.dispatchEvent(new CustomEvent('customers-updated'))
+        } catch {
+          /* ignore */
+        }
+        const m = r.merged
+        alert(
+          m
+            ? `✅ Zusammengeführt. Bestellungen: ${m.orders}, Verkäufe: ${m.sold}, Kassabuch: ${m.kassabuch}, Kunden: ${m.customers}.`
+            : '✅ Abgleich erledigt.'
+        )
+      } else {
+        alert(`⚠️ ${r.error || 'Abruf fehlgeschlagen'}`)
+      }
+    } finally {
+      setKassaSyncBusy(false)
+    }
+  }
+
   // Werk per Seriennummer oder Titel finden und zum Warenkorb hinzufügen
   const addBySerialNumber = (overrideSerial?: string) => {
     const raw = (overrideSerial ?? serialInput).trim()
@@ -1142,35 +1227,14 @@ const ShopPage = () => {
       return
     }
 
-    // Prüfe ob bereits verkauft
-    try {
-      const soldData = localStorage.getItem(soldArtworksKey)
-      if (soldData) {
-        const soldArtworks = JSON.parse(soldData)
-        if (Array.isArray(soldArtworks)) {
-          const auid = String(artwork?.uid ?? '').trim()
-          const isSold = soldArtworks.some((a: any) => {
-            if (!a) return false
-            const suid = String(a?.artworkUid ?? '').trim()
-            if (auid && suid && suid === auid) return true
-            return a.number === artwork.number
-          })
-          if (isSold) {
-            alert('Dieses Werk ist bereits verkauft.')
-            return
-          }
-        }
-      }
-    } catch (error) {
-      // Ignoriere Fehler
-    }
-
-    // Prüfe ob bereits im Warenkorb (Level 5: bevorzugt über uid)
-    const foundUid = String(artwork?.uid ?? '').trim()
-    if (foundUid ? cart.some(item => String(item.artworkUid ?? '').trim() === foundUid) : cart.some(item => item.number === artwork.number)) {
-      alert('Dieses Werk ist bereits in deiner Auswahl.')
+    const lagerVoll = getArtworkStockPieces(artwork)
+    if (lagerVoll <= 0) {
+      alert('Dieses Werk ist nicht mehr auf Lager (Stückzahl 0).')
       return
     }
+
+    // Verfügbarkeit: nur Stamm-Lagerstückzahl (k2-artworks o.ä.), nicht die Verkaufs-Historie –
+    // bei Mehrfachauflagen würde sonst schon ein Teilverkauf den Scan blockieren.
 
     // Preis (Komma-Notation sicher parsen)
     const priceVal = parseArtworkPriceEur(artwork?.price)
@@ -1185,10 +1249,37 @@ const ShopPage = () => {
       return
     }
 
-    // Zum Warenkorb hinzufügen
+    // Gleiches Werk schon in der Auswahl: Stückzahl erhöhen (bis Lager reicht)
+    const foundUid = String(artwork?.uid ?? '').trim()
+    const existingIdx = foundUid
+      ? cart.findIndex(c => String(c.artworkUid ?? '').trim() === foundUid)
+      : cart.findIndex(c => c.number === (artwork.number || artwork.id))
+    if (existingIdx !== -1) {
+      const row = cart[existingIdx]
+      const bisher = getCartLineQuantity(row)
+      if (bisher >= lagerVoll) {
+        alert(`Nicht mehr Stück am Lager (max. ${lagerVoll}).`)
+        return
+      }
+      const next: CartItem = { ...row, quantity: bisher + 1 }
+      setCart(cart.map((c, i) => (i === existingIdx ? next : c)))
+      setSerialInput('')
+      const rest = lagerVoll - bisher - 1
+      const msg = `„${artwork.title || artwork.number}“: ${bisher + 1} Stk. in der Auswahl · ${rest} noch am Lager.`
+      if (addedToastTimerRef.current) clearTimeout(addedToastTimerRef.current)
+      setAddedToast(msg)
+      addedToastTimerRef.current = setTimeout(() => {
+        setAddedToast(null)
+        addedToastTimerRef.current = null
+      }, 1800)
+      return
+    }
+
+    // Neue Zeile
     const cartItem: CartItem = {
       number: artwork.number || artwork.id,
       artworkUid: foundUid || undefined,
+      quantity: 1,
       title: artwork.title || artwork.number,
       price: priceVal,
       category: artwork.category,
@@ -1207,7 +1298,11 @@ const ShopPage = () => {
 
     setCart([...cart, cartItem])
     setSerialInput('')
-    const msg = `"${artwork.title || artwork.number}" wurde zur Auswahl hinzugefügt.`
+    const restNach = lagerVoll - 1
+    const msg =
+      lagerVoll > 1
+        ? `„${artwork.title || artwork.number}“: 1 Stk. in der Auswahl · ${restNach} noch am Lager.`
+        : `„${artwork.title || artwork.number}“ wurde zur Auswahl hinzugefügt (letztes Stück).`
     if (addedToastTimerRef.current) clearTimeout(addedToastTimerRef.current)
     setAddedToast(msg)
     addedToastTimerRef.current = setTimeout(() => {
@@ -1308,8 +1403,36 @@ const ShopPage = () => {
     setCart(newCart)
   }
 
-  // Gesamtpreis berechnen
-  const subtotal = cart.reduce((sum, item) => sum + item.price, 0)
+  const getStockForCartItem = (item: CartItem): number => {
+    const uid = String(item.artworkUid ?? '').trim()
+    const a = allArtworks.find((x: any) => {
+      const xu = String(x?.uid ?? '').trim()
+      if (uid && xu && xu === uid) return true
+      return (x.number || x.id) === item.number
+    })
+    return a != null ? getArtworkStockPieces(a) : 0
+  }
+
+  const adjustCartItemQuantity = (index: number, delta: 1 | -1) => {
+    const item = cart[index]
+    if (!item) return
+    const current = getCartLineQuantity(item)
+    const next = current + delta
+    const maxStock = getStockForCartItem(item)
+    if (next <= 0) {
+      removeFromCart(index)
+      return
+    }
+    if (next > maxStock) {
+      alert(`Nur ${maxStock} Stück am Lager.`)
+      return
+    }
+    setCart(cart.map((c, i) => (i === index ? { ...c, quantity: next } : c)))
+  }
+
+  // Gesamtpreis: pro Zeile Stückzahl × Einzelpreis
+  const subtotal = cart.reduce((sum, item) => sum + cartLineSubtotalEur(item), 0)
+  const cartStueckGesamt = cart.reduce((sum, it) => sum + getCartLineQuantity(it), 0)
   const discountAmount = (subtotal * discount) / 100
   const total = subtotal - discountAmount
 
@@ -1781,7 +1904,7 @@ ${bankBlock}
       }
       const rechnungDatum = date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
       const itemsRows = order.items.map((item: CartItem, idx: number) => {
-        const menge = 1
+        const menge = getCartLineQuantity(item)
         const ep = parseArtworkPriceEur(item.price)
         const betrag = menge * ep
         const r = resolveArtistLabelForGalerieStatistik(item, kuenstlerFbA4)
@@ -2032,13 +2155,21 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
               }
               const rA4 = resolveArtistLabelForGalerieStatistik(item, kuenstlerFbA4)
               const artPart = rA4 && rA4 !== 'Ohne Künstler' ? ' • ' + String(rA4).replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''
+              const mqA4 = getCartLineQuantity(item)
+              const epA4 = parseArtworkPriceEur(item.price)
+              const lineA4 = mqA4 * epA4
+              const stueckInfo =
+                mqA4 > 1
+                  ? `<div class="item-details" style="margin-top: 2px;">Menge: <strong>${mqA4} Stk.</strong> à € ${epA4.toFixed(2)}</div>`
+                  : ''
               return `
               <div class="item">
                 <div class="item-title">${item.title || item.number}</div>
                 <div class="item-details">${getCategoryLabel(item.category)}${artPart}</div>
                 ${sizeInfo ? `<div class="item-details" style="margin-top: 1px;">${sizeInfo}</div>` : ''}
                 <div class="item-details" style="font-weight: bold; margin-top: 2px;">Seriennummer: ${item.number}</div>
-                <div class="item-price">€ ${item.price.toFixed(2)}</div>
+                ${stueckInfo}
+                <div class="item-price">€ ${lineA4.toFixed(2)}</div>
               </div>
             `
             }).join('')}
@@ -2151,10 +2282,11 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
     localStorage.setItem(ordersKey, JSON.stringify(ordersStored))
     setOrders(prev => [order, ...prev.slice(0, 19)])
 
-    // Werke als verkauft markieren (mit optionaler Kundenzuordnung)
+    // Werke als verkauft markieren (mit optionaler Kundenzuordnung) – pro Zeile ein Eintrag, mit Stückzahl
     cart.forEach(item => {
       const soldArtworks = JSON.parse(localStorage.getItem(soldArtworksKey) || '[]')
       const iuid = String((item as any)?.artworkUid ?? '').trim()
+      const stueck = getCartLineQuantity(item)
       if (!soldArtworks.find((a: any) => {
         const suid = String(a?.artworkUid ?? '').trim()
         if (iuid && suid && suid === iuid) return true
@@ -2165,13 +2297,15 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
           ...(item.artworkUid ? { artworkUid: item.artworkUid } : {}),
           soldAt: new Date().toISOString(),
           orderId: order.id,
-          ...(customerId ? { customerId } : {})
+          ...(stueck > 1 ? { soldQuantity: stueck } : {}),
+          soldPrice: parseArtworkPriceEur(item.price),
+          ...(customerId ? { customerId } : {}),
         })
         localStorage.setItem(soldArtworksKey, JSON.stringify(soldArtworks))
       }
     })
 
-    // Stückzahl pro verkauftem Werk um 1 verringern (kontexteigener Artwork-Key)
+    // Stückzahl pro Werk im Bestand abziehen (kontexteigener Artwork-Key)
     const artworkKey = fromOeffentlich ? 'k2-oeffentlich-artworks' : 'k2-artworks'
     try {
       const raw = localStorage.getItem(artworkKey)
@@ -2179,8 +2313,9 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
         const artworks = JSON.parse(raw)
         if (Array.isArray(artworks)) {
           let changed = false
-          cart.forEach((item: { number: string; artworkUid?: string }) => {
+          cart.forEach((item: CartItem) => {
             const uid = String((item as any)?.artworkUid ?? '').trim()
+            const abziehen = getCartLineQuantity(item)
             const idx = artworks.findIndex((a: any) => {
               const aUid = String(a?.uid ?? '').trim()
               if (uid && aUid && aUid === uid) return true
@@ -2189,8 +2324,9 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
             if (idx !== -1) {
               const a = artworks[idx]
               const q = a.quantity != null ? Number(a.quantity) : 1
-              if (q > 1) {
-                artworks[idx] = { ...a, quantity: q - 1 }
+              const next = q - abziehen
+              if (next > 0) {
+                artworks[idx] = { ...a, quantity: next }
                 changed = true
               } else {
                 artworks[idx] = { ...a, quantity: 0, inShop: false }
@@ -2983,7 +3119,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
         </span>
         {cart.length > 0 && (
           <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem' }}>
-            {cart.length} {cart.length === 1 ? 'Werk' : 'Werke'} · € {total.toFixed(2)}
+            {cartStueckGesamt} Stk. · {cart.length} {cart.length === 1 ? 'Position' : 'Positionen'} · € {total.toFixed(2)}
           </span>
         )}
       </div>
@@ -3021,7 +3157,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                   fontSize: '1rem',
                   fontWeight: '400'
                 }}>
-                  {cart.length} {cart.length === 1 ? 'Werk' : 'Werke'} · € {total.toFixed(2)}
+                  {cartStueckGesamt} Stk. · {cart.length} {cart.length === 1 ? 'Position' : 'Positionen'} · € {total.toFixed(2)}
                 </p>
               )}
             </div>
@@ -3120,6 +3256,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
               </Link>
               )}
               {isAdminContext && (
+              <>
               <Link 
                 to={adminLink} 
                 style={{ 
@@ -3146,6 +3283,46 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
               >
                 ⚙️ Admin
               </Link>
+              <button
+                type="button"
+                disabled={kassaSyncBusy}
+                onClick={() => void handleKassaSchliessenSync()}
+                title="Speichert Bestellungen, Verkaufsliste, Kassabuch und Kunden auf Vercel – für den zweiten Rechner oder Backup."
+                style={{
+                  padding: '0.6rem 1.25rem',
+                  background: kassaSyncBusy ? s.bgElevated : '#b54a1e',
+                  border: '1px solid #8a3a18',
+                  color: '#fff',
+                  borderRadius: s.radiusSm,
+                  whiteSpace: 'nowrap',
+                  fontWeight: '600',
+                  cursor: kassaSyncBusy ? 'wait' : 'pointer',
+                  opacity: kassaSyncBusy ? 0.75 : 1,
+                  fontSize: '0.95rem',
+                }}
+              >
+                {kassaSyncBusy ? '…' : '🔒 Kassa schließen'}
+              </button>
+              <button
+                type="button"
+                disabled={kassaSyncBusy}
+                onClick={() => void handleKassaVomServerHolen()}
+                title="Holt den zuletzt gesendeten Kassa-Stand vom Server und führt ihn mit diesem Gerät zusammen."
+                style={{
+                  padding: '0.6rem 1.25rem',
+                  background: s.bgCard,
+                  border: s.border,
+                  color: s.text,
+                  borderRadius: s.radiusSm,
+                  whiteSpace: 'nowrap',
+                  fontWeight: '500',
+                  cursor: kassaSyncBusy ? 'wait' : 'pointer',
+                  fontSize: '0.95rem',
+                }}
+              >
+                ⬇️ Kassa vom Server
+              </button>
+              </>
               )}
             </nav>
           </div>
@@ -3812,7 +3989,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                 textTransform: 'uppercase',
                 letterSpacing: '0.06em'
               }}>
-                Auswahl · {cart.length} {cart.length === 1 ? 'Werk' : 'Werke'}
+                Auswahl · {cartStueckGesamt} Stk. · {cart.length} {cart.length === 1 ? 'Position' : 'Positionen'}
               </h2>
               
               <div style={{ 
@@ -3820,7 +3997,12 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                 flexDirection: 'column', 
                 gap: '0.625rem' 
               }}>
-                {cart.map((item, index) => (
+                {cart.map((item, index) => {
+                  const stueck = getCartLineQuantity(item)
+                  const lagerZeile = getStockForCartItem(item)
+                  const restNachWahl = Math.max(0, lagerZeile - stueck)
+                  const lineSum = cartLineSubtotalEur(item)
+                  return (
                   <div key={`${item.number}-${index}`} style={{
                     background: s.bgCard,
                     border: s.border,
@@ -3911,17 +4093,89 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                           return r && r !== 'Ohne Künstler' ? ` · ${r}` : ''
                         })()}
                       </div>
+                      <div
+                        style={{
+                          fontSize: '0.78rem',
+                          color: s.muted,
+                          marginTop: '0.35rem',
+                          lineHeight: 1.35,
+                        }}
+                      >
+                        {lagerZeile > 0 ? (
+                          <>
+                            <strong style={{ color: s.text }}>{stueck} Stk.</strong> in der Auswahl · Lager:{' '}
+                            <strong style={{ color: s.text }}>{lagerZeile} Stk.</strong> verfügbar, davon{' '}
+                            {restNachWahl} noch frei
+                          </>
+                        ) : (
+                          <span>Stückzahl – Beim letzten Speichern war kein Lagerwert; nutze +/− mit Vorsicht.</span>
+                        )}
+                      </div>
                     </div>
-                    {/* Preis + Entfernen */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 }}>
-                      <span style={{ 
-                        fontWeight: '700', 
-                        color: s.accent,
-                        fontSize: '1.1rem',
-                        whiteSpace: 'nowrap'
-                      }}>
-                        € {item.price.toFixed(2)}
-                      </span>
+                    {/* Menge, Preis, Entfernen */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem', flexShrink: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                        <span style={{ fontSize: '0.78rem', color: s.muted, whiteSpace: 'nowrap' }}>Stk.</span>
+                        <button
+                          type="button"
+                          onClick={() => adjustCartItemQuantity(index, -1)}
+                          style={{
+                            width: '2rem',
+                            height: '2rem',
+                            padding: 0,
+                            background: s.bgElevated,
+                            border: s.border,
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontSize: '1rem',
+                            fontWeight: 700,
+                            color: s.text,
+                            lineHeight: 1,
+                          }}
+                          title="Eins weniger"
+                        >
+                          −
+                        </button>
+                        <span
+                          style={{
+                            minWidth: '1.75rem',
+                            textAlign: 'center',
+                            fontWeight: 800,
+                            fontSize: '1.05rem',
+                            color: s.text,
+                          }}
+                        >
+                          {stueck}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => adjustCartItemQuantity(index, 1)}
+                          disabled={lagerZeile > 0 && stueck >= lagerZeile}
+                          style={{
+                            width: '2rem',
+                            height: '2rem',
+                            padding: 0,
+                            background: lagerZeile > 0 && stueck >= lagerZeile ? s.bgCard : s.bgElevated,
+                            border: s.border,
+                            borderRadius: '8px',
+                            cursor: lagerZeile > 0 && stueck >= lagerZeile ? 'not-allowed' : 'pointer',
+                            fontSize: '1rem',
+                            fontWeight: 700,
+                            color: s.text,
+                            lineHeight: 1,
+                            opacity: lagerZeile > 0 && stueck >= lagerZeile ? 0.45 : 1,
+                          }}
+                          title="Eins mehr (max. Lager)"
+                        >
+                          +
+                        </button>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '0.75rem', color: s.muted }}>à € {item.price.toFixed(2)}</div>
+                        <span style={{ fontWeight: '700', color: s.accent, fontSize: '1.1rem', whiteSpace: 'nowrap' }}>
+                          € {lineSum.toFixed(2)}
+                        </span>
+                      </div>
                       <button
                         onClick={() => removeFromCart(index)}
                         style={{
@@ -3934,7 +4188,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                           fontSize: '0.85rem',
                           fontWeight: '600',
                           transition: 'all 0.2s ease',
-                          whiteSpace: 'nowrap'
+                          whiteSpace: 'nowrap',
                         }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.background = '#fef2ef'
@@ -3947,11 +4201,12 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                           e.currentTarget.style.borderColor = 'rgba(181, 74, 30, 0.15)'
                         }}
                       >
-                        Entfernen
+                        Zeile entfernen
                       </button>
                     </div>
                   </div>
-                ))}
+                  )
+                })}
               </div>
             </section>
 
@@ -4183,11 +4438,17 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                   </button>
                 </div>
                 <ul style={{ margin: '0 0 1.25rem', paddingLeft: '1.25rem', color: s.text, fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', lineHeight: 1.6 }}>
-                  {cart.map((item, idx) => (
+                  {cart.map((item, idx) => {
+                    const mq = getCartLineQuantity(item)
+                    return (
                     <li key={`${item.number}-${idx}`}>
-                      {item.title || item.number} — € {item.price.toFixed(2)}
+                      {item.title || item.number}
+                      {mq > 1 ? ` · ${mq} Stk. à € ${item.price.toFixed(2)}` : ` · € ${item.price.toFixed(2)} / Stk.`}
+                      {' — '}
+                      <strong>€ {cartLineSubtotalEur(item).toFixed(2)}</strong>
                     </li>
-                  ))}
+                    )
+                  })}
                 </ul>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: `1px solid ${s.accent}15` }}>
                   <span style={{ fontWeight: '600', color: s.text }}>Gesamt:</span>
@@ -4602,7 +4863,7 @@ color: s.accent
                   <span style={{ color: s.muted }}>Kundendaten oben auswählen oder eingeben.</span>
                 )}
               </div>
-              <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: `1px solid ${s.accent}18`, fontSize: '0.9rem', color: s.muted }}>Positionen: {cart.length > 0 ? `${cart.length} Artikel · € ${cart.reduce((sum, i) => sum + i.price, 0).toFixed(2)}` : 'noch keine — unten „Artikel hinzufügen“'}</div>
+              <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: `1px solid ${s.accent}18`, fontSize: '0.9rem', color: s.muted }}>Positionen: {cart.length > 0 ? `${cartStueckGesamt} Stk. · ${cart.length} ${cart.length === 1 ? 'Position' : 'Positionen'} · € ${subtotal.toFixed(2)}` : 'noch keine — unten „Artikel hinzufügen“'}</div>
             </div>
 
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
