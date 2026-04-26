@@ -28,7 +28,7 @@
 
 ---
 
-**Was wir JETZT tun:** Kasse: **Preis pro Zeile vor Bon** (Admin) + Bar/Karte ohne Blur davor – Bon muss **neue** Summe zeigen; bei fehlendem Gast-Name/E-Mail: **keine** leeren Preisfelder. **Einordnung:** `applyCartLinePriceDrafts` erst nach validierter Bestellung. (Parallel: Mehrfachstücke/Lager am Gerät, K2-Familie-Einladung, wenn offen.)  
+**Was wir JETZT tun:** Nach Vercel-Deploy: **K2-Familie** Einladungs-QR/Links kurz prüfen; optional **Kasse** Preis-vor-Bon am Gerät. **Nächster Fokus:** wie gehabt aus Alltag – nichts Dringendes offen.  
 **Session-Ende 24.04.26:** Alles gepusht, Arbeitsbaum sauber. K2-Familie-**Feature-Commit:** **`689d2370`** (danach nur Doku/Hash-Session-Ende).
 
 ---
