@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 26.04.26 – **Kasse: Mehrfachstücke, Lager sichtbar, kein false „bereits verkauft“:** `ShopPage` – Warenkorb mit **Stückzahl** (±, Zeilensumme, Lageranzeige), Bon/Rechnung mit Menge, Abzug/Storno nach Stücken; **Verfügbarkeit nur aus Werkstamm** (`getArtworkStockPieces` / `quantity`) – alte Sperre „steht in `soldArtworks`“ entfernt (blockierte Teilverkäufe). **Kassa-Sync:** `kassaServerSync.ts`, `api/kassa-data-get.js`, `api/write-kassa-data.js`, `vercel.json` Rewrites/Header. **Commit:** `3c77dcc4` ✅ **main**
+
+---
+
+**Letzter Stand:** 26.04.26 – **K2 Familie: Einladungs-URLs eisern eine Quelle (Nachzug):** `K2FamilieVerwaltungZugangUndAnsicht` baut QR/Links nur noch über **`familieEinladungsUrls.ts`** (kein `new URL` dupliziert). Persönliche Links: **`fn`** optional wie zuvor (fünfter Parameter). `buildPersoenlicheEinladungsUrlKurz/Scan` erweitert. `familieMitgliedInfoBriefText`: fehlendes **`R`** = `PROJECT_ROUTES['k2-familie']` (Tests grün). Tabelle **ein-standard-problem.mdc**, Lehre **K2-FAMILIE-LEHREN**, Tests **`familieEinladungsUrls`**. **qs:local** grün – **Commit:** _(nach Push)_ ✅ **main**
+
+---
+
 **Letzter Stand:** 26.04.26 – **K2 Familie: Mitglieder per QR/Druck – kurze Wege:** `K2FamilieHomePage` – Hinweise und Fehlermeldungen auf **Kurztexte**; Haupt-CTA **„Weiter“** statt „Bestätigen“; **autoFocus** auf Code-Feld (Einstieg + gelber Sitzungs-Banner); nach erfolgreicher Anmeldung **direkt** zur Person (`navigate` ohne lange Erfolgsmeldung). `K2FamilieMitgliederCodesPage` – kürzere Verwaltungstexte + grüner Block: **persönlicher QR/Link (t+z+m)** = ein Scan. **Build:** `tsc:build` + `vite:build` grün. **Commit:** `f45936c3` + Nachzug `aa62f388` (Hinweis ohne Vercel-URL) ✅ **main** gepusht
 
 ---
@@ -12,7 +20,7 @@
 
 ---
 
-**Was wir JETZT tun:** Mitglieder-**persönlichen QR** testen: Scan → möglichst **direkt** Personenkarte; nur Familien-QR (ohne `m`) → Code + Weiter. Optional: PWA-Icons (vorheriger Stand). **Einordnung:** Symbolwesen / keine Textwände am Handy; Verwaltung druckt **pro Person** `t+z+m`.  
+**Was wir JETZT tun:** Kasse am Gerät: **Auflagenwerk** (mehrere Stück) scannen, **Stückzahl** im Warenkorb, Lager, Bon – nach Vercel-Deploy kurz prüfen. **Einordnung:** Verkaufs-Logik = Werkstamm-`quantity`, nicht Doppel-Blocker über `soldArtworks` bei Teilverkauf. (Parallel: K2-Familie-Einladungs-URL-Flow testen, wenn offen.)  
 **Session-Ende 24.04.26:** Alles gepusht, Arbeitsbaum sauber. K2-Familie-**Feature-Commit:** **`689d2370`** (danach nur Doku/Hash-Session-Ende).
 
 ---
