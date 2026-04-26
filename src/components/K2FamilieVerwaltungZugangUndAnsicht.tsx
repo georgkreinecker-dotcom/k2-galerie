@@ -8,8 +8,13 @@ import { useMemo, useState, useEffect, useRef, useCallback } from 'react'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { adminTheme } from '../config/theme'
-import { APP_BASE_URL_SHAREABLE } from '../config/externalUrls'
-import { buildQrUrlWithVersionOnly, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import { useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import {
+  buildFamilieEinladungsUrlKurz,
+  buildFamilieEinladungsUrlScan,
+  buildPersoenlicheEinladungsUrlKurz,
+  buildPersoenlicheEinladungsUrlScan,
+} from '../utils/familieEinladungsUrls'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
 import { loadEinstellungen, saveEinstellungen, loadPersonen } from '../utils/familieStorage'
@@ -144,39 +149,38 @@ export default function K2FamilieVerwaltungZugangUndAnsicht() {
     return loadEinstellungen(currentTenantId).familyDisplayName?.trim() ?? ''
   }, [currentTenantId, familyDisplayNameInput])
 
-  const familieEinladungsUrlCanonical = useMemo(() => {
-    const z = mitgliedsNummer.trim()
-    if (!z) return ''
-    const base = new URL(`${APP_BASE_URL_SHAREABLE}${familieR.meineFamilie}`)
-    base.searchParams.set('t', currentTenantId)
-    base.searchParams.set('z', z)
-    const fn = familienAnzeigenameFuerEinladung
-    if (fn) base.searchParams.set('fn', fn)
-    return base.toString()
-  }, [mitgliedsNummer, currentTenantId, familienAnzeigenameFuerEinladung, familieR.meineFamilie])
+  const familieEinladungsUrlCanonical = useMemo(
+    () => buildFamilieEinladungsUrlKurz(currentTenantId, mitgliedsNummer, familienAnzeigenameFuerEinladung),
+    [mitgliedsNummer, currentTenantId, familienAnzeigenameFuerEinladung],
+  )
 
-  const familieEinladungsUrl = useMemo(() => {
-    if (!familieEinladungsUrlCanonical) return ''
-    return buildQrUrlWithVersionOnly(familieEinladungsUrlCanonical, versionTimestamp)
-  }, [familieEinladungsUrlCanonical, versionTimestamp])
+  const familieEinladungsUrl = useMemo(
+    () => buildFamilieEinladungsUrlScan(currentTenantId, mitgliedsNummer, familienAnzeigenameFuerEinladung, versionTimestamp),
+    [mitgliedsNummer, currentTenantId, familienAnzeigenameFuerEinladung, versionTimestamp],
+  )
 
-  const familiePersoenlicheEinladungsUrlCanonical = useMemo(() => {
-    const z = mitgliedsNummer.trim()
-    const m = persoenlicheMitgliedsNummerAufKarte
-    if (!z || !m) return ''
-    const base = new URL(`${APP_BASE_URL_SHAREABLE}${familieR.meineFamilie}`)
-    base.searchParams.set('t', currentTenantId)
-    base.searchParams.set('z', z)
-    base.searchParams.set('m', m)
-    const fn = familienAnzeigenameFuerEinladung
-    if (fn) base.searchParams.set('fn', fn)
-    return base.toString()
-  }, [mitgliedsNummer, persoenlicheMitgliedsNummerAufKarte, currentTenantId, familienAnzeigenameFuerEinladung, familieR.meineFamilie])
+  const familiePersoenlicheEinladungsUrlCanonical = useMemo(
+    () =>
+      buildPersoenlicheEinladungsUrlKurz(
+        currentTenantId,
+        mitgliedsNummer,
+        persoenlicheMitgliedsNummerAufKarte,
+        familienAnzeigenameFuerEinladung,
+      ),
+    [mitgliedsNummer, currentTenantId, persoenlicheMitgliedsNummerAufKarte, familienAnzeigenameFuerEinladung],
+  )
 
-  const familiePersoenlicheEinladungsUrl = useMemo(() => {
-    if (!familiePersoenlicheEinladungsUrlCanonical) return ''
-    return buildQrUrlWithVersionOnly(familiePersoenlicheEinladungsUrlCanonical, versionTimestamp)
-  }, [familiePersoenlicheEinladungsUrlCanonical, versionTimestamp])
+  const familiePersoenlicheEinladungsUrl = useMemo(
+    () =>
+      buildPersoenlicheEinladungsUrlScan(
+        currentTenantId,
+        mitgliedsNummer,
+        persoenlicheMitgliedsNummerAufKarte,
+        versionTimestamp,
+        familienAnzeigenameFuerEinladung,
+      ),
+    [mitgliedsNummer, currentTenantId, persoenlicheMitgliedsNummerAufKarte, versionTimestamp, familienAnzeigenameFuerEinladung],
+  )
 
   useEffect(() => {
     if (!familieEinladungsUrl) {

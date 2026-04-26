@@ -1,6 +1,7 @@
 /**
  * Verarbeitet ?t= (Tenant), ?z= (Familien-Zugangsnummer), ?m= (persönliche Mitgliedsnummer)
  * und optional ?fn= (Familien-Anzeigename für Empfänger:innen ohne eure localStorage-Daten).
+ * **URLs erzeugen** nur über `src/utils/familieEinladungsUrls.ts` (eine Quelle) – Parameter müssen übereinstimmen.
  * Vorher nur auf „Meine Familie“ – ein Scan auf /einstieg oder nach Index-Redirect landete ohne Umschalten.
  */
 

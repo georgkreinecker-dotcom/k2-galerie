@@ -10,11 +10,11 @@ import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { adminTheme } from '../config/theme'
-import { APP_BASE_URL_SHAREABLE } from '../config/externalUrls'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
 import { loadEinstellungen, loadPersonen, savePersonen } from '../utils/familieStorage'
-import { buildQrUrlWithVersionOnly, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import { useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import { buildPersoenlicheEinladungsUrlKurz, buildPersoenlicheEinladungsUrlScan } from '../utils/familieEinladungsUrls'
 import {
   assignMissingMitgliedsNummern,
   buildMitgliederCodesZweigGruppen,
@@ -30,33 +30,6 @@ const vp = {
   link: 'var(--k2-accent)',
 } as const
 
-/** Wie K2FamilieHomePage: Produktions-Host, t + z + m, dann v= für Scan (kurz, ohne `_=`), gut per Kamera. */
-function buildPersonalEinladungsUrl(
-  tenantId: string,
-  familienZ: string,
-  mitgliedsNummer: string,
-  versionTs: number,
-): string {
-  const base = new URL(`${APP_BASE_URL_SHAREABLE}${R.meineFamilie}`)
-  base.searchParams.set('t', tenantId)
-  base.searchParams.set('z', familienZ)
-  base.searchParams.set('m', mitgliedsNummer)
-  return buildQrUrlWithVersionOnly(base.toString(), versionTs)
-}
-
-/** Kurzlink nur für Papier/PDF: gleiche Ziel-URL ohne lange Cache-Bust-Parameter (weniger Zeilen pro Person). */
-function buildShortEinladungsUrlForPrint(
-  tenantId: string,
-  familienZ: string,
-  mitgliedsNummer: string,
-): string {
-  const base = new URL(`${APP_BASE_URL_SHAREABLE}${R.meineFamilie}`)
-  base.searchParams.set('t', tenantId)
-  base.searchParams.set('z', familienZ)
-  base.searchParams.set('m', mitgliedsNummer)
-  return base.toString()
-}
-
 export default function K2FamilieMitgliederCodesPage() {
   const a = adminTheme
   const { currentTenantId } = useFamilieTenant()
@@ -68,21 +41,28 @@ export default function K2FamilieMitgliederCodesPage() {
   const [kopiert, setKopiert] = useState(false)
   const [listenRefresh, setListenRefresh] = useState(0)
 
-  const { familienZ, zweigGruppen, alleRows } = useMemo(() => {
+  const { familienZ, zweigGruppen, alleRows, familyDisplayName } = useMemo(() => {
     const einst = loadEinstellungen(currentTenantId)
     const z = (einst.mitgliedsNummerAdmin ?? '').trim()
+    const familyDisplayName = einst.familyDisplayName?.trim() ?? ''
     const personen = loadPersonen(currentTenantId)
     const gruppen = buildMitgliederCodesZweigGruppen(personen, einst.ichBinPersonId)
     const rows = gruppen.flatMap((g) => g.rows)
-    return { familienZ: z, zweigGruppen: gruppen, alleRows: rows }
+    return { familienZ: z, zweigGruppen: gruppen, alleRows: rows, familyDisplayName }
   }, [currentTenantId, listenRefresh])
 
   const buildUrlForPerson = useCallback(
     (m: string) => {
       if (!familienZ || !m) return ''
-      return buildPersonalEinladungsUrl(currentTenantId, familienZ, m, versionTimestamp)
+      return buildPersoenlicheEinladungsUrlScan(
+        currentTenantId,
+        familienZ,
+        m,
+        versionTimestamp,
+        familyDisplayName,
+      )
     },
-    [currentTenantId, familienZ, versionTimestamp],
+    [currentTenantId, familienZ, versionTimestamp, familyDisplayName],
   )
 
   const listeText = useMemo(() => {
@@ -95,7 +75,7 @@ export default function K2FamilieMitgliederCodesPage() {
       for (const r of mit) {
         const urlShort =
           familienZ && r.mitgliedsNummer
-            ? buildShortEinladungsUrlForPrint(currentTenantId, familienZ, r.mitgliedsNummer)
+            ? buildPersoenlicheEinladungsUrlKurz(currentTenantId, familienZ, r.mitgliedsNummer)
             : ''
         blocks.push(`${r.name}\t${r.mitgliedsNummer}\t${urlShort}`)
       }
@@ -106,7 +86,7 @@ export default function K2FamilieMitgliederCodesPage() {
         ? `\n\nOhne Mitgliedsnummer (${ohne.length}): ${ohne.map((o) => o.name).join(', ')} — Button „Fehlende Nummern vergeben“ oder auf der Personenkarte eintragen.`
         : ''
     return header + blocks.join('\n') + footer
-  }, [zweigGruppen, alleRows, familienZ, currentTenantId])
+  }, [zweigGruppen, alleRows, familienZ, currentTenantId, familyDisplayName])
 
   const copyListe = () => {
     void navigator.clipboard.writeText(listeText).then(() => {
@@ -380,7 +360,12 @@ export default function K2FamilieMitgliederCodesPage() {
                 .map((r) => {
                   const url =
                     familienZ && r.mitgliedsNummer
-                      ? buildShortEinladungsUrlForPrint(currentTenantId, familienZ, r.mitgliedsNummer)
+                      ? buildPersoenlicheEinladungsUrlKurz(
+                          currentTenantId,
+                          familienZ,
+                          r.mitgliedsNummer,
+                          familyDisplayName,
+                        )
                       : ''
                   return (
                     <p key={`p-${r.id}`} style={{ margin: '0.35rem 0', fontSize: '10pt', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>

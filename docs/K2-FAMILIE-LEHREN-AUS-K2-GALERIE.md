@@ -8,6 +8,12 @@
 
 ---
 
+## 0a. Mitglieder-Einladung (QR / t+z+m) – eine Quelle
+
+**Eiserne technische Kette:** Einladungs-URLs bauen nur in **`src/utils/familieEinladungsUrls.ts`**, Verarbeitung beim Öffnen in **`FamilieEinladungQuerySync`**. Keine zweite URL-Logik in Seiten. Details: **docs/K2-FAMILIE-EINLADUNGS-URL-QUELLE.md**, Regel **k2-familie-mitglieder-einladung-qr-eine-quelle.mdc**.
+
+---
+
 ## 0. K2 Familie = eigenes Projekt (niemals von außen überschreiben)
 
 **K2 Familie ist ein eigenes Projekt.** Kein anderer Bereich (K2 Galerie, APf, Admin, ök2, VK2, Backup/Restore anderer Kontexte) darf K2-Familie-Daten überschreiben oder die Tenant-Liste leeren.

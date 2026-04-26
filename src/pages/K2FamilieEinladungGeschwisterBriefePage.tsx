@@ -11,8 +11,13 @@ import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { adminTheme } from '../config/theme'
-import { APP_BASE_URL_SHAREABLE } from '../config/externalUrls'
-import { buildQrUrlWithVersionOnly, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import { useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import {
+  buildFamilieEinladungsUrlKurz,
+  buildFamilieEinladungsUrlScan,
+  buildPersoenlicheEinladungsUrlKurz,
+  buildPersoenlicheEinladungsUrlScan,
+} from '../utils/familieEinladungsUrls'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
 import { loadEinstellungen, loadPersonen } from '../utils/familieStorage'
@@ -31,60 +36,6 @@ const vp = {
   muted: 'var(--k2-muted)',
   link: 'var(--k2-accent)',
 } as const
-
-/** Kurz-URL für Papier (ohne Cache-Bust). */
-function buildShortEinladungsUrlForPrint(
-  tenantId: string,
-  familienZ: string,
-  mitgliedsNummer: string,
-): string {
-  const base = new URL(`${APP_BASE_URL_SHAREABLE}${R.meineFamilie}`)
-  base.searchParams.set('t', tenantId)
-  base.searchParams.set('z', familienZ)
-  base.searchParams.set('m', mitgliedsNummer)
-  return base.toString()
-}
-
-/** Wie K2FamilieMitgliederCodesPage: Scan/Öffnen mit Server-Stand — kurze QR-URL (nur v=), besser scannbar. */
-function buildPersonalEinladungsUrlScan(
-  tenantId: string,
-  familienZ: string,
-  mitgliedsNummer: string,
-  versionTs: number,
-): string {
-  const base = new URL(`${APP_BASE_URL_SHAREABLE}${R.meineFamilie}`)
-  base.searchParams.set('t', tenantId)
-  base.searchParams.set('z', familienZ)
-  base.searchParams.set('m', mitgliedsNummer)
-  return buildQrUrlWithVersionOnly(base.toString(), versionTs)
-}
-
-/** Familien-Einstieg nur t+z (optional fn) — wie K2FamilieVerwaltungZugangUndAnsicht. */
-function buildFamilieEinladungsUrlCanonical(
-  tenantId: string,
-  familienZ: string,
-  familyDisplayName?: string,
-): string {
-  if (!familienZ.trim()) return ''
-  const base = new URL(`${APP_BASE_URL_SHAREABLE}${R.meineFamilie}`)
-  base.searchParams.set('t', tenantId)
-  base.searchParams.set('z', familienZ.trim())
-  const fn = (familyDisplayName ?? '').trim()
-  if (fn) base.searchParams.set('fn', fn)
-  return base.toString()
-}
-
-/** Familien-Link zum Scannen: kanonische URL + Server-Stand — kurze QR-URL (nur v=). */
-function buildFamilieEinladungsUrlScan(
-  tenantId: string,
-  familienZ: string,
-  familyDisplayName: string | undefined,
-  versionTs: number,
-): string {
-  const canonical = buildFamilieEinladungsUrlCanonical(tenantId, familienZ, familyDisplayName)
-  if (!canonical) return ''
-  return buildQrUrlWithVersionOnly(canonical, versionTs)
-}
 
 function EinladungQrImg({ url, size = 112 }: { url: string; size?: number }) {
   const [dataUrl, setDataUrl] = useState('')
@@ -475,7 +426,7 @@ function EinladungsBriefSeite({
     familienZ.trim() !== ''
       ? buildFamilieEinladungsUrlScan(tenantId, familienZ, familyDisplayName, versionTimestamp)
       : ''
-  const familienUrlKurz = familienZ.trim() !== '' ? buildFamilieEinladungsUrlCanonical(tenantId, familienZ, familyDisplayName) : ''
+  const familienUrlKurz = familienZ.trim() !== '' ? buildFamilieEinladungsUrlKurz(tenantId, familienZ, familyDisplayName) : ''
 
   const famNameInApp =
     familyDisplayName.trim() !== '' ? (
@@ -643,11 +594,17 @@ function EinladungsBriefSeite({
               {mitCode.map((r) => {
                 const urlScan =
                   familienZ && r.mitgliedsNummer
-                    ? buildPersonalEinladungsUrlScan(tenantId, familienZ, r.mitgliedsNummer, versionTimestamp)
+                    ? buildPersoenlicheEinladungsUrlScan(
+                        tenantId,
+                        familienZ,
+                        r.mitgliedsNummer,
+                        versionTimestamp,
+                        familyDisplayName,
+                      )
                     : ''
                 const urlKurz =
                   familienZ && r.mitgliedsNummer
-                    ? buildShortEinladungsUrlForPrint(tenantId, familienZ, r.mitgliedsNummer)
+                    ? buildPersoenlicheEinladungsUrlKurz(tenantId, familienZ, r.mitgliedsNummer, familyDisplayName)
                     : ''
                 return (
                   <tr key={r.id} style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>

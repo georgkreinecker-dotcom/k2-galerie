@@ -1,0 +1,39 @@
+---
+description: K2 Familie – Mitglieder-Einladung (QR/Link t+z+m) eine Quelle, nichts durcheinander
+alwaysApply: true
+---
+
+# Eiserne Regel: K2 Familie – Mitglieder-Einladung (QR / persönlicher Link)
+
+## Eine Zeile
+
+**Einladungs-URLs für K2 Familie (t, z, m, optional fn) werden nur in `src/utils/familieEinladungsUrls.ts` gebaut – nirgends sonst String-Konkatenation oder zweite URL-Logik.**
+
+## Warum
+
+- **Persönlicher QR** = `?t=` + `?z=` + `?m=` muss exakt zu **`FamilieEinladungQuerySync`** passen (Parse, Tenant, Code-Normalisierung).
+- Doppelte Builder (Seite A und Seite B) **driften** → Scan funktioniert „mal“, Ver verwirrung bei Mandant/Code.
+- **t** in URLs **kleingeschrieben**; **m** immer über **`trimMitgliedsNummerEingabe`** (eine Schreibweise wie im Sync).
+
+## Pflicht
+
+| Thema | Nur hier / so |
+|-----|-----|
+| Link/QR **t+z+m** oder **t+z+fn** bauen | `familieEinladungsUrls.ts` |
+| URL **interpretieren** / nach Scan navigieren | **`FamilieEinladungQuerySync.tsx`** + **`familieEinladungPending.ts`** – nicht parallel eine zweite Parser-Logik einführen |
+| Neuer Druck / neuer QR / neuer Mustertext | Vorher `grep` nach `searchParams.set('m'` oder `meine-familie` – Erweiterung nur über **eine** Hilfsfunktion aus `familieEinladungsUrls.ts` |
+
+## Verboten
+
+- Eigene `new URL(...)`-Ketten mit `t`/`z`/`m` in **anderen** Dateien (Ausnahme: ausdrückliche Anordnung + sofortige Auslagerung nach `familieEinladungsUrls.ts`).
+- **`m`** ohne Normalisierung in die URL schreiben.
+
+## Verknüpfung
+
+- **Doku:** `docs/K2-FAMILIE-EINLADUNGS-URL-QUELLE.md`
+- **Lehren:** `docs/K2-FAMILIE-LEHREN-AUS-K2-GALERIE.md` (Abschnitt Mitglieder-Einladung)
+- **Sportwagen:** `ein-standard-problem.mdc` (eine Problemstellung = eine Lösung)
+
+## Kurzfassung
+
+**Mitglieder-Einladung = eine URL-Quelle (`familieEinladungsUrls.ts`) + ein Sync (`FamilieEinladungQuerySync`). Keine zweite Welt.**

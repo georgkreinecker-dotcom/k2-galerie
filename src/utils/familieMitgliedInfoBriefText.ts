@@ -5,6 +5,7 @@
 
 import { APP_BASE_URL_SHAREABLE } from '../config/externalUrls'
 import { PROJECT_ROUTES } from '../config/navigation'
+import { buildFamilieEinladungsUrlKurz } from './familieEinladungsUrls'
 
 const R = PROJECT_ROUTES['k2-familie']
 
@@ -15,21 +16,7 @@ export type MitgliederInformationsParams = {
   signaturName: string
 }
 
-/** Kanonischer Familien-Einstieg (t + z + optional fn) — wie K2FamilieEinladungGeschwisterBriefePage. */
-export function buildFamilieEinladungsUrlKurz(
-  tenantId: string,
-  familienZ: string,
-  familyDisplayName?: string,
-): string {
-  const z = familienZ.trim()
-  if (!z) return ''
-  const base = new URL(`${APP_BASE_URL_SHAREABLE}${R.meineFamilie}`)
-  base.searchParams.set('t', tenantId)
-  base.searchParams.set('z', z)
-  const fn = (familyDisplayName ?? '').trim()
-  if (fn) base.searchParams.set('fn', fn)
-  return base.toString()
-}
+export { buildFamilieEinladungsUrlKurz }
 
 /**
  * Mustertext (Platzhalter werden ersetzt). Für Anzeige in Einstellungen und Kopieren in die Zwischenablage.

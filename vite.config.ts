@@ -477,6 +477,95 @@ const writeGalleryDataMiddleware = () => {
         }
       })
 
+      // Lokal: Kassa-Snapshot (iPad/Mac-Abgleich) – wie write-kassa-data auf Vercel, schreibt public/kassa-data-*.json
+      const kassaFileForLocalDev = (tenantId: string, vk2Pilot?: string) => {
+        if (tenantId === 'k2') return 'kassa-data-k2.json'
+        if (tenantId === 'oeffentlich') return 'kassa-data-oeffentlich.json'
+        if (tenantId === 'vk2' && vk2Pilot && /^\d{1,8}$/.test(vk2Pilot)) return `kassa-data-vk2-pilot-${vk2Pilot}.json`
+        if (tenantId === 'vk2') return 'kassa-data-vk2.json'
+        return 'kassa-data-k2.json'
+      }
+      server.middlewares.use('/api/write-kassa-data', (req: any, res: any, next: any) => {
+        if (req.method !== 'POST') {
+          next()
+          return
+        }
+        let body = ''
+        req.on('data', (c: any) => {
+          body += c
+        })
+        req.on('end', () => {
+          try {
+            const parsed = JSON.parse(body || '{}')
+            const t = String(parsed.tenantId || 'k2').toLowerCase()
+            const pilot = parsed.vk2PilotId != null ? String(parsed.vk2PilotId).replace(/\D/g, '').slice(0, 8) : ''
+            const name = kassaFileForLocalDev(
+              t === 'oeffentlich' || t === 'vk2' || t === 'k2' ? t : 'k2',
+              pilot && t === 'vk2' ? pilot : undefined
+            )
+            const publicDir = path.resolve(__dirname, 'public')
+            if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, { recursive: true })
+            const outPath = path.join(publicDir, name)
+            const out: Record<string, unknown> = {
+              tenantId: t === 'oeffentlich' || t === 'vk2' || t === 'k2' ? t : 'k2',
+              version: 1,
+              exportedAt: typeof parsed.exportedAt === 'string' ? parsed.exportedAt : new Date().toISOString(),
+              orders: Array.isArray(parsed.orders) ? parsed.orders : [],
+              soldArtworks: Array.isArray(parsed.soldArtworks) ? parsed.soldArtworks : [],
+              kassabuch: Array.isArray(parsed.kassabuch) ? parsed.kassabuch : [],
+              customers: Array.isArray(parsed.customers) ? parsed.customers : [],
+            }
+            if (pilot && t === 'vk2') out.vk2PilotId = pilot
+            fs.writeFileSync(outPath, JSON.stringify(out), 'utf8')
+            const ord = (out.orders as any[]).length
+            const sold = (out.soldArtworks as any[]).length
+            res.writeHead(200, { 'Content-Type': 'application/json' })
+            res.end(
+              JSON.stringify({
+                success: true,
+                path: name,
+                ordersCount: ord,
+                soldCount: sold,
+                kassabuchCount: (out.kassabuch as any[]).length,
+                customersCount: (out.customers as any[]).length,
+              })
+            )
+          } catch (e: any) {
+            res.writeHead(500, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({ error: e?.message || 'Fehler' }))
+          }
+        })
+      })
+      server.middlewares.use((req: any, res: any, next: any) => {
+        const url = String(req.url || '')
+        if (!url.startsWith('/api/kassa-data')) {
+          next()
+          return
+        }
+        if (req.method !== 'GET') {
+          next()
+          return
+        }
+        try {
+          const u = new URL(url, 'http://local')
+          const tenantId = (u.searchParams.get('tenantId') || 'k2').toLowerCase()
+          const pilot = (u.searchParams.get('vk2PilotId') || '').replace(/\D/g, '').slice(0, 8)
+          const name = kassaFileForLocalDev(tenantId, pilot && tenantId === 'vk2' ? pilot : undefined)
+          const filePath = path.join(path.resolve(__dirname, 'public'), name)
+          if (!fs.existsSync(filePath)) {
+            res.writeHead(404, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({ error: 'Noch kein Kassa-Stand' }))
+            return
+          }
+          const buf = fs.readFileSync(filePath, 'utf8')
+          res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' })
+          res.end(buf)
+        } catch (e: any) {
+          res.writeHead(500, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ error: e?.message || 'Lesen fehlgeschlagen' }))
+        }
+      })
+
       // Ein-Klick einrichten: GitHub-Token in .env speichern (kein manuelles Bearbeiten der Datei nötig)
       server.middlewares.use('/api/save-github-env', async (req: any, res: any, next: any) => {
         if (req.method !== 'POST') {
