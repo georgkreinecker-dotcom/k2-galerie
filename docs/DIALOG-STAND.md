@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 26.04.26 (Abend) – **Session-Ende: K2-Familie Einladungs-URLs** – zentrale Utils + Tests, Regel + Doku, Verwaltung/Briefe/Codes an eine Quelle; **Build** (qs:local) grün. **Commit:** _(siehe Push)_ ✅ **main**
+**Letzter Stand:** 26.04.26 (Abend) – **Session-Ende: K2-Familie Einladungs-URLs** – zentrale Utils + Tests, Regel + Doku, Verwaltung/Briefe/Codes an eine Quelle; **Build** (qs:local) grün. **Commit:** `3ca8aa90` ✅ **main**
 
 ---
 
