@@ -331,6 +331,8 @@ interface CartItem {
   ceramicSurface?: string
   ceramicDescription?: string
   ceramicSubcategory?: string
+  /** Stabile Zeile für Preis-Entwurf (Keys) – alte Warenkörbe ohne ID werden nachträglich ergänzt. */
+  cartLineId?: string
 }
 
 function getCartLineQuantity(item: CartItem): number {
@@ -348,6 +350,17 @@ function getArtworkStockPieces(artwork: { quantity?: unknown } | null | undefine
 
 function cartLineSubtotalEur(item: CartItem): number {
   return parseArtworkPriceEur(item.price) * getCartLineQuantity(item)
+}
+
+/** Nicht abgeschickte Einzelpreis-Eingaben in die Zeilen übernehmen (z. B. Eingabefokus noch im Feld). */
+function applyCartLinePriceDrafts(lines: CartItem[], draft: Record<string, string>): CartItem[] {
+  return lines.map((it, i) => {
+    const k = it.cartLineId || `tmp-${i}-${String(it.number || '')}`
+    const d = draft[k]
+    if (d === undefined) return it
+    const n = Math.max(0, Math.min(999999.99, parseArtworkPriceEur(d)))
+    return { ...it, price: n }
+  })
 }
 
 /** HTML K2/ök2 Kassenbon schmal (mm) – eine Quelle für Druckdialog und „Bon im neuen Tab“ (wie Etikett). */
@@ -592,6 +605,8 @@ const ShopPage = () => {
   const location = useLocation()
   const { showChecklists: showGamificationChecklists } = useGamificationChecklistsUi()
   const [cart, setCart] = useState<CartItem[]>([])
+  /** Admin: freie Eingabe Einzelpreis (€) pro Zeile, Key = cartLineId */
+  const [cartLinePriceDraft, setCartLinePriceDraft] = useState<Record<string, string>>({})
   const [showCheckout, setShowCheckout] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'transfer'>('card')
   const [discount, setDiscount] = useState(0)
@@ -973,6 +988,20 @@ const ShopPage = () => {
     })
   }, [allArtworks])
 
+  // Stabile cartLineId für jede Warenkorbzeile (Preis-Editor, Entwürfe; alte k2-cart JSON ohne Feld)
+  useEffect(() => {
+    setCart(prev => {
+      if (!Array.isArray(prev) || prev.length === 0) return prev
+      if (prev.every(it => it.cartLineId)) return prev
+      const base = Date.now()
+      return prev.map((item: CartItem, i: number) =>
+        item.cartLineId
+          ? item
+          : { ...item, cartLineId: `cl-${base}-${i}-${Math.random().toString(36).slice(2, 9)}` }
+      )
+    })
+  }, [cart])
+
   // Bestellungen laden (für Bon erneut drucken) – kontexteigener Key (Datensicherheit)
   useEffect(() => {
     try {
@@ -1279,6 +1308,7 @@ const ShopPage = () => {
     const cartItem: CartItem = {
       number: artwork.number || artwork.id,
       artworkUid: foundUid || undefined,
+      cartLineId: `cl-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
       quantity: 1,
       title: artwork.title || artwork.number,
       price: priceVal,
@@ -1399,6 +1429,16 @@ const ShopPage = () => {
 
   // Artikel aus Warenkorb entfernen
   const removeFromCart = (index: number) => {
+    const row = cart[index]
+    if (row) {
+      const k = row.cartLineId || `tmp-${index}-${String(row.number || '')}`
+      setCartLinePriceDraft(p => {
+        if (!p[k]) return p
+        const next = { ...p }
+        delete next[k]
+        return next
+      })
+    }
     const newCart = cart.filter((_, i) => i !== index)
     setCart(newCart)
   }
@@ -2258,16 +2298,23 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
       }
     }
 
+    // Offene Preisfelder einbeziehen (Fokus noch im Eingabefeld), Zwischensumme neu
+    const cartForOrder = applyCartLinePriceDrafts(cart, cartLinePriceDraft)
+    const subtotalForOrder = cartForOrder.reduce((sum, item) => sum + cartLineSubtotalEur(item), 0)
+    const discountAmountForOrder = (subtotalForOrder * discount) / 100
+    const totalForOrder = subtotalForOrder - discountAmountForOrder
+    setCartLinePriceDraft({})
+
     // Bestellung speichern (Level 5: Snapshot von Aussteller/Kunde mitspeichern)
     const sellerSnapshot = buildSellerSnapshot()
     const buyerSnapshot = buildBuyerSnapshot({ customerId, manualRechnung })
     const order = {
       id: `ORDER-${Date.now()}`,
       date: new Date().toISOString(),
-      items: cart,
-      subtotal,
-      discount: discountAmount,
-      total,
+      items: cartForOrder,
+      subtotal: subtotalForOrder,
+      discount: discountAmountForOrder,
+      total: totalForOrder,
       paymentMethod: method,
       customerId,
       sellerSnapshot,
@@ -2283,7 +2330,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
     setOrders(prev => [order, ...prev.slice(0, 19)])
 
     // Werke als verkauft markieren (mit optionaler Kundenzuordnung) – pro Zeile ein Eintrag, mit Stückzahl
-    cart.forEach(item => {
+    cartForOrder.forEach(item => {
       const soldArtworks = JSON.parse(localStorage.getItem(soldArtworksKey) || '[]')
       const iuid = String((item as any)?.artworkUid ?? '').trim()
       const stueck = getCartLineQuantity(item)
@@ -2313,7 +2360,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
         const artworks = JSON.parse(raw)
         if (Array.isArray(artworks)) {
           let changed = false
-          cart.forEach((item: CartItem) => {
+          cartForOrder.forEach((item: CartItem) => {
             const uid = String((item as any)?.artworkUid ?? '').trim()
             const abziehen = getCartLineQuantity(item)
             const idx = artworks.findIndex((a: any) => {
@@ -2363,11 +2410,11 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
       if (method === 'transfer') {
         printReceiptA4(order, true)
       } else {
-        setSalePrintModal({ order, total, paymentMethodText })
+        setSalePrintModal({ order, total: totalForOrder, paymentMethodText })
       }
     } else {
       // Besucher: nur Bestätigung, kein Bon
-      alert(`✅ Bestellung aufgenommen!\n\nBetrag: €${total.toFixed(2)}\nZahlung: ${paymentMethodText}\n\nWir melden uns bei dir.`)
+      alert(`✅ Bestellung aufgenommen!\n\nBetrag: €${totalForOrder.toFixed(2)}\nZahlung: ${paymentMethodText}\n\nWir melden uns bei dir.`)
     }
   }
 
@@ -4002,6 +4049,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                   const lagerZeile = getStockForCartItem(item)
                   const restNachWahl = Math.max(0, lagerZeile - stueck)
                   const lineSum = cartLineSubtotalEur(item)
+                  const cartLineKey = item.cartLineId || `tmp-${index}-${String(item.number || '')}`
                   return (
                   <div key={`${item.number}-${index}`} style={{
                     background: s.bgCard,
@@ -4171,7 +4219,67 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                         </button>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '0.75rem', color: s.muted }}>à € {item.price.toFixed(2)}</div>
+                        {isAdminContext ? (
+                          <div style={{ marginBottom: '0.4rem' }}>
+                            <label
+                              htmlFor={`kasse-einzelpreis-${cartLineKey}`}
+                              style={{ display: 'block', fontSize: '0.72rem', color: '#5c5650', marginBottom: '0.2rem' }}
+                            >
+                              Einzelpreis € (vor Bon)
+                            </label>
+                            <input
+                              id={`kasse-einzelpreis-${cartLineKey}`}
+                              type="text"
+                              inputMode="decimal"
+                              autoComplete="off"
+                              value={
+                                cartLinePriceDraft[cartLineKey] !== undefined
+                                  ? cartLinePriceDraft[cartLineKey]
+                                  : (Number.isFinite(item.price) ? String(item.price).replace('.', ',') : '0')
+                              }
+                              onFocus={() => {
+                                setCartLinePriceDraft(p => {
+                                  if (p[cartLineKey] !== undefined) return p
+                                  const n = parseArtworkPriceEur(item.price)
+                                  return { ...p, [cartLineKey]: n.toFixed(2).replace('.', ',') }
+                                })
+                              }}
+                              onChange={e => {
+                                setCartLinePriceDraft(p => ({ ...p, [cartLineKey]: e.target.value }))
+                              }}
+                              onBlur={e => {
+                                const n = Math.max(
+                                  0,
+                                  Math.min(999999.99, parseArtworkPriceEur(e.target.value))
+                                )
+                                setCart(prev =>
+                                  prev.map((c, i) => (i === index ? { ...c, price: n } : c))
+                                )
+                                setCartLinePriceDraft(p => {
+                                  const next = { ...p }
+                                  delete next[cartLineKey]
+                                  return next
+                                })
+                              }}
+                              onKeyDown={e => {
+                                if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                              }}
+                              style={{
+                                width: '6.5rem',
+                                padding: '0.35rem 0.5rem',
+                                fontSize: '0.9rem',
+                                fontWeight: 600,
+                                color: '#1c1a18',
+                                background: s.bgElevated,
+                                border: '1px solid #b54a1e',
+                                borderRadius: '8px',
+                                textAlign: 'right',
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <div style={{ fontSize: '0.75rem', color: s.muted }}>à € {item.price.toFixed(2)}</div>
+                        )}
                         <span style={{ fontWeight: '700', color: s.accent, fontSize: '1.1rem', whiteSpace: 'nowrap' }}>
                           € {lineSum.toFixed(2)}
                         </span>

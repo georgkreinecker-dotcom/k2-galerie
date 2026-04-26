@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 26.04.26 – **Kasse: Einzelpreis vor Bon – Entwürfe sicher:** `processOrder` wendet `applyCartLinePriceDrafts` + `setCartLinePriceDraft({})` **erst nach** Kundenprüfung (Name/E-Mail) an – bei abgebrochener Bestellung bleiben Eingaben im Feld erhalten. Bon/Order nutzen `cartForOrder` / `totalForOrder` unverändert. **Commit:** _(siehe Push)_ ✅ **main**
+
+---
+
 **Letzter Stand:** 26.04.26 – **Kasse: Mehrfachstücke, Lager sichtbar, kein false „bereits verkauft“:** `ShopPage` – Warenkorb mit **Stückzahl** (±, Zeilensumme, Lageranzeige), Bon/Rechnung mit Menge, Abzug/Storno nach Stücken; **Verfügbarkeit nur aus Werkstamm** (`getArtworkStockPieces` / `quantity`) – alte Sperre „steht in `soldArtworks`“ entfernt (blockierte Teilverkäufe). **Kassa-Sync:** `kassaServerSync.ts`, `api/kassa-data-get.js`, `api/write-kassa-data.js`, `vercel.json` Rewrites/Header. **Commit:** `3c77dcc4` ✅ **main**
 
 ---
@@ -20,7 +24,7 @@
 
 ---
 
-**Was wir JETZT tun:** Kasse am Gerät: **Auflagenwerk** (mehrere Stück) scannen, **Stückzahl** im Warenkorb, Lager, Bon – nach Vercel-Deploy kurz prüfen. **Einordnung:** Verkaufs-Logik = Werkstamm-`quantity`, nicht Doppel-Blocker über `soldArtworks` bei Teilverkauf. (Parallel: K2-Familie-Einladungs-URL-Flow testen, wenn offen.)  
+**Was wir JETZT tun:** Kasse: **Preis pro Zeile vor Bon** (Admin) + Bar/Karte ohne Blur davor – Bon muss **neue** Summe zeigen; bei fehlendem Gast-Name/E-Mail: **keine** leeren Preisfelder. **Einordnung:** `applyCartLinePriceDrafts` erst nach validierter Bestellung. (Parallel: Mehrfachstücke/Lager am Gerät, K2-Familie-Einladung, wenn offen.)  
 **Session-Ende 24.04.26:** Alles gepusht, Arbeitsbaum sauber. K2-Familie-**Feature-Commit:** **`689d2370`** (danach nur Doku/Hash-Session-Ende).
 
 ---
