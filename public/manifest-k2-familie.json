@@ -3,7 +3,7 @@
   "name": "K2 Familie",
   "short_name": "K2 Familie",
   "description": "K2 Familie – Stammbaum, Momente und Erinnerungen gemeinsam pflegen.",
-  "start_url": "/familie",
+  "start_url": "https://k2-galerie.vercel.app/familie",
   "scope": "/",
   "display": "standalone",
   "background_color": "#f5f0ea",

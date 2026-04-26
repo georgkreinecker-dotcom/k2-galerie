@@ -3,7 +3,7 @@
   "name": "K2 Galerie",
   "short_name": "K2 Galerie",
   "description": "K2 Galerie – Kunst & Keramik",
-  "start_url": "/galerie",
+  "start_url": "https://k2-galerie.vercel.app/galerie",
   "scope": "/",
   "display": "standalone",
   "background_color": "#1a0f0a",

@@ -6,7 +6,7 @@
  * eigenes Manifest-`id` (k2-galerie-pwa / k2-familie-pwa), damit Browser nicht beide
  * als dieselbe Installation mit Galerie-start_url behandeln.
  *
- * Familie: `start_url` = `/familie` (Kurz-URL, klar getrennt von Galerie `/galerie` und
+ * Familie: `start_url` in `manifest-k2-familie.json` = volle Vercel-URL auf `/familie` (iOS-PWA zuverlässiger als reine Pfade). Kurz-URL, getrennt von Galerie `/galerie` und
  * von `/projects/k2-galerie/...`). Die SPA rendert dieselbe Startseite unter `/familie`
  * und unter `/projects/k2-familie/meine-familie` – ohne Redirect, damit Lesezeichen und
  * „Zum Home-Bildschirm“ die kurze Adresse behalten.

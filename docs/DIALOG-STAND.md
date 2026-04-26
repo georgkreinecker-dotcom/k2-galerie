@@ -1,11 +1,15 @@
 # Dialog-Stand
 
+**Letzter Stand:** 26.04.26 – **PWA `start_url` absolut (Galerie + K2 Familie):** In `public/manifest.json` und `public/manifest-k2-familie.json` steht `start_url` jetzt als volle **https://k2-galerie.vercel.app/...**-URL (statt nur `/galerie` bzw. `/familie`), damit iOS/Safari beim **Home-Bildschirm-Icon** die Seite zuverlässig auflöst (hilft u. a. bei „Safari konnte die Seite nicht öffnen“). Kommentar in `k2FamiliePwaBranding.ts`. **Commit:** (nach Push eintragen) ✅ **main**
+
+---
+
 **Letzter Stand:** 25.04.26 – **Shop-Kasse: QR vom Etikett** – `ShopPage.tsx` `extractSerialFromKasseQr`: Werknummer aus **`?q=`** (Etikett-Galerie-Vorschau), **`?werk=`**, Hash **`#werk=`**; relative URLs per `new URL(…, location)`; bei reiner URL ohne Parameter klare Hinweis-Meldung statt ganzer String als „Seriennummer“. **Commit:** `467379c5` ✅ **main** gepusht
 
 ---
 
-**Was wir JETZT tun:** **Supabase (produktiv):** Migration **015** ausführen, Edge Function **`familie`** neu deployen. Danach einmal **„Startseite gestalten“ speichern** (Mac) oder Cloud-Pull – dann erscheint das **Hero-Bild** auch auf dem Handy. **Vercel Ready** abwarten, ggf. Stand-Badge tippen.  
-**Einordnung:** `page_content` / `page_texts` sind jetzt wie andere Familie-Daten in der Cloud; ohne DB-Migration + Deploy liefert die API die Felder nicht. Mobile: **Safe-Area** + kompaktes **Menü** – nach Deploy testen.  
+**Was wir JETZT tun:** Nach **Vercel Ready:** PWA-Icons auf dem iPhone **testen** (Galerie + K2 Familie) – ggf. altes Icon löschen, Seite in Safari öffnen, „Zum Home-Bildschirm“ neu. Weiter: **Supabase (produktiv)** Migration **015** + Edge **`familie`** falls noch offen.  
+**Einordnung:** PWA-Start war relativ – kann auf iOS in Randfällen schiefgehen; absolute Produktions-URL = eine klare Zieladresse. Supabase/Cloud: unverändert wichtig für K2-Familie-Hero.  
 **Session-Ende 24.04.26:** Alles gepusht, Arbeitsbaum sauber. K2-Familie-**Feature-Commit:** **`689d2370`** (danach nur Doku/Hash-Session-Ende).
 
 ---
