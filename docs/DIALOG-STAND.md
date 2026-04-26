@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 26.04.26 – **Kasse: Einzelpreis vor Bon – Entwürfe sicher:** `processOrder` wendet `applyCartLinePriceDrafts` + `setCartLinePriceDraft({})` **erst nach** Kundenprüfung (Name/E-Mail) an – bei abgebrochener Bestellung bleiben Eingaben im Feld erhalten. Bon/Order nutzen `cartForOrder` / `totalForOrder` unverändert. **Commit:** _(siehe Push)_ ✅ **main**
+**Letzter Stand:** 26.04.26 – **Kasse: Einzelpreis vor Bon – Entwürfe sicher:** `processOrder` wendet `applyCartLinePriceDrafts` + `setCartLinePriceDraft({})` **erst nach** Kundenprüfung (Name/E-Mail) an – bei abgebrochener Bestellung bleiben Eingaben im Feld erhalten. Bon/Order nutzen `cartForOrder` / `totalForOrder` unverändert. **Commit:** `aa100c11` ✅ **main**
 
 ---
 
