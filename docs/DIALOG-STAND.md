@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 26.04.26 – **PWA `start_url` absolut (Galerie + K2 Familie):** In `public/manifest.json` und `public/manifest-k2-familie.json` steht `start_url` jetzt als volle **https://k2-galerie.vercel.app/...**-URL (statt nur `/galerie` bzw. `/familie`), damit iOS/Safari beim **Home-Bildschirm-Icon** die Seite zuverlässig auflöst (hilft u. a. bei „Safari konnte die Seite nicht öffnen“). Kommentar in `k2FamiliePwaBranding.ts`. **Commit:** (nach Push eintragen) ✅ **main**
+**Letzter Stand:** 26.04.26 – **PWA `start_url` absolut (Galerie + K2 Familie):** In `public/manifest.json` und `public/manifest-k2-familie.json` steht `start_url` jetzt als volle **https://k2-galerie.vercel.app/...**-URL (statt nur `/galerie` bzw. `/familie`), damit iOS/Safari beim **Home-Bildschirm-Icon** die Seite zuverlässig auflöst (hilft u. a. bei „Safari konnte die Seite nicht öffnen“). Kommentar in `k2FamiliePwaBranding.ts`. **Commit:** `c0e69430` ✅ **main**
 
 ---
 
