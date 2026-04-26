@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 26.04.26 – **K2 Familie: Mitglieder per QR/Druck – kurze Wege:** `K2FamilieHomePage` – Hinweise und Fehlermeldungen auf **Kurztexte**; Haupt-CTA **„Weiter“** statt „Bestätigen“; **autoFocus** auf Code-Feld (Einstieg + gelber Sitzungs-Banner); nach erfolgreicher Anmeldung **direkt** zur Person (`navigate` ohne lange Erfolgsmeldung). `K2FamilieMitgliederCodesPage` – kürzere Verwaltungstexte + grüner Block: **persönlicher QR/Link (t+z+m)** = ein Scan. **Build:** `tsc:build` + `vite:build` grün. **Commit:** `f45936c3` ✅ **main** gepusht
+**Letzter Stand:** 26.04.26 – **K2 Familie: Mitglieder per QR/Druck – kurze Wege:** `K2FamilieHomePage` – Hinweise und Fehlermeldungen auf **Kurztexte**; Haupt-CTA **„Weiter“** statt „Bestätigen“; **autoFocus** auf Code-Feld (Einstieg + gelber Sitzungs-Banner); nach erfolgreicher Anmeldung **direkt** zur Person (`navigate` ohne lange Erfolgsmeldung). `K2FamilieMitgliederCodesPage` – kürzere Verwaltungstexte + grüner Block: **persönlicher QR/Link (t+z+m)** = ein Scan. **Build:** `tsc:build` + `vite:build` grün. **Commit:** `f45936c3` + Nachzug `aa62f388` (Hinweis ohne Vercel-URL) ✅ **main** gepusht
 
 ---
 
