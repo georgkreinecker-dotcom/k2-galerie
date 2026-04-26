@@ -197,14 +197,28 @@ export default function K2FamilieMitgliederCodesPage() {
         >
           Mitglieder &amp; persönliche Codes
         </h1>
-        <p className="no-print-familie-codes" style={{ margin: '0 0 1rem', fontSize: '0.92rem', color: a.muted, lineHeight: 1.5 }}>
-          <strong style={{ color: a.text }}>Nur Verwaltung (Inhaber:in):</strong> Diese Übersicht ist nicht für alle sichtbar — Codes vertraulich weitergeben.{' '}
-          <strong style={{ color: a.text }}>Inhaber:in</strong> erzeugt oder trägt Codes ein und gibt sie an die Mitglieder weiter.{' '}
-          <strong style={{ color: a.text }}>Erstes Mal:</strong> Mitglied nutzt den Code als Schlüssel und erste Identifikation —{' '}
-          <strong style={{ color: a.text }}>danach</strong> reicht QR oder Link auf dem Gerät. Optional: Platzhalter-Button für fehlende Karten (
-          <span style={{ fontFamily: 'ui-monospace, monospace' }}>{MITGLIEDS_NUMMER_AUTO_BEISPIEL}</span>
-          ). Liste wie Stammbaum, ohne Verstorbene. Familien-Zugang:{' '}
-          <span style={{ fontFamily: 'ui-monospace, monospace' }}>{familienZ || '—'}</span>.
+        <p className="no-print-familie-codes" style={{ margin: '0 0 0.65rem', fontSize: '0.92rem', color: a.muted, lineHeight: 1.5 }}>
+          <strong style={{ color: a.text }}>Nur Verwaltung.</strong> Codes vertraulich weitergeben. Liste wie Stammbaum. Familien-Zugang:{' '}
+          <span style={{ fontFamily: 'ui-monospace, monospace' }}>{familienZ || '—'}</span>. Optional: fehlende Nummern mit Platzhalter (
+          <span style={{ fontFamily: 'ui-monospace, monospace' }}>{MITGLIEDS_NUMMER_AUTO_BEISPIEL}</span>).
+        </p>
+        <p
+          className="no-print-familie-codes"
+          style={{
+            margin: '0 0 1rem',
+            padding: '0.65rem 0.75rem',
+            fontSize: '0.95rem',
+            lineHeight: 1.45,
+            color: '#0f766e',
+            background: 'linear-gradient(180deg, #ecfdf5 0%, #d1fae5 100%)',
+            borderRadius: a.radius,
+            border: '1px solid rgba(5, 150, 105, 0.35)',
+            fontWeight: 600,
+          }}
+        >
+          <strong>Karten &amp; Druck pro Mitglied:</strong> Unten in der Tabelle/Listen den{' '}
+          <strong>persönlichen Einladungslink</strong> (t+z+m) oder den QR aus den Einladungsbriefen pro Person nutzen –{' '}
+          <strong>ein Scan reicht</strong>, das Mitglied landet auf der eigenen Seite. Nicht den reinen Familienlink ohne persönliches m – sonst muss am Handy der Code eingegeben werden.
         </p>
 
         <div className="no-print-familie-codes" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>

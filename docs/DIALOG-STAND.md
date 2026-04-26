@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 26.04.26 – **K2 Familie: Mitglieder per QR/Druck – kurze Wege:** `K2FamilieHomePage` – Hinweise und Fehlermeldungen auf **Kurztexte**; Haupt-CTA **„Weiter“** statt „Bestätigen“; **autoFocus** auf Code-Feld (Einstieg + gelber Sitzungs-Banner); nach erfolgreicher Anmeldung **direkt** zur Person (`navigate` ohne lange Erfolgsmeldung). `K2FamilieMitgliederCodesPage` – kürzere Verwaltungstexte + grüner Block: **persönlicher QR/Link (t+z+m)** = ein Scan. **Build:** `tsc:build` + `vite:build` grün. **Commit:** _(nach Push)_
+
+---
+
 **Letzter Stand:** 26.04.26 – **PWA `start_url` absolut (Galerie + K2 Familie):** In `public/manifest.json` und `public/manifest-k2-familie.json` steht `start_url` jetzt als volle **https://k2-galerie.vercel.app/...**-URL (statt nur `/galerie` bzw. `/familie`), damit iOS/Safari beim **Home-Bildschirm-Icon** die Seite zuverlässig auflöst (hilft u. a. bei „Safari konnte die Seite nicht öffnen“). Kommentar in `k2FamiliePwaBranding.ts`. **Commit:** `c0e69430` ✅ **main**
 
 ---
@@ -8,8 +12,7 @@
 
 ---
 
-**Was wir JETZT tun:** Nach **Vercel Ready:** PWA-Icons auf dem iPhone **testen** (Galerie + K2 Familie) – ggf. altes Icon löschen, Seite in Safari öffnen, „Zum Home-Bildschirm“ neu. Weiter: **Supabase (produktiv)** Migration **015** + Edge **`familie`** falls noch offen.  
-**Einordnung:** PWA-Start war relativ – kann auf iOS in Randfällen schiefgehen; absolute Produktions-URL = eine klare Zieladresse. Supabase/Cloud: unverändert wichtig für K2-Familie-Hero.  
+**Was wir JETZT tun:** Mitglieder-**persönlichen QR** testen: Scan → möglichst **direkt** Personenkarte; nur Familien-QR (ohne `m`) → Code + Weiter. Optional: PWA-Icons (vorheriger Stand). **Einordnung:** Symbolwesen / keine Textwände am Handy; Verwaltung druckt **pro Person** `t+z+m`.  
 **Session-Ende 24.04.26:** Alles gepusht, Arbeitsbaum sauber. K2-Familie-**Feature-Commit:** **`689d2370`** (danach nur Doku/Hash-Session-Ende).
 
 ---

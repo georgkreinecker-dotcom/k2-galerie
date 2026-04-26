@@ -235,9 +235,7 @@ export default function K2FamilieHomePage() {
       const p = getFamilieEinladungPending()
       if (!p) return
       if (p.tenantInvalid) {
-        setRegistrierungHinweis(
-          'Der Link zur Familie passt nicht (Kennung in der URL). Bitte den QR-Code erneut scannen oder die Inhaber:in fragen.',
-        )
+        setRegistrierungHinweis('Link passt nicht – QR erneut scannen.')
         clearFamilieEinladungPending()
         return
       }
@@ -252,9 +250,7 @@ export default function K2FamilieHomePage() {
         }
         const switched = ensureTenantInListAndSelect(p.t)
         if (!switched) {
-          setRegistrierungHinweis(
-            'Der Link zur Familie passt nicht (Kennung in der URL). Bitte den QR-Code erneut scannen oder die Inhaber:in fragen.',
-          )
+          setRegistrierungHinweis('Link passt nicht – QR erneut scannen.')
           clearFamilieEinladungPending()
         }
         return
@@ -283,9 +279,7 @@ export default function K2FamilieHomePage() {
         }
       }
       setPersoenlicheNummerEingabe(mNorm)
-      setRegistrierungHinweis(
-        'Automatik konnte nicht sofort zuordnen (Netzwerk oder Cloud). Dein persönlicher Code steht unten – „Bestätigen“ tippen oder kurz warten und die Seite neu öffnen.',
-      )
+      setRegistrierungHinweis('Kurz warten, dann unten Code prüfen und Weiter tippen.')
       clearFamilieEinladungPending()
     }
 
@@ -332,7 +326,7 @@ export default function K2FamilieHomePage() {
     setIdentitaetSessionHinweis('')
     const raw = trimMitgliedsNummerEingabe(identitaetSessionEingabe)
     if (!raw) {
-      setIdentitaetSessionHinweis('Bitte deinen persönlichen Code eintragen.')
+      setIdentitaetSessionHinweis('Code von der Karte eintragen.')
       return
     }
     const ich = ichBinPersonId?.trim()
@@ -409,8 +403,8 @@ export default function K2FamilieHomePage() {
       if (result.personen.length === 0) {
         setRegistrierungHinweis(
           (result.loadMeta.serverPersonenCount ?? 0) === 0
-            ? 'In der Cloud sind für diese Familie noch keine Personen. Prüfen: dieselbe Familie wie am Mac (QR/URL, gleiche Familie in der Leiste)? Inhaber:in am Mac: Personen anlegen oder eine Person öffnen und speichern – beim Speichern gehen die Daten in die Cloud. Ohne das bleibt der Server leer.'
-            : 'Die Daten konnten nach dem Laden nicht im Gerätespeicher abgelegt werden (z. B. Speicher voll). Seite kurz neu öffnen oder Speicherplatz freigeben, dann „Daten vom Server laden“ erneut tippen.',
+            ? 'Noch keine Daten in der Cloud. Verwaltung speichert einmal auf k2-galerie.vercel.app, dann hier erneut laden.'
+            : 'Speichern auf dem Handy klappte nicht. Seite neu öffnen, dann erneut laden.',
         )
       } else {
         setIdentitaetSessionHinweis('')
@@ -425,7 +419,7 @@ export default function K2FamilieHomePage() {
     setRegistrierungErfolg('')
     const raw = trimMitgliedsNummerEingabe(persoenlicheNummerEingabe)
     if (!raw) {
-      setRegistrierungHinweis('Bitte deinen persönlichen Code eintragen (wie mit der Inhaber:in oder dem Administrator vereinbart).')
+      setRegistrierungHinweis('Code von der Karte eintragen.')
       return
     }
     setFamilieCloudSyncBusy(true)
@@ -443,15 +437,13 @@ export default function K2FamilieHomePage() {
       if (personenAktuell.length === 0) {
         setRegistrierungHinweis(
           (result.loadMeta.serverPersonenCount ?? 0) === 0
-            ? 'Es sind noch keine Personen für diese Familie da. Prüfen: gleiche Familie wie am Mac (QR/URL)? Inhaber:in am Mac: Personen speichern (damit die Cloud gefüllt wird), dann hier erneut „Daten vom Server laden“.'
-            : 'Die Personenliste konnte auf diesem Gerät nicht gespeichert werden (z. B. Speicher voll). Seite neu öffnen oder Speicher freigeben, dann erneut „Bestätigen“.',
+            ? 'Noch keine Personen in der Cloud. Verwaltung einmal online speichern, dann erneut „Daten vom Server“.'
+            : 'Speichern fehlgeschlagen. Seite neu öffnen, dann Weiter erneut.',
         )
         return
       }
       if (!pid) {
-        setRegistrierungHinweis(
-          'Keine Person mit diesem Code in dieser Familie. Persönlicher Code (z. B. AB12), nicht die Familien-Zugangsnummer (KF-…). Sonst Schreibweise prüfen oder Administrator fragen.',
-        )
+        setRegistrierungHinweis('Unbekannter Code – Schreibweise prüfen (persönlicher Code, nicht KF-…).')
         return
       }
       const einst = loadEinstellungen(currentTenantId)
@@ -468,9 +460,7 @@ export default function K2FamilieHomePage() {
           return
         }
         setPersoenlicheNummerEingabe('')
-        setRegistrierungErfolg(
-          '✓ Du bist eingerichtet. Persönlicher QR und Familien-Zugang findest du unter Einstellungen & Verwaltung – den Code kannst du auf deiner Personenkarte ändern.',
-        )
+        setRegistrierungErfolg('')
         if (merkGeraetIdentitaet) {
           void saveGerateVertrauen(currentTenantId, pid, raw)
         } else {
@@ -575,8 +565,7 @@ export default function K2FamilieHomePage() {
                       fontFamily: a.fontBody,
                     }}
                   >
-                    Kurz bestätigen: <strong>persönlicher Code</strong> von der Karte (wie bei{' '}
-                    <strong>{ichName}</strong> hinterlegt) – nicht die Familien-Kennung für alle.
+                    Code von der Karte (wie bei <strong>{ichName}</strong>) – nicht die Kennung KF-… für alle.
                   </p>
                 </>
               ) : (
@@ -602,8 +591,7 @@ export default function K2FamilieHomePage() {
                       fontFamily: a.fontBody,
                     }}
                   >
-                    Persönlichen Code von der Karte eingeben. – Als „Du“ ist keine Person in der Liste – bitte unter
-                    Einstellungen → Zugang & Name prüfen oder „Daten vom Server laden“.
+                    Code von der Karte. Oder zuerst „Daten vom Server laden“.
                   </p>
                 </>
               )}
@@ -640,6 +628,7 @@ export default function K2FamilieHomePage() {
                 </span>
                 <input
                   type="text"
+                  autoFocus
                   autoComplete="off"
                   autoCapitalize="none"
                   autoCorrect="off"
@@ -697,7 +686,7 @@ export default function K2FamilieHomePage() {
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  Bestätigen
+                  Weiter
                 </button>
               </div>
               <label
@@ -796,7 +785,7 @@ export default function K2FamilieHomePage() {
                 color: a.muted,
               }}
             >
-              Der Familienraum ist privat und nur für eure Familie. Zugang hast du mit deiner persönlichen ID – dem Code auf deiner Karte.
+              Zugang: persönlicher Code auf der Karte.
             </p>
             <div
               style={{
@@ -821,6 +810,7 @@ export default function K2FamilieHomePage() {
               </span>
               <input
                 type="text"
+                autoFocus
                 autoComplete="off"
                 autoCapitalize="none"
                 autoCorrect="off"
@@ -876,7 +866,7 @@ export default function K2FamilieHomePage() {
                   opacity: familieCloudSyncBusy ? 0.85 : 1,
                 }}
               >
-                {familieCloudSyncBusy ? 'Lade …' : 'Bestätigen'}
+                {familieCloudSyncBusy ? 'Lade …' : 'Weiter'}
               </button>
             </div>
             {!ichBinPersonId && personen.length === 0 ? (
@@ -902,7 +892,7 @@ export default function K2FamilieHomePage() {
                   {familieCloudSyncBusy ? 'Lade …' : 'Daten vom Server laden'}
                 </button>
                 <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', lineHeight: 1.4, color: a.muted }}>
-                  Wichtig auf einem neuen Handy: erst die Personen holen, dann den persönlichen Code bestätigen.
+                  Neues Handy: zuerst „Daten vom Server“, dann Code und Weiter.
                 </p>
               </div>
             ) : null}
