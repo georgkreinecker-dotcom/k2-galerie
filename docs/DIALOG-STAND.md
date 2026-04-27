@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.04.26 – **Admin → Werke bearbeiten: Bestand & Verkauf sichtbar, Werkkarten-Farben:** `artworkLagerStatus.ts` (Lager/Kasse-Summe, eine Einheit zurückbuchen), **ScreenshotExportAdmin** – Modal „Bestand & Verkauf“, Buttons „1 Stück wieder verfügbar“ / Storno-Pfad, Karten-Grid mit Varianten (verfügbar / teilweise / ausverkauft), kontextrichtige Sold-Keys (K2/ök2/VK2). Tests `artworkLagerStatus.test.ts`. **`npm run build` grün.** **Commit:** `4c3e48d6` ✅ **main**
+
+---
+
 **Letzter Stand:** 26.04.26 (Abend) – **Session-Ende: K2-Familie Einladungs-URLs** – zentrale Utils + Tests, Regel + Doku, Verwaltung/Briefe/Codes an eine Quelle; **Build** (qs:local) grün. **Commit:** `3ca8aa90` ✅ **main**
 
 ---
@@ -28,7 +32,7 @@
 
 ---
 
-**Was wir JETZT tun:** Nach Vercel-Deploy: **K2-Familie** Einladungs-QR/Links kurz prüfen; optional **Kasse** Preis-vor-Bon am Gerät. **Nächster Fokus:** wie gehabt aus Alltag – nichts Dringendes offen.  
+**Was wir JETZT tun:** Nach Vercel-Deploy: **Admin → Werke** neues Lager/Verkauf-UI kurz am Mac prüfen (Mehrfachstücke, Kartenfarben). **Nächster Fokus:** wie gehabt.  
 **Session-Ende 24.04.26:** Alles gepusht, Arbeitsbaum sauber. K2-Familie-**Feature-Commit:** **`689d2370`** (danach nur Doku/Hash-Session-Ende).
 
 ---
