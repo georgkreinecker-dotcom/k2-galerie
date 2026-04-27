@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.04.26 – **Kasse Nummernliste:** Ausverkaufte Werke erscheinen nicht mehr; **Mehrfachstücke mit Restbestand** bleiben (wie Lager-Logik) – `getArtworkLagerInfo` + Sold-Liste + Orders aus `localStorage`, Keys K2/ök2/VK2. **Commit:** `181aa542` ✅ **main**
+
+---
+
 **Letzter Stand:** 27.04.26 – **Einzelstück: Werkstamm quantity 1 + Kasse ≥1 verkauft → Anzeige 0 Lager** (`computeDisplayRemaining`) – behebt „Noch 1 am Lager · 1 verkauft“ wenn `quantity` nicht mitverzählt wurde. **Commit:** `e34a9477` ✅ **main**
 
 ---
@@ -40,7 +44,7 @@
 
 ---
 
-**Was wir JETZT tun:** Nach Vercel-Deploy: **Admin → Werke** neues Lager/Verkauf-UI kurz am Mac prüfen (Mehrfachstücke, Kartenfarben). **Nächster Fokus:** wie gehabt.  
+**Was wir JETZT tun:** Nach Deploy: Kasse **Nummernliste** – verkauft/ausverkauft fehlt, Mehrfachstücke mit Lager sichtbar. **Nächster Fokus:** wie gehabt.  
 **Session-Ende 24.04.26:** Alles gepusht, Arbeitsbaum sauber. K2-Familie-**Feature-Commit:** **`689d2370`** (danach nur Doku/Hash-Session-Ende).
 
 ---
