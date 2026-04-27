@@ -9,7 +9,7 @@ export type ArtworkLagerInfo = {
   artworkNumber: string
   /** Noch am Lager (Stückzahl im Werk) */
   remaining: number
-  /** Summe aus Verkaufsliste: soldQuantity oder 1 pro Zeile */
+  /** Summe „Kasse“: max(Verkaufsliste, Bestellungen) – damit Wochenend-Verkäufe aus Orders mitzählen */
   soldSumFromList: number
   hasEntriesInSoldList: boolean
   isAusverkauft: boolean
@@ -52,13 +52,52 @@ export function sumSoldFromListForArtwork(
   return sum
 }
 
+/** Wie getCartLineQuantity in ShopPage: Stückzahl pro Warenkorbzeile */
+function orderLineQuantity(item: { quantity?: unknown } | null | undefined): number {
+  const q = item?.quantity
+  if (q == null || !Number.isFinite(Number(q))) return 1
+  return Math.max(1, Math.min(9999, Math.floor(Number(q))))
+}
+
+/**
+ * Summe verkaufter Stück aus Kassen-Bestellungen (k2-orders / kontextgleich).
+ * Quelle der Wahrheit wenn Verkaufsliste auf einem Gerät fehlt oder veraltet ist.
+ */
+export function sumSoldFromOrdersForArtwork(
+  artwork: { number?: string; id?: string; uid?: string },
+  orders: unknown
+): number {
+  const num = getArtworkNumberKey(artwork)
+  if (!num) return 0
+  const uid = String(artwork?.uid ?? '').trim()
+  const ords = Array.isArray(orders) ? orders : []
+  let sum = 0
+  for (const order of ords) {
+    const items = (order as any)?.items
+    if (!Array.isArray(items)) continue
+    for (const it of items) {
+      if (!it) continue
+      const inum = String((it as any).number ?? '').trim()
+      if (inum !== num) continue
+      const iuid = String((it as any).artworkUid ?? '').trim()
+      if (uid && iuid && iuid !== uid) continue
+      sum += orderLineQuantity(it as { quantity?: unknown })
+    }
+  }
+  return sum
+}
+
 export function getArtworkLagerInfo(
   artwork: { number?: string; id?: string; uid?: string; quantity?: number | string | null },
-  soldList: unknown
+  soldList: unknown,
+  /** Optional: Kassen-Bestellungen (z. B. k2-orders) – max mit Verkaufsliste = vollständige Kassen-Summe */
+  orders?: unknown
 ): ArtworkLagerInfo {
   const artworkNumber = getArtworkNumberKey(artwork)
   const remaining = parseQuantityRemaining(artwork)
-  const soldSumFromList = sumSoldFromListForArtwork(artwork, soldList)
+  const fromList = sumSoldFromListForArtwork(artwork, soldList)
+  const fromOrders = orders != null ? sumSoldFromOrdersForArtwork(artwork, orders) : 0
+  const soldSumFromList = Math.max(fromList, fromOrders)
   const hasEntriesInSoldList = soldSumFromList > 0
   const isAusverkauft = remaining === 0
   const isTeilverkauft = !isAusverkauft && hasEntriesInSoldList

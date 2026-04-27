@@ -2329,16 +2329,18 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
     localStorage.setItem(ordersKey, JSON.stringify(ordersStored))
     setOrders(prev => [order, ...prev.slice(0, 19)])
 
-    // Werke als verkauft markieren (mit optionaler Kundenzuordnung) – pro Zeile ein Eintrag, mit Stückzahl
+    // Werke als verkauft markieren (mit optionaler Kundenzuordnung) – Stückzahl kumulieren bei Folgeverkauf derselben Nummer/UID
     cartForOrder.forEach(item => {
-      const soldArtworks = JSON.parse(localStorage.getItem(soldArtworksKey) || '[]')
+      const soldArtworks = JSON.parse(localStorage.getItem(soldArtworksKey) || '[]') as any[]
       const iuid = String((item as any)?.artworkUid ?? '').trim()
       const stueck = getCartLineQuantity(item)
-      if (!soldArtworks.find((a: any) => {
+      const matchIdx = soldArtworks.findIndex((a: any) => {
         const suid = String(a?.artworkUid ?? '').trim()
         if (iuid && suid && suid === iuid) return true
+        if (iuid && suid) return false
         return a?.number === item.number
-      })) {
+      })
+      if (matchIdx === -1) {
         soldArtworks.push({
           number: item.number,
           ...(item.artworkUid ? { artworkUid: item.artworkUid } : {}),
@@ -2348,8 +2350,19 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
           soldPrice: parseArtworkPriceEur(item.price),
           ...(customerId ? { customerId } : {}),
         })
-        localStorage.setItem(soldArtworksKey, JSON.stringify(soldArtworks))
+      } else {
+        const a = soldArtworks[matchIdx]
+        const prevQ = Math.max(1, Number(a?.soldQuantity) > 0 ? Number(a.soldQuantity) : 1)
+        soldArtworks[matchIdx] = {
+          ...a,
+          soldQuantity: prevQ + stueck,
+          soldAt: new Date().toISOString(),
+          orderId: order.id,
+          soldPrice: parseArtworkPriceEur(item.price),
+          ...(customerId ? { customerId } : {}),
+        }
       }
+      localStorage.setItem(soldArtworksKey, JSON.stringify(soldArtworks))
     })
 
     // Stückzahl pro Werk im Bestand abziehen (kontexteigener Artwork-Key)

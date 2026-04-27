@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { getArtworkLagerInfo, revertOneSoldUnitInList, sumSoldFromListForArtwork } from '../utils/artworkLagerStatus'
+import {
+  getArtworkLagerInfo,
+  revertOneSoldUnitInList,
+  sumSoldFromListForArtwork,
+  sumSoldFromOrdersForArtwork,
+} from '../utils/artworkLagerStatus'
 
 describe('artworkLagerStatus', () => {
   it('remaining 0 = ausverkauft', () => {
@@ -14,6 +19,30 @@ describe('artworkLagerStatus', () => {
     expect(info.isTeilverkauft).toBe(true)
     expect(info.cardVariant).toBe('teilweise')
     expect(info.soldSumFromList).toBe(2)
+  })
+
+  it('Bestellungen ohne Verkaufsliste: verkaufte Stück aus Orders (Wochenend-Fall)', () => {
+    const orders = [
+      {
+        id: 'ORDER-1',
+        items: [{ number: 'K2-M-0005', quantity: 2, title: 'X', price: 10, category: 'malerei' }],
+      },
+      {
+        id: 'ORDER-2',
+        items: [{ number: 'K2-M-0005', quantity: 1, title: 'X', price: 10, category: 'malerei' }],
+      },
+    ]
+    const info = getArtworkLagerInfo({ number: 'K2-M-0005', quantity: 2 }, [], orders)
+    expect(info.soldSumFromList).toBe(3)
+    expect(info.isTeilverkauft).toBe(true)
+  })
+
+  it('sumSoldFromOrdersForArtwork zählt Stück pro Orderzeile', () => {
+    const n = sumSoldFromOrdersForArtwork(
+      { number: 'A-1' },
+      [{ items: [{ number: 'A-1', quantity: 3, title: '', price: 0, category: 'x' }] }]
+    )
+    expect(n).toBe(3)
   })
 
   it('sumSoldFromList: soldQuantity optional counts as 1', () => {

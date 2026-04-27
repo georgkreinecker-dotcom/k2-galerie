@@ -1890,7 +1890,7 @@ import {
 } from '../src/utils/flyerEventBogenStorageKeys'
 import { startAutoSave, stopAutoSave, setupBeforeUnloadSave, pauseAutoSaveForMs, restoreFromBackup, restoreFromBackupFile, hasBackup, getBackupTimestamp, getBackupTimestamps, recordLastBackupDownloadExported, getLastBackupDownloadExported, createK2Backup, createOek2Backup, createVk2Backup, downloadBackupAsFile, restoreK2FromBackup, restoreOek2FromBackup, restoreVk2FromBackup, detectBackupKontext } from '../src/utils/autoSave'
 import { sortArtworksNewestFirst, sortArtworksFavoritesFirstThenNewest } from '../src/utils/artworkSort'
-import { getShopSoldArtworksKey } from '../src/utils/shopContextKeys'
+import { getShopSoldArtworksKey, getShopStorageKeys } from '../src/utils/shopContextKeys'
 import { getArtworkLagerInfo, getArtworkNumberKey, revertOneSoldUnitInList } from '../src/utils/artworkLagerStatus'
 import { urlWithBuildVersion } from '../src/buildInfo.generated'
 import { getOrCreateEmpfehlerId, isValidEmpfehlerIdFormat } from '../src/utils/empfehlerId'
@@ -17424,12 +17424,18 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   const id = String(a?.id ?? '').trim()
                   return id.startsWith('muster-') || ['M1', 'P1', 'G1', 'S1', 'I1', 'M2', 'M3', 'M4', 'M5', 'K1', 'O1'].includes(num)
                 }
-                const soldKeyKarten = getShopSoldArtworksKey(tenant.isOeffentlich, tenant.isVk2)
+                const { ordersKey: ordersKeyKarten, soldArtworksKey: soldKeyKarten } = getShopStorageKeys(tenant.isOeffentlich, tenant.isVk2)
                 let soldListForKarten: any[] = []
+                let ordersForKarten: any[] = []
                 try {
                   soldListForKarten = JSON.parse(localStorage.getItem(soldKeyKarten) || '[]')
                 } catch {
                   soldListForKarten = []
+                }
+                try {
+                  ordersForKarten = JSON.parse(localStorage.getItem(ordersKeyKarten) || '[]')
+                } catch {
+                  ordersForKarten = []
                 }
                 return filtered.map((artwork) => {
                   // ök2-Musterwerke: Immer Kategorie-Bild aus tenantConfig (Inline-SVG) – nie gespeicherte Unsplash/URLs, die oft 403 oder kaputt sind.
@@ -17450,7 +17456,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   const imageSrc = useOek2MusterBild ? getOek2DefaultArtworkImage(artwork.category) : ((tenant.isOeffentlich && isPlaceholder) ? getOek2DefaultArtworkImage(artwork.category) : (isPlaceholder ? PLACEHOLDER_KEIN_BILD : rawSrc))
                   // Cache-Bust für https-URLs (iPhone/Safari zeigt sonst alte Bilder trotz „Vom Server laden“)
                   const imageSrcBust = imageUrlWithCacheBust(imageSrc, artwork)
-                  const lagerKarte = getArtworkLagerInfo(artwork, soldListForKarten)
+                  const lagerKarte = getArtworkLagerInfo(artwork, soldListForKarten, ordersForKarten)
                   const kartenBg =
                     lagerKarte.cardVariant === 'ausverkauft'
                       ? '#f0ebe6'
@@ -28398,14 +28404,20 @@ ${name}`
               gap: '1rem'
             }}>
               {editingArtwork && editingMemberIndex == null && (() => {
-                const sk = getShopSoldArtworksKey(tenant.isOeffentlich, tenant.isVk2)
+                const { ordersKey: okeyEdit, soldArtworksKey: sk } = getShopStorageKeys(tenant.isOeffentlich, tenant.isVk2)
                 let sl: any[] = []
+                let ol: any[] = []
                 try {
                   sl = JSON.parse(localStorage.getItem(sk) || '[]')
                 } catch {
                   sl = []
                 }
-                const li = getArtworkLagerInfo(editingArtwork, sl)
+                try {
+                  ol = JSON.parse(localStorage.getItem(okeyEdit) || '[]')
+                } catch {
+                  ol = []
+                }
+                const li = getArtworkLagerInfo(editingArtwork, sl, ol)
                 return (
                   <div
                     style={{
