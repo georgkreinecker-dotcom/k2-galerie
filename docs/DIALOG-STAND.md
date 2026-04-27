@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.04.26 – **Besucher / Mission / K2 Familie:** `missionVisitSnapshots` (lokale Tages-Snapshots, Matrix & Zeitschiene) + Tests; **App.css** Druck/Matrix; **Kreinecker-Stammbaum** eigener Visit-Count (`k2FamilieKreineckerStammbaumVisit`, Tenant `k2-familie-kreinecker-stammbaum`) in **K2FamilieLayout**, **PlatformStartPage**, **UebersichtBoard**; **pageTexts** Mission-Control-Karte. Build-Info mitgelaufen. **`npm run test` + `build:vercel` grün.** **Commit:** `6d580f57` ✅ **main**
+
+**Was wir JETZT tun:** Bereit für nächste Aufgabe; Arbeitsbaum sauber.
+
+**Einordnung:** Besucher-Metriken erweitern ohne K2/ök2-Daten zu vermischen.
+
+---
+
 **Letzter Stand:** 27.04.26 – **Mission Control:** Nur **operative Steuerung** auf `/mission-control` (Besucher, Nutzer & Vertrieb, **Projekte – direkt**). **System & Kontext** (`Projektkarten`, Roadmap-Hinweise, **Chat-Kontext-JSON**) auf **`/mission-control/system`** – Link in Schnellzugriff + Hinweis unter Projekte. Route: `PLATFORM_ROUTES.missionControlSystem`. **Commit:** `11b14e4b` ✅ **main**
 
 **Was wir JETZT tun:** Offene lokale Änderungen (Besucher-Snapshots, Board, Familie …) ggf. eigenen Commit.
