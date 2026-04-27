@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.04.26 – **Mission Control:** Nur **operative Steuerung** auf `/mission-control` (Besucher, Nutzer & Vertrieb, **Projekte – direkt**). **System & Kontext** (`Projektkarten`, Roadmap-Hinweise, **Chat-Kontext-JSON**) auf **`/mission-control/system`** – Link in Schnellzugriff + Hinweis unter Projekte. Route: `PLATFORM_ROUTES.missionControlSystem`. **Commit:** `11b14e4b` ✅ **main**
+
+**Was wir JETZT tun:** Offene lokale Änderungen (Besucher-Snapshots, Board, Familie …) ggf. eigenen Commit.
+
+**Einordnung:** APf = Werkzeug; Mission Control entlasten, Symbolwesen (Erstes = Tun, nicht Geschichten).
+
+---
+
 **Letzter Stand:** 27.04.26 – **Lager „1 Stück wieder verfügbar“: Kassen-Order mitzurückbuchen** – `revertOneOrderUnitForArtwork` in `artworkLagerStatus.ts`; Admin: **eine Quelle pro Klick** (zuerst Verkaufsliste, sonst `k2-orders`); bei Bestand 0 + nur Order → Werkstamm **1 Stück**; **Storno** war früher bei leerer Verkaufsliste abgebrochen → jetzt Order-Fallback. Tests `artworkLagerStatus.test.ts`. **Commit:** `eb66dba4` ✅ **main**
 
 ---
