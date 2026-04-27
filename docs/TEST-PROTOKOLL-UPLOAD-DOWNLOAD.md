@@ -2,7 +2,7 @@
 
 > **Hinweis:** Wird bei diesem Testlauf neu geschrieben. Oft ändert sich nur der Zeitstempel — dann Arbeitsbaum mit `git restore docs/TEST-PROTOKOLL-UPLOAD-DOWNLOAD.md` räumen oder den Stand bewusst committen.
 
-**Erstellt:** 2026-04-23T16:27:23.806Z
+**Erstellt:** 2026-04-27T08:00:48.993Z
 
 ## Zusammenfassung
 

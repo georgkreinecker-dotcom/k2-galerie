@@ -1,0 +1,37 @@
+import { describe, expect, it } from 'vitest'
+import { getArtworkLagerInfo, revertOneSoldUnitInList, sumSoldFromListForArtwork } from '../utils/artworkLagerStatus'
+
+describe('artworkLagerStatus', () => {
+  it('remaining 0 = ausverkauft', () => {
+    const info = getArtworkLagerInfo({ number: 'K2-M-0001', quantity: 0 }, [])
+    expect(info.isAusverkauft).toBe(true)
+    expect(info.cardVariant).toBe('ausverkauft')
+  })
+
+  it('partial: remaining > 0 and sold list has entries', () => {
+    const sold = [{ number: 'K2-M-0001', soldAt: '2020-01-01', soldQuantity: 2 }]
+    const info = getArtworkLagerInfo({ number: 'K2-M-0001', quantity: 3 }, sold)
+    expect(info.isTeilverkauft).toBe(true)
+    expect(info.cardVariant).toBe('teilweise')
+    expect(info.soldSumFromList).toBe(2)
+  })
+
+  it('sumSoldFromList: soldQuantity optional counts as 1', () => {
+    const s = sumSoldFromListForArtwork({ number: 'A' }, [{ number: 'A', soldAt: 'x' }])
+    expect(s).toBe(1)
+  })
+
+  it('revertOneSoldUnitInList entfernt Zeile mit soldQuantity 1', () => {
+    const list = [{ number: 'N1', soldAt: '2025-01-02T00:00:00Z' }]
+    const { newList, didChange } = revertOneSoldUnitInList(list, 'N1', undefined)
+    expect(didChange).toBe(true)
+    expect(newList).toHaveLength(0)
+  })
+
+  it('revertOneSoldUnitInList verringert soldQuantity', () => {
+    const list = [{ number: 'N1', soldAt: '2025-01-02T00:00:00Z', soldQuantity: 3 }]
+    const { newList, didChange } = revertOneSoldUnitInList(list, 'N1', undefined)
+    expect(didChange).toBe(true)
+    expect(newList[0].soldQuantity).toBe(2)
+  })
+})

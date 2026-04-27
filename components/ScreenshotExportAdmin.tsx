@@ -1890,6 +1890,8 @@ import {
 } from '../src/utils/flyerEventBogenStorageKeys'
 import { startAutoSave, stopAutoSave, setupBeforeUnloadSave, pauseAutoSaveForMs, restoreFromBackup, restoreFromBackupFile, hasBackup, getBackupTimestamp, getBackupTimestamps, recordLastBackupDownloadExported, getLastBackupDownloadExported, createK2Backup, createOek2Backup, createVk2Backup, downloadBackupAsFile, restoreK2FromBackup, restoreOek2FromBackup, restoreVk2FromBackup, detectBackupKontext } from '../src/utils/autoSave'
 import { sortArtworksNewestFirst, sortArtworksFavoritesFirstThenNewest } from '../src/utils/artworkSort'
+import { getShopSoldArtworksKey } from '../src/utils/shopContextKeys'
+import { getArtworkLagerInfo, getArtworkNumberKey, revertOneSoldUnitInList } from '../src/utils/artworkLagerStatus'
 import { urlWithBuildVersion } from '../src/buildInfo.generated'
 import { getOrCreateEmpfehlerId, isValidEmpfehlerIdFormat } from '../src/utils/empfehlerId'
 import { LIZENZPREISE } from '../src/config/licencePricing'
@@ -12052,12 +12054,18 @@ ${'='.repeat(60)}
     })
   }
 
-  // Verkauf stornieren: aus k2-sold-artworks entfernen, Stückzahl +1
+  // Verkauf stornieren (Kasse/Statistik): eine Verkaufszeile zurücknehmen, Bestand +1
   const handleStornoVerkauf = (artworkNumber: string) => {
-    const soldArtworks = JSON.parse(localStorage.getItem('k2-sold-artworks') || '[]')
-    const filtered = soldArtworks.filter((a: any) => a.number !== artworkNumber)
-    if (filtered.length === soldArtworks.length) return
-    localStorage.setItem('k2-sold-artworks', JSON.stringify(filtered))
+    const soldKey = getShopSoldArtworksKey(tenant.isOeffentlich, tenant.isVk2)
+    let list: any[] = []
+    try {
+      list = JSON.parse(localStorage.getItem(soldKey) || '[]')
+    } catch {
+      return
+    }
+    const { newList, didChange } = revertOneSoldUnitInList(list, artworkNumber, undefined)
+    if (!didChange) return
+    localStorage.setItem(soldKey, JSON.stringify(newList))
 
     const artworks = loadArtworks(tenant)
     const idx = artworks.findIndex((a: any) => (a.number || a.id) === artworkNumber)
@@ -12074,15 +12082,57 @@ ${'='.repeat(60)}
     }
   }
 
+  /** Bearbeiten-Modal: ein Stück wieder verfügbar (Storno einer Verkaufszeile) oder bei Bestand 0 ohne Zeile: 1 Stück setzen */
+  const handleEinStueckWiederVorlage = (art: { number?: string; id?: string; uid?: string }) => {
+    const num = getArtworkNumberKey(art)
+    if (!num) return
+    const soldKey = getShopSoldArtworksKey(tenant.isOeffentlich, tenant.isVk2)
+    let list: any[] = []
+    try {
+      list = JSON.parse(localStorage.getItem(soldKey) || '[]')
+    } catch {
+      list = []
+    }
+    const { newList, didChange } = revertOneSoldUnitInList(list, num, String(art?.uid ?? '').trim() || undefined)
+    if (didChange) {
+      localStorage.setItem(soldKey, JSON.stringify(newList))
+    }
+    const artworks = loadArtworks(tenant)
+    const idx = artworks.findIndex(
+      (a: any) => getArtworkNumberKey(a) === num || (a.number || a.id) === num
+    )
+    if (idx === -1) return
+    const a = artworks[idx]
+    const q = a.quantity != null ? Number(a.quantity) : 0
+    if (didChange) {
+      artworks[idx] = { ...a, quantity: q + 1, inShop: true }
+    } else if (q === 0) {
+      artworks[idx] = { ...a, quantity: 1, inShop: true }
+    } else {
+      return
+    }
+    saveArtworks(tenant, artworks).then((ok) => {
+      if (ok) {
+        loadArtworksWithResolvedImages(tenant).then(setAllArtworksSafe)
+        window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromLocalWrite: true } }))
+        if (editingArtwork && getArtworkNumberKey(editingArtwork) === num) {
+          setArtworkQuantity(String(artworks[idx].quantity ?? 1))
+          setIsInShop(artworks[idx].inShop !== false)
+        }
+      }
+    })
+  }
+
   // Werk als verkauft markieren – Stückzahl automatisch um 1 verringern
   const handleMarkAsSold = (artworkNumber: string) => {
-    const soldArtworks = JSON.parse(localStorage.getItem('k2-sold-artworks') || '[]')
+    const soldKey = getShopSoldArtworksKey(tenant.isOeffentlich, tenant.isVk2)
+    const soldArtworks = JSON.parse(localStorage.getItem(soldKey) || '[]')
     if (!soldArtworks.find((a: any) => a.number === artworkNumber)) {
       soldArtworks.push({
         number: artworkNumber,
         soldAt: new Date().toISOString()
       })
-      localStorage.setItem('k2-sold-artworks', JSON.stringify(soldArtworks))
+      localStorage.setItem(soldKey, JSON.stringify(soldArtworks))
     } else {
       alert(`⚠️ Werk ${artworkNumber} ist bereits als verkauft markiert.`)
       setShowSaleModal(false)
@@ -13606,7 +13656,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
     } else if (type === 'verkauft') {
       // Nur verkaufte Werke
       try {
-        const soldData = localStorage.getItem('k2-sold-artworks')
+        const soldKey = getShopSoldArtworksKey(tenant.isOeffentlich, tenant.isVk2)
+        const soldData = localStorage.getItem(soldKey)
         if (soldData) {
           const soldArtworks = JSON.parse(soldData)
           const soldNumbers = new Set(soldArtworks.map((a: any) => a.number))
@@ -17373,6 +17424,13 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   const id = String(a?.id ?? '').trim()
                   return id.startsWith('muster-') || ['M1', 'P1', 'G1', 'S1', 'I1', 'M2', 'M3', 'M4', 'M5', 'K1', 'O1'].includes(num)
                 }
+                const soldKeyKarten = getShopSoldArtworksKey(tenant.isOeffentlich, tenant.isVk2)
+                let soldListForKarten: any[] = []
+                try {
+                  soldListForKarten = JSON.parse(localStorage.getItem(soldKeyKarten) || '[]')
+                } catch {
+                  soldListForKarten = []
+                }
                 return filtered.map((artwork) => {
                   // ök2-Musterwerke: Immer Kategorie-Bild aus tenantConfig (Inline-SVG) – nie gespeicherte Unsplash/URLs, die oft 403 oder kaputt sind.
                   const useOek2MusterBild = tenant.isOeffentlich && isOek2MusterNummer(artwork)
@@ -17392,12 +17450,25 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   const imageSrc = useOek2MusterBild ? getOek2DefaultArtworkImage(artwork.category) : ((tenant.isOeffentlich && isPlaceholder) ? getOek2DefaultArtworkImage(artwork.category) : (isPlaceholder ? PLACEHOLDER_KEIN_BILD : rawSrc))
                   // Cache-Bust für https-URLs (iPhone/Safari zeigt sonst alte Bilder trotz „Vom Server laden“)
                   const imageSrcBust = imageUrlWithCacheBust(imageSrc, artwork)
+                  const lagerKarte = getArtworkLagerInfo(artwork, soldListForKarten)
+                  const kartenBg =
+                    lagerKarte.cardVariant === 'ausverkauft'
+                      ? '#f0ebe6'
+                      : lagerKarte.cardVariant === 'teilweise'
+                        ? '#fff8f0'
+                        : s.bgCard
+                  const kartenBorder =
+                    lagerKarte.cardVariant === 'ausverkauft'
+                      ? '1px solid #b54a1e'
+                      : lagerKarte.cardVariant === 'teilweise'
+                        ? '1px solid #c17a3a'
+                        : `1px solid ${s.accent}22`
                   return (
                   <div 
                     key={artwork.number || artwork.id} 
                     style={{
-                      background: s.bgCard,
-                      border: `1px solid ${s.accent}22`,
+                      background: kartenBg,
+                      border: kartenBorder,
                       borderRadius: '20px',
                       padding: 'clamp(1rem, 3vw, 1.5rem)',
                       boxShadow: s.shadow,
@@ -17405,11 +17476,16 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'translateY(-8px)'
-                      e.currentTarget.style.background = s.bgElevated
+                      e.currentTarget.style.background =
+                        lagerKarte.cardVariant === 'ausverkauft'
+                          ? '#e8e0d8'
+                          : lagerKarte.cardVariant === 'teilweise'
+                            ? '#fff0e6'
+                            : s.bgElevated
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.background = s.bgCard
+                      e.currentTarget.style.background = kartenBg
                     }}
                   >
                     {imageSrcBust ? (
@@ -17508,6 +17584,17 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     }}>
                       {artwork.title || artwork.number}
                     </h3>
+                    <p style={{
+                      margin: '0 0 0.45rem',
+                      fontSize: 'clamp(0.78rem, 2vw, 0.88rem)',
+                      color: '#1c1a18',
+                      fontWeight: 600,
+                      lineHeight: 1.35
+                    }}>
+                      {lagerKarte.isAusverkauft
+                        ? '🔴 Ausverkauft (0 am Lager)'
+                        : `📦 Noch ${lagerKarte.remaining} am Lager${lagerKarte.soldSumFromList > 0 ? ` · Kasse: ${lagerKarte.soldSumFromList} verkauft (erfasst)` : ''}`}
+                    </p>
                     {tenant.isOeffentlich && (
                       <p style={{ margin: '0.2rem 0', fontSize: 'clamp(0.8rem, 2.2vw, 0.9rem)', color: s.muted }}>
                         <span style={{ fontWeight: 600, color: s.text }}>Typ:</span> {FOCUS_DIRECTIONS.find((d) => d.id === getEffectiveDirectionFromWork(artwork))?.label ?? getEntryTypeLabel(artwork.entryType)}
@@ -28310,6 +28397,57 @@ ${name}`
               flexDirection: 'column',
               gap: '1rem'
             }}>
+              {editingArtwork && editingMemberIndex == null && (() => {
+                const sk = getShopSoldArtworksKey(tenant.isOeffentlich, tenant.isVk2)
+                let sl: any[] = []
+                try {
+                  sl = JSON.parse(localStorage.getItem(sk) || '[]')
+                } catch {
+                  sl = []
+                }
+                const li = getArtworkLagerInfo(editingArtwork, sl)
+                return (
+                  <div
+                    style={{
+                      padding: '0.75rem 1rem',
+                      background: 'rgba(181, 74, 30, 0.14)',
+                      border: '1px solid rgba(181, 74, 30, 0.45)',
+                      borderRadius: 12
+                    }}
+                  >
+                    <div style={{ fontSize: '0.85rem', color: '#f0f6ff', fontWeight: 600, marginBottom: 6 }}>Bestand &amp; Verkauf</div>
+                    <div style={{ fontSize: '0.8rem', color: 'rgba(240,246,255,0.92)', lineHeight: 1.45 }}>
+                      {li.isAusverkauft
+                        ? 'Aktuell ausverkauft (0 Stück am Lager).'
+                        : `Noch ${li.remaining} Stück am Lager.`}
+                      {li.soldSumFromList > 0
+                        ? ` In der Kasse erfasst: ${li.soldSumFromList} Stück als verkauft.`
+                        : null}
+                    </div>
+                    {(li.isAusverkauft || li.soldSumFromList > 0) && (
+                      <button
+                        type="button"
+                        onClick={() => handleEinStueckWiederVorlage(editingArtwork)}
+                        style={{
+                          marginTop: 10,
+                          padding: '0.5rem 0.95rem',
+                          background: '#b54a1e',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 8,
+                          fontWeight: 600,
+                          fontSize: '0.85rem',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {li.isAusverkauft
+                          ? '1 Stück wieder verfügbar (Lager / Vorlage)'
+                          : 'Ein verkauftes Stück zurückbuchen (+1 Lager)'}
+                      </button>
+                    )}
+                  </div>
+                )
+              })()}
               {/* VK2: Profil-Formular – Foto, Werk, Vita, Name, Kontakt (Modal dunkel → heller Text, mehr Kontrast) */}
               {tenant.isVk2 ? (
                 <>
