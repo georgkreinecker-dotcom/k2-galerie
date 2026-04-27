@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.04.26 – **Einzelstück: Werkstamm quantity 1 + Kasse ≥1 verkauft → Anzeige 0 Lager** (`computeDisplayRemaining`) – behebt „Noch 1 am Lager · 1 verkauft“ wenn `quantity` nicht mitverzählt wurde. **Commit:** `e34a9477` ✅ **main**
+
+---
+
 **Letzter Stand:** 27.04.26 – **Lager/Kasse: Wochenend-Verkäufe aus Bestellungen (`k2-orders`)** – `getArtworkLagerInfo` nutzt **max(Verkaufsliste, Summe Order-Zeilen)**; **Shop `processOrder`** kumuliert `soldQuantity` bei Folgeverkauf derselben Nummer. Admin-Werkkarten + Modal lesen Orders + Sold-Liste. **Commit:** `4e453250` ✅ **main**
 
 ---
