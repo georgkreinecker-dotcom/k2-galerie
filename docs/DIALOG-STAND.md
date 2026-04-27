@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Session-Ende 27.04.26:** Schluss für heute – **`git` sauber**, **main** = **`792ad600`** (Session-Ende-Doku: DIALOG-STAND + WIR-PROZESS; davor DIALOG **`b915956b`**, Besucher/Kreinecker-Bundle **`6d580f57`**). Nächster Start: `npm run briefing` + dieses File lesen.
+**Session-Ende 27.04.26:** Schluss für heute – **`git` sauber**, Doku **Session-Ende** auf **main** gepusht (**DIALOG-STAND** + **WIR-PROZESS**). Aktueller Tip: `git log -1 --oneline`. Nächster Start: `npm run briefing` + dieses File lesen.
 
 ---
 
