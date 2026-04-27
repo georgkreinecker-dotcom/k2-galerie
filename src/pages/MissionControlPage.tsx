@@ -1,407 +1,650 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { PROJECT_ROUTES, PLATFORM_ROUTES, getAllProjectIds } from '../config/navigation'
+import { PROJECT_ROUTES, PLATFORM_ROUTES, getAllProjectIds, MOK2_ROUTE } from '../config/navigation'
+import { fetchVisitCount } from '../utils/visitCountApiOrigin'
+import {
+  formatMissionVisitSnapshotColumnLabel,
+  loadMissionVisitSnapshots,
+  MISSION_VISIT_CHART_KEY_TO_FIELD,
+  upsertMissionVisitSnapshot,
+} from '../utils/missionVisitSnapshots'
 
-// Helper: Prüft localStorage direkt (ohne Hook)
+const SHOW_VISIT_CHART_KEY = 'k2-mission-control-show-visit-chart'
+
 function getPersistentBoolean(key: string): boolean {
   try {
-    const value = localStorage.getItem(key)
-    return value === 'true'
+    return localStorage.getItem(key) === 'true'
   } catch {
     return false
   }
 }
 
-export default function MissionControlPage() {
-  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set())
-  const [showBackup, setShowBackup] = useState(false)
+type VisitChartRow = { key: string; label: string; value: number; barColor: string }
 
-  const projects = useMemo(() => {
-    return getAllProjectIds().map((id) => {
-      const project = PROJECT_ROUTES[id]
-      
-      // Für k2-galerie: Berechne Status basierend auf gespeicherten Tasks
-      if (id === 'k2-galerie') {
-        const phaseKeys = [
-          'k2-mission-phase1-1', 'k2-mission-phase1-2', 'k2-mission-phase1-3', 'k2-mission-phase1-4',
-          'k2-mission-phase2-1', 'k2-mission-phase2-2', 'k2-mission-phase2-3', 'k2-mission-phase2-4', 'k2-mission-phase2-5',
-          'k2-mission-phase3-1', 'k2-mission-phase3-2', 'k2-mission-phase3-3', 'k2-mission-phase3-4', 'k2-mission-phase3-5',
-          'k2-mission-phase4-1', 'k2-mission-phase4-2', 'k2-mission-phase4-3', 'k2-mission-phase4-4',
-          'k2-mission-phase5-1', 'k2-mission-phase5-2', 'k2-mission-phase5-3', 'k2-mission-phase5-4', 'k2-mission-phase5-5', 'k2-mission-phase5-6', 'k2-mission-phase5-7', 'k2-mission-phase5-8',
-        ]
-        
-        const completed = phaseKeys.filter(key => getPersistentBoolean(key)).length
-        const total = phaseKeys.length
-        const percent = total ? Math.round((completed / total) * 100) : 0
-        
-        return {
-          id,
-          name: project.name,
-          description: 'Kunst & Keramik Galerie – Hybrid-Eröffnung April 2026',
-          status: percent === 100 ? 'completed' : percent > 0 ? 'in-progress' : 'planned',
-          progress: percent,
-          completed,
-          total,
-          color: '#5ffbf1',
-          routes: project,
-        }
-      }
-      
-      // Für andere Projekte: Standard-Werte
-      return {
-        id,
-        name: project.name,
-        description: 'Projekt',
-        status: 'planned' as const,
-        progress: 0,
-        completed: 0,
-        total: 0,
-        color: '#8b5cf6',
-        routes: project,
-      }
+const PROJECT_ENTRY_COLOR: Record<string, string> = {
+  'k2-galerie': '#5ffbf1',
+  'k2-markt': '#a78bfa',
+  vk2: '#8b5cf6',
+  'k2-familie': '#34d399',
+}
+
+export default function MissionControlPage() {
+  const [showVisitChart, setShowVisitChart] = useState(() => getPersistentBoolean(SHOW_VISIT_CHART_KEY))
+  const [visits, setVisits] = useState<{
+    k2: number
+    oeffentlich: number
+    vk2Demo: number
+    k2FamilieMuster: number
+    kreineckerStammbaum: number
+  } | null>(null)
+  const [visitTimeline, setVisitTimeline] = useState(loadMissionVisitSnapshots)
+
+  useEffect(() => {
+    Promise.all([
+      fetchVisitCount('k2'),
+      fetchVisitCount('oeffentlich'),
+      fetchVisitCount('vk2'),
+      fetchVisitCount('k2-familie-muster'),
+      fetchVisitCount('k2-familie-kreinecker-stammbaum'),
+    ]).then(([k2, oef, vk2Demo, k2FamilieMuster, kreineckerStammbaum]) => {
+      const next = { k2, oeffentlich: oef, vk2Demo, k2FamilieMuster, kreineckerStammbaum }
+      setVisits(next)
+      upsertMissionVisitSnapshot(next)
+      setVisitTimeline(loadMissionVisitSnapshots())
     })
   }, [])
 
-  const totalCompleted = projects.reduce((sum, p) => sum + p.completed, 0)
-  const totalTasks = projects.reduce((sum, p) => sum + p.total, 0)
-  const overallProgress = totalTasks ? Math.round((totalCompleted / totalTasks) * 100) : 0
-  const activeProjects = projects.filter(p => p.status === 'in-progress').length
+  const projectQuickEntries = useMemo(
+    () =>
+      getAllProjectIds().map((id) => ({
+        id,
+        name: PROJECT_ROUTES[id].name,
+        home: PROJECT_ROUTES[id].home,
+        color: PROJECT_ENTRY_COLOR[id] ?? '#94a3b8',
+      })),
+    [],
+  )
+
+  const visitSum =
+    visits != null
+      ? visits.k2 +
+        visits.oeffentlich +
+        visits.vk2Demo +
+        visits.k2FamilieMuster +
+        visits.kreineckerStammbaum
+      : null
+
+  const visitChartRows = useMemo((): VisitChartRow[] | null => {
+    if (!visits) return null
+    return [
+      { key: 'k2', label: 'K2 Galerie', value: visits.k2, barColor: '#5ffbf1' },
+      { key: 'oeffentlich', label: 'ök2 Demo', value: visits.oeffentlich, barColor: '#fcd34d' },
+      { key: 'vk2', label: 'VK2-Demo', value: visits.vk2Demo, barColor: '#a78bfa' },
+      { key: 'fam-muster', label: 'K2 Familie Muster', value: visits.k2FamilieMuster, barColor: '#34d399' },
+      { key: 'krein', label: 'Kreinecker-Stammbaum', value: visits.kreineckerStammbaum, barColor: '#fb923c' },
+    ]
+  }, [visits])
+
+  const visitChartMax = useMemo(() => {
+    if (!visitChartRows?.length) return 1
+    return Math.max(1, ...visitChartRows.map((r) => r.value))
+  }, [visitChartRows])
+
+  const visitMatrixPrevLast = useMemo(() => {
+    if (visitTimeline.length < 2) return null
+    const prev = visitTimeline[visitTimeline.length - 2]
+    const last = visitTimeline[visitTimeline.length - 1]
+    return { prev, last }
+  }, [visitTimeline])
+
+  const visitTimelineGraphic = useMemo(() => {
+    if (visitTimeline.length < 1 || !visitChartRows?.length) return null
+    const viewW = 720
+    const viewH = 248
+    const padL = 52
+    const padR = 14
+    const padT = 20
+    const padB = 56
+    const iw = viewW - padL - padR
+    const ih = viewH - padT - padB
+    let maxY = 1
+    for (const snap of visitTimeline) {
+      for (const row of visitChartRows) {
+        const f = MISSION_VISIT_CHART_KEY_TO_FIELD[row.key]
+        if (f) maxY = Math.max(maxY, snap[f])
+      }
+    }
+    const n = visitTimeline.length
+    const denom = n <= 1 ? 1 : n - 1
+    const xAt = (i: number) => padL + (i / denom) * iw
+    const yAt = (v: number) => padT + ih - (v / maxY) * ih
+    type Pl = { rowKey: string; label: string; color: string; points: string; dots: { cx: number; cy: number }[] }
+    const polylines: Pl[] = []
+    for (const row of visitChartRows) {
+      const f = MISSION_VISIT_CHART_KEY_TO_FIELD[row.key]
+      if (!f) continue
+      const dots = visitTimeline.map((s, i) => ({ cx: xAt(i), cy: yAt(s[f]) }))
+      const points = dots.map((d) => `${d.cx},${d.cy}`).join(' ')
+      polylines.push({ rowKey: row.key, label: row.label, color: row.barColor, points, dots })
+    }
+    const xLabelEvery = n <= 9 ? 1 : Math.ceil(n / 9)
+    const xLabels = visitTimeline.map((s, i) => ({
+      x: xAt(i),
+      text: formatMissionVisitSnapshotColumnLabel(s.at),
+      show: i % xLabelEvery === 0 || i === n - 1,
+    }))
+    const gridYs = [0, 0.25, 0.5, 0.75, 1].map((t) => padT + ih * (1 - t))
+    return { viewW, viewH, padL, iw, ih, maxY, polylines, xLabels, gridYs }
+  }, [visitTimeline, visitChartRows])
+
+  const setVisitChartVisible = (next: boolean) => {
+    setShowVisitChart(next)
+    try {
+      localStorage.setItem(SHOW_VISIT_CHART_KEY, next ? 'true' : 'false')
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const printVisitReport = () => {
+    document.body.setAttribute('data-mission-print-visits-only', '1')
+    let cleaned = false
+    const cleanup = () => {
+      if (cleaned) return
+      cleaned = true
+      document.body.removeAttribute('data-mission-print-visits-only')
+      window.removeEventListener('afterprint', cleanup)
+    }
+    window.addEventListener('afterprint', cleanup)
+    window.print()
+    window.setTimeout(cleanup, 2000)
+  }
 
   return (
     <main className="mission-wrapper">
       <div className="viewport">
-        <header>
-          <div>
-            <h1>🚀 Mission Control</h1>
-            <div className="meta">Übergeordnete Übersicht aller Projekte</div>
-          </div>
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            <div style={{ fontSize: '0.75rem', color: '#8fa0c9', opacity: 0.7 }}>💾 Auto-Save aktiv</div>
-            <Link
-              to="/zettel-pilot-form"
-              className="btn small-btn"
-              style={{
-                background: 'linear-gradient(120deg, #f59e0b, #d97706)',
-                color: '#ffffff',
-                textDecoration: 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem'
-              }}
-              title="Pilot-Zettel: Name (und optional URL) eintragen, dann Zettel drucken"
-            >
-              <span style={{ fontSize: '1.1rem' }}>📄</span>
-              <span>Pilot-Zettel</span>
-            </Link>
-            <Link
-              to={PROJECT_ROUTES['k2-galerie'].testuserMappe}
-              className="btn small-btn"
-              style={{
-                background: 'linear-gradient(120deg, #0d9488, #0f766e)',
-                color: '#ffffff',
-                textDecoration: 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem'
-              }}
-              title="Testuser-Mappe: Dokumente, Anmeldung, Katalog, Infos-Zettel, Testprotokolle"
-            >
-              <span style={{ fontSize: '1.1rem' }}>📂</span>
-              <span>Testuser-Mappe</span>
-            </Link>
-            <Link
-              to="/k2team-handbuch"
-              className="btn small-btn"
-              style={{
-                background: 'linear-gradient(120deg, #8b5cf6, #6366f1)',
-                color: '#ffffff',
-                textDecoration: 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem'
-              }}
-              title="K2Team Handbuch öffnen"
-            >
-              <span style={{ fontSize: '1.1rem' }}>🧠⚙️</span>
-              <span>Handbuch</span>
-            </Link>
-            <Link 
-              to={PLATFORM_ROUTES.home} 
-              className="btn small-btn"
-              style={{ 
-                background: 'linear-gradient(120deg, #5ffbf1, #33a1ff)',
-                color: '#04111f',
-                textDecoration: 'none'
-              }}
-            >
-              ← Plattform
-            </Link>
-          </div>
-        </header>
+        {/* Kein großes viewport-header (Smart Panel = Kontext). Schnellzugriff eine Zeile – vgl. schlanke APf-Einstiege. */}
+        <nav
+          className="mission-visit-no-print"
+          aria-label="Schnellzugriff"
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: '0.5rem 0.85rem',
+            marginBottom: '1.15rem',
+            fontSize: '0.82rem',
+          }}
+        >
+          <Link to={PLATFORM_ROUTES.home} style={{ color: '#5ffbf1', textDecoration: 'none', fontWeight: 600 }}>
+            ← Plattform
+          </Link>
+          <span style={{ color: 'rgba(148,163,184,0.5)', userSelect: 'none' }} aria-hidden>
+            ·
+          </span>
+          <Link to="/k2team-handbuch" style={{ color: '#a5b4fc', textDecoration: 'none' }}>
+            Handbuch
+          </Link>
+          <span style={{ color: 'rgba(148,163,184,0.5)', userSelect: 'none' }} aria-hidden>
+            ·
+          </span>
+          <Link to="/zettel-pilot-form" style={{ color: '#fcd34d', textDecoration: 'none' }}>
+            Pilot-Zettel
+          </Link>
+          <span style={{ color: 'rgba(148,163,184,0.5)', userSelect: 'none' }} aria-hidden>
+            ·
+          </span>
+          <Link to={PROJECT_ROUTES['k2-galerie'].testuserMappe} style={{ color: '#5eead4', textDecoration: 'none' }}>
+            Testuser-Mappe
+          </Link>
+          <span style={{ color: 'rgba(148,163,184,0.5)', userSelect: 'none' }} aria-hidden>
+            ·
+          </span>
+          <Link to={PLATFORM_ROUTES.missionControlSystem} style={{ color: '#c4b5fd', textDecoration: 'none', fontSize: '0.8rem' }}>
+            System & Kontext
+          </Link>
+        </nav>
 
-        <section className="stats">
-          <div className="stat">
-            <span>Gesamt-Status</span>
-            <strong style={{ fontSize: '2rem' }}>{overallProgress}%</strong>
-            <small className="muted">{totalCompleted}/{totalTasks} Aufgaben</small>
+        {/* Besucher – wie Übersicht-Board, ohne Doppel-Lizenz-API (nur APf / Entwicklung) */}
+        <section
+          className="panel mission-visit-report-panel"
+          style={{
+            marginTop: '1.25rem',
+            background: 'linear-gradient(135deg, rgba(99,102,241,0.14), rgba(129,140,248,0.08))',
+            border: '1px solid rgba(129,140,248,0.45)',
+          }}
+        >
+          <h2 style={{ margin: '0 0 0.75rem', fontSize: '1.15rem', color: '#a5b4fc' }}>👁 Besucher (Zähler)</h2>
+          <p style={{ margin: '0 0 0.35rem', fontSize: '0.85rem', color: '#8fa0c9' }}>
+            Pro Browser-Sitzung einmal gezählt – Galerie, ök2, VK2-Demo, Musterfamilie Huber, Kreinecker-Stammbaum.
+          </p>
+          <p
+            style={{
+              margin: '0 0 1rem',
+              fontSize: '0.78rem',
+              color: 'rgba(167,192,255,0.95)',
+              padding: '0.45rem 0.65rem',
+              background: 'rgba(15,23,42,0.35)',
+              borderRadius: '8px',
+              border: '1px solid rgba(129,140,248,0.35)',
+            }}
+          >
+            🔧 <strong>Nur für dich / Entwicklung:</strong> diese Ansicht und Grafik erscheinen in der APf (Mission Control),{' '}
+            <strong>nicht</strong> in der K2-Familie-Nutzer-Oberfläche.
+          </p>
+          <div
+            className="mission-visit-no-print"
+            style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center', marginBottom: '1rem' }}
+          >
+            <label
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                fontSize: '0.82rem',
+                color: '#e0e7ff',
+                cursor: 'pointer',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={showVisitChart}
+                onChange={() => setVisitChartVisible(!showVisitChart)}
+              />
+              Balken anzeigen
+            </label>
+            <button
+              type="button"
+              className="btn small-btn"
+              onClick={printVisitReport}
+              style={{
+                background: 'linear-gradient(120deg, #475569, #334155)',
+                color: '#f8fafc',
+                border: '1px solid rgba(148,163,184,0.5)',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+              title="Druckdialog: Als PDF speichern wählen"
+            >
+              🖨️ PDF / Drucken (nur dieser Block)
+            </button>
           </div>
-          <div className="stat">
-            <span>Aktive Projekte</span>
-            <strong>{activeProjects}</strong>
-            <small className="muted">von {projects.length} Projekten</small>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'baseline' }}>
+            <div>
+              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#a5b4fc', lineHeight: 1.1 }}>
+                {visitSum == null ? '…' : visitSum}
+              </div>
+              <div style={{ fontSize: '0.8rem', color: '#8fa0c9' }}>Summe Sichten</div>
+            </div>
+            <div style={{ fontSize: '0.88rem', color: 'rgba(240,247,255,0.88)', lineHeight: 1.6 }}>
+              <div>
+                <strong style={{ color: '#f0f6ff' }}>K2:</strong> {visits?.k2 ?? '–'}
+              </div>
+              <div>
+                <strong style={{ color: '#f0f6ff' }}>ök2:</strong> {visits?.oeffentlich ?? '–'}
+              </div>
+              <div>
+                <strong style={{ color: '#f0f6ff' }}>VK2-Demo:</strong> {visits?.vk2Demo ?? '–'}
+              </div>
+              <div>
+                <strong style={{ color: '#f0f6ff' }}>K2 Familie Muster:</strong> {visits?.k2FamilieMuster ?? '–'}
+              </div>
+              <div>
+                <strong style={{ color: '#f0f6ff' }}>Kreinecker-Stammbaum:</strong> {visits?.kreineckerStammbaum ?? '–'}
+              </div>
+            </div>
+            <Link
+              to={PROJECT_ROUTES['k2-galerie'].uebersicht}
+              className="btn small-btn mission-visit-no-print"
+              style={{
+                alignSelf: 'center',
+                background: 'linear-gradient(120deg, #6366f1, #4f46e5)',
+                color: '#fff',
+                textDecoration: 'none',
+                fontWeight: 600,
+              }}
+            >
+              Übersicht-Board → Lizenzen, Zahlen, Export
+            </Link>
           </div>
-          <div className="stat">
-            <span>Abgeschlossen</span>
-            <strong>{projects.filter(p => p.status === 'completed').length}</strong>
-            <small className="muted">Projekte fertig</small>
-          </div>
-        </section>
-
-        <section className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
-          {projects.map((project) => {
-            const isExpanded = expandedProjects.has(project.id)
-            return (
-              <div 
-                key={project.id} 
-                className="panel"
-                style={{
-                  border: `1px solid ${project.color}40`,
-                  background: `linear-gradient(135deg, ${project.color}15, rgba(18, 22, 35, 0.95))`,
-                }}
+          {showVisitChart && visitChartRows && (
+            <div className="mission-visit-chart" style={{ marginTop: '1.25rem' }}>
+              <h3
+                className="mission-visit-chart-subtitle"
+                style={{ margin: '0 0 0.65rem', fontSize: '0.95rem', color: '#c7d2fe' }}
               >
-                <div 
-                  style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center',
-                    cursor: 'pointer',
-                    marginBottom: isExpanded ? '1rem' : '0'
-                  }}
-                  onClick={() => {
-                    const newExpanded = new Set(expandedProjects)
-                    if (newExpanded.has(project.id)) {
-                      newExpanded.delete(project.id)
-                    } else {
-                      newExpanded.add(project.id)
-                    }
-                    setExpandedProjects(newExpanded)
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
-                    <div
-                      style={{
-                        width: '12px',
-                        height: '12px',
-                        borderRadius: '50%',
-                        background: project.color,
-                        boxShadow: `0 0 8px ${project.color}`,
-                      }}
-                    />
-                    <div style={{ flex: 1 }}>
-                      <h2 style={{ margin: 0, fontSize: '1.2rem', color: project.color }}>
-                        {project.name}
-                      </h2>
-                      <div style={{ fontSize: '0.75rem', color: '#8fa0c9', marginTop: '0.25rem' }}>
-                        {project.description}
+                Verteilung (relativ zum höchsten Einzelwert)
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                {visitChartRows.map((row) => {
+                  const pct = visitChartMax > 0 ? Math.round((row.value / visitChartMax) * 100) : 0
+                  const share = visitSum && visitSum > 0 ? Math.round((row.value / visitSum) * 100) : 0
+                  return (
+                    <div key={row.key} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                      <div
+                        className="mission-visit-chart-row-head"
+                        style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#e0e7ff' }}
+                      >
+                        <span>{row.label}</span>
+                        <span>
+                          {row.value}{' '}
+                          <span className="mission-visit-chart-pct" style={{ color: '#8fa0c9' }}>
+                            ({share}% der Summe)
+                          </span>
+                        </span>
+                      </div>
+                      <div className="mission-visit-bar-track">
+                        <div
+                          className="mission-visit-bar-fill"
+                          style={{ width: `${pct}%`, background: row.barColor }}
+                          title={`${row.value} Sichten`}
+                        />
                       </div>
                     </div>
-                  </div>
-                  <span style={{ fontSize: '1.2rem', color: '#8fa0c9', marginLeft: '1rem' }}>
-                    {isExpanded ? '▼' : '▶'}
-                  </span>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.75rem' }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.25rem' }}>
-                      <span style={{ color: '#8fa0c9' }}>Fortschritt</span>
-                      <span style={{ color: project.color, fontWeight: '600' }}>{project.progress}%</span>
-                    </div>
-                    <div style={{ 
-                      height: '6px', 
-                      background: 'rgba(255, 255, 255, 0.1)', 
-                      borderRadius: '3px',
-                      overflow: 'hidden'
-                    }}>
-                      <div style={{ 
-                        height: '100%', 
-                        width: `${project.progress}%`, 
-                        background: `linear-gradient(90deg, ${project.color}, ${project.color}80)`,
-                        transition: 'width 0.3s ease'
-                      }} />
-                    </div>
-                  </div>
-                  <div style={{ 
-                    padding: '0.25rem 0.5rem',
-                    borderRadius: '6px',
-                    fontSize: '0.75rem',
-                    background: project.status === 'completed' ? '#48bb7840' : project.status === 'in-progress' ? '#5ffbf140' : 'rgba(255, 255, 255, 0.1)',
-                    color: project.status === 'completed' ? '#48bb78' : project.status === 'in-progress' ? '#5ffbf1' : '#8fa0c9'
-                  }}>
-                    {project.status === 'completed' && '✅'}
-                    {project.status === 'in-progress' && '🟢'}
-                    {project.status === 'planned' && '⚪'}
-                  </div>
-                </div>
-
-                {isExpanded && (
-                  <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      {'plan' in project.routes && (
-                        <Link
-                          to={project.routes.plan}
-                          className="btn small-btn"
-                          style={{
-                            background: `linear-gradient(120deg, ${project.color}, ${project.color}80)`,
-                            color: '#04111f',
-                            textDecoration: 'none',
-                            textAlign: 'center',
-                            fontSize: '0.85rem'
-                          }}
-                        >
-                          📋 Projektplan öffnen
-                        </Link>
-                      )}
-                      <Link
-                        to={project.routes.home}
-                        className="btn small-btn"
-                        style={{
-                          background: 'rgba(255, 255, 255, 0.1)',
-                          color: '#f4f7ff',
-                          textDecoration: 'none',
-                          textAlign: 'center',
-                          fontSize: '0.85rem',
-                          border: '1px solid rgba(255, 255, 255, 0.2)'
-                        }}
+                  )
+                })}
+              </div>
+            </div>
+          )}
+          {visitChartRows && (
+            <div
+              className="mission-visit-matrix"
+              style={{ marginTop: showVisitChart ? '1.35rem' : '1.25rem' }}
+            >
+                <h3
+                  className="mission-visit-chart-subtitle mission-visit-matrix-title"
+                  style={{ margin: '0 0 0.5rem', fontSize: '0.95rem', color: '#c7d2fe' }}
+                >
+                  Matrix: Bereich × Zeitschiene
+                </h3>
+                <p style={{ margin: '0 0 0.65rem', fontSize: '0.72rem', color: '#8fa0c9', lineHeight: 1.45 }}>
+            Zeitschiene (lokale Tages-Snapshots) mit Liniendiagramm und Tabelle – unabhängig von „Balken“; PDF/Druck
+            enthält Matrix und Grafik immer.
+                </p>
+                {visitTimeline.length > 0 && visitTimelineGraphic ? (
+                  <div className="mission-visit-timeline-graphic" style={{ marginBottom: '1.1rem' }}>
+                    <h4
+                      className="mission-visit-chart-subtitle"
+                      style={{ margin: '0 0 0.35rem', fontSize: '0.88rem', color: '#c7d2fe', fontWeight: 700 }}
+                    >
+                      Zeitschiene (Grafik)
+                    </h4>
+                    <p style={{ margin: '0 0 0.45rem', fontSize: '0.7rem', color: '#8fa0c9' }}>
+                      Gleiche Zahlen wie die Matrix – Verlauf der kumulativen Zähler über die Zeit.
+                    </p>
+                    <svg
+                      viewBox={`0 0 ${visitTimelineGraphic.viewW} ${visitTimelineGraphic.viewH}`}
+                      className="mission-visit-timeline-svg"
+                      role="img"
+                      aria-label="Besucher-Zeitschiene als Liniendiagramm"
+                    >
+                      {visitTimelineGraphic.gridYs.map((y, idx) => (
+                        <line
+                          key={idx}
+                          x1={visitTimelineGraphic.padL}
+                          y1={y}
+                          x2={visitTimelineGraphic.padL + visitTimelineGraphic.iw}
+                          y2={y}
+                          className="mission-visit-timeline-grid"
+                        />
+                      ))}
+                      <text
+                        x={8}
+                        y={visitTimelineGraphic.gridYs[0] + 4}
+                        fontSize="11"
+                        className="mission-visit-timeline-axis-label"
                       >
-                        🏠 Projekt-Start
-                      </Link>
+                        {visitTimelineGraphic.maxY}
+                      </text>
+                      <text
+                        x={8}
+                        y={visitTimelineGraphic.gridYs[4] + 4}
+                        fontSize="11"
+                        className="mission-visit-timeline-axis-label"
+                      >
+                        0
+                      </text>
+                      {visitTimelineGraphic.polylines.map((pl) => (
+                        <g key={pl.rowKey}>
+                          <polyline
+                            fill="none"
+                            stroke={pl.color}
+                            strokeWidth="2.5"
+                            strokeLinejoin="round"
+                            strokeLinecap="round"
+                            points={pl.points}
+                            className="mission-visit-timeline-line"
+                          />
+                          {pl.dots.map((d, i) => (
+                            <circle
+                              key={i}
+                              cx={d.cx}
+                              cy={d.cy}
+                              r="4"
+                              fill={pl.color}
+                              className="mission-visit-timeline-dot"
+                            />
+                          ))}
+                        </g>
+                      ))}
+                      {visitTimelineGraphic.xLabels
+                        .filter((l) => l.show)
+                        .map((l, i) => (
+                          <text
+                            key={i}
+                            x={l.x}
+                            y={visitTimelineGraphic.viewH - 14}
+                            fontSize="10"
+                            textAnchor="middle"
+                            className="mission-visit-timeline-xlabel"
+                          >
+                            {l.text}
+                          </text>
+                        ))}
+                    </svg>
+                    <div
+                      className="mission-visit-timeline-legend"
+                      style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '0.65rem',
+                        marginTop: '0.45rem',
+                        fontSize: '0.72rem',
+                        color: '#e0e7ff',
+                      }}
+                    >
+                      {visitTimelineGraphic.polylines.map((pl) => (
+                        <span
+                          key={pl.rowKey}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                        >
+                          <span
+                            style={{
+                              width: 14,
+                              height: 3,
+                              background: pl.color,
+                              borderRadius: 2,
+                              flexShrink: 0,
+                            }}
+                            aria-hidden
+                          />
+                          {pl.label}
+                        </span>
+                      ))}
                     </div>
-                    <div style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: '#8fa0c9' }}>
-                      {project.completed}/{project.total} Aufgaben erledigt
-                    </div>
+                  </div>
+                ) : null}
+                {visitTimeline.length === 0 ? (
+                  <p style={{ margin: 0, fontSize: '0.78rem', color: '#94a3b8' }}>
+                    Nach dem ersten Laden erscheint die erste Spalte; über mehrere Tage füllt sich die Zeitschiene.
+                  </p>
+                ) : (
+                  <div className="mission-visit-matrix-scroll">
+                    <table className="mission-visit-matrix-table">
+                      <thead>
+                        <tr>
+                          <th scope="col">Bereich</th>
+                          {visitTimeline.map((s) => (
+                            <th key={s.at} scope="col">
+                              {formatMissionVisitSnapshotColumnLabel(s.at)}
+                            </th>
+                          ))}
+                          {visitMatrixPrevLast ? (
+                            <th scope="col" title="Letzte Spalte minus vorherige Spalte">
+                              Δ
+                            </th>
+                          ) : null}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {visitChartRows.map((row) => {
+                          const field = MISSION_VISIT_CHART_KEY_TO_FIELD[row.key]
+                          const delta =
+                            visitMatrixPrevLast && field
+                              ? visitMatrixPrevLast.last[field] - visitMatrixPrevLast.prev[field]
+                              : null
+                          return (
+                            <tr key={row.key}>
+                              <th scope="row">{row.label}</th>
+                              {visitTimeline.map((s) => (
+                                <td key={`${row.key}-${s.at}`}>{field ? s[field] : '–'}</td>
+                              ))}
+                              {visitMatrixPrevLast && field ? (
+                                <td
+                                  className={
+                                    delta != null && delta > 0
+                                      ? 'mission-visit-matrix-delta-pos'
+                                      : delta != null && delta < 0
+                                        ? 'mission-visit-matrix-delta-neg'
+                                        : ''
+                                  }
+                                >
+                                  {delta == null ? '–' : delta > 0 ? `+${delta}` : String(delta)}
+                                </td>
+                              ) : null}
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
                   </div>
                 )}
-              </div>
-            )
-          })}
+            </div>
+          )}
+          <p className="mission-visit-print-stand" style={{ margin: '1rem 0 0', fontSize: '0.75rem', color: '#8fa0c9' }}>
+            Stand Anzeige / Druck: {new Date().toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })} · Quelle
+            Vercel GET /api/visit
+          </p>
+          <div className="mission-visit-report-seitenfuss seitenfuss" aria-hidden />
         </section>
 
-        {/* AI Memory Backup Tool */}
-        <section className="panel" style={{ marginTop: '2rem', background: 'rgba(95, 251, 241, 0.05)', border: '1px solid rgba(95, 251, 241, 0.2)' }}>
-          <div 
-            style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center',
-              cursor: 'pointer',
-              marginBottom: showBackup ? '1rem' : '0'
+        {/* Nutzer & Vertrieb */}
+        <section style={{ marginTop: '1.5rem' }}>
+          <h2 style={{ fontSize: '1.05rem', color: '#f0f6ff', margin: '0 0 0.75rem' }}>Nutzer & Vertrieb</h2>
+          <div
+            className="grid"
+            style={{
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: '0.75rem',
             }}
-            onClick={() => setShowBackup(!showBackup)}
           >
-            <h2 style={{ color: '#5ffbf1', margin: 0 }}>💾 AI Memory Backup</h2>
-            <span style={{ fontSize: '1.2rem', color: '#8fa0c9' }}>
-              {showBackup ? '▼' : '▶'}
-            </span>
-          </div>
-          
-          {showBackup && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <button
-              onClick={async () => {
-                try {
-                  const response = await fetch('/backup/k2-ai-memory-backup.json')
-                  if (!response.ok) {
-                    throw new Error('Backup-Datei nicht gefunden')
-                  }
-                  const data = await response.json()
-                  
-                  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-                  const url = URL.createObjectURL(blob)
-                  const link = document.createElement('a')
-                  link.href = url
-                  link.download = `k2-ai-memory-backup-${new Date().toISOString().split('T')[0]}.json`
-                  document.body.appendChild(link)
-                  link.click()
-                  document.body.removeChild(link)
-                  URL.revokeObjectURL(url)
-                  
-                  alert('✅ Backup heruntergeladen!')
-                } catch (error) {
-                  alert(`❌ Fehler: ${error instanceof Error ? error.message : String(error)}`)
-                }
-              }}
-              className="btn"
+            <Link
+              to={PROJECT_ROUTES['k2-galerie'].uebersicht}
+              className="panel"
               style={{
-                background: 'linear-gradient(120deg, #5ffbf1, #33a1ff)',
-                color: '#0a0e27',
-                border: 'none',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: '600',
-                fontSize: '0.9rem'
+                textDecoration: 'none',
+                color: 'inherit',
+                border: '1px solid rgba(20,184,166,0.35)',
+                padding: '1rem',
               }}
             >
-              📥 Backup herunterladen
-            </button>
-            
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.85rem' }}>
-                📤 Backup hochladen:
-              </label>
-              <input
-                type="file"
-                accept=".json"
-                onChange={async (e) => {
-                  const file = e.target.files?.[0]
-                  if (!file) return
-                  
-                  try {
-                    const text = await file.text()
-                    const data = JSON.parse(text)
-                    
-                    if (!data.user || !data.project) {
-                      throw new Error('Ungültiges Backup-Format')
-                    }
-                    
-                    const response = await fetch('/api/write-backup', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: text
-                    })
-                    
-                    if (response.ok) {
-                      alert('✅ Backup hochgeladen!')
-                    } else {
-                      throw new Error('Fehler beim Hochladen')
-                    }
-                  } catch (error) {
-                    alert(`❌ Fehler: ${error instanceof Error ? error.message : String(error)}`)
-                  }
-                  
-                  e.target.value = ''
-                }}
-                style={{
-                  width: '100%',
-                  padding: '0.5rem',
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  borderRadius: '6px',
-                  color: '#fff',
-                  fontSize: '0.9rem'
-                }}
-              />
-            </div>
-            
-            <div style={{ marginTop: '1rem', padding: '0.75rem', background: 'rgba(0, 0, 0, 0.2)', borderRadius: '8px', fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.6)' }}>
-              💡 Backup → Speichern → Bei Neustart hochladen → "Lade Backup" sagen
-            </div>
+              <div style={{ fontSize: '1.25rem', marginBottom: '0.35rem' }}>📊</div>
+              <strong style={{ color: '#5eead4' }}>Übersicht-Board</strong>
+              <p style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', color: '#8fa0c9' }}>
+                Besucher, Lizenzen, Abrechnung – ein Screen
+              </p>
+            </Link>
+            <Link
+              to={PROJECT_ROUTES['k2-galerie'].licences}
+              className="panel"
+              style={{
+                textDecoration: 'none',
+                color: 'inherit',
+                border: '1px solid rgba(16,185,129,0.35)',
+                padding: '1rem',
+              }}
+            >
+              <div style={{ fontSize: '1.25rem', marginBottom: '0.35rem' }}>💼</div>
+              <strong style={{ color: '#6ee7b7' }}>Lizenzen</strong>
+              <p style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', color: '#8fa0c9' }}>Wer ist Kunde, Verwaltung</p>
+            </Link>
+            <Link
+              to={MOK2_ROUTE}
+              className="panel"
+              style={{
+                textDecoration: 'none',
+                color: 'inherit',
+                border: '1px solid rgba(251,191,36,0.35)',
+                padding: '1rem',
+              }}
+            >
+              <div style={{ fontSize: '1.25rem', marginBottom: '0.35rem' }}>📋</div>
+              <strong style={{ color: '#fcd34d' }}>mök2</strong>
+              <p style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', color: '#8fa0c9' }}>Vertrieb & Werbetexte</p>
+            </Link>
+            <Link
+              to={PROJECT_ROUTES['k2-galerie'].empfehlungstool}
+              className="panel"
+              style={{
+                textDecoration: 'none',
+                color: 'inherit',
+                border: '1px solid rgba(251,146,60,0.35)',
+                padding: '1rem',
+              }}
+            >
+              <div style={{ fontSize: '1.25rem', marginBottom: '0.35rem' }}>🤝</div>
+              <strong style={{ color: '#fdba74' }}>Empfehlungstool</strong>
+              <p style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', color: '#8fa0c9' }}>IDs & Links teilen</p>
+            </Link>
           </div>
-          )}
         </section>
 
-        <p className="save-hint" style={{ fontSize: '0.75rem', opacity: 0.6, marginTop: '1rem' }}>💾 Lokaler Speicher aktiv</p>
+        {/* Projekte: nur operative Einstiege; Beschreibungen/Roadmap/JSON auf System-Seite */}
+        <section className="mission-visit-no-print" style={{ marginTop: '1.5rem' }}>
+          <h2 style={{ fontSize: '1.05rem', color: '#f0f6ff', margin: '0 0 0.75rem' }}>Projekte – direkt</h2>
+          <div
+            className="grid"
+            style={{
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '0.75rem',
+            }}
+          >
+            {projectQuickEntries.map((p) => (
+              <Link
+                key={p.id}
+                to={p.home}
+                className="panel"
+                style={{
+                  textDecoration: 'none',
+                  color: 'inherit',
+                  border: `1px solid ${p.color}55`,
+                  padding: '0.85rem 1rem',
+                  background: `linear-gradient(135deg, ${p.color}14, rgba(18, 22, 35, 0.92))`,
+                }}
+              >
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: p.color, marginBottom: '0.45rem' }} />
+                <strong style={{ color: p.color, fontSize: '0.95rem' }}>{p.name}</strong>
+                <p style={{ margin: '0.35rem 0 0', fontSize: '0.78rem', color: '#8fa0c9' }}>Projekt-Start</p>
+              </Link>
+            ))}
+          </div>
+          <p style={{ margin: '0.85rem 0 0', fontSize: '0.78rem', color: '#64748b', lineHeight: 1.5 }}>
+            <Link to={PLATFORM_ROUTES.missionControlSystem} style={{ color: '#a5b4fc', fontWeight: 600 }}>
+              System & Kontext →
+            </Link>{' '}
+            Übersichtskarten, frühere Roadmap-Hinweise, Chat-Kontext-Datei – für den Betrieb meist nicht nötig.
+          </p>
+        </section>
       </div>
     </main>
   )

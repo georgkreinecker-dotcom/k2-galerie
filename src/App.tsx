@@ -104,6 +104,7 @@ import { PlatformOnlyRoute } from './components/PlatformOnlyRoute'
 import DevViewPage from './pages/DevViewPage'
 import PlatformStartPage from './pages/PlatformStartPage'
 import MissionControlPage from './pages/MissionControlPage'
+import MissionControlSystemPage from './pages/MissionControlSystemPage'
 import FlyerK2GaleriePage from './pages/FlyerK2GaleriePage'
 import ProspektK2GaleriePage from './pages/ProspektK2GaleriePage'
 import PresseEinladungK2GaleriePage from './pages/PresseEinladungK2GaleriePage'
@@ -991,6 +992,7 @@ function App() {
       } />
       <Route path="/control-studio" element={<Navigate to={PROJECT_ROUTES['k2-galerie'].controlStudio} replace />} />
       <Route path={PLATFORM_ROUTES.missionControl} element={<MissionControlPage />} />
+      <Route path={PLATFORM_ROUTES.missionControlSystem} element={<MissionControlSystemPage />} />
       <Route path="/mobile-connect" element={<Navigate to={PROJECT_ROUTES['k2-galerie'].mobileConnect} replace />} />
       
       {/* Dev-Tool für parallele Ansichten – auf Mobile → Galerie (keine 4 Seiten/Smart Panel) */}

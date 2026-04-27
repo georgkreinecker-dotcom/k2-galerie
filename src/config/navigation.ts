@@ -102,6 +102,8 @@ export const PLATFORM_ROUTES = {
   home: '/',
   projects: '/projects',
   missionControl: '/mission-control',
+  /** Kontext-Texte, Projektkarten, Chat-Kontext-JSON – nicht die tägliche Steuerung */
+  missionControlSystem: '/mission-control/system',
   key: '/platform/key',
   kosten: '/platform/kosten',
   licences: '/platform/licences',
