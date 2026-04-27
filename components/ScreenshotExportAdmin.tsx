@@ -1891,7 +1891,7 @@ import {
 import { startAutoSave, stopAutoSave, setupBeforeUnloadSave, pauseAutoSaveForMs, restoreFromBackup, restoreFromBackupFile, hasBackup, getBackupTimestamp, getBackupTimestamps, recordLastBackupDownloadExported, getLastBackupDownloadExported, createK2Backup, createOek2Backup, createVk2Backup, downloadBackupAsFile, restoreK2FromBackup, restoreOek2FromBackup, restoreVk2FromBackup, detectBackupKontext } from '../src/utils/autoSave'
 import { sortArtworksNewestFirst, sortArtworksFavoritesFirstThenNewest } from '../src/utils/artworkSort'
 import { getShopSoldArtworksKey, getShopStorageKeys } from '../src/utils/shopContextKeys'
-import { getArtworkLagerInfo, getArtworkNumberKey, revertOneSoldUnitInList } from '../src/utils/artworkLagerStatus'
+import { getArtworkLagerInfo, getArtworkNumberKey, revertOneOrderUnitForArtwork, revertOneSoldUnitInList } from '../src/utils/artworkLagerStatus'
 import { urlWithBuildVersion } from '../src/buildInfo.generated'
 import { getOrCreateEmpfehlerId, isValidEmpfehlerIdFormat } from '../src/utils/empfehlerId'
 import { LIZENZPREISE } from '../src/config/licencePricing'
@@ -12057,15 +12057,32 @@ ${'='.repeat(60)}
   // Verkauf stornieren (Kasse/Statistik): eine Verkaufszeile zurücknehmen, Bestand +1
   const handleStornoVerkauf = (artworkNumber: string) => {
     const soldKey = getShopSoldArtworksKey(tenant.isOeffentlich, tenant.isVk2)
+    const { ordersKey } = getShopStorageKeys(tenant.isOeffentlich, tenant.isVk2)
     let list: any[] = []
     try {
       list = JSON.parse(localStorage.getItem(soldKey) || '[]')
     } catch {
-      return
+      list = []
     }
-    const { newList, didChange } = revertOneSoldUnitInList(list, artworkNumber, undefined)
-    if (!didChange) return
-    localStorage.setItem(soldKey, JSON.stringify(newList))
+    const { newList, didChange: soldReverted } = revertOneSoldUnitInList(list, artworkNumber, undefined)
+    if (soldReverted) {
+      localStorage.setItem(soldKey, JSON.stringify(newList))
+    }
+    let ordList: any[] = []
+    try {
+      ordList = JSON.parse(localStorage.getItem(ordersKey) || '[]')
+    } catch {
+      ordList = []
+    }
+    let orderDid = false
+    if (!soldReverted) {
+      const { newOrders, didChange } = revertOneOrderUnitForArtwork(ordList, artworkNumber, undefined)
+      orderDid = didChange
+      if (orderDid) {
+        localStorage.setItem(ordersKey, JSON.stringify(newOrders))
+      }
+    }
+    if (!soldReverted && !orderDid) return
 
     const artworks = loadArtworks(tenant)
     const idx = artworks.findIndex((a: any) => (a.number || a.id) === artworkNumber)
@@ -12087,40 +12104,80 @@ ${'='.repeat(60)}
     const num = getArtworkNumberKey(art)
     if (!num) return
     const soldKey = getShopSoldArtworksKey(tenant.isOeffentlich, tenant.isVk2)
+    const { ordersKey } = getShopStorageKeys(tenant.isOeffentlich, tenant.isVk2)
+    const artUid = String(art?.uid ?? '').trim() || undefined
     let list: any[] = []
     try {
       list = JSON.parse(localStorage.getItem(soldKey) || '[]')
     } catch {
       list = []
     }
-    const { newList, didChange } = revertOneSoldUnitInList(list, num, String(art?.uid ?? '').trim() || undefined)
+    const { newList, didChange } = revertOneSoldUnitInList(list, num, artUid)
     if (didChange) {
       localStorage.setItem(soldKey, JSON.stringify(newList))
+    }
+    let ordList: any[] = []
+    try {
+      ordList = JSON.parse(localStorage.getItem(ordersKey) || '[]')
+    } catch {
+      ordList = []
+    }
+    let orderDid = false
+    if (!didChange) {
+      const { newOrders, didChange: ordCh } = revertOneOrderUnitForArtwork(ordList, num, artUid)
+      orderDid = ordCh
+      if (orderDid) {
+        localStorage.setItem(ordersKey, JSON.stringify(newOrders))
+      }
     }
     const artworks = loadArtworks(tenant)
     const idx = artworks.findIndex(
       (a: any) => getArtworkNumberKey(a) === num || (a.number || a.id) === num
     )
-    if (idx === -1) return
-    const a = artworks[idx]
-    const q = a.quantity != null ? Number(a.quantity) : 0
-    if (didChange) {
-      artworks[idx] = { ...a, quantity: q + 1, inShop: true }
-    } else if (q === 0) {
-      artworks[idx] = { ...a, quantity: 1, inShop: true }
-    } else {
+    if (idx === -1) {
+      if (didChange || orderDid) {
+        loadArtworksWithResolvedImages(tenant).then(setAllArtworksSafe)
+        window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromLocalWrite: true } }))
+      }
       return
     }
-    saveArtworks(tenant, artworks).then((ok) => {
+    const a = artworks[idx]
+    const q = a.quantity != null ? Number(a.quantity) : 0
+    let nextList = artworks
+    let shouldSaveArtworks = false
+    if (didChange) {
+      nextList = [...artworks]
+      nextList[idx] = { ...a, quantity: q + 1, inShop: true }
+      shouldSaveArtworks = true
+    } else if (orderDid && q === 0) {
+      // Kasse nur in Bestellungen (max(Verkaufsliste, Orders)) – Werkstamm war 0
+      nextList = [...artworks]
+      nextList[idx] = { ...a, quantity: 1, inShop: true }
+      shouldSaveArtworks = true
+    } else if (!didChange && !orderDid && q === 0) {
+      nextList = [...artworks]
+      nextList[idx] = { ...a, quantity: 1, inShop: true }
+      shouldSaveArtworks = true
+    } else if (!didChange && !orderDid) {
+      return
+    }
+    const afterStorageChange = (ok: boolean) => {
       if (ok) {
         loadArtworksWithResolvedImages(tenant).then(setAllArtworksSafe)
         window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromLocalWrite: true } }))
         if (editingArtwork && getArtworkNumberKey(editingArtwork) === num) {
-          setArtworkQuantity(String(artworks[idx].quantity ?? 1))
-          setIsInShop(artworks[idx].inShop !== false)
+          const row = nextList[idx] as (typeof a) & { quantity?: number; inShop?: boolean }
+          setArtworkQuantity(String(row.quantity ?? 1))
+          setIsInShop(row.inShop !== false)
         }
       }
-    })
+    }
+    if (shouldSaveArtworks) {
+      saveArtworks(tenant, nextList).then(afterStorageChange)
+    } else {
+      // Nur Verkaufs-/Order-Daten geändert, Werkstamm hatte schon Stückzahl: Anzeige trotzdem aktualisieren
+      void afterStorageChange(true)
+    }
   }
 
   // Werk als verkauft markieren – Stückzahl automatisch um 1 verringern

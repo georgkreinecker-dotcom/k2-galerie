@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   getArtworkLagerInfo,
+  revertOneOrderUnitForArtwork,
   revertOneSoldUnitInList,
   sumSoldFromListForArtwork,
   sumSoldFromOrdersForArtwork,
@@ -71,5 +72,41 @@ describe('artworkLagerStatus', () => {
     const { newList, didChange } = revertOneSoldUnitInList(list, 'N1', undefined)
     expect(didChange).toBe(true)
     expect(newList[0].soldQuantity).toBe(2)
+  })
+
+  it('revertOneOrderUnitForArtwork: eine Stück von neuester Order-Zeile', () => {
+    const orders = [
+      {
+        id: 'A',
+        date: '2025-01-01',
+        items: [{ number: 'K2-K-0008', quantity: 1, title: 'X', price: 280, category: 'k' }],
+        subtotal: 280,
+        discount: 0,
+        total: 280,
+      },
+    ]
+    const { newOrders, didChange } = revertOneOrderUnitForArtwork(orders, 'K2-K-0008', undefined)
+    expect(didChange).toBe(true)
+    expect(newOrders).toHaveLength(0)
+  })
+
+  it('nach Order-Revert: mit Werkstamm 1 Stück wie im Modal – nicht ausverkauft', () => {
+    const orders = [
+      {
+        id: 'A',
+        date: '2026-04-27',
+        items: [{ number: 'K2-K-0008', quantity: 1, title: 'V', price: 280, category: 'k' }],
+        subtotal: 280,
+        discount: 0,
+        total: 280,
+      },
+    ]
+    const { newOrders, didChange } = revertOneOrderUnitForArtwork(orders, 'K2-K-0008', undefined)
+    expect(didChange).toBe(true)
+    expect(newOrders).toHaveLength(0)
+    const info = getArtworkLagerInfo({ number: 'K2-K-0008', quantity: 1 }, [], newOrders)
+    expect(info.soldSumFromList).toBe(0)
+    expect(info.isAusverkauft).toBe(false)
+    expect(info.remaining).toBe(1)
   })
 })

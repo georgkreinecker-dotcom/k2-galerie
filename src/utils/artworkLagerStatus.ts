@@ -179,3 +179,84 @@ export function revertOneSoldUnitInList(
   }
   return { newList: arr, didChange: true }
 }
+
+function parseOrderLinePriceEur(raw: unknown): number {
+  if (typeof raw === 'number' && Number.isFinite(raw)) return raw
+  const s = String(raw ?? '')
+    .replace(/\s/g, '')
+    .replace(/€/g, '')
+    .replace(',', '.')
+  const n = parseFloat(s)
+  return Number.isFinite(n) ? n : 0
+}
+
+function orderLineSubtotalEurForRecalc(item: { price?: unknown; quantity?: unknown }): number {
+  return parseOrderLinePriceEur((item as any).price) * orderLineQuantity(item)
+}
+
+/** Gleiche Zugehörigkeit wie sumSoldFromOrdersForArtwork */
+function orderItemMatchesForRevert(
+  it: { number?: unknown; artworkUid?: unknown; quantity?: unknown },
+  artworkNumber: string,
+  artworkUid?: string
+): boolean {
+  const inum = String((it as any)?.number ?? '').trim()
+  if (inum !== artworkNumber) return false
+  const uid = (artworkUid ?? '').trim()
+  const iuid = String((it as any)?.artworkUid ?? '').trim()
+  if (uid && iuid && iuid !== uid) return false
+  return true
+}
+
+/**
+ * Eine Stück aus Kassen-Bestellungen zurückbuchen (neueste passende Order-Zeile zuerst).
+ * Wichtig für Lager-Anzeige: getArtworkLagerInfo nutzt max(Verkaufsliste, Orders).
+ */
+export function revertOneOrderUnitForArtwork(
+  orders: unknown,
+  artworkNumber: string,
+  artworkUid?: string
+): { newOrders: any[]; didChange: boolean } {
+  const num = artworkNumber.trim()
+  if (!num) return { newOrders: Array.isArray(orders) ? [...(orders as any[])] : [], didChange: false }
+  const arr = Array.isArray(orders) ? [...(orders as any[])] : []
+  const byNewest = arr
+    .map((o, i) => ({ o, i }))
+    .sort((a, b) => {
+      const ta = new Date(a.o?.date || a.o?.soldAt || 0).getTime()
+      const tb = new Date(b.o?.date || b.o?.soldAt || 0).getTime()
+      return tb - ta
+    })
+  for (const { i: orderIndex } of byNewest) {
+    const order = arr[orderIndex] as { items?: unknown; subtotal?: number; discount?: number; total?: number; id?: string }
+    const rawItems = Array.isArray(order?.items) ? order.items : []
+    const items = [...rawItems]
+    const ii = items.findIndex((it: any) => orderItemMatchesForRevert(it, num, artworkUid))
+    if (ii === -1) continue
+    const it = items[ii] as { quantity?: unknown; price?: unknown }
+    const q = orderLineQuantity(it)
+    if (q > 1) {
+      items[ii] = { ...it, quantity: q - 1 }
+    } else {
+      items.splice(ii, 1)
+    }
+    const oldSub = Number(order.subtotal) || 0
+    const newSubtotal = items.reduce((s, x) => s + orderLineSubtotalEurForRecalc(x as { price?: unknown; quantity?: unknown }), 0)
+    const discRaw = Number(order.discount) || 0
+    const newDiscount = oldSub > 0 && newSubtotal >= 0 ? discRaw * (newSubtotal / oldSub) : discRaw
+    const newTotal = Math.max(0, newSubtotal - newDiscount)
+    if (items.length === 0) {
+      arr.splice(orderIndex, 1)
+    } else {
+      arr[orderIndex] = {
+        ...order,
+        items,
+        subtotal: newSubtotal,
+        discount: newDiscount,
+        total: newTotal,
+      }
+    }
+    return { newOrders: arr, didChange: true }
+  }
+  return { newOrders: arr, didChange: false }
+}

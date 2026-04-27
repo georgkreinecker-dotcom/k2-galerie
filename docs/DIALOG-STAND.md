@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.04.26 – **Lager „1 Stück wieder verfügbar“: Kassen-Order mitzurückbuchen** – `revertOneOrderUnitForArtwork` in `artworkLagerStatus.ts`; Admin: **eine Quelle pro Klick** (zuerst Verkaufsliste, sonst `k2-orders`); bei Bestand 0 + nur Order → Werkstamm **1 Stück**; **Storno** war früher bei leerer Verkaufsliste abgebrochen → jetzt Order-Fallback. Tests `artworkLagerStatus.test.ts`. **Commit:** _(nach Push)_ ✅ **main**
+
+---
+
 **Letzter Stand:** 27.04.26 – **Buchhaltung + Kassabuch: Rechnung sichtbar & CSV** – Verkäufe aus Orders: **`verwendungszweck`** mit Bon, **Rechnung (RE-Nr.)** sobald `rechnungsNr` gespeichert (nicht nur bei Zahlart Rechnung); **Verkäufe-CSV** Spalte Rechnungsnr. + Empfänger (`manualRechnung`/`buyerSnapshot`); **Shop** `persistShopOrderRechnungFields` hält Empfänger-Snapshot mit. Tabelle Buchhaltung: längerer Text + `title`. **Commit:** `6158a06a` ✅ **main**
 
 ---
@@ -52,7 +56,7 @@
 
 ---
 
-**Was wir JETZT tun:** Nach Deploy: Kasse **Nummernliste** – verkauft/ausverkauft fehlt, Mehrfachstücke mit Lager sichtbar. **Nächster Fokus:** wie gehabt.  
+**Was wir JETZT tun:** Fix **„Wieder verfügbar“** + Orders ist auf **main** – nach **Deploy** K2-Admin: K2-K-0008 o. ä. testen. **Nächster Fokus:** wie gehabt.  
 **Session-Ende 24.04.26:** Alles gepusht, Arbeitsbaum sauber. K2-Familie-**Feature-Commit:** **`689d2370`** (danach nur Doku/Hash-Session-Ende).
 
 ---
