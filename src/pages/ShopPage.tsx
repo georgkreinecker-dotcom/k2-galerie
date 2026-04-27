@@ -1937,12 +1937,21 @@ ${bankBlock}
       const u: any = { ...stored[idx], rechnungsNr }
       if ((order as any).manualRechnung && typeof (order as any).manualRechnung === 'object') {
         u.manualRechnung = (order as any).manualRechnung
-        const snap = buildBuyerSnapshot({
+      }
+      let nextBuyer: BuyerSnapshotV1 | undefined
+      if ((order as any).manualRechnung && typeof (order as any).manualRechnung === 'object') {
+        nextBuyer = buildBuyerSnapshot({
           customerId: (order as any).customerId,
           manualRechnung: (order as any).manualRechnung,
         })
-        if (snap) u.buyerSnapshot = snap
+      } else {
+        const bs = (order as any).buyerSnapshot as BuyerSnapshotV1 | undefined
+        if (bs?.version === 1) nextBuyer = bs
+        else if ((order as any).customerId) {
+          nextBuyer = buildBuyerSnapshot({ customerId: (order as any).customerId })
+        }
       }
+      if (nextBuyer) u.buyerSnapshot = nextBuyer
       stored[idx] = u
       localStorage.setItem(ordersKey, JSON.stringify(stored))
       setOrders((prev) =>

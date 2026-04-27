@@ -86,6 +86,33 @@ function loadOrdersKey(tenant: KassabuchTenant): string {
   return K2_ORDERS_KEY
 }
 
+/**
+ * Anzeige im Kassabuch / für CSV: Verkauf, Bon-Nr., bei Rechnung ggf. RE-Nr., Kunde bzw. Rechnungsempfänger.
+ * Eine Quelle: gespeicherte Order (k2-orders etc.) inkl. manualRechnung, buyerSnapshot, rechnungsNr.
+ */
+export function formatVerkaufVerwendungszweckFromOrder(o: {
+  orderNumber?: string
+  paymentMethod?: string
+  rechnungsNr?: string
+  manualRechnung?: { name?: string; firma?: string }
+  buyerSnapshot?: { version?: number; name?: string; firma?: string }
+}): string {
+  const parts: string[] = ['Verkauf']
+  if (o.orderNumber) parts.push(String(o.orderNumber))
+  const r = o.rechnungsNr && String(o.rechnungsNr).trim()
+  if (r) parts.push(`Rechnung ${r}`)
+  else if (o.paymentMethod === 'transfer') parts.push('Rechnung')
+  const m = o.manualRechnung
+  const bs = o.buyerSnapshot
+  let kunde = ''
+  if (m && (m.name || m.firma)) kunde = [m.name, m.firma].filter(Boolean).join(', ').trim()
+  else if (bs && (bs as { version?: number }).version === 1 && (bs.name || bs.firma)) {
+    kunde = [bs.name, bs.firma].filter(Boolean).join(', ').trim()
+  }
+  if (kunde) parts.push(kunde)
+  return parts.join(' · ')
+}
+
 /** Gibt alle Kassabuch-Einträge inkl. Kassaeingänge (Verkäufe) zurück – chronologisch sortiert. */
 export function getKassabuchMitEingaengen(tenant: KassabuchTenant): KassabuchEintrag[] {
   const ausgaenge = loadKassabuch(tenant)
@@ -99,12 +126,14 @@ export function getKassabuchMitEingaengen(tenant: KassabuchTenant): KassabuchEin
       .map(o => {
         const datum = (o.date || (o as any).soldAt || '').slice(0, 10)
         const betrag = typeof o.total === 'number' ? o.total : 0
+        const oid = (o as { id?: string }).id
         return {
-          id: `order-${o.id || Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          id: oid ? `order-eingang-${oid}` : `order-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
           datum,
           betrag,
           art: 'eingang' as const,
           verkaufId: o.id,
+          verwendungszweck: formatVerkaufVerwendungszweckFromOrder(o as any),
         }
       })
     const combined = [...eingaenge, ...ausgaenge].sort((a, b) => a.datum.localeCompare(b.datum) || 0)

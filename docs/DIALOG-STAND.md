@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.04.26 – **Buchhaltung + Kassabuch: Rechnung sichtbar & CSV** – Verkäufe aus Orders: **`verwendungszweck`** mit Bon, **Rechnung (RE-Nr.)** sobald `rechnungsNr` gespeichert (nicht nur bei Zahlart Rechnung); **Verkäufe-CSV** Spalte Rechnungsnr. + Empfänger (`manualRechnung`/`buyerSnapshot`); **Shop** `persistShopOrderRechnungFields` hält Empfänger-Snapshot mit. Tabelle Buchhaltung: längerer Text + `title`. **Commit:** _(nach Push)_ ✅ **main**
+
+---
+
+**Letzter Stand:** 27.04.26 – **Shop K2/ök2: Rechnung A4** – Rechnungsadresse im Checkout/Modal; **`rechnungsNr`** wird bei erstem A4-Druck vergeben und an der **gespeicherten Bestellung** festgehalten (`persistShopOrderRechnungFields`), Nachdruck = **gleiche RE-Nr.** wie VK2-Muster. **Commit:** `4b0affb8` ✅ **main**
+
+---
+
 **Letzter Stand:** 27.04.26 – **Kasse Nummernliste:** Ausverkaufte Werke erscheinen nicht mehr; **Mehrfachstücke mit Restbestand** bleiben (wie Lager-Logik) – `getArtworkLagerInfo` + Sold-Liste + Orders aus `localStorage`, Keys K2/ök2/VK2. **Commit:** `181aa542` ✅ **main**
 
 ---

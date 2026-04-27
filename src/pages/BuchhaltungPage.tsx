@@ -52,10 +52,12 @@ interface OrderRow {
   soldAt?: string
   total?: number
   paymentMethod?: string
+  rechnungsNr?: string
+  manualRechnung?: { name?: string; firma?: string; street?: string; plz?: string; city?: string; email?: string; phone?: string; uid?: string }
   items?: Array<{ number?: string; title?: string; price?: number; quantity?: number }>
   // Level 5: Snapshots für historische Belege (aus Shop/Kassa)
   sellerSnapshot?: any
-  buyerSnapshot?: any
+  buyerSnapshot?: { version?: number; name?: string; firma?: string; street?: string; plz?: string; city?: string; email?: string; phone?: string; uid?: string }
 }
 
 function loadOrders(tenant: KassabuchTenant): OrderRow[] {
@@ -78,6 +80,14 @@ function loadOeffentlichArtworksForRohertrag(): unknown[] {
   }
 }
 
+function orderRowBuyerName(o: OrderRow): string {
+  const m = o.manualRechnung
+  if (m && (m.name || m.firma)) return [m.name, m.firma].filter(Boolean).join(', ').trim()
+  const b = o.buyerSnapshot
+  if (b && (b.name || b.firma)) return [b.name, b.firma].filter(Boolean).join(', ').trim()
+  return ''
+}
+
 function exportVerkaufeCsv(orders: OrderRow[], fromDate?: string, toDate?: string): string {
   let list = orders
     .filter(o => o && (o.date || o.soldAt))
@@ -88,10 +98,12 @@ function exportVerkaufeCsv(orders: OrderRow[], fromDate?: string, toDate?: strin
   if (fromDate) list = list.filter(o => o.datum >= fromDate)
   if (toDate) list = list.filter(o => o.datum <= toDate)
   list.sort((a, b) => (a.datum || '').localeCompare(b.datum || ''))
-  const header = 'Datum;Bon-Nr.;Betrag;Zahlungsart;Aussteller;Aussteller-Adresse;Aussteller-E-Mail;Kunde/Rechnungsempfänger'
+  const header =
+    'Datum;Bon-Nr.;Rechnungsnr.;Betrag;Zahlungsart;Aussteller;Aussteller-Adresse;Aussteller-E-Mail;Kunde/Rechnungsempfänger'
   const rows = list.map(o => {
     const esc = (v: any) => String(v ?? '').replace(/;/g, ',').replace(/\n/g, ' ').replace(/\r/g, ' ').trim()
     const nr = (o.orderNumber || o.id || '').replace(/;/g, ',')
+    const reNr = (o.rechnungsNr && String(o.rechnungsNr).trim()) || ''
     const betrag = typeof o.total === 'number' ? o.total.toFixed(2) : '0,00'
     const art = o.paymentMethod === 'cash' ? 'Bar' : o.paymentMethod === 'card' ? 'Karte' : o.paymentMethod === 'transfer' ? 'Rechnung' : (o.paymentMethod || '')
     const snap = o.sellerSnapshot
@@ -103,9 +115,9 @@ function exportVerkaufeCsv(orders: OrderRow[], fromDate?: string, toDate?: strin
       ? [v.address, v.city, v.country].filter(Boolean).join(', ')
       : [g.address, g.city, g.country].filter(Boolean).join(', ')
     const sellerEmail = tenant === 'vk2' ? (v.email || '') : (g.email || '')
-    const buyerName = (o.buyerSnapshot && (o.buyerSnapshot.name || o.buyerSnapshot.firma)) ? (o.buyerSnapshot.name || o.buyerSnapshot.firma) : ''
+    const buyerName = orderRowBuyerName(o)
 
-    return `${o.datum};${esc(nr)};${esc(betrag)};${esc(art)};${esc(sellerName)};${esc(sellerAddress)};${esc(sellerEmail)};${esc(buyerName)}`
+    return `${o.datum};${esc(nr)};${esc(reNr)};${esc(betrag)};${esc(art)};${esc(sellerName)};${esc(sellerAddress)};${esc(sellerEmail)};${esc(buyerName)}`
   })
   return [header, ...rows].join('\n')
 }
@@ -510,7 +522,14 @@ export default function BuchhaltungPage() {
                   <td style={{ padding: '0.75rem', color: s.text }}>{e.datum}</td>
                   <td style={{ padding: '0.75rem', color: s.text }}>{getKassabuchArtLabel(e.art)}</td>
                   <td style={{ padding: '0.75rem', textAlign: 'right', fontWeight: 600, color: s.text }}>{e.betrag.toFixed(2)} €</td>
-                  <td style={{ padding: '0.75rem', color: '#5c5650' }}>{(e.verwendungszweck || '').slice(0, 40)}{(e.verwendungszweck?.length || 0) > 40 ? '…' : ''}</td>
+                  <td
+                    style={{ padding: '0.75rem', color: '#5c5650', maxWidth: 280, lineHeight: 1.35 }}
+                    title={e.verwendungszweck || ''}
+                  >
+                    {(e.verwendungszweck || '').length > 90
+                      ? `${(e.verwendungszweck || '').slice(0, 88)}…`
+                      : e.verwendungszweck || '–'}
+                  </td>
                   <td style={{ padding: '0.75rem', color: s.text }}>
                     {e.belegImage ? <span title="Belegfoto">📷</span> : null}
                     {e.belegQrText ? <span title={e.belegQrText.slice(0, 100)}>📄</span> : null}
