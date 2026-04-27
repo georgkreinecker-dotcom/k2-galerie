@@ -13,6 +13,15 @@ describe('artworkLagerStatus', () => {
     expect(info.cardVariant).toBe('ausverkauft')
   })
 
+  it('Einzelstück: Werkstamm quantity 1 + Kasse 1 verkauft → 0 Lager, ausverkauft (Widerspruch bereinigt)', () => {
+    const sold = [{ number: 'K2-M-0001', soldAt: '2026-04-27', soldQuantity: 1 }]
+    const info = getArtworkLagerInfo({ number: 'K2-M-0001', quantity: 1 }, sold)
+    expect(info.remaining).toBe(0)
+    expect(info.isAusverkauft).toBe(true)
+    expect(info.isTeilverkauft).toBe(false)
+    expect(info.cardVariant).toBe('ausverkauft')
+  })
+
   it('partial: remaining > 0 and sold list has entries', () => {
     const sold = [{ number: 'K2-M-0001', soldAt: '2020-01-01', soldQuantity: 2 }]
     const info = getArtworkLagerInfo({ number: 'K2-M-0001', quantity: 3 }, sold)

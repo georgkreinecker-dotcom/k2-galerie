@@ -29,6 +29,19 @@ function parseQuantityRemaining(artwork: { quantity?: number | string | null }):
   return Math.max(0, n)
 }
 
+/**
+ * Lageranzeige: `quantity` im Werkstamm = oft nur auf dem Gerät aktualisiert, wo abgerechnet wurde.
+ * Kasse (Sold + Orders) kann neuer sein → sonst Fälle „1 am Lager · 1 verkauft“ bei Einzelstück.
+ * Wenn laut Werkstamm **genau 1** Stück, die Kasse aber **≥1** Verkauf bucht → faktisch 0 (Einzelstück ausverkauft).
+ * Bei Mehrfachstück: Werkstamm-Zahl vorerst führen (Abzug dort wo verkauft wurde).
+ */
+function computeDisplayRemaining(stockFromArtwork: number, soldSumKasse: number): number {
+  const q = Math.max(0, stockFromArtwork)
+  const s = Math.max(0, soldSumKasse)
+  if (q === 1 && s >= 1) return 0
+  return q
+}
+
 export function sumSoldFromListForArtwork(
   artwork: { number?: string; id?: string; uid?: string },
   soldList: unknown
@@ -94,11 +107,12 @@ export function getArtworkLagerInfo(
   orders?: unknown
 ): ArtworkLagerInfo {
   const artworkNumber = getArtworkNumberKey(artwork)
-  const remaining = parseQuantityRemaining(artwork)
+  const stockRaw = parseQuantityRemaining(artwork)
   const fromList = sumSoldFromListForArtwork(artwork, soldList)
   const fromOrders = orders != null ? sumSoldFromOrdersForArtwork(artwork, orders) : 0
   const soldSumFromList = Math.max(fromList, fromOrders)
   const hasEntriesInSoldList = soldSumFromList > 0
+  const remaining = computeDisplayRemaining(stockRaw, soldSumFromList)
   const isAusverkauft = remaining === 0
   const isTeilverkauft = !isAusverkauft && hasEntriesInSoldList
 
