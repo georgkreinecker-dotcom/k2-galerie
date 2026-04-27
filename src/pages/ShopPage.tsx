@@ -658,6 +658,29 @@ const ShopPage = () => {
     phone: string
     uid: string
   }>({ typ: 'einfach', name: '', firma: '', street: '', plz: '', city: '', email: '', phone: '', uid: '' })
+  /** Admin: Kunde aus DB gewählt + Zahlart Rechnung – optionale Rechnungsadresse für A4 */
+  const [rechnungAdresseFuerKunde, setRechnungAdresseFuerKunde] = useState({
+    firma: '',
+    street: '',
+    plz: '',
+    city: '',
+    uid: '',
+  })
+  /** Nach Bar/Kasse: A4-Rechnung – Adresse vor Druck anpassbar (Vorbefüllung aus Bestellung) */
+  const [saleRechnungAdresseDraft, setSaleRechnungAdresseDraft] = useState({
+    firma: '',
+    street: '',
+    plz: '',
+    city: '',
+    uid: '',
+  })
+  const [k2ReprintRechnungAdresseDraft, setK2ReprintRechnungAdresseDraft] = useState({
+    firma: '',
+    street: '',
+    plz: '',
+    city: '',
+    uid: '',
+  })
   // VK2 Vereins-Kasse (schlank): Betrag, Bezeichnung (5 Optionen), bei Spende/Mitgliedsbeitrag optional Name aus Mitgliederliste, Bon optional
   const [vk2Betrag, setVk2Betrag] = useState('')
   const [vk2Bezeichnung, setVk2Bezeichnung] = useState('')
@@ -1050,6 +1073,34 @@ const ShopPage = () => {
     window.addEventListener('customers-updated', load)
     return () => window.removeEventListener('customers-updated', load)
   }, [])
+
+  useEffect(() => {
+    const o = salePrintModal?.order
+    if (!o) return
+    const m = o.manualRechnung
+    const b = o.buyerSnapshot as BuyerSnapshotV1 | undefined
+    setSaleRechnungAdresseDraft({
+      firma: (m?.firma || b?.firma || '').trim(),
+      street: (m?.street || b?.street || '').trim(),
+      plz: (m?.plz || b?.plz || '').trim(),
+      city: (m?.city || b?.city || '').trim(),
+      uid: (m?.uid || b?.uid || '').trim(),
+    })
+  }, [salePrintModal?.order?.id])
+
+  useEffect(() => {
+    const o = k2ReprintOrderModal?.order
+    if (!o) return
+    const m = o.manualRechnung
+    const b = o.buyerSnapshot as BuyerSnapshotV1 | undefined
+    setK2ReprintRechnungAdresseDraft({
+      firma: (m?.firma || b?.firma || '').trim(),
+      street: (m?.street || b?.street || '').trim(),
+      plz: (m?.plz || b?.plz || '').trim(),
+      city: (m?.city || b?.city || '').trim(),
+      uid: (m?.uid || b?.uid || '').trim(),
+    })
+  }, [k2ReprintOrderModal?.order?.id])
 
   // Bon oder Rechnung erneut drucken – Modal statt confirm (Safari: Geste für Pop-up-Druck erhalten)
   const handleReprintOrder = (order: any) => {
@@ -1845,6 +1896,61 @@ ${bankBlock}
     openBonHtmlInNewTab(html, receiptPaperWidthMm)
   }
 
+  const mergeOrderForRechnungPrint = (
+    order: any,
+    draft: { firma: string; street: string; plz: string; city: string; uid: string }
+  ) => {
+    const m = order.manualRechnung as
+      | { name?: string; firma?: string; street?: string; plz?: string; city?: string; email?: string; phone?: string; uid?: string }
+      | undefined
+    const b = order.buyerSnapshot as BuyerSnapshotV1 | undefined
+    const c = order.customerId ? getCustomerById(order.customerId) : null
+    const nameBase =
+      (m?.name && String(m.name).trim()) ||
+      (b?.version === 1 && b.name && String(b.name).trim()) ||
+      (c?.name && String(c.name).trim()) ||
+      'Kunde'
+    return {
+      ...order,
+      manualRechnung: {
+        name: nameBase,
+        firma: (draft.firma || m?.firma || b?.firma || '').trim() || undefined,
+        street: (draft.street || m?.street || b?.street || '').trim() || undefined,
+        plz: (draft.plz || m?.plz || b?.plz || '').trim() || undefined,
+        city: (draft.city || m?.city || b?.city || '').trim() || undefined,
+        email: (m?.email || b?.email || c?.email || '').trim() || undefined,
+        phone: (m?.phone || b?.phone || c?.phone || '').trim() || undefined,
+        uid: (draft.uid || m?.uid || b?.uid || '').trim() || undefined,
+      },
+    }
+  }
+
+  /** Rechnungs-A4: Nummer + Adress-Snapshot an gespeicherter Bestellung festhalten (Nachdruck = gleiche RE-Nr.). */
+  const persistShopOrderRechnungFields = (order: any, rechnungsNr: string) => {
+    try {
+      const raw = localStorage.getItem(ordersKey)
+      const stored = raw ? JSON.parse(raw) : []
+      if (!Array.isArray(stored)) return
+      const oid = order.id ?? `${order.orderNumber}-${order.date}`
+      const idx = stored.findIndex((x: any) => (x.id ?? `${x.orderNumber}-${x.date}`) === oid)
+      if (idx === -1) return
+      const u: any = { ...stored[idx], rechnungsNr }
+      if ((order as any).manualRechnung && typeof (order as any).manualRechnung === 'object') {
+        u.manualRechnung = (order as any).manualRechnung
+        const snap = buildBuyerSnapshot({
+          customerId: (order as any).customerId,
+          manualRechnung: (order as any).manualRechnung,
+        })
+        if (snap) u.buyerSnapshot = snap
+      }
+      stored[idx] = u
+      localStorage.setItem(ordersKey, JSON.stringify(stored))
+      setOrders((prev) =>
+        prev.map((ord: any) => ((ord.id ?? `${ord.orderNumber}-${ord.date}`) === oid ? { ...ord, ...u } : ord))
+      )
+    } catch (_) {}
+  }
+
   // Kassenbon drucken (Breite mm aus Einstellungen) – Stammdaten aus aktuellem Kontext (K2 vs. ök2)
   const printReceipt = async (order: any) => {
     const html = buildK2Oek2ReceiptHtml(order, fromOeffentlich, {
@@ -1917,21 +2023,27 @@ ${bankBlock}
       headerTitle = 'RECHNUNG'
       headerSub = sellerNameForHeader + (fromOeffentlich ? ' (Demo)' : ' · Kunst & Keramik')
       nrLabel = 'Rechnungsnr.:'
-      try {
-        const key = fromOeffentlich ? 'k2-oeffentlich-rechnung-counter' : 'k2-rechnung-counter'
-        const year = new Date().getFullYear()
-        const stored = localStorage.getItem(key)
-        const parsed = stored ? JSON.parse(stored) : { year, next: 1 }
-        if (parsed.year !== year) {
-          parsed.year = year
-          parsed.next = 1
+      const existingRe = (order as any).rechnungsNr && String((order as any).rechnungsNr).trim()
+      if (existingRe) {
+        nrValue = existingRe
+      } else {
+        try {
+          const key = fromOeffentlich ? 'k2-oeffentlich-rechnung-counter' : 'k2-rechnung-counter'
+          const year = new Date().getFullYear()
+          const stored = localStorage.getItem(key)
+          const parsed = stored ? JSON.parse(stored) : { year, next: 1 }
+          if (parsed.year !== year) {
+            parsed.year = year
+            parsed.next = 1
+          }
+          nrValue = `RE-${year}-${String(parsed.next).padStart(4, '0')}`
+          parsed.next += 1
+          localStorage.setItem(key, JSON.stringify(parsed))
+        } catch (_) {
+          nrValue = `RE-${new Date().getFullYear()}-${order.orderNumber}`
         }
-        nrValue = `RE-${year}-${String(parsed.next).padStart(4, '0')}`
-        parsed.next += 1
-        localStorage.setItem(key, JSON.stringify(parsed))
-      } catch (_) {
-        nrValue = `RE-${new Date().getFullYear()}-${order.orderNumber}`
       }
+      persistShopOrderRechnungFields(order, String(nrValue))
     }
 
     if (asRechnung) {
@@ -1957,18 +2069,59 @@ ${bankBlock}
           qrDataUrl = await QRCode.toDataURL(epc, { width: 180, margin: 1 })
         } catch (_) {}
       }
-      const customer = order.customerId ? getCustomerById(order.customerId) : null
-      const manual = (order as any).manualRechnung as { name: string; firma?: string; street?: string; plz?: string; city?: string; email?: string; phone?: string; uid?: string } | undefined
-      let buyerName: string
-      let buyerAddress: string
-      if (manual?.name) {
-        buyerName = [manual.name, manual.firma].filter(Boolean).join(', ')
-        const adr = [manual.street, [manual.plz, manual.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')
-        const contact = [manual.email, manual.phone].filter(Boolean).join(' · ')
-        buyerAddress = [adr, contact, manual.uid].filter(Boolean).join(' · ') || '–'
+      const escHtml = (t: string) =>
+        String(t ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+      const manual = (order as any).manualRechnung as {
+        name?: string
+        firma?: string
+        street?: string
+        plz?: string
+        city?: string
+        email?: string
+        phone?: string
+        uid?: string
+      } | undefined
+      const bs = order.buyerSnapshot as BuyerSnapshotV1 | undefined
+      const pick =
+        manual?.name
+          ? manual
+          : bs?.version === 1 && (bs.name || bs.firma || bs.street || bs.plz || bs.city)
+            ? {
+                name: bs.name,
+                firma: bs.firma,
+                street: bs.street,
+                plz: bs.plz,
+                city: bs.city,
+                email: bs.email,
+                phone: bs.phone,
+                uid: bs.uid,
+              }
+            : null
+      let buyerNameEsc: string
+      let buyerAddressHtml: string
+      if (pick && (pick.name || pick.firma)) {
+        const buyerNameRaw = [pick.name, pick.firma].filter(Boolean).join(', ') || 'Kunde / Rechnungsempfänger'
+        buyerNameEsc = escHtml(buyerNameRaw)
+        const parts: string[] = []
+        if (pick.street?.trim()) parts.push(pick.street.trim())
+        const ort = [pick.plz, pick.city].filter(Boolean).join(' ').trim()
+        if (ort) parts.push(ort)
+        const contact = [pick.email, pick.phone].filter(Boolean).join(' · ')
+        if (contact) parts.push(contact)
+        if (pick.uid?.trim()) parts.push(`UID: ${pick.uid.trim()}`)
+        buyerAddressHtml = parts.length
+          ? parts.map((p) => `<p style="margin:0 0 4px 0;">${escHtml(p)}</p>`).join('')
+          : '<p style="margin:0;color:#666;">–</p>'
       } else {
-        buyerName = customer?.name || 'Kunde / Rechnungsempfänger'
-        buyerAddress = [customer?.email, customer?.phone].filter(Boolean).join(' · ') || '–'
+        const customer = order.customerId ? getCustomerById(order.customerId) : null
+        buyerNameEsc = escHtml(customer?.name || 'Kunde / Rechnungsempfänger')
+        const contact = [customer?.email, customer?.phone].filter(Boolean).join(' · ')
+        buyerAddressHtml = contact
+          ? `<p style="margin:0 0 4px 0;">${escHtml(contact)}</p>`
+          : '<p style="margin:0;color:#666;">–</p>'
       }
       const rechnungDatum = date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
       const itemsRows = order.items.map((item: CartItem, idx: number) => {
@@ -2027,8 +2180,8 @@ th:nth-child(5), td:nth-child(5) { width: 50px; text-align: center; }
   </div>
   <div class="col">
     <h3>Rechnungsempfänger</h3>
-    <p><strong>${buyerName.replace(/</g, '&lt;')}</strong></p>
-    <p>${buyerAddress.replace(/</g, '&lt;')}</p>
+    <p><strong>${buyerNameEsc}</strong></p>
+    ${buyerAddressHtml}
   </div>
 </div>
 <div class="meta">
@@ -2293,18 +2446,50 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
     let manualRechnung: { name: string; firma?: string; street?: string; plz?: string; city?: string; email?: string; phone?: string; uid?: string } | undefined
     if (isAdmin) {
       customerId = selectedCustomerId || undefined
-      if (method === 'transfer' && !customerId && rechnungManuellCheckout.name.trim()) {
+      const addrK = rechnungAdresseFuerKunde
+      const hasKundeAddr = !!(
+        addrK.street.trim() ||
+        addrK.plz.trim() ||
+        addrK.city.trim() ||
+        addrK.firma.trim() ||
+        addrK.uid.trim()
+      )
+      if (method === 'transfer' && customerId && hasKundeAddr) {
+        const c = customers.find((x) => x.id === customerId)
+        if (c) {
+          manualRechnung = {
+            name: c.name.trim(),
+            email: c.email?.trim() || undefined,
+            phone: c.phone?.trim() || undefined,
+            firma: addrK.firma.trim() || undefined,
+            street: addrK.street.trim() || undefined,
+            plz: addrK.plz.trim() || undefined,
+            city: addrK.city.trim() || undefined,
+            uid: addrK.uid.trim() || undefined,
+          }
+        }
+      } else if (method === 'transfer' && !customerId && rechnungManuellCheckout.name.trim()) {
         manualRechnung = {
           name: rechnungManuellCheckout.name.trim(),
-          ...(rechnungManuellCheckout.typ === 'ausfuehrlich' ? {
-            firma: rechnungManuellCheckout.firma.trim() || undefined,
-            street: rechnungManuellCheckout.street.trim() || undefined,
-            plz: rechnungManuellCheckout.plz.trim() || undefined,
-            city: rechnungManuellCheckout.city.trim() || undefined,
-            email: rechnungManuellCheckout.email.trim() || undefined,
-            phone: rechnungManuellCheckout.phone.trim() || undefined,
-            uid: rechnungManuellCheckout.uid.trim() || undefined
-          } : {})
+          ...(rechnungManuellCheckout.typ === 'ausfuehrlich'
+            ? {
+                firma: rechnungManuellCheckout.firma.trim() || undefined,
+                street: rechnungManuellCheckout.street.trim() || undefined,
+                plz: rechnungManuellCheckout.plz.trim() || undefined,
+                city: rechnungManuellCheckout.city.trim() || undefined,
+                email: rechnungManuellCheckout.email.trim() || undefined,
+                phone: rechnungManuellCheckout.phone.trim() || undefined,
+                uid: rechnungManuellCheckout.uid.trim() || undefined,
+              }
+            : {
+                firma: rechnungManuellCheckout.firma.trim() || undefined,
+                street: rechnungManuellCheckout.street.trim() || undefined,
+                plz: rechnungManuellCheckout.plz.trim() || undefined,
+                city: rechnungManuellCheckout.city.trim() || undefined,
+                email: rechnungManuellCheckout.email.trim() || undefined,
+                phone: rechnungManuellCheckout.phone.trim() || undefined,
+                uid: rechnungManuellCheckout.uid.trim() || undefined,
+              }),
         }
       }
     } else {
@@ -2435,6 +2620,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
     setCart([])
     setShowCheckout(false)
     setSelectedCustomerId(null)
+    setRechnungAdresseFuerKunde({ firma: '', street: '', plz: '', city: '', uid: '' })
     if (manualRechnung) {
       setRechnungManuellCheckout({ typ: 'einfach', name: '', firma: '', street: '', plz: '', city: '', email: '', phone: '', uid: '' })
     }
@@ -2963,8 +3149,10 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
               background: s.bgCard,
               borderRadius: s.radius,
               padding: '1.35rem',
-              maxWidth: '400px',
+              maxWidth: '430px',
               width: '100%',
+              maxHeight: 'min(90vh, 640px)',
+              overflowY: 'auto',
               boxShadow: s.shadowLg,
               border: `1px solid ${s.border}`
             }}
@@ -2989,6 +3177,98 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                 </>
               )}
             </p>
+            <div
+              style={{
+                marginBottom: '1rem',
+                padding: '0.7rem 0.75rem',
+                borderRadius: 10,
+                background: s.bgElevated,
+                border: `1px solid ${s.border}`,
+              }}
+            >
+              <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1c1a18', marginBottom: '0.45rem' }}>
+                Rechnungsadresse für A4 (optional, vor dem Druck anpassen)
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                <input
+                  type="text"
+                  value={saleRechnungAdresseDraft.firma}
+                  onChange={(e) => setSaleRechnungAdresseDraft((d) => ({ ...d, firma: e.target.value }))}
+                  placeholder="Firma (optional)"
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem 0.55rem',
+                    fontSize: '0.88rem',
+                    border: '1px solid #b54a1e55',
+                    borderRadius: 8,
+                    background: s.bgCard,
+                    color: '#1c1a18',
+                  }}
+                />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 68px 1fr', gap: '0.35rem' }}>
+                  <input
+                    type="text"
+                    value={saleRechnungAdresseDraft.street}
+                    onChange={(e) => setSaleRechnungAdresseDraft((d) => ({ ...d, street: e.target.value }))}
+                    placeholder="Straße"
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem 0.55rem',
+                      fontSize: '0.88rem',
+                      border: '1px solid #b54a1e55',
+                      borderRadius: 8,
+                      background: s.bgCard,
+                      color: '#1c1a18',
+                    }}
+                  />
+                  <input
+                    type="text"
+                    value={saleRechnungAdresseDraft.plz}
+                    onChange={(e) => setSaleRechnungAdresseDraft((d) => ({ ...d, plz: e.target.value }))}
+                    placeholder="PLZ"
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem 0.55rem',
+                      fontSize: '0.88rem',
+                      border: '1px solid #b54a1e55',
+                      borderRadius: 8,
+                      background: s.bgCard,
+                      color: '#1c1a18',
+                    }}
+                  />
+                  <input
+                    type="text"
+                    value={saleRechnungAdresseDraft.city}
+                    onChange={(e) => setSaleRechnungAdresseDraft((d) => ({ ...d, city: e.target.value }))}
+                    placeholder="Ort"
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem 0.55rem',
+                      fontSize: '0.88rem',
+                      border: '1px solid #b54a1e55',
+                      borderRadius: 8,
+                      background: s.bgCard,
+                      color: '#1c1a18',
+                    }}
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={saleRechnungAdresseDraft.uid}
+                  onChange={(e) => setSaleRechnungAdresseDraft((d) => ({ ...d, uid: e.target.value }))}
+                  placeholder="UID (optional)"
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem 0.55rem',
+                    fontSize: '0.88rem',
+                    border: '1px solid #b54a1e55',
+                    borderRadius: 8,
+                    background: s.bgCard,
+                    color: '#1c1a18',
+                  }}
+                />
+              </div>
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <button
                 type="button"
@@ -3033,7 +3313,8 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
               <button
                 type="button"
                 onClick={() => {
-                  printReceiptA4(salePrintModal.order, true)
+                  const merged = mergeOrderForRechnungPrint(salePrintModal.order, saleRechnungAdresseDraft)
+                  printReceiptA4(merged, true)
                   setSalePrintModal(null)
                 }}
                 style={{
@@ -3091,8 +3372,10 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
               background: s.bgCard,
               borderRadius: s.radius,
               padding: '1.35rem',
-              maxWidth: '400px',
+              maxWidth: '430px',
               width: '100%',
+              maxHeight: 'min(90vh, 640px)',
+              overflowY: 'auto',
               boxShadow: s.shadowLg,
               border: `1px solid ${s.border}`
             }}
@@ -3114,6 +3397,98 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                 </>
               )}
             </p>
+            <div
+              style={{
+                marginBottom: '1rem',
+                padding: '0.7rem 0.75rem',
+                borderRadius: 10,
+                background: s.bgElevated,
+                border: `1px solid ${s.border}`,
+              }}
+            >
+              <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1c1a18', marginBottom: '0.45rem' }}>
+                Rechnungsadresse für A4 (optional, vor dem Druck anpassen)
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                <input
+                  type="text"
+                  value={k2ReprintRechnungAdresseDraft.firma}
+                  onChange={(e) => setK2ReprintRechnungAdresseDraft((d) => ({ ...d, firma: e.target.value }))}
+                  placeholder="Firma (optional)"
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem 0.55rem',
+                    fontSize: '0.88rem',
+                    border: '1px solid #b54a1e55',
+                    borderRadius: 8,
+                    background: s.bgCard,
+                    color: '#1c1a18',
+                  }}
+                />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 68px 1fr', gap: '0.35rem' }}>
+                  <input
+                    type="text"
+                    value={k2ReprintRechnungAdresseDraft.street}
+                    onChange={(e) => setK2ReprintRechnungAdresseDraft((d) => ({ ...d, street: e.target.value }))}
+                    placeholder="Straße"
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem 0.55rem',
+                      fontSize: '0.88rem',
+                      border: '1px solid #b54a1e55',
+                      borderRadius: 8,
+                      background: s.bgCard,
+                      color: '#1c1a18',
+                    }}
+                  />
+                  <input
+                    type="text"
+                    value={k2ReprintRechnungAdresseDraft.plz}
+                    onChange={(e) => setK2ReprintRechnungAdresseDraft((d) => ({ ...d, plz: e.target.value }))}
+                    placeholder="PLZ"
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem 0.55rem',
+                      fontSize: '0.88rem',
+                      border: '1px solid #b54a1e55',
+                      borderRadius: 8,
+                      background: s.bgCard,
+                      color: '#1c1a18',
+                    }}
+                  />
+                  <input
+                    type="text"
+                    value={k2ReprintRechnungAdresseDraft.city}
+                    onChange={(e) => setK2ReprintRechnungAdresseDraft((d) => ({ ...d, city: e.target.value }))}
+                    placeholder="Ort"
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem 0.55rem',
+                      fontSize: '0.88rem',
+                      border: '1px solid #b54a1e55',
+                      borderRadius: 8,
+                      background: s.bgCard,
+                      color: '#1c1a18',
+                    }}
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={k2ReprintRechnungAdresseDraft.uid}
+                  onChange={(e) => setK2ReprintRechnungAdresseDraft((d) => ({ ...d, uid: e.target.value }))}
+                  placeholder="UID (optional)"
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem 0.55rem',
+                    fontSize: '0.88rem',
+                    border: '1px solid #b54a1e55',
+                    borderRadius: 8,
+                    background: s.bgCard,
+                    color: '#1c1a18',
+                  }}
+                />
+              </div>
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <button
                 type="button"
@@ -3158,7 +3533,8 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
               <button
                 type="button"
                 onClick={() => {
-                  printReceiptA4(k2ReprintOrderModal.order, true)
+                  const merged = mergeOrderForRechnungPrint(k2ReprintOrderModal.order, k2ReprintRechnungAdresseDraft)
+                  printReceiptA4(merged, true)
                   setK2ReprintOrderModal(null)
                 }}
                 style={{
@@ -4669,6 +5045,99 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                     <p style={{ fontSize: '0.8rem', color: s.muted, marginTop: '0.35rem' }}>
                       Kunden verwaltest du im Control-Studio unter „Kunden“. Erscheint im Archiv bei „Verkauft an“.
                     </p>
+                    {paymentMethod === 'transfer' && selectedCustomerId && (
+                      <div
+                        style={{
+                          marginTop: '0.85rem',
+                          padding: '0.75rem',
+                          borderRadius: 12,
+                          border: `1px solid ${s.accent}33`,
+                          background: s.bgCard,
+                        }}
+                      >
+                        <div style={{ fontSize: '0.88rem', fontWeight: 600, color: s.text, marginBottom: '0.5rem' }}>
+                          Rechnungsadresse (optional, erscheint auf der A4-Rechnung)
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                          <input
+                            type="text"
+                            value={rechnungAdresseFuerKunde.firma}
+                            onChange={(e) => setRechnungAdresseFuerKunde((a) => ({ ...a, firma: e.target.value }))}
+                            placeholder="Firma (optional)"
+                            style={{
+                              width: '100%',
+                              maxWidth: '400px',
+                              padding: '0.55rem 0.65rem',
+                              fontSize: '0.9rem',
+                              border: `1px solid ${s.accent}33`,
+                              borderRadius: 8,
+                              background: s.bgElevated,
+                              color: s.text,
+                            }}
+                          />
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 76px 1fr', gap: '0.45rem', maxWidth: '400px' }}>
+                            <input
+                              type="text"
+                              value={rechnungAdresseFuerKunde.street}
+                              onChange={(e) => setRechnungAdresseFuerKunde((a) => ({ ...a, street: e.target.value }))}
+                              placeholder="Straße"
+                              style={{
+                                padding: '0.55rem 0.65rem',
+                                fontSize: '0.9rem',
+                                border: `1px solid ${s.accent}33`,
+                                borderRadius: 8,
+                                background: s.bgElevated,
+                                color: s.text,
+                              }}
+                            />
+                            <input
+                              type="text"
+                              value={rechnungAdresseFuerKunde.plz}
+                              onChange={(e) => setRechnungAdresseFuerKunde((a) => ({ ...a, plz: e.target.value }))}
+                              placeholder="PLZ"
+                              style={{
+                                padding: '0.55rem 0.65rem',
+                                fontSize: '0.9rem',
+                                border: `1px solid ${s.accent}33`,
+                                borderRadius: 8,
+                                background: s.bgElevated,
+                                color: s.text,
+                              }}
+                            />
+                            <input
+                              type="text"
+                              value={rechnungAdresseFuerKunde.city}
+                              onChange={(e) => setRechnungAdresseFuerKunde((a) => ({ ...a, city: e.target.value }))}
+                              placeholder="Ort"
+                              style={{
+                                padding: '0.55rem 0.65rem',
+                                fontSize: '0.9rem',
+                                border: `1px solid ${s.accent}33`,
+                                borderRadius: 8,
+                                background: s.bgElevated,
+                                color: s.text,
+                              }}
+                            />
+                          </div>
+                          <input
+                            type="text"
+                            value={rechnungAdresseFuerKunde.uid}
+                            onChange={(e) => setRechnungAdresseFuerKunde((a) => ({ ...a, uid: e.target.value }))}
+                            placeholder="UID (optional)"
+                            style={{
+                              width: '100%',
+                              maxWidth: '400px',
+                              padding: '0.55rem 0.65rem',
+                              fontSize: '0.9rem',
+                              border: `1px solid ${s.accent}33`,
+                              borderRadius: 8,
+                              background: s.bgElevated,
+                              color: s.text,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -4766,6 +5235,30 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                           <label style={{ display: 'block', fontSize: '0.8rem', color: s.muted, marginBottom: '0.2rem' }}>{rechnungManuellCheckout.typ === 'einfach' ? 'Name / Firma' : 'Name'}</label>
                           <input type="text" value={rechnungManuellCheckout.name} onChange={(e) => setRechnungManuellCheckout((m) => ({ ...m, name: e.target.value }))} placeholder={rechnungManuellCheckout.typ === 'einfach' ? 'Name oder Firma' : 'Name'} style={{ width: '100%', padding: '0.5rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${s.accent}33`, borderRadius: 8, background: s.bgElevated, color: s.text }} />
                         </div>
+                        {rechnungManuellCheckout.typ === 'einfach' && (
+                          <div style={{ marginTop: '0.5rem' }}>
+                            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.text, marginBottom: '0.4rem' }}>Rechnungsadresse (optional)</div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                              <input
+                                type="text"
+                                value={rechnungManuellCheckout.firma}
+                                onChange={(e) => setRechnungManuellCheckout((m) => ({ ...m, firma: e.target.value }))}
+                                placeholder="Firma (optional)"
+                                style={{ width: '100%', padding: '0.5rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${s.accent}33`, borderRadius: 8, background: s.bgElevated, color: s.text }}
+                              />
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 72px 1fr', gap: '0.45rem' }}>
+                                <input type="text" value={rechnungManuellCheckout.street} onChange={(e) => setRechnungManuellCheckout((m) => ({ ...m, street: e.target.value }))} placeholder="Straße" style={{ width: '100%', padding: '0.5rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${s.accent}33`, borderRadius: 8, background: s.bgElevated, color: s.text }} />
+                                <input type="text" value={rechnungManuellCheckout.plz} onChange={(e) => setRechnungManuellCheckout((m) => ({ ...m, plz: e.target.value }))} placeholder="PLZ" style={{ width: '100%', padding: '0.5rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${s.accent}33`, borderRadius: 8, background: s.bgElevated, color: s.text }} />
+                                <input type="text" value={rechnungManuellCheckout.city} onChange={(e) => setRechnungManuellCheckout((m) => ({ ...m, city: e.target.value }))} placeholder="Ort" style={{ width: '100%', padding: '0.5rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${s.accent}33`, borderRadius: 8, background: s.bgElevated, color: s.text }} />
+                              </div>
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.45rem' }}>
+                                <input type="email" value={rechnungManuellCheckout.email} onChange={(e) => setRechnungManuellCheckout((m) => ({ ...m, email: e.target.value }))} placeholder="E-Mail (optional)" style={{ width: '100%', padding: '0.5rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${s.accent}33`, borderRadius: 8, background: s.bgElevated, color: s.text }} />
+                                <input type="text" value={rechnungManuellCheckout.phone} onChange={(e) => setRechnungManuellCheckout((m) => ({ ...m, phone: e.target.value }))} placeholder="Telefon (optional)" style={{ width: '100%', padding: '0.5rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${s.accent}33`, borderRadius: 8, background: s.bgElevated, color: s.text }} />
+                              </div>
+                              <input type="text" value={rechnungManuellCheckout.uid} onChange={(e) => setRechnungManuellCheckout((m) => ({ ...m, uid: e.target.value }))} placeholder="UID (optional)" style={{ width: '100%', padding: '0.5rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${s.accent}33`, borderRadius: 8, background: s.bgElevated, color: s.text }} />
+                            </div>
+                          </div>
+                        )}
                         {rechnungManuellCheckout.typ === 'ausfuehrlich' && (
                           <>
                             <div><label style={{ display: 'block', fontSize: '0.8rem', color: s.muted, marginBottom: '0.2rem' }}>Firma (optional)</label><input type="text" value={rechnungManuellCheckout.firma} onChange={(e) => setRechnungManuellCheckout((m) => ({ ...m, firma: e.target.value }))} placeholder="Firma" style={{ width: '100%', padding: '0.5rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${s.accent}33`, borderRadius: 8, background: s.bgElevated, color: s.text }} /></div>
