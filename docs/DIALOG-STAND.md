@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 27.04.26 – **Lager „1 Stück wieder verfügbar“: Kassen-Order mitzurückbuchen** – `revertOneOrderUnitForArtwork` in `artworkLagerStatus.ts`; Admin: **eine Quelle pro Klick** (zuerst Verkaufsliste, sonst `k2-orders`); bei Bestand 0 + nur Order → Werkstamm **1 Stück**; **Storno** war früher bei leerer Verkaufsliste abgebrochen → jetzt Order-Fallback. Tests `artworkLagerStatus.test.ts`. **Commit:** _(nach Push)_ ✅ **main**
+**Letzter Stand:** 27.04.26 – **Lager „1 Stück wieder verfügbar“: Kassen-Order mitzurückbuchen** – `revertOneOrderUnitForArtwork` in `artworkLagerStatus.ts`; Admin: **eine Quelle pro Klick** (zuerst Verkaufsliste, sonst `k2-orders`); bei Bestand 0 + nur Order → Werkstamm **1 Stück**; **Storno** war früher bei leerer Verkaufsliste abgebrochen → jetzt Order-Fallback. Tests `artworkLagerStatus.test.ts`. **Commit:** `eb66dba4` ✅ **main**
 
 ---
 
