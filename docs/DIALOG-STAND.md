@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 27.04.26 – **Buchhaltung + Kassabuch: Rechnung sichtbar & CSV** – Verkäufe aus Orders: **`verwendungszweck`** mit Bon, **Rechnung (RE-Nr.)** sobald `rechnungsNr` gespeichert (nicht nur bei Zahlart Rechnung); **Verkäufe-CSV** Spalte Rechnungsnr. + Empfänger (`manualRechnung`/`buyerSnapshot`); **Shop** `persistShopOrderRechnungFields` hält Empfänger-Snapshot mit. Tabelle Buchhaltung: längerer Text + `title`. **Commit:** `6158a06a` ✅ **main**
+**Letzter Stand:** 27.04.26 – **Buchhaltung + Kassabuch: Rechnung sichtbar & CSV** – Verkäufe aus Orders: **`verwendungszweck`** mit Bon, **Rechnung (RE-Nr.)** sobald `rechnungsNr` gespeichert (nicht nur bei Zahlart Rechnung); **Verkäufe-CSV** Spalte Rechnungsnr. + Empfänger (`manualRechnung`/`buyerSnapshot`); **Shop** `persistShopOrderRechnungFields` hält Empfänger-Snapshot mit. Tabelle Buchhaltung: längerer Text + `title`. **Commit:** `3f508855` ✅ **main**
 
 ---
 
