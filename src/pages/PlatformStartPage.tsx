@@ -114,6 +114,7 @@ export default function PlatformStartPage() {
     oeffentlich: number
     vk2Demo: number
     k2FamilieMuster: number
+    kreineckerStammbaum: number
   } | null>(null)
 
   useEffect(() => {
@@ -127,8 +128,9 @@ export default function PlatformStartPage() {
       fetchVisitCount('oeffentlich'),
       fetchVisitCount('vk2'),
       fetchVisitCount('k2-familie-muster'),
-    ]).then(([k2, oef, vk2Demo, k2FamilieMuster]) =>
-      setVisits({ k2, oeffentlich: oef, vk2Demo, k2FamilieMuster }),
+      fetchVisitCount('k2-familie-kreinecker-stammbaum'),
+    ]).then(([k2, oef, vk2Demo, k2FamilieMuster, kreineckerStammbaum]) =>
+      setVisits({ k2, oeffentlich: oef, vk2Demo, k2FamilieMuster, kreineckerStammbaum }),
     )
   }, [])
 
@@ -236,7 +238,7 @@ export default function PlatformStartPage() {
                 }}
               >
                 👁 Besucher: K2 {visits.k2} · ök2 {visits.oeffentlich} · VK2-Demo {visits.vk2Demo} · Familie-Muster{' '}
-                {visits.k2FamilieMuster} → Details
+                {visits.k2FamilieMuster} · Kreinecker-Stammbaum {visits.kreineckerStammbaum} → Details
               </Link>
             )}
           </div>

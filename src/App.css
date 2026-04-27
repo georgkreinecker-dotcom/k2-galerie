@@ -3145,6 +3145,162 @@ body:has(.stammbaum-druck-view:not(.stammbaum-druck-view--vorschau)) {
   body:has(.licence-export-area) .licence-export-area td {
     border-color: #ccc;
   }
+
+  /* Mission Control: Druck nur Besucher-Panel (PDF, APf / Entwicklung) */
+  body[data-mission-print-visits-only='1'] .mission-wrapper .viewport > *:not(.mission-visit-report-panel) {
+    display: none !important;
+  }
+  body[data-mission-print-visits-only='1'] .mission-visit-no-print {
+    display: none !important;
+  }
+  body[data-mission-print-visits-only='1'] .mission-visit-report-panel {
+    break-inside: avoid;
+    background: #fff !important;
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+  }
+  body[data-mission-print-visits-only='1'] .mission-visit-bar-track {
+    background: #e8e8e8 !important;
+    border: 1px solid #bbb;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  body[data-mission-print-visits-only='1'] .mission-visit-bar-fill {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  body[data-mission-print-visits-only='1'] .mission-visit-report-seitenfuss {
+    display: block !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 0.65rem;
+    color: #444 !important;
+    padding: 0.25rem 0;
+    background: #fff !important;
+  }
+  body[data-mission-print-visits-only='1'] .mission-visit-report-seitenfuss::after {
+    content: 'Seite ' counter(page);
+  }
+  body[data-mission-print-visits-only='1'] .mission-visit-chart-subtitle,
+  body[data-mission-print-visits-only='1'] .mission-visit-chart-row-head {
+    color: #1c1a18 !important;
+  }
+  body[data-mission-print-visits-only='1'] .mission-visit-chart-pct {
+    color: #5c5650 !important;
+  }
+  body[data-mission-print-visits-only='1'] .mission-visit-report-panel p,
+  body[data-mission-print-visits-only='1'] .mission-visit-report-panel li {
+    color: #1c1a18 !important;
+  }
+  body[data-mission-print-visits-only='1'] .mission-visit-print-stand {
+    color: #5c5650 !important;
+  }
+  body[data-mission-print-visits-only='1'] .mission-visit-matrix-table th,
+  body[data-mission-print-visits-only='1'] .mission-visit-matrix-table td {
+    border-color: #bbb !important;
+    color: #1c1a18 !important;
+  }
+  body[data-mission-print-visits-only='1'] .mission-visit-matrix-table thead th {
+    background: #e8e8e8 !important;
+    color: #1c1a18 !important;
+  }
+  body[data-mission-print-visits-only='1'] .mission-visit-matrix-table tbody th {
+    background: #f0f0f0 !important;
+    color: #1c1a18 !important;
+  }
+  body[data-mission-print-visits-only='1'] .mission-visit-matrix-delta-pos {
+    color: #166534 !important;
+  }
+  body[data-mission-print-visits-only='1'] .mission-visit-matrix-delta-neg {
+    color: #991b1b !important;
+  }
+  body[data-mission-print-visits-only='1'] .mission-visit-timeline-grid {
+    stroke: #ccc !important;
+  }
+  body[data-mission-print-visits-only='1'] .mission-visit-timeline-axis-label,
+  body[data-mission-print-visits-only='1'] .mission-visit-timeline-xlabel {
+    fill: #5c5650 !important;
+  }
+  body[data-mission-print-visits-only='1'] .mission-visit-timeline-line,
+  body[data-mission-print-visits-only='1'] .mission-visit-timeline-dot {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* Mission Control: Balken-Grafik Besucher (Bildschirm) */
+.mission-visit-bar-track {
+  height: 12px;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  overflow: hidden;
+  max-width: 100%;
+}
+.mission-visit-bar-fill {
+  height: 100%;
+  border-radius: 8px;
+  min-width: 0;
+}
+.mission-visit-report-seitenfuss {
+  display: none;
+}
+
+.mission-visit-matrix-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 -0.25rem;
+  padding: 0 0.25rem;
+}
+.mission-visit-matrix-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+  font-size: 0.74rem;
+}
+.mission-visit-matrix-table th,
+.mission-visit-matrix-table td {
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  padding: 0.32rem 0.45rem;
+  text-align: right;
+  white-space: nowrap;
+  color: rgba(240, 247, 255, 0.92);
+}
+.mission-visit-matrix-table thead th {
+  font-weight: 700;
+  background: rgba(99, 102, 241, 0.2);
+  color: #e0e7ff;
+}
+.mission-visit-matrix-table tbody th {
+  text-align: left;
+  font-weight: 600;
+  background: rgba(15, 23, 42, 0.35);
+  color: #e0e7ff;
+}
+.mission-visit-matrix-delta-pos {
+  color: #86efac !important;
+  font-weight: 600;
+}
+.mission-visit-matrix-delta-neg {
+  color: #fca5a5 !important;
+  font-weight: 600;
+}
+
+.mission-visit-timeline-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  max-height: 300px;
+}
+.mission-visit-timeline-grid {
+  stroke: rgba(255, 255, 255, 0.14);
+  stroke-width: 1;
+}
+.mission-visit-timeline-axis-label,
+.mission-visit-timeline-xlabel {
+  fill: #8fa0c9;
 }
 
 /* ök2 Admin: aufklappbare Demo/Muster-Zeile – kein Doppel-Pfeil am summary */

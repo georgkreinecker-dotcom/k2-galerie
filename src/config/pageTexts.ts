@@ -72,7 +72,7 @@ const defaults: PageTextsConfig = {
     cards: [
       { title: 'Galerie', description: 'ök2 – Öffentliche K2 Galerie, Kunst & Keramik, Eröffnung, Werke.', cta: 'Öffnen →' },
       { title: 'Control-Studio', description: 'Komplettes Kommandozentrum inkl. KI-Agent, Launch-Plan und Aufgabenfeldern.', cta: 'Starten →' },
-      { title: 'Mission Control', description: 'Übergeordnete Übersicht aller Projekte mit Status & Fortschritt.', cta: 'Öffnen →' },
+      { title: 'Mission Control', description: 'Besucher-Zähler, Nutzer & Vertrieb, Produkte mit Betriebs-Status – kein sinnloser Prozentbalken.', cta: 'Öffnen →' },
       { title: 'Mobile-Connect', description: 'QR-Hub für iPhone/iPad, damit die Galerie wie eine App läuft.', cta: 'Zu Mobile →' },
     ],
     quickLinks: [

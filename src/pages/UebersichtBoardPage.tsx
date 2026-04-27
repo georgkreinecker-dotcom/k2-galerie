@@ -49,7 +49,8 @@ export default function UebersichtBoardPage() {
     oeffentlich: number
     vk2Demo: number
     k2FamilieMuster: number
-  }>({ k2: 0, oeffentlich: 0, vk2Demo: 0, k2FamilieMuster: 0 })
+    kreineckerStammbaum: number
+  }>({ k2: 0, oeffentlich: 0, vk2Demo: 0, k2FamilieMuster: 0, kreineckerStammbaum: 0 })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -76,8 +77,9 @@ export default function UebersichtBoardPage() {
         fetchVisitCount('oeffentlich'),
         fetchVisitCount('vk2'),
         fetchVisitCount('k2-familie-muster'),
-      ]).then(([k2, oef, vk2Demo, k2FamilieMuster]) => {
-        if (!cancelled) setVisits({ k2, oeffentlich: oef, vk2Demo, k2FamilieMuster })
+        fetchVisitCount('k2-familie-kreinecker-stammbaum'),
+      ]).then(([k2, oef, vk2Demo, k2FamilieMuster, kreineckerStammbaum]) => {
+        if (!cancelled) setVisits({ k2, oeffentlich: oef, vk2Demo, k2FamilieMuster, kreineckerStammbaum })
       }),
     ]).finally(() => {
       if (!cancelled) setLoading(false)
@@ -216,6 +218,9 @@ export default function UebersichtBoardPage() {
               </p>
               <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: C.textSoft }}>
                 K2 Familie Muster (Huber): {visits.k2FamilieMuster}
+              </p>
+              <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: C.textSoft }}>
+                Kreinecker-Stammbaum: {visits.kreineckerStammbaum}
               </p>
               <span style={{ display: 'inline-block', marginTop: '0.75rem', fontSize: '0.8rem', color: C.textSoft }}>
                 Pro Session einmal gezählt

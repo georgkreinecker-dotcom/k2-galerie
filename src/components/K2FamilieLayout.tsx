@@ -54,6 +54,7 @@ import { PublicTeilenFixed } from './PublicTeilenFixed'
 import { AppVerlassenFooterLink } from './AppVerlassenFooterLink'
 import { getPublicK2FamilieMusterEntryUrl } from '../utils/publicLinks'
 import { reportK2FamilieMusterHuberVisit } from '../utils/k2FamilieMusterVisit'
+import { reportK2FamilieKreineckerStammbaumVisit } from '../utils/k2FamilieKreineckerStammbaumVisit'
 
 /** Gleicher String wie `K2_FAMILIE_SESSION_UPDATED` in `familieStorage.ts` — hier als Literal, damit kein Laufzeit-ReferenceError (z. B. HMR). */
 const FAMILIE_SESSION_UPDATED_EVENT = 'k2-familie-einstellungen-updated'
@@ -1259,6 +1260,11 @@ function FamilieLayoutInner() {
     if (currentTenantId !== FAMILIE_HUBER_TENANT_ID) return
     if (!isFamilieNurMusterSession()) return
     reportK2FamilieMusterHuberVisit()
+  }, [currentTenantId, location.pathname, location.search])
+
+  /** Interne Statistik: Kreinecker-Stammbaum (Stammkette), getrennt von Huber-Muster. */
+  useEffect(() => {
+    reportK2FamilieKreineckerStammbaumVisit(currentTenantId, location.pathname, location.search)
   }, [currentTenantId, location.pathname, location.search])
 
   const columnInner = (
