@@ -1,6 +1,6 @@
 /**
- * Lokale Zeitschiene für Mission Control: kumulatives GET /api/visit pro Tag
- * einmal pro Kalendertag auf diesem Mac gemerkt (localStorage).
+ * Lokale Zeitschiene für Mission Control: einmal pro Kalendertag kumulierte GET /api/visit-Zähler
+ * auf diesem Mac gemerkt (localStorage). Grafik „Zeitschiene“ = Tageszuwachs (Differenz zum Vortag).
  * Kein Server-Verlauf – nur für Entwicklung / APf.
  */
 
@@ -89,4 +89,34 @@ export function formatMissionVisitSnapshotColumnLabel(isoAt: string): string {
   const d = new Date(isoAt)
   if (Number.isNaN(d.getTime())) return '–'
   return d.toLocaleDateString('de-AT', { day: '2-digit', month: '2-digit', year: '2-digit' })
+}
+
+const COUNT_FIELDS: (keyof MissionVisitCounts)[] = [
+  'k2',
+  'oeffentlich',
+  'vk2Demo',
+  'k2FamilieMuster',
+  'kreineckerStammbaum',
+]
+
+/** Tageszuwachs pro Snapshot-Zeile: Differenz zum Vortag (kein Monotonie-Abfall → 0). Erster Tag ohne Vortrag: überall 0. */
+export function computeMissionVisitDailyDeltas(timeline: MissionVisitSnapshot[]): MissionVisitCounts[] {
+  if (timeline.length === 0) return []
+  return timeline.map((snap, i) => {
+    if (i === 0) {
+      return { k2: 0, oeffentlich: 0, vk2Demo: 0, k2FamilieMuster: 0, kreineckerStammbaum: 0 }
+    }
+    const prev = timeline[i - 1]
+    const out: MissionVisitCounts = {
+      k2: 0,
+      oeffentlich: 0,
+      vk2Demo: 0,
+      k2FamilieMuster: 0,
+      kreineckerStammbaum: 0,
+    }
+    for (const k of COUNT_FIELDS) {
+      out[k] = Math.max(0, snap[k] - prev[k])
+    }
+    return out
+  })
 }

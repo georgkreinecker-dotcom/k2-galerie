@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { PROJECT_ROUTES, PLATFORM_ROUTES, getAllProjectIds, MOK2_ROUTE } from '../config/navigation'
 import { fetchVisitCount } from '../utils/visitCountApiOrigin'
 import {
+  computeMissionVisitDailyDeltas,
   formatMissionVisitSnapshotColumnLabel,
   loadMissionVisitSnapshots,
   MISSION_VISIT_CHART_KEY_TO_FIELD,
@@ -99,6 +100,7 @@ export default function MissionControlPage() {
 
   const visitTimelineGraphic = useMemo(() => {
     if (visitTimeline.length < 1 || !visitChartRows?.length) return null
+    const daily = computeMissionVisitDailyDeltas(visitTimeline)
     const viewW = 720
     const viewH = 248
     const padL = 52
@@ -108,10 +110,10 @@ export default function MissionControlPage() {
     const iw = viewW - padL - padR
     const ih = viewH - padT - padB
     let maxY = 1
-    for (const snap of visitTimeline) {
+    for (const d of daily) {
       for (const row of visitChartRows) {
         const f = MISSION_VISIT_CHART_KEY_TO_FIELD[row.key]
-        if (f) maxY = Math.max(maxY, snap[f])
+        if (f) maxY = Math.max(maxY, d[f])
       }
     }
     const n = visitTimeline.length
@@ -123,7 +125,7 @@ export default function MissionControlPage() {
     for (const row of visitChartRows) {
       const f = MISSION_VISIT_CHART_KEY_TO_FIELD[row.key]
       if (!f) continue
-      const dots = visitTimeline.map((s, i) => ({ cx: xAt(i), cy: yAt(s[f]) }))
+      const dots = daily.map((dRow, i) => ({ cx: xAt(i), cy: yAt(dRow[f]) }))
       const points = dots.map((d) => `${d.cx},${d.cy}`).join(' ')
       polylines.push({ rowKey: row.key, label: row.label, color: row.barColor, points, dots })
     }
@@ -358,8 +360,9 @@ export default function MissionControlPage() {
                   Matrix: Bereich × Zeitschiene
                 </h3>
                 <p style={{ margin: '0 0 0.65rem', fontSize: '0.72rem', color: '#8fa0c9', lineHeight: 1.45 }}>
-            Zeitschiene (lokale Tages-Snapshots) mit Liniendiagramm und Tabelle – unabhängig von „Balken“; PDF/Druck
-            enthält Matrix und Grafik immer.
+            Zeitschiene: <strong style={{ color: '#c7d2fe' }}>Tabelle</strong> = kumulierte Zähler pro Tag (API-Stand);{' '}
+            <strong style={{ color: '#c7d2fe' }}>Grafik</strong> = <strong>Tageszuwachs</strong> (Differenz zum Vortag). PDF/Druck
+            enthält beides.
                 </p>
                 {visitTimeline.length > 0 && visitTimelineGraphic ? (
                   <div className="mission-visit-timeline-graphic" style={{ marginBottom: '1.1rem' }}>
@@ -370,7 +373,8 @@ export default function MissionControlPage() {
                       Zeitschiene (Grafik)
                     </h4>
                     <p style={{ margin: '0 0 0.45rem', fontSize: '0.7rem', color: '#8fa0c9' }}>
-                      Gleiche Zahlen wie die Matrix – Verlauf der kumulativen Zähler über die Zeit.
+                      Neue Sichten pro Kalendertag: je Punkt <strong>Zuwachs</strong> zur Spalte davor in der Matrix (erster Tag: 0).
+                      Nicht die kumulierten Zahlen aus der Tabellenzeile.
                     </p>
                     <svg
                       viewBox={`0 0 ${visitTimelineGraphic.viewW} ${visitTimelineGraphic.viewH}`}
