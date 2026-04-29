@@ -4,6 +4,14 @@
 
 ---
 
+**Letzter Stand:** 29.04.26 – **K2 Willkommen + Impressum: Öffnungszeiten aus Stammdaten.** Zentrale Formatierung `formatGalleryOpeningHoursBlock` in `galleryOpeningHoursFormat.ts` (Flyer nutzt dieselbe Quelle). **GaleriePage:** prägnante Box **unter** „Herzlich willkommen – Galerie betreten“; Impressum mit 🕐-Zeile; `impressumStammdatenK2` übernimmt `openingHours` / `openingHoursWeek` aus State; Impressum erscheint auch wenn **nur** Öffnungszeiten gesetzt (`hasAny` inkl. `openingBlock`). **`npm run qs:local` grün.** **Commit:** `2bac884b` ✅ **main**
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Georg: Öffnungszeiten sichtbar wie im Flyer – ein Standard, K2 nur Anzeige/Merge aus bestehenden Stammdaten.
+
+---
+
 **Letzter Stand:** 29.04.26 – **Mission Control Zeitschiene (Grafik):** Statt kumulativer API-Zähler zeigt die Linie **Tageszuwachs** (`computeMissionVisitDailyDeltas`: Differenz zur Vortagsspalte, erster Tag 0). Tabelle/Matrix unverändert kumulativ. Tests `missionVisitSnapshots`. **Commit:** `c86b3f39` ✅ **main**
 
 **Was wir JETZT tun:** –

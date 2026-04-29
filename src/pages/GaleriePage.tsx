@@ -25,6 +25,7 @@ import { eventPlakatMoreInfoTitle } from '../utils/eventPlakatTooltip'
 import { loadDocuments, saveDocuments } from '../utils/documentsStorage'
 import { applyServerPayloadK2 } from '../utils/applyServerDataToLocal'
 import { saveStammdaten, loadStammdaten } from '../utils/stammdatenStorage'
+import { formatGalleryOpeningHoursBlock } from '../utils/galleryOpeningHoursFormat'
 import { sanitizeK2WebsiteField } from '../utils/k2StammdatenWebSanitize'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { safeReload } from '../utils/env'
@@ -926,6 +927,14 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       if (martinaData?.email?.trim()) m.email = martinaData.email.trim()
       if (georgData?.phone?.trim()) ge.phone = georgData.phone.trim()
       if (georgData?.email?.trim()) ge.email = georgData.email.trim()
+      if ((galleryData as { openingHours?: string }).openingHours?.trim()) {
+        g.openingHours = (galleryData as { openingHours: string }).openingHours.trim()
+      }
+      const gdWeek = (galleryData as { openingHoursWeek?: Record<string, string> }).openingHoursWeek
+      if (gdWeek && typeof gdWeek === 'object' && !Array.isArray(gdWeek)) {
+        const prevWeek = (g as { openingHoursWeek?: Record<string, string> }).openingHoursWeek || {}
+        ;(g as { openingHoursWeek?: Record<string, string> }).openingHoursWeek = { ...prevWeek, ...gdWeek }
+      }
       return { gallery: g, martina: m, georg: ge }
     } catch (_) {
       return {
@@ -948,6 +957,13 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       return { gallery: MUSTER_TEXTE.gallery, martina: MUSTER_TEXTE.martina, georg: MUSTER_TEXTE.georg }
     }
   }, [musterOnly])
+
+  /** Öffnungszeiten für Willkommens-Kachel + Impressum (Stammdaten Galerie). */
+  const galerieOpeningHoursBlock = React.useMemo(() => {
+    const src = !musterOnly ? impressumStammdatenK2?.gallery : impressumStammdatenOek2?.gallery
+    if (!src) return ''
+    return formatGalleryOpeningHoursBlock(src as { openingHours?: string; openingHoursWeek?: Record<string, string> }).trim()
+  }, [musterOnly, impressumStammdatenK2, impressumStammdatenOek2])
 
   // ök2: Bei Ladefehler Willkommensbild Fallback anzeigen (kein blaues Fragezeichen)
   const [welcomeImageFailed, setWelcomeImageFailed] = useState(false)
@@ -4093,6 +4109,47 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                 >
                   Herzlich willkommen – Galerie betreten →
                 </Link>
+                {galerieOpeningHoursBlock ? (
+                  <div
+                    role="region"
+                    aria-label="Öffnungszeiten"
+                    style={{
+                      marginTop: 'clamp(0.85rem, 2.2vw, 1.15rem)',
+                      padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1rem, 2.5vw, 1.25rem)',
+                      borderRadius: '12px',
+                      border: musterOnly ? `2px solid color-mix(in srgb, ${theme.accent} 55%, transparent)` : '2px solid rgba(255, 140, 66, 0.55)',
+                      background: musterOnly ? `color-mix(in srgb, ${theme.accent} 12%, rgba(0,0,0,0.06))` : 'rgba(255, 140, 66, 0.14)',
+                      boxShadow: musterOnly ? 'none' : '0 8px 28px rgba(0,0,0,0.2)',
+                      textAlign: 'center',
+                      maxWidth: 'min(100%, 26rem)',
+                      alignSelf: 'center',
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 'clamp(0.68rem, 1.6vw, 0.76rem)',
+                        fontWeight: 700,
+                        letterSpacing: '0.12em',
+                        textTransform: 'uppercase',
+                        color: musterOnly ? theme.accent : 'rgba(255, 200, 160, 0.95)',
+                        marginBottom: '0.35rem',
+                      }}
+                    >
+                      Öffnungszeiten
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 'clamp(0.95rem, 2.3vw, 1.12rem)',
+                        fontWeight: 600,
+                        lineHeight: 1.45,
+                        color: musterOnly ? theme.text : 'rgba(255, 255, 255, 0.96)',
+                        whiteSpace: 'pre-line',
+                      }}
+                    >
+                      {galerieOpeningHoursBlock}
+                    </div>
+                  </div>
+                ) : null}
                 {!musterOnly && (
                   <p style={{
                     marginTop: 'clamp(0.75rem, 2vw, 1rem)',
@@ -4276,7 +4333,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                     const georgName = (georg as any)?.name?.trim()
                     const georgTel = (georg as any)?.phone?.trim()
                     const email = (gallery as any)?.email?.trim() || (martina as any)?.email?.trim() || (georg as any)?.email?.trim()
-                    const hasAny = adresse || martinaName || martinaTel || georgName || georgTel || email
+                    const openingBlock = formatGalleryOpeningHoursBlock(
+                      gallery as { openingHours?: string; openingHoursWeek?: Record<string, string> },
+                    ).trim()
+                    const hasAny = !!(adresse || martinaName || martinaTel || georgName || georgTel || email || openingBlock)
                     if (!hasAny) return null
                     const googleMapsSearch = adresse ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(adresse)}` : ''
                     const googleMapsDir = adresse ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(adresse)}` : ''
@@ -4305,6 +4365,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                         {martinaName && <p style={{ margin: '0 0 0.25rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: theme.muted }}>{martinaName}{martinaTel ? ` · 📞 ${martinaTel}` : ''}</p>}
                         {georgName && <p style={{ margin: '0 0 0.25rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: theme.muted }}>{georgName}{georgTel ? ` · 📞 ${georgTel}` : ''}</p>}
                         {email && <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>✉️ <a href={`mailto:${email}`} style={{ color: theme.accent, textDecoration: 'none' }}>{email}</a></p>}
+                        {openingBlock ? (
+                          <p style={{ margin: '0.65rem 0 0.5rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: theme.muted, lineHeight: 1.5 }}>
+                            🕐{' '}
+                            <span style={{ color: theme.accent, fontWeight: 600, whiteSpace: 'pre-line' }}>{openingBlock}</span>
+                          </p>
+                        ) : null}
                       </>
                     )
                   })()}
