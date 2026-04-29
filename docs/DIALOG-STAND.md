@@ -4,6 +4,14 @@
 
 ---
 
+**Letzter Stand:** 29.04.26 – **Mission Control Zeitschiene (Grafik):** Statt kumulativer API-Zähler zeigt die Linie **Tageszuwachs** (`computeMissionVisitDailyDeltas`: Differenz zur Vortagsspalte, erster Tag 0). Tabelle/Matrix unverändert kumulativ. Tests `missionVisitSnapshots`. **Commit:** `c86b3f39` ✅ **main**
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Zeitschiene soll Aktivität pro Tag sichtbar machen, nicht flache Gesamthöhen.
+
+---
+
 **Letzter Stand:** 27.04.26 – **Besucher / Mission / K2 Familie:** `missionVisitSnapshots` (lokale Tages-Snapshots, Matrix & Zeitschiene) + Tests; **App.css** Druck/Matrix; **Kreinecker-Stammbaum** eigener Visit-Count (`k2FamilieKreineckerStammbaumVisit`, Tenant `k2-familie-kreinecker-stammbaum`) in **K2FamilieLayout**, **PlatformStartPage**, **UebersichtBoard**; **pageTexts** Mission-Control-Karte. Build-Info mitgelaufen. **`npm run test` + `build:vercel` grün.** **Commit:** `6d580f57` ✅ **main** · **DIALOG:** `b915956b`
 
 **Was wir JETZT tun:** –
