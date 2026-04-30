@@ -279,6 +279,8 @@ Wenn nein: wir lassen es.
 
 ---
 
+**Session-Reflexion (30.04.26, Abend):** Presse-Nachbericht zur Galerieeröffnung als feste Doku abgelegt (Ton wie erste Aussendung, §1a gekürzt) – Georg kann ohne Suchen weiterarbeiten.
+
 **Session-Reflexion (30.04.26):** ök2-Demo: eine kanonische Musterliste überall (Lesen, Veröffentlichen, Galerie-Server-Fetch, Kasse-Storno) – Besucher-Werke bleiben nicht als „öffentlicher Bestand“ hängen.
 
 **Session-Reflexion (20.04.26):** K2 Familie Kunden-Präsentationsmappe mit echten Screenshots und Capture-Skript ohne Rundgang-Modal – eine Quelle (`readMusterLeitfadenAbgeschlossen`) im Playwright-Kontext spiegelt.

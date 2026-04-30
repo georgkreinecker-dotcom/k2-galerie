@@ -4,6 +4,8 @@
 
 ---
 
+**Letzter Stand:** 30.04.26 (Abend) – **Presse: Nachbericht Galerieeröffnung** – Volltext abgelegt: [PRESSE-NACHBERICHT-EROEFFNUNG-VORSCHLAG.md](oeffentlichkeitsarbeit/presseaussendung-fertig/PRESSE-NACHBERICHT-EROEFFNUNG-VORSCHLAG.md) (Basis Archiv WELS + MEDIENSTUDIO §1a, ~30 Verkäufe / positives Echo). **Commit:** `59a50048` ✅ **main**
+
 **Letzter Stand:** 30.04.26 – **mök2 Inserat: ausdruckbar & versendbar** – Aktionsleiste: **Nur Inserat drucken** (nur Karte, `@page` 96×129 mm + Sichtbarkeits-Print-CSS), **PDF speichern/teilen** (`inseratViertelPdf.ts`, html2canvas+jsPDF), **Link kopieren**, **E-Mail-Entwurf** (Vorschau-Link + Eingangstor-URL). Inserat-Root `id=mok2-inserat-print-root` + `ref`. **Commit:** `4213947c` ✅ **main**
 
 **Letzter Stand:** 30.04.26 – **mök2 Inserat: K2 zentriert, ök2/VK2 größer** – Linksspalte: oberes Tealfeld und Bild **je 50 % Höhe**, **K2** + kgm darin **mittig**; Karten **ök2/VK2** größere Überschrift/Fließtext, etwas mehr Innenabstand. **Commit:** `1604307e` ✅ **main**
@@ -12,9 +14,9 @@
 
 **Letzter Stand:** 30.04.26 – **mök2: Inserat Viertel – K2, Typo, QR** – Linkes Feld: großes **K2** + „GALERIE“ (`K2_GALERIE_PUBLIC_BRAND`), darunter Bild/Teal; rechts größere Header-Zeilen und fetter Werbesatz; drei Karten mit dickerer Farbleiste und Maximal-Schrift; QR ~100px, Druck 24mm, Teal-Rahmen. **Build grün.** **Commit:** (älterer Stand – siehe oben)
 
-**Was wir JETZT tun:** Inserat in Browser testen: **Nur Inserat drucken**, **PDF**, **Link**, **E-Mail-Entwurf**.
+**Was wir JETZT tun:** – (Presse-Vorschlag liegt in der Doku; bei Bedarf an Redaktion senden.)
 
-**Einordnung:** Lokalzeitungs-Kampagne – ein Klick für Setzerei/Zeitung; QR-Ziel Eingangstor unverändert (Server-Stand + Bust im QR der Karte).
+**Einordnung:** Eröffnung erfolgreich; Nachbericht-Text fertig zum Kopieren; Inserat/Kampagne wie geplant.
 
 ---
 
