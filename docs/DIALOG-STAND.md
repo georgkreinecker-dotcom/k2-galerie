@@ -4,7 +4,7 @@
 
 ---
 
-**Letzter Stand:** 30.04.26 – **Muster nur lesend (ök2-Vorschau + K2 Familie Huber):** `GalerieVorschauPage` – Mobile-Admin-Modal nur wenn `!musterOnly && !vk2`; `openEditModal`/`openNewModal` früh abgebrochen. **K2 Familie:** `familieMusterWriteGuard` + alle `save*` in `familieStorage`, `setFamilyPageTexts`/`setFamilyPageContent` lehnen bei **Nur-Muster-Sitzung** + Tenant **huber** ab; **`seedFamilieHuber`** darf mit `skipMusterDemoGuard` weiter schreiben. Tests `familieMusterHuberReadonly`. **`npm run build` grün.** Commit folgt.
+**Letzter Stand:** 30.04.26 – **Muster nur lesend (ök2-Vorschau + K2 Familie Huber):** `GalerieVorschauPage` – Mobile-Admin-Modal nur wenn `!musterOnly && !vk2`; `openEditModal`/`openNewModal` früh abgebrochen. **K2 Familie:** `familieMusterWriteGuard` + alle `save*` in `familieStorage`, `setFamilyPageTexts`/`setFamilyPageContent` lehnen bei **Nur-Muster-Sitzung** + Tenant **huber** ab; **`seedFamilieHuber`** darf mit `skipMusterDemoGuard` weiter schreiben. Tests `familieMusterHuberReadonly`. **`npm run build` grün.** **Commit:** `baeb85a7` ✅ **main**
 
 **Was wir JETZT tun:** –
 
