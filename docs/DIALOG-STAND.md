@@ -4,7 +4,7 @@
 
 ---
 
-**Letzter Stand:** 30.04.26 (Abend) – **Presse: Nachbericht Galerieeröffnung** – Volltext abgelegt: [PRESSE-NACHBERICHT-EROEFFNUNG-VORSCHLAG.md](oeffentlichkeitsarbeit/presseaussendung-fertig/PRESSE-NACHBERICHT-EROEFFNUNG-VORSCHLAG.md) (Basis Archiv WELS + MEDIENSTUDIO §1a, ~30 Verkäufe / positives Echo). **Commit:** `9e3c4786` ✅ **main**
+**Letzter Stand:** 30.04.26 (Abend) – **Presse: Nachbericht Galerieeröffnung** – Volltext abgelegt: [PRESSE-NACHBERICHT-EROEFFNUNG-VORSCHLAG.md](oeffentlichkeitsarbeit/presseaussendung-fertig/PRESSE-NACHBERICHT-EROEFFNUNG-VORSCHLAG.md) (Basis Archiv WELS + MEDIENSTUDIO §1a, ~30 Verkäufe / positives Echo). **Commit:** `cca4fc38` ✅ **main**
 
 **Letzter Stand:** 30.04.26 – **mök2 Inserat: ausdruckbar & versendbar** – Aktionsleiste: **Nur Inserat drucken** (nur Karte, `@page` 96×129 mm + Sichtbarkeits-Print-CSS), **PDF speichern/teilen** (`inseratViertelPdf.ts`, html2canvas+jsPDF), **Link kopieren**, **E-Mail-Entwurf** (Vorschau-Link + Eingangstor-URL). Inserat-Root `id=mok2-inserat-print-root` + `ref`. **Commit:** `4213947c` ✅ **main**
 
