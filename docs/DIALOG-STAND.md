@@ -4,7 +4,7 @@
 
 ---
 
-**Letzter Stand:** 30.04.26 – **mök2: Inserat Lokalzeitung** – Sektion mit Kopiertext (Viertelseite hoch, Eingangstor), QR zu `/entdecken`, Sidebar-Eintrag **Inserat Lokalzeitung**. **`npm run qs:local` grün.** **Commit:** `c57383d0` ✅ **main**
+**Letzter Stand:** 30.04.26 – **mök2: Inserat Lokalzeitung** – Sektion mit Kopiertext (Viertelseite hoch, Eingangstor), QR zu `/entdecken`, Sidebar-Eintrag **Inserat Lokalzeitung**. **`npm run qs:local` grün.** **Commit:** `c482191b` ✅ **main**
 
 **Was wir JETZT tun:** –
 
