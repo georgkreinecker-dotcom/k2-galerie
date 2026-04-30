@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { PROJECT_ROUTES, AGB_ROUTE, BASE_APP_URL, PILOT_SCHREIBEN_ROUTE, K2_GALERIE_APF_EINSTIEG, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, flyerEventBogenUrl } from '../config/navigation'
+import { PROJECT_ROUTES, AGB_ROUTE, BASE_APP_URL, PILOT_SCHREIBEN_ROUTE, K2_GALERIE_APF_EINSTIEG, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, flyerEventBogenUrl, MOK2_ROUTE } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { mok2Groups } from '../config/mok2Structure'
 import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_BOTSCHAFT_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SOCIAL, PRODUCT_KERN_EIGENER_ORT, PRODUCT_POSITIONING_SWEET_SPOT, FOCUS_DIRECTIONS } from '../config/tenantConfig'
@@ -98,6 +98,9 @@ const printStyles = `
     .marketing-oek2-page [style*="padding: 0.75rem"], .marketing-oek2-page [style*="padding: 1rem"] { padding: 0.25rem 0.4rem !important; margin-top: 0.15rem !important; margin-bottom: 0.15rem !important; font-size: 8pt !important; line-height: 1.25 !important; }
     .marketing-oek2-page [style*="gridTemplateColumns"] { gap: 0.35rem !important; }
     .marketing-oek2-page [style*="gridTemplateColumns"] > div { padding: 0.3rem 0.4rem !important; }
+    .marketing-oek2-page .mok2-inserat-block { background: #f8f6f2 !important; color: #1a1a1a !important; border: 1px solid #c4c2bd !important; }
+    .marketing-oek2-page .mok2-inserat-block h3 { color: #0d4f4a !important; }
+    .marketing-oek2-page .mok2-inserat-block pre { color: #1a1a1a !important; font-size: 8pt !important; }
   }
 `
 
@@ -156,6 +159,18 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
       .catch(() => {})
     return () => { cancelled = true }
   }, [pilotSchreibenAufHandyUrl, qrVersionTs])
+
+  /** QR fürs Lokalzeitungs-Inserat: Eingangstor /entdecken, Server-Stand + Bust (wie Galerie-QR-Regel). */
+  const [inseratEingangstorQrUrl, setInseratEingangstorQrUrl] = useState('')
+  useEffect(() => {
+    if (!URL_MUSTER_EINGANGSTOR.startsWith('http')) return
+    let cancelled = false
+    const urlFuerQr = buildQrUrlWithBust(URL_MUSTER_EINGANGSTOR, qrVersionTs)
+    QRCode.toDataURL(urlFuerQr, { width: 240, margin: 1, color: { dark: '#1a1a1a', light: '#ffffff' } })
+      .then((url) => { if (!cancelled) setInseratEingangstorQrUrl(url) })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [qrVersionTs])
 
   const saveOefImage = async (key: 'welcome' | 'innen', file: File) => {
     setOefSaving(true)
@@ -1006,6 +1021,114 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           </ul>
         </div>
       </section>
+
+      <section id="mok2-inserat-lokalzeitung" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Inserat Lokalzeitung – Eingangstor &amp; QR
+        </h2>
+        <p style={{ marginBottom: '0.65rem', fontSize: '0.92rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
+          <strong>Format:</strong> Viertelseite Hochformat, ca. 96 × 129 mm. <strong>Ein QR</strong> – Ziel ist das öffentliche{' '}
+          <strong>Eingangstor für Fremde</strong> (Route <code style={{ fontSize: '0.85em', color: '#5ffbf1' }}>{OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE}</code>
+          ), damit Leser:innen direkt in Entdecken / Demo ök2 landen.
+        </p>
+        <p style={{ marginBottom: '0.75rem', fontSize: '0.86rem', color: 'rgba(255,255,255,0.82)', lineHeight: 1.5 }}>
+          <strong>Wo du das hier ansehen und ausdrucken kannst:</strong> In der APf links <strong>mök2</strong> wählen, in der Sidebar unter{' '}
+          <strong>Vertrieb – Kanäle …</strong> den Punkt <strong>Inserat Lokalzeitung</strong> anklicken. Oder Kurzweg{' '}
+          <Link to={MOK2_ROUTE} style={{ color: '#5ffbf1', fontWeight: 600 }}>{MOK2_ROUTE}</Link>
+          {' · '}
+          <Link
+            to={`${PROJECT_ROUTES['k2-galerie'].marketingOek2}#mok2-inserat-lokalzeitung`}
+            style={{ color: '#5ffbf1', wordBreak: 'break-all' }}
+          >
+            Direktanker (Lesezeichen)
+          </Link>
+          . <strong>Im Browser</strong> öffnen (Chrome/Safari), nicht in der Cursor-Vorschau – oben <strong>Als PDF drucken</strong> für die ganze mök2-Seite oder nur diesen Abschnitt markieren.
+        </p>
+
+        <div
+          className="mok2-inserat-block"
+          style={{
+            padding: '1rem 1.1rem',
+            background: 'rgba(255,250,245,0.97)',
+            borderRadius: '10px',
+            border: '1px solid rgba(28,26,24,0.18)',
+            marginBottom: '1rem',
+            breakInside: 'avoid' as const,
+          }}
+        >
+          <h3 style={{ fontSize: '1.02rem', color: '#0d4f4a', margin: '0 0 0.5rem', fontWeight: 700 }}>
+            Textblock zum Übernehmen (Setzerei / Word)
+          </h3>
+          <p style={{ margin: '0 0 0.45rem', fontSize: '0.8rem', color: '#3d3a36' }}>
+            Anrede in der Zeitung: <strong>Sie</strong>. QR in der Anzeige auf dieselbe URL legen wie unten bei „Ziel-Link“.
+          </p>
+          <pre
+            style={{
+              margin: 0,
+              padding: '0.65rem 0.75rem',
+              background: '#fff',
+              border: '1px solid #e0ddd8',
+              borderRadius: '6px',
+              fontSize: '0.82rem',
+              lineHeight: 1.45,
+              color: '#1c1a18',
+              whiteSpace: 'pre-wrap',
+              fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+            }}
+          >
+            {`GALERIE, KASSE, EVENTS – AUS EINER HAND
+
+kgm solution – Software für Künstler:innen, kleine Galerien und Kunstvereine. Online ansehen und ausprobieren – ohne Installation.
+
+• Öffentlicher Auftritt und Demo – ök2
+• Vereinsplattform mit Katalog – VK2
+• Optional: K2 Familie für den privaten Bereich
+
+Pilotplätze auf Anfrage. AGB und Details auf der Website.
+
+QR scannen → Entdecken (Demo)
+
+kgm solution`}
+          </pre>
+        </div>
+
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'flex-start',
+            gap: '1rem',
+            padding: '0.85rem 1rem',
+            background: 'rgba(95,251,241,0.07)',
+            borderRadius: '10px',
+            border: '1px solid rgba(95,251,241,0.22)',
+            marginBottom: '0.75rem',
+            breakInside: 'avoid' as const,
+          }}
+        >
+          {inseratEingangstorQrUrl ? (
+            <img src={inseratEingangstorQrUrl} alt="QR-Code zum Eingangstor Entdecken" width={132} height={132} style={{ flexShrink: 0, background: '#fff', padding: 6, borderRadius: 4 }} />
+          ) : (
+            <div style={{ width: 132, height: 132, background: 'rgba(255,255,255,0.1)', borderRadius: 4, flexShrink: 0 }} aria-hidden />
+          )}
+          <div style={{ flex: '1 1 200px', minWidth: 0 }}>
+            <h3 style={{ fontSize: '1rem', color: '#5ffbf1', margin: '0 0 0.4rem' }}>Ziel-Link &amp; Vorschau</h3>
+            <p style={{ margin: '0 0 0.35rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.88)', lineHeight: 1.5 }}>
+              <strong>Für die Druckerei</strong> (statisch, lesbar unter dem QR):{' '}
+              <code style={{ fontSize: '0.8em', color: '#fde68a', wordBreak: 'break-all' }}>{URL_MUSTER_EINGANGSTOR}</code>
+            </p>
+            <p style={{ margin: '0 0 0.35rem', fontSize: '0.78rem', color: 'rgba(255,255,255,0.72)', lineHeight: 1.45 }}>
+              Der QR oben encodiert dieselbe Adresse mit aktuellem Server-Stand und Cache-Bust (wie bei unseren Galerie-QRs) – für Papier-Anzeigen kann die Setzerei zusätzlich die kurze URL setzen.
+            </p>
+            <p style={{ margin: 0, fontSize: '0.85rem' }}>
+              <a href={urlMusterEingangstorLive} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', fontWeight: 600 }}>
+                Eingangstor im Browser testen →
+              </a>
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Eröffnung K2 + ök2 + VK2 – Marketinglinie, gemeinsame Lounge */}
       <section id="mok2-eroeffnung-k2-oek2" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>

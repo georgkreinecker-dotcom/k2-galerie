@@ -48,6 +48,7 @@ export const mok2Groups: Mok2Group[] = [
     chapterTitle: 'Vertrieb – Kanäle, Empfehlung, Werbung',
     sections: [
       { id: 'mok2-sichtbarkeit-werbung', label: 'Sichtbarkeit & Werbung (Suchmaschinen, Verbreitung)' },
+      { id: 'mok2-inserat-lokalzeitung', label: 'Inserat Lokalzeitung (Eingangstor, QR)' },
       { id: 'mok2-eroeffnung-k2-oek2', label: 'Eröffnung K2 + ök2 + VK2 (Marketinglinie)' },
       { id: 'mok2-muster-werbetyp-eroeffnung', label: 'Muster pro Werbetyp (Eröffnung)' },
       { id: 'mok2-entwuerfe-oeffentlichkeitsarbeit', label: 'Entwürfe Öffentlichkeitsarbeit (Feinschliff)' },
