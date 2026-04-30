@@ -4,11 +4,13 @@
 
 ---
 
-**Letzter Stand:** 30.04.26 – **mök2: Inserat Lokalzeitung** – Sektion mit Kopiertext (Viertelseite hoch, Eingangstor), QR zu `/entdecken`, Sidebar-Eintrag **Inserat Lokalzeitung**. **`npm run qs:local` grün.** **Commit:** `c482191b` ✅ **main**
+**Letzter Stand:** 30.04.26 – **mök2 Inserat: K2-Familie-Karte sauber, QR kleiner** – Kopf **32 %** Höhe; Karten: ök2/VK2 teilen Rest flexibel, **K2 Familie** `flex: 0 0 auto` (kein Abschneiden); kompaktere Typo/Ränder; Fuß **QR 72 px**, Druck **18 mm** (war 24 mm). **Commit:** `b7e9c245` ✅ **main**
+
+**Letzter Stand:** 30.04.26 – **mök2: Inserat Viertel – K2, Typo, QR** – Linkes Feld: großes **K2** + „GALERIE“ (`K2_GALERIE_PUBLIC_BRAND`), darunter Bild/Teal; rechts größere Header-Zeilen und fetter Werbesatz; drei Karten mit dickerer Farbleiste und Maximal-Schrift; QR ~100px, Druck 24mm, Teal-Rahmen. **Build grün.** **Commit:** (älterer Stand – siehe oben)
 
 **Was wir JETZT tun:** –
 
-**Einordnung:** Lokalzeitung = ein QR aufs öffentliche Eingangstor; alles unter mök2 ablegbar und über **Als PDF drucken** nutzbar.
+**Einordnung:** Anzeige optisch näher am Screenshot-Muster; ein QR Eingangstor unverändert.
 
 ---
 
