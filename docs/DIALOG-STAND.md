@@ -4,6 +4,14 @@
 
 ---
 
+**Letzter Stand:** 30.04.26 – **ök2 Mustergalerie: nur offizielle Musterwerke.** Besucher-Werke werden nicht mehr dauerhaft / serverseitig für andere sichtbar: **`canonicalOek2MusterArtworksList`** beim Veröffentlichen (`publishGalleryData`), nach Server-Fetch (`GaleriePage`), Lesen Shop/Buchhaltung/ControlStudio/Storno-Bestand; **`saveArtworksByKey`** lehnt **leeres** `toSave` für ök2 ab (kein „leer → 5 Muster“ beim Schreiben). Tests `artworksStorage`. Mit im Commit: Build-Info + Test-Protokoll-Zeitstempel (vorher unstaged). **`npm run build` grün.** **Commit:** `a0fa879d` ✅ **main**
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** ök2 = Demo; öffentlicher Bestand = nur `MUSTER_ARTWORKS`, keine Fremdeinträge auf Vercel/über Geräte.
+
+---
+
 **Letzter Stand:** 29.04.26 – **K2 Willkommen + Impressum: Öffnungszeiten aus Stammdaten.** Zentrale Formatierung `formatGalleryOpeningHoursBlock` in `galleryOpeningHoursFormat.ts` (Flyer nutzt dieselbe Quelle). **GaleriePage:** prägnante Box **unter** „Herzlich willkommen – Galerie betreten“; Impressum mit 🕐-Zeile; `impressumStammdatenK2` übernimmt `openingHours` / `openingHoursWeek` aus State; Impressum erscheint auch wenn **nur** Öffnungszeiten gesetzt (`hasAny` inkl. `openingBlock`). **`npm run qs:local` grün.** **Commit:** `2bac884b` ✅ **main**
 
 **Was wir JETZT tun:** –
