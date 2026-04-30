@@ -9,7 +9,22 @@ import QRCode from 'qrcode'
 import { PROJECT_ROUTES, AGB_ROUTE, BASE_APP_URL, PILOT_SCHREIBEN_ROUTE, K2_GALERIE_APF_EINSTIEG, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, flyerEventBogenUrl, MOK2_ROUTE } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { mok2Groups } from '../config/mok2Structure'
-import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_BOTSCHAFT_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SOCIAL, PRODUCT_KERN_EIGENER_ORT, PRODUCT_POSITIONING_SWEET_SPOT, FOCUS_DIRECTIONS } from '../config/tenantConfig'
+import {
+  PRODUCT_WERBESLOGAN,
+  PRODUCT_WERBESLOGAN_2,
+  PRODUCT_BOTSCHAFT_2,
+  PRODUCT_ZIELGRUPPE,
+  PRODUCT_POSITIONING_SOCIAL,
+  PRODUCT_KERN_EIGENER_ORT,
+  PRODUCT_POSITIONING_SWEET_SPOT,
+  PRODUCT_INSERAT_VIERTEL_HAUPT,
+  PRODUCT_INSERAT_VIERTEL_UNTER,
+  FOCUS_DIRECTIONS,
+  PRODUCT_COPYRIGHT_BRAND_ONLY,
+  PRODUCT_BRAND_NAME,
+  PRODUCT_K2_FAMILIE_WERBESLOGAN,
+  PRODUCT_K2_FAMILIE_WERBE_KERN_KOMPAKT,
+} from '../config/tenantConfig'
 import ProductCopyright from '../components/ProductCopyright'
 import { compressImageForStorage } from '../utils/compressImageForStorage'
 import { useGamificationChecklistsUi } from '../hooks/useGamificationChecklistsUi'
@@ -18,6 +33,12 @@ import { useGamificationChecklistsUi } from '../hooks/useGamificationChecklistsU
 const URL_K2_GALERIE = `${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].galerie}`
 const URL_MUSTER_EINGANGSTOR = `${BASE_APP_URL}${OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE}`
 const URL_VK2 = `${BASE_APP_URL}${PROJECT_ROUTES.vk2.home}`
+
+/** Inserat Viertelseite – wie Prospekt/Flyer (Teal), nicht nur Fließtext */
+const INSERAT_TEAL_DARK = '#0c5c55'
+const INSERAT_TEAL_BAR = '#0d9488'
+const INSERAT_VK2_BAR = '#d97706'
+const INSERAT_FAMILIE_BAR = '#047857'
 
 const MOK2_SLOGAN_KEY = 'k2-mok2-werbeslogan'
 const MOK2_BOTSCHAFT_KEY = 'k2-mok2-botschaft2'
@@ -101,6 +122,25 @@ const printStyles = `
     .marketing-oek2-page .mok2-inserat-block { background: #f8f6f2 !important; color: #1a1a1a !important; border: 1px solid #c4c2bd !important; }
     .marketing-oek2-page .mok2-inserat-block h3 { color: #0d4f4a !important; }
     .marketing-oek2-page .mok2-inserat-block pre { color: #1a1a1a !important; font-size: 8pt !important; }
+    .marketing-oek2-page .mok2-inserat-viertel {
+      width: 96mm !important;
+      height: 129mm !important;
+      max-width: none !important;
+      aspect-ratio: auto !important;
+      margin: 3mm auto !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      border: 1px solid #b8b4ae !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .marketing-oek2-page .mok2-inserat-viertel-qr img {
+      width: 18mm !important;
+      height: 18mm !important;
+      max-width: none !important;
+      padding: 0.9mm !important;
+      border: 1px solid #c4c0ba !important;
+    }
   }
 `
 
@@ -166,7 +206,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
     if (!URL_MUSTER_EINGANGSTOR.startsWith('http')) return
     let cancelled = false
     const urlFuerQr = buildQrUrlWithBust(URL_MUSTER_EINGANGSTOR, qrVersionTs)
-    QRCode.toDataURL(urlFuerQr, { width: 240, margin: 1, color: { dark: '#1a1a1a', light: '#ffffff' } })
+    QRCode.toDataURL(urlFuerQr, { width: 400, margin: 1, color: { dark: '#1a1a1a', light: '#ffffff' } })
       .then((url) => { if (!cancelled) setInseratEingangstorQrUrl(url) })
       .catch(() => {})
     return () => { cancelled = true }
@@ -1045,6 +1085,283 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           . <strong>Im Browser</strong> öffnen (Chrome/Safari), nicht in der Cursor-Vorschau – oben <strong>Als PDF drucken</strong> für die ganze mök2-Seite oder nur diesen Abschnitt markieren.
         </p>
 
+        <h3 className="marketing-oek2-no-print" style={{ fontSize: '1.05rem', color: '#5ffbf1', margin: '0 0 0.5rem', fontWeight: 700 }}>
+          Bildseiten-Muster (Viertelseite 96 × 129 mm)
+        </h3>
+        <p className="marketing-oek2-no-print" style={{ margin: '0 0 0.75rem', fontSize: '0.82rem', color: 'rgba(255,255,255,0.75)', lineHeight: 1.45 }}>
+          Layout: links oben <strong>K2</strong> mit <strong>{PRODUCT_BRAND_NAME}</strong>, darunter Bild/Teal; rechts Inserat-Botschaft „Programm für viele“ aus tenantConfig; <strong>drei Bereiche</strong>; unten <strong>QR</strong> Eingangstor.
+        </p>
+
+        <div
+          className="mok2-inserat-viertel"
+          style={{
+            width: 'min(96mm, 100%)',
+            maxWidth: 400,
+            aspectRatio: '96 / 129',
+            margin: '0 auto 1rem',
+            display: 'flex',
+            flexDirection: 'column',
+            background: '#fffefb',
+            borderRadius: 10,
+            overflow: 'hidden',
+            boxShadow: '0 6px 28px rgba(0,0,0,0.22)',
+            border: '1px solid rgba(28,26,24,0.14)',
+            breakInside: 'avoid' as const,
+            color: '#1c1a18',
+            fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+          }}
+        >
+          <div
+            style={{
+              flex: '0 0 32%',
+              minHeight: 0,
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <div style={{ display: 'flex', flex: '1 1 0', minHeight: 0 }}>
+            <div
+              style={{
+                flex: '0 0 28%',
+                minWidth: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                background: INSERAT_TEAL_DARK,
+              }}
+            >
+              <div
+                style={{
+                  flex: '0 0 44%',
+                  minHeight: 52,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '6px 4px',
+                  background: INSERAT_TEAL_DARK,
+                  boxShadow: 'inset 0 -1px 0 rgba(255,255,255,0.12)',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 'clamp(1.35rem, 7vw, 2.5rem)',
+                    fontWeight: 900,
+                    color: '#fff',
+                    lineHeight: 0.9,
+                    letterSpacing: '-0.03em',
+                    textShadow: '0 2px 12px rgba(0,0,0,0.35)',
+                  }}
+                >
+                  K2
+                </span>
+                <span
+                  style={{
+                    fontSize: 'clamp(0.48rem, 2vw, 0.72rem)',
+                    fontWeight: 800,
+                    color: 'rgba(255,255,255,0.96)',
+                    marginTop: 6,
+                    letterSpacing: '0.04em',
+                  }}
+                >
+                  {PRODUCT_BRAND_NAME}
+                </span>
+              </div>
+              <div style={{ flex: 1, position: 'relative', minHeight: 44, overflow: 'hidden' }}>
+                {oefWelcome ? (
+                  <img src={oefWelcome} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                ) : (
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      background: `linear-gradient(160deg, ${INSERAT_TEAL_DARK} 0%, #134e4a 55%, #0f766e 100%)`,
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+            <div
+              style={{
+                flex: 1,
+                minWidth: 0,
+                padding: '0.5rem 0.55rem',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                background: 'linear-gradient(180deg, #fffefb 0%, #f0ebe3 100%)',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 'clamp(0.62rem, 2.85vw, 0.92rem)',
+                  fontWeight: 900,
+                  color: INSERAT_TEAL_DARK,
+                  lineHeight: 1.15,
+                  letterSpacing: '0.02em',
+                }}
+              >
+                {PRODUCT_INSERAT_VIERTEL_HAUPT}
+              </div>
+              <p
+                style={{
+                  margin: '8px 0 0',
+                  fontSize: 'clamp(0.52rem, 2.2vw, 0.72rem)',
+                  lineHeight: 1.28,
+                  color: '#1c1a18',
+                  fontWeight: 800,
+                }}
+              >
+                {PRODUCT_INSERAT_VIERTEL_UNTER}
+              </p>
+            </div>
+            </div>
+            <div
+              style={{
+                flexShrink: 0,
+                width: '100%',
+                boxSizing: 'border-box',
+                padding: '8px 10px 9px',
+                borderTop: `1px solid rgba(12, 92, 85, 0.22)`,
+                background: 'linear-gradient(180deg, #f4f0ea 0%, #ebe6de 100%)',
+                fontSize: 'clamp(0.58rem, 2.65vw, 0.86rem)',
+                fontWeight: 900,
+                color: INSERAT_TEAL_DARK,
+                lineHeight: 1.2,
+                letterSpacing: '0.015em',
+                textAlign: 'left',
+              }}
+            >
+              {PRODUCT_WERBESLOGAN_2 || PRODUCT_WERBESLOGAN}
+            </div>
+          </div>
+
+          <div
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 3,
+              minHeight: 0,
+              padding: '3px 5px 4px',
+            }}
+          >
+            {[
+              { k: 'o', bar: INSERAT_TEAL_BAR, t: 'ök2', s: 'Eigene Plattform · Galerie, Demo, Kasse, Events' },
+              { k: 'v', bar: INSERAT_VK2_BAR, t: 'VK2', s: 'Vereinsplattform · Katalog, Mitglieder, Werbung' },
+              {
+                k: 'f',
+                bar: INSERAT_FAMILIE_BAR,
+                t: 'K2 Familie',
+                s: `${PRODUCT_K2_FAMILIE_WERBESLOGAN} ${PRODUCT_K2_FAMILIE_WERBE_KERN_KOMPAKT}`,
+              },
+            ].map((row) => (
+              <div
+                key={row.k}
+                style={{
+                  flex: row.k === 'f' ? '0 0 auto' : '1 1 0',
+                  minHeight: row.k === 'f' ? undefined : 0,
+                  display: 'flex',
+                  borderRadius: 6,
+                  overflow: 'hidden',
+                  border: '1px solid rgba(28,26,24,0.1)',
+                }}
+              >
+                <div style={{ width: 8, flexShrink: 0, background: row.bar }} aria-hidden />
+                <div
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    padding: row.k === 'f' ? '5px 8px 6px' : '5px 8px',
+                    background: '#fff',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 'clamp(0.65rem, 2.75vw, 0.92rem)',
+                      fontWeight: 900,
+                      color: row.bar,
+                      lineHeight: 1.08,
+                    }}
+                  >
+                    {row.t}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 'clamp(0.52rem, 2.15vw, 0.72rem)',
+                      color: '#1c1a18',
+                      lineHeight: row.k === 'f' ? 1.22 : 1.2,
+                      marginTop: 3,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {row.s}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div
+            style={{
+              flexShrink: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '5px 8px 7px',
+              borderTop: `1px solid rgba(12, 92, 85, 0.22)`,
+              background: '#faf8f4',
+            }}
+          >
+            <div style={{ flex: '1 1 0', minWidth: 0, paddingRight: 2 }}>
+              <p style={{ margin: 0, fontSize: 'clamp(0.42rem, 1.55vw, 0.54rem)', lineHeight: 1.28, color: '#5c5650', fontWeight: 700 }}>
+                Pilotplätze auf Anfrage · AGB auf der Website
+              </p>
+              <p style={{ margin: '3px 0 0', fontSize: 'clamp(0.38rem, 1.42vw, 0.5rem)', color: '#6b6560', lineHeight: 1.25, fontWeight: 600 }}>
+                QR scannen → Entdecken (Demo)
+              </p>
+            </div>
+            <div
+              className="mok2-inserat-viertel-qr"
+              style={{
+                flexShrink: 0,
+                lineHeight: 0,
+                padding: 3,
+                background: '#fff',
+                borderRadius: 5,
+                border: '1.5px solid #0c5c55',
+                boxShadow: '0 1px 5px rgba(12,92,85,0.18)',
+              }}
+            >
+              {inseratEingangstorQrUrl ? (
+                <img
+                  src={inseratEingangstorQrUrl}
+                  alt="QR zum Eingangstor Entdecken"
+                  width={72}
+                  height={72}
+                  style={{ display: 'block', background: '#fff' }}
+                />
+              ) : (
+                <div style={{ width: 72, height: 72, background: '#e8e6e2' }} aria-hidden />
+              )}
+            </div>
+          </div>
+          <div
+            style={{
+              padding: '0 8px 5px',
+              fontSize: 'clamp(0.32rem, 1.05vw, 0.4rem)',
+              color: '#8a8580',
+              textAlign: 'center',
+              background: '#faf8f4',
+              lineHeight: 1.2,
+            }}
+          >
+            {PRODUCT_COPYRIGHT_BRAND_ONLY}
+          </div>
+        </div>
+
         <div
           className="mok2-inserat-block"
           style={{
@@ -1057,7 +1374,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           }}
         >
           <h3 style={{ fontSize: '1.02rem', color: '#0d4f4a', margin: '0 0 0.5rem', fontWeight: 700 }}>
-            Textblock zum Übernehmen (Setzerei / Word)
+            Nur Text – Fallback für Setzerei / Word
           </h3>
           <p style={{ margin: '0 0 0.45rem', fontSize: '0.8rem', color: '#3d3a36' }}>
             Anrede in der Zeitung: <strong>Sie</strong>. QR in der Anzeige auf dieselbe URL legen wie unten bei „Ziel-Link“.
@@ -1076,9 +1393,15 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
               fontFamily: 'ui-sans-serif, system-ui, sans-serif',
             }}
           >
-            {`GALERIE, KASSE, EVENTS – AUS EINER HAND
+            {`${PRODUCT_INSERAT_VIERTEL_HAUPT}
 
-kgm solution – Software für Künstler:innen, kleine Galerien und Kunstvereine. Online ansehen und ausprobieren – ohne Installation.
+${PRODUCT_INSERAT_VIERTEL_UNTER}
+
+${PRODUCT_WERBESLOGAN_2 || PRODUCT_WERBESLOGAN}
+
+GALERIE, KASSE, EVENTS – AUS EINER HAND
+
+kgm solution – Software für Künstler:innen, kleine Galerien und Vereine uvm. Online ansehen und ausprobieren – ohne Installation.
 
 • Öffentlicher Auftritt und Demo – ök2
 • Vereinsplattform mit Katalog – VK2
