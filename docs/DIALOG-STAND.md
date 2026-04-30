@@ -12,9 +12,9 @@
 
 **Letzter Stand:** 30.04.26 – **mök2: Inserat Viertel – K2, Typo, QR** – Linkes Feld: großes **K2** + „GALERIE“ (`K2_GALERIE_PUBLIC_BRAND`), darunter Bild/Teal; rechts größere Header-Zeilen und fetter Werbesatz; drei Karten mit dickerer Farbleiste und Maximal-Schrift; QR ~100px, Druck 24mm, Teal-Rahmen. **Build grün.** **Commit:** (älterer Stand – siehe oben)
 
-**Was wir JETZT tun:** –
+**Was wir JETZT tun:** Inserat in Browser testen: **Nur Inserat drucken**, **PDF**, **Link**, **E-Mail-Entwurf**.
 
-**Einordnung:** Anzeige optisch näher am Screenshot-Muster; ein QR Eingangstor unverändert.
+**Einordnung:** Lokalzeitungs-Kampagne – ein Klick für Setzerei/Zeitung; QR-Ziel Eingangstor unverändert (Server-Stand + Bust im QR der Karte).
 
 ---
 
