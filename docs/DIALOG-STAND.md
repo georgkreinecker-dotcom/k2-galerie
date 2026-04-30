@@ -4,7 +4,7 @@
 
 ---
 
-**Letzter Stand:** 30.04.26 – **ök2 Vorschau „← Zur Galerie“ landet auf Willkommens-Galerie statt Entdecken (APf).** Ursache: `GaleriePage` leitet Fremde ohne `k2-from-entdecken` zu Entdecken um; von der APf-Vorschau wurde `k2-oek2-from-apf` nie gesetzt (nur bei `GaleriePage`). **Fix:** `GalerieVorschauPage` – `useLayoutEffect` setzt `k2-oek2-from-apf` bei `fromApf`/`embedded`; Link „← Zur Galerie“ mit `state: { fromOeffentlichGalerie: true }`; `GaleriePage` – Entdecken-Redirect überspringen bei diesem State und bei `k2-oek2-from-apf`. **`npm run qs:local` grün.** **Commit:** `ceeb0414` ✅ **main**
+**Letzter Stand:** 30.04.26 – **ök2 Vorschau „← Zur Galerie“ landet auf Willkommens-Galerie statt Entdecken (APf).** Ursache: `GaleriePage` leitet Fremde ohne `k2-from-entdecken` zu Entdecken um; von der APf-Vorschau wurde `k2-oek2-from-apf` nie gesetzt (nur bei `GaleriePage`). **Fix:** `GalerieVorschauPage` – `useLayoutEffect` setzt `k2-oek2-from-apf` bei `fromApf`/`embedded`; Link „← Zur Galerie“ mit `state: { fromOeffentlichGalerie: true }`; `GaleriePage` – Entdecken-Redirect überspringen bei diesem State und bei `k2-oek2-from-apf`. **`npm run qs:local` grün.** **Commit:** `e896ff07` ✅ **main**
 
 **Was wir JETZT tun:** –
 
