@@ -4,7 +4,7 @@
 
 ---
 
-**Letzter Stand:** 30.04.26 – **ök2 Mustergalerie: nur offizielle Musterwerke.** Besucher-Werke werden nicht mehr dauerhaft / serverseitig für andere sichtbar: **`canonicalOek2MusterArtworksList`** beim Veröffentlichen (`publishGalleryData`), nach Server-Fetch (`GaleriePage`), Lesen Shop/Buchhaltung/ControlStudio/Storno-Bestand; **`saveArtworksByKey`** lehnt **leeres** `toSave` für ök2 ab (kein „leer → 5 Muster“ beim Schreiben). Tests `artworksStorage`. Mit im Commit: Build-Info + Test-Protokoll-Zeitstempel (vorher unstaged). **`npm run build` grün.** **Commit:** `a0fa879d` (App) – siehe `git log` für Doku-Folgecommits ✅ **main**
+**Letzter Stand:** 30.04.26 – **ök2 Mustergalerie: nur offizielle Musterwerke.** Besucher-Werke werden nicht mehr dauerhaft / serverseitig für andere sichtbar: **`canonicalOek2MusterArtworksList`** beim Veröffentlichen (`publishGalleryData`), nach Server-Fetch (`GaleriePage`), Lesen Shop/Buchhaltung/ControlStudio/Storno-Bestand; **`saveArtworksByKey`** lehnt **leeres** `toSave` für ök2 ab (kein „leer → 5 Muster“ beim Schreiben). Tests `artworksStorage`. Mit im Commit: Build-Info + Test-Protokoll-Zeitstempel (vorher unstaged). **`npm run build` grün.** **Commit:** App `a0fa879d`, Doku `e8e46883` (inkl. WIR-PROZESS) ✅ **main**
 
 **Was wir JETZT tun:** –
 
