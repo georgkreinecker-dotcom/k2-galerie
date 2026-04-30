@@ -4,6 +4,8 @@
 
 ---
 
+**Letzter Stand:** 30.04.26 – **mök2 Inserat: ausdruckbar & versendbar** – Aktionsleiste: **Nur Inserat drucken** (nur Karte, `@page` 96×129 mm + Sichtbarkeits-Print-CSS), **PDF speichern/teilen** (`inseratViertelPdf.ts`, html2canvas+jsPDF), **Link kopieren**, **E-Mail-Entwurf** (Vorschau-Link + Eingangstor-URL). Inserat-Root `id=mok2-inserat-print-root` + `ref`. **Commit:** `PENDING_HASH` ✅ **main**
+
 **Letzter Stand:** 30.04.26 – **mök2 Inserat: K2 zentriert, ök2/VK2 größer** – Linksspalte: oberes Tealfeld und Bild **je 50 % Höhe**, **K2** + kgm darin **mittig**; Karten **ök2/VK2** größere Überschrift/Fließtext, etwas mehr Innenabstand. **Commit:** `1604307e` ✅ **main**
 
 **Letzter Stand:** 30.04.26 – **mök2 Inserat: K2-Familie-Karte sauber, QR kleiner** – Kopf **32 %** Höhe; Karten: ök2/VK2 teilen Rest flexibel, **K2 Familie** `flex: 0 0 auto` (kein Abschneiden); kompaktere Typo/Ränder; Fuß **QR 72 px**, Druck **18 mm** (war 24 mm). **Commit:** `b7e9c245` ✅ **main**

@@ -53,14 +53,29 @@ export const PRODUCT_KERN_EIGENER_ORT = 'Eigener Ort statt Miete bei anderen.'
 export const PRODUCT_POSITIONING_SWEET_SPOT = 'Zu klein für die Großen, zu komplex für die Kleinen – genau unser Platz.'
 
 /**
+ * Viertelseiten-Inserat mök2 (Lokalzeitung): rechte Kopfspalte.
+ * Eigene Kurzbotschaft „Programm für viele“ – nicht identisch mit KERN_EIGENER_ORT + SWEET_SPOT.
+ */
+export const PRODUCT_INSERAT_VIERTEL_HAUPT =
+  'Ein Programm für viele – eine Plattform, viele Wege.'
+
+export const PRODUCT_INSERAT_VIERTEL_UNTER =
+  'Galerie & Handel, Vereine uvm., privater Familienraum – mit kgm solution.'
+
+/**
  * K2 Familie – Werbelinie (eigenes Produkt, nicht K2 Galerie).
  * Slogan + Werbebotschaft in einem Satz; Deckblätter, Vertrieb.
  */
 export const PRODUCT_K2_FAMILIE_WERBESLOGAN = 'Dein privater Familienraum.'
 
+/**
+ * Kernbotschaft ohne Produktnamen – z. B. Inserat-Karte, wenn die Überschrift schon „K2 Familie“ ist.
+ */
+export const PRODUCT_K2_FAMILIE_WERBE_KERN_KOMPAKT =
+  'Geschützter digitaler Raum für Beziehungen, Stammbaum und Geschichten.'
+
 /** Werbebotschaft in einem Satz (Zusatz zum Slogan). */
-export const PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ =
-  'K2 Familie gibt eurer Familie einen geschützten digitalen Raum für Beziehungen, Stammbaum und gemeinsame Geschichten.'
+export const PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ = `K2 Familie – ${PRODUCT_K2_FAMILIE_WERBE_KERN_KOMPAKT}`
 
 /** Deckblatt / Druck: Slogan + Werbebotschaft hintereinander. */
 export const PRODUCT_K2_FAMILIE_WERBELINIE_DECKBLATT = `${PRODUCT_K2_FAMILIE_WERBESLOGAN} ${PRODUCT_K2_FAMILIE_WERBESLOGAN_ZUSATZ}`

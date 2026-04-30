@@ -3,7 +3,7 @@
  * Ideen, Konzepte, Werbeunterlagen; klar strukturiert, bearbeitbar. Ausdruckbar als PDF.
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, AGB_ROUTE, BASE_APP_URL, PILOT_SCHREIBEN_ROUTE, K2_GALERIE_APF_EINSTIEG, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, flyerEventBogenUrl, MOK2_ROUTE } from '../config/navigation'
@@ -28,6 +28,7 @@ import {
 import ProductCopyright from '../components/ProductCopyright'
 import { compressImageForStorage } from '../utils/compressImageForStorage'
 import { useGamificationChecklistsUi } from '../hooks/useGamificationChecklistsUi'
+import { shareInseratViertelPdf } from '../utils/inseratViertelPdf'
 
 /** Einheitliche Eröffnungs-URLs (wie in docs/MARKETING-EROEFFNUNG-K2-OEK2.md Abschnitt Links & QR) */
 const URL_K2_GALERIE = `${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].galerie}`
@@ -135,11 +136,33 @@ const printStyles = `
       print-color-adjust: exact !important;
     }
     .marketing-oek2-page .mok2-inserat-viertel-qr img {
-      width: 18mm !important;
-      height: 18mm !important;
+      width: 20mm !important;
+      height: 20mm !important;
       max-width: none !important;
-      padding: 0.9mm !important;
+      padding: 0.85mm !important;
       border: 1px solid #c4c0ba !important;
+    }
+    html.mok2-print-inserat-only body * {
+      visibility: hidden !important;
+    }
+    html.mok2-print-inserat-only #mok2-inserat-print-root,
+    html.mok2-print-inserat-only #mok2-inserat-print-root * {
+      visibility: visible !important;
+    }
+    html.mok2-print-inserat-only #mok2-inserat-print-root {
+      position: absolute !important;
+      left: 0 !important;
+      top: 0 !important;
+      margin: 0 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    html.mok2-print-inserat-only .marketing-oek2-page {
+      background: #fff !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      max-width: none !important;
+      min-height: 0 !important;
     }
   }
 `
@@ -250,6 +273,58 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
   }
 
   const handlePrint = () => window.print()
+
+  const inseratViertelRef = useRef<HTMLDivElement>(null)
+  const [inseratHinweis, setInseratHinweis] = useState<string | null>(null)
+  const blinkInseratHinweis = useCallback((msg: string) => {
+    setInseratHinweis(msg)
+    window.setTimeout(() => setInseratHinweis(null), 4500)
+  }, [])
+
+  const handlePrintInseratOnly = useCallback(() => {
+    const pageStyle = document.createElement('style')
+    pageStyle.id = 'mok2-inserat-print-page-size'
+    pageStyle.textContent = '@media print { @page { size: 96mm 129mm; margin: 0; } }'
+    document.head.appendChild(pageStyle)
+    document.documentElement.classList.add('mok2-print-inserat-only')
+    let cleaned = false
+    const cleanup = () => {
+      if (cleaned) return
+      cleaned = true
+      document.documentElement.classList.remove('mok2-print-inserat-only')
+      document.getElementById('mok2-inserat-print-page-size')?.remove()
+      window.removeEventListener('afterprint', cleanup)
+    }
+    window.addEventListener('afterprint', cleanup)
+    window.print()
+    window.setTimeout(cleanup, 4000)
+  }, [])
+
+  const handleInseratPdfShare = useCallback(async () => {
+    blinkInseratHinweis('PDF wird erstellt …')
+    const r = await shareInseratViertelPdf(inseratViertelRef.current)
+    if (r === 'shared') blinkInseratHinweis('Geteilt (System-Dialog).')
+    else if (r === 'downloaded') blinkInseratHinweis('PDF im Download-Ordner gespeichert.')
+    else if (r === 'cancelled') blinkInseratHinweis('Abgebrochen.')
+    else blinkInseratHinweis('PDF nicht möglich – bitte „Nur Inserat drucken“ oder Screenshot.')
+  }, [blinkInseratHinweis])
+
+  const handleCopyInseratLink = useCallback(async () => {
+    const url = `${window.location.origin}${window.location.pathname}#mok2-inserat-lokalzeitung`
+    try {
+      await navigator.clipboard.writeText(url)
+      blinkInseratHinweis('Link kopiert.')
+    } catch {
+      blinkInseratHinweis(url)
+    }
+  }, [blinkInseratHinweis])
+
+  const handleMailtoInserat = useCallback(() => {
+    const url = `${window.location.origin}${window.location.pathname}#mok2-inserat-lokalzeitung`
+    const subject = 'Anzeige K2 / kgm solution – Viertelseite'
+    const body = `Guten Tag,\n\nVorschau-Link zum Inserat (96 × 129 mm):\n${url}\n\nQR-Ziel Eingangstor (Demo):\n${urlMusterEingangstorLive}\n\nMit freundlichen Grüßen`
+    window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+  }, [urlMusterEingangstorLive])
 
   return (
     <article
@@ -1082,8 +1157,108 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           >
             Direktanker (Lesezeichen)
           </Link>
-          . <strong>Im Browser</strong> öffnen (Chrome/Safari), nicht in der Cursor-Vorschau – oben <strong>Als PDF drucken</strong> für die ganze mök2-Seite oder nur diesen Abschnitt markieren.
+          . <strong>Im Browser</strong> öffnen (Chrome/Safari), nicht in der Cursor-Vorschau. <strong>Kampagne:</strong> unten{' '}
+          <strong>Nur Inserat drucken</strong> (Seite 96×129 mm), <strong>PDF</strong> speichern oder teilen, <strong>Link kopieren</strong>,{' '}
+          <strong>E-Mail-Entwurf</strong> für Setzerei/Zeitung. Oben weiterhin <strong>Als PDF drucken</strong> für die ganze mök2-Seite.
         </p>
+
+        <div
+          className="marketing-oek2-no-print"
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '0.45rem',
+            alignItems: 'center',
+            marginBottom: '0.65rem',
+            padding: '0.65rem 0.75rem',
+            background: 'rgba(95,251,241,0.08)',
+            border: '1px solid rgba(95,251,241,0.35)',
+            borderRadius: 10,
+          }}
+        >
+          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#5ffbf1', flex: '1 1 100%' }}>
+            Ausdrucken &amp; versenden
+          </span>
+          <button
+            type="button"
+            onClick={handlePrintInseratOnly}
+            style={{
+              padding: '0.45rem 0.75rem',
+              background: '#0d9488',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              fontSize: '0.82rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            Nur Inserat drucken (96×129 mm)
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleInseratPdfShare()}
+            style={{
+              padding: '0.45rem 0.75rem',
+              background: 'rgba(95,251,241,0.15)',
+              color: '#5ffbf1',
+              border: '1px solid rgba(95,251,241,0.5)',
+              borderRadius: 8,
+              fontSize: '0.82rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            PDF speichern oder teilen
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleCopyInseratLink()}
+            style={{
+              padding: '0.45rem 0.75rem',
+              background: 'rgba(255,255,255,0.06)',
+              color: 'rgba(255,250,245,0.95)',
+              border: '1px solid rgba(255,255,255,0.22)',
+              borderRadius: 8,
+              fontSize: '0.82rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            Link kopieren
+          </button>
+          <button
+            type="button"
+            onClick={handleMailtoInserat}
+            style={{
+              padding: '0.45rem 0.75rem',
+              background: 'rgba(255,255,255,0.06)',
+              color: 'rgba(255,250,245,0.95)',
+              border: '1px solid rgba(255,255,255,0.22)',
+              borderRadius: 8,
+              fontSize: '0.82rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            E-Mail-Entwurf
+          </button>
+        </div>
+        {inseratHinweis ? (
+          <p
+            className="marketing-oek2-no-print"
+            role="status"
+            style={{
+              margin: '0 0 0.65rem',
+              fontSize: '0.84rem',
+              color: '#5ffbf1',
+              fontWeight: 600,
+              lineHeight: 1.4,
+            }}
+          >
+            {inseratHinweis}
+          </p>
+        ) : null}
 
         <h3 className="marketing-oek2-no-print" style={{ fontSize: '1.05rem', color: '#5ffbf1', margin: '0 0 0.5rem', fontWeight: 700 }}>
           Bildseiten-Muster (Viertelseite 96 × 129 mm)
@@ -1093,6 +1268,8 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </p>
 
         <div
+          id="mok2-inserat-print-root"
+          ref={inseratViertelRef}
           className="mok2-inserat-viertel"
           style={{
             width: 'min(96mm, 100%)',
@@ -1131,15 +1308,15 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             >
               <div
                 style={{
-                  flex: '1 1 0',
+                  flex: '1.08 1 0',
                   minHeight: 0,
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: '8px 5px',
+                  padding: '10px 6px',
                   background: INSERAT_TEAL_DARK,
-                  boxShadow: 'inset 0 -1px 0 rgba(255,255,255,0.12)',
+                  boxShadow: 'inset 0 -1px 0 rgba(255,255,255,0.1)',
                   textAlign: 'center',
                 }}
               >
@@ -1151,6 +1328,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                     lineHeight: 1,
                     letterSpacing: '-0.03em',
                     textShadow: '0 2px 12px rgba(0,0,0,0.35)',
+                    display: 'block',
                   }}
                 >
                   K2
@@ -1160,15 +1338,16 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                     fontSize: 'clamp(0.48rem, 2vw, 0.72rem)',
                     fontWeight: 800,
                     color: 'rgba(255,255,255,0.96)',
-                    marginTop: 5,
+                    marginTop: 6,
                     letterSpacing: '0.04em',
-                    lineHeight: 1.15,
+                    lineHeight: 1.2,
+                    display: 'block',
                   }}
                 >
                   {PRODUCT_BRAND_NAME}
                 </span>
               </div>
-              <div style={{ flex: '1 1 0', minHeight: 0, position: 'relative', overflow: 'hidden' }}>
+              <div style={{ flex: '0.92 1 0', minHeight: 0, position: 'relative', overflow: 'hidden' }}>
                 {oefWelcome ? (
                   <img src={oefWelcome} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 ) : (
@@ -1195,11 +1374,12 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             >
               <div
                 style={{
-                  fontSize: 'clamp(0.62rem, 2.85vw, 0.92rem)',
+                  fontSize: 'clamp(0.64rem, 2.95vw, 0.95rem)',
                   fontWeight: 900,
                   color: INSERAT_TEAL_DARK,
                   lineHeight: 1.15,
                   letterSpacing: '0.02em',
+                  textWrap: 'balance' as const,
                 }}
               >
                 {PRODUCT_INSERAT_VIERTEL_HAUPT}
@@ -1207,10 +1387,11 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
               <p
                 style={{
                   margin: '8px 0 0',
-                  fontSize: 'clamp(0.52rem, 2.2vw, 0.72rem)',
+                  fontSize: 'clamp(0.54rem, 2.28vw, 0.74rem)',
                   lineHeight: 1.28,
                   color: '#1c1a18',
                   fontWeight: 800,
+                  textWrap: 'balance' as const,
                 }}
               >
                 {PRODUCT_INSERAT_VIERTEL_UNTER}
@@ -1222,15 +1403,16 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                 flexShrink: 0,
                 width: '100%',
                 boxSizing: 'border-box',
-                padding: '8px 10px 9px',
+                padding: '9px 10px 10px',
                 borderTop: `1px solid rgba(12, 92, 85, 0.22)`,
                 background: 'linear-gradient(180deg, #f4f0ea 0%, #ebe6de 100%)',
                 fontSize: 'clamp(0.58rem, 2.65vw, 0.86rem)',
                 fontWeight: 900,
                 color: INSERAT_TEAL_DARK,
-                lineHeight: 1.2,
+                lineHeight: 1.22,
                 letterSpacing: '0.015em',
-                textAlign: 'left',
+                textAlign: 'center',
+                textWrap: 'balance' as const,
               }}
             >
               {PRODUCT_WERBESLOGAN_2 || PRODUCT_WERBESLOGAN}
@@ -1242,9 +1424,9 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
               flex: 1,
               display: 'flex',
               flexDirection: 'column',
-              gap: 3,
+              gap: 4,
               minHeight: 0,
-              padding: '3px 5px 4px',
+              padding: '4px 6px 5px',
             }}
           >
             {[
@@ -1270,12 +1452,12 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                   border: '1px solid rgba(28,26,24,0.1)',
                 }}
               >
-                <div style={{ width: inseratOeVk ? 9 : 8, flexShrink: 0, background: row.bar }} aria-hidden />
+                <div style={{ width: inseratOeVk ? 10 : 8, flexShrink: 0, background: row.bar }} aria-hidden />
                 <div
                   style={{
                     flex: 1,
                     minWidth: 0,
-                    padding: inseratOeVk ? '7px 9px' : row.k === 'f' ? '5px 8px 6px' : '5px 8px',
+                    padding: inseratOeVk ? '8px 10px' : row.k === 'f' ? '5px 8px 6px' : '5px 8px',
                     background: '#fff',
                     display: 'flex',
                     flexDirection: 'column',
@@ -1285,11 +1467,11 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                   <div
                     style={{
                       fontSize: inseratOeVk
-                        ? 'clamp(0.78rem, 3.35vw, 1.08rem)'
+                        ? 'clamp(0.88rem, 3.85vw, 1.18rem)'
                         : 'clamp(0.65rem, 2.75vw, 0.92rem)',
                       fontWeight: 900,
                       color: row.bar,
-                      lineHeight: 1.06,
+                      lineHeight: 1.05,
                     }}
                   >
                     {row.t}
@@ -1297,11 +1479,11 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                   <div
                     style={{
                       fontSize: inseratOeVk
-                        ? 'clamp(0.62rem, 2.58vw, 0.84rem)'
+                        ? 'clamp(0.7rem, 2.95vw, 0.93rem)'
                         : 'clamp(0.52rem, 2.15vw, 0.72rem)',
                       color: '#1c1a18',
-                      lineHeight: 1.22,
-                      marginTop: inseratOeVk ? 4 : 3,
+                      lineHeight: 1.24,
+                      marginTop: inseratOeVk ? 5 : 3,
                       fontWeight: 700,
                     }}
                   >
@@ -1348,12 +1530,12 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                 <img
                   src={inseratEingangstorQrUrl}
                   alt="QR zum Eingangstor Entdecken"
-                  width={72}
-                  height={72}
+                  width={80}
+                  height={80}
                   style={{ display: 'block', background: '#fff' }}
                 />
               ) : (
-                <div style={{ width: 72, height: 72, background: '#e8e6e2' }} aria-hidden />
+                <div style={{ width: 80, height: 80, background: '#e8e6e2' }} aria-hidden />
               )}
             </div>
           </div>
