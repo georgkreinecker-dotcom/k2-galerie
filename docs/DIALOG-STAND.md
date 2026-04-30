@@ -4,6 +4,14 @@
 
 ---
 
+**Letzter Stand:** 30.04.26 – **ök2 Vorschau „← Zur Galerie“ landet auf Willkommens-Galerie statt Entdecken (APf).** Ursache: `GaleriePage` leitet Fremde ohne `k2-from-entdecken` zu Entdecken um; von der APf-Vorschau wurde `k2-oek2-from-apf` nie gesetzt (nur bei `GaleriePage`). **Fix:** `GalerieVorschauPage` – `useLayoutEffect` setzt `k2-oek2-from-apf` bei `fromApf`/`embedded`; Link „← Zur Galerie“ mit `state: { fromOeffentlichGalerie: true }`; `GaleriePage` – Entdecken-Redirect überspringen bei diesem State und bei `k2-oek2-from-apf`. **`npm run qs:local` grün.** **Commit:** `ceeb0414` ✅ **main**
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Zurück von Vorschau = gleiche öffentliche Galerie mit Willkommensbereich; APf zählt wie Galerie-Nutzer, nicht wie kalter Fremder-Link.
+
+---
+
 **Letzter Stand:** 30.04.26 – **Muster nur lesend (ök2-Vorschau + K2 Familie Huber):** `GalerieVorschauPage` – Mobile-Admin-Modal nur wenn `!musterOnly && !vk2`; `openEditModal`/`openNewModal` früh abgebrochen. **K2 Familie:** `familieMusterWriteGuard` + alle `save*` in `familieStorage`, `setFamilyPageTexts`/`setFamilyPageContent` lehnen bei **Nur-Muster-Sitzung** + Tenant **huber** ab; **`seedFamilieHuber`** darf mit `skipMusterDemoGuard` weiter schreiben. Tests `familieMusterHuberReadonly`. **`npm run build` grün.** **Commit:** `baeb85a7` ✅ **main**
 
 **Was wir JETZT tun:** –

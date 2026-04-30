@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, MEIN_BEREICH_ROUTE, BASE_APP_URL, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
@@ -321,6 +321,15 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
   })
   /** „So könnte dein Auftritt …“ – nur für Fremde, nicht in der APf (Programmierarbeit) */
   const embeddedInApf = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embedded') === '1'
+  /** Wie GaleriePage: APf/iframe setzt Flag, damit „Zur Galerie“ nicht nach Entdecken umgeleitet wird (Vorschau lädt GaleriePage vorher oft nicht). */
+  useLayoutEffect(() => {
+    if (!musterOnly) return
+    try {
+      if (fromApf || embeddedInApf) {
+        sessionStorage.setItem(KEY_OEK2_FROM_APF, '1')
+      }
+    } catch (_) {}
+  }, [musterOnly, fromApf, embeddedInApf])
   /** Guide nur für Fremde (Besucher), nicht für Programmier-APf (fromApf / embedded) oder Admin */
   const isGalerieUser =
     fromApf === true ||
@@ -2186,7 +2195,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
               alignItems: 'center'
             }}>
               <Link 
-                to={musterOnly ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie} 
+                to={musterOnly ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie}
+                state={musterOnly ? { fromOeffentlichGalerie: true } : undefined}
                 style={{ 
                   padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)', 
                   background: musterOnly ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.1)',

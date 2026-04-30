@@ -479,6 +479,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       /** Testpilot / persönliche Demo: vorname + entwurf – direkt Galerie, nicht Entdecken */
       if (isOek2PilotEntwurfQuery(search)) return
       if ((location.state as any)?.fromAdmin || sessionStorage.getItem(KEY_FROM_ADMIN)) return
+      if ((location.state as { fromOeffentlichGalerie?: boolean } | null)?.fromOeffentlichGalerie === true) return
+      try {
+        if (sessionStorage.getItem(KEY_OEK2_FROM_APF) === '1') return
+      } catch (_) {}
       if (hasFreshOek2EntrySession()) return
       navigate(ENTDECKEN_ROUTE, { replace: true })
     } catch (_) {}
