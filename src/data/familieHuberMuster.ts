@@ -152,31 +152,41 @@ export function seedFamilieHuber(): boolean {
   const events = getFamilieHuberEvents()
   const momente = getFamilieHuberMomente()
 
-  if (!savePersonen(tenantId, personen, { allowReduce: true })) return false
-  if (!saveEvents(tenantId, events, { allowReduce: true })) return false
-  if (!saveMomente(tenantId, momente, { allowReduce: true })) return false
+  const seedOpts = { allowReduce: true as const, skipMusterDemoGuard: true as const }
+  if (!savePersonen(tenantId, personen, seedOpts)) return false
+  if (!saveEvents(tenantId, events, seedOpts)) return false
+  if (!saveMomente(tenantId, momente, seedOpts)) return false
 
   const einstPrev = loadEinstellungen(tenantId)
   if (
-    !saveEinstellungen(tenantId, {
-      ...einstPrev,
-      inhaberPersonId: FAMILIE_HUBER_INHABER_PERSON_ID,
-      ichBinPersonId: FAMILIE_HUBER_INHABER_PERSON_ID,
-    })
+    !saveEinstellungen(
+      tenantId,
+      {
+        ...einstPrev,
+        inhaberPersonId: FAMILIE_HUBER_INHABER_PERSON_ID,
+        ichBinPersonId: FAMILIE_HUBER_INHABER_PERSON_ID,
+      },
+      { skipMusterDemoGuard: true }
+    )
   ) {
     return false
   }
 
-  setFamilyPageTexts(tenantId, {
-    welcomeTitle: 'Musterfamilie Huber',
-    welcomeSubtitle: 'Vier Generationen – bunt und verbunden',
-    introText: 'Paul und Antonia, ihre vier Kinder, sechs Enkelkinder und drei Urenkel. Eine Tochter lebt mit ihrer Lebenspartnerin Sophie und dem adoptierten Sohn Leon. Ein Jahr voller Feste, Geburtstage und gemeinsamer Momente.',
-    buttonStammbaum: 'Stammbaum ansehen',
-    buttonEvents: 'Events & Termine',
-    buttonKalender: 'Kalender & Übersicht',
-  })
+  setFamilyPageTexts(
+    tenantId,
+    {
+      welcomeTitle: 'Musterfamilie Huber',
+      welcomeSubtitle: 'Vier Generationen – bunt und verbunden',
+      introText:
+        'Paul und Antonia, ihre vier Kinder, sechs Enkelkinder und drei Urenkel. Eine Tochter lebt mit ihrer Lebenspartnerin Sophie und dem adoptierten Sohn Leon. Ein Jahr voller Feste, Geburtstage und gemeinsamer Momente.',
+      buttonStammbaum: 'Stammbaum ansehen',
+      buttonEvents: 'Events & Termine',
+      buttonKalender: 'Kalender & Übersicht',
+    },
+    { skipMusterDemoGuard: true }
+  )
 
-  setFamilyPageContent(tenantId, { ...FAMILIE_HUBER_DEFAULT_PAGE_CONTENT })
+  setFamilyPageContent(tenantId, { ...FAMILIE_HUBER_DEFAULT_PAGE_CONTENT }, { skipMusterDemoGuard: true })
 
   addTenantToList(tenantId)
   return true

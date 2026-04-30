@@ -684,6 +684,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
   
   // Öffne Modal zum Bearbeiten eines Objekts
   const openEditModal = (artwork: any) => {
+    if (musterOnly || vk2) return
     console.log('🔍 openEditModal aufgerufen mit artwork:', artwork)
     
     if (!artwork) {
@@ -748,6 +749,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
   
   // Öffne Modal für neues Objekt – letzte Kategorie beibehalten (nicht Standard „Bild“); ök2: Kategorien aus Stammdaten-Sparte
   const openNewModal = () => {
+    if (musterOnly || vk2) return
     setEditingArtwork(null)
     setIsEditingMode(false) // Explizit auf "Neues Objekt" Modus setzen
     setMobilePhoto(null)
@@ -3482,8 +3484,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
         </div>
       )}
       
-      {/* Mobile-First Admin Modal */}
-      {showMobileAdmin && (
+      {/* Mobile-First Admin Modal (ök2/VK2: nie anzeigen – Muster nur lesend) */}
+      {!musterOnly && !vk2 && showMobileAdmin && (
         <div style={{
           position: 'fixed',
           top: 0,

@@ -4,6 +4,14 @@
 
 ---
 
+**Letzter Stand:** 30.04.26 – **Muster nur lesend (ök2-Vorschau + K2 Familie Huber):** `GalerieVorschauPage` – Mobile-Admin-Modal nur wenn `!musterOnly && !vk2`; `openEditModal`/`openNewModal` früh abgebrochen. **K2 Familie:** `familieMusterWriteGuard` + alle `save*` in `familieStorage`, `setFamilyPageTexts`/`setFamilyPageContent` lehnen bei **Nur-Muster-Sitzung** + Tenant **huber** ab; **`seedFamilieHuber`** darf mit `skipMusterDemoGuard` weiter schreiben. Tests `familieMusterHuberReadonly`. **`npm run build` grün.** Commit folgt.
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Demo/Muster nicht von Besuchern persistieren; VK2-Öffentlich ohne Werke-Bearbeitung (unverändert).
+
+---
+
 **Letzter Stand:** 30.04.26 – **ök2 Mustergalerie: nur offizielle Musterwerke.** Besucher-Werke werden nicht mehr dauerhaft / serverseitig für andere sichtbar: **`canonicalOek2MusterArtworksList`** beim Veröffentlichen (`publishGalleryData`), nach Server-Fetch (`GaleriePage`), Lesen Shop/Buchhaltung/ControlStudio/Storno-Bestand; **`saveArtworksByKey`** lehnt **leeres** `toSave` für ök2 ab (kein „leer → 5 Muster“ beim Schreiben). Tests `artworksStorage`. Mit im Commit: Build-Info + Test-Protokoll-Zeitstempel (vorher unstaged). **`npm run build` grün.** **Commit:** Kern `a0fa879d` ✅ **main** (Doku/Reflexion: nachfolgende Commits auf `main`)
 
 **Was wir JETZT tun:** –

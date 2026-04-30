@@ -9,6 +9,7 @@
 import type { K2FamiliePerson, K2FamilieMoment, K2FamilieEvent, K2FamilieGabe, K2FamilieBeitrag, K2FamilieEinstellungen, K2FamilieZweig, K2FamilieGeschichte } from '../types/k2Familie'
 import { getK2FamiliePersonenKey, getK2FamilieMomenteKey, getK2FamilieEventsKey, getK2FamilieGabenKey, getK2FamilieBeitraegeKey, getK2FamilieEinstellungenKey, getK2FamilieZweigeKey, getK2FamilieGeschichtenKey } from '../types/k2Familie'
 import { clearIdentitaetBestaetigt, clearGerateVertrauen } from './familieIdentitaetStorage'
+import { isFamilieMusterHuberDemoReadOnly } from './familieMusterWriteGuard'
 import { isSupabaseConfigured } from './supabaseClient'
 
 /** Erster Tenant (eine Familie) für den Start. Später: mehrere TenantIds pro Lizenz. */
@@ -57,8 +58,12 @@ export function loadPersonen(tenantId: string): K2FamiliePerson[] {
 export function savePersonen(
   tenantId: string,
   list: K2FamiliePerson[],
-  options: { allowReduce?: boolean } = {}
+  options: { allowReduce?: boolean; skipMusterDemoGuard?: boolean } = {}
 ): boolean {
+  if (!options.skipMusterDemoGuard && isFamilieMusterHuberDemoReadOnly(tenantId)) {
+    console.warn('⚠️ familieStorage: Musterfamilie (Demo-Sitzung) ist nur lesend – Speichern abgelehnt')
+    return false
+  }
   const key = getK2FamiliePersonenKey(tenantId)
   const current = loadPersonen(tenantId)
   const currentCount = current.length
@@ -121,8 +126,12 @@ export function loadMomente(tenantId: string): K2FamilieMoment[] {
 export function saveMomente(
   tenantId: string,
   list: K2FamilieMoment[],
-  options: { allowReduce?: boolean } = {}
+  options: { allowReduce?: boolean; skipMusterDemoGuard?: boolean } = {}
 ): boolean {
+  if (!options.skipMusterDemoGuard && isFamilieMusterHuberDemoReadOnly(tenantId)) {
+    console.warn('⚠️ familieStorage: Musterfamilie (Demo-Sitzung) ist nur lesend – Momente speichern abgelehnt')
+    return false
+  }
   const key = getK2FamilieMomenteKey(tenantId)
   const current = loadMomente(tenantId)
   const currentCount = current.length
@@ -178,8 +187,12 @@ export function loadEvents(tenantId: string): K2FamilieEvent[] {
 export function saveEvents(
   tenantId: string,
   list: K2FamilieEvent[],
-  options: { allowReduce?: boolean } = {}
+  options: { allowReduce?: boolean; skipMusterDemoGuard?: boolean } = {}
 ): boolean {
+  if (!options.skipMusterDemoGuard && isFamilieMusterHuberDemoReadOnly(tenantId)) {
+    console.warn('⚠️ familieStorage: Musterfamilie (Demo-Sitzung) ist nur lesend – Events speichern abgelehnt')
+    return false
+  }
   const key = getK2FamilieEventsKey(tenantId)
   const current = loadEvents(tenantId)
   const currentCount = current.length
@@ -231,7 +244,15 @@ export function loadGaben(tenantId: string): K2FamilieGabe[] {
 /**
  * Speichert Gaben für einen Tenant. Phase 5. Kein Supabase-Push (lokal nur).
  */
-export function saveGaben(tenantId: string, list: K2FamilieGabe[]): boolean {
+export function saveGaben(
+  tenantId: string,
+  list: K2FamilieGabe[],
+  options: { skipMusterDemoGuard?: boolean } = {}
+): boolean {
+  if (!options.skipMusterDemoGuard && isFamilieMusterHuberDemoReadOnly(tenantId)) {
+    console.warn('⚠️ familieStorage: Musterfamilie (Demo-Sitzung) ist nur lesend – Gaben speichern abgelehnt')
+    return false
+  }
   const key = getK2FamilieGabenKey(tenantId)
   const arr = Array.isArray(list) ? list : []
   try {
@@ -266,7 +287,15 @@ export function loadBeitraege(tenantId: string): K2FamilieBeitrag[] {
 /**
  * Speichert Beiträge für einen Tenant.
  */
-export function saveBeitraege(tenantId: string, list: K2FamilieBeitrag[]): boolean {
+export function saveBeitraege(
+  tenantId: string,
+  list: K2FamilieBeitrag[],
+  options: { skipMusterDemoGuard?: boolean } = {}
+): boolean {
+  if (!options.skipMusterDemoGuard && isFamilieMusterHuberDemoReadOnly(tenantId)) {
+    console.warn('⚠️ familieStorage: Musterfamilie (Demo-Sitzung) ist nur lesend – Beiträge speichern abgelehnt')
+    return false
+  }
   const key = getK2FamilieBeitraegeKey(tenantId)
   const arr = Array.isArray(list) ? list : []
   try {
@@ -322,7 +351,15 @@ export function mergeEinstellungenFromServer(
 /**
  * Speichert Einstellungen für einen Tenant.
  */
-export function saveEinstellungen(tenantId: string, data: K2FamilieEinstellungen): boolean {
+export function saveEinstellungen(
+  tenantId: string,
+  data: K2FamilieEinstellungen,
+  options: { skipMusterDemoGuard?: boolean } = {}
+): boolean {
+  if (!options.skipMusterDemoGuard && isFamilieMusterHuberDemoReadOnly(tenantId)) {
+    console.warn('⚠️ familieStorage: Musterfamilie (Demo-Sitzung) ist nur lesend – Einstellungen speichern abgelehnt')
+    return false
+  }
   const key = getK2FamilieEinstellungenKey(tenantId)
   const patch = data && typeof data === 'object' ? data : {}
   const prev = loadEinstellungen(tenantId)
@@ -395,7 +432,15 @@ export function loadZweige(tenantId: string): K2FamilieZweig[] {
 /**
  * Speichert Zweige für einen Tenant.
  */
-export function saveZweige(tenantId: string, list: K2FamilieZweig[]): boolean {
+export function saveZweige(
+  tenantId: string,
+  list: K2FamilieZweig[],
+  options: { skipMusterDemoGuard?: boolean } = {}
+): boolean {
+  if (!options.skipMusterDemoGuard && isFamilieMusterHuberDemoReadOnly(tenantId)) {
+    console.warn('⚠️ familieStorage: Musterfamilie (Demo-Sitzung) ist nur lesend – Zweige speichern abgelehnt')
+    return false
+  }
   const key = getK2FamilieZweigeKey(tenantId)
   const arr = Array.isArray(list) ? list : []
   try {
@@ -430,7 +475,15 @@ export function loadGeschichten(tenantId: string): K2FamilieGeschichte[] {
 /**
  * Speichert Geschichten für einen Tenant.
  */
-export function saveGeschichten(tenantId: string, list: K2FamilieGeschichte[]): boolean {
+export function saveGeschichten(
+  tenantId: string,
+  list: K2FamilieGeschichte[],
+  options: { skipMusterDemoGuard?: boolean } = {}
+): boolean {
+  if (!options.skipMusterDemoGuard && isFamilieMusterHuberDemoReadOnly(tenantId)) {
+    console.warn('⚠️ familieStorage: Musterfamilie (Demo-Sitzung) ist nur lesend – Geschichten speichern abgelehnt')
+    return false
+  }
   const key = getK2FamilieGeschichtenKey(tenantId)
   const arr = Array.isArray(list) ? list : []
   try {
@@ -454,6 +507,10 @@ export function saveGeschichten(tenantId: string, list: K2FamilieGeschichte[]): 
  * Returns true wenn alles gespeichert wurde.
  */
 export function deletePersonWithCleanup(tenantId: string, personId: string): boolean {
+  if (isFamilieMusterHuberDemoReadOnly(tenantId)) {
+    console.warn('⚠️ familieStorage: Musterfamilie (Demo-Sitzung) ist nur lesend – Löschen abgelehnt')
+    return false
+  }
   const einstGuard = loadEinstellungen(tenantId)
   if (einstGuard.stammbaumPersonenLoeschenGesperrt) {
     console.warn('⚠️ familieStorage: Personen löschen ist gesperrt (Inhaber:in unter Einstellungen)')

@@ -11,6 +11,7 @@ import {
   FAMILIE_HUBER_DEFAULT_EINSTIEG_HERO,
   K2_FAMILIE_DECKBLATT_HOME_PNG,
 } from '../data/k2FamilieMusterHuberQuelle'
+import { isFamilieMusterHuberDemoReadOnly } from '../utils/familieMusterWriteGuard'
 
 /** Nur Pfad (ohne Query); bei absoluter URL `pathname` – sonst schlägt `===` mit Vercel-URL fehl. */
 function familieBildPathForVergleich(url: string): string {
@@ -121,8 +122,16 @@ export function mergeFamilyPageContentFromServer(
 }
 
 /** Speichert Seitengestaltung (nur nach expliziter User-Aktion). */
-export function setFamilyPageContent(tenantId: string, data: Partial<PageContentFamilie>): void {
+export function setFamilyPageContent(
+  tenantId: string,
+  data: Partial<PageContentFamilie>,
+  opts?: { skipMusterDemoGuard?: boolean }
+): void {
   try {
+    if (!opts?.skipMusterDemoGuard && isFamilieMusterHuberDemoReadOnly(tenantId)) {
+      console.warn('⚠️ pageContentFamilie: Musterfamilie (Demo-Sitzung) ist nur lesend')
+      return
+    }
     const key = getStorageKey(tenantId)
     const prev = getFamilyPageContent(tenantId)
     const next: PageContentFamilie = { ...prev }

@@ -6,6 +6,7 @@
 
 import { FAMILIE_HUBER_TENANT_ID } from '../data/k2FamilieMusterHuberQuelle'
 import { loadEinstellungen } from '../utils/familieStorage'
+import { isFamilieMusterHuberDemoReadOnly } from '../utils/familieMusterWriteGuard'
 /** Früher „Familie Huber“ – in Sanitize und Migration noch erkannt. */
 const HUBER_LEGACY_WELCOME_TITLE = 'Familie Huber'
 const HUBER_SEED_WELCOME_TITLE = 'Musterfamilie Huber'
@@ -103,8 +104,16 @@ export function mergeFamilyPageTextsFromServer(
 }
 
 /** Speichert Seitentexte (nur nach expliziter User-Aktion). */
-export function setFamilyPageTexts(tenantId: string, data: Partial<PageTextsFamilie>): void {
+export function setFamilyPageTexts(
+  tenantId: string,
+  data: Partial<PageTextsFamilie>,
+  opts?: { skipMusterDemoGuard?: boolean }
+): void {
   try {
+    if (!opts?.skipMusterDemoGuard && isFamilieMusterHuberDemoReadOnly(tenantId)) {
+      console.warn('⚠️ pageTextsFamilie: Musterfamilie (Demo-Sitzung) ist nur lesend')
+      return
+    }
     const key = getStorageKey(tenantId)
     const prev = getFamilyPageTexts(tenantId)
     const next = { ...prev, ...data }
