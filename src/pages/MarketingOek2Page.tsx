@@ -1131,15 +1131,16 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             >
               <div
                 style={{
-                  flex: '0 0 44%',
-                  minHeight: 52,
+                  flex: '1 1 0',
+                  minHeight: 0,
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: '6px 4px',
+                  padding: '8px 5px',
                   background: INSERAT_TEAL_DARK,
                   boxShadow: 'inset 0 -1px 0 rgba(255,255,255,0.12)',
+                  textAlign: 'center',
                 }}
               >
                 <span
@@ -1147,7 +1148,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                     fontSize: 'clamp(1.35rem, 7vw, 2.5rem)',
                     fontWeight: 900,
                     color: '#fff',
-                    lineHeight: 0.9,
+                    lineHeight: 1,
                     letterSpacing: '-0.03em',
                     textShadow: '0 2px 12px rgba(0,0,0,0.35)',
                   }}
@@ -1159,14 +1160,15 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                     fontSize: 'clamp(0.48rem, 2vw, 0.72rem)',
                     fontWeight: 800,
                     color: 'rgba(255,255,255,0.96)',
-                    marginTop: 6,
+                    marginTop: 5,
                     letterSpacing: '0.04em',
+                    lineHeight: 1.15,
                   }}
                 >
                   {PRODUCT_BRAND_NAME}
                 </span>
               </div>
-              <div style={{ flex: 1, position: 'relative', minHeight: 44, overflow: 'hidden' }}>
+              <div style={{ flex: '1 1 0', minHeight: 0, position: 'relative', overflow: 'hidden' }}>
                 {oefWelcome ? (
                   <img src={oefWelcome} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 ) : (
@@ -1254,7 +1256,9 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                 t: 'K2 Familie',
                 s: `${PRODUCT_K2_FAMILIE_WERBESLOGAN} ${PRODUCT_K2_FAMILIE_WERBE_KERN_KOMPAKT}`,
               },
-            ].map((row) => (
+            ].map((row) => {
+              const inseratOeVk = row.k === 'o' || row.k === 'v'
+              return (
               <div
                 key={row.k}
                 style={{
@@ -1266,12 +1270,12 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                   border: '1px solid rgba(28,26,24,0.1)',
                 }}
               >
-                <div style={{ width: 8, flexShrink: 0, background: row.bar }} aria-hidden />
+                <div style={{ width: inseratOeVk ? 9 : 8, flexShrink: 0, background: row.bar }} aria-hidden />
                 <div
                   style={{
                     flex: 1,
                     minWidth: 0,
-                    padding: row.k === 'f' ? '5px 8px 6px' : '5px 8px',
+                    padding: inseratOeVk ? '7px 9px' : row.k === 'f' ? '5px 8px 6px' : '5px 8px',
                     background: '#fff',
                     display: 'flex',
                     flexDirection: 'column',
@@ -1280,20 +1284,24 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                 >
                   <div
                     style={{
-                      fontSize: 'clamp(0.65rem, 2.75vw, 0.92rem)',
+                      fontSize: inseratOeVk
+                        ? 'clamp(0.78rem, 3.35vw, 1.08rem)'
+                        : 'clamp(0.65rem, 2.75vw, 0.92rem)',
                       fontWeight: 900,
                       color: row.bar,
-                      lineHeight: 1.08,
+                      lineHeight: 1.06,
                     }}
                   >
                     {row.t}
                   </div>
                   <div
                     style={{
-                      fontSize: 'clamp(0.52rem, 2.15vw, 0.72rem)',
+                      fontSize: inseratOeVk
+                        ? 'clamp(0.62rem, 2.58vw, 0.84rem)'
+                        : 'clamp(0.52rem, 2.15vw, 0.72rem)',
                       color: '#1c1a18',
-                      lineHeight: row.k === 'f' ? 1.22 : 1.2,
-                      marginTop: 3,
+                      lineHeight: 1.22,
+                      marginTop: inseratOeVk ? 4 : 3,
                       fontWeight: 700,
                     }}
                   >
@@ -1301,7 +1309,8 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                   </div>
                 </div>
               </div>
-            ))}
+              )
+            })}
           </div>
 
           <div
