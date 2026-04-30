@@ -279,6 +279,8 @@ Wenn nein: wir lassen es.
 
 ---
 
+**Session-Reflexion (30.04.26):** ök2-Demo: eine kanonische Musterliste überall (Lesen, Veröffentlichen, Galerie-Server-Fetch, Kasse-Storno) – Besucher-Werke bleiben nicht als „öffentlicher Bestand“ hängen.
+
 **Session-Reflexion (20.04.26):** K2 Familie Kunden-Präsentationsmappe mit echten Screenshots und Capture-Skript ohne Rundgang-Modal – eine Quelle (`readMusterLeitfadenAbgeschlossen`) im Playwright-Kontext spiegelt.
 
 **Session-Reflexion (19.04.26):** K2 Familie: Sitzung prüft nur den Code der Person **„Du“** – Listen-Codes anderer Mitglieder sind absichtlich nicht genug; nachvollziehbare Texte + aktiver Familienname im Banner; Georg hat einen neuen Code, der passt.
