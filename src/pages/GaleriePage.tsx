@@ -16,7 +16,7 @@ import { Oek2GalerieLeitfadenModal } from '../components/Oek2GalerieLeitfadenMod
 import { getPageTexts, cleanK2PageTextsFromVk2, type GaleriePageTexts } from '../config/pageTexts'
 import { getPageContentEntdecken, DEFAULT_HERO_RUNDGANG_INVITE } from '../config/pageContentEntdecken'
 import { appendToHistory } from '../utils/artworkHistory'
-import { readArtworksRawForContext, saveArtworksForContextWithImageStore } from '../utils/artworksStorage'
+import { readArtworksRawForContext, saveArtworksForContextWithImageStore, canonicalOek2MusterArtworksList } from '../utils/artworksStorage'
 import { mergeServerWithLocal, preserveLocalImageData } from '../utils/syncMerge'
 import { loadEvents, saveEvents } from '../utils/eventsStorage'
 import { getOeffentlichEventsWithMusterFallback } from '../utils/oek2MusterEventLinie'
@@ -2235,8 +2235,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         try {
           // öK2 öffentlich: Server ist Wahrheit (keine lokalen Altbestände zurückmischen).
           if (Array.isArray(data.artworks)) {
-            await saveArtworksForContextWithImageStore(true, false, data.artworks, { allowReduce: true })
-            window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: data.artworks.length, fromGaleriePage: true, oeffentlichFromServer: true } }))
+            const officialOek2 = canonicalOek2MusterArtworksList(data.artworks)
+            await saveArtworksForContextWithImageStore(true, false, officialOek2, { allowReduce: true })
+            window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: officialOek2.length, fromGaleriePage: true, oeffentlichFromServer: true } }))
           }
           if (Array.isArray(data.events) && data.events.length > 0) {
             const existing = loadEvents('oeffentlich')

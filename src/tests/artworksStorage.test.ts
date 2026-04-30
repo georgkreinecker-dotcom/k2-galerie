@@ -4,13 +4,14 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { MUSTER_ARTWORKS } from '../config/tenantConfig'
 import {
   readArtworksRawForContext,
   saveArtworksForContext,
   readArtworksRawByKey,
   saveArtworksByKey,
   mergeAndMaybeWrite,
-  getArtworksStorageKey
+  getArtworksStorageKey,
 } from '../utils/artworksStorage'
 
 const K2_KEY = 'k2-artworks'
@@ -36,11 +37,13 @@ describe('artworksStorage: Kontext-Keys', () => {
     expect(list[0].number).toBe('1')
   })
 
-  it('readArtworksRawForContext ök2 liest k2-oeffentlich-artworks', () => {
-    localStorage.setItem(OEK2_KEY, JSON.stringify([{ number: 'M1', title: 'Muster' }]))
+  it('readArtworksRawForContext ök2 kanonisiert auf MUSTER_ARTWORKS (nur Muster, Fremdes fällt weg)', () => {
+    localStorage.setItem(OEK2_KEY, JSON.stringify([{ number: 'M1', title: 'Muster' }, { number: 'X99', title: 'Fremd' }]))
     const list = readArtworksRawForContext(true, false)
-    expect(list).toHaveLength(1)
-    expect(list[0].number).toBe('M1')
+    expect(list).toHaveLength(MUSTER_ARTWORKS.length)
+    const m1 = list.find((a: any) => a.number === 'M1')
+    expect(m1?.title).toBe('Muster')
+    expect(list.some((a: any) => a.number === 'X99')).toBe(false)
   })
 
   it('readArtworksRawForContext VK2 liefert immer []', () => {
@@ -55,10 +58,12 @@ describe('artworksStorage: Kontext-Keys', () => {
     expect(localStorage.getItem(OEK2_KEY)).toBeNull()
   })
 
-  it('saveArtworksForContext ök2 schreibt in k2-oeffentlich-artworks', () => {
+  it('saveArtworksForContext ök2 schreibt kanonische Musterliste', () => {
     const ok = saveArtworksForContext(true, false, [{ number: 'M1', title: 'M' }])
     expect(ok).toBe(true)
-    expect(readArtworksRawByKey(OEK2_KEY)).toHaveLength(1)
+    const stored = readArtworksRawByKey(OEK2_KEY)
+    expect(stored).toHaveLength(MUSTER_ARTWORKS.length)
+    expect(stored.find((a: any) => a.number === 'M1')?.title).toBe('M')
   })
 
   it('saveArtworksForContext VK2 ist No-Op (false, schreibt nichts)', () => {

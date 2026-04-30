@@ -8,6 +8,7 @@ import { getCustomers, type Customer } from '../utils/customers'
 import { hasKassa } from '../utils/kassabuchStorage'
 import { useTenant } from '../context/TenantContext'
 import { getShopSoldArtworksKey } from '../utils/shopContextKeys'
+import { readArtworksRawForContext } from '../utils/artworksStorage'
 
 type ChatMessage = { role: 'user' | 'ai'; content: string }
 
@@ -45,9 +46,10 @@ const ArchivTab = () => {
               if (Array.isArray(arr)) artworks.push(...arr)
             })
           } catch (_) {}
+        } else if (tenant.isOeffentlich) {
+          artworks = readArtworksRawForContext(true, false)
         } else {
-          const ak = tenant.isOeffentlich ? 'k2-oeffentlich-artworks' : 'k2-artworks'
-          const artworksData = localStorage.getItem(ak)
+          const artworksData = localStorage.getItem('k2-artworks')
           artworks = artworksData ? JSON.parse(artworksData) : []
           if (!Array.isArray(artworks)) artworks = []
         }

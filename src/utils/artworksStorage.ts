@@ -15,6 +15,23 @@ import { MUSTER_ARTWORKS } from '../config/tenantConfig'
 const K2_ARTWORKS_KEY = 'k2-artworks'
 const OEF_ARTWORKS_KEY = 'k2-oeffentlich-artworks'
 
+/**
+ * ök2 öffentliche Demo: Nur die in MUSTER_ARTWORKS festgelegten Werke (ids + Nummern).
+ * Besucher-„neue Werke“ oder Testeinträge werden nicht in der Muster-Galerie / auf Vercel gehalten.
+ */
+export function canonicalOek2MusterArtworksList(fromList: unknown): any[] {
+  const arr = Array.isArray(fromList) ? fromList : []
+  return MUSTER_ARTWORKS.map(template => {
+    const tid = String(template.id)
+    const tnum = String(template.number ?? '').trim().toUpperCase()
+    const match =
+      arr.find((a: any) => a && String(a.id) === tid) ||
+      arr.find((a: any) => a && String(a.number ?? '').trim().toUpperCase() === tnum)
+    if (!match) return { ...template }
+    return { ...template, ...match, id: template.id, number: template.number }
+  })
+}
+
 export function ensureArtworkUid(a: any): string {
   const existing = String(a?.uid ?? '').trim()
   if (existing) return existing
@@ -112,7 +129,7 @@ export function readArtworksRawForContext(musterOnly: boolean, vk2: boolean): an
     const list = readArtworksRawByKey(OEF_ARTWORKS_KEY)
     // ök2: Leerer Speicher = Musterwerke anzeigen (Demo soll immer etwas zeigen)
     if (!list || list.length === 0) return [...MUSTER_ARTWORKS]
-    return list
+    return canonicalOek2MusterArtworksList(list)
   }
   return readArtworksRawByKey(K2_ARTWORKS_KEY)
 }
@@ -128,7 +145,7 @@ export function readArtworksRawForContextOrNull(musterOnly: boolean): any[] | nu
   const raw = readArtworksRawByKeyOrNull(OEF_ARTWORKS_KEY)
   // ök2: Key fehlt oder leer = Musterwerke (Demo soll immer etwas zeigen)
   if (raw === null || raw.length === 0) return [...MUSTER_ARTWORKS]
-  return raw
+  return canonicalOek2MusterArtworksList(raw)
 }
 
 /**
@@ -235,7 +252,15 @@ export function saveArtworksByKey(
   options: { allowReduce?: boolean; filterK2Only?: boolean } = {}
 ): boolean {
   const filterK2 = options.filterK2Only ?? (key === K2_ARTWORKS_KEY)
-  const list = filterK2 ? filterK2Only(toSave) : (Array.isArray(toSave) ? toSave : [])
+  let list = filterK2 ? filterK2Only(toSave) : (Array.isArray(toSave) ? toSave : [])
+  if (key === OEF_ARTWORKS_KEY) {
+    const raw = Array.isArray(toSave) ? toSave : []
+    if (raw.length === 0) {
+      console.warn('⚠️ artworksStorage: Leere Liste für ök2 abgelehnt – Musterwerke bleiben Standard.')
+      return false
+    }
+    list = canonicalOek2MusterArtworksList(list)
+  }
   const current = readArtworksRawByKey(key)
   const currentCount = current.length
 
@@ -249,7 +274,7 @@ export function saveArtworksByKey(
     console.warn('⚠️ artworksStorage: Speichern mit 0 Werken abgelehnt (Schutz – auch bei allowReduce)')
     return false
   }
-  if (list.length < currentCount && !options.allowReduce) {
+  if (list.length < currentCount && !options.allowReduce && key !== OEF_ARTWORKS_KEY) {
     console.warn(`⚠️ artworksStorage: Speichern würde ${currentCount} → ${list.length} reduzieren, abgelehnt`)
     return false
   }

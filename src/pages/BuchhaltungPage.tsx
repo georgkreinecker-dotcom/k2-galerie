@@ -19,6 +19,7 @@ import {
 import { computeRohertragOek2, type RohertragOek2Artwork } from '../utils/buchhaltungRohertragOek2'
 import { computeLagerstandOek2Vorschau } from '../utils/buchhaltungLagerstandOek2'
 import { formatEkAnzeige } from '../utils/artworkEkVk'
+import { readArtworksRawForContext } from '../utils/artworksStorage'
 
 const s = {
   bg: '#f8f7f5',
@@ -71,13 +72,7 @@ function loadOrders(tenant: KassabuchTenant): OrderRow[] {
 }
 
 function loadOeffentlichArtworksForRohertrag(): unknown[] {
-  try {
-    const raw = localStorage.getItem('k2-oeffentlich-artworks')
-    const list = raw ? JSON.parse(raw) : []
-    return Array.isArray(list) ? list : []
-  } catch {
-    return []
-  }
+  return readArtworksRawForContext(true, false)
 }
 
 function orderRowBuyerName(o: OrderRow): string {

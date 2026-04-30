@@ -3,9 +3,9 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import jsQR from 'jsqr'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { getCategoryLabel, MUSTER_TEXTE, MUSTER_ARTWORKS, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
+import { getCategoryLabel, MUSTER_TEXTE, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
 import { loadStammdaten, loadVk2Stammdaten } from '../utils/stammdatenStorage'
-import { readArtworksRawByKey, saveArtworksByKey } from '../utils/artworksStorage'
+import { readArtworksRawByKey, readArtworksRawForContext, saveArtworksByKey } from '../utils/artworksStorage'
 import { isOeffentlichDisplayContext } from '../utils/oeffentlichContext'
 import { getShopStorageKeys } from '../utils/shopContextKeys'
 import {
@@ -978,9 +978,7 @@ const ShopPage = () => {
   useEffect(() => {
     const loadArtworks = () => {
       if (fromOeffentlich) {
-        const stored = readArtworksRawByKey('k2-oeffentlich-artworks')
-        const list = Array.isArray(stored) && stored.length > 0 ? stored : MUSTER_ARTWORKS
-        setAllArtworks(list)
+        setAllArtworks(readArtworksRawForContext(true, false))
       } else {
         const artworks = readArtworksRawByKey('k2-artworks')
         if (Array.isArray(artworks)) setAllArtworks(artworks)
@@ -1133,7 +1131,7 @@ const ShopPage = () => {
         localStorage.setItem(soldArtworksKey, JSON.stringify(filtered))
       }
       const artworkKey = fromOeffentlich ? 'k2-oeffentlich-artworks' : 'k2-artworks'
-      const artworks = readArtworksRawByKey(artworkKey)
+      const artworks = fromOeffentlich ? [...readArtworksRawForContext(true, false)] : readArtworksRawByKey(artworkKey)
       if (Array.isArray(artworks) && order.items && order.items.length > 0) {
         let changed = false
         order.items.forEach((item: CartItem) => {
@@ -1163,8 +1161,7 @@ const ShopPage = () => {
       }
       window.dispatchEvent(new CustomEvent('artworks-updated'))
       setAllArtworks(prev => {
-        const key = fromOeffentlich ? 'k2-oeffentlich-artworks' : 'k2-artworks'
-        const next = readArtworksRawByKey(key)
+        const next = fromOeffentlich ? readArtworksRawForContext(true, false) : readArtworksRawByKey('k2-artworks')
         return Array.isArray(next) ? next : prev
       })
       alert('✅ Verkauf storniert. Die Werke sind wieder verfügbar.')
@@ -1228,7 +1225,7 @@ const ShopPage = () => {
       arr.splice(removeIdx, 1)
       localStorage.setItem(soldArtworksKey, JSON.stringify(arr))
       const artworkKey = fromOeffentlich ? 'k2-oeffentlich-artworks' : 'k2-artworks'
-      const artworks = readArtworksRawByKey(artworkKey)
+      const artworks = fromOeffentlich ? [...readArtworksRawForContext(true, false)] : readArtworksRawByKey(artworkKey)
       const uid = String((removed as any)?.artworkUid ?? '').trim()
       const idx = artworks.findIndex((a: any) => {
         const aUid = String(a?.uid ?? '').trim()
@@ -1243,7 +1240,7 @@ const ShopPage = () => {
       }
       window.dispatchEvent(new CustomEvent('artworks-updated'))
       setAllArtworks(prev => {
-        const next = readArtworksRawByKey(artworkKey)
+        const next = fromOeffentlich ? readArtworksRawForContext(true, false) : readArtworksRawByKey(artworkKey)
         return Array.isArray(next) ? next : prev
       })
       loadVerkaufslisteForStorno()
@@ -2590,35 +2587,41 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
     // Stückzahl pro Werk im Bestand abziehen (kontexteigener Artwork-Key)
     const artworkKey = fromOeffentlich ? 'k2-oeffentlich-artworks' : 'k2-artworks'
     try {
-      const raw = localStorage.getItem(artworkKey)
-      if (raw) {
-        const artworks = JSON.parse(raw)
-        if (Array.isArray(artworks)) {
-          let changed = false
-          cartForOrder.forEach((item: CartItem) => {
-            const uid = String((item as any)?.artworkUid ?? '').trim()
-            const abziehen = getCartLineQuantity(item)
-            const idx = artworks.findIndex((a: any) => {
-              const aUid = String(a?.uid ?? '').trim()
-              if (uid && aUid && aUid === uid) return true
-              return (a.number || a.id) === item.number
-            })
-            if (idx !== -1) {
-              const a = artworks[idx]
-              const q = a.quantity != null ? Number(a.quantity) : 1
-              const next = q - abziehen
-              if (next > 0) {
-                artworks[idx] = { ...a, quantity: next }
-                changed = true
-              } else {
-                artworks[idx] = { ...a, quantity: 0, inShop: false }
-                changed = true
-              }
-            }
+      let artworks: any[] = []
+      if (fromOeffentlich) {
+        artworks = [...readArtworksRawForContext(true, false)]
+      } else {
+        const raw = localStorage.getItem(artworkKey)
+        if (raw) {
+          const parsed = JSON.parse(raw)
+          if (Array.isArray(parsed)) artworks = parsed
+        }
+      }
+      if (artworks.length > 0) {
+        let changed = false
+        cartForOrder.forEach((item: CartItem) => {
+          const uid = String((item as any)?.artworkUid ?? '').trim()
+          const abziehen = getCartLineQuantity(item)
+          const idx = artworks.findIndex((a: any) => {
+            const aUid = String(a?.uid ?? '').trim()
+            if (uid && aUid && aUid === uid) return true
+            return (a.number || a.id) === item.number
           })
-          if (changed) {
-            saveArtworksByKey(artworkKey, artworks, { filterK2Only: artworkKey === 'k2-artworks', allowReduce: true })
+          if (idx !== -1) {
+            const a = artworks[idx]
+            const q = a.quantity != null ? Number(a.quantity) : 1
+            const next = q - abziehen
+            if (next > 0) {
+              artworks[idx] = { ...a, quantity: next }
+              changed = true
+            } else {
+              artworks[idx] = { ...a, quantity: 0, inShop: false }
+              changed = true
+            }
           }
+        })
+        if (changed) {
+          saveArtworksByKey(artworkKey, artworks, { filterK2Only: artworkKey === 'k2-artworks', allowReduce: true })
         }
       }
     } catch (_) {}

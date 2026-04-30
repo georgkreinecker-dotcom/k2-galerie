@@ -20,6 +20,7 @@ import {
   getFlyerEventBogenStorageKey,
 } from './flyerEventBogenStorageKeys'
 import type { TenantId } from '../config/tenantConfig'
+import { canonicalOek2MusterArtworksList } from './artworksStorage'
 
 type PublishTenantId = Exclude<TenantId, 'demo'>
 
@@ -231,16 +232,18 @@ export async function publishGalleryDataToServer(
   const total = artworks.length
   options?.onProgress?.(0, total)
   const withUrls = await resolveArtworkImageUrlsForExport(artworks, { onProgress: options?.onProgress })
+  const forPublishList =
+    tenantId === 'oeffentlich' ? canonicalOek2MusterArtworksList(withUrls) : withUrls
   const hasHttpsUrl = (a: any) =>
     a?.imageUrl &&
     typeof a.imageUrl === 'string' &&
     (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))
-  const imagesResolved = withUrls.filter(hasHttpsUrl).length
-  const artworkNumbersWithoutImageUrl = withUrls
+  const imagesResolved = forPublishList.filter(hasHttpsUrl).length
+  const artworkNumbersWithoutImageUrl = forPublishList
     .filter((a: any) => !hasHttpsUrl(a))
     .map((a: any) => String(a?.number ?? a?.id ?? '').trim())
     .filter(Boolean)
-  const forExport = artworksForExport(withUrls)
+  const forExport = artworksForExport(forPublishList)
 
   // Optional: Meta vom Server übernehmen (nur K2) – verhindert „zurückdrehen“ durch alte lokale Daten.
   let serverMeta: Record<string, unknown> | null = null
