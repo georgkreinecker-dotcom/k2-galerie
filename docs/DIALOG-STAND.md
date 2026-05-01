@@ -4,6 +4,10 @@
 
 ---
 
+**Letzter Stand:** 01.05.26 – **mök2 Werbefahrplan** – Sidebar + Sektion **`#mok2-werbefahrplan`**: Kampagnen mit **Titel, Von/Bis, Aktivitäten**; Speicher `k2-mok2-werbefahrplan`; **Default** erste Kampagne (15.05.–15.06.26: redaktionell, 5× Inserat 1/4, Online-Auktion); Link **Mission Control**; Utils + Tests `werbefahrplanMok2Storage`. **Commit:** `0b6344b8` ✅ **main**
+
+**Letzter Stand:** 01.05.26 – **Presse-Nachbericht: Präsentationsmappe Vollversion** – mök2 **`#mok2-presse-nachbericht-eroeffnung`**: vier **Links + QR** (K2, ök2 `?context=oeffentlich`, VK2 `?variant=vk2`, VK2 Promo `?variant=vk2-promo`) wie **Werbeunterlagen**; QR-Bündelung in einem `useEffect`; Doku `PRESSE-NACHBERICHT-EROEFFNUNG-VORSCHLAG.md` Liste + QR-Hinweis **alle Links**. **Commit:** `e38c1cc2` ✅ **main**
+
 **Letzter Stand:** 01.05.26 – **Presse-Nachbericht: QR unter Links** – mök2 **`#mok2-presse-nachbericht-eroeffnung`**: zwei **QR-Bilder** (Galerie + Eingangstor) mit **buildQrUrlWithBust** wie Inserat; Doku-Hinweis in `PRESSE-NACHBERICHT-EROEFFNUNG-VORSCHLAG.md`. **Commit:** `e886bf9a` ✅ **main**
 
 **Letzter Stand:** 01.05.26 – **mök2 Vertrieb: Presse-Nachbericht Galerieeröffnung** – Sidebar (`mok2Structure`) + Sektion **`#mok2-presse-nachbericht-eroeffnung`** in `MarketingOek2Page` (Voltext wie Doku, Galerie-/Demo-Links mit Server-Bust); in `PRESSE-NACHBERICHT-EROEFFNUNG-VORSCHLAG.md` Verweis auf mök2-Anker; **Redaktionsblock** „Galerie → Plattform“ **subtil** (kein Zielgruppen-Pitch, **K2-Plattform** nur **intern**, Abgrenzung zu Software-Werbung). **Commit:** `bbbf517b` ✅ **main**
@@ -24,7 +28,7 @@
 
 **Letzter Stand:** 30.04.26 – **mök2: Inserat Viertel – K2, Typo, QR** – Linkes Feld: großes **K2** + „GALERIE“ (`K2_GALERIE_PUBLIC_BRAND`), darunter Bild/Teal; rechts größere Header-Zeilen und fetter Werbesatz; drei Karten mit dickerer Farbleiste und Maximal-Schrift; QR ~100px, Druck 24mm, Teal-Rahmen. **Build grün.** **Commit:** (älterer Stand – siehe oben)
 
-**Was wir JETZT tun:** – Presse-Nachbericht: **mök2 → Vertrieb** oder Doku-Datei; bei Bedarf an Redaktion senden / PDF drucken.
+**Was wir JETZT tun:** – Presse-Nachbericht: **mök2 → Vertrieb** oder Doku-Datei; bei Bedarf an Redaktion senden / PDF drucken (inkl. Mappe-Links/QR).
 
 **Einordnung:** Eröffnung erfolgreich; Nachbericht in **Doku + mök2** (eine Lesespur zum Drucken); Inserat/Kampagne wie geplant.
 

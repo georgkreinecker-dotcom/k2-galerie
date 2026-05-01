@@ -29,6 +29,12 @@ import ProductCopyright from '../components/ProductCopyright'
 import { compressImageForStorage } from '../utils/compressImageForStorage'
 import { useGamificationChecklistsUi } from '../hooks/useGamificationChecklistsUi'
 import { shareInseratViertelPdf } from '../utils/inseratViertelPdf'
+import {
+  loadMok2Werbefahrplan,
+  saveMok2Werbefahrplan,
+  createEmptyMok2WerbeKampagne,
+  type Mok2WerbeKampagne,
+} from '../utils/werbefahrplanMok2Storage'
 
 /** Einheitliche Eröffnungs-URLs (wie in docs/MARKETING-EROEFFNUNG-K2-OEK2.md Abschnitt Links & QR) */
 const URL_K2_GALERIE = `${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].galerie}`
@@ -243,6 +249,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
       setBotschaft(getStoredBotschaft())
       setOefWelcome(getStoredOefImage(OEF_WELCOME_KEY))
       setOefGalerieInnen(getStoredOefImage(OEF_GALERIE_INNEN_KEY))
+      setWerbeKampagnen(loadMok2Werbefahrplan())
     }
   }, [location.pathname])
 
@@ -324,6 +331,31 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
       cancelled = true
     }
   }, [qrVersionTs])
+
+  /** Werbefahrplan – nur mök2-Vertrieb, Key k2-mok2-werbefahrplan (kein K2-Kundendaten-Key). */
+  const [werbeKampagnen, setWerbeKampagnen] = useState<Mok2WerbeKampagne[]>(() => loadMok2Werbefahrplan())
+  const [werbeFahrplanSavedAt, setWerbeFahrplanSavedAt] = useState<number | null>(null)
+  const werbeSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    return () => {
+      if (werbeSaveTimerRef.current) clearTimeout(werbeSaveTimerRef.current)
+    }
+  }, [])
+  const updateWerbeKampagne = useCallback((id: string, patch: Partial<Mok2WerbeKampagne>) => {
+    setWerbeKampagnen((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)))
+  }, [])
+  const addWerbeKampagne = useCallback(() => {
+    setWerbeKampagnen((prev) => [...prev, createEmptyMok2WerbeKampagne()])
+  }, [])
+  const removeWerbeKampagne = useCallback((id: string) => {
+    setWerbeKampagnen((prev) => (prev.length <= 1 ? prev : prev.filter((r) => r.id !== id)))
+  }, [])
+  const saveWerbeFahrplan = useCallback(() => {
+    saveMok2Werbefahrplan(werbeKampagnen)
+    setWerbeFahrplanSavedAt(Date.now())
+    if (werbeSaveTimerRef.current) clearTimeout(werbeSaveTimerRef.current)
+    werbeSaveTimerRef.current = setTimeout(() => setWerbeFahrplanSavedAt(null), 2800)
+  }, [werbeKampagnen])
 
   const saveOefImage = async (key: 'welcome' | 'innen', file: File) => {
     setOefSaving(true)
@@ -1772,6 +1804,159 @@ QR scannen → Entdecken (Demo)`}
             </p>
           </div>
         </div>
+      </section>
+
+      {/* Werbefahrplan – Aktivitäten & Zeitraum (Steuerung, Korrelation mit Mission Control manuell) */}
+      <section id="mok2-werbefahrplan" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Werbefahrplan (Aktivitäten &amp; Zeitraum)
+        </h2>
+        <p style={{ marginBottom: '0.65rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.88)', lineHeight: 1.55 }}>
+          Einfache Übersicht: <strong>was</strong> läuft, <strong>von wann bis wann</strong>. Gespeichert nur auf <strong>diesem Mac</strong> (APf). Zum Abgleich mit Besucherzahlen später{' '}
+          <Link to="/mission-control" style={{ color: '#5ffbf1', fontWeight: 600 }}>
+            Mission Control
+          </Link>{' '}
+          öffnen – Zeitraum hier und Kurve dort nebeneinander legen.
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem', marginBottom: '0.85rem' }}>
+          <button
+            type="button"
+            onClick={saveWerbeFahrplan}
+            style={{
+              padding: '0.45rem 0.95rem',
+              borderRadius: 8,
+              border: '1px solid #b54a1e',
+              background: '#b54a1e',
+              color: '#fff',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontSize: '0.88rem',
+            }}
+          >
+            Speichern
+          </button>
+          <button
+            type="button"
+            onClick={addWerbeKampagne}
+            style={{
+              padding: '0.45rem 0.95rem',
+              borderRadius: 8,
+              border: '1px solid rgba(95,251,241,0.45)',
+              background: 'rgba(95,251,241,0.12)',
+              color: '#5ffbf1',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontSize: '0.88rem',
+            }}
+          >
+            Neue Kampagne
+          </button>
+          {werbeFahrplanSavedAt ? (
+            <span style={{ alignSelf: 'center', fontSize: '0.85rem', color: '#86efac' }}>Gespeichert.</span>
+          ) : null}
+        </div>
+        {werbeKampagnen.map((k) => (
+          <div
+            key={k.id}
+            style={{
+              marginBottom: '1rem',
+              padding: '1rem',
+              borderRadius: 10,
+              border: '1px solid rgba(95,251,241,0.28)',
+              background: 'rgba(15,28,32,0.55)',
+            }}
+          >
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.65rem' }}>
+              <span style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.65)' }}>Kampagne</span>
+              {werbeKampagnen.length > 1 ? (
+                <button
+                  type="button"
+                  onClick={() => removeWerbeKampagne(k.id)}
+                  style={{
+                    fontSize: '0.78rem',
+                    padding: '0.2rem 0.5rem',
+                    borderRadius: 6,
+                    border: '1px solid rgba(248,113,113,0.5)',
+                    background: 'rgba(248,113,113,0.12)',
+                    color: '#fecaca',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Entfernen
+                </button>
+              ) : null}
+            </div>
+            <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', color: '#5ffbf1' }}>Titel</label>
+            <input
+              type="text"
+              value={k.titel}
+              onChange={(e) => updateWerbeKampagne(k.id, { titel: e.target.value })}
+              style={{
+                width: '100%',
+                maxWidth: '42rem',
+                marginBottom: '0.75rem',
+                padding: '0.45rem 0.55rem',
+                borderRadius: 6,
+                border: '1px solid #c4c2bd',
+                background: '#fffefb',
+                color: '#1c1a18',
+                fontSize: '0.9rem',
+              }}
+            />
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '0.75rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.8rem', color: '#5ffbf1' }}>Von</label>
+                <input
+                  type="date"
+                  value={k.vonISO}
+                  onChange={(e) => updateWerbeKampagne(k.id, { vonISO: e.target.value })}
+                  style={{
+                    padding: '0.4rem 0.5rem',
+                    borderRadius: 6,
+                    border: '1px solid #c4c2bd',
+                    background: '#fffefb',
+                    color: '#1c1a18',
+                    fontSize: '0.88rem',
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.8rem', color: '#5ffbf1' }}>Bis</label>
+                <input
+                  type="date"
+                  value={k.bisISO}
+                  onChange={(e) => updateWerbeKampagne(k.id, { bisISO: e.target.value })}
+                  style={{
+                    padding: '0.4rem 0.5rem',
+                    borderRadius: 6,
+                    border: '1px solid #c4c2bd',
+                    background: '#fffefb',
+                    color: '#1c1a18',
+                    fontSize: '0.88rem',
+                  }}
+                />
+              </div>
+            </div>
+            <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', color: '#5ffbf1' }}>Aktivitäten (eine Zeile pro Punkt)</label>
+            <textarea
+              value={k.aktivitaeten}
+              onChange={(e) => updateWerbeKampagne(k.id, { aktivitaeten: e.target.value })}
+              rows={6}
+              style={{
+                width: '100%',
+                maxWidth: '48rem',
+                padding: '0.5rem 0.6rem',
+                borderRadius: 6,
+                border: '1px solid #c4c2bd',
+                background: '#fffefb',
+                color: '#1c1a18',
+                fontSize: '0.88rem',
+                lineHeight: 1.45,
+                resize: 'vertical' as const,
+              }}
+            />
+          </div>
+        ))}
       </section>
 
       {/* Eröffnung K2 + ök2 + VK2 – Marketinglinie, gemeinsame Lounge */}
