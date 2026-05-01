@@ -51,6 +51,7 @@ export const mok2Groups: Mok2Group[] = [
       { id: 'mok2-inserat-lokalzeitung', label: 'Inserat Lokalzeitung (Eingangstor, QR)' },
       { id: 'mok2-eroeffnung-k2-oek2', label: 'Eröffnung K2 + ök2 + VK2 (Marketinglinie)' },
       { id: 'mok2-muster-werbetyp-eroeffnung', label: 'Muster pro Werbetyp (Eröffnung)' },
+      { id: 'mok2-presse-nachbericht-eroeffnung', label: 'Presse-Nachbericht Galerieeröffnung (Redaktion)' },
       { id: 'mok2-entwuerfe-oeffentlichkeitsarbeit', label: 'Entwürfe Öffentlichkeitsarbeit (Feinschliff)' },
       { id: 'mok2-kanale-2026', label: 'Kanäle 2026' },
       { id: 'mok2-verbesserungen', label: 'Was wir gemeinsam verbessern' },

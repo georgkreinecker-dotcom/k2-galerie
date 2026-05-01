@@ -1793,6 +1793,121 @@ QR scannen → Entdecken (Demo)`}
           <p style={{ margin: '0.75rem 0 0', fontSize: '0.82rem', color: 'rgba(255,255,255,0.7)' }}>Quellen: MARKETING-EROEFFNUNG-K2-OEK2.md, MEDIENSTUDIO-K2.md (§1a, §1b), MEDIENVERTEILER-EROEFFNUNG.md.</p>
         </div>
       </section>
+      {/* Presse-Nachbericht Eröffnung – redaktioneller Text (Doku-Spiegel) */}
+      <section id="mok2-presse-nachbericht-eroeffnung" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Presse-Nachbericht Galerieeröffnung (Redaktion)
+        </h2>
+        <p style={{ marginBottom: '0.65rem', fontSize: '0.88rem', color: 'rgba(255,255,255,0.78)', lineHeight: 1.5 }}>
+          <strong>Stand:</strong> 30.04.26 · <strong>Basis:</strong> erste Presseaussendung (Archiv WELS) + Medienstudio K2 §1a (Human-Interest-Kern).{' '}
+          <strong>Zweck:</strong> redaktioneller Nachbericht nach erfolgreicher Eröffnung – Text zur freien redaktionellen Bearbeitung.
+        </p>
+        <p style={{ marginBottom: '0.65rem', fontSize: '0.88rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>
+          <strong>Faktenlage (für Redaktion):</strong> sehr positives Besucherfeedback; <strong>rund 30 Verkäufe</strong> im Eröffnungswochenende.
+        </p>
+        <p style={{ marginBottom: '0.5rem', fontSize: '0.82rem', color: 'rgba(255,255,255,0.72)' }}>
+          <strong>Vollständige Vorlage im Repo:</strong>{' '}
+          <code style={{ fontSize: '0.82em', color: '#5ffbf1' }}>docs/oeffentlichkeitsarbeit/presseaussendung-fertig/PRESSE-NACHBERICHT-EROEFFNUNG-VORSCHLAG.md</code>
+        </p>
+
+        <h3 style={{ fontSize: '1.05rem', color: '#5ffbf1', margin: '1rem 0 0.5rem', borderBottom: '1px solid rgba(95,251,241,0.2)', paddingBottom: '0.25rem' }}>
+          E-Mail an die Redaktion (Kurztext oben drüber)
+        </h3>
+        <div style={{ padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.06)', borderRadius: '8px', border: '1px solid rgba(95,251,241,0.22)', fontSize: '0.88rem', lineHeight: 1.55, color: 'rgba(255,255,255,0.92)' }}>
+          <p style={{ margin: '0 0 0.5rem' }}>Sehr geehrte Damen und Herren,</p>
+          <p style={{ margin: '0 0 0.5rem' }}>
+            anbei eine <strong>Presseinformation zum Nachbericht</strong> über unsere Galerieeröffnung – mit Zahlen und Stimmung aus dem Besuch. Sie dürfen den Text gerne{' '}
+            <strong>kürzen oder redigieren</strong>; bei Rückfragen oder Interviewwünschen sind wir erreichbar.
+          </p>
+          <p style={{ margin: 0 }}>
+            Mit freundlichen Grüßen
+            <br />
+            Martina und Georg Kreinecker
+          </p>
+        </div>
+
+        <h3 style={{ fontSize: '1.05rem', color: '#5ffbf1', margin: '1rem 0 0.5rem', borderBottom: '1px solid rgba(95,251,241,0.2)', paddingBottom: '0.25rem' }}>
+          PRESSEINFORMATION (Textkörper)
+        </h3>
+        <div style={{ padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.08)', borderRadius: '8px', border: '1px solid rgba(95,251,241,0.25)', fontSize: '0.88rem', lineHeight: 1.55, color: 'rgba(255,255,255,0.92)' }}>
+          <p style={{ margin: '0 0 0.35rem' }}>
+            <strong>Zur Veröffentlichung / Nachbericht</strong>
+          </p>
+          <p style={{ margin: '0 0 0.75rem' }}>
+            <strong>Erfolgreiche Galerieeröffnung · K2 Galerie Kunst &amp; Keramik · Eferding</strong>
+          </p>
+          <p style={{ margin: '0 0 0.35rem' }}>
+            <strong>ORT:</strong> Schlossergasse 4, 4070 Eferding, Österreich
+          </p>
+          <p style={{ margin: '0 0 1rem' }}>
+            <strong>ANLASS:</strong> Eröffnungswochenende <strong>24.–26. April 2026</strong> (wie angekündigt)
+          </p>
+          <h4 style={{ fontSize: '0.95rem', color: '#5ffbf1', margin: '0 0 0.35rem' }}>EINORDNUNG</h4>
+          <p style={{ margin: '0 0 0.85rem' }}>
+            Die <strong>K2 Galerie Kunst &amp; Keramik</strong> von <strong>Martina und Georg Kreinecker</strong> hat ihre Eröffnung mit großem Besucherinteresse erlebt. Die ausgestellten Werke{' '}
+            <strong>Malerei und Keramik</strong> wurden von den Gästen <strong>äußerst positiv</strong> aufgenommen; im Verlauf der Eröffnungstage wurden <strong>rund dreißig Verkäufe</strong> registriert – ein klares Zeichen, dass die Verbindung von{' '}
+            <strong>Qualität, persönlicher Begegnung und regionaler Sichtbarkeit</strong> funktioniert.
+          </p>
+          <h4 style={{ fontSize: '0.95rem', color: '#5ffbf1', margin: '0 0 0.35rem' }}>HINTERGRUND IN KÜRZE</h4>
+          <p style={{ margin: '0 0 0.85rem' }}>
+            Hinter der Galerie steht dieselbe <strong>Haltung</strong>, die auch die <strong>K2-Plattform</strong> prägt: aus der Praxis von Künstler:innen und aus der Erfahrung im <strong>Organisieren und Vermarkten</strong> entstanden – weil am Markt oft <strong>Stückwerke</strong> statt eines durchgängigen Wegs von Galerie bis Kasse und Öffentlichkeitsarbeit angeboten werden. <strong>Kein Tech-Konzern</strong>, sondern{' '}
+            <strong>Menschen, die nicht bei halben Lösungen bleiben wollten</strong> – mit einem Augenzwinkern: Wer ein Leben lang Dinge zu Ende bringt, hört damit nicht einfach auf.
+          </p>
+          <h4 style={{ fontSize: '0.95rem', color: '#5ffbf1', margin: '0 0 0.35rem' }}>FÜR REDAKTIONEN</h4>
+          <ul style={{ margin: '0 0 0.85rem', paddingLeft: '1.2em' }}>
+            <li>
+              <strong>Ausstellung</strong> weiterhin über die <strong>öffentliche Galerie</strong> im Netz einsehbar (Werke, Kontakt, Öffnungszeiten).
+            </li>
+            <li>
+              <strong>Bildmaterial</strong> und <strong>Interview</strong> auf Anfrage über die unten genannten Kontaktdaten.
+            </li>
+          </ul>
+          <h4 style={{ fontSize: '0.95rem', color: '#5ffbf1', margin: '0 0 0.35rem' }}>KONTAKT</h4>
+          <p style={{ margin: '0 0 0.35rem' }}>Mit freundlichen Grüßen</p>
+          <p style={{ margin: '0 0 0.5rem' }}>Georg Kreinecker</p>
+          <p style={{ margin: '0 0 0.25rem' }}>
+            <strong>E-Mail:</strong> georg.kreinecker@kgm.at
+          </p>
+          <p style={{ margin: '0 0 0.25rem' }}>
+            <strong>Telefon:</strong> 0664 1046337
+          </p>
+          <p style={{ margin: '0.5rem 0 0.25rem' }}>
+            <strong>Adresse:</strong> Schlossergasse 4, 4070 Eferding, Österreich
+          </p>
+          <p style={{ margin: '0 0 0.75rem' }}>
+            <strong>Öffnungszeiten:</strong> Samstag 9.30 bis 14.00 Uhr
+          </p>
+          <p style={{ margin: '0 0 0.35rem' }}>
+            <strong>Links:</strong>
+          </p>
+          <ul style={{ margin: 0, paddingLeft: '1.2em' }}>
+            <li>
+              <strong>Galerie:</strong>{' '}
+              <a href={urlK2GalerieLive} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>
+                {URL_K2_GALERIE}
+              </a>
+            </li>
+            <li>
+              <strong>Demo / Eingangstor:</strong>{' '}
+              <a href={urlMusterEingangstorLive} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>
+                {URL_MUSTER_EINGANGSTOR}
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <h3 style={{ fontSize: '1.05rem', color: '#5ffbf1', margin: '1rem 0 0.5rem', borderBottom: '1px solid rgba(95,251,241,0.2)', paddingBottom: '0.25rem' }}>
+          Verknüpfung (Repo)
+        </h3>
+        <ul style={{ margin: 0, paddingLeft: '1.2em', fontSize: '0.85rem', lineHeight: 1.55, color: 'rgba(255,255,255,0.88)' }}>
+          <li>
+            <code style={{ fontSize: '0.82em', color: '#5ffbf1' }}>docs/oeffentlichkeitsarbeit/presseaussendung-fertig/PRESSE-AUSSENDUNG-ARCHIV-2026-04-01-WELS.md</code> – erste Aussendung (Ton &amp; Struktur)
+          </li>
+          <li>
+            <code style={{ fontSize: '0.82em', color: '#5ffbf1' }}>docs/MEDIENSTUDIO-K2.md</code> – §1a Presse-Story
+          </li>
+        </ul>
+      </section>
       {/* Entwürfe Öffentlichkeitsarbeit – Feinschliff: Taschen, Flyer, großer Markt, QR (zum Ausfüllen in den Modals) */}
       <section id="mok2-entwuerfe-oeffentlichkeitsarbeit" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>

@@ -67,6 +67,10 @@ Georg Kreinecker
 
 ---
 
+## Auch in mök2 (Vertrieb)
+
+Gleicher Inhalt unter **Marketing ök2 → Vertrieb – Kanäle … → Presse-Nachbericht Galerieeröffnung (Redaktion)** zum Lesen und **Als PDF drucken**. Anker: `/projects/k2-galerie/marketing-oek2#mok2-presse-nachbericht-eroeffnung`.
+
 ## Verknüpfung
 
 - [PRESSE-AUSSENDUNG-ARCHIV-2026-04-01-WELS.md](./PRESSE-AUSSENDUNG-ARCHIV-2026-04-01-WELS.md) – erste Aussendung (Ton & Struktur)

@@ -4,7 +4,9 @@
 
 ---
 
-**Letzter Stand:** 01.05.26 – **mök2 Inserat Viertel – Aufteilung** – Kopf **30 %** (mehr Raum Karten); Streifen **kompakter**; Karten **mehr Innenabstand**, Titel/Fließtext **etwas kleiner** (ök2/VK2 luftiger); Fuß: Slogan **zentriert zur QR-Höhe**, Schrift **0.5–0.64rem**, QR **72 px**; Hinweiszeile **dezenter**. **Commit:** (folgt) ✅ **main**
+**Letzter Stand:** 01.05.26 – **mök2 Vertrieb: Presse-Nachbericht Galerieeröffnung** – Sidebar (`mok2Structure`) + Sektion **`#mok2-presse-nachbericht-eroeffnung`** in `MarketingOek2Page` (Voltext wie Doku, Galerie-/Demo-Links mit Server-Bust); in `PRESSE-NACHBERICHT-EROEFFNUNG-VORSCHLAG.md` Verweis auf mök2-Anker. **Commit:** `1a633b5f` ✅ **main**
+
+**Letzter Stand:** 01.05.26 – **mök2 Inserat Viertel – Aufteilung** – Kopf **30 %** (mehr Raum Karten); Streifen **kompakter**; Karten **mehr Innenabstand**, Titel/Fließtext **etwas kleiner** (ök2/VK2 luftiger); Fuß: Slogan **zentriert zur QR-Höhe**, Schrift **0.5–0.64rem**, QR **72 px**; Hinweiszeile **dezenter**. **Commit:** `b6c2de3b` ✅ **main**
 
 **Letzter Stand:** 01.05.26 – **mök2 Inserat Zeitungsdruck** – Innere Linien kräftiger: K2-Kopf **border-bottom**, rechte Spalte **border-left** Teal, Slogan-/Fuß-/Produktbereich **2px**-Trenner, Karten **1.75px**, QR **2px**, Copyright-Trenner; **@media print** Zusatzregeln (`#mok2-inserat-print-root …`, `print-color-adjust`). **Commit:** (siehe oben) ✅ **main**
 
@@ -20,9 +22,9 @@
 
 **Letzter Stand:** 30.04.26 – **mök2: Inserat Viertel – K2, Typo, QR** – Linkes Feld: großes **K2** + „GALERIE“ (`K2_GALERIE_PUBLIC_BRAND`), darunter Bild/Teal; rechts größere Header-Zeilen und fetter Werbesatz; drei Karten mit dickerer Farbleiste und Maximal-Schrift; QR ~100px, Druck 24mm, Teal-Rahmen. **Build grün.** **Commit:** (älterer Stand – siehe oben)
 
-**Was wir JETZT tun:** – (Presse-Vorschlag liegt in der Doku; bei Bedarf an Redaktion senden.)
+**Was wir JETZT tun:** – Presse-Nachbericht: **mök2 → Vertrieb** oder Doku-Datei; bei Bedarf an Redaktion senden / PDF drucken.
 
-**Einordnung:** Eröffnung erfolgreich; Nachbericht-Text fertig zum Kopieren; Inserat/Kampagne wie geplant.
+**Einordnung:** Eröffnung erfolgreich; Nachbericht in **Doku + mök2** (eine Lesespur zum Drucken); Inserat/Kampagne wie geplant.
 
 ---
 
