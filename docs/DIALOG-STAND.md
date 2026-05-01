@@ -4,7 +4,7 @@
 
 ---
 
-**Letzter Stand:** 01.05.26 – **Drucker Epson TM-m30II (WLAN) + IPP für K2 One-Click** – Admin **Einstellungen → Drucker**: Feld **IPP-Pfad** pro Mandant (localStorage `k2-ipp-path-*`), Standard `ipp/print` (Brother); One-Click-POST enthält `ippPath` (war schon im `k2-print-server.js`). Hinweise **Brother + Epson**, Etikettenformat-Label neutral (mm). Neu: **`docs/DRUCKER-EPSON-TM-M30II-K2.md`**, **`DRUCKER-STAND.md`** aktualisiert. **`npm run qs:local` grün.** **Commit:** `7713f271` ✅ **main**
+**Letzter Stand:** 01.05.26 – **Drucker Epson TM-m30II (WLAN) + IPP für K2 One-Click** – Admin **Einstellungen → Drucker**: Feld **IPP-Pfad** pro Mandant (localStorage `k2-ipp-path-*`), Standard `ipp/print` (Brother); One-Click-POST enthält `ippPath` (war schon im `k2-print-server.js`). Hinweise **Brother + Epson**, Etikettenformat-Label neutral (mm). Neu: **`docs/DRUCKER-EPSON-TM-M30II-K2.md`**, **`DRUCKER-STAND.md`** aktualisiert. **`npm run qs:local` grün.** **Commit:** `4646bc32` ✅ **main**
 
 **Letzter Stand:** 01.05.26 – **mök2: kein Board rechts, Mappe = Sprung zum Kapitel** – `MarketingOek2Page`: **mök2 Board** (Kachel-Grid) **entfernt** – Navigation nur noch links. `Mok2Layout`: Beim **Öffnen** einer Mappe **smooth scroll** zum ersten **Anker** der Mappe (erstes `section` ohne `linkTo`). Sidebar-Hinweis: Mappe = Kapitelanfang im Text. **`npm run qs:local` grün.** **Commit:** `ba716090` ✅ **main**
 
