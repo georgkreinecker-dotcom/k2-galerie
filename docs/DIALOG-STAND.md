@@ -4,7 +4,7 @@
 
 ---
 
-**Letzter Stand:** 01.05.26 – **K2 Bon: Epson TM-m30II oft kein AirPrint (Hinweise + Doku)** – iPad-Druckerliste ohne Epson = **normal** (kein Apple AirPrint auf dem Modell). **ShopPage:** Mac-Hinweis, Touch-Zeile unter Bon, Verkaufs-/Nachdruck-Modal (K2 Touch) und VK2-Bon-Text angepasst – **kein** Versprechen „AirPrint = Epson“. **docs/DRUCKER-EPSON-TM-M30II-K2.md** Abschnitt **7**; **DRUCKER-AIRPRINT.md** Verweis. **`npm run qs:local` grün.** **Commit:** `98498536` ✅ **main**
+**Letzter Stand:** 01.05.26 – **K2 Bon: Epson TM-m30II oft kein AirPrint (Hinweise + Doku)** – iPad-Druckerliste ohne Epson = **normal** (kein Apple AirPrint auf dem Modell). **ShopPage:** Mac-Hinweis, Touch-Zeile unter Bon, Verkaufs-/Nachdruck-Modal (K2 Touch) und VK2-Bon-Text angepasst – **kein** Versprechen „AirPrint = Epson“. **docs/DRUCKER-EPSON-TM-M30II-K2.md** Abschnitt **7**; **DRUCKER-AIRPRINT.md** Verweis. **`npm run qs:local` grün.** **Commit:** `11f5f938` ✅ **main**
 
 **Letzter Stand:** 01.05.26 – **K2: Brother = Etikett, Epson = Kasse** – **`src/utils/printerSettingsStorage.ts`**: Etikett wie bisher (`k2-printer-ip-k2` …); neu **Kasse** `k2-kassa-printer-ip-k2`, `k2-kassa-ipp-path-k2`. **Admin** zwei Blöcke (nur Mandant K2). **ShopPage:** Bon-Hinweis echtes K2 → **Epson TM**, ök2 → Brother unverändert. **Doku:** `DRUCKER-STAND.md`, `docs/DRUCKER-EPSON-TM-M30II-K2.md`. **`npm run qs:local` grün.** **Commit:** `162a57cd` ✅ **main**
 
