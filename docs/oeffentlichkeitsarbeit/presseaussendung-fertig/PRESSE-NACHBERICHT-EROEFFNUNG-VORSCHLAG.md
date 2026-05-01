@@ -34,11 +34,15 @@ Martina und Georg Kreinecker
 
 Die **K2 Galerie Kunst & Keramik** von **Martina und Georg Kreinecker** hat ihre Eröffnung mit großem Besucherinteresse erlebt. Die ausgestellten Werke **Malerei und Keramik** wurden von den Gästen **äußerst positiv** aufgenommen; im Verlauf der Eröffnungstage wurden **rund dreißig Verkäufe** registriert – ein klares Zeichen, dass die Verbindung von **Qualität, persönlicher Begegnung und regionaler Sichtbarkeit** funktioniert.
 
+### Von der Galerie zur Plattform
+
+**Zum Zusammenhang (für die Redaktion, ohne Werbeanspruch):** Was Gäste erleben, hängt mit der **Alltagsorganisation** der Galerie zusammen – Atelier, Lager, Ausstellung, Verkauf, Außenauftritt. Dort wird oft sichtbar, dass **Webpräsenz, Kasse, Termine und Pressearbeit** **über viele getrennte Werkzeuge** laufen und **wenig als ein gemeinsamer Ablauf** zusammenpassen. **Für den eigenen Betrieb** entstand **daraus** eine **zusammenhängende eigene Umsetzung** (von den Betreibenden intern **K2-Plattform** genannt), **gewachsen aus der Praxis** – **nicht** im **Duktus** üblicher **Software-Werbung** oder großer **Tech-Konzerne**. Der **folgende** Abschnitt erläutert **Haltung** und **Berufswege**.
+
 ---
 
 ### HINTERGRUND IN KÜRZE
 
-Hinter der Galerie steht dieselbe **Haltung**, die auch die **K2-Plattform** prägt: aus der Praxis von Künstler:innen und aus der Erfahrung im **Organisieren und Vermarkten** entstanden – weil am Markt oft **Stückwerke** statt eines durchgängigen Wegs von Galerie bis Kasse und Öffentlichkeitsarbeit angeboten werden. **Kein Tech-Konzern**, sondern **Menschen, die nicht bei halben Lösungen bleiben wollten** – mit einem Augenzwinkern: Wer ein Leben lang Dinge zu Ende bringt, hört damit nicht einfach auf.
+Hinter der Galerie steht dieselbe **Haltung**, die auch die **K2-Plattform** prägt: aus der **künstlerischen und galeristischen Arbeit** von **Martina Kreinecker** und aus der **Praxis im Organisieren und Vermarkten** – ergänzt durch **Georg Kreineckers Unternehmerlaufbahn** (**Handwerk und Meisterprüfung**, **eigenes produzierendes Unternehmen**, später **internationales Handels- und Beratungsgeschäft** im Maschinen- und Anlagenbereich über viele Jahre). So wird nachvollziehbar, warum am Markt oft **Stückwerke** statt eines durchgängigen Wegs von Galerie bis Kasse und Öffentlichkeitsarbeit wenig ausreichen. **Kein Tech-Konzern**, sondern **Menschen, die nicht bei halben Lösungen bleiben wollten** – mit einem Augenzwinkern: Wer ein Leben lang Dinge zu Ende bringt, hört damit nicht einfach auf.
 
 ---
 
