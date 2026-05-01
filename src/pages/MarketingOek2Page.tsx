@@ -129,9 +129,10 @@ const printStyles = `
       max-width: none !important;
       aspect-ratio: auto !important;
       margin: 3mm auto !important;
-      border-radius: 0 !important;
+      border-radius: 10px !important;
+      overflow: hidden !important;
       box-shadow: none !important;
-      border: 1px solid #b8b4ae !important;
+      border: 3px solid #1c1a18 !important;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
@@ -140,7 +141,8 @@ const printStyles = `
       height: 20mm !important;
       max-width: none !important;
       padding: 0.85mm !important;
-      border: 1px solid #c4c0ba !important;
+      border: 2px solid #2a2622 !important;
+      border-radius: 3px !important;
     }
     html.mok2-print-inserat-only body * {
       visibility: hidden !important;
@@ -154,6 +156,10 @@ const printStyles = `
       left: 0 !important;
       top: 0 !important;
       margin: 0 !important;
+      border-radius: 10px !important;
+      overflow: hidden !important;
+      border: 3px solid #1c1a18 !important;
+      box-shadow: none !important;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
@@ -1282,7 +1288,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             borderRadius: 10,
             overflow: 'hidden',
             boxShadow: '0 6px 28px rgba(0,0,0,0.22)',
-            border: '1px solid rgba(28,26,24,0.14)',
+            border: '3px solid #2a2622',
             breakInside: 'avoid' as const,
             color: '#1c1a18',
             fontFamily: 'ui-sans-serif, system-ui, sans-serif',
