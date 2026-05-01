@@ -64,6 +64,20 @@ Dependencies: im Projekt `npm install` – Paket **`ipp`** muss installiert sein
 
 ---
 
+## 7. iPad/iPhone: „Kein Epson“ unter Drucken / AirPrint?
+
+Der **TM-m30II** hat in der Regel **kein Apple AirPrint**. In der iOS-Druckerliste erscheint er deshalb oft **gar nicht** – das ist **kein Fehler** der App.
+
+**Praktische Wege:**
+
+1. **Bon am Mac drucken:** PDF **Teilen** → in **Dateien** speichern → auf dem Mac öffnen und mit dem dort eingerichteten Epson (IPP/IP) drucken. Oder Mac-Drucker für das iPad **freigeben** (Systemeinstellungen → Freigaben).
+2. **Hersteller-Seite:** **Epson TM Utility** / passende **Epson-Drucker-App** nutzen, falls ihr sie für den Bon einsetzt (laut Epson-Doku zum Modell).
+3. **Print-Server** (Abschnitt 5): Bon vom Mac oder vom Server an den Epson schicken, wenn ihr diesen Weg nutzt.
+
+In der **K2-App** sind die Bon-Hinweise darauf ausgerichtet (kein Versprechen „AirPrint = Epson sichtbar“).
+
+---
+
 ## Siehe auch
 
 - `DRUCKER-AIRPRINT.md` – Druckdialog, Teilen, iPad/Android  

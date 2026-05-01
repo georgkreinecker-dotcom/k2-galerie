@@ -113,7 +113,7 @@ Dein Drucker (QL-820**N**WBc) = AirPrint, einfach „Jetzt drucken“ → Brothe
 | Richtung | Was wählen |
 |----------|------------|
 | **Kassenbon / schmale Rolle (58 oder 80 mm)** | **Star Micronics TSP650II**-Serie, **Variante explizit mit AirPrint** (z. B. Modellbezeichnung **TSP654II AirPrint** / WLAN+AirPrint). Im **Handel nur kaufen**, wenn auf der **Produktseite** oder der **Verpackung** **„Apple AirPrint“** steht – es gibt viele TSP650II-**ohne** AirPrint. |
-| **Epson TM-m30 / ähnlich** | Vorsicht: Händler sprechen oft von „iOS“ – **das ist nicht dasselbe wie AirPrint**. Wenn **AirPrint** nicht im offiziellen Epson-Datenblatt steht, **Safari-Druck** oft genauso zäh wie beim Brother. |
+| **Epson TM-m30 / ähnlich** | Vorsicht: Händler sprechen oft von „iOS“ – **das ist nicht dasselbe wie AirPrint**. Wenn **AirPrint** nicht im offiziellen Epson-Datenblatt steht, **Safari-Druck** oft genauso zäh wie beim Brother. **K2 Kasse (TM-m30II):** Schritt-für-Schritt bei leerer iOS-Druckerliste → `docs/DRUCKER-EPSON-TM-M30II-K2.md` **Abschnitt 7**. |
 | **Etiketten (wie Brother QL 29×90)** | AirPrint-Etikettendrucker sind **selten**. Star nennt u. a. **TSP800II**-Linie mit AirPrint für **Ticket/Label** – **Medienformat** vor Kauf prüfen (nicht 1:1 QL-Ersatz ohne Abgleich). |
 
 **Praxis:** Neues Gerät im Laden oder beim Händler: **Testseite** aus Safari (oder K2-Bon) auf **Rolle** drucken – erst dann kaufen, wenn **Papierformat** im Dialog stimmt.

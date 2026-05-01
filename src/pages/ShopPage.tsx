@@ -268,10 +268,10 @@ function receiptBrotherMacPrintHintHtml(): string {
 </div>`
 }
 
-/** K2 echte Galerie: Kasse = Epson TM (Systemdialog), Rolle oft 80 mm – Admin → Drucker / Bon-Breite. */
+/** K2 echte Galerie: Kasse = Epson TM – am Mac Systemdialog; iPad meist kein AirPrint für dieses Modell. */
 function receiptK2EpsonMacPrintHintHtml(): string {
   return `<div class="receipt-print-hint-screen" role="note">
-  <strong>K2 · Epson TM (Kasse):</strong> Im Druckdialog den <strong>Epson TM-m30II</strong> wählen (WLAN). Papier / Medien zur <strong>Rolle</strong> passend stellen (oft <strong>80 mm</strong> Breite – wie unter Admin → Einstellungen → Drucker für die Bon-Breite 62 oder 80 mm). Vorschau kann breiter wirken – entscheidend ist die Rolle am Drucker. Kein Epson in der Liste: gleiches WLAN, Drucker eingeschaltet, ggf. <strong>Chrome</strong> probieren.
+  <strong>K2 · Epson TM (Kasse):</strong> Am <strong>Mac</strong> im Druckdialog den <strong>Epson TM-m30II</strong> wählen (vorher unter Systemeinstellungen → Drucker per <strong>IP/IPP</strong> einrichten). Papier / Medien zur <strong>Rolle</strong> (oft <strong>80 mm</strong> – wie Bon-Breite in Admin → Drucker). <strong>iPad/iPhone:</strong> Dieser Epson hat in der Regel <strong>kein Apple AirPrint</strong> – in der Druckerliste erscheint er oft <strong>nicht</strong> (das ist normal). Stattdessen: PDF <strong>Teilen</strong> → in <strong>Dateien</strong> speichern → am <strong>Mac</strong> drucken („Drucker freigeben“) oder <strong>Epson TM Utility</strong> / Drucker-App des Herstellers nutzen, falls ihr die verwendet.
 </div>`
 }
 
@@ -287,7 +287,7 @@ function receiptK2EpsonMacPrintHintHtmlIfDesktop(): string {
 }
 
 /**
- * Nur Touch: Am Mac liefert der Brother-Systemdialog echte Papierformate (z. B. 54×81 mm); iOS nur AirPrint – dieselben Optionen gibt es dort nicht.
+ * Touch: Hinweis unter dem Bon. K2+Epson: kein AirPrint-Versprechen (TM-m30II meist nicht in iOS-Liste).
  */
 function receiptTabHintTouchHtml(
   paperW: number,
@@ -300,7 +300,7 @@ function receiptTabHintTouchHtml(
       : 'Tab schließen nach dem Druck.'
   const appHint =
     kind === 'k2-kasse' && opts?.k2EpsonKassa
-      ? 'Drucken (AirPrint) oder Epson-App.'
+      ? 'Dateien speichern → am Mac drucken, oder Epson-Drucker-App – Epson TM meist ohne AirPrint.'
       : kind === 'k2-kasse'
         ? 'Drucken oder Brother-App.'
         : 'Drucken oder passende Drucker-App.'
@@ -2763,8 +2763,8 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
               <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: s.muted, lineHeight: 1.45 }}>
                 {isBonTouchDevice() ? (
                   <>
-                    Kassenbon (80&nbsp;mm): <strong>Druckdialog</strong> – im Systemfenster <strong>Teilen</strong> →{' '}
-                    <strong>Drucken</strong> (oder AirPrint).
+                    Kassenbon (80&nbsp;mm): <strong>Druckdialog</strong> – <strong>Teilen</strong> →{' '}
+                    <strong>Drucken</strong> (verfügbare Drucker – nicht jeder Bon-Drucker ist AirPrint).
                   </>
                 ) : (
                   <>
@@ -3198,10 +3198,19 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
             </p>
             <p style={{ margin: '0 0 1rem', fontSize: '0.88rem', color: '#5c5650', lineHeight: 1.45 }}>
               {isBonTouchDevice() ? (
-                <>
-                  <strong>Kassenbon (80&nbsp;mm):</strong> <strong>Druckdialog</strong> – danach <strong>Teilen</strong> →{' '}
-                  <strong>Drucken</strong>. Alternativ: <strong>Rechnung A4</strong>.
-                </>
+                fromOeffentlich ? (
+                  <>
+                    <strong>Kassenbon (80&nbsp;mm):</strong> <strong>Druckdialog</strong> – danach <strong>Teilen</strong> →{' '}
+                    <strong>Drucken</strong>. Alternativ: <strong>Rechnung A4</strong>.
+                  </>
+                ) : (
+                  <>
+                    <strong>Kassenbon (Epson TM, 80&nbsp;mm):</strong> Auf dem iPad erscheint der Epson oft{' '}
+                    <strong>nicht</strong> in der Druckerliste (meist <strong>kein AirPrint</strong>) – das ist normal.{' '}
+                    <strong>Teilen</strong> → in <strong>Dateien</strong> speichern → am <strong>Mac</strong> drucken oder Epson-Drucker-App. Alternativ:{' '}
+                    <strong>Rechnung A4</strong>.
+                  </>
+                )
               ) : (
                 <>
                   <strong>Kassenbon (80&nbsp;mm):</strong> Druckdialog <strong>oder</strong> neuer Tab (wie Etikett) – dann
@@ -3419,8 +3428,9 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
             <p style={{ margin: '0 0 1rem', fontSize: '0.88rem', color: '#5c5650', lineHeight: 1.45 }}>
               {isBonTouchDevice() ? (
                 <>
-                  <strong>Kassenbon (80&nbsp;mm)</strong> oder <strong>Rechnung A4</strong> – am Handy/iPad{' '}
-                  <strong>Druckdialog</strong> nutzen (Teilen → Drucken).
+                  <strong>Kassenbon (Epson TM)</strong> oder <strong>Rechnung A4</strong> – Epson auf dem iPad oft{' '}
+                  <strong>ohne AirPrint</strong> in der Liste: <strong>Teilen</strong> → <strong>Dateien</strong> → am Mac drucken oder Epson-App. Oder{' '}
+                  <strong>Druckdialog</strong> und verfügbare Drucker wählen.
                 </>
               ) : (
                 <>
