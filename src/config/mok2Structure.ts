@@ -1,6 +1,6 @@
 /**
- * mök2-Struktur: gruppierte Sektionen für Sidebar und druckbare Kapitelseiten.
- * Eine Änderung hier wirkt in Mok2Layout (Sidebar) und MarketingOek2Page (Kapitel + Druck).
+ * mök2-Struktur: gruppierte Sektionen = Mappen (Kapitel) für Sidebar, Board und druckbare Kapitelseiten.
+ * Eine Änderung hier wirkt in Mok2Layout (Sidebar als aufklappbare Mappen) und MarketingOek2Page (Kapitel + Druck).
  */
 
 import { PROJECT_ROUTES } from './navigation'

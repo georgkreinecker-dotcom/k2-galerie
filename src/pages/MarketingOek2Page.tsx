@@ -572,10 +572,10 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <section className="marketing-oek2-no-print" id="mok2-board" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
           <h2 style={{ fontSize: '1.1rem', margin: '0 0 0.5rem', color: '#5ffbf1', fontWeight: 700 }}>mök2 Board</h2>
           <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)', marginBottom: '1rem' }}>
-            Ein Klick – du bist beim Thema. Zuerst: <strong style={{ color: 'rgba(255,255,255,0.92)' }}>Mein Weg / Sparten</strong> im Kern-Kapitel; dazu Presse, Vertrieb, Lizenzen, Werbeunterlagen.
+            Eine Kachel = eine <strong style={{ color: 'rgba(255,255,255,0.92)' }}>Mappe</strong> (Sprung zum Kapitelanfang). Details und APf-Links: links unter „Struktur mök2“ bzw. oben <strong style={{ color: 'rgba(255,255,255,0.92)' }}>Weitere Seiten</strong>.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem' }}>
-            {mok2Groups.map((group, i) => {
+            {mok2Groups.map((group) => {
               const firstId = group.sections[0]?.id
               if (!firstId) return null
               return (
@@ -599,75 +599,6 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                 </button>
               )
             })}
-            <button
-              type="button"
-              onClick={() => document.getElementById('mok2-sichtbarkeit-werbung')?.scrollIntoView({ behavior: 'smooth' })}
-              style={{
-                padding: '0.75rem 1rem',
-                background: 'rgba(95,251,241,0.12)',
-                border: '1px solid rgba(95,251,241,0.4)',
-                borderRadius: 10,
-                color: '#5ffbf1',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-                fontWeight: 600,
-                textAlign: 'left',
-              }}
-            >
-              📰 Event- und Medienplanung
-            </button>
-            <Link
-              to={PROJECT_ROUTES['k2-galerie'].werbeunterlagen}
-              style={{
-                padding: '0.75rem 1rem',
-                background: 'rgba(95,251,241,0.08)',
-                border: '1px solid rgba(95,251,241,0.35)',
-                borderRadius: 10,
-                color: '#5ffbf1',
-                textDecoration: 'none',
-                fontSize: '0.9rem',
-                fontWeight: 600,
-                display: 'block',
-                textAlign: 'left',
-              }}
-            >
-              📁 Werbeunterlagen
-            </Link>
-            <Link
-              to={PROJECT_ROUTES['k2-galerie'].licences}
-              style={{
-                padding: '0.75rem 1rem',
-                background: 'rgba(95,251,241,0.08)',
-                border: '1px solid rgba(95,251,241,0.35)',
-                borderRadius: 10,
-                color: '#5ffbf1',
-                textDecoration: 'none',
-                fontSize: '0.9rem',
-                fontWeight: 600,
-                display: 'block',
-                textAlign: 'left',
-              }}
-            >
-              💼 Lizenzen
-            </Link>
-            <Link
-              to={AGB_ROUTE}
-              state={{ returnTo: location.pathname }}
-              style={{
-                padding: '0.75rem 1rem',
-                background: 'rgba(95,251,241,0.08)',
-                border: '1px solid rgba(95,251,241,0.35)',
-                borderRadius: 10,
-                color: '#5ffbf1',
-                textDecoration: 'none',
-                fontSize: '0.9rem',
-                fontWeight: 600,
-                display: 'block',
-                textAlign: 'left',
-              }}
-            >
-              📜 AGB
-            </Link>
           </div>
         </section>
       )}
