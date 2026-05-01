@@ -4,7 +4,7 @@
 
 ---
 
-**Letzter Stand:** 01.05.26 – **mök2 Werbefahrplan** – Sidebar + Sektion **`#mok2-werbefahrplan`**: Kampagnen mit **Titel, Von/Bis, Aktivitäten**; Speicher `k2-mok2-werbefahrplan`; **Default** erste Kampagne (15.05.–15.06.26: redaktionell, 5× Inserat 1/4, Online-Auktion); Link **Mission Control**; Utils + Tests `werbefahrplanMok2Storage`. **Commit:** `0b6344b8` ✅ **main**
+**Letzter Stand:** 01.05.26 – **mök2 Werbefahrplan** – Sidebar + Sektion **`#mok2-werbefahrplan`**: Kampagnen mit **Titel, Von/Bis, Aktivitäten**; Speicher `k2-mok2-werbefahrplan`; **Default** erste Kampagne (15.05.–15.06.26: redaktionell, 5× Inserat 1/4, Online-Auktion); Link **Mission Control**; Utils + Tests `werbefahrplanMok2Storage`. **Commit:** `d92f8892` ✅ **main**
 
 **Letzter Stand:** 01.05.26 – **Presse-Nachbericht: Präsentationsmappe Vollversion** – mök2 **`#mok2-presse-nachbericht-eroeffnung`**: vier **Links + QR** (K2, ök2 `?context=oeffentlich`, VK2 `?variant=vk2`, VK2 Promo `?variant=vk2-promo`) wie **Werbeunterlagen**; QR-Bündelung in einem `useEffect`; Doku `PRESSE-NACHBERICHT-EROEFFNUNG-VORSCHLAG.md` Liste + QR-Hinweis **alle Links**. **Commit:** `e38c1cc2` ✅ **main**
 
