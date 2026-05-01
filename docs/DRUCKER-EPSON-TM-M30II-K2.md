@@ -1,6 +1,6 @@
-# Epson TM-m30II – WLAN & K2 One-Click (IPP)
+# Epson TM-m30II – WLAN & K2 (Kasse)
 
-Kurzanleitung, damit der **Epson TM-m30II** im gleichen WLAN wie Mac/iPad/Handy erreichbar ist und der **One-Click-Druck** aus der K2-App funktioniert (Print-Server + IPP).
+Kurzanleitung für den **Epson TM-m30II** im WLAN. **K2:** Der Epson ist der **Kassendrucker** (Bon/Beleg im Shop per System-Druckdialog). **Etiketten** gehen am **Brother QL** (eigene IP + One-Click). Im Admin unter **K2 Galerie** zwei Abschnitte: Etikett Brother, Kasse Epson.
 
 ---
 
@@ -16,7 +16,7 @@ Kurzanleitung, damit der **Epson TM-m30II** im gleichen WLAN wie Mac/iPad/Handy 
 - **Statusblatt** am Drucker drucken (laut Epson-Handbuch: oft Taste am Gerät oder Menü „Netzwerkstatus“), oder  
 - Im Browser die **Web-Config** öffnen: `http://<IP-des-Druckers>/` (IP vom Statusblatt oder vom Router „verbundene Geräte“).
 
-Diese **IPv4** trägst du in der K2-App ein: **Admin → Einstellungen → Drucker → IP-Adresse** (Mandant **K2 Galerie**).
+Diese **IPv4** trägst du in der K2-App ein: **Admin → Einstellungen → Drucker** (Mandant **K2 Galerie**) im Abschnitt **Kassendrucker (Epson TM-m30II)** → **IP-Adresse (Epson Kasse)** – nicht die Brother-Etiketten-IP verwechseln.
 
 ---
 
@@ -27,9 +27,9 @@ Der interne Print-Server spricht den Drucker per **IPP auf Port 631** an: `http:
 - Im **Web-Config** des Epson (Netzwerk / IPP): **IPP** einschalten, falls aus.
 - Den **IPP-Pfad** (Queue-Name) steht dort meist als etwas wie **`EPSON_IPP_Printer`** – **ohne** führenden Slash, exakt so wie angezeigt übernehmen.
 
-In K2: **Admin → Einstellungen → Drucker → IPP-Pfad (One-Click)**  
-- Brother QL: typischerweise `ipp/print`  
-- Epson TM-m30II: oft `EPSON_IPP_Printer` (von deinem Gerät ablesen, nicht raten)
+In K2: **Admin → Einstellungen → Drucker**  
+- **Etikett Brother:** IPP-Pfad One-Click = typischerweise `ipp/print`  
+- **Kasse Epson:** **IPP-Pfad Epson** im Abschnitt Kassendrucker – oft `EPSON_IPP_Printer` (vom Gerät ablesen). One-Click im Etikett-Modal nutzt weiter nur den Brother.
 
 ---
 

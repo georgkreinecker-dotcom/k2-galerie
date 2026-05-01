@@ -4,6 +4,8 @@
 
 ---
 
+**Letzter Stand:** 01.05.26 – **K2: Brother = Etikett, Epson = Kasse** – **`src/utils/printerSettingsStorage.ts`**: Etikett wie bisher (`k2-printer-ip-k2` …); neu **Kasse** `k2-kassa-printer-ip-k2`, `k2-kassa-ipp-path-k2`. **Admin** zwei Blöcke (nur Mandant K2). **ShopPage:** Bon-Hinweis echtes K2 → **Epson TM**, ök2 → Brother unverändert. **Doku:** `DRUCKER-STAND.md`, `docs/DRUCKER-EPSON-TM-M30II-K2.md`. **`npm run qs:local` grün.** **Commit:** `4d11e40b` ✅ **main**
+
 **Letzter Stand:** 01.05.26 – **Drucker Epson TM-m30II (WLAN) + IPP für K2 One-Click** – Admin **Einstellungen → Drucker**: Feld **IPP-Pfad** pro Mandant (localStorage `k2-ipp-path-*`), Standard `ipp/print` (Brother); One-Click-POST enthält `ippPath` (war schon im `k2-print-server.js`). Hinweise **Brother + Epson**, Etikettenformat-Label neutral (mm). Neu: **`docs/DRUCKER-EPSON-TM-M30II-K2.md`**, **`DRUCKER-STAND.md`** aktualisiert. **`npm run qs:local` grün.** **Commit:** `4646bc32` ✅ **main**
 
 **Letzter Stand:** 01.05.26 – **mök2: kein Board rechts, Mappe = Sprung zum Kapitel** – `MarketingOek2Page`: **mök2 Board** (Kachel-Grid) **entfernt** – Navigation nur noch links. `Mok2Layout`: Beim **Öffnen** einer Mappe **smooth scroll** zum ersten **Anker** der Mappe (erstes `section` ohne `linkTo`). Sidebar-Hinweis: Mappe = Kapitelanfang im Text. **`npm run qs:local` grün.** **Commit:** `ba716090` ✅ **main**
@@ -36,9 +38,9 @@
 
 **Letzter Stand:** 30.04.26 – **mök2: Inserat Viertel – K2, Typo, QR** – Linkes Feld: großes **K2** + „GALERIE“ (`K2_GALERIE_PUBLIC_BRAND`), darunter Bild/Teal; rechts größere Header-Zeilen und fetter Werbesatz; drei Karten mit dickerer Farbleiste und Maximal-Schrift; QR ~100px, Druck 24mm, Teal-Rahmen. **Build grün.** **Commit:** (älterer Stand – siehe oben)
 
-**Was wir JETZT tun:** – Epson **IP + IPP-Pfad** in Admin eintragen, **Print-Server** starten, **One-Click** testen; Brother unverändert `ipp/print`.
+**Was wir JETZT tun:** – K2: Brother-IP + Epson-Kasse-IP im Admin prüfen; **One-Click** = nur Etikett (Brother); Kasse = Systemdialog → Epson.
 
-**Einordnung:** K2 **Werkzeug** (Admin); Etikett **primär** weiter Druckdialog; One-Click = IPP über `k2-print-server.js` mit wählbarem Pfad (Brother/Epson).
+**Einordnung:** K2 **Werkzeug** (Admin); Etikett Brother / Kasse Epson getrennt; One-Click unverändert Brother-Etikett über `k2-print-server.js`.
 
 ---
 

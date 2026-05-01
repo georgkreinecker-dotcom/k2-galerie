@@ -261,10 +261,17 @@ function cssPrintRollMm(widthMm: number): string {
 `
 }
 
-/** Nur Bildschirm: Safari/Brother – Papierformat im Systemdialog muss zur Rolle passen (nicht A4). */
+/** Nur Bildschirm: Safari/Brother – Papierformat im Systemdialog muss zur Rolle passen (nicht A4). ök2/Demo-Kasse. */
 function receiptBrotherMacPrintHintHtml(): string {
   return `<div class="receipt-print-hint-screen" role="note">
   <strong>Brother-Rolle / Mac:</strong> Zeigt die Vorschau <strong>A4</strong> und der Bon ist nur ein <strong>kleiner Streifen</strong> → im Druckdialog <strong>Papierformat</strong> auf die <strong>eingelegte Rolle</strong> stellen (z. B. <strong>54×81 mm</strong>, <strong>62 mm Endlos</strong> / DK-22251), <strong>nicht</strong> „210 × 297 mm“. <strong>Kopf- und Fußzeilen drucken</strong> aus. Breite: Admin → Einstellungen → Drucker (62 oder 80 mm). Wenn Papierformat nicht wählbar: Brother-Treiber prüfen oder <strong>Chrome</strong> probieren.
+</div>`
+}
+
+/** K2 echte Galerie: Kasse = Epson TM (Systemdialog), Rolle oft 80 mm – Admin → Drucker / Bon-Breite. */
+function receiptK2EpsonMacPrintHintHtml(): string {
+  return `<div class="receipt-print-hint-screen" role="note">
+  <strong>K2 · Epson TM (Kasse):</strong> Im Druckdialog den <strong>Epson TM-m30II</strong> wählen (WLAN). Papier / Medien zur <strong>Rolle</strong> passend stellen (oft <strong>80 mm</strong> Breite – wie unter Admin → Einstellungen → Drucker für die Bon-Breite 62 oder 80 mm). Vorschau kann breiter wirken – entscheidend ist die Rolle am Drucker. Kein Epson in der Liste: gleiches WLAN, Drucker eingeschaltet, ggf. <strong>Chrome</strong> probieren.
 </div>`
 }
 
@@ -274,18 +281,30 @@ function receiptBrotherMacPrintHintHtmlIfDesktop(): string {
   return receiptBrotherMacPrintHintHtml()
 }
 
+function receiptK2EpsonMacPrintHintHtmlIfDesktop(): string {
+  if (isBonTouchDevice()) return ''
+  return receiptK2EpsonMacPrintHintHtml()
+}
+
 /**
  * Nur Touch: Am Mac liefert der Brother-Systemdialog echte Papierformate (z. B. 54×81 mm); iOS nur AirPrint – dieselben Optionen gibt es dort nicht.
  */
 function receiptTabHintTouchHtml(
   paperW: number,
-  kind: 'k2-kasse' | 'vk2-bon' | 'vk2-beleg'
+  kind: 'k2-kasse' | 'vk2-bon' | 'vk2-beleg',
+  opts?: { k2EpsonKassa?: boolean }
 ): string {
   const back =
     kind === 'k2-kasse'
       ? 'Zurück zur Kasse.'
       : 'Tab schließen nach dem Druck.'
-  return `<div class="receipt-tab-hint"><strong>PDF</strong> (ca. ${paperW} mm breit) → <strong>Teilen</strong> → Drucken oder Brother-App. ${back}</div>`
+  const appHint =
+    kind === 'k2-kasse' && opts?.k2EpsonKassa
+      ? 'Drucken (AirPrint) oder Epson-App.'
+      : kind === 'k2-kasse'
+        ? 'Drucken oder Brother-App.'
+        : 'Drucken oder passende Drucker-App.'
+  return `<div class="receipt-tab-hint"><strong>PDF</strong> (ca. ${paperW} mm breit) → <strong>Teilen</strong> → ${appHint} ${back}</div>`
 }
 
 // Kassa-Stil – ruhig, edel, dezentes Terracotta als Akzent
@@ -423,9 +442,10 @@ function buildK2Oek2ReceiptHtml(
   const ustHinweis = !ustId ? 'Kleinunternehmer § 6 Abs. 1 Z 27 UStG 1994' : ''
   const tabHintBlock = opts?.tabHint
     ? isBonTouchDevice()
-      ? receiptTabHintTouchHtml(paperW, 'k2-kasse')
+      ? receiptTabHintTouchHtml(paperW, 'k2-kasse', { k2EpsonKassa: !fromOeffentlich })
       : `<div class="receipt-tab-hint"><strong>Zweiter Weg</strong> – Bon steht unten. iPad: <strong>Teilen</strong> → Drucken. Mac: <strong>⌘P</strong> / Drucken.</div>`
     : ''
+  const macHintBlock = fromOeffentlich ? receiptBrotherMacPrintHintHtmlIfDesktop() : receiptK2EpsonMacPrintHintHtmlIfDesktop()
   return `
       <!DOCTYPE html>
       <html>
@@ -475,7 +495,7 @@ function buildK2Oek2ReceiptHtml(
           </style>
         </head>
         <body>
-          ${receiptBrotherMacPrintHintHtmlIfDesktop()}
+          ${macHintBlock}
           ${tabHintBlock}
           <div id="k2-receipt-root">
           <div class="header">
