@@ -4,6 +4,10 @@
 
 ---
 
+**Letzter Stand:** 01.05.26 – **mök2 Inserat Viertel – Aufteilung** – Kopf **30 %** (mehr Raum Karten); Streifen **kompakter**; Karten **mehr Innenabstand**, Titel/Fließtext **etwas kleiner** (ök2/VK2 luftiger); Fuß: Slogan **zentriert zur QR-Höhe**, Schrift **0.5–0.64rem**, QR **72 px**; Hinweiszeile **dezenter**. **Commit:** (folgt) ✅ **main**
+
+**Letzter Stand:** 01.05.26 – **mök2 Inserat Zeitungsdruck** – Innere Linien kräftiger: K2-Kopf **border-bottom**, rechte Spalte **border-left** Teal, Slogan-/Fuß-/Produktbereich **2px**-Trenner, Karten **1.75px**, QR **2px**, Copyright-Trenner; **@media print** Zusatzregeln (`#mok2-inserat-print-root …`, `print-color-adjust`). **Commit:** (siehe oben) ✅ **main**
+
 **Letzter Stand:** 01.05.26 – **mök2 Inserat** – Überschrift **K2 Familie** dieselbe Schriftgröße wie **ök2/VK2** (`clamp` wie die anderen Karten). Zuvor am selben Tag: Safari-Druck **display:none** statt `visibility` (keine dutzenden leeren Seiten); Kurztext **nicht ⌘P** auf ganzer Seite. **Commit:** `3d4d6d8f` ✅ **main**
 
 **Letzter Stand:** 30.04.26 (Abend) – **Presse: Nachbericht Galerieeröffnung** – Volltext abgelegt: [PRESSE-NACHBERICHT-EROEFFNUNG-VORSCHLAG.md](oeffentlichkeitsarbeit/presseaussendung-fertig/PRESSE-NACHBERICHT-EROEFFNUNG-VORSCHLAG.md) (Basis Archiv WELS + MEDIENSTUDIO §1a, ~30 Verkäufe / positives Echo). **Commit:** `cca4fc38` ✅ **main**

@@ -144,6 +144,54 @@ const printStyles = `
       border: 2px solid #2a2622 !important;
       border-radius: 3px !important;
     }
+    /* Inserat: innere Linien für Zeitungsdruck (helle 1px-Ränder gehen auf Papier oft verloren) */
+    #mok2-inserat-print-root .mok2-inserat-hero-k2head {
+      border-bottom: 2px solid #0a2f2c !important;
+      box-shadow: none !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    #mok2-inserat-print-root .mok2-inserat-hero-copy {
+      border-left: 2.5px solid #0c5c55 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    #mok2-inserat-print-root .mok2-inserat-line-slogan {
+      border-top: 2.5px solid #0c4a44 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    #mok2-inserat-print-root .mok2-inserat-products-wrap {
+      border-top: 2.5px solid #0c4a44 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    #mok2-inserat-print-root .mok2-inserat-product-card {
+      border: 1.75px solid #1c1a18 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    #mok2-inserat-print-root .mok2-inserat-line-footer {
+      border-top: 2.5px solid #0c4a44 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    #mok2-inserat-print-root .mok2-inserat-line-copy {
+      border-top: 1.5px solid #5c5650 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    #mok2-inserat-print-root .mok2-inserat-line-qr-hint {
+      border-top: 1px solid rgba(92, 86, 80, 0.35) !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    #mok2-inserat-print-root .mok2-inserat-viertel-qr {
+      border: 2.5px solid #0c3d38 !important;
+      box-shadow: none !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
     /* Nur Inserat: display:none statt visibility – sonst behalten versteckte Blöcke ihre Höhe → viele leere Safari-Seiten. */
     html.mok2-print-inserat-only body *:not(:has(#mok2-inserat-print-root)):not(#mok2-inserat-print-root):not(#mok2-inserat-print-root *) {
       display: none !important;
@@ -1294,7 +1342,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         >
           <div
             style={{
-              flex: '0 0 32%',
+              flex: '0 0 30%',
               minHeight: 0,
               display: 'flex',
               flexDirection: 'column',
@@ -1311,6 +1359,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
               }}
             >
               <div
+                className="mok2-inserat-hero-k2head"
                 style={{
                   flex: '1.08 1 0',
                   minHeight: 0,
@@ -1320,7 +1369,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                   justifyContent: 'center',
                   padding: '10px 6px',
                   background: INSERAT_TEAL_DARK,
-                  boxShadow: 'inset 0 -1px 0 rgba(255,255,255,0.1)',
+                  borderBottom: '1px solid rgba(0,0,0,0.22)',
                   textAlign: 'center',
                 }}
               >
@@ -1351,7 +1400,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                   {PRODUCT_BRAND_NAME}
                 </span>
               </div>
-              <div style={{ flex: '0.92 1 0', minHeight: 0, position: 'relative', overflow: 'hidden' }}>
+              <div className="mok2-inserat-hero-photo" style={{ flex: '0.92 1 0', minHeight: 0, position: 'relative', overflow: 'hidden' }}>
                 {oefWelcome ? (
                   <img src={oefWelcome} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 ) : (
@@ -1366,6 +1415,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
               </div>
             </div>
             <div
+              className="mok2-inserat-hero-copy"
               style={{
                 flex: 1,
                 minWidth: 0,
@@ -1374,6 +1424,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                 flexDirection: 'column',
                 justifyContent: 'center',
                 background: 'linear-gradient(180deg, #fffefb 0%, #f0ebe3 100%)',
+                borderLeft: '1.5px solid rgba(12, 92, 85, 0.38)',
               }}
             >
               <div
@@ -1403,18 +1454,19 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             </div>
             </div>
             <div
+              className="mok2-inserat-line-slogan"
               style={{
                 flexShrink: 0,
                 width: '100%',
                 boxSizing: 'border-box',
-                padding: '9px 10px 10px',
-                borderTop: `1px solid rgba(12, 92, 85, 0.22)`,
+                padding: '7px 10px 8px',
+                borderTop: '2px solid rgba(12, 92, 85, 0.42)',
                 background: 'linear-gradient(180deg, #f4f0ea 0%, #ebe6de 100%)',
-                fontSize: 'clamp(0.58rem, 2.65vw, 0.86rem)',
+                fontSize: 'clamp(0.55rem, 2.45vw, 0.8rem)',
                 fontWeight: 900,
                 color: INSERAT_TEAL_DARK,
-                lineHeight: 1.22,
-                letterSpacing: '0.015em',
+                lineHeight: 1.2,
+                letterSpacing: '0.012em',
                 textAlign: 'center',
                 textWrap: 'balance' as const,
               }}
@@ -1424,13 +1476,15 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           </div>
 
           <div
+            className="mok2-inserat-products-wrap"
             style={{
               flex: 1,
               display: 'flex',
               flexDirection: 'column',
-              gap: 4,
+              gap: 5,
               minHeight: 0,
-              padding: '4px 6px 5px',
+              padding: '5px 7px 6px',
+              borderTop: '2px solid rgba(12, 92, 85, 0.38)',
             }}
           >
             {[
@@ -1447,13 +1501,14 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
               return (
               <div
                 key={row.k}
+                className="mok2-inserat-product-card"
                 style={{
                   flex: row.k === 'f' ? '0 0 auto' : '1 1 0',
                   minHeight: row.k === 'f' ? undefined : 0,
                   display: 'flex',
                   borderRadius: 6,
                   overflow: 'hidden',
-                  border: '1px solid rgba(28,26,24,0.1)',
+                  border: '1.5px solid rgba(28, 26, 24, 0.42)',
                 }}
               >
                 <div style={{ width: inseratOeVk ? 10 : 8, flexShrink: 0, background: row.bar }} aria-hidden />
@@ -1461,7 +1516,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                   style={{
                     flex: 1,
                     minWidth: 0,
-                    padding: inseratOeVk ? '8px 10px' : row.k === 'f' ? '5px 8px 6px' : '5px 8px',
+                    padding: inseratOeVk ? '9px 10px 8px' : row.k === 'f' ? '6px 9px 7px' : '6px 9px',
                     background: '#fff',
                     display: 'flex',
                     flexDirection: 'column',
@@ -1471,10 +1526,10 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                   <div
                     style={{
                       /* Überschrift überall gleich groß (ök2, VK2, K2 Familie) */
-                      fontSize: 'clamp(0.88rem, 3.85vw, 1.18rem)',
+                      fontSize: 'clamp(0.82rem, 3.55vw, 1.08rem)',
                       fontWeight: 900,
                       color: row.bar,
-                      lineHeight: 1.05,
+                      lineHeight: 1.08,
                     }}
                   >
                     {row.t}
@@ -1482,11 +1537,11 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                   <div
                     style={{
                       fontSize: inseratOeVk
-                        ? 'clamp(0.7rem, 2.95vw, 0.93rem)'
-                        : 'clamp(0.52rem, 2.15vw, 0.72rem)',
+                        ? 'clamp(0.66rem, 2.75vw, 0.88rem)'
+                        : 'clamp(0.52rem, 2.1vw, 0.7rem)',
                       color: '#1c1a18',
-                      lineHeight: 1.24,
-                      marginTop: inseratOeVk ? 5 : 3,
+                      lineHeight: 1.26,
+                      marginTop: inseratOeVk ? 4 : 3,
                       fontWeight: 700,
                     }}
                   >
@@ -1499,50 +1554,67 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           </div>
 
           <div
+            className="mok2-inserat-line-footer"
             style={{
               flexShrink: 0,
               display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '5px 8px 7px',
-              borderTop: `1px solid rgba(12, 92, 85, 0.22)`,
+              alignItems: 'stretch',
+              gap: 8,
+              padding: '6px 9px 8px',
+              borderTop: '2px solid rgba(12, 92, 85, 0.42)',
               background: '#faf8f4',
             }}
           >
-            <div style={{ flex: '1 1 0', minWidth: 0, paddingRight: 2 }}>
-              <p style={{ margin: 0, fontSize: 'clamp(0.42rem, 1.55vw, 0.54rem)', lineHeight: 1.28, color: '#5c5650', fontWeight: 700 }}>
-                Pilotplätze auf Anfrage · AGB auf der Website
-              </p>
-              <p style={{ margin: '3px 0 0', fontSize: 'clamp(0.38rem, 1.42vw, 0.5rem)', color: '#6b6560', lineHeight: 1.25, fontWeight: 600 }}>
-                QR scannen → Entdecken (Demo)
+            <div
+              style={{
+                flex: '1 1 0',
+                minWidth: 0,
+                paddingRight: 4,
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: 'clamp(0.5rem, 1.72vw, 0.64rem)',
+                  lineHeight: 1.22,
+                  color: '#45413c',
+                  fontWeight: 700,
+                  textWrap: 'balance' as const,
+                }}
+              >
+                {PRODUCT_WERBESLOGAN}
               </p>
             </div>
             <div
               className="mok2-inserat-viertel-qr"
               style={{
                 flexShrink: 0,
+                alignSelf: 'center',
                 lineHeight: 0,
-                padding: 3,
+                padding: 2,
                 background: '#fff',
                 borderRadius: 5,
-                border: '1.5px solid #0c5c55',
-                boxShadow: '0 1px 5px rgba(12,92,85,0.18)',
+                border: '2px solid #0c4a44',
+                boxShadow: '0 1px 4px rgba(12,92,85,0.16)',
               }}
             >
               {inseratEingangstorQrUrl ? (
                 <img
                   src={inseratEingangstorQrUrl}
                   alt="QR zum Eingangstor Entdecken"
-                  width={80}
-                  height={80}
+                  width={72}
+                  height={72}
                   style={{ display: 'block', background: '#fff' }}
                 />
               ) : (
-                <div style={{ width: 80, height: 80, background: '#e8e6e2' }} aria-hidden />
+                <div style={{ width: 72, height: 72, background: '#e8e6e2' }} aria-hidden />
               )}
             </div>
           </div>
           <div
+            className="mok2-inserat-line-copy"
             style={{
               padding: '0 8px 5px',
               fontSize: 'clamp(0.32rem, 1.05vw, 0.4rem)',
@@ -1550,9 +1622,26 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
               textAlign: 'center',
               background: '#faf8f4',
               lineHeight: 1.2,
+              borderTop: '1px solid rgba(92, 86, 80, 0.35)',
             }}
           >
             {PRODUCT_COPYRIGHT_BRAND_ONLY}
+          </div>
+          <div
+            className="mok2-inserat-line-qr-hint"
+            style={{
+              padding: '3px 8px 4px',
+              fontSize: 'clamp(0.38rem, 1.38vw, 0.5rem)',
+              color: '#5c5650',
+              textAlign: 'center',
+              background: '#faf8f4',
+              lineHeight: 1.25,
+              fontWeight: 700,
+              letterSpacing: '0.015em',
+              borderTop: '1px solid rgba(92, 86, 80, 0.28)',
+            }}
+          >
+            QR scannen → Entdecken (Demo)
           </div>
         </div>
 
@@ -1601,11 +1690,11 @@ kgm solution – Software für Künstler:innen, kleine Galerien und Vereine uvm.
 • Vereinsplattform mit Katalog – VK2
 • Optional: K2 Familie für den privaten Bereich
 
-Pilotplätze auf Anfrage. AGB und Details auf der Website.
+${PRODUCT_WERBESLOGAN}
 
-QR scannen → Entdecken (Demo)
+kgm solution
 
-kgm solution`}
+QR scannen → Entdecken (Demo)`}
           </pre>
         </div>
 
