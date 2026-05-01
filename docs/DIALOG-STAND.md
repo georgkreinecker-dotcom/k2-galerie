@@ -4,7 +4,9 @@
 
 ---
 
-**Letzter Stand:** 01.05.26 – **mök2 Vertrieb: Presse-Nachbericht Galerieeröffnung** – Sidebar (`mok2Structure`) + Sektion **`#mok2-presse-nachbericht-eroeffnung`** in `MarketingOek2Page` (Voltext wie Doku, Galerie-/Demo-Links mit Server-Bust); in `PRESSE-NACHBERICHT-EROEFFNUNG-VORSCHLAG.md` Verweis auf mök2-Anker; **Redaktionsblock** „Galerie → Plattform“ **subtil** (kein Zielgruppen-Pitch, **K2-Plattform** nur **intern**, Abgrenzung zu Software-Werbung). **Commit:** `2940ec96` ✅ **main**
+**Letzter Stand:** 01.05.26 – **Presse-Nachbericht: QR unter Links** – mök2 **`#mok2-presse-nachbericht-eroeffnung`**: zwei **QR-Bilder** (Galerie + Eingangstor) mit **buildQrUrlWithBust** wie Inserat; Doku-Hinweis in `PRESSE-NACHBERICHT-EROEFFNUNG-VORSCHLAG.md`. **Commit:** `e886bf9a` ✅ **main**
+
+**Letzter Stand:** 01.05.26 – **mök2 Vertrieb: Presse-Nachbericht Galerieeröffnung** – Sidebar (`mok2Structure`) + Sektion **`#mok2-presse-nachbericht-eroeffnung`** in `MarketingOek2Page` (Voltext wie Doku, Galerie-/Demo-Links mit Server-Bust); in `PRESSE-NACHBERICHT-EROEFFNUNG-VORSCHLAG.md` Verweis auf mök2-Anker; **Redaktionsblock** „Galerie → Plattform“ **subtil** (kein Zielgruppen-Pitch, **K2-Plattform** nur **intern**, Abgrenzung zu Software-Werbung). **Commit:** `bbbf517b` ✅ **main**
 
 **Letzter Stand:** 01.05.26 – **mök2 Inserat Viertel – Aufteilung** – Kopf **30 %** (mehr Raum Karten); Streifen **kompakter**; Karten **mehr Innenabstand**, Titel/Fließtext **etwas kleiner** (ök2/VK2 luftiger); Fuß: Slogan **zentriert zur QR-Höhe**, Schrift **0.5–0.64rem**, QR **72 px**; Hinweiszeile **dezenter**. **Commit:** `b6c2de3b` ✅ **main**
 
