@@ -59,6 +59,7 @@
     "@vitejs/plugin-react": "^5.1.1",
     "@xyflow/react": "^12.10.1",
     "dagre": "^0.8.5",
+    "html2canvas": "^1.4.1",
     "html2pdf.js": "^0.14.0",
     "ipp": "^1.1.0",
     "jspdf": "^3.0.4",

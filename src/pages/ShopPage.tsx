@@ -13,6 +13,13 @@ import {
   shopTenantIdForReceipt,
 } from '../utils/receiptPaperWidthStorage'
 import { exportReceiptHtmlToRollPdfBlob, shareReceiptPdfBlob } from '../utils/receiptRollPdf'
+import { loadPrinterSettingsForTenant } from '../utils/printerSettingsStorage'
+import {
+  canOfferK2EpsonBonOneClick,
+  canPostToK2PrintServer,
+  renderReceiptHtmlToPngBase64,
+  sendPngToK2PrintServer,
+} from '../utils/k2EpsonBonOneClick'
 import { getCustomers, getCustomerById, createCustomer, updateCustomer, type Customer } from '../utils/customers'
 import { readKuenstlerFallbackShop, resolveArtistLabelForGalerieStatistik } from '../utils/artworkArtistDisplay'
 import { sortArtworksCategoryBlocksThenNumberAsc } from '../utils/artworkSort'
@@ -387,7 +394,7 @@ function applyCartLinePriceDrafts(lines: CartItem[], draft: Record<string, strin
 function buildK2Oek2ReceiptHtml(
   order: any,
   fromOeffentlich: boolean,
-  opts?: { tabHint?: boolean; paperWidthMm?: number }
+  opts?: { tabHint?: boolean; paperWidthMm?: number; forIppRaster?: boolean }
 ): string {
   const paperW = opts?.paperWidthMm === 62 || opts?.paperWidthMm === 80 ? opts.paperWidthMm : 80
   const viewportPx = Math.max(200, Math.round((paperW / 25.4) * 96))
@@ -440,12 +447,19 @@ function buildK2Oek2ReceiptHtml(
     })
     .join('')
   const ustHinweis = !ustId ? 'Kleinunternehmer § 6 Abs. 1 Z 27 UStG 1994' : ''
-  const tabHintBlock = opts?.tabHint
-    ? isBonTouchDevice()
-      ? receiptTabHintTouchHtml(paperW, 'k2-kasse', { k2EpsonKassa: !fromOeffentlich })
-      : `<div class="receipt-tab-hint"><strong>Zweiter Weg</strong> – Bon steht unten. iPad: <strong>Teilen</strong> → Drucken. Mac: <strong>⌘P</strong> / Drucken.</div>`
-    : ''
-  const macHintBlock = fromOeffentlich ? receiptBrotherMacPrintHintHtmlIfDesktop() : receiptK2EpsonMacPrintHintHtmlIfDesktop()
+  const tabHintBlock =
+    opts?.forIppRaster
+      ? ''
+      : opts?.tabHint
+        ? isBonTouchDevice()
+          ? receiptTabHintTouchHtml(paperW, 'k2-kasse', { k2EpsonKassa: !fromOeffentlich })
+          : `<div class="receipt-tab-hint"><strong>Zweiter Weg</strong> – Bon steht unten. iPad: <strong>Teilen</strong> → Drucken. Mac: <strong>⌘P</strong> / Drucken.</div>`
+        : ''
+  const macHintBlock = opts?.forIppRaster
+    ? ''
+    : fromOeffentlich
+      ? receiptBrotherMacPrintHintHtmlIfDesktop()
+      : receiptK2EpsonMacPrintHintHtmlIfDesktop()
   return `
       <!DOCTYPE html>
       <html>
@@ -716,6 +730,8 @@ const ShopPage = () => {
   } | null>(null)
   /** K2/ök2: Bon erneut drucken – ohne natives confirm (Safari bricht sonst die Druck-Geste). */
   const [k2ReprintOrderModal, setK2ReprintOrderModal] = useState<{ order: any } | null>(null)
+  /** K2: Bon per Print-Server (IPP) direkt an Epson – läuft parallel zum Druckdialog. */
+  const [k2EpsonBonOneClickBusy, setK2EpsonBonOneClickBusy] = useState(false)
   /** VK2: nach Einnahme mit Bon / Bon erneut – gleiche sichtbare Wahl (kein confirm vor print). */
   const [vk2BonSaleModal, setVk2BonSaleModal] = useState<{
     order: any
@@ -865,6 +881,20 @@ const ShopPage = () => {
     () => getReceiptPaperWidthMm(shopTenantIdForReceipt(fromOeffentlich, fromVk2)),
     [fromOeffentlich, fromVk2]
   )
+  /** K2: Epson-IP + Print-Server-URL gesetzt → Button „Bon direkt an Epson“ anbieten. */
+  const k2EpsonDirectBonPrinter = useMemo(() => {
+    if (fromOeffentlich || fromVk2) return null
+    const ps = loadPrinterSettingsForTenant('k2')
+    if (
+      !canOfferK2EpsonBonOneClick({
+        fromOeffentlich: false,
+        kassaIp: ps.kassaIpAddress,
+        printServerUrl: ps.printServerUrl,
+      })
+    )
+      return null
+    return ps
+  }, [fromOeffentlich, fromVk2])
   const vk2Mitglieder = (() => { try { const sd = loadVk2Stammdaten(); return Array.isArray(sd?.mitglieder) ? sd.mitglieder : [] } catch { return [] } })()
   const showVk2Mitglieder = fromVk2 && (vk2Bezeichnung === 'Spende' || vk2Bezeichnung === 'Mitgliedsbeitrag')
   const galerieLink = fromOeffentlich
@@ -1999,6 +2029,48 @@ ${bankBlock}
     printWindow.document.write(html)
     printWindow.document.close()
     triggerPrintDialogFromPopup(printWindow, receiptPaperWidthMm)
+  }
+
+  /** Zusätzlicher Weg: Bon als PNG an lokalen K2-Print-Server → IPP → Epson TM (siehe docs/DRUCKER-EPSON-TM-M30II-K2.md). */
+  const handleK2EpsonBonDirectIpp = async (order: any) => {
+    if (fromOeffentlich || fromVk2) return
+    const ps = loadPrinterSettingsForTenant('k2')
+    const gate = canPostToK2PrintServer(ps.printServerUrl)
+    if (!gate.ok) {
+      alert(gate.reason || 'Print-Server momentan nicht nutzbar.')
+      return
+    }
+    if (!(ps.kassaIpAddress || '').trim()) {
+      alert('Epson-Kasse: IP-Adresse fehlt. Unter Admin → Einstellungen → Drucker eintragen.')
+      return
+    }
+    setK2EpsonBonOneClickBusy(true)
+    try {
+      const html = buildK2Oek2ReceiptHtml(order, fromOeffentlich, {
+        paperWidthMm: receiptPaperWidthMm,
+        tabHint: false,
+        forIppRaster: true,
+      })
+      const { base64, widthMm, heightMm } = await renderReceiptHtmlToPngBase64(html, receiptPaperWidthMm)
+      await sendPngToK2PrintServer(ps.printServerUrl, {
+        image: base64,
+        printerIP: ps.kassaIpAddress.trim(),
+        ippPath: ps.kassaIppPath || 'EPSON_IPP_Printer',
+        widthMm,
+        heightMm,
+        jobName: 'k2-bon',
+      })
+      alert('✅ Bon wurde an den Epson im WLAN gesendet.')
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e)
+      alert(
+        '⚠️ Direktdruck an Epson fehlgeschlagen.\n\n' +
+          msg +
+          '\n\nIst der Print-Server auf dem Mac gestartet (npm run print-server)? Gleiches WLAN? IPP am Epson aktiv? Siehe docs/DRUCKER-EPSON-TM-M30II-K2.md'
+      )
+    } finally {
+      setK2EpsonBonOneClickBusy(false)
+    }
   }
 
   // Kassenbon oder Rechnung als A4 drucken (asRechnung = Rechnung mit Rechnungsnummer) – Stammdaten aus aktuellem Kontext (K2 vs. ök2)
@@ -3330,6 +3402,28 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
               >
                 🖨️ Kassenbon – Druckdialog
               </button>
+              {k2EpsonDirectBonPrinter ? (
+                <button
+                  type="button"
+                  disabled={k2EpsonBonOneClickBusy}
+                  onClick={() => {
+                    void handleK2EpsonBonDirectIpp(salePrintModal.order)
+                  }}
+                  style={{
+                    padding: '0.65rem 1rem',
+                    background: s.bgElevated,
+                    color: '#1c1a18',
+                    border: `1px solid #b54a1e`,
+                    borderRadius: s.radiusSm,
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    cursor: k2EpsonBonOneClickBusy ? 'wait' : 'pointer',
+                    opacity: k2EpsonBonOneClickBusy ? 0.72 : 1,
+                  }}
+                >
+                  {k2EpsonBonOneClickBusy ? '⏳ Sende an Epson …' : '⚡ Bon direkt an Epson (WLAN)'}
+                </button>
+              ) : null}
               {!isBonTouchDevice() ? (
                 <button
                   type="button"
@@ -3551,6 +3645,28 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
               >
                 🖨️ Kassenbon – Druckdialog
               </button>
+              {k2EpsonDirectBonPrinter ? (
+                <button
+                  type="button"
+                  disabled={k2EpsonBonOneClickBusy}
+                  onClick={() => {
+                    void handleK2EpsonBonDirectIpp(k2ReprintOrderModal.order)
+                  }}
+                  style={{
+                    padding: '0.65rem 1rem',
+                    background: s.bgElevated,
+                    color: '#1c1a18',
+                    border: `1px solid #b54a1e`,
+                    borderRadius: s.radiusSm,
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    cursor: k2EpsonBonOneClickBusy ? 'wait' : 'pointer',
+                    opacity: k2EpsonBonOneClickBusy ? 0.72 : 1,
+                  }}
+                >
+                  {k2EpsonBonOneClickBusy ? '⏳ Sende an Epson …' : '⚡ Bon direkt an Epson (WLAN)'}
+                </button>
+              ) : null}
               {!isBonTouchDevice() ? (
                 <button
                   type="button"

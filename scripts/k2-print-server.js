@@ -31,7 +31,7 @@ function sendResponse(res, statusCode, body, contentType = 'application/json') {
 }
 
 /** ippPath z. B. ipp/print (Brother) oder EPSON_IPP_Printer (Epson TM, ohne führenden Slash) */
-function printViaIpp(printerIP, imageBuffer, widthMm, heightMm, ippPath) {
+function printViaIpp(printerIP, imageBuffer, widthMm, heightMm, ippPath, jobName) {
   return new Promise((resolve, reject) => {
     const safePath = (ippPath || 'ipp/print').replace(/^\/+/, '').replace(/[^a-zA-Z0-9._/-]/g, '') || 'ipp/print'
     const url = `http://${printerIP}:631/${safePath}`
@@ -40,11 +40,12 @@ function printViaIpp(printerIP, imageBuffer, widthMm, heightMm, ippPath) {
     // IPP media-size: 1/100 mm (RFC 8011)
     const xDim = Math.round((widthMm || 29) * 100)
     const yDim = Math.round((heightMm || 90.3) * 100)
+    const safeJob = String(jobName || 'k2-etikett').replace(/[^\wäöüÄÖÜß .\-]/gi, '').slice(0, 80) || 'k2-etikett'
 
     const msg = {
       'operation-attributes-tag': {
         'requesting-user-name': 'k2-galerie',
-        'job-name': 'k2-etikett',
+        'job-name': safeJob,
         'document-format': 'image/png'
       },
       'job-attributes-tag': {
@@ -96,9 +97,15 @@ const server = http.createServer((req, res) => {
       const widthMm = parseFloat(data.widthMm) || 29
       const heightMm = parseFloat(data.heightMm) || 90.3
       const ippPath = typeof data.ippPath === 'string' ? data.ippPath : 'ipp/print'
+      const jobName = typeof data.jobName === 'string' ? data.jobName : 'k2-etikett'
 
-      printViaIpp(printerIP, imageBuffer, widthMm, heightMm, ippPath)
-        .then(() => sendResponse(res, 200, { ok: true, message: 'Etikett gesendet' }))
+      printViaIpp(printerIP, imageBuffer, widthMm, heightMm, ippPath, jobName)
+        .then(() =>
+          sendResponse(res, 200, {
+            ok: true,
+            message: jobName === 'k2-bon' || jobName.includes('bon') ? 'Bon gesendet' : 'Etikett gesendet'
+          })
+        )
         .catch((err) => {
           console.error('Print error:', err)
           let msg = err.message || 'Druck fehlgeschlagen'
