@@ -34,6 +34,11 @@ import { shareInseratViertelPdf } from '../utils/inseratViertelPdf'
 const URL_K2_GALERIE = `${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].galerie}`
 const URL_MUSTER_EINGANGSTOR = `${BASE_APP_URL}${OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE}`
 const URL_VK2 = `${BASE_APP_URL}${PROJECT_ROUTES.vk2.home}`
+/** Präsentationsmappe Vollversion – gleiche Einträge wie Werbeunterlagen (Vertrieb) */
+const URL_PRAEMAPPE_VOLL_K2 = `${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}`
+const URL_PRAEMAPPE_VOLL_OEK2 = `${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}?context=oeffentlich`
+const URL_PRAEMAPPE_VOLL_VK2 = `${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}?variant=vk2`
+const URL_PRAEMAPPE_VOLL_VK2_PROMO = `${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}?variant=vk2-promo`
 
 /** Inserat Viertelseite – wie Prospekt/Flyer (Teal), nicht nur Fließtext */
 const INSERAT_TEAL_DARK = '#0c5c55'
@@ -260,6 +265,10 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
   const urlK2GalerieLive = buildQrUrlWithBust(URL_K2_GALERIE, qrVersionTs)
   const urlMusterEingangstorLive = buildQrUrlWithBust(URL_MUSTER_EINGANGSTOR, qrVersionTs)
   const urlVk2Live = buildQrUrlWithBust(URL_VK2, qrVersionTs)
+  const urlPraemappeVollK2Live = buildQrUrlWithBust(URL_PRAEMAPPE_VOLL_K2, qrVersionTs)
+  const urlPraemappeVollOek2Live = buildQrUrlWithBust(URL_PRAEMAPPE_VOLL_OEK2, qrVersionTs)
+  const urlPraemappeVollVk2Live = buildQrUrlWithBust(URL_PRAEMAPPE_VOLL_VK2, qrVersionTs)
+  const urlPraemappeVollVk2PromoLive = buildQrUrlWithBust(URL_PRAEMAPPE_VOLL_VK2_PROMO, qrVersionTs)
   /** Kompass + Kampagne: volle URLs für PDF/Druck und Weiterleitung (Mail, Messenger) */
   const urlTexteBriefeKompass = `${BASE_APP_URL}/k2team-handbuch?doc=24-TEXTE-BRIEFE-KOMPASS.md`
   const urlKampagneMarketingStrategieLive = `${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie}`
@@ -286,21 +295,29 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
     return () => { cancelled = true }
   }, [qrVersionTs])
 
-  /** Presse-Nachbericht: QR unter den Links (Galerie + Eingangstor), dieselbe URL wie der Link (Server-Stand + Bust). */
-  const [presseNachberichtQrGalerie, setPresseNachberichtQrGalerie] = useState('')
-  const [presseNachberichtQrEingangstor, setPresseNachberichtQrEingangstor] = useState('')
+  /** Presse-Nachbericht: QR unter den Links (Galerie, Eingangstor, Präsentationsmappen Vollversion), dieselbe URL wie der Link (Server-Stand + Bust). */
+  type PresseNachberichtQrKey = 'galerie' | 'eingang' | 'mapK2' | 'mapOek2' | 'mapVk2' | 'mapVk2Promo'
+  const [presseNachberichtQr, setPresseNachberichtQr] = useState<Partial<Record<PresseNachberichtQrKey, string>>>({})
   useEffect(() => {
-    if (!URL_K2_GALERIE.startsWith('http') || !URL_MUSTER_EINGANGSTOR.startsWith('http')) return
+    const pairs: [PresseNachberichtQrKey, string][] = [
+      ['galerie', URL_K2_GALERIE],
+      ['eingang', URL_MUSTER_EINGANGSTOR],
+      ['mapK2', URL_PRAEMAPPE_VOLL_K2],
+      ['mapOek2', URL_PRAEMAPPE_VOLL_OEK2],
+      ['mapVk2', URL_PRAEMAPPE_VOLL_VK2],
+      ['mapVk2Promo', URL_PRAEMAPPE_VOLL_VK2_PROMO],
+    ]
+    if (!pairs.every(([, u]) => u.startsWith('http'))) return
     let cancelled = false
-    const uG = buildQrUrlWithBust(URL_K2_GALERIE, qrVersionTs)
-    const uE = buildQrUrlWithBust(URL_MUSTER_EINGANGSTOR, qrVersionTs)
     const opts = { width: 168, margin: 1, color: { dark: '#1a1a1a', light: '#ffffff' } } as const
-    Promise.all([QRCode.toDataURL(uG, opts), QRCode.toDataURL(uE, opts)])
-      .then(([g, e]) => {
-        if (!cancelled) {
-          setPresseNachberichtQrGalerie(g)
-          setPresseNachberichtQrEingangstor(e)
-        }
+    Promise.all(pairs.map(([, base]) => QRCode.toDataURL(buildQrUrlWithBust(base, qrVersionTs), opts)))
+      .then((dataUrls) => {
+        if (cancelled) return
+        const next: Partial<Record<PresseNachberichtQrKey, string>> = {}
+        pairs.forEach(([k], i) => {
+          next[k] = dataUrls[i]
+        })
+        setPresseNachberichtQr(next)
       })
       .catch(() => {})
     return () => {
@@ -1946,10 +1963,10 @@ QR scannen → Entdecken (Demo)`}
               <a href={urlK2GalerieLive} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>
                 {URL_K2_GALERIE}
               </a>
-              {presseNachberichtQrGalerie ? (
+              {presseNachberichtQr.galerie ? (
                 <div style={{ marginTop: '0.4rem' }}>
                   <img
-                    src={presseNachberichtQrGalerie}
+                    src={presseNachberichtQr.galerie}
                     alt="QR-Code: Link zur Galerie (aktueller Stand)"
                     width={126}
                     height={126}
@@ -1958,16 +1975,84 @@ QR scannen → Entdecken (Demo)`}
                 </div>
               ) : null}
             </li>
-            <li style={{ marginBottom: 0 }}>
+            <li style={{ marginBottom: '0.85rem' }}>
               <strong>Demo / Eingangstor:</strong>{' '}
               <a href={urlMusterEingangstorLive} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>
                 {URL_MUSTER_EINGANGSTOR}
               </a>
-              {presseNachberichtQrEingangstor ? (
+              {presseNachberichtQr.eingang ? (
                 <div style={{ marginTop: '0.4rem' }}>
                   <img
-                    src={presseNachberichtQrEingangstor}
+                    src={presseNachberichtQr.eingang}
                     alt="QR-Code: Link Demo / Eingangstor (aktueller Stand)"
+                    width={126}
+                    height={126}
+                    style={{ display: 'block', borderRadius: 6, background: '#fff', padding: 4 }}
+                  />
+                </div>
+              ) : null}
+            </li>
+            <li style={{ marginBottom: '0.85rem' }}>
+              <strong>Präsentationsmappe Vollversion (K2):</strong>{' '}
+              <a href={urlPraemappeVollK2Live} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>
+                {URL_PRAEMAPPE_VOLL_K2}
+              </a>
+              {presseNachberichtQr.mapK2 ? (
+                <div style={{ marginTop: '0.4rem' }}>
+                  <img
+                    src={presseNachberichtQr.mapK2}
+                    alt="QR-Code: Präsentationsmappe Vollversion K2"
+                    width={126}
+                    height={126}
+                    style={{ display: 'block', borderRadius: 6, background: '#fff', padding: 4 }}
+                  />
+                </div>
+              ) : null}
+            </li>
+            <li style={{ marginBottom: '0.85rem' }}>
+              <strong>Präsentationsmappe Vollversion (ök2, Demo):</strong>{' '}
+              <a href={urlPraemappeVollOek2Live} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>
+                {URL_PRAEMAPPE_VOLL_OEK2}
+              </a>
+              {presseNachberichtQr.mapOek2 ? (
+                <div style={{ marginTop: '0.4rem' }}>
+                  <img
+                    src={presseNachberichtQr.mapOek2}
+                    alt="QR-Code: Präsentationsmappe Vollversion ök2"
+                    width={126}
+                    height={126}
+                    style={{ display: 'block', borderRadius: 6, background: '#fff', padding: 4 }}
+                  />
+                </div>
+              ) : null}
+            </li>
+            <li style={{ marginBottom: '0.85rem' }}>
+              <strong>Präsentationsmappe Vollversion (VK2):</strong>{' '}
+              <a href={urlPraemappeVollVk2Live} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>
+                {URL_PRAEMAPPE_VOLL_VK2}
+              </a>
+              {presseNachberichtQr.mapVk2 ? (
+                <div style={{ marginTop: '0.4rem' }}>
+                  <img
+                    src={presseNachberichtQr.mapVk2}
+                    alt="QR-Code: Präsentationsmappe Vollversion VK2"
+                    width={126}
+                    height={126}
+                    style={{ display: 'block', borderRadius: 6, background: '#fff', padding: 4 }}
+                  />
+                </div>
+              ) : null}
+            </li>
+            <li style={{ marginBottom: 0 }}>
+              <strong>Präsentationsmappe Vollversion (VK2 Promo):</strong>{' '}
+              <a href={urlPraemappeVollVk2PromoLive} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>
+                {URL_PRAEMAPPE_VOLL_VK2_PROMO}
+              </a>
+              {presseNachberichtQr.mapVk2Promo ? (
+                <div style={{ marginTop: '0.4rem' }}>
+                  <img
+                    src={presseNachberichtQr.mapVk2Promo}
+                    alt="QR-Code: Präsentationsmappe Vollversion VK2 Promo"
                     width={126}
                     height={126}
                     style={{ display: 'block', borderRadius: 6, background: '#fff', padding: 4 }}

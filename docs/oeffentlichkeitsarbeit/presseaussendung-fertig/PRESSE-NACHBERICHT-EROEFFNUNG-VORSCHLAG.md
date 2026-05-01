@@ -88,8 +88,12 @@ Georg Kreinecker
 
 - Galerie: https://k2-galerie.vercel.app/projects/k2-galerie/galerie
 - Demo / Eingangstor: https://k2-galerie.vercel.app/entdecken
+- Präsentationsmappe Vollversion (K2): https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe-vollversion
+- Präsentationsmappe Vollversion (ök2, Demo): https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe-vollversion?context=oeffentlich
+- Präsentationsmappe Vollversion (VK2): https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe-vollversion?variant=vk2
+- Präsentationsmappe Vollversion (VK2 Promo): https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe-vollversion?variant=vk2-promo
 
-**QR-Codes:** In der APf unter **Marketing ök2** → **Presse-Nachbericht Galerieeröffnung (Redaktion)** stehen unter diesen beiden Links **fertige QR-Bilder** (gleiche URLs wie oben, mit **Server-Stand und Cache-Bust** – wie bei der Galerie-Regel zum Scannen). Zum **PDF drucken** oder **Screenshot** für die Redaktion dort am zuverlässigsten.
+**QR-Codes:** In der APf unter **Marketing ök2** → **Presse-Nachbericht Galerieeröffnung (Redaktion)** stehen unter **allen** obigen Links **fertige QR-Bilder** (gleiche URLs wie oben, mit **Server-Stand und Cache-Bust** – wie bei der Galerie-Regel zum Scannen). Zum **PDF drucken** oder **Screenshot** für die Redaktion dort am zuverlässigsten.
 
 ---
 
