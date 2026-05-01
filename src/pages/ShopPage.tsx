@@ -895,6 +895,11 @@ const ShopPage = () => {
       return null
     return ps
   }, [fromOeffentlich, fromVk2])
+  /** iPad + K2 + Epson/Print-Server eingetragen: Epson zuerst – nicht den System-Dialog als ersten Schritt. */
+  const touchK2BonEpsonZuerst = useMemo(
+    () => !fromOeffentlich && !fromVk2 && isBonTouchDevice() && k2EpsonDirectBonPrinter != null,
+    [fromOeffentlich, fromVk2, k2EpsonDirectBonPrinter]
+  )
   const vk2Mitglieder = (() => { try { const sd = loadVk2Stammdaten(); return Array.isArray(sd?.mitglieder) ? sd.mitglieder : [] } catch { return [] } })()
   const showVk2Mitglieder = fromVk2 && (vk2Bezeichnung === 'Spende' || vk2Bezeichnung === 'Mitgliedsbeitrag')
   const galerieLink = fromOeffentlich
@@ -3275,11 +3280,18 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                     <strong>Kassenbon (80&nbsp;mm):</strong> <strong>Druckdialog</strong> – danach <strong>Teilen</strong> →{' '}
                     <strong>Drucken</strong>. Alternativ: <strong>Rechnung A4</strong>.
                   </>
+                ) : touchK2BonEpsonZuerst ? (
+                  <>
+                    <strong>Epson ohne AirPrint:</strong> Zuerst den obersten Button <strong>Bon direkt an Epson</strong> –{' '}
+                    der Weg geht über den <strong>Mac</strong> im WLAN (Print-Server), <strong>nicht</strong> über die iPad-Druckerliste.{' '}
+                    Darunter: <strong>PDF / Teilen</strong> – dort kann der Epson fehlen, das ist normal. <strong>Rechnung A4</strong> wie gewohnt.
+                  </>
                 ) : (
                   <>
-                    <strong>Kassenbon (Epson TM, 80&nbsp;mm):</strong> Auf dem iPad erscheint der Epson oft{' '}
-                    <strong>nicht</strong> in der Druckerliste (meist <strong>kein AirPrint</strong>) – das ist normal.{' '}
-                    <strong>Teilen</strong> → in <strong>Dateien</strong> speichern → am <strong>Mac</strong> drucken oder Epson-Drucker-App. Alternativ:{' '}
+                    <strong>Kassenbon (Epson TM, 80&nbsp;mm):</strong> Trage in <strong>Admin → Drucker</strong> die{' '}
+                    <strong>Epson-IP</strong> und die <strong>Print-Server-URL</strong> ein und starte am Mac{' '}
+                    <code style={{ fontSize: '0.8rem' }}>npm run print-server</code> – dann erscheint hier{' '}
+                    <strong>Bon direkt an Epson</strong> (ohne AirPrint). Sonst: <strong>Teilen</strong> → Dateien / Mac, oder{' '}
                     <strong>Rechnung A4</strong>.
                   </>
                 )
@@ -3383,47 +3395,93 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
               </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <button
-                type="button"
-                onClick={() => {
-                  printReceipt(salePrintModal.order)
-                  setSalePrintModal(null)
-                }}
-                style={{
-                  padding: '0.65rem 1rem',
-                  background: '#b54a1e',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: s.radiusSm,
-                  fontWeight: 700,
-                  fontSize: '0.95rem',
-                  cursor: 'pointer'
-                }}
-              >
-                🖨️ Kassenbon – Druckdialog
-              </button>
-              {k2EpsonDirectBonPrinter ? (
-                <button
-                  type="button"
-                  disabled={k2EpsonBonOneClickBusy}
-                  onClick={() => {
-                    void handleK2EpsonBonDirectIpp(salePrintModal.order)
-                  }}
-                  style={{
-                    padding: '0.65rem 1rem',
-                    background: s.bgElevated,
-                    color: '#1c1a18',
-                    border: `1px solid #b54a1e`,
-                    borderRadius: s.radiusSm,
-                    fontWeight: 600,
-                    fontSize: '0.95rem',
-                    cursor: k2EpsonBonOneClickBusy ? 'wait' : 'pointer',
-                    opacity: k2EpsonBonOneClickBusy ? 0.72 : 1,
-                  }}
-                >
-                  {k2EpsonBonOneClickBusy ? '⏳ Sende an Epson …' : '⚡ Bon direkt an Epson (WLAN)'}
-                </button>
-              ) : null}
+              {touchK2BonEpsonZuerst ? (
+                <>
+                  <button
+                    type="button"
+                    disabled={k2EpsonBonOneClickBusy}
+                    onClick={() => {
+                      void handleK2EpsonBonDirectIpp(salePrintModal.order)
+                    }}
+                    style={{
+                      padding: '0.65rem 1rem',
+                      background: '#b54a1e',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: s.radiusSm,
+                      fontWeight: 700,
+                      fontSize: '0.95rem',
+                      cursor: k2EpsonBonOneClickBusy ? 'wait' : 'pointer',
+                      opacity: k2EpsonBonOneClickBusy ? 0.72 : 1,
+                    }}
+                  >
+                    {k2EpsonBonOneClickBusy ? '⏳ Sende an Epson …' : '⚡ Bon direkt an Epson (WLAN)'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      printReceipt(salePrintModal.order)
+                      setSalePrintModal(null)
+                    }}
+                    style={{
+                      padding: '0.65rem 1rem',
+                      background: s.bgElevated,
+                      color: '#1c1a18',
+                      border: `1px solid ${s.border}`,
+                      borderRadius: s.radiusSm,
+                      fontWeight: 600,
+                      fontSize: '0.95rem',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    📱 Bon als PDF / Teilen (System – Epson oft nicht in der Liste)
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      printReceipt(salePrintModal.order)
+                      setSalePrintModal(null)
+                    }}
+                    style={{
+                      padding: '0.65rem 1rem',
+                      background: '#b54a1e',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: s.radiusSm,
+                      fontWeight: 700,
+                      fontSize: '0.95rem',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    🖨️ Kassenbon – Druckdialog
+                  </button>
+                  {k2EpsonDirectBonPrinter ? (
+                    <button
+                      type="button"
+                      disabled={k2EpsonBonOneClickBusy}
+                      onClick={() => {
+                        void handleK2EpsonBonDirectIpp(salePrintModal.order)
+                      }}
+                      style={{
+                        padding: '0.65rem 1rem',
+                        background: s.bgElevated,
+                        color: '#1c1a18',
+                        border: `1px solid #b54a1e`,
+                        borderRadius: s.radiusSm,
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        cursor: k2EpsonBonOneClickBusy ? 'wait' : 'pointer',
+                        opacity: k2EpsonBonOneClickBusy ? 0.72 : 1,
+                      }}
+                    >
+                      {k2EpsonBonOneClickBusy ? '⏳ Sende an Epson …' : '⚡ Bon direkt an Epson (WLAN)'}
+                    </button>
+                  ) : null}
+                </>
+              )}
               {!isBonTouchDevice() ? (
                 <button
                   type="button"
@@ -3521,11 +3579,19 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
             </p>
             <p style={{ margin: '0 0 1rem', fontSize: '0.88rem', color: '#5c5650', lineHeight: 1.45 }}>
               {isBonTouchDevice() ? (
-                <>
-                  <strong>Kassenbon (Epson TM)</strong> oder <strong>Rechnung A4</strong> – Epson auf dem iPad oft{' '}
-                  <strong>ohne AirPrint</strong> in der Liste: <strong>Teilen</strong> → <strong>Dateien</strong> → am Mac drucken oder Epson-App. Oder{' '}
-                  <strong>Druckdialog</strong> und verfügbare Drucker wählen.
-                </>
+                touchK2BonEpsonZuerst ? (
+                  <>
+                    <strong>Epson ohne AirPrint:</strong> Zuerst <strong>Bon direkt an Epson</strong> (Mac + Print-Server im WLAN).{' '}
+                    Darunter <strong>PDF / Teilen</strong> – Epson fehlt dort oft, das ist normal. <strong>Rechnung A4</strong> wie gewohnt.
+                  </>
+                ) : (
+                  <>
+                    <strong>Kassenbon (Epson TM)</strong> oder <strong>Rechnung A4</strong> – Epson auf dem iPad oft{' '}
+                    <strong>ohne AirPrint</strong> in der Liste: <strong>Teilen</strong> → <strong>Dateien</strong> → am Mac drucken oder Epson-App. Oder{' '}
+                    <strong>Druckdialog</strong> und verfügbare Drucker wählen. Mit <strong>Admin → Drucker</strong> + Print-Server erscheint{' '}
+                    <strong>Bon direkt an Epson</strong>.
+                  </>
+                )
               ) : (
                 <>
                   <strong>Kassenbon (80&nbsp;mm)</strong> oder <strong>Rechnung A4</strong> – ohne Zwischen-Dialog
@@ -3626,47 +3692,93 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
               </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <button
-                type="button"
-                onClick={() => {
-                  printReceipt(k2ReprintOrderModal.order)
-                  setK2ReprintOrderModal(null)
-                }}
-                style={{
-                  padding: '0.65rem 1rem',
-                  background: '#b54a1e',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: s.radiusSm,
-                  fontWeight: 700,
-                  fontSize: '0.95rem',
-                  cursor: 'pointer'
-                }}
-              >
-                🖨️ Kassenbon – Druckdialog
-              </button>
-              {k2EpsonDirectBonPrinter ? (
-                <button
-                  type="button"
-                  disabled={k2EpsonBonOneClickBusy}
-                  onClick={() => {
-                    void handleK2EpsonBonDirectIpp(k2ReprintOrderModal.order)
-                  }}
-                  style={{
-                    padding: '0.65rem 1rem',
-                    background: s.bgElevated,
-                    color: '#1c1a18',
-                    border: `1px solid #b54a1e`,
-                    borderRadius: s.radiusSm,
-                    fontWeight: 600,
-                    fontSize: '0.95rem',
-                    cursor: k2EpsonBonOneClickBusy ? 'wait' : 'pointer',
-                    opacity: k2EpsonBonOneClickBusy ? 0.72 : 1,
-                  }}
-                >
-                  {k2EpsonBonOneClickBusy ? '⏳ Sende an Epson …' : '⚡ Bon direkt an Epson (WLAN)'}
-                </button>
-              ) : null}
+              {touchK2BonEpsonZuerst ? (
+                <>
+                  <button
+                    type="button"
+                    disabled={k2EpsonBonOneClickBusy}
+                    onClick={() => {
+                      void handleK2EpsonBonDirectIpp(k2ReprintOrderModal.order)
+                    }}
+                    style={{
+                      padding: '0.65rem 1rem',
+                      background: '#b54a1e',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: s.radiusSm,
+                      fontWeight: 700,
+                      fontSize: '0.95rem',
+                      cursor: k2EpsonBonOneClickBusy ? 'wait' : 'pointer',
+                      opacity: k2EpsonBonOneClickBusy ? 0.72 : 1,
+                    }}
+                  >
+                    {k2EpsonBonOneClickBusy ? '⏳ Sende an Epson …' : '⚡ Bon direkt an Epson (WLAN)'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      printReceipt(k2ReprintOrderModal.order)
+                      setK2ReprintOrderModal(null)
+                    }}
+                    style={{
+                      padding: '0.65rem 1rem',
+                      background: s.bgElevated,
+                      color: '#1c1a18',
+                      border: `1px solid ${s.border}`,
+                      borderRadius: s.radiusSm,
+                      fontWeight: 600,
+                      fontSize: '0.95rem',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    📱 Bon als PDF / Teilen (System – Epson oft nicht in der Liste)
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      printReceipt(k2ReprintOrderModal.order)
+                      setK2ReprintOrderModal(null)
+                    }}
+                    style={{
+                      padding: '0.65rem 1rem',
+                      background: '#b54a1e',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: s.radiusSm,
+                      fontWeight: 700,
+                      fontSize: '0.95rem',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    🖨️ Kassenbon – Druckdialog
+                  </button>
+                  {k2EpsonDirectBonPrinter ? (
+                    <button
+                      type="button"
+                      disabled={k2EpsonBonOneClickBusy}
+                      onClick={() => {
+                        void handleK2EpsonBonDirectIpp(k2ReprintOrderModal.order)
+                      }}
+                      style={{
+                        padding: '0.65rem 1rem',
+                        background: s.bgElevated,
+                        color: '#1c1a18',
+                        border: `1px solid #b54a1e`,
+                        borderRadius: s.radiusSm,
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        cursor: k2EpsonBonOneClickBusy ? 'wait' : 'pointer',
+                        opacity: k2EpsonBonOneClickBusy ? 0.72 : 1,
+                      }}
+                    >
+                      {k2EpsonBonOneClickBusy ? '⏳ Sende an Epson …' : '⚡ Bon direkt an Epson (WLAN)'}
+                    </button>
+                  ) : null}
+                </>
+              )}
               {!isBonTouchDevice() ? (
                 <button
                   type="button"

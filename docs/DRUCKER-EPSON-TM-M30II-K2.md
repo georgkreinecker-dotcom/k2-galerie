@@ -58,7 +58,8 @@ Dependencies: im Projekt `npm install` – Paket **`ipp`** muss installiert sein
 
 Wenn **Epson-IP**, **IPP-Pfad** und **Print-Server-URL** in den Drucker-Einstellungen stehen, zeigt die **K2-Kasse** nach einem Verkauf (und beim **Bon erneut drucken**) den Button **„Bon direkt an Epson (WLAN)“**.
 
-- **Ablauf:** Bon-HTML → im Browser zu PNG gerastert → `fetch` an den Print-Server auf dem Mac → **IPP** an die Epson-IP. **Primärer Weg** bleibt **„Kassenbon – Druckdialog“** (wie in `docs/KRITISCHE-ABLAEUFE.md`); der Epson-Button ist nur **Zusatz**, besonders sinnvoll am **iPad**, wo der Epson oft **nicht** in der System-Druckerliste steht.
+- **Ablauf:** Bon-HTML → im Browser zu PNG gerastert → `fetch` an den Print-Server auf dem Mac → **IPP** an die Epson-IP.
+- **Reihenfolge der Buttons:** Am **Mac/Desktop** zuerst **„Kassenbon – Druckdialog“** (wie in `docs/KRITISCHE-ABLAEUFE.md`), darunter optional **Bon direkt an Epson**. Am **iPad** (Touch), wenn Epson + Print-Server eingetragen sind: **zuerst Bon direkt an Epson**, darunter **„Bon als PDF / Teilen“** – damit der erste sichtbare Schritt **nicht** nur die System-/AirPrint-Liste ist (Epson fehlt dort oft).
 - **Voraussetzung:** `npm run print-server` läuft auf dem **Mac** im gleichen WLAN wie iPad und Epson.
 - **Wichtig – https vs. http:** Öffnest du die Kasse unter **https** (z. B. Vercel `k2-galerie.vercel.app`), blockiert der Browser Aufrufe zu einem **http**-Print-Server (**Mixed Content**). Dann erscheint eine **klare Meldung** in der App. **Lösungen:** Kasse im LAN unter **http://…** öffnen (z. B. lokaler Vite-Port oder gleicher Host mit http), oder einen **https**-Zugang zum Print-Server einrichten (Tunnel/Reverse-Proxy – für Experten).
 - **Technik:** `src/utils/k2EpsonBonOneClick.ts`, `ShopPage.tsx`, Print-Server `scripts/k2-print-server.js`.

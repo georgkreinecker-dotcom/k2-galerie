@@ -279,6 +279,8 @@ Wenn nein: wir lassen es.
 
 ---
 
+**Session-Reflexion (01.05.26, Nacht):** Kasse am iPad: sichtbarer **erster** Schritt Epson (wenn Print-Server da), Systemweg klar als zweiter Button – passt zu „kein AirPrint-Wirrwarr“; **Epson-IP** = eine Drucker-Adresse im WLAN (nicht iPad-spezifisch), Print-Server-URL = Mac.
+
 **Session-Reflexion (30.04.26, Abend):** Presse-Nachbericht zur Galerieeröffnung als feste Doku abgelegt (Ton wie erste Aussendung, §1a gekürzt) – Georg kann ohne Suchen weiterarbeiten.
 
 **Session-Reflexion (30.04.26):** ök2-Demo: eine kanonische Musterliste überall (Lesen, Veröffentlichen, Galerie-Server-Fetch, Kasse-Storno) – Besucher-Werke bleiben nicht als „öffentlicher Bestand“ hängen.

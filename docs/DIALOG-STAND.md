@@ -1,10 +1,14 @@
 # Dialog-Stand
 
+**Session-Ende 01.05.26 (Nacht):** Georg – Schluss für heute; **Commit + Push** mit Kasse-iPad-UX + Doku; nächster Start: `npm run briefing` + dieses File.
+
 **Session-Ende 27.04.26:** Schluss für heute – **`git` sauber**, Doku **Session-Ende** auf **main** gepusht (**DIALOG-STAND** + **WIR-PROZESS**). Aktueller Tip: `git log -1 --oneline`. Nächster Start: `npm run briefing` + dieses File lesen.
 
 ---
 
-**Letzter Stand:** 01.05.26 – **K2 Kasse: Bon direkt an Epson (WLAN, Zusatzweg)** – `src/utils/k2EpsonBonOneClick.ts`: Bon-HTML → PNG (`html2canvas`), `fetch` an lokalen Print-Server, **Mixed-Content**-Hinweis (https-Seite → http-Server). **`ShopPage.tsx`:** Button **„Bon direkt an Epson (WLAN)“** nach Verkauf + **Bon erneut** (nur K2, wenn Epson-IP + Print-Server-URL gesetzt). **`buildK2Oek2ReceiptHtml`** Option **`forIppRaster`** (ohne Mac-/Tab-Hinweis-Blöcke). **`package.json`:** **`html2canvas`** direkt; Tests **`src/tests/k2EpsonBonOneClick.test.ts`**. **Doku:** `docs/DRUCKER-EPSON-TM-M30II-K2.md` §5a. Primärer Weg **Druckdialog** unverändert. **`npm run test` + `build:vercel` grün.** **Commit:** _(nach Push eintragen)_ ✅ **main**
+**Letzter Stand:** 01.05.26 (Nacht) – **Session-Ende + Kasse iPad: Epson zuerst** – **K2** + Touch + Epson/Print-Server eingetragen: Verkaufs-Modal + **Bon erneut** zeigen **zuerst** „Bon direkt an Epson“, darunter **PDF/Teilen** (klarer als nur System/AirPrint). **`touchK2BonEpsonZuerst`** in `ShopPage.tsx`. **Doku** `docs/DRUCKER-EPSON-TM-M30II-K2.md` §5a (Reihenfolge Desktop vs. iPad). **qs:local** zuvor grün. **Commit:** `3d5acd1c852f979a460a385fd139f9df00d7067f` ✅ **main**
+
+**Letzter Stand:** 01.05.26 – **K2 Kasse: Bon direkt an Epson (WLAN, Zusatzweg)** – `src/utils/k2EpsonBonOneClick.ts`: Bon-HTML → PNG (`html2canvas`), `fetch` an lokalen Print-Server, **Mixed-Content**-Hinweis (https-Seite → http-Server). **`ShopPage.tsx`:** Button **„Bon direkt an Epson (WLAN)“** nach Verkauf + **Bon erneut** (nur K2, wenn Epson-IP + Print-Server-URL gesetzt). **`buildK2Oek2ReceiptHtml`** Option **`forIppRaster`** (ohne Mac-/Tab-Hinweis-Blöcke). **`package.json`:** **`html2canvas`** direkt; Tests **`src/tests/k2EpsonBonOneClick.test.ts`**. **Doku:** `docs/DRUCKER-EPSON-TM-M30II-K2.md` §5a. Primärer Weg **Druckdialog** unverändert. **`npm run test` + `build:vercel` grün.** **Commit:** `1f12f002` ✅ **main**
 
 **Letzter Stand:** 01.05.26 – **K2 Bon: Epson TM-m30II oft kein AirPrint (Hinweise + Doku)** – iPad-Druckerliste ohne Epson = **normal** (kein Apple AirPrint auf dem Modell). **ShopPage:** Mac-Hinweis, Touch-Zeile unter Bon, Verkaufs-/Nachdruck-Modal (K2 Touch) und VK2-Bon-Text angepasst – **kein** Versprechen „AirPrint = Epson“. **docs/DRUCKER-EPSON-TM-M30II-K2.md** Abschnitt **7**; **DRUCKER-AIRPRINT.md** Verweis. **`npm run qs:local` grün.** **Commit:** `11f5f938` ✅ **main**
 
@@ -42,9 +46,9 @@
 
 **Letzter Stand:** 30.04.26 – **mök2: Inserat Viertel – K2, Typo, QR** – Linkes Feld: großes **K2** + „GALERIE“ (`K2_GALERIE_PUBLIC_BRAND`), darunter Bild/Teal; rechts größere Header-Zeilen und fetter Werbesatz; drei Karten mit dickerer Farbleiste und Maximal-Schrift; QR ~100px, Druck 24mm, Teal-Rahmen. **Build grün.** **Commit:** (älterer Stand – siehe oben)
 
-**Was wir JETZT tun:** – K2: **Druckdialog** für Bon bleibt Standard; optional **„Bon direkt an Epson“** nur mit `npm run print-server` am Mac + Epson-IP/IPP in den Drucker-Einstellungen; unter **https** (Vercel) blockiert der Browser **http**-Print-Server → Doku §5a.
+**Was wir JETZT tun:** – **Pause.** Nächster Schritt wenn du wieder da bist: K2-Kasse am **iPad** mit **Print-Server** + **Epson-IP** – erster Button **Epson**, zweiter **PDF/Teilen**; am **Mac** weiter zuerst Druckdialog. **Epson-IP** = Adresse des **Druckers** im WLAN (eine Zahl für alle Geräte); **Print-Server-URL** = **Mac**-IP mit Port.
 
-**Einordnung:** Brother-Etikett One-Click + Epson-Bon One-Click nutzen denselben **Print-Server**; Kasse weiter getrennt von Etikett-IP; Zusatzweg ersetzt nicht den Druckdialog (`KRITISCHE-ABLAEUFE`).
+**Einordnung:** iPad-UX ohne AirPrint-Wirrwarr; Desktop-Bon bleibt Druckdialog zuerst (`KRITISCHE-ABLAEUFE`); Brother-Etikett + Epson-Bon teilen den Print-Server-Ansatz.
 
 ---
 
