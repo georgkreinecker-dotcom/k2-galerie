@@ -4,7 +4,7 @@
 
 ---
 
-**Letzter Stand:** 01.05.26 – **mök2 Inserat Druck** – Abgerundete Ecken im Print wieder (`border-radius: 10px`, `overflow: hidden`); Rahmen **3px** dunkel statt 1px; „Nur Inserat“-Root gleich mitgezogen; QR im Druck **2px** Rahmen. **Commit:** (folgt) ✅ **main**
+**Letzter Stand:** 01.05.26 – **mök2 Inserat** – Überschrift **K2 Familie** dieselbe Schriftgröße wie **ök2/VK2** (`clamp` wie die anderen Karten). Zuvor am selben Tag: Safari-Druck **display:none** statt `visibility` (keine dutzenden leeren Seiten); Kurztext **nicht ⌘P** auf ganzer Seite. **Commit:** `fa3d235f` ✅ **main**
 
 **Letzter Stand:** 30.04.26 (Abend) – **Presse: Nachbericht Galerieeröffnung** – Volltext abgelegt: [PRESSE-NACHBERICHT-EROEFFNUNG-VORSCHLAG.md](oeffentlichkeitsarbeit/presseaussendung-fertig/PRESSE-NACHBERICHT-EROEFFNUNG-VORSCHLAG.md) (Basis Archiv WELS + MEDIENSTUDIO §1a, ~30 Verkäufe / positives Echo). **Commit:** `cca4fc38` ✅ **main**
 

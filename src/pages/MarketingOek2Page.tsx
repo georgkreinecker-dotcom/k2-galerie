@@ -144,12 +144,9 @@ const printStyles = `
       border: 2px solid #2a2622 !important;
       border-radius: 3px !important;
     }
-    html.mok2-print-inserat-only body * {
-      visibility: hidden !important;
-    }
-    html.mok2-print-inserat-only #mok2-inserat-print-root,
-    html.mok2-print-inserat-only #mok2-inserat-print-root * {
-      visibility: visible !important;
+    /* Nur Inserat: display:none statt visibility – sonst behalten versteckte Blöcke ihre Höhe → viele leere Safari-Seiten. */
+    html.mok2-print-inserat-only body *:not(:has(#mok2-inserat-print-root)):not(#mok2-inserat-print-root):not(#mok2-inserat-print-root *) {
+      display: none !important;
     }
     html.mok2-print-inserat-only #mok2-inserat-print-root {
       position: absolute !important;
@@ -1164,8 +1161,9 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             Direktanker (Lesezeichen)
           </Link>
           . <strong>Im Browser</strong> öffnen (Chrome/Safari), nicht in der Cursor-Vorschau. <strong>Kampagne:</strong> unten{' '}
-          <strong>Nur Inserat drucken</strong> (Seite 96×129 mm), <strong>PDF</strong> speichern oder teilen, <strong>Link kopieren</strong>,{' '}
-          <strong>E-Mail-Entwurf</strong> für Setzerei/Zeitung. Oben weiterhin <strong>Als PDF drucken</strong> für die ganze mök2-Seite.
+          <strong>Nur Inserat drucken</strong> (eine Druckseite 96×129 mm) – <strong>nicht</strong> Safari{' '}
+          <strong>⌘P</strong> auf der ganzen Seite; das wäre die komplette mök2-Seite (viele DIN-A4-Seiten). Dazu{' '}
+          <strong>PDF</strong>, <strong>Link kopieren</strong>, <strong>E-Mail-Entwurf</strong>. Oben weiterhin <strong>Als PDF drucken</strong> für die ganze mök2-Seite.
         </p>
 
         <div
@@ -1472,9 +1470,8 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                 >
                   <div
                     style={{
-                      fontSize: inseratOeVk
-                        ? 'clamp(0.88rem, 3.85vw, 1.18rem)'
-                        : 'clamp(0.65rem, 2.75vw, 0.92rem)',
+                      /* Überschrift überall gleich groß (ök2, VK2, K2 Familie) */
+                      fontSize: 'clamp(0.88rem, 3.85vw, 1.18rem)',
                       fontWeight: 900,
                       color: row.bar,
                       lineHeight: 1.05,
