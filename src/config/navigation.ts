@@ -140,6 +140,8 @@ export const PROJECT_ROUTES = {
     platzanordnung: '/projects/k2-galerie/platzanordnung',
     produktVorschau: '/projects/k2-galerie/produkt-vorschau',
     marketingOek2: '/projects/k2-galerie/marketing-oek2',
+    /** mök2: Werbefahrplan – eigene Arbeitsfläche (Kampagnen, Zeitraum, Aktivitäten) */
+    werbefahrplan: '/projects/k2-galerie/werbefahrplan',
     /**
      * Präsentationsmappe (Kurz-URL für Flyer, mök2, Werbeunterlagen).
      * **Standard:** App leitet ohne `?view=kurz` auf `praesentationsmappeVollversion` um → **letztgültige Mappe** = Vollversion (`public/praesentationsmappe-vollversion/`).
@@ -239,6 +241,7 @@ export const PROJECT_ROUTES = {
     platzanordnung: '/projects/k2-galerie/platzanordnung',
     produktVorschau: '/projects/k2-galerie/produkt-vorschau',
     marketingOek2: '/projects/k2-galerie/marketing-oek2',
+    werbefahrplan: '/projects/k2-galerie/werbefahrplan',
     praesentationsmappe: '/projects/k2-galerie/praesentationsmappe',
     praesentationsmappeVollversion: '/projects/k2-galerie/praesentationsmappe-vollversion',
     /** Promo A4 „Essenz“ – eigenständiger Flyer, nicht in der Präsentationsmappe */
@@ -315,6 +318,7 @@ export const PROJECT_ROUTES = {
     platzanordnung: '/projects/k2-galerie/platzanordnung',
     produktVorschau: '/projects/k2-galerie/produkt-vorschau',
     marketingOek2: '/projects/k2-galerie/marketing-oek2',
+    werbefahrplan: '/projects/k2-galerie/werbefahrplan',
     praesentationsmappe: '/projects/k2-galerie/praesentationsmappe',
     praesentationsmappeVollversion: '/projects/k2-galerie/praesentationsmappe-vollversion',
     /** Promo A4 „Essenz“ – eigenständiger Flyer, nicht in der Präsentationsmappe */

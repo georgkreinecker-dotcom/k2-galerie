@@ -30,6 +30,7 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
   const isMarketingPage = location.pathname === PROJECT_ROUTES['k2-galerie'].marketingOek2
   const isUebersicht = location.pathname === PROJECT_ROUTES['k2-galerie'].uebersicht
   const isWerbeunterlagen = location.pathname === PROJECT_ROUTES['k2-galerie'].werbeunterlagen
+  const isWerbefahrplan = location.pathname === PROJECT_ROUTES['k2-galerie'].werbefahrplan
   const isLicences = location.pathname === PROJECT_ROUTES['k2-galerie'].licences
   const isSoftwareentwicklung = location.pathname === PROJECT_ROUTES['k2-galerie'].softwareentwicklung
   const isEmpfehlungstool = location.pathname === PROJECT_ROUTES['k2-galerie'].empfehlungstool
@@ -137,6 +138,20 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
           }}
         >
           Werbeunterlagen
+        </Link>
+        <Link
+          to={PROJECT_ROUTES['k2-galerie'].werbefahrplan}
+          style={{
+            padding: '0.4rem 0.8rem',
+            background: isWerbefahrplan ? 'var(--k2-accent, #5ffbf1)' : '#444',
+            color: isWerbefahrplan ? '#000' : '#fff',
+            textDecoration: 'none',
+            borderRadius: '6px',
+            fontSize: '0.9rem',
+            fontWeight: isWerbefahrplan ? 600 : 400,
+          }}
+        >
+          Werbefahrplan
         </Link>
         <Link
           to={PROJECT_ROUTES['k2-galerie'].licences}

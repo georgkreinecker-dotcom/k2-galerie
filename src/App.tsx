@@ -34,6 +34,7 @@ import Vk2HandbuchPage from './pages/Vk2HandbuchPage'
 import MobileConnectPage from './pages/MobileConnectPage'
 import ProduktVorschauPage from './pages/ProduktVorschauPage'
 import MarketingOek2Page from './pages/MarketingOek2Page'
+import Mok2WerbefahrplanPage from './pages/Mok2WerbefahrplanPage'
 import PraesentationsmappePage from './pages/PraesentationsmappePage'
 import PraesentationsmappeVollversionPage from './pages/PraesentationsmappeVollversionPage'
 import FlyerOek2PromoA4Page from './pages/FlyerOek2PromoA4Page'
@@ -939,6 +940,7 @@ function App() {
       <Route path="/projects/k2-galerie/vita/:artistId" element={<VitaPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].produktVorschau} element={<ProduktVorschauPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].marketingOek2} element={<Mok2Layout><MarketingOek2Page embeddedInMok2Layout /></Mok2Layout>} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].werbefahrplan} element={<Mok2Layout><Mok2WerbefahrplanPage /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].prospektGalerieeroeffnung} element={<ProspektGalerieeroeffnungPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].plakatGalerieeroeffnung} element={<PlakatGalerieeroeffnungRedirect />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu} element={<FlyerEventBogenNeuPage />} />

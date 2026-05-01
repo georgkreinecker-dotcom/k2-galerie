@@ -55,10 +55,14 @@ export function loadMok2Werbefahrplan(): Mok2WerbeKampagne[] {
   }
 }
 
+/** Gleicher Tab: Teaser / andere UI kann darauf hören (storage-Event feuert nur in anderen Tabs). */
+export const MOK2_WERBEFAHRPLAN_UPDATED_EVENT = 'k2-mok2-werbefahrplan-updated'
+
 export function saveMok2Werbefahrplan(rows: Mok2WerbeKampagne[]): void {
   if (typeof window === 'undefined') return
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(rows))
+    window.dispatchEvent(new CustomEvent(MOK2_WERBEFAHRPLAN_UPDATED_EVENT))
   } catch {
     /* Quota o. ä. – keine stillen Kundendaten-Keys betroffen */
   }
