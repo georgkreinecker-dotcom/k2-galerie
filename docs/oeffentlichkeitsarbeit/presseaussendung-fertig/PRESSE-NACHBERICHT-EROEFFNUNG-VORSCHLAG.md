@@ -32,17 +32,37 @@ Martina und Georg Kreinecker
 
 ### EINORDNUNG
 
-Die **K2 Galerie Kunst & Keramik** von **Martina und Georg Kreinecker** hat ihre Eröffnung mit großem Besucherinteresse erlebt. Die ausgestellten Werke **Malerei und Keramik** wurden von den Gästen **äußerst positiv** aufgenommen; im Verlauf der Eröffnungstage wurden **rund dreißig Verkäufe** registriert – ein klares Zeichen, dass die Verbindung von **Qualität, persönlicher Begegnung und regionaler Sichtbarkeit** funktioniert.
+Die **K2 Galerie Kunst & Keramik** von **Martina und Georg Kreinecker** erlebte ihre Eröffnung mit **großem Besucherinteresse**.
+
+**Malerei und Keramik** kamen **sehr gut** an. Im Eröffnungswochenende wurden **rund 30 Verkäufe** registriert – ein klares Signal: **Qualität**, **persönliche Begegnung** und **regionale Sichtbarkeit** wirken zusammen.
 
 ### Von der Galerie zur Plattform
 
-**Zum Zusammenhang (für die Redaktion, ohne Werbeanspruch):** Was Gäste erleben, hängt mit der **Alltagsorganisation** der Galerie zusammen – Atelier, Lager, Ausstellung, Verkauf, Außenauftritt. Dort wird oft sichtbar, dass **Webpräsenz, Kasse, Termine und Pressearbeit** **über viele getrennte Werkzeuge** laufen und **wenig als ein gemeinsamer Ablauf** zusammenpassen. **Für den eigenen Betrieb** entstand **daraus** eine **zusammenhängende eigene Umsetzung** (von den Betreibenden intern **K2-Plattform** genannt), **gewachsen aus der Praxis** – **nicht** im **Duktus** üblicher **Software-Werbung** oder großer **Tech-Konzerne**. Der **folgende** Abschnitt erläutert **Haltung** und **Berufswege**.
+**Zum Zusammenhang (für die Redaktion, ohne Werbeanspruch)**
+
+Was Gäste sehen, hängt mit dem **Alltag** zusammen: Atelier, Lager, Ausstellung, Verkauf, Außenauftritt.
+
+Dabei fällt oft auf:
+
+- **Website, Kasse, Termine und Pressearbeit** laufen **über viele getrennte Werkzeuge**.
+- **Wenig roter Faden** – viele Einzelschritte.
+
+**Für den eigenen Betrieb** entstand daraus **ein einheitlicheres System** (intern **K2-Plattform** genannt). **Aus der Praxis** – **nicht** im **Ton** typischer **Software-Werbung** oder großer **Tech-Konzerne**.
+
+Darauf folgt ein kurzer Abschnitt zu **Haltung** und **Berufswegen**.
 
 ---
 
 ### HINTERGRUND IN KÜRZE
 
-Hinter der Galerie steht dieselbe **Haltung**, die auch die **K2-Plattform** prägt: aus der **künstlerischen und galeristischen Arbeit** von **Martina Kreinecker** und aus der **Praxis im Organisieren und Vermarkten** – ergänzt durch **Georg Kreineckers Unternehmerlaufbahn** (**Handwerk und Meisterprüfung**, **eigenes produzierendes Unternehmen**, später **internationales Handels- und Beratungsgeschäft** im Maschinen- und Anlagenbereich über viele Jahre). So wird nachvollziehbar, warum am Markt oft **Stückwerke** statt eines durchgängigen Wegs von Galerie bis Kasse und Öffentlichkeitsarbeit wenig ausreichen. **Kein Tech-Konzern**, sondern **Menschen, die nicht bei halben Lösungen bleiben wollten** – mit einem Augenzwinkern: Wer ein Leben lang Dinge zu Ende bringt, hört damit nicht einfach auf.
+Galerie und interne **K2-Plattform** teilen dieselbe **Haltung**:
+
+- **Martina Kreinecker:** künstlerische und galeristische Arbeit.
+- **Georg Kreinecker:** **Handwerk**, **Meisterprüfung**, **eigenes produzierendes Unternehmen**, später **internationales Handels- und Beratungsgeschäft** im Maschinen- und Anlagenbau (über viele Jahre).
+
+So wird verständlich, warum **Stückwerk** am Markt selten reicht, wenn **Galerie, Kasse und Öffentlichkeitsarbeit** zusammengehören sollen.
+
+**Kein Tech-Konzern** – sondern Menschen, die **gern zu Ende bringen**. Mit einem Augenzwinkern: Wer so arbeitet, hört nicht einfach auf.
 
 ---
 
@@ -68,6 +88,8 @@ Georg Kreinecker
 
 - Galerie: https://k2-galerie.vercel.app/projects/k2-galerie/galerie
 - Demo / Eingangstor: https://k2-galerie.vercel.app/entdecken
+
+**QR-Codes:** In der APf unter **Marketing ök2** → **Presse-Nachbericht Galerieeröffnung (Redaktion)** stehen unter diesen beiden Links **fertige QR-Bilder** (gleiche URLs wie oben, mit **Server-Stand und Cache-Bust** – wie bei der Galerie-Regel zum Scannen). Zum **PDF drucken** oder **Screenshot** für die Redaktion dort am zuverlässigsten.
 
 ---
 

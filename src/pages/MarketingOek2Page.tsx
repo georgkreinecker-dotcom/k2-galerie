@@ -286,6 +286,28 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
     return () => { cancelled = true }
   }, [qrVersionTs])
 
+  /** Presse-Nachbericht: QR unter den Links (Galerie + Eingangstor), dieselbe URL wie der Link (Server-Stand + Bust). */
+  const [presseNachberichtQrGalerie, setPresseNachberichtQrGalerie] = useState('')
+  const [presseNachberichtQrEingangstor, setPresseNachberichtQrEingangstor] = useState('')
+  useEffect(() => {
+    if (!URL_K2_GALERIE.startsWith('http') || !URL_MUSTER_EINGANGSTOR.startsWith('http')) return
+    let cancelled = false
+    const uG = buildQrUrlWithBust(URL_K2_GALERIE, qrVersionTs)
+    const uE = buildQrUrlWithBust(URL_MUSTER_EINGANGSTOR, qrVersionTs)
+    const opts = { width: 168, margin: 1, color: { dark: '#1a1a1a', light: '#ffffff' } } as const
+    Promise.all([QRCode.toDataURL(uG, opts), QRCode.toDataURL(uE, opts)])
+      .then(([g, e]) => {
+        if (!cancelled) {
+          setPresseNachberichtQrGalerie(g)
+          setPresseNachberichtQrEingangstor(e)
+        }
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [qrVersionTs])
+
   const saveOefImage = async (key: 'welcome' | 'innen', file: File) => {
     setOefSaving(true)
     try {
@@ -1843,19 +1865,53 @@ QR scannen → Entdecken (Demo)`}
             <strong>ANLASS:</strong> Eröffnungswochenende <strong>24.–26. April 2026</strong> (wie angekündigt)
           </p>
           <h4 style={{ fontSize: '0.95rem', color: '#5ffbf1', margin: '0 0 0.35rem' }}>EINORDNUNG</h4>
-          <p style={{ margin: '0 0 0.85rem' }}>
-            Die <strong>K2 Galerie Kunst &amp; Keramik</strong> von <strong>Martina und Georg Kreinecker</strong> hat ihre Eröffnung mit großem Besucherinteresse erlebt. Die ausgestellten Werke{' '}
-            <strong>Malerei und Keramik</strong> wurden von den Gästen <strong>äußerst positiv</strong> aufgenommen; im Verlauf der Eröffnungstage wurden <strong>rund dreißig Verkäufe</strong> registriert – ein klares Zeichen, dass die Verbindung von{' '}
-            <strong>Qualität, persönlicher Begegnung und regionaler Sichtbarkeit</strong> funktioniert.
+          <p style={{ margin: '0 0 0.45rem', lineHeight: 1.58 }}>
+            Die <strong>K2 Galerie Kunst &amp; Keramik</strong> von <strong>Martina und Georg Kreinecker</strong> erlebte ihre Eröffnung mit <strong>großem Besucherinteresse</strong>.
+          </p>
+          <p style={{ margin: '0 0 0.85rem', lineHeight: 1.58 }}>
+            <strong>Malerei und Keramik</strong> kamen <strong>sehr gut</strong> an. Im Eröffnungswochenende wurden <strong>rund 30 Verkäufe</strong> registriert – ein klares Signal: <strong>Qualität</strong>, <strong>persönliche Begegnung</strong> und <strong>regionale Sichtbarkeit</strong> wirken zusammen.
           </p>
           <h4 style={{ fontSize: '0.95rem', color: '#5ffbf1', margin: '0.75rem 0 0.35rem' }}>Von der Galerie zur Plattform</h4>
-          <p style={{ margin: '0 0 0.85rem', fontSize: '0.86rem', lineHeight: 1.55, color: 'rgba(255,255,255,0.9)' }}>
-            <strong>Zum Zusammenhang (für die Redaktion, ohne Werbeanspruch):</strong> Was Gäste erleben, hängt mit der <strong>Alltagsorganisation</strong> der Galerie zusammen – Atelier, Lager, Ausstellung, Verkauf, Außenauftritt. Dort wird oft sichtbar, dass <strong>Webpräsenz, Kasse, Termine und Pressearbeit</strong> <strong>über viele getrennte Werkzeuge</strong> laufen und <strong>wenig als ein gemeinsamer Ablauf</strong> zusammenpassen. <strong>Für den eigenen Betrieb</strong> entstand <strong>daraus</strong> eine <strong>zusammenhängende eigene Umsetzung</strong> (von den Betreibenden intern <strong>K2-Plattform</strong> genannt), <strong>gewachsen aus der Praxis</strong> – <strong>nicht</strong> im <strong>Duktus</strong> üblicher <strong>Software-Werbung</strong> oder großer <strong>Tech-Konzerne</strong>. Der <strong>folgende</strong> Abschnitt erläutert <strong>Haltung</strong> und <strong>Berufswege</strong>.
+          <p style={{ margin: '0 0 0.4rem', fontSize: '0.86rem', lineHeight: 1.58, color: 'rgba(255,255,255,0.92)' }}>
+            <strong>Zum Zusammenhang (für die Redaktion, ohne Werbeanspruch)</strong>
+          </p>
+          <p style={{ margin: '0 0 0.45rem', fontSize: '0.86rem', lineHeight: 1.58, color: 'rgba(255,255,255,0.9)' }}>
+            Was Gäste sehen, hängt mit dem <strong>Alltag</strong> zusammen: Atelier, Lager, Ausstellung, Verkauf, Außenauftritt.
+          </p>
+          <p style={{ margin: '0 0 0.35rem', fontSize: '0.86rem', lineHeight: 1.58, color: 'rgba(255,255,255,0.9)' }}>
+            Dabei fällt oft auf:
+          </p>
+          <ul style={{ margin: '0 0 0.55rem', paddingLeft: '1.2em', fontSize: '0.86rem', lineHeight: 1.55, color: 'rgba(255,255,255,0.9)' }}>
+            <li>
+              <strong>Website, Kasse, Termine und Pressearbeit</strong> laufen <strong>über viele getrennte Werkzeuge</strong>.
+            </li>
+            <li>
+              <strong>Wenig roter Faden</strong> – viele Einzelschritte.
+            </li>
+          </ul>
+          <p style={{ margin: '0 0 0.45rem', fontSize: '0.86rem', lineHeight: 1.58, color: 'rgba(255,255,255,0.9)' }}>
+            <strong>Für den eigenen Betrieb</strong> entstand daraus <strong>ein einheitlicheres System</strong> (intern <strong>K2-Plattform</strong> genannt). <strong>Aus der Praxis</strong> – <strong>nicht</strong> im <strong>Ton</strong> typischer <strong>Software-Werbung</strong> oder großer <strong>Tech-Konzerne</strong>.
+          </p>
+          <p style={{ margin: '0 0 0.85rem', fontSize: '0.86rem', lineHeight: 1.58, color: 'rgba(255,255,255,0.88)' }}>
+            Darauf folgt ein kurzer Abschnitt zu <strong>Haltung</strong> und <strong>Berufswegen</strong>.
           </p>
           <h4 style={{ fontSize: '0.95rem', color: '#5ffbf1', margin: '0 0 0.35rem' }}>HINTERGRUND IN KÜRZE</h4>
-          <p style={{ margin: '0 0 0.85rem' }}>
-            Hinter der Galerie steht dieselbe <strong>Haltung</strong>, die auch die <strong>K2-Plattform</strong> prägt: aus der <strong>künstlerischen und galeristischen Arbeit</strong> von <strong>Martina Kreinecker</strong> und aus der <strong>Praxis im Organisieren und Vermarkten</strong> – ergänzt durch <strong>Georg Kreineckers Unternehmerlaufbahn</strong> (<strong>Handwerk und Meisterprüfung</strong>, <strong>eigenes produzierendes Unternehmen</strong>, später <strong>internationales Handels- und Beratungsgeschäft</strong> im Maschinen- und Anlagenbereich über viele Jahre). So wird nachvollziehbar, warum am Markt oft <strong>Stückwerke</strong> statt eines durchgängigen Wegs von Galerie bis Kasse und Öffentlichkeitsarbeit wenig ausreichen. <strong>Kein Tech-Konzern</strong>, sondern{' '}
-            <strong>Menschen, die nicht bei halben Lösungen bleiben wollten</strong> – mit einem Augenzwinkern: Wer ein Leben lang Dinge zu Ende bringt, hört damit nicht einfach auf.
+          <p style={{ margin: '0 0 0.35rem', lineHeight: 1.58 }}>
+            Galerie und interne <strong>K2-Plattform</strong> teilen dieselbe <strong>Haltung</strong>:
+          </p>
+          <ul style={{ margin: '0 0 0.5rem', paddingLeft: '1.2em', lineHeight: 1.55 }}>
+            <li>
+              <strong>Martina Kreinecker:</strong> künstlerische und galeristische Arbeit.
+            </li>
+            <li>
+              <strong>Georg Kreinecker:</strong> <strong>Handwerk</strong>, <strong>Meisterprüfung</strong>, <strong>eigenes produzierendes Unternehmen</strong>, später <strong>internationales Handels- und Beratungsgeschäft</strong> im Maschinen- und Anlagenbau (über viele Jahre).
+            </li>
+          </ul>
+          <p style={{ margin: '0 0 0.45rem', lineHeight: 1.58 }}>
+            So wird verständlich, warum <strong>Stückwerk</strong> am Markt selten reicht, wenn <strong>Galerie, Kasse und Öffentlichkeitsarbeit</strong> zusammengehören sollen.
+          </p>
+          <p style={{ margin: '0 0 0.85rem', lineHeight: 1.58 }}>
+            <strong>Kein Tech-Konzern</strong> – sondern Menschen, die <strong>gern zu Ende bringen</strong>. Mit einem Augenzwinkern: Wer so arbeitet, hört nicht einfach auf.
           </p>
           <h4 style={{ fontSize: '0.95rem', color: '#5ffbf1', margin: '0 0 0.35rem' }}>FÜR REDAKTIONEN</h4>
           <ul style={{ margin: '0 0 0.85rem', paddingLeft: '1.2em' }}>
@@ -1882,20 +1938,42 @@ QR scannen → Entdecken (Demo)`}
             <strong>Öffnungszeiten:</strong> Samstag 9.30 bis 14.00 Uhr
           </p>
           <p style={{ margin: '0 0 0.35rem' }}>
-            <strong>Links:</strong>
+            <strong>Links:</strong> <span style={{ fontWeight: 400, color: 'rgba(255,255,255,0.72)', fontSize: '0.82rem' }}>(QR = gleiche Adresse, aktueller Server-Stand)</span>
           </p>
-          <ul style={{ margin: 0, paddingLeft: '1.2em' }}>
-            <li>
+          <ul style={{ margin: 0, paddingLeft: '1.2em', listStyleType: 'disc' }}>
+            <li style={{ marginBottom: '0.85rem' }}>
               <strong>Galerie:</strong>{' '}
               <a href={urlK2GalerieLive} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>
                 {URL_K2_GALERIE}
               </a>
+              {presseNachberichtQrGalerie ? (
+                <div style={{ marginTop: '0.4rem' }}>
+                  <img
+                    src={presseNachberichtQrGalerie}
+                    alt="QR-Code: Link zur Galerie (aktueller Stand)"
+                    width={126}
+                    height={126}
+                    style={{ display: 'block', borderRadius: 6, background: '#fff', padding: 4 }}
+                  />
+                </div>
+              ) : null}
             </li>
-            <li>
+            <li style={{ marginBottom: 0 }}>
               <strong>Demo / Eingangstor:</strong>{' '}
               <a href={urlMusterEingangstorLive} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>
                 {URL_MUSTER_EINGANGSTOR}
               </a>
+              {presseNachberichtQrEingangstor ? (
+                <div style={{ marginTop: '0.4rem' }}>
+                  <img
+                    src={presseNachberichtQrEingangstor}
+                    alt="QR-Code: Link Demo / Eingangstor (aktueller Stand)"
+                    width={126}
+                    height={126}
+                    style={{ display: 'block', borderRadius: 6, background: '#fff', padding: 4 }}
+                  />
+                </div>
+              ) : null}
             </li>
           </ul>
         </div>
