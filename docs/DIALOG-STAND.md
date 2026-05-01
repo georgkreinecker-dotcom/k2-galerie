@@ -4,6 +4,8 @@
 
 ---
 
+**Letzter Stand:** 01.05.26 – **Drucker Epson TM-m30II (WLAN) + IPP für K2 One-Click** – Admin **Einstellungen → Drucker**: Feld **IPP-Pfad** pro Mandant (localStorage `k2-ipp-path-*`), Standard `ipp/print` (Brother); One-Click-POST enthält `ippPath` (war schon im `k2-print-server.js`). Hinweise **Brother + Epson**, Etikettenformat-Label neutral (mm). Neu: **`docs/DRUCKER-EPSON-TM-M30II-K2.md`**, **`DRUCKER-STAND.md`** aktualisiert. **`npm run qs:local` grün.** **Commit:** `7713f271` ✅ **main**
+
 **Letzter Stand:** 01.05.26 – **mök2: kein Board rechts, Mappe = Sprung zum Kapitel** – `MarketingOek2Page`: **mök2 Board** (Kachel-Grid) **entfernt** – Navigation nur noch links. `Mok2Layout`: Beim **Öffnen** einer Mappe **smooth scroll** zum ersten **Anker** der Mappe (erstes `section` ohne `linkTo`). Sidebar-Hinweis: Mappe = Kapitelanfang im Text. **`npm run qs:local` grün.** **Commit:** `ba716090` ✅ **main**
 
 **Letzter Stand:** 01.05.26 – **mök2 Navigation: Mappen + weniger Doppelungen** – `Mok2Layout`: Sidebar **aufklappbare Mappen** (`mok2Groups`, eine offen/alle zu); **kein** zweites „Übersicht (Board)“ in der Spalte; doppelte Fuß-Links (Werbeunterlagen/Lizenzen/…) **entfernt** – stattdessen oben **„Weitere Seiten“**-Menü (Software, Werbeunterlagen, Werbefahrplan, Lizenzen, Lizenz kaufen, Empfehlung, Vergütung, Eingangstor, AGB). `MarketingOek2Page`: **mök2 Board** nur noch **eine Kachel pro Mappe** (keine Extra-Kacheln Event/Lizenzen/AGB). `mok2Structure.ts` Kommentar. **`npm run qs:local` grün.** **Commit:** `7689ae4b` ✅ **main**
@@ -34,9 +36,9 @@
 
 **Letzter Stand:** 30.04.26 – **mök2: Inserat Viertel – K2, Typo, QR** – Linkes Feld: großes **K2** + „GALERIE“ (`K2_GALERIE_PUBLIC_BRAND`), darunter Bild/Teal; rechts größere Header-Zeilen und fetter Werbesatz; drei Karten mit dickerer Farbleiste und Maximal-Schrift; QR ~100px, Druck 24mm, Teal-Rahmen. **Build grün.** **Commit:** (älterer Stand – siehe oben)
 
-**Was wir JETZT tun:** – mök2 im Browser prüfen (Mappe öffnen → rechter Bereich zeigt sofort das Kapitel, kein Kachel-Board); Presse/Vertrieb wie geplant.
+**Was wir JETZT tun:** – Epson **IP + IPP-Pfad** in Admin eintragen, **Print-Server** starten, **One-Click** testen; Brother unverändert `ipp/print`.
 
-**Einordnung:** mök2 = eigener Bereich; **eine klare Hierarchie**: Hauptleiste → Marketing-Text **oder** Weitere Seiten; links **Mappen** = Einstieg ins Kapitel ohne doppelte Übersicht.
+**Einordnung:** K2 **Werkzeug** (Admin); Etikett **primär** weiter Druckdialog; One-Click = IPP über `k2-print-server.js` mit wählbarem Pfad (Brother/Epson).
 
 ---
 

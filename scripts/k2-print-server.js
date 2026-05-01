@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 /**
- * K2 Print-Server: One-Click-Etikett-Druck auf Brother QL-820 per IPP
+ * K2 Print-Server: One-Click-Etikett-Druck per IPP (PNG) zum Drucker im LAN
  *
  * Start: node scripts/k2-print-server.js
  * Dann in K2 Drucker-Einstellungen: Print-Server URL = http://localhost:3847
  * (oder http://MAC-IP:3847 für iPad/iPhone im gleichen WLAN)
  *
- * Voraussetzung: Brother im WLAN erreichbar (z.B. 192.168.1.102)
+ * Drucker: z. B. Brother QL (IPP-Pfad meist **ipp/print**) oder Epson TM-m30II
+ * (IPP im Web-Config aktivieren; Pfad oft **EPSON_IPP_Printer** – siehe docs/DRUCKER-EPSON-TM-M30II-K2.md)
+ *
  * npm install ipp  (falls noch nicht vorhanden)
  */
 
@@ -28,9 +30,11 @@ function sendResponse(res, statusCode, body, contentType = 'application/json') {
   res.end(typeof body === 'string' ? body : JSON.stringify(body))
 }
 
-function printToBrother(printerIP, imageBuffer, widthMm, heightMm) {
+/** ippPath z. B. ipp/print (Brother) oder EPSON_IPP_Printer (Epson TM, ohne führenden Slash) */
+function printViaIpp(printerIP, imageBuffer, widthMm, heightMm, ippPath) {
   return new Promise((resolve, reject) => {
-    const url = `http://${printerIP}:631/ipp/print`
+    const safePath = (ippPath || 'ipp/print').replace(/^\/+/, '').replace(/[^a-zA-Z0-9._/-]/g, '') || 'ipp/print'
+    const url = `http://${printerIP}:631/${safePath}`
     const printer = ipp.Printer(url)
 
     // IPP media-size: 1/100 mm (RFC 8011)
@@ -91,14 +95,16 @@ const server = http.createServer((req, res) => {
       const printerIP = data.printerIP || DEFAULT_PRINTER_IP
       const widthMm = parseFloat(data.widthMm) || 29
       const heightMm = parseFloat(data.heightMm) || 90.3
+      const ippPath = typeof data.ippPath === 'string' ? data.ippPath : 'ipp/print'
 
-      printToBrother(printerIP, imageBuffer, widthMm, heightMm)
+      printViaIpp(printerIP, imageBuffer, widthMm, heightMm, ippPath)
         .then(() => sendResponse(res, 200, { ok: true, message: 'Etikett gesendet' }))
         .catch((err) => {
           console.error('Print error:', err)
           let msg = err.message || 'Druck fehlgeschlagen'
           if (msg.includes('x-dimension') || msg.includes('ECONNREFUSED') || msg.includes('ENOTFOUND') || msg.includes('ETIMEDOUT')) {
-            msg = 'Drucker nicht erreichbar. Mac und Brother müssen im gleichen WLAN sein (Drucker ist im mobilen LAN).'
+            msg =
+              'Drucker nicht erreichbar oder IPP lehnt ab. Gleiches WLAN wie dieser Rechner? IP stimmt? Bei Epson: IPP im Drucker aktivieren und IPP-Pfad prüfen (docs/DRUCKER-EPSON-TM-M30II-K2.md).'
           }
           sendResponse(res, 500, { error: msg })
         })

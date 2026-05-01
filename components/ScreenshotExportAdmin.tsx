@@ -3235,15 +3235,33 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   }
 
   // Mandantenspezifische Drucker-Einstellungen (K2, ök2, Demo – je eigener Drucker + Format)
-  const printerStorageKey = (tenantId: TenantId, key: 'ip' | 'type' | 'labelSize' | 'printServerUrl' | 'openEtikettAfterSave' | 'openEtikettInNewTab') => {
-    const suffix = key === 'ip' ? 'printer-ip' : key === 'type' ? 'printer-type' : key === 'labelSize' ? 'label-size' : key === 'printServerUrl' ? 'print-server-url' : key === 'openEtikettAfterSave' ? 'open-etikett-after-save' : 'open-etikett-in-new-tab'
+  const printerStorageKey = (
+    tenantId: TenantId,
+    key: 'ip' | 'type' | 'labelSize' | 'printServerUrl' | 'openEtikettAfterSave' | 'openEtikettInNewTab' | 'ippPath'
+  ) => {
+    const suffix =
+      key === 'ip'
+        ? 'printer-ip'
+        : key === 'type'
+          ? 'printer-type'
+          : key === 'labelSize'
+            ? 'label-size'
+            : key === 'printServerUrl'
+              ? 'print-server-url'
+              : key === 'openEtikettAfterSave'
+                ? 'open-etikett-after-save'
+                : key === 'openEtikettInNewTab'
+                  ? 'open-etikett-in-new-tab'
+                  : 'ipp-path'
     return `k2-${suffix}-${tenantId}`
   }
   const defaultPrinterSettings = () => ({
     ipAddress: '192.168.1.102',
-    printerModel: 'Brother QL-820MWBc',
+    printerModel: 'Brother QL-820MWBc oder Epson TM-m30II (WLAN)',
     printerType: 'etikettendrucker' as const,
     labelSize: '29x60',
+    /** Brother: ipp/print. Epson TM (One-Click): oft EPSON_IPP_Printer – im Drucker-Web-Config unter IPP nachlesen. */
+    ippPath: 'ipp/print',
     // Standard: Am Mac localhost; Mobilgeräte und Drucker im LAN 192.168.1.x → Print-Server-URL in diesem Netz.
     printServerUrl: typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
       ? 'http://localhost:3847'
@@ -3278,6 +3296,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       const ip = localStorage.getItem(printerStorageKey(tenantId, 'ip'))
       const type = localStorage.getItem(printerStorageKey(tenantId, 'type'))
       const labelSize = localStorage.getItem(printerStorageKey(tenantId, 'labelSize'))
+      const ippPathStored = localStorage.getItem(printerStorageKey(tenantId, 'ippPath'))
       const printServerUrl = localStorage.getItem(printerStorageKey(tenantId, 'printServerUrl'))
       const openEtikettRaw = localStorage.getItem(printerStorageKey(tenantId, 'openEtikettAfterSave'))
       const openEtikettAfterSave = openEtikettRaw === '1' || openEtikettRaw === 'true'
@@ -3288,6 +3307,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         printerModel: def.printerModel,
         printerType: (type || def.printerType) as 'etikettendrucker' | 'standarddrucker',
         labelSize: labelSize || def.labelSize,
+        ippPath: ippPathStored || def.ippPath,
         printServerUrl: printServerUrl || def.printServerUrl,
         openEtikettAfterSave: openEtikettRaw != null ? openEtikettAfterSave : def.openEtikettAfterSave,
         openEtikettInNewTab
@@ -3296,7 +3316,11 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       return defaultPrinterSettings()
     }
   }
-  const savePrinterSetting = (tenantId: TenantId, key: 'ip' | 'type' | 'labelSize' | 'printServerUrl' | 'openEtikettAfterSave' | 'openEtikettInNewTab', value: string) => {
+  const savePrinterSetting = (
+    tenantId: TenantId,
+    key: 'ip' | 'type' | 'labelSize' | 'printServerUrl' | 'openEtikettAfterSave' | 'openEtikettInNewTab' | 'ippPath',
+    value: string
+  ) => {
     try {
       localStorage.setItem(printerStorageKey(tenantId, key), value)
     } catch (_) {}
@@ -13258,7 +13282,8 @@ ${'='.repeat(60)}
             image: base64,
             printerIP: settings.ipAddress || '192.168.1.102',
             widthMm: lm.width,
-            heightMm: lm.height
+            heightMm: lm.height,
+            ippPath: (settings.ippPath || 'ipp/print').trim() || 'ipp/print'
           })
         }),
         timeoutPromise
@@ -13266,7 +13291,7 @@ ${'='.repeat(60)}
       const json = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(json.error || `Fehler ${res.status}`)
       setShowPrintModal(false)
-      alert('✅ Etikett gesendet – Brother druckt.')
+      alert('✅ Etikett gesendet – Druckauftrag an den Drucker (IPP).')
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'One-Click-Druck fehlgeschlagen'
       const isIpadOrPhone = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
@@ -22133,7 +22158,7 @@ ${name}`
                           }}
                         />
                         <p style={{ fontSize: '0.8rem', color: s.muted, marginTop: '0.5rem', marginBottom: 0 }}>
-                          Aktuelle IP: 192.168.1.102 (auf mobilem Gerät als zweiter Router)
+                          WLAN-IP des Druckers (Brother oder Epson TM). Beispiel bisher Brother: 192.168.1.102 – Epson: IP aus Statusblatt oder Web-Config des Druckers (siehe Doku unten).
                         </p>
                       </div>
 
@@ -22208,7 +22233,7 @@ ${name}`
 
                       <div className="field">
                         <label style={{ fontSize: '0.9rem', color: s.muted, marginBottom: '0.5rem', display: 'block' }}>
-                          Etikettenformat (Brother)
+                          Etikettenformat (mm)
                         </label>
                         <input
                           type="text"
@@ -22218,7 +22243,7 @@ ${name}`
                             setPrinterSettings(prev => ({ ...prev, labelSize: v }))
                             savePrinterSetting(printerSettingsForTenant, 'labelSize', v)
                           }}
-                          placeholder="29x60"
+                          placeholder="29x60 oder z. B. 80x200"
                           style={{
                             padding: '0.75rem',
                             background: s.bgElevated,
@@ -22230,7 +22255,36 @@ ${name}`
                           }}
                         />
                         <p style={{ fontSize: '0.8rem', color: s.muted, marginTop: '0.5rem', marginBottom: 0 }}>
-                          Breite × Höhe in mm (z. B. 29x60 für Endlos-Papier, 29x90,3 optional). Pro Mandant getrennt; Kassabeleg kann anderes Format nutzen.
+                          Breite × Höhe in mm: Brother z. B. 29×60 oder 29×90,3; Epson TM-m30II oft 80 mm Rollenbreite (Höhe an Rolle anpassen). Pro Mandant getrennt.
+                        </p>
+                      </div>
+
+                      <div className="field">
+                        <label style={{ fontSize: '0.9rem', color: s.muted, marginBottom: '0.5rem', display: 'block' }}>
+                          IPP-Pfad (nur One-Click über Print-Server)
+                        </label>
+                        <input
+                          type="text"
+                          value={printerSettings.ippPath ?? 'ipp/print'}
+                          onChange={(e) => {
+                            const v = e.target.value.trim().replace(/^\/+/, '') || 'ipp/print'
+                            setPrinterSettings(prev => ({ ...prev, ippPath: v }))
+                            savePrinterSetting(printerSettingsForTenant, 'ippPath', v)
+                          }}
+                          placeholder="Brother: ipp/print — Epson TM: oft EPSON_IPP_Printer"
+                          style={{
+                            padding: '0.75rem',
+                            background: s.bgElevated,
+                            border: `1px solid ${s.accent}33`,
+                            borderRadius: '8px',
+                            color: s.text,
+                            fontSize: '0.95rem',
+                            width: '100%'
+                          }}
+                        />
+                        <p style={{ fontSize: '0.8rem', color: s.muted, marginTop: '0.5rem', marginBottom: 0 }}>
+                          Steht im Drucker-Web-Interface unter IPP (Port 631). Ausführlich:{' '}
+                          <code style={{ fontSize: '0.75rem' }}>docs/DRUCKER-EPSON-TM-M30II-K2.md</code> im Projektordner.
                         </p>
                       </div>
 
@@ -22272,11 +22326,11 @@ ${name}`
                       }}>
                         <strong style={{ color: s.accent }}>ℹ️ Info:</strong>
                         <ul style={{ marginTop: '0.5rem', paddingLeft: '1.5rem' }}>
-                          <li>Drucker funktioniert bereits auf IP 192.168.1.102</li>
-                          <li>Zweiter Router auf mobilem Gerät installiert</li>
-                          <li>Zugriff von Mac, iPad und Handy möglich</li>
-                          <li>Einstellungen werden automatisch gespeichert</li>
-                          <li><strong>AirPrint aktiv:</strong> Im Druckdialog Brother wählen (Name ggf. „QL-820NWB“ ohne c). Papier: 29×60 mm (oder 29×90 mm), 100 %.</li>
+                          <li>Brother bisher z. B. IP 192.168.1.102; Epson TM: eigene WLAN-IP eintragen</li>
+                          <li>One-Click: Print-Server am Mac starten, ggf. IPP-Pfad für Epson setzen</li>
+                          <li>Zugriff von Mac, iPad und Handy möglich (gleiches WLAN wie Drucker)</li>
+                          <li>Einstellungen werden bei Änderung mitgespeichert; Button unten sichert alles nochmal ab</li>
+                          <li><strong>AirPrint / Systemdialog:</strong> Im Druckdialog den gewünschten Drucker wählen; Etikettenformat und 100 % wie im Handbuch</li>
                         </ul>
                       </div>
 
@@ -22289,11 +22343,12 @@ ${name}`
                       }}>
                         <summary style={{ cursor: 'pointer', fontWeight: 600, color: s.accent }}>📖 Druck-Anleitung (AirPrint, iPad, Android, One-Click)</summary>
                         <div style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: s.muted, lineHeight: 1.6 }}>
-                          <p style={{ marginTop: 0 }}><strong>Mac:</strong> Brother per IP hinzufügen (Systemeinstellungen → Drucker &amp; Scanner).</p>
-                          <p><strong>iPad/iPhone:</strong> 1) Druck über Mac („Für iOS freigeben“) oder 2) Etikett teilen → Brother iPrint &amp; Label App.</p>
-                          <p><strong>Android:</strong> Etikett teilen/herunterladen → Brother iPrint &amp; Label App (Play Store).</p>
-                          <p><strong>One-Click:</strong> Print-Server starten (<code>npm run print-server</code>), URL hier eintragen.</p>
-                          <p style={{ marginBottom: 0 }}>Ausführlich: <code>DRUCKER-AIRPRINT.md</code> im Projektordner.</p>
+                          <p style={{ marginTop: 0 }}><strong>Mac:</strong> Drucker per IP oder Bonjour hinzufügen (Systemeinstellungen → Drucker &amp; Scanner).</p>
+                          <p><strong>Epson TM-m30II (WLAN, One-Click):</strong> IP und IPP-Pfad wie in <code>docs/DRUCKER-EPSON-TM-M30II-K2.md</code>.</p>
+                          <p><strong>iPad/iPhone:</strong> 1) Druck über Mac („Für iOS freigeben“) oder 2) Etikett teilen → passende Drucker-App.</p>
+                          <p><strong>Android:</strong> Etikett teilen/herunterladen → Drucker-App des Herstellers.</p>
+                          <p><strong>One-Click:</strong> Print-Server starten (<code>npm run print-server</code>), URL hier eintragen; bei Epson IPP-Pfad prüfen.</p>
+                          <p style={{ marginBottom: 0 }}>Ausführlich: <code>DRUCKER-AIRPRINT.md</code> und Epson-Doku im Projektordner.</p>
                         </div>
                       </details>
 
@@ -22302,6 +22357,11 @@ ${name}`
                           savePrinterSetting(printerSettingsForTenant, 'ip', printerSettings.ipAddress)
                           savePrinterSetting(printerSettingsForTenant, 'type', printerSettings.printerType)
                           savePrinterSetting(printerSettingsForTenant, 'labelSize', printerSettings.labelSize)
+                          savePrinterSetting(
+                            printerSettingsForTenant,
+                            'ippPath',
+                            (printerSettings.ippPath || 'ipp/print').trim().replace(/^\/+/, '') || 'ipp/print'
+                          )
                           savePrinterSetting(printerSettingsForTenant, 'printServerUrl', printerSettings.printServerUrl ?? '')
                           alert(`✅ Drucker & Format für ${printerSettingsForTenant === 'k2' ? 'K2' : printerSettingsForTenant === 'oeffentlich' ? 'ök2' : 'Demo'} gespeichert!`)
                         }}
