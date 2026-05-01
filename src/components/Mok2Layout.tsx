@@ -336,7 +336,7 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
             </button>
           </div>
           <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: '#8fa0c9', lineHeight: 1.45 }}>
-            Arbeitsplattform für den Vertrieb von ök2. <strong style={{ color: 'rgba(255,255,255,0.82)' }}>Mappen</strong> antippen – Themen ein- oder ausklappen. Übersicht Board:{' '}
+            Arbeitsplattform für den Vertrieb von ök2. <strong style={{ color: 'rgba(255,255,255,0.82)' }}>Mappe</strong> antippen: Kapitelanfang im Text; Themen in der Mappe ein- oder ausklappen. Übersicht:{' '}
             <strong style={{ color: 'rgba(255,255,255,0.82)' }}>oben in der Leiste</strong>. Weitere APf-Seiten: <strong style={{ color: 'rgba(255,255,255,0.82)' }}>Weitere Seiten</strong>.
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
@@ -354,7 +354,14 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
                 >
                   <button
                     type="button"
-                    onClick={() => setOpenGroupIdx((prev) => (prev === groupIdx ? null : groupIdx))}
+                    onClick={() => {
+                      const wasOpen = openGroupIdx === groupIdx
+                      setOpenGroupIdx((prev) => (prev === groupIdx ? null : groupIdx))
+                      if (!wasOpen && isMarketingPage) {
+                        const firstId = group.sections.find((s) => !s.linkTo)?.id
+                        if (firstId) scrollToSection(firstId)
+                      }
+                    }}
                     style={{
                       width: '100%',
                       display: 'flex',

@@ -567,42 +567,6 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </div>
       )}
 
-      {/* mök2 Board – Themen auf einen Blick, ein Klick zum Bereich */}
-      {embeddedInMok2Layout && (
-        <section className="marketing-oek2-no-print" id="mok2-board" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
-          <h2 style={{ fontSize: '1.1rem', margin: '0 0 0.5rem', color: '#5ffbf1', fontWeight: 700 }}>mök2 Board</h2>
-          <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)', marginBottom: '1rem' }}>
-            Eine Kachel = eine <strong style={{ color: 'rgba(255,255,255,0.92)' }}>Mappe</strong> (Sprung zum Kapitelanfang). Details und APf-Links: links unter „Struktur mök2“ bzw. oben <strong style={{ color: 'rgba(255,255,255,0.92)' }}>Weitere Seiten</strong>.
-          </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem' }}>
-            {mok2Groups.map((group) => {
-              const firstId = group.sections[0]?.id
-              if (!firstId) return null
-              return (
-                <button
-                  key={group.chapterTitle}
-                  type="button"
-                  onClick={() => document.getElementById(firstId)?.scrollIntoView({ behavior: 'smooth' })}
-                  style={{
-                    padding: '0.75rem 1rem',
-                    background: 'rgba(95,251,241,0.08)',
-                    border: '1px solid rgba(95,251,241,0.35)',
-                    borderRadius: 10,
-                    color: '#5ffbf1',
-                    cursor: 'pointer',
-                    fontSize: '0.9rem',
-                    fontWeight: 600,
-                    textAlign: 'left',
-                  }}
-                >
-                  {group.chapterTitle}
-                </button>
-              )
-            })}
-          </div>
-        </section>
-      )}
-
       {/* Kapitel: Kern – Überblick & Stärken */}
       <Mok2ChapterPage title={mok2Groups[0].chapterTitle} />
       {/* Leitvision K2 Markt – kreative Leitvision (eine Stelle, ausrichtend) */}
