@@ -1,5 +1,7 @@
 # Dialog-Stand
 
+**Letzter Stand:** 02.05.26 – **Admin Drucker: Daten vom Epson-Status-Bon als Ein-Klick + klare Print-Server-Hinweise** – Konstante **`K2_EPSON_STATUS_BON_EXAMPLE_IP`** (`192.168.0.83`), Button im Admin; Texte **One-Click** = Etikett + K2-Bon; **iPad:** keine `localhost` in Print-Server-URL. **Doku** `docs/DRUCKER-EPSON-TM-M30II-K2.md` TM-m30III. **Commit:** `4e8522d0` ✅ **main**
+
 **Session-Ende 01.05.26 (Nacht):** Georg – Schluss für heute; **Commit + Push** mit Kasse-iPad-UX + Doku; nächster Start: `npm run briefing` + dieses File.
 
 **Session-Ende 27.04.26:** Schluss für heute – **`git` sauber**, Doku **Session-Ende** auf **main** gepusht (**DIALOG-STAND** + **WIR-PROZESS**). Aktueller Tip: `git log -1 --oneline`. Nächster Start: `npm run briefing` + dieses File lesen.
