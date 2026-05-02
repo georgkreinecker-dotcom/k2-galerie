@@ -1,6 +1,12 @@
 # Dialog-Stand
 
-**Letzter Stand:** 02.05.26 – **Admin Drucker: Daten vom Epson-Status-Bon als Ein-Klick + klare Print-Server-Hinweise** – Konstante **`K2_EPSON_STATUS_BON_EXAMPLE_IP`** (`192.168.0.83`), Button im Admin; Texte **One-Click** = Etikett + K2-Bon; **iPad:** keine `localhost` in Print-Server-URL. **Doku** `docs/DRUCKER-EPSON-TM-M30II-K2.md` TM-m30III. **Commit:** `4e8522d0` ✅ **main**
+**Letzter Stand:** 02.05.26 – **mök2 Presse-Nachbericht: zwei Varianten in der App** – Georg sah nur einen Textkörper (Markdown hatte schon A/B). **`MarketingOek2Page`** **`#mok2-presse-nachbericht-eroeffnung`:** Kurzhinweis „Zwei Textkörper“, **Variante A** sachlich (+ Links/QR wie bisher), **Variante B** erzählerisch (Links verweisen auf A). Stand-Zeile **02.05.26**. **Commit:** `6a4e517b` ✅ **main**
+
+**Session-Ende 02.05.26:** Schluss für heute – **Mixed-Content-Hinweis** Epson-Bon (`k2EpsonBonOneClick`), **Doku** §5a `docs/DRUCKER-EPSON-TM-M30II-K2.md`, Build-Info mitgeschrieben. **Commit:** `COMMIT_PLACEHOLDER` ✅ **main**
+
+**Letzter Stand:** 02.05.26 – **Epson Bon Mixed Content:** Meldung + Doku klargestellt: bei **https (Vercel)** blockiert der Browser **http-Print-Server** – Lösung **http-Kasse** z. B. `http://<Mac>:5177/projects/k2-galerie/shop` oder https-Tunnel.
+
+**Vorher:** 02.05.26 – **Admin Drucker: Daten vom Epson-Status-Bon als Ein-Klick + klare Print-Server-Hinweise** – Konstante **`K2_EPSON_STATUS_BON_EXAMPLE_IP`** (`192.168.0.83`), Button im Admin; Texte **One-Click** = Etikett + K2-Bon; **iPad:** keine `localhost` in Print-Server-URL. **Doku** `docs/DRUCKER-EPSON-TM-M30II-K2.md` TM-m30III. **Commit:** `4e8522d0` ✅ **main**
 
 **Session-Ende 01.05.26 (Nacht):** Georg – Schluss für heute; **Commit + Push** mit Kasse-iPad-UX + Doku; nächster Start: `npm run briefing` + dieses File.
 
@@ -867,7 +873,7 @@
 
 ---
 
-**Letzter Stand:** 15.04.26 – **K2 Familie: Anmeldung mit persönlichem Code auf fremdem Handy** – **`loadFamilieFromSupabase`:** nach **`mergeById`** wird **`ergaenzeMitgliedsNummerAusServerListe`** aufgerufen (war schon in `familieMitgliedsNummer` dokumentiert, fehlte im Lade-Pfad). **Grund:** neuere lokale Kopie ohne Code konnte den Server-Eintrag mit Code überschreiben → **`findPersonIdByMitgliedsNummer`** fand niemanden. **`npm run test`** grün; **`tsc --noEmit`** grün. **Commit:** _(nach Push eintragen)_
+**Letzter Stand:** 15.04.26 – **K2 Familie: Anmeldung mit persönlichem Code auf fremdem Handy** – **`loadFamilieFromSupabase`:** nach **`mergeById`** wird **`ergaenzeMitgliedsNummerAusServerListe`** aufgerufen (war schon in `familieMitgliedsNummer` dokumentiert, fehlte im Lade-Pfad). **Grund:** neuere lokale Kopie ohne Code konnte den Server-Eintrag mit Code überschreiben → **`findPersonIdByMitgliedsNummer`** fand niemanden. **`npm run test`** grün; **`tsc --noEmit`** grün. **Commit:** _`6a4e517b`_
 
 **Was wir JETZT tun:** Auf **Vercel** nach Deploy: fremdes Gerät / privates Fenster → Familie laden → **persönlichen Code** eingeben → Person muss zuordenbar sein.
 
@@ -1577,7 +1583,7 @@
 
 ---
 
-**Letzter Stand:** 04.04.26 – **Präsentationsmappe: Deckblatt bleibt** – Georg: Nur den **überflüssigen Text im Inhaltsverzeichnis** (`00-INDEX.md`) meinte, **nicht** das Deckblatt entfernen. **Deckblatt** (`01-DECKBLATT.md` + Cover in der App) und **Punkt 1 im INDEX** wieder klar; K2-Leitfaden = `00-SO-NUTZT-DU-MAPPE.md` (Split von alter LESEFUEHRUNG). TS-Fix `renderDeckblattCover` (Cast nur `name`). Tests + Build grün. **Commit:** _(nach Push eintragen)_ ✅
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe: Deckblatt bleibt** – Georg: Nur den **überflüssigen Text im Inhaltsverzeichnis** (`00-INDEX.md`) meinte, **nicht** das Deckblatt entfernen. **Deckblatt** (`01-DECKBLATT.md` + Cover in der App) und **Punkt 1 im INDEX** wieder klar; K2-Leitfaden = `00-SO-NUTZT-DU-MAPPE.md` (Split von alter LESEFUEHRUNG). TS-Fix `renderDeckblattCover` (Cast nur `name`). Tests + Build grün. **Commit:** _`6a4e517b`_ ✅
 
 **Was wir JETZT tun:** Optional: VK2-INDEX-Parität prüfen; Deploy → Mappe kurz durchklicken.
 
@@ -2731,7 +2737,7 @@
 
 ---
 
-**Letzter Stand:** 27.03.26 – **Flyer-Toolbar (K2 nur):** „← Zurück zum mök2“ und „Werbeunterlagen“ nur bei **`!isVk2 && !isOeffentlich`** (nur echte K2-Arbeitskontext-Toolbar). **VK2 und ök2:** beide Links ausgeblendet; mök2-Link braucht kein `?context=oeffentlich` mehr (nur K2). **Datei:** `FlyerEventBogenNeuPage.tsx`. **Commit:** (nach Push eintragen).
+**Letzter Stand:** 27.03.26 – **Flyer-Toolbar (K2 nur):** „← Zurück zum mök2“ und „Werbeunterlagen“ nur bei **`!isVk2 && !isOeffentlich`** (nur echte K2-Arbeitskontext-Toolbar). **VK2 und ök2:** beide Links ausgeblendet; mök2-Link braucht kein `?context=oeffentlich` mehr (nur K2). **Datei:** `FlyerEventBogenNeuPage.tsx`. **Commit:** `6a4e517b`.
 
 **Was wir JETZT tun:** Georg prüft ök2- und VK2-Flyer: keine beiden Links; K2 weiter mit beiden.
 

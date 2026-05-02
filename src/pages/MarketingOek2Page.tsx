@@ -1742,8 +1742,12 @@ QR scannen → Entdecken (Demo)`}
           Presse-Nachbericht Galerieeröffnung (Redaktion)
         </h2>
         <p style={{ marginBottom: '0.65rem', fontSize: '0.88rem', color: 'rgba(255,255,255,0.78)', lineHeight: 1.5 }}>
-          <strong>Stand:</strong> 30.04.26 · <strong>Basis:</strong> erste Presseaussendung (Archiv WELS) + Medienstudio K2 §1a (Human-Interest-Kern).{' '}
+          <strong>Stand:</strong> 02.05.26 · <strong>Basis:</strong> erste Presseaussendung (Archiv WELS) + Medienstudio K2 §1a (Human-Interest-Kern).{' '}
           <strong>Zweck:</strong> redaktioneller Nachbericht nach erfolgreicher Eröffnung – Text zur freien redaktionellen Bearbeitung.
+        </p>
+        <p style={{ marginBottom: '0.65rem', fontSize: '0.88rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>
+          <strong>Zwei Textkörper:</strong> <strong>Variante A</strong> = sachlich-einordnend. <strong>Variante B</strong> = etwas erzählerischer – gleiche Fakten, anderer Ton; je nach Medium wählen.{' '}
+          <strong>Links und QR</strong> nur einmal unter Variante A; Variante B verweist darauf.
         </p>
         <p style={{ marginBottom: '0.65rem', fontSize: '0.88rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>
           <strong>Faktenlage (für Redaktion):</strong> sehr positives Besucherfeedback; <strong>rund 30 Verkäufe</strong> im Eröffnungswochenende.
@@ -1770,7 +1774,7 @@ QR scannen → Entdecken (Demo)`}
         </div>
 
         <h3 style={{ fontSize: '1.05rem', color: '#5ffbf1', margin: '1rem 0 0.5rem', borderBottom: '1px solid rgba(95,251,241,0.2)', paddingBottom: '0.25rem' }}>
-          PRESSEINFORMATION (Textkörper)
+          PRESSEINFORMATION – Variante A (Textkörper, sachlich-einordnend)
         </h3>
         <div style={{ padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.08)', borderRadius: '8px', border: '1px solid rgba(95,251,241,0.25)', fontSize: '0.88rem', lineHeight: 1.55, color: 'rgba(255,255,255,0.92)' }}>
           <p style={{ margin: '0 0 0.35rem' }}>
@@ -1965,6 +1969,67 @@ QR scannen → Entdecken (Demo)`}
               ) : null}
             </li>
           </ul>
+        </div>
+
+        <h3 style={{ fontSize: '1.05rem', color: '#5ffbf1', margin: '1.25rem 0 0.5rem', borderBottom: '1px solid rgba(95,251,241,0.2)', paddingBottom: '0.25rem' }}>
+          PRESSEINFORMATION – Variante B (Textkörper, erzählerischer Schwung)
+        </h3>
+        <div style={{ padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.06)', borderRadius: '8px', border: '1px solid rgba(95,251,241,0.22)', fontSize: '0.88rem', lineHeight: 1.55, color: 'rgba(255,255,255,0.92)' }}>
+          <p style={{ margin: '0 0 0.35rem' }}>
+            <strong>Zur Veröffentlichung / Nachbericht</strong>
+          </p>
+          <p style={{ margin: '0 0 0.75rem' }}>
+            <strong>Erfolgreiche Galerieeröffnung · K2 Galerie Kunst &amp; Keramik · Eferding</strong>
+          </p>
+          <p style={{ margin: '0 0 0.35rem' }}>
+            <strong>ORT:</strong> Schlossergasse 4, 4070 Eferding, Österreich
+          </p>
+          <p style={{ margin: '0 0 1rem' }}>
+            <strong>ANLASS:</strong> Eröffnungswochenende <strong>24.–26. April 2026</strong> (wie angekündigt)
+          </p>
+          <h4 style={{ fontSize: '0.95rem', color: '#5ffbf1', margin: '0 0 0.35rem' }}>Was sich zugetragen hat</h4>
+          <p style={{ margin: '0 0 0.45rem', lineHeight: 1.58 }}>
+            Drei Tage lang war die <strong>K2 Galerie Kunst &amp; Keramik</strong> in der Schlossergasse mehr als ein neuer Ort – sie wurde zum <strong>Treffpunkt</strong>: Nachbarn, Kunstfreundinnen, Neugierige und Sammlerinnen kamen vorbei, blieben stehen, sprachen mit{' '}
+            <strong>Martina und Georg Kreinecker</strong>, mit den Werken, mit der Keramik und den Bildern an den Wänden.
+          </p>
+          <p style={{ margin: '0 0 0.85rem', lineHeight: 1.58 }}>
+            Die <strong>Stimmung</strong> war durchweg <strong>herzlich und lebendig</strong>. Wo Malerei und Keramik <strong>nebeneinander</strong> stehen, entsteht ein Gespräch über Form, Farbe und Handwerk – und genau das ist spürbar gewesen. Mit <strong>rund 30 Verkäufen</strong> im Eröffnungswochenende zeigt sich etwas, das über eine schöne Vernissage hinausgeht: <strong>Interesse</strong>, das <strong>bleibt</strong>, und <strong>Vertrauen</strong> in <strong>Qualität</strong> und <strong>persönliche Beratung</strong>.
+          </p>
+          <h4 style={{ fontSize: '0.95rem', color: '#5ffbf1', margin: '0.75rem 0 0.35rem' }}>Warum das mehr ist als „ein guter Start“</h4>
+          <p style={{ margin: '0 0 0.45rem', fontSize: '0.86rem', lineHeight: 1.58, color: 'rgba(255,255,255,0.9)' }}>
+            Für Martina und Georg war die Eröffnung der <strong>sichtbare Teil</strong> eines Weges, der länger vorbereitet war: <strong>Atelier</strong>, <strong>Lager</strong>, <strong>Ausstellung</strong> und <strong>Außenauftritt</strong> gehören bei ihnen zusammen – nicht als Schlagworte, sondern als <strong>Alltag</strong>. Genau deshalb stießen sie im eigenen Betrieb immer wieder auf <strong>viele einzelne Werkzeuge</strong> – Website hier, Kasse dort, Termine und Presse wieder woanders – und auf den Wunsch nach einem <strong>roten Faden</strong>.
+          </p>
+          <p style={{ margin: '0 0 0.85rem', fontSize: '0.86rem', lineHeight: 1.58, color: 'rgba(255,255,255,0.9)' }}>
+            Daraus entstand <strong>intern</strong> eine <strong>einheitlichere Lösung</strong> (K2-Plattform): <strong>aus der Praxis</strong>, <strong>ohne</strong> den Ton üblicher <strong>Software-Werbung</strong> oder großer <strong>Tech-Konzerne</strong>. Die Galerie ist das <strong>Schaufenster</strong>; dahinter steckt dieselbe <strong>Haltung</strong>: <strong>zu Ende bringen</strong>, <strong>sauber arbeiten</strong>, Menschen nicht mit „Tool-Chaos“ alleinlassen.
+          </p>
+          <h4 style={{ fontSize: '0.95rem', color: '#5ffbf1', margin: '0 0 0.35rem' }}>Menschen hinter dem Projekt</h4>
+          <p style={{ margin: '0 0 0.45rem', lineHeight: 1.58 }}>
+            <strong>Martina Kreinecker</strong> trägt die <strong>künstlerische und galeristische</strong> Arbeit. <strong>Georg Kreinecker</strong> kommt aus <strong>Handwerk und Meisterprüfung</strong>, aus einem <strong>eigenen produzierenden Unternehmen</strong> und aus <strong>vielen Jahren internationalem Handel und Beratung</strong> im Maschinen- und Anlagenbau. Wer solche Biografien zusammenbringt, versteht vielleicht besser, warum <strong>Stückwerk</strong> am Markt selten reicht, wenn <strong>Galerie, Kasse und Öffentlichkeitsarbeit</strong> zusammengehören sollen.
+          </p>
+          <p style={{ margin: '0 0 0.85rem', lineHeight: 1.58 }}>
+            <strong>Kein Tech-Konzern</strong> – sondern Menschen, die <strong>Freude an der Sache</strong> haben und <strong>weitermachen</strong>. Mit einem Augenzwinkern: Wer so arbeitet, hört nicht einfach auf.
+          </p>
+          <h4 style={{ fontSize: '0.95rem', color: '#5ffbf1', margin: '0 0 0.35rem' }}>FÜR REDAKTIONEN</h4>
+          <ul style={{ margin: '0 0 0.85rem', paddingLeft: '1.2em' }}>
+            <li>
+              <strong>Ausstellung</strong> weiterhin über die <strong>öffentliche Galerie</strong> im Netz einsehbar (Werke, Kontakt, Öffnungszeiten).
+            </li>
+            <li>
+              <strong>Bildmaterial</strong> und <strong>Interview</strong> auf Anfrage über die unten genannten Kontaktdaten.
+            </li>
+          </ul>
+          <h4 style={{ fontSize: '0.95rem', color: '#5ffbf1', margin: '0 0 0.35rem' }}>KONTAKT &amp; Links</h4>
+          <p style={{ margin: '0 0 0.35rem' }}>Mit freundlichen Grüßen</p>
+          <p style={{ margin: '0 0 0.5rem' }}>Georg Kreinecker</p>
+          <p style={{ margin: '0 0 0.25rem' }}>
+            <strong>E-Mail:</strong> georg.kreinecker@kgm.at · <strong>Telefon:</strong> 0664 1046337
+          </p>
+          <p style={{ margin: '0 0 0.35rem' }}>
+            <strong>Adresse:</strong> Schlossergasse 4, 4070 Eferding · <strong>Öffnungszeiten:</strong> Samstag 9.30–14.00 Uhr
+          </p>
+          <p style={{ margin: 0, fontSize: '0.86rem', color: 'rgba(255,255,255,0.82)', lineHeight: 1.55 }}>
+            <strong>Links und QR-Codes:</strong> siehe Block <strong>Variante A</strong> oben (Galerie, Demo, Präsentationsmappen – jeweils mit QR zum Scannen).
+          </p>
         </div>
 
         <h3 style={{ fontSize: '1.05rem', color: '#5ffbf1', margin: '1rem 0 0.5rem', borderBottom: '1px solid rgba(95,251,241,0.2)', paddingBottom: '0.25rem' }}>
