@@ -5,6 +5,15 @@
 
 **Zwei Textkörper:** **Variante A** = sachlich-einordnend (wie bisher). **Variante B** = etwas erzählerischer und enthusiastischer – gleiche Fakten, anderer Ton; je nach Medium oder Redaktion wählen.
 
+### Inhalt (kurz – wo was steht)
+
+| Teil | Wo |
+|------|-----|
+| **Variante A** (sachlich) | Überschrift weiter unten: `PRESSEINFORMATION – Variante A` |
+| **Variante B** (erzählerisch) | **Direkt nach** Ende von Variante A (nach QR-Hinweis A) – Überschrift **`PRESSEINFORMATION – Variante B`** · Zwischenüberschriften u. a. *Was sich zugetragen hat*, *Warum das mehr ist als „ein guter Start“* |
+
+**In Cursor:** Datei einmal **speichern/schließen und wieder öffnen** oder **`Cmd+F`** → `Variante B` – dann springst du sofort zum zweiten Textkörper (die IDE zeigt manchmal noch eine alte Zeilenzahl).
+
 **Faktenlage (für Redaktion):** Sehr positives Besucherfeedback; **rund 30 Verkäufe** im Eröffnungswochenende.
 
 ---
