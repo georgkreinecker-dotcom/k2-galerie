@@ -1,7 +1,9 @@
 # Presse: Nachbericht Galerieeröffnung (Vorschlag)
 
-**Stand:** 30.04.26 · **Basis:** Erste Presseaussendung (Archiv WELS) + Medienstudio K2 §1a (Human-Interest-Kern).  
+**Stand:** 02.05.26 · **Basis:** Erste Presseaussendung (Archiv WELS) + Medienstudio K2 §1a (Human-Interest-Kern).  
 **Zweck:** Redaktioneller Nachbericht nach erfolgreicher Eröffnung – Text zur freien redaktionellen Bearbeitung.
+
+**Zwei Textkörper:** **Variante A** = sachlich-einordnend (wie bisher). **Variante B** = etwas erzählerischer und enthusiastischer – gleiche Fakten, anderer Ton; je nach Medium oder Redaktion wählen.
 
 **Faktenlage (für Redaktion):** Sehr positives Besucherfeedback; **rund 30 Verkäufe** im Eröffnungswochenende.
 
@@ -18,7 +20,7 @@ Martina und Georg Kreinecker
 
 ---
 
-## PRESSEINFORMATION (Textkörper)
+## PRESSEINFORMATION – Variante A (Textkörper, sachlich-einordnend)
 
 **Zur Veröffentlichung / Nachbericht**
 
@@ -94,6 +96,69 @@ Georg Kreinecker
 - Präsentationsmappe Vollversion (VK2 Promo): https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe-vollversion?variant=vk2-promo
 
 **QR-Codes:** In der APf unter **Marketing ök2** → **Presse-Nachbericht Galerieeröffnung (Redaktion)** stehen unter **allen** obigen Links **fertige QR-Bilder** (gleiche URLs wie oben, mit **Server-Stand und Cache-Bust** – wie bei der Galerie-Regel zum Scannen). Zum **PDF drucken** oder **Screenshot** für die Redaktion dort am zuverlässigsten.
+
+---
+
+## PRESSEINFORMATION – Variante B (Textkörper, erzählerischer Schwung)
+
+**Zur Veröffentlichung / Nachbericht**
+
+**Erfolgreiche Galerieeröffnung · K2 Galerie Kunst & Keramik · Eferding**
+
+**ORT:** Schlossergasse 4, 4070 Eferding, Österreich
+
+**ANLASS:** Eröffnungswochenende **24.–26. April 2026** (wie angekündigt)
+
+---
+
+### Was sich zugetragen hat
+
+Drei Tage lang war die **K2 Galerie Kunst & Keramik** in der Schlossergasse mehr als ein neuer Ort – sie wurde zum **Treffpunkt**: Nachbarn, Kunstfreundinnen, Neugierige und Sammlerinnen kamen vorbei, blieben stehen, sprachen mit **Martina und Georg Kreinecker**, mit den Werken, mit der Keramik und den Bildern an den Wänden.
+
+Die **Stimmung** war durchweg **herzlich und lebendig**. Wo Malerei und Keramik **nebeneinander** stehen, entsteht ein Gespräch über Form, Farbe und Handwerk – und genau das ist spürbar gewesen. Mit **rund 30 Verkäufen** im Eröffnungswochenende zeigt sich etwas, das über eine schöne Vernissage hinausgeht: **Interesse**, das **bleibt**, und **Vertrauen** in **Qualität** und **persönliche Beratung**.
+
+### Warum das mehr ist als „ein guter Start“
+
+Für Martina und Georg war die Eröffnung der **sichtbare Teil** eines Weges, der länger vorbereitet war: **Atelier**, **Lager**, **Ausstellung** und **Außenauftritt** gehören bei ihnen zusammen – nicht als buzzwords, sondern als **Alltag**. Genau deshalb stießen sie im eigenen Betrieb immer wieder auf **viele einzelne Werkzeuge** – Website hier, Kasse dort, Termine und Presse wieder woanders – und auf den Wunsch nach einem **roten Faden**.
+
+Daraus entstand **intern** eine **einheitlichere Lösung** (K2-Plattform): **aus der Praxis**, **ohne** den Ton üblicher **Software-Werbung** oder großer **Tech-Konzerne**. Die Galerie ist das **Schaufenster**; dahinter steckt dieselbe **Haltung**: **zu Ende bringen**, **sauber arbeiten**, **Menschen nicht mit „Tool-Chaos“ alleinlassen**.
+
+### Menschen hinter dem Projekt
+
+**Martina Kreinecker** trägt die **künstlerische und galeristische** Arbeit. **Georg Kreinecker** kommt aus **Handwerk und Meisterprüfung**, aus einem **eigenen produzierenden Unternehmen** und aus **vielen Jahren internationalem Handel und Beratung** im Maschinen- und Anlagenbau. Wer solche Biografien zusammenbringt, versteht vielleicht besser, warum **Stückwerk** am Markt selten reicht, wenn **Galerie, Kasse und Öffentlichkeitsarbeit** zusammengehören sollen.
+
+**Kein Tech-Konzern** – sondern Menschen, die **Freude an der Sache** haben und **weitermachen**. Mit einem Augenzwinkern: Wer so arbeitet, hört nicht einfach auf.
+
+---
+
+### FÜR REDAKTIONEN
+
+- **Ausstellung** weiterhin über die **öffentliche Galerie** im Netz einsehbar (Werke, Kontakt, Öffnungszeiten).
+- **Bildmaterial** und **Interview** auf Anfrage über die unten genannten Kontaktdaten.
+
+---
+
+### KONTAKT
+
+Mit freundlichen Grüßen  
+Georg Kreinecker
+
+**E-Mail:** georg.kreinecker@kgm.at  
+**Telefon:** 0664 1046337
+
+**Adresse:** Schlossergasse 4, 4070 Eferding, Österreich  
+**Öffnungszeiten:** Samstag 9.30 bis 14.00 Uhr
+
+**Links:**
+
+- Galerie: https://k2-galerie.vercel.app/projects/k2-galerie/galerie
+- Demo / Eingangstor: https://k2-galerie.vercel.app/entdecken
+- Präsentationsmappe Vollversion (K2): https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe-vollversion
+- Präsentationsmappe Vollversion (ök2, Demo): https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe-vollversion?context=oeffentlich
+- Präsentationsmappe Vollversion (VK2): https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe-vollversion?variant=vk2
+- Präsentationsmappe Vollversion (VK2 Promo): https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe-vollversion?variant=vk2-promo
+
+**QR-Codes:** wie bei Variante A – APf **Marketing ök2** → **Presse-Nachbericht Galerieeröffnung (Redaktion)**.
 
 ---
 
