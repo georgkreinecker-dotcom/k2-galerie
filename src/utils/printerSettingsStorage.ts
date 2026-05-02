@@ -4,6 +4,13 @@
  */
 import type { TenantId } from '../config/tenantConfig'
 
+/**
+ * Beispiel aus Epson-Netzwerk-Status-Bon (K2 vor Ort).
+ * Nur per Button in Admin → Drucker eintragbar – keine automatische Überschreibung von gespeicherten Werten.
+ * Bei DHCP kann sich die Drucker-IP ändern; ggf. neuen Bon drucken oder feste IP im Router/WebConfig.
+ */
+export const K2_EPSON_STATUS_BON_EXAMPLE_IP = '192.168.0.83'
+
 export type PrinterSettings = {
   ipAddress: string
   printerModel: string

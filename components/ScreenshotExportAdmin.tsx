@@ -34,7 +34,11 @@ import {
   DEFAULT_KATALOG_SPALTEN_K2_OEK2,
   DEFAULT_KATALOG_SPALTEN_VK2,
 } from '../src/utils/werkkatalogPreferences'
-import { loadPrinterSettingsForTenant, savePrinterSetting } from '../src/utils/printerSettingsStorage'
+import {
+  K2_EPSON_STATUS_BON_EXAMPLE_IP,
+  loadPrinterSettingsForTenant,
+  savePrinterSetting,
+} from '../src/utils/printerSettingsStorage'
 import { formatEventTerminKomplett } from '../src/utils/eventTerminFormat'
 import { openCheckoutOrPaymentUrl } from '../src/utils/openCheckoutOrPaymentUrl'
 import { fetchVisitCount } from '../src/utils/visitCountApiOrigin'
@@ -22038,7 +22042,7 @@ ${name}`
                         <option value="demo">Demo</option>
                       </select>
                       <p style={{ fontSize: '0.8rem', color: s.muted, marginTop: '0.5rem', marginBottom: 0 }}>
-                        Pro Mandant eigene Werte. <strong>K2:</strong> Etiketten am <strong>Brother QL</strong>, Kassenbon in der <strong>Kasse</strong> am <strong>Epson TM-m30II</strong> (WLAN) – getrennte IP-Felder unten.
+                        Pro Mandant eigene Werte. <strong>K2:</strong> Etiketten am <strong>Brother QL</strong>, Kassenbon in der <strong>Kasse</strong> am <strong>Epson TM-m30II / TM-m30III</strong> (WLAN) – getrennte IP-Felder unten.
                       </p>
                     </div>
 
@@ -22201,7 +22205,7 @@ ${name}`
 
                       <div className="field">
                         <label style={{ fontSize: '0.9rem', color: s.muted, marginBottom: '0.5rem', display: 'block' }}>
-                          Print-Server URL (One-Click Etikett)
+                          Print-Server URL (Brother-Etikett + K2-Bon „direkt an Epson“)
                         </label>
                         <input
                           type="text"
@@ -22211,7 +22215,7 @@ ${name}`
                             setPrinterSettings(prev => ({ ...prev, printServerUrl: v }))
                             savePrinterSetting(printerSettingsForTenant, 'printServerUrl', v)
                           }}
-                          placeholder="Am Mac: http://localhost:3847 — Im mobilen LAN (192.168.1.x): z.B. http://192.168.1.1:3847"
+                          placeholder="Nur auf diesem Mac: http://localhost:3847 — iPad/anderes Gerät: http://192.168.0.XX:3847 (IPv4 des Mac im WLAN)"
                           style={{
                             padding: '0.75rem',
                             background: s.bgElevated,
@@ -22223,17 +22227,20 @@ ${name}`
                           }}
                         />
                         <p style={{ fontSize: '0.8rem', color: s.muted, marginTop: '0.5rem', marginBottom: 0 }}>
-                          Optional. Wenn gesetzt: „One-Click drucken“ im <strong>Etikett</strong>-Modal (Brother). Start: <code style={{ fontSize: '0.75rem' }}>npm run print-server</code> oder <code style={{ fontSize: '0.75rem' }}>node scripts/k2-print-server.js</code>
+                          Wenn gesetzt: One-Click <strong>Etikett</strong> (Brother) und – bei K2 mit Epson-IP unten – <strong>Bon direkt an Epson</strong> in der Kasse. Auf dem <strong>iPad</strong> darf hier <strong>nicht</strong>{' '}
+                          <code style={{ fontSize: '0.75rem' }}>localhost</code> stehen (das ist immer nur „dieses Gerät“). Stattdessen IPv4 des <strong>Mac</strong>, auf dem{' '}
+                          <code style={{ fontSize: '0.75rem' }}>npm run print-server</code> läuft. Start Server: <code style={{ fontSize: '0.75rem' }}>npm run print-server</code>
                         </p>
                       </div>
 
                       {printerSettingsForTenant === 'k2' && (
                         <>
                           <h5 style={{ margin: '0.75rem 0 0', fontSize: '0.95rem', fontWeight: 700, color: s.accent }}>
-                            Kassendrucker (Epson TM-m30II)
+                            Kassendrucker (Epson TM-m30II / TM-m30III)
                           </h5>
                           <p style={{ fontSize: '0.8rem', color: s.muted, margin: '0 0 0.25rem' }}>
-                            Bon und Belege in der <strong>Kasse</strong>: System-Druckdialog → Epson wählen. IP und IPP hier festhalten (Doku, Netzwerk); One-Click gilt weiter nur fürs Etikett oben.
+                            <strong>Epson-IP</strong> = Adresse des <strong>Druckers</strong> im WLAN (steht auf dem Netzwerk-Status-Bon);{' '}
+                            <strong>dieselbe Zahl</strong> für Mac und iPad. Zusätzlich: Print-Server-URL oben = <strong>Mac</strong> im WLAN (nicht die Epson-IP). Bon alternativ weiter per System-Druckdialog / Teilen.
                           </p>
                           <div className="field">
                             <label style={{ fontSize: '0.9rem', color: s.muted, marginBottom: '0.5rem', display: 'block' }}>
@@ -22247,7 +22254,7 @@ ${name}`
                                 setPrinterSettings(prev => ({ ...prev, kassaIpAddress: v }))
                                 savePrinterSetting('k2', 'kassaIp', v)
                               }}
-                              placeholder="z. B. andere IP als Brother"
+                              placeholder={`z. B. ${K2_EPSON_STATUS_BON_EXAMPLE_IP} (Status-Bon / WebConfig)`}
                               style={{
                                 padding: '0.75rem',
                                 background: s.bgElevated,
@@ -22258,6 +22265,30 @@ ${name}`
                                 width: '100%'
                               }}
                             />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const v = K2_EPSON_STATUS_BON_EXAMPLE_IP
+                                setPrinterSettings((prev) => ({ ...prev, kassaIpAddress: v }))
+                                savePrinterSetting('k2', 'kassaIp', v)
+                              }}
+                              style={{
+                                marginTop: '0.45rem',
+                                padding: '0.45rem 0.75rem',
+                                background: '#b54a1e',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontWeight: 600,
+                                fontSize: '0.82rem',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              Epson-IP vom Status-Bon eintragen ({K2_EPSON_STATUS_BON_EXAMPLE_IP})
+                            </button>
+                            <p style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.4rem', marginBottom: 0 }}>
+                              Bei <strong>DHCP</strong> kann sich die IP nach Router-Neustart ändern – dann neuen Status-Bon drucken oder feste IP / Reservierung im Router (siehe Epson WebConfig).
+                            </p>
                           </div>
                           <div className="field">
                             <label style={{ fontSize: '0.9rem', color: s.muted, marginBottom: '0.5rem', display: 'block' }}>
@@ -22300,10 +22331,13 @@ ${name}`
                         <strong style={{ color: s.accent }}>ℹ️ Info:</strong>
                         <ul style={{ marginTop: '0.5rem', paddingLeft: '1.5rem' }}>
                           <li><strong>K2:</strong> Etikett = Brother (IP oben); Kasse = Epson TM (eigene IP, Abschnitt unten)</li>
-                          <li>One-Click: nur Etikett (Brother); Print-Server starten, IPP <code style={{ fontSize: '0.75rem' }}>ipp/print</code> für Brother</li>
+                          <li>
+                            One-Click: <strong>Etikett</strong> (Brother, IPP meist <code style={{ fontSize: '0.75rem' }}>ipp/print</code>) und bei gesetzter Epson-IP + Print-Server{' '}
+                            <strong>K2-Bon „direkt an Epson“</strong> in der Kasse
+                          </li>
                           <li>Zugriff von Mac, iPad und Handy im gleichen WLAN wie die Drucker</li>
                           <li>Einstellungen werden bei Änderung mitgespeichert; Button unten sichert alles nochmal ab</li>
-                          <li><strong>Kasse K2:</strong> System-Druckdialog → Epson; Bon-Breite 62/80 mm unter Etikettformat-Einstellung bzw. Kasse</li>
+                          <li><strong>Kasse K2:</strong> System-Druckdialog oder Bon-One-Click; Bon-Breite 62/80 mm unter Etikettformat bzw. Kasse</li>
                         </ul>
                       </div>
 
@@ -22317,10 +22351,13 @@ ${name}`
                         <summary style={{ cursor: 'pointer', fontWeight: 600, color: s.accent }}>📖 Druck-Anleitung (AirPrint, iPad, Android, One-Click)</summary>
                         <div style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: s.muted, lineHeight: 1.6 }}>
                           <p style={{ marginTop: 0 }}><strong>Mac:</strong> Drucker per IP oder Bonjour hinzufügen (Systemeinstellungen → Drucker &amp; Scanner).</p>
-                          <p><strong>Epson TM-m30II (K2 Kasse):</strong> IP und IPP im Abschnitt „Kassendrucker“; Doku <code>docs/DRUCKER-EPSON-TM-M30II-K2.md</code>.</p>
+                          <p><strong>Epson TM-m30II / III (K2 Kasse):</strong> IP und IPP im Abschnitt „Kassendrucker“; Doku <code>docs/DRUCKER-EPSON-TM-M30II-K2.md</code>.</p>
                           <p><strong>iPad/iPhone:</strong> 1) Druck über Mac („Für iOS freigeben“) oder 2) Etikett teilen → passende Drucker-App.</p>
                           <p><strong>Android:</strong> Etikett teilen/herunterladen → Drucker-App des Herstellers.</p>
-                          <p><strong>One-Click:</strong> Print-Server starten (<code>npm run print-server</code>), URL eintragen – für <strong>Brother-Etikett</strong>.</p>
+                          <p>
+                            <strong>One-Click:</strong> Print-Server starten (<code>npm run print-server</code>), URL eintragen – <strong>Etikett</strong> (Brother) und bei K2 mit Epson-IP{' '}
+                            <strong>Bon direkt an Epson</strong>; am iPad Print-Server = <code>http://…Mac-LAN-IP…:3847</code>, nicht <code>localhost</code>.
+                          </p>
                           <p style={{ marginBottom: 0 }}>Ausführlich: <code>DRUCKER-AIRPRINT.md</code> und Epson-Doku im Projektordner.</p>
                         </div>
                       </details>

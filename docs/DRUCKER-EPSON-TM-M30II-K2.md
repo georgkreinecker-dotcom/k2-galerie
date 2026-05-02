@@ -1,6 +1,6 @@
-# Epson TM-m30II – WLAN & K2 (Kasse)
+# Epson TM-m30II / TM-m30III – WLAN & K2 (Kasse)
 
-Kurzanleitung für den **Epson TM-m30II** im WLAN. **K2:** Der Epson ist der **Kassendrucker** (Bon/Beleg im Shop per System-Druckdialog). **Etiketten** gehen am **Brother QL** (eigene IP + One-Click). Im Admin unter **K2 Galerie** zwei Abschnitte: Etikett Brother, Kasse Epson.
+Kurzanleitung für den **Epson TM-m30II** bzw. **TM-m30III** im WLAN. **K2:** Der Epson ist der **Kassendrucker** (Bon/Beleg im Shop per System-Druckdialog). **Etiketten** gehen am **Brother QL** (eigene IP + One-Click). Im Admin unter **K2 Galerie** zwei Abschnitte: Etikett Brother, Kasse Epson.
 
 ---
 
@@ -16,7 +16,7 @@ Kurzanleitung für den **Epson TM-m30II** im WLAN. **K2:** Der Epson ist der **K
 - **Statusblatt** am Drucker drucken (laut Epson-Handbuch: oft Taste am Gerät oder Menü „Netzwerkstatus“), oder  
 - Im Browser die **Web-Config** öffnen: `http://<IP-des-Druckers>/` (IP vom Statusblatt oder vom Router „verbundene Geräte“).
 
-Diese **IPv4** trägst du in der K2-App ein: **Admin → Einstellungen → Drucker** (Mandant **K2 Galerie**) im Abschnitt **Kassendrucker (Epson TM-m30II)** → **IP-Adresse (Epson Kasse)** – nicht die Brother-Etiketten-IP verwechseln.
+Diese **IPv4** trägst du in der K2-App ein: **Admin → Einstellungen → Drucker** (Mandant **K2 Galerie**) im Abschnitt **Kassendrucker (Epson TM-m30II / III)** → **IP-Adresse (Epson Kasse)** – nicht die Brother-Etiketten-IP verwechseln. **Beispiel** aus einem Status-Bon vor Ort: **192.168.0.83** (siehe Konstante `K2_EPSON_STATUS_BON_EXAMPLE_IP` – im Admin gibt es einen Button „vom Status-Bon eintragen“). Bei **DHCP** kann sich die IP ändern → neuen Bon drucken oder feste IP / Reservierung im Router.
 
 ---
 
@@ -29,7 +29,7 @@ Der interne Print-Server spricht den Drucker per **IPP auf Port 631** an: `http:
 
 In K2: **Admin → Einstellungen → Drucker**  
 - **Etikett Brother:** IPP-Pfad One-Click = typischerweise `ipp/print`  
-- **Kasse Epson:** **IPP-Pfad Epson** im Abschnitt Kassendrucker – oft `EPSON_IPP_Printer` (vom Gerät ablesen). One-Click im Etikett-Modal nutzt weiter nur den Brother.
+- **Kasse Epson:** **IPP-Pfad Epson** im Abschnitt Kassendrucker – oft `EPSON_IPP_Printer` (vom Gerät ablesen). Mit **Print-Server** (`npm run print-server`) und Epson-IP zeigt die **Kasse** zusätzlich **Bon direkt an Epson** (siehe §5a).
 
 ---
 
