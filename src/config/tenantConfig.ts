@@ -59,8 +59,12 @@ export const PRODUCT_POSITIONING_SWEET_SPOT = 'Zu klein für die Großen, zu kom
 export const PRODUCT_INSERAT_VIERTEL_HAUPT =
   'Eine Plattform für Galerie, Verein und Familie.'
 
+/** Unter der Inserat-Überschrift – kurz, parallel zur Headline (nicht den Slogan-Streifen ersetzen). */
 export const PRODUCT_INSERAT_VIERTEL_UNTER =
-  'Professionell zeigen, organisieren, privat teilen.'
+  'Sichtbarkeit, Struktur, vertraulicher Austausch.'
+
+/** Viertel-Inserat: Zeile unter dem QR (sichtbar im Kasten + in Setzerei-Fallback). */
+export const PRODUCT_INSERAT_VIERTEL_QR_HINT = 'QR scannen → Demo im Browser öffnen'
 
 /**
  * K2 Familie – Werbelinie (eigenes Produkt, nicht K2 Galerie).
@@ -240,6 +244,12 @@ export const K2_STAMMDATEN_DEFAULTS = {
     socialFeaturedVideoUrl: '',
   },
 }
+
+/** Lokalzeitungs-Inserat (96×129 mm): kurze Impressum-Zeile ohne Adresse (Kontakt aus Stammdaten-Defaults). */
+export const PRODUCT_INSERAT_VIERTEL_IMPRESSUM = (() => {
+  const g = K2_STAMMDATEN_DEFAULTS.gallery
+  return `Impressum: ${PRODUCT_BRAND_NAME} · ${g.email}`
+})()
 
 /**
  * K2 echte Galerie (Martina & Georg): Langvita als App-Vorgabe, wenn Stammdaten-Feld „vita“ noch leer ist.

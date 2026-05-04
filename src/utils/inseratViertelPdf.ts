@@ -10,9 +10,9 @@ export const INSERAT_VIERTEL_MM = { w: 96, h: 129 } as const
 export async function exportInseratViertelToPdfBlob(el: HTMLElement | null): Promise<Blob | null> {
   if (!el || typeof el.getBoundingClientRect !== 'function') return null
   try {
-    const rect = el.getBoundingClientRect()
-    const wPx = Math.max(1, Math.round(rect.width))
-    const hPx = Math.max(1, Math.round(rect.height))
+    /** Voller Inhalt (keine Leerfläche durch feste Kastenhöhe); PDF-Seite bleibt 96×129 mm. */
+    const wPx = Math.max(1, Math.round(el.scrollWidth))
+    const hPx = Math.max(1, Math.round(el.scrollHeight))
 
     const html2canvasMod = await import('html2canvas')
     const runHtml2Canvas = (html2canvasMod as { default?: unknown }).default ?? html2canvasMod
@@ -42,7 +42,22 @@ export async function exportInseratViertelToPdfBlob(el: HTMLElement | null): Pro
     const imgData = canvas.toDataURL('image/jpeg', 0.94)
     const { jsPDF } = await import('jspdf')
     const pdf = new jsPDF({ unit: 'mm', format: [wMm, hMm], orientation: 'portrait' })
-    pdf.addImage(imgData, 'JPEG', 0, 0, wMm, hMm, undefined, 'FAST')
+    const imgW = canvas.width
+    const imgH = canvas.height
+    const imgRatio = imgW / imgH
+    const pageRatio = wMm / hMm
+    let drawW = wMm
+    let drawH = hMm
+    if (imgRatio > pageRatio) {
+      drawH = wMm / imgRatio
+    } else {
+      drawW = hMm * imgRatio
+    }
+    const ox = (wMm - drawW) / 2
+    const oy = (hMm - drawH) / 2
+    pdf.setFillColor(255, 254, 251)
+    pdf.rect(0, 0, wMm, hMm, 'F')
+    pdf.addImage(imgData, 'JPEG', ox, oy, drawW, drawH, undefined, 'FAST')
     const out = pdf.output('blob')
     return out instanceof Blob ? out : null
   } catch (e) {

@@ -19,6 +19,8 @@ import {
   PRODUCT_POSITIONING_SWEET_SPOT,
   PRODUCT_INSERAT_VIERTEL_HAUPT,
   PRODUCT_INSERAT_VIERTEL_UNTER,
+  PRODUCT_INSERAT_VIERTEL_QR_HINT,
+  PRODUCT_INSERAT_VIERTEL_IMPRESSUM,
   FOCUS_DIRECTIONS,
   PRODUCT_COPYRIGHT_BRAND_ONLY,
   PRODUCT_BRAND_NAME,
@@ -131,7 +133,8 @@ const printStyles = `
     .marketing-oek2-page .mok2-inserat-block pre { color: #1a1a1a !important; font-size: 8pt !important; }
     .marketing-oek2-page .mok2-inserat-viertel {
       width: 96mm !important;
-      height: 129mm !important;
+      height: auto !important;
+      max-height: none !important;
       max-width: none !important;
       aspect-ratio: auto !important;
       margin: 3mm auto !important;
@@ -181,16 +184,37 @@ const printStyles = `
       border-top: 2.5px solid #0c4a44 !important;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
+      padding: 1.5mm 2mm 2mm !important;
+      align-items: center !important;
     }
-    #mok2-inserat-print-root .mok2-inserat-line-copy {
+    #mok2-inserat-print-root .mok2-inserat-footer-slogan {
+      font-size: 6.75pt !important;
+      line-height: 1.22 !important;
+    }
+    #mok2-inserat-print-root .mok2-inserat-line-legal-footer {
       border-top: 1.5px solid #5c5650 !important;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
+      padding: 1mm 2mm 1.75mm !important;
+      font-size: 5.65pt !important;
+      line-height: 1.18 !important;
     }
-    #mok2-inserat-print-root .mok2-inserat-line-qr-hint {
-      border-top: 1px solid rgba(92, 86, 80, 0.35) !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
+    #mok2-inserat-print-root .mok2-inserat-line-legal-footer .mok2-inserat-legal-qr-hint {
+      font-size: 6.35pt !important;
+      font-weight: 800 !important;
+      margin: 0 0 0.35mm 0 !important;
+      line-height: 1.2 !important;
+    }
+    #mok2-inserat-print-root .mok2-inserat-line-legal-footer .mok2-inserat-legal-copy {
+      margin: 0 0 0.3mm 0 !important;
+      font-size: 5.65pt !important;
+      line-height: 1.15 !important;
+    }
+    #mok2-inserat-print-root .mok2-inserat-line-legal-footer .mok2-inserat-legal-impressum {
+      margin: 0 !important;
+      font-size: 5.35pt !important;
+      line-height: 1.12 !important;
+      color: #5c5650 !important;
     }
     #mok2-inserat-print-root .mok2-inserat-viertel-qr {
       border: 2.5px solid #0c3d38 !important;
@@ -1261,7 +1285,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           style={{
             width: 'min(96mm, 100%)',
             maxWidth: 400,
-            aspectRatio: '96 / 129',
+            boxSizing: 'border-box',
             margin: '0 auto 1rem',
             display: 'flex',
             flexDirection: 'column',
@@ -1277,13 +1301,13 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         >
           <div
             style={{
-              flex: '0 0 25%',
+              flex: '0 0 auto',
               minHeight: 0,
               display: 'flex',
               flexDirection: 'column',
             }}
           >
-            <div style={{ display: 'flex', flex: '1 1 0', minHeight: 0 }}>
+            <div style={{ display: 'flex', flex: '1 1 0', minHeight: 0, alignItems: 'stretch' }}>
             <div
               style={{
                 flex: '0 0 28%',
@@ -1302,7 +1326,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: '10px 8px',
+                  padding: '8px 6px',
                   background: INSERAT_TEAL_DARK,
                   borderBottom: '1px solid rgba(0,0,0,0.22)',
                   textAlign: 'center',
@@ -1326,15 +1350,17 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                   style={{
                     maxWidth: '100%',
                     boxSizing: 'border-box',
-                    padding: '0 2px',
-                    fontSize: 'clamp(0.4rem, 1.55vw, 0.64rem)',
+                    padding: '0 5px',
+                    fontSize: 'clamp(0.52rem, 1.75vw, 0.68rem)',
                     fontWeight: 800,
                     color: 'rgba(255,255,255,0.96)',
                     marginTop: 6,
-                    letterSpacing: '0.02em',
-                    lineHeight: 1.25,
+                    letterSpacing: '0.03em',
+                    lineHeight: 1.3,
                     display: 'block',
-                    wordBreak: 'break-word',
+                    whiteSpace: 'nowrap',
+                    overflow: 'visible',
+                    wordBreak: 'normal',
                     hyphens: 'none',
                   }}
                 >
@@ -1360,20 +1386,21 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
               style={{
                 flex: 1,
                 minWidth: 0,
-                padding: '0.55rem 0.62rem',
+                padding: '0.48rem 0.55rem 0.45rem',
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'center',
+                justifyContent: 'flex-start',
                 background: 'linear-gradient(180deg, #fffefb 0%, #f0ebe3 100%)',
                 borderLeft: '1.5px solid rgba(12, 92, 85, 0.38)',
+                overflow: 'visible',
               }}
             >
               <div
                 style={{
-                  fontSize: 'clamp(0.64rem, 2.95vw, 0.95rem)',
+                  fontSize: 'clamp(0.58rem, 2.75vw, 0.88rem)',
                   fontWeight: 900,
                   color: INSERAT_TEAL_DARK,
-                  lineHeight: 1.15,
+                  lineHeight: 1.3,
                   letterSpacing: '0.02em',
                   textWrap: 'balance' as const,
                 }}
@@ -1382,12 +1409,13 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
               </div>
               <p
                 style={{
-                  margin: '8px 0 0',
-                  fontSize: 'clamp(0.54rem, 2.28vw, 0.74rem)',
-                  lineHeight: 1.28,
+                margin: '4px 0 0',
+                fontSize: 'clamp(0.5rem, 2vw, 0.68rem)',
+                lineHeight: 1.32,
                   color: '#1c1a18',
                   fontWeight: 800,
-                  textWrap: 'balance' as const,
+                  paddingBottom: '0.06em',
+                  textWrap: 'pretty' as const,
                 }}
               >
                 {PRODUCT_INSERAT_VIERTEL_UNTER}
@@ -1400,13 +1428,13 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                 flexShrink: 0,
                 width: '100%',
                 boxSizing: 'border-box',
-                padding: '5px 9px 6px',
+                padding: '4px 7px 4px',
                 borderTop: '2px solid rgba(12, 92, 85, 0.42)',
                 background: 'linear-gradient(180deg, #f4f0ea 0%, #ebe6de 100%)',
-                fontSize: 'clamp(0.52rem, 2.2vw, 0.76rem)',
+                fontSize: 'clamp(0.48rem, 2vw, 0.7rem)',
                 fontWeight: 900,
                 color: INSERAT_TEAL_DARK,
-                lineHeight: 1.2,
+                lineHeight: 1.14,
                 letterSpacing: '0.012em',
                 textAlign: 'center',
                 textWrap: 'balance' as const,
@@ -1422,8 +1450,8 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
               flex: '0 0 auto',
               display: 'flex',
               flexDirection: 'column',
-              gap: 5,
-              padding: '5px 7px 5px',
+              gap: 3,
+              padding: '4px 6px 4px',
               borderTop: '2px solid rgba(12, 92, 85, 0.38)',
             }}
           >
@@ -1465,7 +1493,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                   style={{
                     flex: 1,
                     minWidth: 0,
-                    padding: '7px 9px',
+                    padding: '5px 7px',
                     background: '#fff',
                     display: 'flex',
                     flexDirection: 'column',
@@ -1475,20 +1503,21 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                   <div
                     style={{
                       /* Überschrift überall gleich groß (ök2, VK2, K2 Familie) */
-                      fontSize: 'clamp(0.74rem, 3.1vw, 0.98rem)',
+                      fontSize: 'clamp(0.65rem, 2.6vw, 0.88rem)',
                       fontWeight: 900,
                       color: row.bar,
-                      lineHeight: 1.1,
+                      lineHeight: 1.08,
                     }}
                   >
                     {row.t}
                   </div>
                   <div
                     style={{
-                      fontSize: 'clamp(0.56rem, 2.35vw, 0.78rem)',
+                      fontSize: 'clamp(0.5rem, 2vw, 0.7rem)',
                       color: '#1c1a18',
                       lineHeight: 1.28,
-                      marginTop: 3,
+                      marginTop: 2,
+                      paddingBottom: 1,
                       fontWeight: 700,
                     }}
                   >
@@ -1501,16 +1530,22 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           </div>
 
           <div
-            className="mok2-inserat-line-footer"
             style={{
               flexShrink: 0,
+              background: '#faf8f4',
+              borderTop: '2px solid rgba(12, 92, 85, 0.42)',
+            }}
+          >
+          <div
+            className="mok2-inserat-line-footer"
+            style={{
               display: 'flex',
               alignItems: 'center',
               gap: 7,
               marginTop: 0,
-              padding: '5px 7px 6px',
-              borderTop: '2px solid rgba(12, 92, 85, 0.42)',
-              background: '#faf8f4',
+              padding: '3px 6px 4px',
+              borderTop: 'none',
+              background: 'transparent',
             }}
           >
             <div
@@ -1523,10 +1558,11 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
               }}
             >
               <p
+                className="mok2-inserat-footer-slogan"
                 style={{
                   margin: 0,
-                  fontSize: 'clamp(0.58rem, 2.05vw, 0.76rem)',
-                  lineHeight: 1.26,
+                  fontSize: 'clamp(0.52rem, 1.85vw, 0.72rem)',
+                  lineHeight: 1.22,
                   color: '#45413c',
                   fontWeight: 700,
                   textWrap: 'balance' as const,
@@ -1552,45 +1588,62 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                 <img
                   src={inseratEingangstorQrUrl}
                   alt="QR zum Eingangstor Entdecken"
-                  width={72}
-                  height={72}
+                  width={58}
+                  height={58}
                   style={{ display: 'block', background: '#fff' }}
                 />
               ) : (
-                <div style={{ width: 72, height: 72, background: '#e8e6e2' }} aria-hidden />
+                <div style={{ width: 58, height: 58, background: '#e8e6e2' }} aria-hidden />
               )}
             </div>
           </div>
           <div
-            className="mok2-inserat-line-qr-hint"
+            className="mok2-inserat-line-legal-footer"
             style={{
-              padding: '2px 6px 3px',
-              fontSize: 'clamp(0.44rem, 1.25vw, 0.52rem)',
-              color: '#45413c',
+              padding: '1px 5px 4px',
               textAlign: 'center',
-              background: '#faf8f4',
-              lineHeight: 1.2,
-              fontWeight: 700,
-              letterSpacing: '0.012em',
-              borderTop: '1px solid rgba(92, 86, 80, 0.22)',
-            }}
-          >
-            QR scannen → Demo im Browser öffnen
-          </div>
-          <div
-            className="mok2-inserat-line-copy"
-            style={{
-              padding: '2px 6px 4px',
-              fontSize: 'clamp(0.4rem, 1.05vw, 0.48rem)',
-              color: '#6b6560',
-              textAlign: 'center',
-              background: '#faf8f4',
-              lineHeight: 1.15,
+              background: 'transparent',
               borderTop: '1px solid rgba(92, 86, 80, 0.28)',
+              color: '#45413c',
             }}
           >
-            {PRODUCT_COPYRIGHT_BRAND_ONLY}
+            <p
+              className="mok2-inserat-legal-qr-hint"
+              style={{
+                margin: '0 0 2px',
+                fontSize: 'clamp(0.42rem, 1.15vw, 0.5rem)',
+                fontWeight: 800,
+                lineHeight: 1.18,
+                letterSpacing: '0.01em',
+              }}
+            >
+              {PRODUCT_INSERAT_VIERTEL_QR_HINT}
+            </p>
+            <p
+              className="mok2-inserat-legal-copy"
+              style={{
+                margin: '0 0 2px',
+                fontSize: 'clamp(0.38rem, 1vw, 0.46rem)',
+                lineHeight: 1.14,
+                color: '#5c5650',
+              }}
+            >
+              {PRODUCT_COPYRIGHT_BRAND_ONLY}
+            </p>
+            <p
+              className="mok2-inserat-legal-impressum"
+              style={{
+                margin: 0,
+                fontSize: 'clamp(0.36rem, 0.95vw, 0.44rem)',
+                lineHeight: 1.12,
+                color: '#6b6560',
+              }}
+            >
+              {PRODUCT_INSERAT_VIERTEL_IMPRESSUM}
+            </p>
           </div>
+          </div>
+
         </div>
 
         <div
@@ -1642,7 +1695,11 @@ ${PRODUCT_WERBESLOGAN}
 
 kgm solution
 
-QR scannen → Entdecken (Demo)`}
+${PRODUCT_INSERAT_VIERTEL_QR_HINT}
+
+${PRODUCT_COPYRIGHT_BRAND_ONLY}
+
+${PRODUCT_INSERAT_VIERTEL_IMPRESSUM}`}
           </pre>
         </div>
 
