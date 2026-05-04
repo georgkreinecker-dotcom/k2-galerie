@@ -1,5 +1,7 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.05.26 – **mök2 Viertel-Inserat:** Teal-Logo **kgm solution** lesbar (Padding/Clamp); Unterzeile **`Professionell zeigen, organisieren, privat teilen.`** ohne „mit kgm solution“ (`tenantConfig`); Layout Kacheln/Fuß/QR wie Session; Epson-Hinweis **Abschnitt 5a** (kein §). **Commit:** `8c0862db` ✅ **main**
+
 **Letzter Stand:** 02.05.26 – **mök2 Presse-Nachbericht: zwei Varianten in der App** – Georg sah nur einen Textkörper (Markdown hatte schon A/B). **`MarketingOek2Page`** **`#mok2-presse-nachbericht-eroeffnung`:** Kurzhinweis „Zwei Textkörper“, **Variante A** sachlich (+ Links/QR wie bisher), **Variante B** erzählerisch (Links verweisen auf A). Stand-Zeile **02.05.26**. **Commit:** `1a10acb8` ✅ **main**
 
 **Session-Ende 02.05.26:** Schluss für heute – **Mixed-Content-Hinweis** Epson-Bon (`k2EpsonBonOneClick`), **Doku** §5a `docs/DRUCKER-EPSON-TM-M30II-K2.md`, Build-Info mitgeschrieben. **Commit:** `COMMIT_PLACEHOLDER` ✅ **main**
