@@ -33,7 +33,7 @@ export function canPostToK2PrintServer(printServerUrl: string): { ok: boolean; r
       return {
         ok: false,
         reason:
-          'Diese Seite läuft mit https – der Browser erlaubt keinen Aufruf zu einem http-Print-Server (Sicherheit). Öffne die Kasse im gleichen WLAN unter http://… (Mac oder lokaler Vite-Link), oder richte einen https-Zugang zum Print-Server ein. Details: docs/DRUCKER-EPSON-TM-M30II-K2.md',
+          'Die Epson-IP kann stimmen – hier blockiert nur der Browser: Die Seite läuft mit https (z. B. Vercel), der Print-Server mit http. Das ist „Mixed Content“ und aus Sicherheitsgründen nicht erlaubt. Im gleichen WLAN: Kasse per http auf den Mac öffnen, z. B. http://<Mac-IP>:5177/projects/k2-galerie/shop (dazu npm run dev am Mac). Print-Server-URL: http://<dieselbe-Mac-IP>:3847. Alternativ: https-Zugang zum Print-Server (Tunnel). Details: docs/DRUCKER-EPSON-TM-M30II-K2.md, Abschnitt 5a.',
       }
     }
   } catch {

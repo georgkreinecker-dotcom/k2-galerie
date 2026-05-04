@@ -54,13 +54,13 @@ export const PRODUCT_POSITIONING_SWEET_SPOT = 'Zu klein für die Großen, zu kom
 
 /**
  * Viertelseiten-Inserat mök2 (Lokalzeitung): rechte Kopfspalte.
- * Eigene Kurzbotschaft „Programm für viele“ – nicht identisch mit KERN_EIGENER_ORT + SWEET_SPOT.
+ * Klarer Dreiklang (Galerie / Verein / Familie), eine Plattform – gut scannbar in Kleinformat.
  */
 export const PRODUCT_INSERAT_VIERTEL_HAUPT =
-  'Ein Programm für viele – eine Plattform, viele Wege.'
+  'Eine Plattform für Galerie, Verein und Familie.'
 
 export const PRODUCT_INSERAT_VIERTEL_UNTER =
-  'Galerie & Handel, Vereine uvm., privater Familienraum – mit kgm solution.'
+  'Professionell zeigen, organisieren, privat teilen.'
 
 /**
  * K2 Familie – Werbelinie (eigenes Produkt, nicht K2 Galerie).
