@@ -64,6 +64,7 @@ export const mok2Groups: Mok2Group[] = [
       { id: 'mok2-6', label: '6. Empfehlungs-Programm' },
       { id: 'mok2-so-empfiehlst-du', label: 'So empfiehlst du (Kurz-Anleitung)' },
       { id: 'mok2-7', label: '7. Promotion für alle Medien (inkl. Zielgruppe)' },
+      { id: 'mok2-logo-visitenkarte', label: 'Logo-Ideen fuer Visitenkarte' },
       { id: 'mok2-8', label: '8. APf-Struktur' },
       { id: 'mok2-9', label: '9. Werbeunterlagen' },
     ],

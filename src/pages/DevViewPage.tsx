@@ -2009,7 +2009,11 @@ end tell`
                     ref={apfIframeDesktopRef}
                     key={`desktop-${effectiveCurrentPage}`}
                     src={`${window.location.origin}${getPathForPage(effectiveCurrentPage)}${getPathForPage(effectiveCurrentPage).includes('?') ? '&' : '?'}embedded=1`}
-                    title={currentPageData?.name ?? 'Desktop'}
+                    title={
+                      effectiveCurrentPage === 'mok2'
+                        ? 'mök2'
+                        : (currentPageData?.name ?? 'Desktop')
+                    }
                     style={{
                       width: '100%',
                       height: '100%',

@@ -13,6 +13,7 @@ import {
   EVENT_VK2_PLATFORM_RUNDGANG,
   SS_VK2_GALERIE_LEITFADEN_MINIMIZED,
   hasVk2PlatformLeitfadenCompleted,
+  isVk2MitgliedPinSessionActive,
   isVk2PlatformLeitfadenContext,
   isVk2PlatformRundgangSessionVisible,
   isVk2PublicGaleriePath,
@@ -79,11 +80,17 @@ export function Vk2PlatformLeitfadenHost() {
       const step = schritte[i]
       if (!step) return
       const pathNow = locationRef.current.pathname
+      const searchNow = locationRef.current.search || ''
       const q = new URLSearchParams()
       if (vorname) q.set('vorname', vorname)
       const qs = q.toString()
       const suffix = qs ? `?${qs}` : ''
       if (step.phase === 'galerie') {
+        // Nach VK2-Mitglied-Login: /admin?context=vk2&mitglied=1 – nicht zur öffentlichen Galerie zwingen (Profil bliebe sonst unerreichbar).
+        const mitgliedAdmin =
+          pathNow.startsWith('/admin') &&
+          (new URLSearchParams(searchNow).get('mitglied') === '1' || isVk2MitgliedPinSessionActive())
+        if (mitgliedAdmin) return
         // Wie ök2: bereits auf Galerie oder Vorschau
         if (!isVk2PublicGaleriePath(pathNow)) {
           navigate(`${GALERIE_PATH}${suffix}`)

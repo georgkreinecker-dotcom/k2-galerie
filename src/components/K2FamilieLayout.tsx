@@ -53,8 +53,14 @@ import {
 import { PublicTeilenFixed } from './PublicTeilenFixed'
 import { AppVerlassenFooterLink } from './AppVerlassenFooterLink'
 import { getPublicK2FamilieMusterEntryUrl } from '../utils/publicLinks'
-import { reportK2FamilieMusterHuberVisit } from '../utils/k2FamilieMusterVisit'
-import { reportK2FamilieKreineckerStammbaumVisit } from '../utils/k2FamilieKreineckerStammbaumVisit'
+import { reportK2FamilieMusterHuberVisit, VISIT_TENANT_K2_FAMILIE_MUSTER } from '../utils/k2FamilieMusterVisit'
+import {
+  reportK2FamilieKreineckerStammbaumVisit,
+  VISIT_TENANT_K2_FAMILIE_KREINECKER_STAMMBAUM,
+  isKreineckerStammbaumBesuchPath,
+  isKreineckerStammbaumSessionTenant,
+} from '../utils/k2FamilieKreineckerStammbaumVisit'
+import { reportMarketingAttributionLanding } from '../utils/marketingAttribution'
 
 /** Gleicher String wie `K2_FAMILIE_SESSION_UPDATED` in `familieStorage.ts` — hier als Literal, damit kein Laufzeit-ReferenceError (z. B. HMR). */
 const FAMILIE_SESSION_UPDATED_EVENT = 'k2-familie-einstellungen-updated'
@@ -1260,11 +1266,25 @@ function FamilieLayoutInner() {
     if (currentTenantId !== FAMILIE_HUBER_TENANT_ID) return
     if (!isFamilieNurMusterSession()) return
     reportK2FamilieMusterHuberVisit()
+    reportMarketingAttributionLanding({
+      surface: 'k2_familie',
+      tenantVisitKey: VISIT_TENANT_K2_FAMILIE_MUSTER,
+      sessionDedupeKey: 'k2-familie-muster',
+      search: location.search,
+    })
   }, [currentTenantId, location.pathname, location.search])
 
   /** Interne Statistik: Kreinecker-Stammbaum (Stammkette), getrennt von Huber-Muster. */
   useEffect(() => {
     reportK2FamilieKreineckerStammbaumVisit(currentTenantId, location.pathname, location.search)
+    if (!isKreineckerStammbaumSessionTenant(currentTenantId)) return
+    if (!isKreineckerStammbaumBesuchPath(location.pathname, location.search)) return
+    reportMarketingAttributionLanding({
+      surface: 'k2_familie',
+      tenantVisitKey: VISIT_TENANT_K2_FAMILIE_KREINECKER_STAMMBAUM,
+      sessionDedupeKey: VISIT_TENANT_K2_FAMILIE_KREINECKER_STAMMBAUM,
+      search: location.search,
+    })
   }, [currentTenantId, location.pathname, location.search])
 
   const columnInner = (

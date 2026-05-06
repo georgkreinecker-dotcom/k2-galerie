@@ -1,0 +1,14 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Logo Entwurf 3 Signet</title>
+  <desc id="desc">Abstraktes K2 Signet minimal</desc>
+  <rect width="1200" height="800" fill="#ffffff"/>
+  <rect x="120" y="90" width="960" height="620" rx="30" fill="#f8fbfa" stroke="#d7e4e2" stroke-width="2"/>
+  <g transform="translate(240,190)">
+    <path d="M40 320L240 80h110L150 320z" fill="#0f172a"/>
+    <path d="M310 320l140-240h120L430 320z" fill="#0f766e"/>
+    <path d="M560 320h190" stroke="#0f172a" stroke-width="26" stroke-linecap="round"/>
+    <path d="M640 220c-60 0-90 40-90 100h200" fill="none" stroke="#0f172a" stroke-width="26" stroke-linecap="round"/>
+  </g>
+  <text x="220" y="610" font-family="Arial, Helvetica, sans-serif" font-size="58" font-weight="700" fill="#111827">K2 Kunst und Galerie</text>
+  <text x="220" y="658" font-family="Arial, Helvetica, sans-serif" font-size="24" letter-spacing="4" fill="#0f766e">LOGOENTWURF SIGNET</text>
+</svg>

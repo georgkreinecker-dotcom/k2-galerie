@@ -1,0 +1,12 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Logo Entwurf 1 Monogramm</title>
+  <desc id="desc">Minimales Monogramm K2 in Kreisform</desc>
+  <rect width="1200" height="800" fill="#ffffff"/>
+  <rect x="100" y="80" width="1000" height="640" rx="36" fill="#f7faf9" stroke="#d7e5e2" stroke-width="2"/>
+  <circle cx="360" cy="400" r="170" fill="none" stroke="#0f766e" stroke-width="22"/>
+  <path d="M305 315v170m0-85h80m-80 0l90 85" fill="none" stroke="#1f2937" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M430 315v170m95-170h-70c-22 0-40 18-40 40v90c0 22 18 40 40 40h70" fill="none" stroke="#1f2937" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="580" y="360" font-family="Arial, Helvetica, sans-serif" font-size="78" font-weight="700" fill="#111827">K2 Kunst und Galerie</text>
+  <text x="580" y="425" font-family="Arial, Helvetica, sans-serif" font-size="32" fill="#334155">Kunst. Galerie. Begegnung.</text>
+  <text x="580" y="485" font-family="Arial, Helvetica, sans-serif" font-size="24" letter-spacing="4" fill="#0f766e">LOGOENTWURF MONOGRAMM</text>
+</svg>

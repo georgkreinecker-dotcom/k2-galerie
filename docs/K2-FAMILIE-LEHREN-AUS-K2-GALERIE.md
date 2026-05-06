@@ -14,6 +14,16 @@
 
 ---
 
+## 0b. Lizenz-Erfolg: Admin-QR = Meine Familie, nie `/admin?t=`
+
+**Raumschiff:** Nach Stripe liefert **`api/get-licence-by-session.js`** für K2 Familie **`admin_url`** = **`…/projects/k2-familie/meine-familie?t=<mandant>`** (Mandant in **`t=`**, nicht **`tenantId=`**).
+
+**Falle (behoben):** **`normalizeLicenseeAdminUrl`** in **`src/utils/publicLinks.ts`** hat früher jeden Nicht-`/admin`-Pfad zu **`/admin` + gleiche Query** gemacht → Scan landete in **Galerie-Admin**, weil **`TenantContext`** **`dynamicTenantId`** nur aus **`?tenantId=`** liest, **nicht** aus **`?t=`**.
+
+**Regel:** Pfade unter **`/projects/k2-familie/…`** dürfen **niemals** zu **`/admin`** normalisiert werden. **Regression:** **`src/tests/publicLinks.test.ts`** (inkl. **`getLicenseeAdminQrTargetUrl`** muss **`meine-familie`** enthalten, kein **`/admin`**). Doku: **docs/ADMIN-QR-LIZENZ-OEK2-ABLAUF.md**. **Cursor-Regel (Pflicht bei Lizenz/Stripe/publicLinks):** **`.cursor/rules/lizenz-anmeldung-stripe-erfolg.mdc`**.
+
+---
+
 ## 0. K2 Familie = eigenes Projekt (niemals von außen überschreiben)
 
 **K2 Familie ist ein eigenes Projekt.** Kein anderer Bereich (K2 Galerie, APf, Admin, ök2, VK2, Backup/Restore anderer Kontexte) darf K2-Familie-Daten überschreiben oder die Tenant-Liste leeren.
@@ -116,6 +126,7 @@
 
 ## Checkliste vor Änderungen an K2 Familie
 
+- [ ] **Lizenz / Admin-QR / `normalizeLicenseeAdminUrl`:** Familie-URLs mit **`?t=`** nicht auf **`/admin`** umbiegen (siehe **0b**).
 - [ ] Schreibe ich in den **richtigen Kontext**? Nur `k2-familie-*` Keys.
 - [ ] Kann es **stilles Überschreiben** oder **Löschen ohne User-Aktion** geben? → Verboten.
 - [ ] **Neue Route/Unterseite?** → Route vor `/projects/:projectId`, Link mit korrektem path.

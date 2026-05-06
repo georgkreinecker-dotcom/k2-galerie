@@ -104,6 +104,19 @@ export function openVk2PlatformRundgangGlobally(): void {
   setVk2PlatformRundgangSessionVisible(true)
 }
 
+/** Session: VK2-Mitglied nach PIN-Login (Vk2MitgliedLoginPage / Admin). */
+const VK2_MITGLIED_EINGELOGGT_KEY = 'k2-vk2-mitglied-eingeloggt'
+
+/** True, wenn ein Vereinsmitglied per PIN eingeloggt ist – Rundgang darf dann nicht vom Admin zur öffentlichen Galerie zwingen. */
+export function isVk2MitgliedPinSessionActive(): boolean {
+  try {
+    if (typeof window === 'undefined') return false
+    return !!sessionStorage.getItem(VK2_MITGLIED_EINGELOGGT_KEY)
+  } catch {
+    return false
+  }
+}
+
 /** Öffentliche VK2-Galerie-Routen (Plattform) – parallel zu ök2 `isOek2PublicGaleriePath`. */
 export function isVk2PublicGaleriePath(pathname: string): boolean {
   if (pathname === '/projects/vk2/galerie' || pathname === '/projects/vk2/galerie-vorschau') return true

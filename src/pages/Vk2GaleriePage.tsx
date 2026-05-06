@@ -20,6 +20,7 @@ import { isAdminUnlocked } from '../utils/adminUnlockStorage'
 import { formatEventTerminKomplett } from '../utils/eventTerminFormat'
 import { eventPlakatMoreInfoTitle } from '../utils/eventPlakatTooltip'
 import { reportPublicGalleryVisit } from '../utils/reportPublicGalleryVisit'
+import { reportMarketingAttributionLanding } from '../utils/marketingAttribution'
 import { resolveVk2PublicGalleryVisitTenantId } from '../utils/publicGalleryVisitTenant'
 import { openVk2PlatformRundgangGlobally } from '../utils/vk2PlatformLeitfadenStorage'
 import { PublicTeilenFixed } from '../components/PublicTeilenFixed'
@@ -171,10 +172,18 @@ const Vk2GaleriePage: React.FC = () => {
   // Besucherzähler VK2: ein Mandant = ein Zähler (Pilot → vk2-pilot-{id}, sonst vk2)
   useEffect(() => {
     const tenant = resolveVk2PublicGalleryVisitTenantId()
+    const skipVorschau = () => new URLSearchParams(window.location.search).get('vorschau') === '1'
     reportPublicGalleryVisit({
       tenant,
       sessionKey: 'k2-visit-sent-' + tenant,
-      skip: () => new URLSearchParams(window.location.search).get('vorschau') === '1',
+      skip: skipVorschau,
+    })
+    reportMarketingAttributionLanding({
+      surface: 'vk2',
+      tenantVisitKey: tenant,
+      sessionDedupeKey: `vk2-${tenant}`,
+      search: location.search,
+      skip: skipVorschau,
     })
   }, [location.search])
 

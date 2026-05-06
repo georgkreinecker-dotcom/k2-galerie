@@ -24,7 +24,8 @@ import {
   applyZettelPilotVornameToOeffentlichMartina,
   runOek2ZettelPilotEntwurfPrefill,
 } from '../utils/zettelPilotOeffentlichPrefill'
-import { getShopSoldArtworksKey } from '../utils/shopContextKeys'
+import { getShopOrdersKey, getShopSoldArtworksKey } from '../utils/shopContextKeys'
+import { getArtworkLagerInfo } from '../utils/artworkLagerStatus'
 import { readKuenstlerFallbackGalerieKarten, resolveArtistLabelForGalerieStatistik } from '../utils/artworkArtistDisplay'
 import { AppVerlassenFooterLink } from '../components/AppVerlassenFooterLink'
 // Fotos für neue Werke nur im Admin (Neues Werk hinzufügen) – dort Option Freistellen/Original
@@ -2417,7 +2418,12 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
           
           // K2: Verkaufte Werke nach soldArtworksDisplayDays ausblenden (0 = sofort in History)
           let soldDisplayDays = 30
-          let soldMap: Map<string, string> = new Map()
+          const soldMap: Map<string, string> = new Map()
+          const soldStatusMap: Map<string, { isSoldOut: boolean; isPartiallySold: boolean }> = new Map()
+          const soldArtworksKey = getShopSoldArtworksKey(musterOnly, vk2)
+          const ordersKey = getShopOrdersKey(musterOnly, vk2)
+          let soldList: any[] = []
+          let ordersList: any[] = []
           if (!musterOnly) {
             try {
               const gal = localStorage.getItem('k2-stammdaten-galerie')
@@ -2425,13 +2431,40 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
                 const g = JSON.parse(gal)
                 if (typeof g.soldArtworksDisplayDays === 'number') soldDisplayDays = g.soldArtworksDisplayDays
               }
-              const soldRaw = localStorage.getItem('k2-sold-artworks')
+              const soldRaw = localStorage.getItem(soldArtworksKey)
               if (soldRaw) {
                 const arr = JSON.parse(soldRaw)
-                if (Array.isArray(arr)) arr.forEach((a: any) => { if (a?.number != null) soldMap.set(String(a.number), a.soldAt || '') })
+                if (Array.isArray(arr)) {
+                  soldList = arr
+                  arr.forEach((a: any) => {
+                    if (a?.number != null) soldMap.set(String(a.number), a.soldAt || '')
+                  })
+                }
+              }
+              const ordersRaw = localStorage.getItem(ordersKey)
+              if (ordersRaw) {
+                const arr = JSON.parse(ordersRaw)
+                if (Array.isArray(arr)) ordersList = arr
               }
             } catch (_) {}
           }
+          currentArtworks.forEach((artwork: any) => {
+            const num = artwork?.number != null ? String(artwork.number) : (artwork?.id != null ? String(artwork.id) : '')
+            if (!num) return
+            const lager = getArtworkLagerInfo(artwork, soldList, ordersList)
+            soldStatusMap.set(num, { isSoldOut: lager.isAusverkauft, isPartiallySold: lager.isTeilverkauft })
+            if (!soldMap.get(num)) {
+              let newestOrderDate = ''
+              for (const o of ordersList) {
+                if (!o || !Array.isArray(o.items)) continue
+                const hasItem = o.items.some((it: any) => String(it?.number ?? '') === num)
+                if (!hasItem) continue
+                const od = String(o.date || '')
+                if (od && (!newestOrderDate || new Date(od).getTime() > new Date(newestOrderDate).getTime())) newestOrderDate = od
+              }
+              if (newestOrderDate) soldMap.set(num, newestOrderDate)
+            }
+          })
           const filtered = currentArtworks.filter((artwork) => {
             if (!artwork) return false
             if (filter === 'alle') {
@@ -2439,7 +2472,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
               if (!musterOnly && soldMap.size > 0) {
                 const num = artwork.number != null ? String(artwork.number) : (artwork.id != null ? String(artwork.id) : '')
                 const soldAt = num ? soldMap.get(num) : null
-                if (soldAt) {
+                const soldStatus = num ? soldStatusMap.get(num) : null
+                if (soldAt && soldStatus?.isSoldOut) {
                   if (soldDisplayDays === 0) return false
                   const cutoff = Date.now() - soldDisplayDays * 24 * 60 * 60 * 1000
                   if (new Date(soldAt).getTime() < cutoff) return false
@@ -2456,7 +2490,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
             if (include && !musterOnly && soldMap.size > 0) {
               const num = artwork.number != null ? String(artwork.number) : (artwork.id != null ? String(artwork.id) : '')
               const soldAt = num ? soldMap.get(num) : null
-              if (soldAt) {
+              const soldStatus = num ? soldStatusMap.get(num) : null
+              if (soldAt && soldStatus?.isSoldOut) {
                 if (soldDisplayDays === 0) include = false
                 else {
                   const cutoff = Date.now() - soldDisplayDays * 24 * 60 * 60 * 1000
@@ -2508,20 +2543,16 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
               {filteredArtworks.map((artwork, index) => {
                 if (!artwork) return null
                 
-                // Prüfe ob verkauft
+                // Prüfe Verkauf/Teilverkauf über zentrale Lagerlogik (Kasse + Orders)
                 let isSold = false
+                let isPartiallySold = false
                 let isReserved = false
                 let reservedFor = ''
-                try {
-                  const soldData = localStorage.getItem('k2-sold-artworks')
-                  if (soldData) {
-                    const soldArtworks = JSON.parse(soldData)
-                    if (Array.isArray(soldArtworks)) {
-                      isSold = soldArtworks.some((a: any) => a && a.number === artwork.number)
-                    }
-                  }
-                } catch (error) {
-                  // Ignoriere Fehler
+                const artworkNum = artwork?.number != null ? String(artwork.number) : (artwork?.id != null ? String(artwork.id) : '')
+                const soldStatus = artworkNum ? soldStatusMap.get(artworkNum) : null
+                if (soldStatus) {
+                  isSold = soldStatus.isSoldOut
+                  isPartiallySold = soldStatus.isPartiallySold
                 }
                 try {
                   const resData = localStorage.getItem('k2-reserved-artworks')
@@ -2647,6 +2678,23 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
                         boxShadow: '0 4px 12px rgba(245, 87, 108, 0.4)'
                       }}>
                         Verkauft
+                      </div>
+                    )}
+                    {!isSold && isPartiallySold && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '0.75rem',
+                        right: '0.75rem',
+                        background: 'linear-gradient(135deg, #f59e0b 0%, #f97316 100%)',
+                        color: '#fff',
+                        padding: 'clamp(0.4rem, 1.5vw, 0.5rem) clamp(0.75rem, 2vw, 1rem)',
+                        borderRadius: '8px',
+                        fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
+                        fontWeight: '600',
+                        zIndex: 1,
+                        boxShadow: '0 4px 12px rgba(245, 158, 11, 0.4)'
+                      }}>
+                        Teilverkauft
                       </div>
                     )}
                     {!isSold && isReserved && (

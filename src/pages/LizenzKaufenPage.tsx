@@ -127,7 +127,7 @@ export default function LizenzKaufenPage() {
           }}
         >
           <div style={{ fontWeight: 700, marginBottom: '0.45rem', color: accentDeep }}>
-            {import.meta.env.DEV ? 'Funktionstest Stripe (Sportwagen: ein Klick)' : 'Muster (ohne Zahlung)'}
+            {import.meta.env.DEV ? 'Funktionstest Stripe (Sportwagen: ein Klick)' : 'Stripe Live-Zahlung'}
           </div>
           {import.meta.env.DEV ? (
             <>
@@ -176,11 +176,11 @@ export default function LizenzKaufenPage() {
             </>
           ) : (
             <p style={{ margin: '0 0 0.6rem', lineHeight: 1.45 }}>
-              <strong>Erfolgsseite ansehen:</strong>{' '}
+              <strong>Live-Betrieb:</strong> Zahlung läuft direkt über Stripe. Optional kannst du die Erfolgsseite als Vorschau ansehen:{' '}
               <Link to="/lizenz-erfolg?muster=1" style={{ color: accent, fontWeight: 600 }}>
                 Lizenzbestätigung als Vorschau öffnen
               </Link>
-              {' – inkl. Drucklayout, ohne Stripe.'}
+              {' (nur Vorschau, ohne Stripe-Zahlung).'}
             </p>
           )}
           <button

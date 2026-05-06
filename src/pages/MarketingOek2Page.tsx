@@ -31,6 +31,7 @@ import ProductCopyright from '../components/ProductCopyright'
 import { compressImageForStorage } from '../utils/compressImageForStorage'
 import { useGamificationChecklistsUi } from '../hooks/useGamificationChecklistsUi'
 import { shareInseratViertelPdf } from '../utils/inseratViertelPdf'
+import { shareBlobAsFile } from '../utils/sharePrintFile'
 import Mok2WerbefahrplanTeaser from '../components/mok2/Mok2WerbefahrplanTeaser'
 
 /** Einheitliche Eröffnungs-URLs (wie in docs/MARKETING-EROEFFNUNG-K2-OEK2.md Abschnitt Links & QR) */
@@ -184,12 +185,13 @@ const printStyles = `
       border-top: 2.5px solid #0c4a44 !important;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
-      padding: 1.5mm 2mm 2mm !important;
+      padding: 2mm 2.5mm 2.5mm !important;
       align-items: center !important;
     }
     #mok2-inserat-print-root .mok2-inserat-footer-slogan {
-      font-size: 6.75pt !important;
-      line-height: 1.22 !important;
+      font-size: 9pt !important;
+      line-height: 1.32 !important;
+      letter-spacing: 0.01em !important;
     }
     #mok2-inserat-print-root .mok2-inserat-line-legal-footer {
       border-top: 1.5px solid #5c5650 !important;
@@ -244,6 +246,30 @@ const printStyles = `
       margin: 0 !important;
       max-width: none !important;
       min-height: 0 !important;
+    }
+    html.mok2-print-inserat-a4 body *:not(:has(#mok2-inserat-print-root)):not(#mok2-inserat-print-root):not(#mok2-inserat-print-root *) {
+      display: none !important;
+    }
+    html.mok2-print-inserat-a4 #mok2-inserat-print-root {
+      position: static !important;
+      margin: 0 auto !important;
+      width: 96mm !important;
+      border-radius: 10px !important;
+      overflow: hidden !important;
+      border: 3px solid #1c1a18 !important;
+      box-shadow: none !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    html.mok2-print-inserat-a4 .marketing-oek2-page {
+      min-height: calc(297mm - 24mm) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      background: #fff !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      max-width: none !important;
     }
   }
 `
@@ -391,6 +417,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
 
   const inseratViertelRef = useRef<HTMLDivElement>(null)
   const [inseratHinweis, setInseratHinweis] = useState<string | null>(null)
+  const logoMasterA5CardRef = useRef<HTMLDivElement>(null)
   const blinkInseratHinweis = useCallback((msg: string) => {
     setInseratHinweis(msg)
     window.setTimeout(() => setInseratHinweis(null), 4500)
@@ -407,6 +434,25 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
       if (cleaned) return
       cleaned = true
       document.documentElement.classList.remove('mok2-print-inserat-only')
+      document.getElementById('mok2-inserat-print-page-size')?.remove()
+      window.removeEventListener('afterprint', cleanup)
+    }
+    window.addEventListener('afterprint', cleanup)
+    window.print()
+    window.setTimeout(cleanup, 4000)
+  }, [])
+
+  const handlePrintInseratA4 = useCallback(() => {
+    const pageStyle = document.createElement('style')
+    pageStyle.id = 'mok2-inserat-print-page-size'
+    pageStyle.textContent = '@media print { @page { size: A4; margin: 12mm; } }'
+    document.head.appendChild(pageStyle)
+    document.documentElement.classList.add('mok2-print-inserat-a4')
+    let cleaned = false
+    const cleanup = () => {
+      if (cleaned) return
+      cleaned = true
+      document.documentElement.classList.remove('mok2-print-inserat-a4')
       document.getElementById('mok2-inserat-print-page-size')?.remove()
       window.removeEventListener('afterprint', cleanup)
     }
@@ -440,6 +486,67 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
     const body = `Guten Tag,\n\nVorschau-Link zum Inserat (96 × 129 mm):\n${url}\n\nQR-Ziel Eingangstor (Demo):\n${urlMusterEingangstorLive}\n\nMit freundlichen Grüßen`
     window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
   }, [urlMusterEingangstorLive])
+
+  const handleLogoPdfDownload = useCallback(async () => {
+    const el = logoMasterA5CardRef.current
+    if (!el) return
+    blinkInseratHinweis('Logo-PDF wird erstellt ...')
+    try {
+      const wPx = Math.max(1, Math.round(el.scrollWidth))
+      const hPx = Math.max(1, Math.round(el.scrollHeight))
+      const html2canvasMod = await import('html2canvas')
+      const runHtml2Canvas = (html2canvasMod as { default?: unknown }).default ?? html2canvasMod
+      if (typeof runHtml2Canvas !== 'function') {
+        blinkInseratHinweis('PDF aktuell nicht moeglich.')
+        return
+      }
+      await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())))
+      const canvas = await (runHtml2Canvas as (node: HTMLElement, opts: Record<string, unknown>) => Promise<HTMLCanvasElement>)(
+        el,
+        {
+          scale: 4,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#0f1720',
+          width: wPx,
+          height: hPx,
+          windowWidth: wPx,
+          windowHeight: hPx,
+          scrollX: 0,
+          scrollY: 0,
+          logging: false,
+        }
+      )
+      if (!canvas || canvas.width < 2 || canvas.height < 2) {
+        blinkInseratHinweis('PDF aktuell nicht moeglich.')
+        return
+      }
+      const { jsPDF } = await import('jspdf')
+      const cardW = 85
+      const cardH = 55
+      const pdf = new jsPDF({ unit: 'mm', format: [cardW, cardH], orientation: 'landscape' })
+      const imgData = canvas.toDataURL('image/png')
+      pdf.setFillColor(15, 23, 32)
+      pdf.rect(0, 0, cardW, cardH, 'F')
+      pdf.addImage(imgData, 'PNG', 0, 0, cardW, cardH, undefined, 'FAST')
+      const blob = pdf.output('blob')
+      if (!(blob instanceof Blob)) {
+        blinkInseratHinweis('PDF aktuell nicht moeglich.')
+        return
+      }
+      const r = await shareBlobAsFile(blob, 'K2-Visitenkarte-Logo-85x55mm.pdf', {
+        title: 'K2 Logo Master A5',
+        text: 'K2 Galerie Kunst&Keramik – Logo mit Master-A5-Bild',
+        mimeType: 'application/pdf',
+      })
+      if (r === 'shared') blinkInseratHinweis('PDF geteilt (System-Dialog).')
+      else if (r === 'downloaded') blinkInseratHinweis('PDF im Download-Ordner gespeichert.')
+      else if (r === 'cancelled') blinkInseratHinweis('Abgebrochen.')
+      else blinkInseratHinweis('PDF aktuell nicht moeglich.')
+    } catch {
+      blinkInseratHinweis('PDF aktuell nicht moeglich.')
+    }
+  }, [blinkInseratHinweis])
 
   return (
     <article
@@ -550,6 +657,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             <li><a href="#mok2-5" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Weitere Ideen & Konzepte</strong></a></li>
             <li><a href="#mok2-6" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Empfehlungs-Programm</strong> (Vertrieb durch Nutzer:innen)</a></li>
             <li><a href="#mok2-7" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Promotion für alle Medien</strong></a></li>
+            <li><a href="#mok2-logo-visitenkarte" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Logo-Ideen fuer Visitenkarte</strong> (3 Entwuerfe)</a></li>
             <li><a href="#mok2-8" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>APf-Struktur:</strong> Marketingarbeit organisieren</a></li>
             <li><a href="#mok2-9" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Werbeunterlagen</strong> (bearbeitbar)</a></li>
             <li><a href="#mok2-10" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>10. Lizenzen</strong> (Konditionen & Vergebung)</a></li>
@@ -861,6 +969,91 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </div>
       </section>
 
+      <section id="mok2-logo-visitenkarte" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Logo-Ideen fuer Visitenkarte
+        </h2>
+        <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
+          Finale Version auf Basis Master-A5: Originalbild aus der Karte plus die gruene Inserat-Farbe fuer maximalen Wiedererkennungswert.
+        </p>
+        <article
+          style={{
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(95,251,241,0.25)',
+            borderRadius: 12,
+            padding: '0.85rem',
+          }}
+        >
+          <h3 style={{ margin: '0 0 0.35rem 0', color: '#d9fffb', fontSize: '1rem' }}>Final – Master A5 + Gruen</h3>
+          <p style={{ margin: '0 0 0.8rem 0', color: 'rgba(255,255,255,0.82)', fontSize: '0.9rem' }}>
+            Werkbild M001, Daten aus Master A5, Farbe wie Inserat.
+          </p>
+          <div style={{ marginBottom: '0.75rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => void handleLogoPdfDownload()}
+              style={{
+                border: '1px solid rgba(95,251,241,0.45)',
+                borderRadius: 8,
+                background: 'rgba(95,251,241,0.12)',
+                color: '#d9fffb',
+                padding: '0.45rem 0.7rem',
+                cursor: 'pointer',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+              }}
+            >
+              PDF laden
+            </button>
+          </div>
+          <div
+            style={{
+              width: '100%',
+              maxWidth: 980,
+              borderRadius: 10,
+              border: '1px solid rgba(95,251,241,0.2)',
+              background: '#0f1720',
+              padding: '1rem',
+              boxSizing: 'border-box',
+            }}
+          >
+            <div
+              ref={logoMasterA5CardRef}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'minmax(180px, 34%) 1fr',
+                gap: '1rem',
+                border: '1px solid rgba(95,251,241,0.45)',
+                borderRadius: 14,
+                padding: '0.6rem',
+                background: 'linear-gradient(180deg, #0d2233 0%, #0b1b29 100%)',
+                aspectRatio: '85 / 55',
+                alignItems: 'stretch',
+                boxSizing: 'border-box',
+              }}
+            >
+              <div
+                style={{
+                  borderRadius: 10,
+                  border: '2px solid #5ffbf1',
+                  backgroundImage: 'url(/mok2/vertrieb/werk-K2-M-0001-upscaled-x4.jpg)',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat',
+                  height: '100%',
+                }}
+              />
+              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <div style={{ color: '#5ffbf1', fontWeight: 800, fontSize: 'clamp(2rem, 5vw, 3rem)', lineHeight: 1, marginBottom: '0.55rem' }}>K2</div>
+                <div style={{ color: '#5ffbf1', fontWeight: 700, fontSize: 'clamp(1.35rem, 3.2vw, 2.3rem)', lineHeight: 1.12 }}>Galerie Kunst&amp;Keramik</div>
+                <div style={{ color: '#d6fffb', fontWeight: 600, fontSize: 'clamp(1rem, 2.2vw, 1.5rem)', marginTop: '0.55rem' }}>Martina &amp; Georg Kreinecker</div>
+                <div style={{ marginTop: '0.8rem', borderBottom: '2px solid rgba(95,251,241,0.5)', width: '80%' }} />
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
       {/* Texte & KI: Marketing-Hinweis für Lizenznehmer:innen (externes Werkzeug + Einfügen) */}
       <section id="mok2-texte-ki-freiheit" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
@@ -1168,7 +1361,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             Direktanker (Lesezeichen)
           </Link>
           . <strong>Im Browser</strong> öffnen (Chrome/Safari), nicht in der Cursor-Vorschau. <strong>Kampagne:</strong> unten{' '}
-          <strong>Nur Inserat drucken</strong> (eine Druckseite 96×129 mm) – <strong>nicht</strong> Safari{' '}
+          <strong>Nur Inserat drucken</strong> (eine Druckseite 96×129 mm) oder <strong>Inserat auf A4 drucken</strong> (auf A4 zentriert) – <strong>nicht</strong> Safari{' '}
           <strong>⌘P</strong> auf der ganzen Seite; das wäre die komplette mök2-Seite (viele DIN-A4-Seiten). Dazu{' '}
           <strong>PDF</strong>, <strong>Link kopieren</strong>, <strong>E-Mail-Entwurf</strong>. Oben weiterhin <strong>Als PDF drucken</strong> für die ganze mök2-Seite.
         </p>
@@ -1205,6 +1398,22 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             }}
           >
             Nur Inserat drucken (96×129 mm)
+          </button>
+          <button
+            type="button"
+            onClick={handlePrintInseratA4}
+            style={{
+              padding: '0.45rem 0.75rem',
+              background: '#0f766e',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              fontSize: '0.82rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            Inserat auf A4 drucken
           </button>
           <button
             type="button"
@@ -1302,12 +1511,12 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <div
             style={{
               flex: '0 0 auto',
-              minHeight: 0,
               display: 'flex',
               flexDirection: 'column',
             }}
           >
-            <div style={{ display: 'flex', flex: '1 1 0', minHeight: 0, alignItems: 'stretch' }}>
+            {/* Zeile K2/Bild + Headline: nur Inhaltshöhe (kein flex:1 ohne Elternhöhe – sonst Kollaps / falscher Streifen) */}
+            <div style={{ display: 'flex', flex: '0 0 auto', alignItems: 'stretch' }}>
             <div
               style={{
                 flex: '0 0 28%',
@@ -1320,8 +1529,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
               <div
                 className="mok2-inserat-hero-k2head"
                 style={{
-                  flex: '1.08 1 0',
-                  minHeight: 0,
+                  flex: '0 0 auto',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
@@ -1367,7 +1575,10 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                   {PRODUCT_BRAND_NAME}
                 </span>
               </div>
-              <div className="mok2-inserat-hero-photo" style={{ flex: '0.92 1 0', minHeight: 0, position: 'relative', overflow: 'hidden' }}>
+              <div
+                className="mok2-inserat-hero-photo"
+                style={{ flex: '1 1 0', minHeight: 36, position: 'relative', overflow: 'hidden' }}
+              >
                 {oefWelcome ? (
                   <img src={oefWelcome} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 ) : (
@@ -1541,9 +1752,9 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 7,
+              gap: 8,
               marginTop: 0,
-              padding: '3px 6px 4px',
+              padding: '5px 7px 6px',
               borderTop: 'none',
               background: 'transparent',
             }}
@@ -1552,7 +1763,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
               style={{
                 flex: '1 1 0',
                 minWidth: 0,
-                paddingRight: 4,
+                paddingRight: 2,
                 display: 'flex',
                 alignItems: 'center',
               }}
@@ -1561,8 +1772,8 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                 className="mok2-inserat-footer-slogan"
                 style={{
                   margin: 0,
-                  fontSize: 'clamp(0.52rem, 1.85vw, 0.72rem)',
-                  lineHeight: 1.22,
+                  fontSize: 'clamp(0.68rem, 2.5vw, 0.98rem)',
+                  lineHeight: 1.32,
                   color: '#45413c',
                   fontWeight: 700,
                   textWrap: 'balance' as const,

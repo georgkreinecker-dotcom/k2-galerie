@@ -1,0 +1,39 @@
+---
+description: Lizenzanmeldung, Stripe-Erfolg, Admin-QR – K2 Familie vs. Galerie; URLs und Normalisierung; Webhook/product_line. Bei Änderungen an diesen Pfaden diese Regel und Tests beachten.
+globs: src/utils/publicLinks.ts,src/pages/LizenzErfolgPage.tsx,src/components/LicenseeAdminQrPanel.tsx,api/get-licence-by-session.js,api/stripeWebhookLicenceShared.js,api/lizenzProductLineShared.js,src/tests/publicLinks.test.ts,src/tests/stripeLicenceContract.test.ts
+alwaysApply: false
+---
+
+# Lizenzanmeldung & Stripe-Erfolg (Admin-URL, QR, Produktlinie)
+
+## Was schiefging (Mai 2026)
+
+- **Symptom:** Nach Lizenzkauf **K2 Familie** führte der Admin-QR / die normalisierte URL in den **K2-Galerie-Admin** (`/admin?t=…`) statt in **Meine Familie**.
+- **Ursache:** `normalizeLicenseeAdminUrl` hat Pfade, die **nicht** `/admin` sind, pauschal zu **`/admin` + gleiche Query** gemacht. **`TenantContext`** liest **`dynamicTenantId` nur aus `tenantId=`**, **nicht** aus **`t=`** → Galerie-Kontext trotz Mandant in `t`.
+- **Fix:** Pfade unter **`PROJECT_ROUTES['k2-familie'].home`** (`/projects/k2-familie` und Unterpfade wie **`/meine-familie`**) **niemals** auf `/admin` umbiegen. API liefert kanonisch z. B. **`/projects/k2-familie/meine-familie?t=<mandant>`**.
+
+## Unveränderliche Regeln
+
+1. **Eine Wahrheit für den Ziel-Link nach Kauf:** `admin_url` / Anzeige-URL kommt aus **`api/get-licence-by-session.js`** (`buildAdminUrlForLicence` o. Ä.) und muss zur **Produktlinie** passen (**`product_line` / `licence_type`** Familie vs. Galerie). Kein zweiter, abweichender Builder ohne Abgleich.
+2. **`normalizeLicenseeAdminUrl`:** **Keine** Regel der Form „alles Nicht-`/admin` → `/admin`“, die **K2-Familie-Routen** erwischt. Familie-Home und alle Unterpfade **`/projects/k2-familie/…`** bleiben **relativ-path-erhalten** (nur Origin/Base, keine Umschreibung zu `/admin`).
+3. **Query-Parameter:** **`t=`** = K2-Familie-Mandant (Einladungs-/Familie-Standard). **`tenantId=`** = Galerie-Lizenznehmer. **Nicht** verwechseln und **nicht** still von `t` auf `tenantId` „übersetzen“, ohne TenantContext anzupassen (besser: URL-Konvention pro Produkt beibehalten).
+4. **QR / Cache-Bust:** Lizenznehmer-Admin-QR nur über **`getLicenseeAdminQrTargetUrl`** + **`buildQrUrlWithBust`** (Server-Stand), nicht nur lokaler Build. Siehe **stand-qr-niemals-zurueck.mdc** und **docs/ADMIN-QR-LIZENZ-OEK2-ABLAUF.md**.
+5. **Stripe-Webhook & Metadata:** Änderungen an **`lizenzProductLineShared.js`**, **`stripeWebhookLicenceShared.js`** oder DB-Schreibweise für Lizenzen → **`stripeLicenceContract.test.ts`** (o. Ä.) grün halten; **`product_line`** konsistent zu **`buildAdminUrlForLicence`**.
+6. **Plattform vs. Lizenznehmer:** Unverändert **eiserne-regel-lizenznehmer-kein-oek2-vk2.mdc** – Lizenzinstanz erhält keinen ök2/VK2-Zugang; hier geht es nur darum, **innerhalb erlaubter Ziele** (Galerie vs. Familie) die **richtige** Route zu treffen.
+
+## Pflicht vor Commit (wenn du diese Pfade änderst)
+
+- [ ] **`src/tests/publicLinks.test.ts`:** Normalisierung für **`meine-familie`**, Unterpfade, **`getLicenseeAdminQrTargetUrl`** ohne `/admin` für Familie.
+- [ ] **`npm run test`** (mindestens betroffene Suites) + **`npm run build`** grün.
+- [ ] **Doku:** Bei neuem Produkt oder neuer URL-Konvention **docs/ADMIN-QR-LIZENZ-OEK2-ABLAUF.md** und **docs/K2-FAMILIE-LEHREN-AUS-K2-GALERIE.md** (§ Lizenz / QR) anpassen.
+- [ ] **FEHLERANALYSEPROTOKOLL.md:** Neue Fehlerklasse oder Wiederholung vermerken.
+
+## Verknüpfung
+
+- **docs/ADMIN-QR-LIZENZ-OEK2-ABLAUF.md** – Tabelle K2 Familie vs. Galerie, Technik.
+- **docs/K2-FAMILIE-LEHREN-AUS-K2-GALERIE.md** – §0b / Lizenz-Erfolg, `t=` vs. `tenantId`.
+- **ein-standard-problem.mdc** – Zeile „Lizenz Erfolg / Admin-QR“.
+
+## Kurzfassung
+
+**K2 Familie nach Lizenz = `/projects/k2-familie/…` mit `t=` – nie durch Normalisierung zu `/admin` machen. Galerie-Lizenz = `tenantId=` auf `/admin`. Eine API-Wahrheit, Tests, Doku.**

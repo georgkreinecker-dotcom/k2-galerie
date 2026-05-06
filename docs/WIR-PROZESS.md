@@ -279,6 +279,8 @@ Wenn nein: wir lassen es.
 
 ---
 
+**Session-Reflexion (06.05.26):** K2 Familie = **kein** Empfehlungsprogramm (nicht nur UI): Checkout/Webhook/Verlängerung ignorieren `empfehlerId` bei Familie-Lizenzen. Georg kann schließen ohne offenen lokalen Stand – Rest mit `qs:local` + Push.
+
 **Session-Reflexion (02.05.26):** Epson-Bon „trotz richtiger IP“: die Blockade ist **Browser Mixed Content** (https-App ↔ http-Print-Server), nicht die Druckeradresse – in App und Doku so benannt, konkreter Ausweg **http-Kasse im LAN** (`npm run dev` + Mac-IP).
 
 **Session-Reflexion (01.05.26, Nacht):** Kasse am iPad: sichtbarer **erster** Schritt Epson (wenn Print-Server da), Systemweg klar als zweiter Button – passt zu „kein AirPrint-Wirrwarr“; **Epson-IP** = eine Drucker-Adresse im WLAN (nicht iPad-spezifisch), Print-Server-URL = Mac.

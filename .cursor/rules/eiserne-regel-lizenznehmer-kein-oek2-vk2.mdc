@@ -50,6 +50,7 @@ alwaysApply: true
 
 - **Doku:** docs/SICHERHEIT-LIZENZNEHMER-KEIN-OEK2-VK2.md
 - **Code:** src/config/tenantConfig.ts (isPlatformInstance, PLATFORM_HOSTNAMES), src/context/TenantContext.tsx, src/components/PlatformOnlyRoute.tsx
+- **Regressionstests (Lizenznehmer simuliert):** `src/tests/tenantContextLicenseeInstance.test.ts` – `?context=oeffentlich|vk2`, `/projects/vk2/*`, Dev-View-Ök2/VK2-Seiten → Mandant bleibt **k2**.
 
 ## Kurzfassung
 

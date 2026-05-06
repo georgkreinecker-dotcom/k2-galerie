@@ -49,10 +49,26 @@ describe('publicLinks', () => {
     expect(normalizeLicenseeAdminUrl(fam, origin)).toBe(fam)
   })
 
+  it('normalizeLicenseeAdminUrl lässt k2-familie-Unterpfade unverändert (Raumschiff: kein /admin-Umbiegen)', () => {
+    const u = `${origin}/projects/k2-familie/einstellungen?t=huber`
+    expect(normalizeLicenseeAdminUrl(u, origin)).toBe(u)
+  })
+
   it('getLicenseeAdminQrTargetUrl hängt v und Cache-Bust an', () => {
     const u = getLicenseeAdminQrTargetUrl(`${origin}/admin`, 12345, origin)
     expect(u.startsWith(`${origin}/admin?`)).toBe(true)
     expect(u).toContain('v=12345')
+    expect(u).toContain('_=')
+  })
+
+  /** Regressions-Schutz: /admin?t= würde Galerie-Admin sein (tenantId≠t); QR muss meine-familie bleiben. */
+  it('getLicenseeAdminQrTargetUrl: K2-Familie bleibt auf meine-familie, nicht /admin', () => {
+    const fam = `${origin}/projects/k2-familie/meine-familie?t=familie-x-123`
+    const u = getLicenseeAdminQrTargetUrl(fam, 42_000, origin)
+    expect(u).toContain('/projects/k2-familie/meine-familie')
+    expect(u).toContain('t=familie-x-123')
+    expect(u).not.toMatch(/\/admin(\?|$|&)/)
+    expect(u).toContain('v=42000')
     expect(u).toContain('_=')
   })
 

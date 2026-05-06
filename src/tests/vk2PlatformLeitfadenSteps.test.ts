@@ -1,12 +1,23 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import {
   buildVk2PlatformLeitfadenSchritte,
   vk2PlatformGalerieSchrittCount,
 } from '../components/guidedLeitfaden/vk2PlatformLeitfadenSteps'
 import {
+  isVk2MitgliedPinSessionActive,
   isVk2PlatformLeitfadenContext,
   isVk2PublicGaleriePath,
 } from '../utils/vk2PlatformLeitfadenStorage'
+
+const VK2_MITGLIED_SESSION_KEY = 'k2-vk2-mitglied-eingeloggt'
+
+afterEach(() => {
+  try {
+    sessionStorage.removeItem(VK2_MITGLIED_SESSION_KEY)
+  } catch {
+    /* ignore */
+  }
+})
 
 describe('VK2 Plattform-Leitfaden', () => {
   it('verbindet Galerie ohne doppeltes fertig mit Admin ohne doppelte Begrüßung', () => {
@@ -33,5 +44,13 @@ describe('VK2 Plattform-Leitfaden', () => {
     expect(isVk2PlatformLeitfadenContext('/admin', true)).toBe(true)
     expect(isVk2PlatformLeitfadenContext('/admin', false)).toBe(false)
     expect(isVk2PlatformLeitfadenContext('/mok2', true)).toBe(false)
+  })
+
+  it('Mitglied-PIN-Session: isVk2MitgliedPinSessionActive liest sessionStorage', () => {
+    expect(isVk2MitgliedPinSessionActive()).toBe(false)
+    sessionStorage.setItem(VK2_MITGLIED_SESSION_KEY, '1')
+    expect(isVk2MitgliedPinSessionActive()).toBe(true)
+    sessionStorage.removeItem(VK2_MITGLIED_SESSION_KEY)
+    expect(isVk2MitgliedPinSessionActive()).toBe(false)
   })
 })

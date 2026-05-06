@@ -1,0 +1,38 @@
+<svg width="1400" height="900" viewBox="0 0 1400 900" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" aria-labelledby="title desc">
+  <title id="title">K2 Logo Final mit Master A5 Bild</title>
+  <desc id="desc">Finale Logo-Version mit Bild aus Master A5 fuer hohen Wiedererkennungswert</desc>
+  <rect width="1400" height="900" fill="#0f1720"/>
+  <rect x="70" y="70" width="1260" height="760" rx="36" fill="#111f2b" stroke="#5ffbf1" stroke-opacity="0.45" stroke-width="2"/>
+
+  <defs>
+    <clipPath id="imageCardClip">
+      <rect x="130" y="150" width="420" height="560" rx="24"/>
+    </clipPath>
+  </defs>
+
+  <image
+    href="/img/k2/masterflyer-k2-a5-seite1.png"
+    xlink:href="/img/k2/masterflyer-k2-a5-seite1.png"
+    x="130"
+    y="150"
+    width="420"
+    height="560"
+    preserveAspectRatio="xMidYMid slice"
+    clip-path="url(#imageCardClip)"
+  />
+
+  <rect x="130" y="150" width="420" height="560" rx="24" fill="none" stroke="#5ffbf1" stroke-width="3"/>
+
+  <text x="610" y="300" font-family="Arial, Helvetica, sans-serif" font-size="92" font-weight="700" fill="#5ffbf1">
+    K2
+  </text>
+  <text x="610" y="390" font-family="Arial, Helvetica, sans-serif" font-size="62" font-weight="700" fill="#5ffbf1">
+    Galerie Kunst&amp;Keramik
+  </text>
+  <text x="610" y="455" font-family="Arial, Helvetica, sans-serif" font-size="36" fill="#d6fffb">
+    Martina &amp; Georg Kreinecker
+  </text>
+
+  <line x1="610" y1="500" x2="1220" y2="500" stroke="#5ffbf1" stroke-opacity="0.5" stroke-width="3"/>
+
+</svg>

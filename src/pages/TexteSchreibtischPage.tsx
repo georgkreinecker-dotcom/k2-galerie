@@ -135,6 +135,13 @@ const BEREICHE: Bereich[] = [
         to: '/plakate-druckformate-k2/oeffnungszeiten-flyer-a5-k2.html',
         rotateDeg: -0.14,
       },
+      {
+        id: 'druck-inserat-lokalzeitung-a4',
+        titel: 'Inserat Lokalzeitung A4',
+        zweck: 'Inserat zentriert auf A4 drucken (mök2 · Inserat Lokalzeitung)',
+        to: '/projects/k2-galerie/marketing-oek2#mok2-inserat-lokalzeitung',
+        rotateDeg: 0.08,
+      },
     ],
   },
   {

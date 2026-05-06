@@ -1,4 +1,4 @@
-# Anke – Briefing – 27.04.26
+# Anke – Briefing – 06.05.26
 
 > Ankes Briefing für Session-Start. Generiert von `npm run briefing`. Stand, Offen, Proaktiv.
 

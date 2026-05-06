@@ -1,5 +1,7 @@
 # Dialog-Stand
 
+**Session-Ende 06.05.26:** Offener Arbeitsstand (Marketing-Attribution, mök2-Assets, VK2-Leitfaden, Galerie-Pages, Regeln/Doku, Build-Info) mit **qs:local** grün committed und auf **main** gepusht – siehe letzter Commit-Hash unten.
+
 **Letzter Stand:** 06.05.26 – **K2 Familie: kein Empfehlungsprogramm:** **K2FamilieLizenzErwerbenPage** ohne Empfehler-Feld; **createCheckoutShared.js** – bei **familie_monat/jahr** keine **empfehlerId** in Session-/Abo-Metadaten; **stripeWebhookLicenceShared.js** – **rowsFromCheckoutSession** setzt **empfehler_id** und Gutschrift bei Familie-Lizenz immer **null** (auch wenn Metadaten manipuliert); **stripeInvoiceRenewalShared.js** – Verlängerung: **empfehler_id** in Zahlung **null**, keine Gutschrift für **familie_***. Tests **stripeLicenceContract.test.ts** grün. **Commit:** `e308d83e` ✅ **main**
 
 **Letzter Stand:** 06.05.26 – **Regelwerk Lizenzanmeldung / Stripe-Erfolg:** Neue Regel **`.cursor/rules/lizenz-anmeldung-stripe-erfolg.mdc`** (Pfad: API + `publicLinks` + Erfolgsseite + Tests; kein `/projects/k2-familie/…` → `/admin`). **`ein-standard-problem.mdc`** Zeile „Lizenzanmeldung …“. **`FEHLERANALYSEPROTOKOLL.md`:** Quelle, Fehlerklasse, Protokoll-Eintrag 06.05.26, Laufende Absicherungen. **`K2-FAMILIE-LEHREN`** §0b → Verweis auf die Regel. **`publicLinks.test.ts`** geprüft (grün). **Commit:** _(nach Push)_ ✅ **main**

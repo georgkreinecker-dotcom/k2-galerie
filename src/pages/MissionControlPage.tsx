@@ -12,6 +12,20 @@ import {
 
 const SHOW_VISIT_CHART_KEY = 'k2-mission-control-show-visit-chart'
 
+type MarketingAttrSummaryRow = {
+  campaign_key: string | null
+  surface: string
+  event_kind: string
+  count: number
+}
+
+function marketingAttrSurfaceLabel(surface: string): string {
+  if (surface === 'oeffentlich') return 'ök2'
+  if (surface === 'vk2') return 'VK2'
+  if (surface === 'k2_familie') return 'K2 Familie'
+  return surface
+}
+
 function getPersistentBoolean(key: string): boolean {
   try {
     return localStorage.getItem(key) === 'true'
@@ -39,6 +53,12 @@ export default function MissionControlPage() {
     kreineckerStammbaum: number
   } | null>(null)
   const [visitTimeline, setVisitTimeline] = useState(loadMissionVisitSnapshots)
+  const [attrSummary, setAttrSummary] = useState<{
+    configured: boolean
+    summary: MarketingAttrSummaryRow[]
+    days?: number
+    error?: string
+  } | null>(null)
 
   useEffect(() => {
     Promise.all([
@@ -53,6 +73,23 @@ export default function MissionControlPage() {
       upsertMissionVisitSnapshot(next)
       setVisitTimeline(loadMissionVisitSnapshots())
     })
+  }, [])
+
+  useEffect(() => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : ''
+    fetch(`${origin}/api/marketing-attribution?mode=summary&days=90`)
+      .then((r) => r.json())
+      .then((data) => {
+        setAttrSummary({
+          configured: Boolean(data?.configured),
+          summary: Array.isArray(data?.summary) ? data.summary : [],
+          days: typeof data?.days === 'number' ? data.days : 90,
+          error: typeof data?.error === 'string' ? data.error : undefined,
+        })
+      })
+      .catch(() => {
+        setAttrSummary({ configured: false, summary: [], error: 'Netzwerk' })
+      })
   }, [])
 
   const projectQuickEntries = useMemo(
@@ -540,6 +577,68 @@ export default function MissionControlPage() {
             Vercel GET /api/visit
           </p>
           <div className="mission-visit-report-seitenfuss seitenfuss" aria-hidden />
+        </section>
+
+        {/* Werbe-Korrelation: Landings × Kampagne (?k= / First-Touch) */}
+        <section
+          className="panel mission-visit-no-print"
+          style={{
+            marginTop: '1.35rem',
+            background: 'linear-gradient(135deg, rgba(16,185,129,0.12), rgba(45,212,191,0.06))',
+            border: '1px solid rgba(45,212,191,0.4)',
+            padding: '1rem 1.1rem',
+          }}
+        >
+          <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.05rem', color: '#5eead4' }}>
+            📣 Werbe-Korrelation (ök2 · VK2 · K2 Familie)
+          </h2>
+          <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: '#8fa0c9', lineHeight: 1.5 }}>
+            Messbare Landings pro <strong style={{ color: '#99f6e4' }}>Kampagne</strong> und{' '}
+            <strong style={{ color: '#99f6e4' }}>Oberfläche</strong>. Links mit{' '}
+            <code style={{ color: '#ccfbf1', fontSize: '0.78rem' }}>?k=</code> derselben ID wie im mök2-Werbefahrplan
+            (z. B. <code style={{ color: '#ccfbf1', fontSize: '0.78rem' }}>kampagne-fruehjahr-2026-1</code>
+            ). Ohne Parameter: First-Touch der letzten 90 Tage im Browser. Pseudonyme Sitzungs-ID, keine Namen.
+          </p>
+          {attrSummary == null ? (
+            <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>Lade Auswertung…</p>
+          ) : !attrSummary.configured ? (
+            <p style={{ margin: 0, fontSize: '0.85rem', color: '#fbbf24' }}>
+              {attrSummary.error ?? 'Supabase nicht konfiguriert – nach Migration 016 SQL ausführen.'}
+            </p>
+          ) : attrSummary.summary.length === 0 ? (
+            <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>
+              Noch keine Events (letzte {attrSummary.days ?? 90} Tage). Test: Demo-URL mit{' '}
+              <code style={{ color: '#ccfbf1' }}>?k=…</code> öffnen.
+            </p>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', color: '#e2e8f0' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid rgba(45,212,191,0.35)', textAlign: 'left' }}>
+                    <th style={{ padding: '0.4rem 0.5rem 0.5rem 0' }}>Kampagne</th>
+                    <th style={{ padding: '0.4rem 0.5rem' }}>Oberfläche</th>
+                    <th style={{ padding: '0.4rem 0.5rem' }}>Ereignis</th>
+                    <th style={{ padding: '0.4rem 0', textAlign: 'right' }}>Anzahl</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {attrSummary.summary.map((row, i) => (
+                    <tr key={i} style={{ borderBottom: '1px solid rgba(148,163,184,0.15)' }}>
+                      <td style={{ padding: '0.35rem 0.5rem 0.35rem 0', color: '#f0fdfa' }}>
+                        {row.campaign_key ?? '— ohne Kampagne —'}
+                      </td>
+                      <td style={{ padding: '0.35rem 0.5rem' }}>{marketingAttrSurfaceLabel(row.surface)}</td>
+                      <td style={{ padding: '0.35rem 0.5rem', color: '#94a3b8' }}>{row.event_kind}</td>
+                      <td style={{ padding: '0.35rem 0', textAlign: 'right', fontWeight: 700 }}>{row.count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p style={{ margin: '0.65rem 0 0', fontSize: '0.72rem', color: '#64748b' }}>
+                Quelle: POST /api/marketing-attribution · Fenster {attrSummary.days ?? 90} Tage
+              </p>
+            </div>
+          )}
         </section>
 
         {/* Nutzer & Vertrieb */}

@@ -38,6 +38,7 @@ import { OK2_THEME } from '../config/ok2Theme'
 import { getPublicGalerieUrl } from '../utils/publicLinks'
 import { isLocalOrPrivateOrigin } from '../utils/publicShare'
 import { reportPublicGalleryVisit } from '../utils/reportPublicGalleryVisit'
+import { reportMarketingAttributionLanding } from '../utils/marketingAttribution'
 import {
   resolveOek2PublicGalleryVisitTenantId,
   resolveVk2PublicGalleryVisitTenantId,
@@ -618,6 +619,18 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         tenantId === 'k2' && typeof localStorage !== 'undefined' && localStorage.getItem('k2-admin-unlocked') === 'k2',
     })
   }, [tenantId, location.search])
+
+  // Werbe-Korrelation (nur ök2-Öffentlichseite, nicht K2-echte Galerie)
+  useEffect(() => {
+    if (!musterOnly) return
+    const tenant = resolveOek2PublicGalleryVisitTenantId()
+    reportMarketingAttributionLanding({
+      surface: 'oeffentlich',
+      tenantVisitKey: tenant,
+      sessionDedupeKey: `oeffentlich-${tenant}`,
+      search: location.search,
+    })
+  }, [musterOnly, location.search])
 
   // Design-Farben aus Admin anwenden – NUR für K2 (nicht für ök2/musterOnly!)
   // ök2 hat eigene Design-Einstellungen unter k2-oeffentlich-design-settings

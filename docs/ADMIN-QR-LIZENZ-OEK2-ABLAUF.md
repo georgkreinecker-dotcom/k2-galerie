@@ -11,7 +11,8 @@ Kurzreferenz, damit QR/Link **nicht** mit Galerie-Besucher-QR verwechselt werden
 | **K2 echte Galerie** (nur Plattform) | Admin → Einstellungen → Stammdaten, unter Vita (Martina) | `{origin}/admin` (ohne `context`) | immer |
 | **ök2-Demo** (nur Plattform) | Admin → Einstellungen → Stammdaten, unter Vita | `{origin}/admin?context=oeffentlich` | immer (Demo) |
 | **Lizenznehmer** (eigene Instanz) | Admin → Einstellungen → Stammdaten (oben) | `{origin}/admin` (+ ggf. Query aus API) | nach **Lizenznummer** unter Registrierung |
-| **Nach Lizenzkauf** | `/lizenz-erfolg?session_id=…` | `admin_url` aus API | wenn URL `/admin` enthält |
+| **Nach Lizenzkauf – K2 Galerie** | `/lizenz-erfolg?session_id=…` | `admin_url` aus API → meist `{origin}/admin?tenantId=…` | wenn URL **`/admin`** |
+| **Nach Lizenzkauf – K2 Familie** | dieselbe Seite | API: **`…/projects/k2-familie/meine-familie?t=…`** (Mandant in **`t=`**) | wenn URL **`/admin`** oder **`/meine-familie`** |
 
 ---
 
@@ -20,6 +21,7 @@ Kurzreferenz, damit QR/Link **nicht** mit Galerie-Besucher-QR verwechselt werden
 - **Komponente:** `src/components/LicenseeAdminQrPanel.tsx`
 - **Kanonische URL + QR mit Cache-Bust:** `normalizeLicenseeAdminUrl`, `getLicenseeAdminQrTargetUrl` in `src/utils/publicLinks.ts` → `buildQrUrlWithBust` + **Server-Stand** (`useQrVersionTimestamp` aus `useServerBuildTimestamp.ts`).
 - **Regel:** QR enthält `v=<Server-Timestamp>&_=<Date.now()>` – entspricht der Projektregel „Stand & QR“ (nicht nur lokaler Build).
+- **K2 Familie (Raumschiff):** **`normalizeLicenseeAdminUrl`** lässt **`/projects/k2-familie/…`** unverändert. **Nicht** zu **`/admin?t=`** umbiegen – sonst Galerie-Admin statt Meine Familie (`tenantId` ≠ `t` im TenantContext). Regression: **`publicLinks.test.ts`**.
 
 ---
 
