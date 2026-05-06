@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 06.05.26 – **K2 Familie Admin-QR falsch (Galerie statt Familie):** API liefert **`/projects/k2-familie/meine-familie?t=…`**, aber **`normalizeLicenseeAdminUrl`** hat alles Nicht-`/admin` zu **`/admin?t=…`** gemacht – **`tenantId`** wird nur aus **`tenantId=`** gelesen, nicht aus **`t=`** → Galerie-Admin. **Fix:** Pfade unter **`PROJECT_ROUTES['k2-familie'].home`** unverändert lassen. **Tests:** `publicLinks.test.ts`. **Commit:** _(nach Push)_ ✅ **main**
+**Letzter Stand:** 06.05.26 – **K2 Familie Admin-QR falsch (Galerie statt Familie):** API liefert **`/projects/k2-familie/meine-familie?t=…`**, aber **`normalizeLicenseeAdminUrl`** hat alles Nicht-`/admin` zu **`/admin?t=…`** gemacht – **`tenantId`** wird nur aus **`tenantId=`** gelesen, nicht aus **`t=`** → Galerie-Admin. **Fix:** Pfade unter **`PROJECT_ROUTES['k2-familie'].home`** unverändert lassen. **Tests:** `publicLinks.test.ts`. **Commit:** 55014ae9 ✅ **main**
 
 **Letzter Stand:** 06.05.26 – **K2 Familie `/lizenz-erfolg` – Texte & QR:** Nur noch **K2-Familie**-Wortlaut (kein Galerie-/Entdecken-Footer); **Vercel-Vorschau-URLs** in Links/QR → **`rewriteLicenceUrlForCustomerDisplay`** (`publicLinks.ts`, teilbare Origin wie Production). **`LizenzErfolgCopy`:** `screenAdminQrHint`, `showOptionalPlatformFooter`. **Tests:** `publicLinks.test.ts`. **Commit:** f3e0910e ✅ **main**
 
