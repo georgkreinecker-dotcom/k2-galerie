@@ -12,14 +12,7 @@ import {
   rowsFromCheckoutSession,
   checkoutSessionEffectiveMetadata,
 } from './stripeWebhookLicenceShared.js'
-import { productLineFromLicenceType } from './lizenzProductLineShared.js'
-
-function productLineFromStripeSession(session, licenceType) {
-  const meta = checkoutSessionEffectiveMetadata(session)
-  const raw = String(meta.productLine || '').trim()
-  if (raw === 'k2_familie' || raw === 'k2_galerie') return raw
-  return productLineFromLicenceType(licenceType)
-}
+import { productLineFromLicenceType, productLineFromStripeSession } from './lizenzProductLineShared.js'
 
 function resolveBaseUrl() {
   return process.env.VERCEL_URL
@@ -50,10 +43,11 @@ function buildAdminUrlForLicence(baseUrl, tenantId, licenceType) {
 function jsonFromDbLicence(licence, baseUrl) {
   const licenceType = licence.licence_type || 'basic'
   let productLine = productLineFromLicenceType(licenceType)
+  const tid = String(licence.tenant_id || '').trim().toLowerCase()
   const gu = String(licence.galerie_url || '')
   if (
     productLine === 'k2_galerie' &&
-    (gu.includes('k2-familie') || gu.includes('/meine-familie'))
+    (tid.startsWith('familie-') || gu.includes('k2-familie') || gu.includes('/meine-familie'))
   ) {
     productLine = 'k2_familie'
   }
@@ -148,7 +142,7 @@ export default async function handler(req, res) {
           name: ins.name || '',
           email: ins.email || '',
           licence_type: licenceType,
-          product_line: productLineFromStripeSession(session, licenceType),
+          product_line: productLineFromStripeSession(session, licenceType, tenantId),
           from_stripe: true,
         })
       } catch (stripeErr) {

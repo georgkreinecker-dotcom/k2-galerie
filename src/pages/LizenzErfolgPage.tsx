@@ -13,7 +13,7 @@ import { buildLizenzMusterErfolgLinks } from '../utils/lizenzMusterDemo'
 import {
   LIZENZ_ERFOLG_LOADING_NEUTRAL,
   type LizenzProductLine,
-  normalizeProductLine,
+  normalizeProductLineFromApi,
   getLizenzErfolgCopy,
 } from '../utils/lizenzErfolgCopy'
 
@@ -72,7 +72,13 @@ export default function LizenzErfolgPage() {
             admin_url: data.admin_url || K2_GALERIE_APF_EINSTIEG,
             name: data.name || '',
             email: data.email || '',
-            product_line: normalizeProductLine(data.product_line, data.licence_type),
+            product_line: normalizeProductLineFromApi({
+              product_line: data.product_line,
+              licence_type: data.licence_type,
+              galerie_url: data.galerie_url,
+              admin_url: data.admin_url,
+              tenant_id: data.tenant_id,
+            }),
             from_stripe: data.from_stripe === true,
           })
           setLinksError(null)

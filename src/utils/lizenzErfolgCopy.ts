@@ -19,6 +19,23 @@ export function normalizeProductLine(
   return fromLicenceType
 }
 
+/** Erfolgsseite: URLs / Mandant schlagen widersprüchliches product_line (z. B. Stripe-Metadaten). */
+export function normalizeProductLineFromApi(payload: {
+  product_line?: string | null
+  licence_type?: string | null
+  galerie_url?: string | null
+  admin_url?: string | null
+  tenant_id?: string | null
+}): LizenzProductLine {
+  const tid = String(payload.tenant_id || '').trim().toLowerCase()
+  if (tid.startsWith('familie-')) return 'k2_familie'
+  const gu = String(payload.galerie_url || '')
+  if (gu.includes('k2-familie') || gu.includes('meine-familie')) return 'k2_familie'
+  const au = String(payload.admin_url || '')
+  if (au.includes('/projects/k2-familie/') || au.includes('meine-familie')) return 'k2_familie'
+  return normalizeProductLine(payload.product_line, payload.licence_type)
+}
+
 export type LizenzErfolgCopy = {
   openPrimaryLabel: string
   adminButtonLabel: string

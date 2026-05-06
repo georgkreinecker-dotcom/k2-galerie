@@ -25,8 +25,11 @@ import {
   resolveCheckoutLicenceType,
   rowsFromCheckoutSession,
 } from '../../api/stripeWebhookLicenceShared.js'
-import { productLineFromLicenceType } from '../../api/lizenzProductLineShared.js'
-import { normalizeProductLine } from '../utils/lizenzErfolgCopy'
+import {
+  productLineFromLicenceType,
+  productLineFromStripeSession,
+} from '../../api/lizenzProductLineShared.js'
+import { normalizeProductLine, normalizeProductLineFromApi } from '../utils/lizenzErfolgCopy'
 import {
   createStripeCheckoutSession,
   generateFamilieTenantId,
@@ -126,6 +129,49 @@ describe('normalizeProductLine (API-Felder + Fallback)', () => {
   it('ohne product_line: ableiten aus licence_type', () => {
     expect(normalizeProductLine(undefined, 'familie_jahr')).toBe('k2_familie')
     expect(normalizeProductLine(null, 'pro')).toBe('k2_galerie')
+  })
+})
+
+describe('normalizeProductLineFromApi (URLs / tenant schlagen product_line)', () => {
+  it('widersprüchlich k2_galerie + meine-familie URL → k2_familie', () => {
+    expect(
+      normalizeProductLineFromApi({
+        product_line: 'k2_galerie',
+        licence_type: 'basic',
+        galerie_url: 'https://x.app/projects/k2-familie/meine-familie',
+        admin_url: 'https://x.app/admin?tenantId=x',
+      }),
+    ).toBe('k2_familie')
+  })
+  it('tenant_id familie-* → k2_familie trotz product_line Galerie', () => {
+    expect(
+      normalizeProductLineFromApi({
+        product_line: 'k2_galerie',
+        licence_type: 'basic',
+        tenant_id: 'familie-georg-kreinecker-0gjans',
+      }),
+    ).toBe('k2_familie')
+  })
+})
+
+describe('productLineFromStripeSession', () => {
+  it('licence_type Familie hat Vorrang vor metadata productLine k2_galerie', () => {
+    expect(
+      productLineFromStripeSession(
+        { metadata: { productLine: 'k2_galerie', tenantId: 'familie-x' } },
+        'familie_monat',
+        'familie-x',
+      ),
+    ).toBe('k2_familie')
+  })
+  it('nur tenant familie-* reicht (licence basic + falsches meta)', () => {
+    expect(
+      productLineFromStripeSession(
+        { metadata: { productLine: 'k2_galerie' } },
+        'basic',
+        'familie-georg-kreinecker-0gjans',
+      ),
+    ).toBe('k2_familie')
   })
 })
 
