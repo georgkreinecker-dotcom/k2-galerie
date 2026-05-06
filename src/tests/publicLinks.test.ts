@@ -44,6 +44,11 @@ describe('publicLinks', () => {
     expect(normalizeLicenseeAdminUrl(origin, origin)).toBe(`${origin}/admin`)
   })
 
+  it('normalizeLicenseeAdminUrl lässt K2-Familie meine-familie mit ?t= unverändert', () => {
+    const fam = `${origin}/projects/k2-familie/meine-familie?t=familie-test-abc`
+    expect(normalizeLicenseeAdminUrl(fam, origin)).toBe(fam)
+  })
+
   it('getLicenseeAdminQrTargetUrl hängt v und Cache-Bust an', () => {
     const u = getLicenseeAdminQrTargetUrl(`${origin}/admin`, 12345, origin)
     expect(u.startsWith(`${origin}/admin?`)).toBe(true)
@@ -58,6 +63,10 @@ describe('publicLinks', () => {
     expect(out).toContain('k2-galerie.vercel.app')
     expect(out).not.toContain('5xpfubp4x')
     expect(out).toContain('/admin?t=familie-x')
+    const previewFam =
+      'https://k2-galerie-5xpfubp4x-georgs-projects-77ea633e.vercel.app/projects/k2-familie/meine-familie?t=familie-x'
+    const outFam = rewriteLicenceUrlForCustomerDisplay(previewFam)
+    expect(outFam).toBe('https://k2-galerie.vercel.app/projects/k2-familie/meine-familie?t=familie-x')
     expect(rewriteLicenceUrlForCustomerDisplay('https://k2-galerie.vercel.app/g/test')).toBe(
       'https://k2-galerie.vercel.app/g/test',
     )

@@ -1,5 +1,7 @@
 # Dialog-Stand
 
+**Letzter Stand:** 06.05.26 – **K2 Familie Admin-QR falsch (Galerie statt Familie):** API liefert **`/projects/k2-familie/meine-familie?t=…`**, aber **`normalizeLicenseeAdminUrl`** hat alles Nicht-`/admin` zu **`/admin?t=…`** gemacht – **`tenantId`** wird nur aus **`tenantId=`** gelesen, nicht aus **`t=`** → Galerie-Admin. **Fix:** Pfade unter **`PROJECT_ROUTES['k2-familie'].home`** unverändert lassen. **Tests:** `publicLinks.test.ts`. **Commit:** _(nach Push)_ ✅ **main**
+
 **Letzter Stand:** 06.05.26 – **K2 Familie `/lizenz-erfolg` – Texte & QR:** Nur noch **K2-Familie**-Wortlaut (kein Galerie-/Entdecken-Footer); **Vercel-Vorschau-URLs** in Links/QR → **`rewriteLicenceUrlForCustomerDisplay`** (`publicLinks.ts`, teilbare Origin wie Production). **`LizenzErfolgCopy`:** `screenAdminQrHint`, `showOptionalPlatformFooter`. **Tests:** `publicLinks.test.ts`. **Commit:** f3e0910e ✅ **main**
 
 **Letzter Stand:** 06.05.26 – **Regel eingehalten:** Nach Erweiterung `LizenzErfolgCopy` **`build:vercel` + `npm run test`** vor Commit (TS2741 vermeiden: neues Feld in **beiden** `getLizenzErfolgCopy`-Zweigen). **Lizenz-Erfolg K2 Familie ≠ Galerie:** `entdeckenFooterLabel`, QR-`downloadFileName` je `product_line`, Kommentar Page; **`resolveLizenzErfolgProductLine`**-Test; **`lizenzMusterDemo`** `product_line`. **Commit:** `ae1cc35f` ✅ **main**
@@ -70,7 +72,7 @@
 
 **Letzter Stand:** 30.04.26 – **mök2: Inserat Viertel – K2, Typo, QR** – Linkes Feld: großes **K2** + „GALERIE“ (`K2_GALERIE_PUBLIC_BRAND`), darunter Bild/Teal; rechts größere Header-Zeilen und fetter Werbesatz; drei Karten mit dickerer Farbleiste und Maximal-Schrift; QR ~100px, Druck 24mm, Teal-Rahmen. **Build grün.** **Commit:** (älterer Stand – siehe oben)
 
-**Was wir JETZT tun:** – **K2 Familie:** Nach **Push** Production **`k2-galerie.vercel.app`** – `/lizenz-erfolg?session_id=…` prüfen: Buttons **K2 Familie**, URLs mit **`?t=familie-…`**, Admin-QR sichtbar.
+**Was wir JETZT tun:** – **K2 Familie:** Nach **Push** Production **`k2-galerie.vercel.app`** – `/lizenz-erfolg?session_id=…` erneut: **Admin-QR** muss **`…/meine-familie?t=familie-…`** encodieren (nicht **`/admin?t=`**).
 
 **Einordnung:** Stripe-Webhook und Session-API liefern konsistent `licence_type` / `product_line`; Mandantenwechsel in K2 Familie über URL-Parameter **`t`** (wie Einladung).
 

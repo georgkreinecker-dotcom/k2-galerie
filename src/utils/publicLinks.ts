@@ -60,6 +60,11 @@ export function normalizeLicenseeAdminUrl(input: string, baseOrigin?: string): s
     if (path.toLowerCase().endsWith('/admin')) {
       return `${u.origin}${path}${u.search}`
     }
+    /** K2 Familie: API liefert /projects/k2-familie/meine-familie?t=… – nicht zu /admin umbiegen (?t= ist kein tenantId). */
+    const famHome = PROJECT_ROUTES['k2-familie'].home
+    if (path === famHome || path.startsWith(`${famHome}/`)) {
+      return `${u.origin}${path}${u.search}`
+    }
     return `${u.origin}/admin${u.search}`
   } catch {
     return raw
