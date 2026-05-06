@@ -11,7 +11,17 @@ import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWEN
 import { LicenseeAdminQrPanel } from '../components/LicenseeAdminQrPanel'
 import { buildLizenzMusterErfolgLinks } from '../utils/lizenzMusterDemo'
 
-type LicenceLinks = { galerie_url: string | null; admin_url: string; name: string; email: string }
+type LicenceLinks = {
+  galerie_url: string | null
+  admin_url: string
+  name: string
+  email: string
+  /** true = Links aus Stripe geholt, DB-Eintrag (Webhook) kann noch folgen */
+  from_stripe?: boolean
+}
+
+/** Diese API-Fehler sinnlos mit Warte-Retries wiederholen */
+const LIZENZ_SESSION_NO_RETRY_ERRORS = new Set(['Sitzung unbekannt', 'Supabase nicht konfiguriert'])
 
 export default function LizenzErfolgPage() {
   const [searchParams] = useSearchParams()
@@ -20,6 +30,7 @@ export default function LizenzErfolgPage() {
   const musterVorschau = musterParam === '1' && !sessionId
   const [links, setLinks] = useState<LicenceLinks | null>(null)
   const [linksError, setLinksError] = useState<string | null>(null)
+  const [linksFetchTick, setLinksFetchTick] = useState(0)
   const bestaetigungsDatum = new Date().toLocaleDateString('de-AT', { day: '2-digit', month: '2-digit', year: 'numeric' })
 
   /** Muster-Erfolgsseite ohne Stripe: /lizenz-erfolg?muster=1 */
@@ -33,29 +44,39 @@ export default function LizenzErfolgPage() {
 
   useEffect(() => {
     if (!sessionId) return
+    setLinks(null)
+    setLinksError(null)
     let cancelled = false
-    /** Webhook + DB können ein paar Sekunden brauchen – mehrere Versuche mit steigender Pause */
+    /** Webhook + DB können kurz brauchen; danach liefert die API ggf. Stripe-Fallback */
     const retryAfterMs = [2000, 5000, 10000]
     const load = async (attempt = 0) => {
       try {
         const res = await fetch(`/api/get-licence-by-session?session_id=${encodeURIComponent(sessionId)}`)
         const data = await res.json().catch(() => ({}))
         if (cancelled) return
-        if (data.error && !data.galerie_url) {
-          if (attempt < retryAfterMs.length) {
-            setTimeout(() => load(attempt + 1), retryAfterMs[attempt])
-            return
-          }
+
+        if (!data.error) {
+          setLinks({
+            galerie_url: data.galerie_url || null,
+            admin_url: data.admin_url || K2_GALERIE_APF_EINSTIEG,
+            name: data.name || '',
+            email: data.email || '',
+            from_stripe: data.from_stripe === true,
+          })
+          setLinksError(null)
+          return
+        }
+
+        if (LIZENZ_SESSION_NO_RETRY_ERRORS.has(String(data.error))) {
           setLinksError(data.hint || data.error)
           return
         }
-        setLinks({
-          galerie_url: data.galerie_url || null,
-          admin_url: data.admin_url || K2_GALERIE_APF_EINSTIEG,
-          name: data.name || '',
-          email: data.email || '',
-        })
-        setLinksError(null)
+
+        if (attempt < retryAfterMs.length) {
+          setTimeout(() => load(attempt + 1), retryAfterMs[attempt])
+          return
+        }
+        setLinksError(data.hint || data.error)
       } catch {
         if (cancelled) return
         if (attempt < retryAfterMs.length) {
@@ -67,7 +88,7 @@ export default function LizenzErfolgPage() {
     }
     load()
     return () => { cancelled = true }
-  }, [sessionId])
+  }, [sessionId, linksFetchTick])
 
   return (
     <main style={{ maxWidth: 480, margin: '3rem auto', padding: '0 1rem', textAlign: 'center' }}>
@@ -109,13 +130,64 @@ export default function LizenzErfolgPage() {
           : 'Vielen Dank für deine Zahlung. Deine Lizenz ist aktiv.'}
       </p>
       {linksError && (
-        <p className="lizenz-erfolg-no-print" style={{ fontSize: '0.9rem', color: 'var(--k2-muted)', marginBottom: '1rem' }}>
-          {linksError}
-        </p>
+        <div className="lizenz-erfolg-no-print" style={{ marginBottom: '1rem' }}>
+          <p style={{ fontSize: '0.9rem', color: 'var(--k2-muted)', marginBottom: '0.65rem' }}>{linksError}</p>
+          <button
+            type="button"
+            className="btn primary-btn"
+            style={{ cursor: 'pointer' }}
+            onClick={() => setLinksFetchTick((t) => t + 1)}
+          >
+            Erneut prüfen
+          </button>
+        </div>
       )}
       {links && (links.galerie_url || links.admin_url) && (
         <div className="lizenz-erfolg-no-print" style={{ marginBottom: '1.5rem', textAlign: 'left', maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
-          <p style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.5rem' }}>Deine Galerie</p>
+          <p style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '0.65rem' }}>Dein Zugang – ein Klick</p>
+          <p style={{ fontSize: '0.82rem', color: 'var(--k2-muted)', marginBottom: '0.75rem', lineHeight: 1.45 }}>
+            Das sind <strong>deine</strong> Seiten (Galerie für Besucher, Admin zum Bearbeiten) – nicht die allgemeine Lizenz-Übersicht oder die öffentliche Entdeckung.
+          </p>
+          {links.from_stripe && (
+            <p
+              style={{
+                fontSize: '0.78rem',
+                color: '#b45309',
+                background: 'rgba(251,191,36,0.12)',
+                border: '1px solid rgba(180,83,9,0.25)',
+                borderRadius: 8,
+                padding: '0.5rem 0.65rem',
+                marginBottom: '0.75rem',
+                lineHeight: 1.4,
+                textAlign: 'left',
+              }}
+            >
+              <strong>Hinweis:</strong> Die Adressen stammen direkt von Stripe (die Datenbank war noch leer). Das ist in Ordnung zum Weiterarbeiten; der Eintrag in der Lizenz-Datenbank kann wenige Sekunden später nachkommen.
+            </p>
+          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.1rem' }}>
+            {links.galerie_url && (
+              <a
+                href={links.galerie_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn primary-btn"
+                style={{ display: 'block', textAlign: 'center', textDecoration: 'none', width: '100%', boxSizing: 'border-box' }}
+              >
+                Meine Galerie öffnen
+              </a>
+            )}
+            <a
+              href={links.admin_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn primary-btn"
+              style={{ display: 'block', textAlign: 'center', textDecoration: 'none', width: '100%', boxSizing: 'border-box' }}
+            >
+              Galerie bearbeiten (Admin)
+            </a>
+          </div>
+          <p style={{ fontSize: '0.82rem', color: 'var(--k2-muted)', marginBottom: '0.35rem' }}>Adresse zum Kopieren</p>
           {links.galerie_url && (
             <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem' }}>
               <a href={links.galerie_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--k2-accent)', wordBreak: 'break-all' }}>
@@ -123,7 +195,7 @@ export default function LizenzErfolgPage() {
               </a>
             </p>
           )}
-          <p style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.5rem', marginTop: '1rem' }}>Galerie bearbeiten (Admin)</p>
+          <p style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.35rem', marginTop: '0.75rem' }}>Admin-Link</p>
           <p style={{ margin: 0, fontSize: '0.9rem' }}>
             <a href={links.admin_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--k2-accent)', wordBreak: 'break-all' }}>
               {links.admin_url}
@@ -164,8 +236,8 @@ export default function LizenzErfolgPage() {
         </div>
       )}
       {sessionId && !links && !linksError && (
-        <p className="lizenz-erfolg-no-print" style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', marginBottom: '1.5rem' }}>
-          Deine Galerie-Links werden geladen…
+        <p className="lizenz-erfolg-no-print" style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', marginBottom: '1.5rem', lineHeight: 1.45 }}>
+          Deine persönlichen Links (Galerie + Admin) werden geladen… Das dauert meist ein paar Sekunden, bis die Zahlung am Server eingetroffen ist.
         </p>
       )}
 
@@ -242,16 +314,28 @@ export default function LizenzErfolgPage() {
         </button>
       </p>
 
-      <p className="lizenz-erfolg-no-print">
-        <Link to={PROJECT_ROUTES['k2-galerie'].licences} className="btn primary-btn">
-          Zu den Lizenzen
+      <div
+        className="lizenz-erfolg-no-print"
+        style={{
+          marginTop: '1.75rem',
+          paddingTop: '1.25rem',
+          borderTop: '1px solid rgba(255,255,255,0.12)',
+          textAlign: 'left',
+          maxWidth: 420,
+          marginLeft: 'auto',
+          marginRight: 'auto',
+        }}
+      >
+        <p style={{ fontSize: '0.78rem', color: 'var(--k2-muted)', marginBottom: '0.6rem', fontWeight: 600 }}>
+          Optional – allgemeine Plattform (nicht deine persönliche Galerie)
+        </p>
+        <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: 'var(--k2-accent)', fontSize: '0.88rem', display: 'block', marginBottom: '0.45rem' }}>
+          Lizenzen & Abrechnung (Übersicht kgm) →
         </Link>
-      </p>
-      <p className="lizenz-erfolg-no-print" style={{ marginTop: '1rem' }}>
-        <Link to={ENTDECKEN_ROUTE} style={{ color: 'var(--k2-accent)', fontSize: '0.9rem' }}>
-          Zur Galerie-Entdeckung →
+        <Link to={ENTDECKEN_ROUTE} style={{ color: 'var(--k2-muted)', fontSize: '0.85rem', display: 'block' }}>
+          Öffentliche Galerie-Entdeckung →
         </Link>
-      </p>
+      </div>
       <footer className="lizenz-erfolg-no-print" style={{ marginTop: '2rem', fontSize: '0.72rem', color: 'var(--k2-muted)', lineHeight: 1.45 }}>
         {PRODUCT_COPYRIGHT_BRAND_ONLY}
         <br />
