@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 06.05.26 – **K2 Familie `/lizenz-erfolg` – Texte & QR:** Nur noch **K2-Familie**-Wortlaut (kein Galerie-/Entdecken-Footer); **Vercel-Vorschau-URLs** in Links/QR → **`rewriteLicenceUrlForCustomerDisplay`** (`publicLinks.ts`, teilbare Origin wie Production). **`LizenzErfolgCopy`:** `screenAdminQrHint`, `showOptionalPlatformFooter`. **Tests:** `publicLinks.test.ts`. **Commit:** _(nach Push eintragen)_
+**Letzter Stand:** 06.05.26 – **K2 Familie `/lizenz-erfolg` – Texte & QR:** Nur noch **K2-Familie**-Wortlaut (kein Galerie-/Entdecken-Footer); **Vercel-Vorschau-URLs** in Links/QR → **`rewriteLicenceUrlForCustomerDisplay`** (`publicLinks.ts`, teilbare Origin wie Production). **`LizenzErfolgCopy`:** `screenAdminQrHint`, `showOptionalPlatformFooter`. **Tests:** `publicLinks.test.ts`. **Commit:** f3e0910e ✅ **main**
 
 **Letzter Stand:** 06.05.26 – **Regel eingehalten:** Nach Erweiterung `LizenzErfolgCopy` **`build:vercel` + `npm run test`** vor Commit (TS2741 vermeiden: neues Feld in **beiden** `getLizenzErfolgCopy`-Zweigen). **Lizenz-Erfolg K2 Familie ≠ Galerie:** `entdeckenFooterLabel`, QR-`downloadFileName` je `product_line`, Kommentar Page; **`resolveLizenzErfolgProductLine`**-Test; **`lizenzMusterDemo`** `product_line`. **Commit:** `ae1cc35f` ✅ **main**
 
