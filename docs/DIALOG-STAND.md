@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Session-Ende 06.05.26:** Offener Arbeitsstand (Marketing-Attribution, mök2-Assets, VK2-Leitfaden, Galerie-Pages, Regeln/Doku, Build-Info) mit **qs:local** grün committed und auf **main** gepusht – siehe letzter Commit-Hash unten.
+**Session-Ende 06.05.26:** Offener Arbeitsstand (Marketing-Attribution, mök2-Assets, VK2-Leitfaden, Galerie-Pages, Regeln/Doku, Build-Info) mit **qs:local** grün committed und auf **main** gepusht. **Commit:** `916c8956` ✅ **main**
 
 **Letzter Stand:** 06.05.26 – **K2 Familie: kein Empfehlungsprogramm:** **K2FamilieLizenzErwerbenPage** ohne Empfehler-Feld; **createCheckoutShared.js** – bei **familie_monat/jahr** keine **empfehlerId** in Session-/Abo-Metadaten; **stripeWebhookLicenceShared.js** – **rowsFromCheckoutSession** setzt **empfehler_id** und Gutschrift bei Familie-Lizenz immer **null** (auch wenn Metadaten manipuliert); **stripeInvoiceRenewalShared.js** – Verlängerung: **empfehler_id** in Zahlung **null**, keine Gutschrift für **familie_***. Tests **stripeLicenceContract.test.ts** grün. **Commit:** `e308d83e` ✅ **main**
 
