@@ -29021,66 +29021,73 @@ ${name}`
                   </div>
                 </div>
               ) : (
-                <div style={{
-                  display: 'flex',
-                  gap: '0.5rem',
-                  padding: '0.75rem',
-                  background: 'rgba(255, 255, 255, 0.03)',
-                  borderRadius: '10px',
-                  border: '1px dashed rgba(95, 251, 241, 0.3)'
-                }}>
-                  <label 
-                    htmlFor="file-input-upload" 
-                    style={{
-                      padding: '0.5rem 1rem',
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      borderRadius: '6px',
-                      color: '#ffffff',
-                      cursor: 'pointer',
-                      fontSize: '0.85rem',
-                      fontWeight: '500',
-                      border: 'none',
-                      flex: 1
-                    }}
-                  >
-                    📁 Datei
-                  </label>
-                  <input
-                    id="file-input-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                    style={{ display: 'none' }}
-                  />
-                  <input
-                    id="camera-input-direct"
-                    type="file"
-                    accept="image/*"
-                    capture
-                    onChange={handleFileSelect}
-                    style={{ display: 'none' }}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleCameraClick}
-                    style={{
-                      padding: '0.5rem 1rem',
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      borderRadius: '6px',
-                      color: '#ffffff',
-                      cursor: 'pointer',
-                      fontSize: '0.85rem',
-                      fontWeight: '500',
-                      flex: 1
-                    }}
-                  >
-                    📸 Kamera
-                  </button>
-                </div>
+                <>
+                  <div style={{
+                    display: 'flex',
+                    gap: '0.5rem',
+                    padding: '0.75rem',
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    borderRadius: '10px',
+                    border: '1px dashed rgba(95, 251, 241, 0.3)'
+                  }}>
+                    <label 
+                      htmlFor="file-input-upload" 
+                      style={{
+                        padding: '0.5rem 1rem',
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        borderRadius: '6px',
+                        color: '#ffffff',
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: '500',
+                        border: 'none',
+                        flex: 1
+                      }}
+                    >
+                      📁 Datei
+                    </label>
+                    <input
+                      id="file-input-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileSelect}
+                      style={{ display: 'none' }}
+                    />
+                    <input
+                      id="camera-input-direct"
+                      type="file"
+                      accept="image/*"
+                      capture
+                      onChange={handleFileSelect}
+                      style={{ display: 'none' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleCameraClick}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '6px',
+                        color: '#ffffff',
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: '500',
+                        flex: 1
+                      }}
+                    >
+                      📸 Kamera
+                    </button>
+                  </div>
+                  {isMobileDevice && (
+                    <p style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.72)', lineHeight: 1.35 }}>
+                      Hinweis Mobil: Aus Stabilitaetsgruenden nur <strong>Original</strong> speichern. Kein Freistellen und kein Zuschneiden.
+                    </p>
+                  )}
+                </>
               )}
 
-              {/* Option: Desktop = Freistellen, Original, Vollkachel + Zuschneiden. Mobil = nur Original + Zuschneiden (Festlegung: Freistellen/Vollkachel nur PC/Laptop) */}
+              {/* Option: Desktop = Freistellen, Original, Vollkachel + Zuschneiden. Mobil = nur Original (keine Bildverarbeitung, um Abstürze/Datenlast zu vermeiden). */}
               {previewUrl && !isMobileDevice && (
                 <div style={{
                   padding: '0.75rem',
@@ -29230,7 +29237,7 @@ ${name}`
                 </div>
               )}
 
-              {/* Mobil: Nur Original und Zuschneiden (Freistellen/Vollkachel nur am PC/Laptop) */}
+              {/* Mobil: Nur Original – kein Freistellen und kein Zuschneiden (Datenmenge/Absturz beim Speichern). */}
               {previewUrl && isMobileDevice && (
                 <div style={{
                   padding: '0.75rem',
@@ -29242,12 +29249,13 @@ ${name}`
                     Bildverarbeitung (Handy/Tablet)
                   </span>
                   <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', marginBottom: '0.5rem', lineHeight: 1.4 }}>
-                    Am Handy/Tablet nur <strong>Original benutzen</strong> und <strong>Foto zuschneiden</strong>. Freistellen und Vollkachel nur am PC/Laptop.
+                    Aus Sicherheitsgruenden (hohe Datenmenge, Absturzrisiko beim Speichern) am Handy/Tablet nur <strong>Original benutzen</strong>.
+                    <br />
+                    <strong>Kein Freistellen und kein Zuschneiden auf Mobilgeraeten.</strong> Diese Funktionen gibt es nur am PC/Laptop.
                   </p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#f4f7ff' }}>
                     <span style={{ opacity: 0.9 }}>✓ Original benutzen</span>
                   </div>
-                  <AdminBildZuschneidenButton previewUrl={previewUrl} onOpenCrop={setCropImageSrc} />
                 </div>
               )}
 
