@@ -29,7 +29,11 @@ import {
   productLineFromLicenceType,
   productLineFromStripeSession,
 } from '../../api/lizenzProductLineShared.js'
-import { normalizeProductLine, normalizeProductLineFromApi } from '../utils/lizenzErfolgCopy'
+import {
+  normalizeProductLine,
+  normalizeProductLineFromApi,
+  resolveLizenzErfolgProductLine,
+} from '../utils/lizenzErfolgCopy'
 import {
   createStripeCheckoutSession,
   generateFamilieTenantId,
@@ -167,6 +171,19 @@ describe('normalizeProductLineFromApi (URLs / tenant schlagen product_line)', ()
         product_line: 'k2_galerie',
         licence_type: 'basic',
         galerie_url: 'https://x.app/g/familie-test-1',
+      }),
+    ).toBe('k2_familie')
+  })
+})
+
+describe('resolveLizenzErfolgProductLine', () => {
+  it('API product_line Galerie + meine-familie URL → k2_familie', () => {
+    expect(
+      resolveLizenzErfolgProductLine({
+        product_line: 'k2_galerie',
+        licence_type: 'basic',
+        galerie_url: 'https://x.app/projects/k2-familie/meine-familie?t=x',
+        admin_url: 'https://x.app/admin',
       }),
     ).toBe('k2_familie')
   })

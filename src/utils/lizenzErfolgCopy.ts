@@ -60,7 +60,28 @@ export function normalizeProductLineFromApi(payload: {
   }
   const au = String(payload.admin_url || '').toLowerCase()
   if (au.includes('/projects/k2-familie/') || au.includes('meine-familie')) return 'k2_familie'
+  /** Query ?tenantId=familie-… (auch wenn Pfad noch /admin) */
+  if (/\btenantid=familie-/.test(au) || /\btenant_id=familie-/.test(au)) return 'k2_familie'
   return normalizeProductLine(payload.product_line, payload.licence_type)
+}
+
+/** API sagt manchmal „Galerie“, URLs/Mandant sagen K2 Familie – immer Familie gewinnen. */
+export function resolveLizenzErfolgProductLine(payload: {
+  product_line?: string | null
+  licence_type?: string | null
+  galerie_url?: string | null
+  admin_url?: string | null
+  tenant_id?: string | null
+}): LizenzProductLine {
+  const fromFields = normalizeProductLineFromApi(payload)
+  const fromAnchorsOnly = normalizeProductLineFromApi({
+    product_line: 'k2_galerie',
+    licence_type: 'basic',
+    galerie_url: payload.galerie_url,
+    admin_url: payload.admin_url,
+    tenant_id: payload.tenant_id,
+  })
+  return fromFields === 'k2_familie' || fromAnchorsOnly === 'k2_familie' ? 'k2_familie' : 'k2_galerie'
 }
 
 export type LizenzErfolgCopy = {
@@ -68,11 +89,15 @@ export type LizenzErfolgCopy = {
   adminButtonLabel: string
   /** Nach „Das sind **deine** “ im JSX */
   accessBlurbAfterDeine: string
+  /** Kurz: K2 Familie ≠ Galerie (nur Lizenz/Abrechnung gemeinsam) – optional unter Zugangs-Block */
+  accessProductNote?: string
   visitorUrlPrintLabel: string
   loadingLine: string
   /** Nach „Unten in der **Lizenzbestätigung zum Drucken** “ im Admin-QR-Intro */
   adminQrBodyUrlsClause: string
   optionalFooterTitle: string
+  /** Footer: Link zur öffentlichen Entdecken-Seite (nicht „Galerie“ bei K2 Familie) */
+  entdeckenFooterLabel: string
   /** Druck: Hinweis wenn URLs noch fehlen */
   printMissingUrlsHint: string
 }
@@ -83,15 +108,18 @@ export function getLizenzErfolgCopy(productLine: LizenzProductLine): LizenzErfol
       openPrimaryLabel: 'K2 Familie öffnen',
       adminButtonLabel: 'K2 Familie bearbeiten (Admin)',
       accessBlurbAfterDeine:
-        'Seiten (Start für Besucher, Admin zum Bearbeiten) – nicht die allgemeine Lizenz-Übersicht oder die öffentliche Entdeckung.',
-      visitorUrlPrintLabel: 'K2 Familie (Besucher)',
+        'Zugangsseiten für K2 Familie (Start für Gäste, Bereich zum Bearbeiten) – nicht die Künstler-Galerie, nicht die allgemeine Lizenz-Übersicht und nicht die öffentliche Entdeckung.',
+      accessProductNote:
+        'K2 Familie und die Künstler-Galerie sind zwei getrennte Produkte. Über Stripe nutzt ihr dieselbe Lizenz-Abrechnung; die Links hier führen nur in deinen K2-Familie-Bereich.',
+      visitorUrlPrintLabel: 'K2 Familie – Link für Gäste',
       loadingLine:
-        'Deine persönlichen Links (K2 Familie + Admin) werden geladen… Das dauert meist ein paar Sekunden, bis die Zahlung am Server eingetroffen ist.',
+        'Deine persönlichen Links (K2 Familie + Bearbeiten) werden geladen… Das dauert meist ein paar Sekunden, bis die Zahlung am Server eingetroffen ist.',
       adminQrBodyUrlsClause:
-        'stehen K2-Familie- und Admin-Adresse mit; den QR kannst du hier als Bild sichern oder den Link kopieren.',
+        'stehen der Gäste-Link und die Adresse zum Bearbeiten mit; den QR kannst du hier als Bild sichern oder den Link kopieren.',
       optionalFooterTitle: 'Optional – allgemeine Plattform (nicht dein K2-Familie-Bereich)',
+      entdeckenFooterLabel: 'Öffentliche Entdeckung (Plattform, nicht K2 Familie) →',
       printMissingUrlsHint:
-        'Sobald K2-Familie- und Admin-Adresse oben geladen sind, erscheinen sie in diesem Kasten.',
+        'Sobald K2-Familie- und Bearbeiten-Adresse oben geladen sind, erscheinen sie in diesem Kasten.',
     }
   }
   return {
@@ -105,6 +133,7 @@ export function getLizenzErfolgCopy(productLine: LizenzProductLine): LizenzErfol
     adminQrBodyUrlsClause:
       'stehen Galerie- und Admin-Adresse mit; den QR kannst du hier als Bild sichern oder den Link kopieren.',
     optionalFooterTitle: 'Optional – allgemeine Plattform (nicht deine persönliche Galerie)',
+    entdeckenFooterLabel: 'Öffentliche Galerie-Entdeckung →',
     printMissingUrlsHint:
       'Sobald Galerie- und Admin-Adresse oben geladen sind, erscheinen sie in diesem Kasten.',
   }

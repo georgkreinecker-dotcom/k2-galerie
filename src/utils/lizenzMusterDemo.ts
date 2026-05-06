@@ -16,5 +16,6 @@ export function buildLizenzMusterErfolgLinks(origin: string) {
     admin_url: `${b}/admin?tenantId=${encodeURIComponent(LIZENZ_MUSTER_TENANT_ID)}`,
     name: LIZENZ_MUSTER_NAME,
     email: LIZENZ_MUSTER_EMAIL,
+    product_line: 'k2_galerie' as const,
   }
 }

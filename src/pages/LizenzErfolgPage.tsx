@@ -1,7 +1,7 @@
 /**
  * Seite nach erfolgreichem Stripe-Checkout (Redirect von Stripe).
  * URL: /lizenz-erfolg?session_id=...
- * Lädt Lizenz/URL per API und zeigt „Deine Galerie“ + „Admin“-Links. Enthält ausdruckbare Lizenzbestätigung.
+ * Lädt Lizenz/URL per API und zeigt Zugangslinks (Künstler-Galerie oder K2 Familie je product_line) + Admin. Druckbare Lizenzbestätigung.
  */
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
@@ -13,7 +13,7 @@ import { buildLizenzMusterErfolgLinks } from '../utils/lizenzMusterDemo'
 import {
   LIZENZ_ERFOLG_LOADING_NEUTRAL,
   type LizenzProductLine,
-  normalizeProductLineFromApi,
+  resolveLizenzErfolgProductLine,
   getLizenzErfolgCopy,
 } from '../utils/lizenzErfolgCopy'
 
@@ -23,6 +23,8 @@ type LicenceLinks = {
   name: string
   email: string
   product_line: LizenzProductLine
+  tenant_id?: string | null
+  licence_type?: string | null
   /** true = Links aus Stripe geholt, DB-Eintrag (Webhook) kann noch folgen */
   from_stripe?: boolean
 }
@@ -67,16 +69,19 @@ export default function LizenzErfolgPage() {
         if (cancelled) return
 
         if (!data.error) {
+          const adminUrl = data.admin_url || K2_GALERIE_APF_EINSTIEG
           setLinks({
             galerie_url: data.galerie_url || null,
-            admin_url: data.admin_url || K2_GALERIE_APF_EINSTIEG,
+            admin_url: adminUrl,
             name: data.name || '',
             email: data.email || '',
-            product_line: normalizeProductLineFromApi({
+            tenant_id: data.tenant_id ?? null,
+            licence_type: data.licence_type ?? null,
+            product_line: resolveLizenzErfolgProductLine({
               product_line: data.product_line,
               licence_type: data.licence_type,
               galerie_url: data.galerie_url,
-              admin_url: data.admin_url,
+              admin_url: adminUrl,
               tenant_id: data.tenant_id,
             }),
             from_stripe: data.from_stripe === true,
@@ -166,6 +171,19 @@ export default function LizenzErfolgPage() {
           <p style={{ fontSize: '0.82rem', color: 'var(--k2-muted)', marginBottom: '0.75rem', lineHeight: 1.45 }}>
             Das sind <strong>deine</strong> {copy.accessBlurbAfterDeine}
           </p>
+          {copy.accessProductNote && (
+            <p
+              style={{
+                fontSize: '0.78rem',
+                color: 'var(--k2-muted)',
+                marginBottom: '0.75rem',
+                lineHeight: 1.45,
+                textAlign: 'left',
+              }}
+            >
+              {copy.accessProductNote}
+            </p>
+          )}
           {links.from_stripe && (
             <p
               style={{
@@ -231,6 +249,9 @@ export default function LizenzErfolgPage() {
                 radius="12px"
                 primaryButtonBg="#b54a1e"
                 primaryButtonColor="#fff"
+                downloadFileName={
+                  links.product_line === 'k2_familie' ? 'admin-qr-k2-familie.png' : 'admin-qr-k2-galerie.png'
+                }
                 heading="Admin-QR fürs Handy"
                 adminIntro={
                   <p style={{ margin: 0 }}>
@@ -350,7 +371,7 @@ export default function LizenzErfolgPage() {
           Lizenzen & Abrechnung (Übersicht kgm) →
         </Link>
         <Link to={ENTDECKEN_ROUTE} style={{ color: 'var(--k2-muted)', fontSize: '0.85rem', display: 'block' }}>
-          Öffentliche Galerie-Entdeckung →
+          {copy.entdeckenFooterLabel}
         </Link>
       </div>
       <footer className="lizenz-erfolg-no-print" style={{ marginTop: '2rem', fontSize: '0.72rem', color: 'var(--k2-muted)', lineHeight: 1.45 }}>
