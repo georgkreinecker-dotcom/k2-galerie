@@ -21,8 +21,11 @@ import {
   buildGalerieUrl,
   computeEmpfehlerGutschrift,
   normalizeWebhookTenantId,
+  resolveCheckoutLicenceType,
   rowsFromCheckoutSession,
 } from '../../api/stripeWebhookLicenceShared.js'
+import { productLineFromLicenceType } from '../../api/lizenzProductLineShared.js'
+import { normalizeProductLine } from '../utils/lizenzErfolgCopy'
 import {
   createStripeCheckoutSession,
   generateFamilieTenantId,
@@ -96,6 +99,58 @@ describe('generateFamilieTenantId', () => {
     const id = generateFamilieTenantId('  Anna.Test@Familie.de  ')
     expect(id).toMatch(/^familie-[a-z0-9-]+-[a-z0-9]+$/)
     expect(id).toContain('anna-test')
+  })
+})
+
+describe('productLineFromLicenceType (eine Quelle API + Erfolgsseite)', () => {
+  it('K2 Familie Monat/Jahr → k2_familie', () => {
+    expect(productLineFromLicenceType('familie_monat')).toBe('k2_familie')
+    expect(productLineFromLicenceType('familie_jahr')).toBe('k2_familie')
+  })
+  it('Galerie-Stufen und Leer → k2_galerie', () => {
+    expect(productLineFromLicenceType('basic')).toBe('k2_galerie')
+    expect(productLineFromLicenceType('pro')).toBe('k2_galerie')
+    expect(productLineFromLicenceType('')).toBe('k2_galerie')
+  })
+})
+
+describe('normalizeProductLine (API-Felder + Fallback)', () => {
+  it('bevorzugt product_line aus der Antwort', () => {
+    expect(normalizeProductLine('k2_familie', 'basic')).toBe('k2_familie')
+    expect(normalizeProductLine('k2_galerie', 'familie_jahr')).toBe('k2_galerie')
+  })
+  it('ohne product_line: ableiten aus licence_type', () => {
+    expect(normalizeProductLine(undefined, 'familie_jahr')).toBe('k2_familie')
+    expect(normalizeProductLine(null, 'pro')).toBe('k2_galerie')
+  })
+})
+
+describe('resolveCheckoutLicenceType (Metadaten-Lücken vs. K2 Familie)', () => {
+  it('nur productLine k2_familie + Betrag Monat → familie_monat', () => {
+    expect(
+      resolveCheckoutLicenceType({
+        amount_total: STRIPE_FAMILIE_LICENCE_PRICE_CENTS.familie_monat,
+        metadata: { productLine: 'k2_familie' },
+      }),
+    ).toBe('familie_monat')
+  })
+
+  it('nur tenantId familie-* ohne licenceType + Betrag Jahr → familie_jahr', () => {
+    expect(
+      resolveCheckoutLicenceType({
+        amount_total: STRIPE_FAMILIE_LICENCE_PRICE_CENTS.familie_jahr,
+        metadata: { tenantId: 'familie-test-abc12' },
+      }),
+    ).toBe('familie_jahr')
+  })
+
+  it('Galerie-tenant ohne licenceType → basic (kein Familie-Fallback)', () => {
+    expect(
+      resolveCheckoutLicenceType({
+        amount_total: 3500,
+        metadata: { tenantId: 'galerie-test-abc12' },
+      }),
+    ).toBe('basic')
   })
 })
 

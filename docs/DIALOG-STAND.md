@@ -1,5 +1,7 @@
 # Dialog-Stand
 
+**Letzter Stand:** 06.05.26 – **K2 Familie nach Stripe-Zahlung:** Erfolgsseite zeigte fälschlich **Galerie-Lizenz** (Fallback `basic`). **Fix:** `resolveCheckoutLicenceType` in `api/stripeWebhookLicenceShared.js` (Metadaten `productLine` / `familie-`-Tenant / Betrag); DB `017_licences_licence_type_k2_familie.sql` (`familie_monat`/`familie_jahr` im CHECK); `get-licence-by-session` mit `productLineFromLicenceType`; **Admin-Link Familie:** `/projects/k2-familie/meine-familie?t=` (nicht `tenantId=`). **Tests:** `resolveCheckoutLicenceType` in `stripeLicenceContract.test.ts`. **Supabase:** Migration 017 einmal anwenden. **Commit:** _(nach Push Hash eintragen)_ ✅ **main**
+
 **Letzter Stand:** 06.05.26 – **Lizenz-Erfolgsseite „wird noch geladen“:** Ursache = **keine Zeile** in Supabase `licences` für `stripe_session_id` (Webhook zu spät/ausgeblieben). **Fix:** `api/get-licence-by-session.js` – bei leerer DB **Stripe** `checkout.sessions.retrieve` (nur `complete` + `paid`/`no_payment_required`), gleiche URLs wie Webhook via `rowsFromCheckoutSession`, Flag `from_stripe`. **LizenzErfolgPage:** Erfolg bei `!data.error`, keine Warte-Retries bei „Sitzung unbekannt“ / Supabase fehlt, **Erneut prüfen**, Hinweis bei Stripe-Fallback. **Commit:** `9874aaf5` ✅ **main**
 
 **Letzter Stand:** 04.05.26 – **mök2 Viertel-Inserat:** Teal-Logo **kgm solution** lesbar (Padding/Clamp); Unterzeile **`Professionell zeigen, organisieren, privat teilen.`** ohne „mit kgm solution“ (`tenantConfig`); Layout Kacheln/Fuß/QR wie Session; Epson-Hinweis **Abschnitt 5a** (kein §). **Commit:** `8c0862db` ✅ **main**
@@ -58,9 +60,11 @@
 
 **Letzter Stand:** 30.04.26 – **mök2: Inserat Viertel – K2, Typo, QR** – Linkes Feld: großes **K2** + „GALERIE“ (`K2_GALERIE_PUBLIC_BRAND`), darunter Bild/Teal; rechts größere Header-Zeilen und fetter Werbesatz; drei Karten mit dickerer Farbleiste und Maximal-Schrift; QR ~100px, Druck 24mm, Teal-Rahmen. **Build grün.** **Commit:** (älterer Stand – siehe oben)
 
-**Was wir JETZT tun:** – **Pause.** Nächster Schritt wenn du wieder da bist: K2-Kasse am **iPad** mit **Print-Server** + **Epson-IP** – erster Button **Epson**, zweiter **PDF/Teilen**; am **Mac** weiter zuerst Druckdialog. **Epson-IP** = Adresse des **Druckers** im WLAN (eine Zahl für alle Geräte); **Print-Server-URL** = **Mac**-IP mit Port.
+**Was wir JETZT tun:** – **K2 Familie Lizenz:** Nach Push **Migration 017** in Supabase ausführen; Test-Checkout Familie → Erfolgsseite **K2 Familie**-Texte + Link **Meine Familie** mit `?t=`.
 
-**Einordnung:** iPad-UX ohne AirPrint-Wirrwarr; Desktop-Bon bleibt Druckdialog zuerst (`KRITISCHE-ABLAEUFE`); Brother-Etikett + Epson-Bon teilen den Print-Server-Ansatz.
+**Einordnung:** Stripe-Webhook und Session-API liefern konsistent `licence_type` / `product_line`; Mandantenwechsel in K2 Familie über URL-Parameter **`t`** (wie Einladung).
+
+**Pause / Kasse:** Nächster Schritt optional: K2-Kasse am **iPad** mit **Print-Server** + **Epson-IP** – erster Button **Epson**, zweiter **PDF/Teilen**; am **Mac** weiter zuerst Druckdialog.
 
 ---
 

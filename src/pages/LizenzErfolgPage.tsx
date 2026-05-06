@@ -3,19 +3,26 @@
  * URL: /lizenz-erfolg?session_id=...
  * Lädt Lizenz/URL per API und zeigt „Deine Galerie“ + „Admin“-Links. Enthält ausdruckbare Lizenzbestätigung.
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import '../App.css'
 import { PROJECT_ROUTES, ENTDECKEN_ROUTE, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { LicenseeAdminQrPanel } from '../components/LicenseeAdminQrPanel'
 import { buildLizenzMusterErfolgLinks } from '../utils/lizenzMusterDemo'
+import {
+  LIZENZ_ERFOLG_LOADING_NEUTRAL,
+  type LizenzProductLine,
+  normalizeProductLine,
+  getLizenzErfolgCopy,
+} from '../utils/lizenzErfolgCopy'
 
 type LicenceLinks = {
   galerie_url: string | null
   admin_url: string
   name: string
   email: string
+  product_line: LizenzProductLine
   /** true = Links aus Stripe geholt, DB-Eintrag (Webhook) kann noch folgen */
   from_stripe?: boolean
 }
@@ -32,6 +39,10 @@ export default function LizenzErfolgPage() {
   const [linksError, setLinksError] = useState<string | null>(null)
   const [linksFetchTick, setLinksFetchTick] = useState(0)
   const bestaetigungsDatum = new Date().toLocaleDateString('de-AT', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  const copy = useMemo(
+    () => getLizenzErfolgCopy(links?.product_line ?? 'k2_galerie'),
+    [links?.product_line],
+  )
 
   /** Muster-Erfolgsseite ohne Stripe: /lizenz-erfolg?muster=1 */
   useEffect(() => {
@@ -61,6 +72,7 @@ export default function LizenzErfolgPage() {
             admin_url: data.admin_url || K2_GALERIE_APF_EINSTIEG,
             name: data.name || '',
             email: data.email || '',
+            product_line: normalizeProductLine(data.product_line, data.licence_type),
             from_stripe: data.from_stripe === true,
           })
           setLinksError(null)
@@ -146,7 +158,7 @@ export default function LizenzErfolgPage() {
         <div className="lizenz-erfolg-no-print" style={{ marginBottom: '1.5rem', textAlign: 'left', maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
           <p style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '0.65rem' }}>Dein Zugang – ein Klick</p>
           <p style={{ fontSize: '0.82rem', color: 'var(--k2-muted)', marginBottom: '0.75rem', lineHeight: 1.45 }}>
-            Das sind <strong>deine</strong> Seiten (Galerie für Besucher, Admin zum Bearbeiten) – nicht die allgemeine Lizenz-Übersicht oder die öffentliche Entdeckung.
+            Das sind <strong>deine</strong> {copy.accessBlurbAfterDeine}
           </p>
           {links.from_stripe && (
             <p
@@ -174,7 +186,7 @@ export default function LizenzErfolgPage() {
                 className="btn primary-btn"
                 style={{ display: 'block', textAlign: 'center', textDecoration: 'none', width: '100%', boxSizing: 'border-box' }}
               >
-                Meine Galerie öffnen
+                {copy.openPrimaryLabel}
               </a>
             )}
             <a
@@ -184,7 +196,7 @@ export default function LizenzErfolgPage() {
               className="btn primary-btn"
               style={{ display: 'block', textAlign: 'center', textDecoration: 'none', width: '100%', boxSizing: 'border-box' }}
             >
-              Galerie bearbeiten (Admin)
+              {copy.adminButtonLabel}
             </a>
           </div>
           <p style={{ fontSize: '0.82rem', color: 'var(--k2-muted)', marginBottom: '0.35rem' }}>Adresse zum Kopieren</p>
@@ -224,8 +236,7 @@ export default function LizenzErfolgPage() {
                     ) : (
                       <>
                         Das ist <strong>dein eigener</strong> Admin-Zugang nach dem Lizenzkauf – nicht der QR der ök2-Muster-Demo.
-                        Unten in der <strong>Lizenzbestätigung zum Drucken</strong> stehen Galerie- und Admin-Adresse mit; den QR
-                        kannst du hier als Bild sichern oder den Link kopieren.
+                        Unten in der <strong>Lizenzbestätigung zum Drucken</strong> {copy.adminQrBodyUrlsClause}
                       </>
                     )}
                   </p>
@@ -237,7 +248,7 @@ export default function LizenzErfolgPage() {
       )}
       {sessionId && !links && !linksError && (
         <p className="lizenz-erfolg-no-print" style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', marginBottom: '1.5rem', lineHeight: 1.45 }}>
-          Deine persönlichen Links (Galerie + Admin) werden geladen… Das dauert meist ein paar Sekunden, bis die Zahlung am Server eingetroffen ist.
+          {LIZENZ_ERFOLG_LOADING_NEUTRAL}
         </p>
       )}
 
@@ -274,12 +285,12 @@ export default function LizenzErfolgPage() {
         )}
         {links?.galerie_url && (
           <p style={{ margin: '0.75rem 0 0.35rem', fontSize: '0.9rem', color: '#333', lineHeight: 1.45, wordBreak: 'break-all' }}>
-            <strong>Galerie (Besucher):</strong> {links.galerie_url}
+            <strong>{copy.visitorUrlPrintLabel}:</strong> {links.galerie_url}
           </p>
         )}
         {links?.admin_url && (
           <p style={{ margin: '0.35rem 0 0.35rem', fontSize: '0.9rem', color: '#333', lineHeight: 1.45, wordBreak: 'break-all' }}>
-            <strong>Admin (Bearbeiten):</strong> {links.admin_url}
+            <strong>{copy.adminButtonLabel}:</strong> {links.admin_url}
           </p>
         )}
         <p className="lizenz-erfolg-no-print" style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: '#444', lineHeight: 1.5 }}>
@@ -290,15 +301,15 @@ export default function LizenzErfolgPage() {
         <p className="lizenz-erfolg-print-only" style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: '#444', lineHeight: 1.5 }}>
           {links?.admin_url ? (
             <>
-              <strong>Admin-Zugang:</strong> Die Adresse „Admin (Bearbeiten)“ steht oben in diesem Kasten. Vor dem Drucken
-              kannst du unter „Admin-QR fürs Handy“ noch einen QR speichern oder den Link kopieren – der QR erscheint nicht
-              auf dem Ausdruck.
+              <strong>Admin-Zugang:</strong> Die Adresse „{copy.adminButtonLabel}“ steht oben in diesem Kasten. Vor dem
+              Drucken kannst du unter „Admin-QR fürs Handy“ noch einen QR speichern oder den Link kopieren – der QR erscheint
+              nicht auf dem Ausdruck.
             </>
           ) : (
             <>
-              <strong>Hinweis:</strong> Sobald Galerie- und Admin-Adresse oben geladen sind, erscheinen sie in diesem Kasten.
-              Fehlen sie nach der Zahlung dauerhaft, ist die serverseitige Verarbeitung (Webhook) noch nicht eingerichtet –
-              siehe Dokumentation STRIPE-TEST / Webhook in Vercel.
+              <strong>Hinweis:</strong> {copy.printMissingUrlsHint} Fehlen sie nach der Zahlung dauerhaft, ist die
+              serverseitige Verarbeitung (Webhook) noch nicht eingerichtet – siehe Dokumentation STRIPE-TEST / Webhook in
+              Vercel.
             </>
           )}
         </p>
@@ -327,7 +338,7 @@ export default function LizenzErfolgPage() {
         }}
       >
         <p style={{ fontSize: '0.78rem', color: 'var(--k2-muted)', marginBottom: '0.6rem', fontWeight: 600 }}>
-          Optional – allgemeine Plattform (nicht deine persönliche Galerie)
+          {copy.optionalFooterTitle}
         </p>
         <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: 'var(--k2-accent)', fontSize: '0.88rem', display: 'block', marginBottom: '0.45rem' }}>
           Lizenzen & Abrechnung (Übersicht kgm) →

@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import '../App.css'
 import { K2_FAMILIE_LIZENZPREISE } from '../config/licencePricing'
-import { AGB_ROUTE, PROJECT_ROUTES } from '../config/navigation'
+import { AGB_ROUTE, BASE_APP_URL, PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import { isValidEmpfehlerIdFormat } from '../utils/empfehlerId'
@@ -16,6 +16,15 @@ import { adminTheme } from '../config/theme'
 type FamiliePlan = 'familie_monat' | 'familie_jahr'
 
 const R = PROJECT_ROUTES['k2-familie']
+
+/** Gleiche Lizenz-Seite auf Production – dort ist Stripe wie unter Vercel konfiguriert. */
+const VERCEL_FAMILIE_LIZENZ_URL = `${BASE_APP_URL}${R.lizenzErwerben}`
+
+function isLocalDevHost(): boolean {
+  if (typeof window === 'undefined') return false
+  const h = window.location.hostname
+  return h === 'localhost' || h === '127.0.0.1' || h.endsWith('.local')
+}
 
 const OPTIONS: { id: FamiliePlan; title: string; subtitle: string; preis: string }[] = [
   {
@@ -126,6 +135,47 @@ export default function K2FamilieLizenzErwerbenPage() {
           Zahlung über <strong>Stripe</strong> (wie bei der K2-Galerie-Lizenz) – monatlich oder jährlich. Nach erfolgreicher Zahlung
           siehst du die Bestätigung unter <strong>Lizenz erfolgreich</strong> (gleiche Erfolgsseite wie die Galerie).
         </p>
+
+        {isLocalDevHost() && (
+          <div
+            style={{
+              marginBottom: '1.15rem',
+              padding: '0.85rem 1rem',
+              background: 'rgba(217, 119, 6, 0.12)',
+              border: '1px solid rgba(217, 119, 6, 0.45)',
+              borderRadius: 12,
+              fontSize: '0.88rem',
+              lineHeight: 1.55,
+              color: text,
+            }}
+          >
+            <strong style={{ color: '#b45309' }}>Lokal am Mac:</strong> Ohne{' '}
+            <code style={{ fontSize: '0.8rem', background: 'rgba(0,0,0,0.06)', padding: '0.12rem 0.35rem', borderRadius: 6 }}>
+              STRIPE_SECRET_KEY=sk_test_…
+            </code>{' '}
+            in der <strong>.env</strong> im Projektroot und <strong>neu gestartetem</strong> Dev-Server startet kein Checkout (das ist
+            bewusst). Für einen <strong>echten Testlauf</strong> mit Testkarte: dieselbe Seite auf der Live-App öffnen.
+            <div style={{ marginTop: '0.65rem' }}>
+              <a
+                href={VERCEL_FAMILIE_LIZENZ_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-block',
+                  padding: '0.6rem 1rem',
+                  background: `linear-gradient(135deg, ${accentSoft} 0%, ${accent} 100%)`,
+                  color: '#fff',
+                  borderRadius: 10,
+                  fontWeight: 700,
+                  fontSize: '0.9rem',
+                  textDecoration: 'none',
+                }}
+              >
+                K2 Familie Lizenz auf Vercel testen (neuer Tab) →
+              </a>
+            </div>
+          </div>
+        )}
 
         <div
           style={{
@@ -344,9 +394,30 @@ export default function K2FamilieLizenzErwerbenPage() {
             </p>
           )}
           {error && (
-            <p style={{ color: '#b91c1c', fontSize: '0.9rem', margin: '0 0 0.85rem', whiteSpace: 'pre-line', lineHeight: 1.45 }}>
-              {error}
-            </p>
+            <div style={{ margin: '0 0 0.85rem' }}>
+              <p style={{ color: '#b91c1c', fontSize: '0.9rem', margin: '0 0 0.65rem', whiteSpace: 'pre-line', lineHeight: 1.45 }}>
+                {error}
+              </p>
+              {typeof error === 'string' && error.includes('Stripe lokal nicht konfiguriert') && (
+                <a
+                  href={VERCEL_FAMILIE_LIZENZ_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-block',
+                    padding: '0.65rem 1rem',
+                    background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
+                    color: '#fff',
+                    borderRadius: 10,
+                    fontWeight: 700,
+                    fontSize: '0.9rem',
+                    textDecoration: 'none',
+                  }}
+                >
+                  Hier auf Vercel mit Testkarte bezahlen (neuer Tab) →
+                </a>
+              )}
+            </div>
           )}
 
           <button

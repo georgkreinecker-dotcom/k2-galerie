@@ -1,6 +1,11 @@
 /**
  * Reine Hilfen für webhook-stripe.js – ohne Stripe/Supabase (gut testbar).
  */
+import {
+  STRIPE_FAMILIE_CHECKOUT_TYPES,
+  STRIPE_FAMILIE_LICENCE_PRICE_CENTS,
+  STRIPE_CHECKOUT_LICENCE_TYPES,
+} from './stripePriceCents.js'
 
 export const WEBHOOK_TENANT_ID_REGEX = /^[a-z0-9-]{1,64}$/
 
@@ -17,6 +22,40 @@ export function buildGalerieUrl(baseUrl, tenantId) {
   const b = String(baseUrl || '').replace(/\/$/, '')
   if (!b) return null
   return `${b}/g/${tenantId}`
+}
+
+/**
+ * Aus Checkout-Session: licence_type für DB/Webhook (Galerie vs. K2 Familie).
+ * Absicherung wenn Metadaten in Stripe unvollständig ankommen – sonst Fallback „basic“ → falsche Erfolgsseite.
+ * @param {object} session Stripe checkout.session
+ */
+export function resolveCheckoutLicenceType(session) {
+  const metadata = session?.metadata || {}
+  let lt = String(metadata.licenceType || metadata.licence_type || '').trim()
+  if (STRIPE_FAMILIE_CHECKOUT_TYPES.includes(lt)) return lt
+  if (STRIPE_CHECKOUT_LICENCE_TYPES.includes(lt)) return lt
+
+  const productLine = String(metadata.productLine || '').trim()
+  const tenantNorm = normalizeWebhookTenantId(metadata.tenantId)
+  const isFamilieTenant = Boolean(tenantNorm?.startsWith('familie-'))
+  const isFamilieProduct = productLine === 'k2_familie' || isFamilieTenant
+
+  if (isFamilieProduct) {
+    const fromAmount = inferFamilieLicenceTypeFromAmount(session?.amount_total)
+    if (fromAmount) return fromAmount
+    return 'familie_jahr'
+  }
+
+  if (lt) return lt
+  return 'basic'
+}
+
+function inferFamilieLicenceTypeFromAmount(amountTotal) {
+  const n = typeof amountTotal === 'number' ? amountTotal : Number(amountTotal)
+  if (!Number.isFinite(n)) return null
+  if (n === STRIPE_FAMILIE_LICENCE_PRICE_CENTS.familie_monat) return 'familie_monat'
+  if (n === STRIPE_FAMILIE_LICENCE_PRICE_CENTS.familie_jahr) return 'familie_jahr'
+  return null
 }
 
 /**
@@ -38,7 +77,7 @@ export function computeEmpfehlerGutschrift(amountTotal, empfehlerId) {
  */
 export function rowsFromCheckoutSession(session, baseUrl) {
   const metadata = session?.metadata || {}
-  const licenceType = metadata.licenceType || 'basic'
+  const licenceType = resolveCheckoutLicenceType(session)
   const empfehlerId = (metadata.empfehlerId || '').trim() || null
   const customerName = (metadata.customerName || '').trim() || 'Kunde'
   const tenantId = normalizeWebhookTenantId(metadata.tenantId)
