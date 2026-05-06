@@ -8,19 +8,27 @@ export const LIZENZ_ERFOLG_LOADING_NEUTRAL =
 
 export { productLineFromLicenceType }
 
-/** tenantId / tenant_id aus Admin-Link (?tenantId= / ?tenant_id=) – für Erfolgsseite wenn DB nur /admin liefert. */
+/** tenantId / tenant_id / K2-Familie-Mandant ?t= aus Admin- oder meine-familie-Link. */
 export function parseTenantIdFromAdminUrl(adminUrl: string | null | undefined): string {
   const s = String(adminUrl || '').trim()
   if (!s) return ''
   try {
     const base = typeof window !== 'undefined' ? window.location.origin : 'https://k2-galerie.vercel.app'
     const u = new URL(s, base)
-    return (u.searchParams.get('tenantId') || u.searchParams.get('tenant_id') || '').trim()
+    const tid = (u.searchParams.get('tenantId') || u.searchParams.get('tenant_id') || '').trim()
+    if (tid) return tid
+    const t = (u.searchParams.get('t') || '').trim()
+    if (t.toLowerCase().startsWith('familie-')) return t
+    return ''
   } catch {
     const q = s.includes('?') ? s.slice(s.indexOf('?') + 1) : ''
     try {
       const p = new URLSearchParams(q)
-      return (p.get('tenantId') || p.get('tenant_id') || '').trim()
+      const tid = (p.get('tenantId') || p.get('tenant_id') || '').trim()
+      if (tid) return tid
+      const t = (p.get('t') || '').trim()
+      if (t.toLowerCase().startsWith('familie-')) return t
+      return ''
     } catch {
       return ''
     }
@@ -60,8 +68,9 @@ export function normalizeProductLineFromApi(payload: {
   }
   const au = String(payload.admin_url || '').toLowerCase()
   if (au.includes('/projects/k2-familie/') || au.includes('meine-familie')) return 'k2_familie'
-  /** Query ?tenantId=familie-… (auch wenn Pfad noch /admin) */
+  /** Query ?tenantId=familie-… / ?t=familie-… (auch wenn Pfad noch /admin) */
   if (/\btenantid=familie-/.test(au) || /\btenant_id=familie-/.test(au)) return 'k2_familie'
+  if (/\b[?&]t=familie-/.test(au)) return 'k2_familie'
   return normalizeProductLine(payload.product_line, payload.licence_type)
 }
 
@@ -100,6 +109,10 @@ export type LizenzErfolgCopy = {
   entdeckenFooterLabel: string
   /** Druck: Hinweis wenn URLs noch fehlen */
   printMissingUrlsHint: string
+  /** Nur Bildschirm: wo Admin-QR (unterhalb Druckkasten) */
+  screenAdminQrHint: string
+  /** true = optionaler Footer mit Lizenzen/Entdecken anzeigen */
+  showOptionalPlatformFooter: boolean
 }
 
 export function getLizenzErfolgCopy(productLine: LizenzProductLine): LizenzErfolgCopy {
@@ -108,18 +121,19 @@ export function getLizenzErfolgCopy(productLine: LizenzProductLine): LizenzErfol
       openPrimaryLabel: 'K2 Familie öffnen',
       adminButtonLabel: 'K2 Familie bearbeiten (Admin)',
       accessBlurbAfterDeine:
-        'Zugangsseiten für K2 Familie (Start für Gäste, Bereich zum Bearbeiten) – nicht die Künstler-Galerie, nicht die allgemeine Lizenz-Übersicht und nicht die öffentliche Entdeckung.',
-      accessProductNote:
-        'K2 Familie und die Künstler-Galerie sind zwei getrennte Produkte. Über Stripe nutzt ihr dieselbe Lizenz-Abrechnung; die Links hier führen nur in deinen K2-Familie-Bereich.',
+        'Einstiege für K2 Familie: einen für Gäste, einen zum Bearbeiten. Speichere oder teile die Adressen wie du magst.',
       visitorUrlPrintLabel: 'K2 Familie – Link für Gäste',
       loadingLine:
-        'Deine persönlichen Links (K2 Familie + Bearbeiten) werden geladen… Das dauert meist ein paar Sekunden, bis die Zahlung am Server eingetroffen ist.',
+        'Deine Links für K2 Familie werden geladen… Meist nur wenige Sekunden nach der Zahlung.',
       adminQrBodyUrlsClause:
-        'stehen der Gäste-Link und die Adresse zum Bearbeiten mit; den QR kannst du hier als Bild sichern oder den Link kopieren.',
-      optionalFooterTitle: 'Optional – allgemeine Plattform (nicht dein K2-Familie-Bereich)',
-      entdeckenFooterLabel: 'Öffentliche Entdeckung (Plattform, nicht K2 Familie) →',
+        'stehen der Gäste-Link und die Admin-Adresse. Den QR kannst du als Bild sichern oder den Link kopieren.',
+      optionalFooterTitle: '',
+      entdeckenFooterLabel: '',
       printMissingUrlsHint:
-        'Sobald K2-Familie- und Bearbeiten-Adresse oben geladen sind, erscheinen sie in diesem Kasten.',
+        'Sobald Gäste- und Admin-Adresse oben geladen sind, erscheinen sie in diesem Kasten.',
+      screenAdminQrHint:
+        'Admin-QR: Oben unter „Admin-QR fürs Handy“ – Link kopieren oder QR-Bild speichern und zu deinen Unterlagen legen.',
+      showOptionalPlatformFooter: false,
     }
   }
   return {
@@ -136,5 +150,8 @@ export function getLizenzErfolgCopy(productLine: LizenzProductLine): LizenzErfol
     entdeckenFooterLabel: 'Öffentliche Galerie-Entdeckung →',
     printMissingUrlsHint:
       'Sobald Galerie- und Admin-Adresse oben geladen sind, erscheinen sie in diesem Kasten.',
+    screenAdminQrHint:
+      'QR-Code für den Admin: Auf dem Bildschirm oberhalb dieses Kastens unter „Admin-QR fürs Handy“ – dort Link kopieren oder QR-Bild speichern und mit zu deinen Unterlagen legen. Das ist dein persönlicher Zugang nach dem Lizenzkauf (nicht der ök2-Demo-QR).',
+    showOptionalPlatformFooter: true,
   }
 }

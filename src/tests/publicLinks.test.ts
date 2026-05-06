@@ -5,6 +5,7 @@ import {
   getPublicK2FamilieMusterEntryUrl,
   normalizeLicenseeAdminUrl,
   getLicenseeAdminQrTargetUrl,
+  rewriteLicenceUrlForCustomerDisplay,
 } from '../utils/publicLinks'
 
 describe('publicLinks', () => {
@@ -48,6 +49,18 @@ describe('publicLinks', () => {
     expect(u.startsWith(`${origin}/admin?`)).toBe(true)
     expect(u).toContain('v=12345')
     expect(u).toContain('_=')
+  })
+
+  it('rewriteLicenceUrlForCustomerDisplay: Vercel-Vorschau → teilbare Origin, Production unverändert', () => {
+    const preview =
+      'https://k2-galerie-5xpfubp4x-georgs-projects-77ea633e.vercel.app/admin?t=familie-x'
+    const out = rewriteLicenceUrlForCustomerDisplay(preview)
+    expect(out).toContain('k2-galerie.vercel.app')
+    expect(out).not.toContain('5xpfubp4x')
+    expect(out).toContain('/admin?t=familie-x')
+    expect(rewriteLicenceUrlForCustomerDisplay('https://k2-galerie.vercel.app/g/test')).toBe(
+      'https://k2-galerie.vercel.app/g/test',
+    )
   })
 })
 

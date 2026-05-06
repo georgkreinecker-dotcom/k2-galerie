@@ -1,4 +1,9 @@
 import { APP_BASE_URL, APP_BASE_URL_SHAREABLE } from '../config/externalUrls'
+
+/** Production-Host auf Vercel – Vorschau-Deployments (*-*.vercel.app) sind oft passwortgeschützt. */
+const VERCEL_K2_GALERIE_PRODUCTION_HOST = 'k2-galerie.vercel.app'
+
+const shareableOrigin = () => APP_BASE_URL_SHAREABLE.replace(/\/$/, '')
 import { K2_FAMILIE_WILLKOMMEN_ROUTE, PROJECT_ROUTES } from '../config/navigation'
 import { buildQrUrlWithBust } from '../hooks/useServerBuildTimestamp'
 
@@ -63,5 +68,25 @@ export function normalizeLicenseeAdminUrl(input: string, baseOrigin?: string): s
 
 export function getLicenseeAdminQrTargetUrl(adminUrl: string, versionTimestamp: number, baseOrigin?: string): string {
   return buildQrUrlWithBust(normalizeLicenseeAdminUrl(adminUrl, baseOrigin), versionTimestamp)
+}
+
+/**
+ * Nach dem Kauf liefert Stripe/DB oft die URL des **Vorschau-Deployments** (…vercel.app mit Hash).
+ * Diese Deployments verlangen ggf. Vercel-Login – QR und Kopierlinks sollen auf die **öffentliche App** zeigen.
+ * Production `k2-galerie.vercel.app` und Fremd-Domains bleiben unverändert; localhost nur über relative Auflösung.
+ */
+export function rewriteLicenceUrlForCustomerDisplay(url: string | null | undefined): string {
+  const trimmed = (url || '').trim()
+  if (!trimmed) return ''
+  try {
+    const u = new URL(trimmed, `${shareableOrigin()}/`)
+    const h = u.hostname.toLowerCase()
+    if (h.endsWith('.vercel.app') && h !== VERCEL_K2_GALERIE_PRODUCTION_HOST) {
+      return `${shareableOrigin()}${u.pathname}${u.search}${u.hash}`
+    }
+    return u.href
+  } catch {
+    return trimmed
+  }
 }
 

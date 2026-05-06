@@ -3,13 +3,14 @@
  * URL: /lizenz-erfolg?session_id=...
  * Lädt Lizenz/URL per API und zeigt Zugangslinks (Künstler-Galerie oder K2 Familie je product_line) + Admin. Druckbare Lizenzbestätigung.
  */
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import '../App.css'
 import { PROJECT_ROUTES, ENTDECKEN_ROUTE, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { LicenseeAdminQrPanel } from '../components/LicenseeAdminQrPanel'
 import { buildLizenzMusterErfolgLinks } from '../utils/lizenzMusterDemo'
+import { rewriteLicenceUrlForCustomerDisplay } from '../utils/publicLinks'
 import {
   LIZENZ_ERFOLG_LOADING_NEUTRAL,
   type LizenzProductLine,
@@ -40,77 +41,121 @@ export default function LizenzErfolgPage() {
   const [links, setLinks] = useState<LicenceLinks | null>(null)
   const [linksError, setLinksError] = useState<string | null>(null)
   const [linksFetchTick, setLinksFetchTick] = useState(0)
+  /** Verhindert, dass eine ältere Fetch-Kette nach „Erneut prüfen“ noch setLinks ausführt. */
+  const licenceFetchEpochRef = useRef(0)
+  const licenceSessionForLinksRef = useRef<string | null>(null)
   const bestaetigungsDatum = new Date().toLocaleDateString('de-AT', { day: '2-digit', month: '2-digit', year: 'numeric' })
   const copy = useMemo(
     () => getLizenzErfolgCopy(links?.product_line ?? 'k2_galerie'),
     [links?.product_line],
   )
 
+  /** Vorschau-URLs (*.vercel.app außer Production) → öffentliche App, damit QR nicht auf Vercel-Login zeigt. */
+  const linksForUi = useMemo((): LicenceLinks | null => {
+    if (!links) return null
+    const gRaw = links.galerie_url
+    const g = gRaw ? rewriteLicenceUrlForCustomerDisplay(gRaw) : null
+    const aRaw = links.admin_url || ''
+    const a = rewriteLicenceUrlForCustomerDisplay(aRaw) || aRaw
+    return { ...links, galerie_url: g, admin_url: a }
+  }, [links])
+
   /** Muster-Erfolgsseite ohne Stripe: /lizenz-erfolg?muster=1 */
   useEffect(() => {
     if (sessionId) return
     if (musterParam !== '1') return
     const o = typeof window !== 'undefined' ? window.location.origin : ''
-    setLinks(buildLizenzMusterErfolgLinks(o))
+    const b = buildLizenzMusterErfolgLinks(o)
+    setLinks({
+      ...b,
+      galerie_url: b.galerie_url ? rewriteLicenceUrlForCustomerDisplay(b.galerie_url) : null,
+      admin_url: rewriteLicenceUrlForCustomerDisplay(b.admin_url) || b.admin_url,
+    })
     setLinksError(null)
   }, [sessionId, musterParam])
 
   useEffect(() => {
     if (!sessionId) return
-    setLinks(null)
+    const epoch = ++licenceFetchEpochRef.current
+    const isNewSession = licenceSessionForLinksRef.current !== sessionId
+    licenceSessionForLinksRef.current = sessionId
+    /** Nur bei neuer Session leeren – sonst „Erneut prüfen“ kurz richtig, dann falsch (Merge fehlt). */
+    if (isNewSession) setLinks(null)
     setLinksError(null)
     let cancelled = false
+    let retryTimer: ReturnType<typeof setTimeout> | null = null
     /** Webhook + DB können kurz brauchen; danach liefert die API ggf. Stripe-Fallback */
     const retryAfterMs = [2000, 5000, 10000]
     const load = async (attempt = 0) => {
       try {
         const res = await fetch(`/api/get-licence-by-session?session_id=${encodeURIComponent(sessionId)}`)
         const data = await res.json().catch(() => ({}))
-        if (cancelled) return
+        if (cancelled || licenceFetchEpochRef.current !== epoch) return
 
         if (!data.error) {
-          const adminUrl = data.admin_url || K2_GALERIE_APF_EINSTIEG
-          setLinks({
-            galerie_url: data.galerie_url || null,
-            admin_url: adminUrl,
-            name: data.name || '',
-            email: data.email || '',
-            tenant_id: data.tenant_id ?? null,
-            licence_type: data.licence_type ?? null,
-            product_line: resolveLizenzErfolgProductLine({
+          setLinks((prev) => {
+            if (licenceFetchEpochRef.current !== epoch) return prev
+            const gIn = data.galerie_url
+            const galerie_url =
+              gIn != null && String(gIn).trim() !== '' ? String(gIn).trim() : prev?.galerie_url ?? null
+            const tIn = data.tenant_id
+            const tenant_id =
+              tIn != null && String(tIn).trim() !== '' ? String(tIn).trim() : prev?.tenant_id ?? null
+            const aIn = data.admin_url
+            let admin_url =
+              aIn != null && String(aIn).trim() !== '' ? String(aIn).trim() : prev?.admin_url || ''
+            if (!admin_url) admin_url = K2_GALERIE_APF_EINSTIEG
+            const licence_type = data.licence_type ?? prev?.licence_type ?? null
+            const product_line = resolveLizenzErfolgProductLine({
               product_line: data.product_line,
-              licence_type: data.licence_type,
-              galerie_url: data.galerie_url,
-              admin_url: adminUrl,
-              tenant_id: data.tenant_id,
-            }),
-            from_stripe: data.from_stripe === true,
+              licence_type,
+              galerie_url,
+              admin_url,
+              tenant_id,
+            })
+            const name = (data.name && String(data.name).trim()) ? String(data.name) : prev?.name || ''
+            const email = (data.email && String(data.email).trim()) ? String(data.email) : prev?.email || ''
+            return {
+              galerie_url,
+              admin_url,
+              name,
+              email,
+              tenant_id,
+              licence_type,
+              product_line,
+              from_stripe: data.from_stripe === true || prev?.from_stripe === true,
+            }
           })
           setLinksError(null)
           return
         }
 
         if (LIZENZ_SESSION_NO_RETRY_ERRORS.has(String(data.error))) {
+          if (licenceFetchEpochRef.current !== epoch) return
           setLinksError(data.hint || data.error)
           return
         }
 
         if (attempt < retryAfterMs.length) {
-          setTimeout(() => load(attempt + 1), retryAfterMs[attempt])
+          retryTimer = setTimeout(() => load(attempt + 1), retryAfterMs[attempt])
           return
         }
+        if (licenceFetchEpochRef.current !== epoch) return
         setLinksError(data.hint || data.error)
       } catch {
-        if (cancelled) return
+        if (cancelled || licenceFetchEpochRef.current !== epoch) return
         if (attempt < retryAfterMs.length) {
-          setTimeout(() => load(attempt + 1), retryAfterMs[attempt])
+          retryTimer = setTimeout(() => load(attempt + 1), retryAfterMs[attempt])
           return
         }
         setLinksError('Verbindung fehlgeschlagen.')
       }
     }
     load()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+      if (retryTimer) clearTimeout(retryTimer)
+    }
   }, [sessionId, linksFetchTick])
 
   return (
@@ -165,7 +210,7 @@ export default function LizenzErfolgPage() {
           </button>
         </div>
       )}
-      {links && (links.galerie_url || links.admin_url) && (
+      {linksForUi && (linksForUi.galerie_url || linksForUi.admin_url) && (
         <div className="lizenz-erfolg-no-print" style={{ marginBottom: '1.5rem', textAlign: 'left', maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
           <p style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '0.65rem' }}>Dein Zugang – ein Klick</p>
           <p style={{ fontSize: '0.82rem', color: 'var(--k2-muted)', marginBottom: '0.75rem', lineHeight: 1.45 }}>
@@ -184,7 +229,7 @@ export default function LizenzErfolgPage() {
               {copy.accessProductNote}
             </p>
           )}
-          {links.from_stripe && (
+          {linksForUi.from_stripe && (
             <p
               style={{
                 fontSize: '0.78rem',
@@ -202,9 +247,9 @@ export default function LizenzErfolgPage() {
             </p>
           )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.1rem' }}>
-            {links.galerie_url && (
+            {linksForUi.galerie_url && (
               <a
-                href={links.galerie_url}
+                href={linksForUi.galerie_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn primary-btn"
@@ -214,7 +259,7 @@ export default function LizenzErfolgPage() {
               </a>
             )}
             <a
-              href={links.admin_url}
+              href={linksForUi.admin_url}
               target="_blank"
               rel="noopener noreferrer"
               className="btn primary-btn"
@@ -224,24 +269,24 @@ export default function LizenzErfolgPage() {
             </a>
           </div>
           <p style={{ fontSize: '0.82rem', color: 'var(--k2-muted)', marginBottom: '0.35rem' }}>Adresse zum Kopieren</p>
-          {links.galerie_url && (
+          {linksForUi.galerie_url && (
             <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem' }}>
-              <a href={links.galerie_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--k2-accent)', wordBreak: 'break-all' }}>
-                {links.galerie_url}
+              <a href={linksForUi.galerie_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--k2-accent)', wordBreak: 'break-all' }}>
+                {linksForUi.galerie_url}
               </a>
             </p>
           )}
           <p style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.35rem', marginTop: '0.75rem' }}>Admin-Link</p>
           <p style={{ margin: 0, fontSize: '0.9rem' }}>
-            <a href={links.admin_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--k2-accent)', wordBreak: 'break-all' }}>
-              {links.admin_url}
+            <a href={linksForUi.admin_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--k2-accent)', wordBreak: 'break-all' }}>
+              {linksForUi.admin_url}
             </a>
           </p>
-          {(/\/admin/i.test(links.admin_url) || /\/meine-familie/i.test(links.admin_url)) && (
+          {(/\/admin/i.test(linksForUi.admin_url) || /\/meine-familie/i.test(linksForUi.admin_url)) && (
             <div style={{ marginTop: '1.25rem' }}>
               <LicenseeAdminQrPanel
                 registrationComplete
-                adminBaseUrl={links.admin_url}
+                adminBaseUrl={linksForUi.admin_url}
                 accent="#0d9488"
                 bgCard="#f8fafc"
                 text="#1c1a18"
@@ -250,7 +295,7 @@ export default function LizenzErfolgPage() {
                 primaryButtonBg="#b54a1e"
                 primaryButtonColor="#fff"
                 downloadFileName={
-                  links.product_line === 'k2_familie' ? 'admin-qr-k2-familie.png' : 'admin-qr-k2-galerie.png'
+                  linksForUi.product_line === 'k2_familie' ? 'admin-qr-k2-familie.png' : 'admin-qr-k2-galerie.png'
                 }
                 heading="Admin-QR fürs Handy"
                 adminIntro={
@@ -259,6 +304,11 @@ export default function LizenzErfolgPage() {
                       <>
                         <strong>Mustervorschau:</strong> QR und Link sind nur Beispiele – nach einem echten Kauf erscheinen hier{' '}
                         <strong>deine</strong> Zugangsdaten.
+                      </>
+                    ) : linksForUi.product_line === 'k2_familie' ? (
+                      <>
+                        <strong>Admin-Zugang</strong> für K2 Familie. Unten in der{' '}
+                        <strong>Lizenzbestätigung zum Drucken</strong> {copy.adminQrBodyUrlsClause}
                       </>
                     ) : (
                       <>
@@ -310,23 +360,21 @@ export default function LizenzErfolgPage() {
         {!sessionId && musterVorschau && (
           <p style={{ margin: 0, fontSize: '0.85rem', color: '#666' }}>Referenz: Mustervorschau (keine Stripe-Session)</p>
         )}
-        {links?.galerie_url && (
+        {linksForUi?.galerie_url && (
           <p style={{ margin: '0.75rem 0 0.35rem', fontSize: '0.9rem', color: '#333', lineHeight: 1.45, wordBreak: 'break-all' }}>
-            <strong>{copy.visitorUrlPrintLabel}:</strong> {links.galerie_url}
+            <strong>{copy.visitorUrlPrintLabel}:</strong> {linksForUi.galerie_url}
           </p>
         )}
-        {links?.admin_url && (
+        {linksForUi?.admin_url && (
           <p style={{ margin: '0.35rem 0 0.35rem', fontSize: '0.9rem', color: '#333', lineHeight: 1.45, wordBreak: 'break-all' }}>
-            <strong>{copy.adminButtonLabel}:</strong> {links.admin_url}
+            <strong>{copy.adminButtonLabel}:</strong> {linksForUi.admin_url}
           </p>
         )}
         <p className="lizenz-erfolg-no-print" style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: '#444', lineHeight: 1.5 }}>
-          <strong>QR-Code für den Admin:</strong> Auf dem Bildschirm oberhalb dieses Kastens unter „Admin-QR fürs Handy“ –
-          dort <strong>Link kopieren</strong> oder <strong>QR-Bild speichern</strong> und mit zu deinen Unterlagen legen.
-          Das ist dein persönlicher Zugang nach dem Lizenzkauf (nicht der ök2-Demo-QR).
+          {copy.screenAdminQrHint}
         </p>
         <p className="lizenz-erfolg-print-only" style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: '#444', lineHeight: 1.5 }}>
-          {links?.admin_url ? (
+          {linksForUi?.admin_url ? (
             <>
               <strong>Admin-Zugang:</strong> Die Adresse „{copy.adminButtonLabel}“ steht oben in diesem Kasten. Vor dem
               Drucken kannst du unter „Admin-QR fürs Handy“ noch einen QR speichern oder den Link kopieren – der QR erscheint
@@ -352,28 +400,30 @@ export default function LizenzErfolgPage() {
         </button>
       </p>
 
-      <div
-        className="lizenz-erfolg-no-print"
-        style={{
-          marginTop: '1.75rem',
-          paddingTop: '1.25rem',
-          borderTop: '1px solid rgba(255,255,255,0.12)',
-          textAlign: 'left',
-          maxWidth: 420,
-          marginLeft: 'auto',
-          marginRight: 'auto',
-        }}
-      >
-        <p style={{ fontSize: '0.78rem', color: 'var(--k2-muted)', marginBottom: '0.6rem', fontWeight: 600 }}>
-          {copy.optionalFooterTitle}
-        </p>
-        <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: 'var(--k2-accent)', fontSize: '0.88rem', display: 'block', marginBottom: '0.45rem' }}>
-          Lizenzen & Abrechnung (Übersicht kgm) →
-        </Link>
-        <Link to={ENTDECKEN_ROUTE} style={{ color: 'var(--k2-muted)', fontSize: '0.85rem', display: 'block' }}>
-          {copy.entdeckenFooterLabel}
-        </Link>
-      </div>
+      {copy.showOptionalPlatformFooter && (
+        <div
+          className="lizenz-erfolg-no-print"
+          style={{
+            marginTop: '1.75rem',
+            paddingTop: '1.25rem',
+            borderTop: '1px solid rgba(255,255,255,0.12)',
+            textAlign: 'left',
+            maxWidth: 420,
+            marginLeft: 'auto',
+            marginRight: 'auto',
+          }}
+        >
+          <p style={{ fontSize: '0.78rem', color: 'var(--k2-muted)', marginBottom: '0.6rem', fontWeight: 600 }}>
+            {copy.optionalFooterTitle}
+          </p>
+          <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: 'var(--k2-accent)', fontSize: '0.88rem', display: 'block', marginBottom: '0.45rem' }}>
+            Lizenzen & Abrechnung (Übersicht kgm) →
+          </Link>
+          <Link to={ENTDECKEN_ROUTE} style={{ color: 'var(--k2-muted)', fontSize: '0.85rem', display: 'block' }}>
+            {copy.entdeckenFooterLabel}
+          </Link>
+        </div>
+      )}
       <footer className="lizenz-erfolg-no-print" style={{ marginTop: '2rem', fontSize: '0.72rem', color: 'var(--k2-muted)', lineHeight: 1.45 }}>
         {PRODUCT_COPYRIGHT_BRAND_ONLY}
         <br />
