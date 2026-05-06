@@ -1,5 +1,7 @@
 # Dialog-Stand
 
+**Letzter Stand:** 06.05.26 – **K2 Familie Stripe → Erfolg noch Galerie:** Zusatz-Fix **Commit:** `9565ac5b` ✅ **main** – `checkoutSessionEffectiveMetadata` (Session + Subscription-Metadaten), **Cancel-URL** K2-Familie-Lizenz erkennt Familie-Checkout, **line_items**-Intervall-Fallback, `get-licence-by-session` **expand** `subscription` + `line_items`, **DB-Zeile:** `galerie_url` mit `k2-familie`/`meine-familie` → `product_line` **k2_familie**; **UI:** `normalizeProductLine` – `licence_type` **familie_*** hat Vorrang vor widersprüchlichem `product_line` Galerie. **Tests:** `stripeLicenceContract.test.ts` grün; **`npm run build:vercel`** grün.
+
 **Letzter Stand:** 06.05.26 – **K2 Familie nach Stripe-Zahlung:** Erfolgsseite zeigte fälschlich **Galerie-Lizenz** (Fallback `basic`). **Fix:** `resolveCheckoutLicenceType` in `api/stripeWebhookLicenceShared.js` (Metadaten `productLine` / `familie-`-Tenant / Betrag); DB `017_licences_licence_type_k2_familie.sql` (`familie_monat`/`familie_jahr` im CHECK); `get-licence-by-session` mit `productLineFromLicenceType`; **Admin-Link Familie:** `/projects/k2-familie/meine-familie?t=` (nicht `tenantId=`). **Tests:** `resolveCheckoutLicenceType` in `stripeLicenceContract.test.ts`. **Supabase:** Migration 017 einmal anwenden. **Commit:** `59d14380` ✅ **main**
 
 **Letzter Stand:** 06.05.26 – **Lizenz-Erfolgsseite „wird noch geladen“:** Ursache = **keine Zeile** in Supabase `licences` für `stripe_session_id` (Webhook zu spät/ausgeblieben). **Fix:** `api/get-licence-by-session.js` – bei leerer DB **Stripe** `checkout.sessions.retrieve` (nur `complete` + `paid`/`no_payment_required`), gleiche URLs wie Webhook via `rowsFromCheckoutSession`, Flag `from_stripe`. **LizenzErfolgPage:** Erfolg bei `!data.error`, keine Warte-Retries bei „Sitzung unbekannt“ / Supabase fehlt, **Erneut prüfen**, Hinweis bei Stripe-Fallback. **Commit:** `9874aaf5` ✅ **main**
@@ -60,7 +62,7 @@
 
 **Letzter Stand:** 30.04.26 – **mök2: Inserat Viertel – K2, Typo, QR** – Linkes Feld: großes **K2** + „GALERIE“ (`K2_GALERIE_PUBLIC_BRAND`), darunter Bild/Teal; rechts größere Header-Zeilen und fetter Werbesatz; drei Karten mit dickerer Farbleiste und Maximal-Schrift; QR ~100px, Druck 24mm, Teal-Rahmen. **Build grün.** **Commit:** (älterer Stand – siehe oben)
 
-**Was wir JETZT tun:** – **K2 Familie Lizenz:** Nach Push **Migration 017** in Supabase ausführen; Test-Checkout Familie → Erfolgsseite **K2 Familie**-Texte + Link **Meine Familie** mit `?t=`.
+**Was wir JETZT tun:** – **K2 Familie Lizenz:** Vercel **Ready** abwarten, dann Test-Checkout → `/lizenz-erfolg` = **K2 Familie** (nicht Galerie). **Migration 017** in Supabase falls noch offen.
 
 **Einordnung:** Stripe-Webhook und Session-API liefern konsistent `licence_type` / `product_line`; Mandantenwechsel in K2 Familie über URL-Parameter **`t`** (wie Einladung).
 
