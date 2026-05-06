@@ -152,6 +152,24 @@ describe('normalizeProductLineFromApi (URLs / tenant schlagen product_line)', ()
       }),
     ).toBe('k2_familie')
   })
+  it('nur admin_url ?tenantId=familie-* (ohne tenant_id) → k2_familie', () => {
+    expect(
+      normalizeProductLineFromApi({
+        product_line: 'k2_galerie',
+        licence_type: 'basic',
+        admin_url: 'https://x.app/admin?tenantId=familie-georg-kreinecker-yltune',
+      }),
+    ).toBe('k2_familie')
+  })
+  it('galerie_url /g/familie-… → k2_familie', () => {
+    expect(
+      normalizeProductLineFromApi({
+        product_line: 'k2_galerie',
+        licence_type: 'basic',
+        galerie_url: 'https://x.app/g/familie-test-1',
+      }),
+    ).toBe('k2_familie')
+  })
 })
 
 describe('productLineFromStripeSession', () => {
@@ -317,7 +335,28 @@ describe('Webhook-Zeilen aus Session', () => {
     )
     expect(pack.licenceInsert.tenant_id).toBe('familie-test-abc12')
     expect(pack.licenceInsert.galerie_url).toBe(
-      'https://k2-galerie.vercel.app/projects/k2-familie/meine-familie',
+      'https://k2-galerie.vercel.app/projects/k2-familie/meine-familie?t=familie-test-abc12',
+    )
+  })
+
+  it('tenantId familie-* + licenceType basic → trotzdem Meine Familie URL mit t=', () => {
+    const base = 'https://k2-galerie.vercel.app'
+    const pack = rowsFromCheckoutSession(
+      {
+        id: 'cs_fam_mis',
+        amount_total: 10000,
+        customer_email: 'k@fam.de',
+        metadata: {
+          licenceType: 'basic',
+          customerName: 'K',
+          tenantId: 'familie-test-abc12',
+        },
+      },
+      base,
+    )
+    expect(pack.licenceInsert.licence_type).toMatch(/^familie_/)
+    expect(pack.licenceInsert.galerie_url).toBe(
+      'https://k2-galerie.vercel.app/projects/k2-familie/meine-familie?t=familie-test-abc12',
     )
   })
 

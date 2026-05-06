@@ -1,5 +1,7 @@
 # Dialog-Stand
 
+**Letzter Stand:** 06.05.26 – **K2 Familie `/lizenz-erfolg`:** Galerie-Texte + falsche Links (z. B. `/admin?tenantId=familie-…`, `/g/familie-…`, `meine-familie` ohne `?t=`). **Fix:** `resolveCheckoutLicenceType` – bei **`licenceType: basic`** + **`tenantId familie-*`** nicht mehr sofort `basic`; **`rowsFromCheckoutSession`** – Familie-**`galerie_url`** immer **`…/meine-familie?t=<tenant>`**; **`get-licence-by-session`** – **`buildAdminUrlForLicence`** mit **`tidNorm`**, DB-**`galerie_url`** reparieren (`/g/familie-…`, fehlendes `t`); **`normalizeProductLineFromApi`** – **`tenantId` aus `admin_url`**, **`/g/familie-`**; **LizenzErfolgPage** – Admin-QR auch bei **`meine-familie`**. **Tests** `stripeLicenceContract.test.ts` grün; **`build:vercel`** grün. **Commit:** _(nach Push eintragen)_ ✅ **main**
+
 **Letzter Stand:** 06.05.26 – **Lizenz-Erfolg UI sagte „Galerie“ trotz meine-familie-URL:** Ursache = `productLineFromStripeSession` hat **`metadata.productLine=k2_galerie`** vor **`licence_type` / `tenantId familie-*`** gesetzt. **Fix:** Reihenfolge in `api/lizenzProductLineShared.js` (`productLineFromStripeSession`), Erfolgsseite **`normalizeProductLineFromApi`** (URL + tenant), DB-Pfad **`tenant_id` familie-** → `product_line` korrigieren. **Tests** ergänzt. Nach **Push** erneut `/lizenz-erfolg` testen.
 
 **Letzter Stand:** 06.05.26 – **K2 Familie Stripe → Erfolg noch Galerie:** Zusatz-Fix **Commit:** `9565ac5b` ✅ **main** – `checkoutSessionEffectiveMetadata` (Session + Subscription-Metadaten), **Cancel-URL** K2-Familie-Lizenz erkennt Familie-Checkout, **line_items**-Intervall-Fallback, `get-licence-by-session` **expand** `subscription` + `line_items`, **DB-Zeile:** `galerie_url` mit `k2-familie`/`meine-familie` → `product_line` **k2_familie**; **UI:** `normalizeProductLine` – `licence_type` **familie_*** hat Vorrang vor widersprüchlichem `product_line` Galerie. **Tests:** `stripeLicenceContract.test.ts` grün; **`npm run build:vercel`** grün.
@@ -64,7 +66,7 @@
 
 **Letzter Stand:** 30.04.26 – **mök2: Inserat Viertel – K2, Typo, QR** – Linkes Feld: großes **K2** + „GALERIE“ (`K2_GALERIE_PUBLIC_BRAND`), darunter Bild/Teal; rechts größere Header-Zeilen und fetter Werbesatz; drei Karten mit dickerer Farbleiste und Maximal-Schrift; QR ~100px, Druck 24mm, Teal-Rahmen. **Build grün.** **Commit:** (älterer Stand – siehe oben)
 
-**Was wir JETZT tun:** – **K2 Familie Lizenz:** Vercel **Ready** abwarten, dann Test-Checkout → `/lizenz-erfolg` = **K2 Familie** (nicht Galerie). **Migration 017** in Supabase falls noch offen.
+**Was wir JETZT tun:** – **K2 Familie:** Nach **Push** Production **`k2-galerie.vercel.app`** – `/lizenz-erfolg?session_id=…` prüfen: Buttons **K2 Familie**, URLs mit **`?t=familie-…`**, Admin-QR sichtbar.
 
 **Einordnung:** Stripe-Webhook und Session-API liefern konsistent `licence_type` / `product_line`; Mandantenwechsel in K2 Familie über URL-Parameter **`t`** (wie Einladung).
 

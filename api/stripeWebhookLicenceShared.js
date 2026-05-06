@@ -70,13 +70,14 @@ function lineItemRecurringInterval(session) {
  */
 export function resolveCheckoutLicenceType(session) {
   const metadata = checkoutSessionEffectiveMetadata(session)
-  let lt = String(metadata.licenceType || metadata.licence_type || '').trim()
-  if (STRIPE_FAMILIE_CHECKOUT_TYPES.includes(lt)) return lt
-  if (STRIPE_CHECKOUT_LICENCE_TYPES.includes(lt)) return lt
-
-  const productLine = String(metadata.productLine || '').trim()
   const tenantNorm = normalizeWebhookTenantId(metadata.tenantId)
   const isFamilieTenant = Boolean(tenantNorm?.startsWith('familie-'))
+  let lt = String(metadata.licenceType || metadata.licence_type || '').trim()
+  if (STRIPE_FAMILIE_CHECKOUT_TYPES.includes(lt)) return lt
+  /** Galerie-Stufen (basic, …) nicht zurückgeben, wenn tenantId eindeutig K2 Familie ist – sonst falsche URLs/Erfolgsseite. */
+  if (STRIPE_CHECKOUT_LICENCE_TYPES.includes(lt) && !isFamilieTenant) return lt
+
+  const productLine = String(metadata.productLine || '').trim()
   const isFamilieProduct = productLine === 'k2_familie' || isFamilieTenant
   const isFamilieCancel = isFamilieCheckoutByCancelUrl(session)
 
@@ -133,10 +134,16 @@ export function rowsFromCheckoutSession(session, baseUrl) {
     empfehlerId,
   )
   const b = String(baseUrl || '').replace(/\/$/, '')
-  const isFamilieLicence = licenceType === 'familie_monat' || licenceType === 'familie_jahr'
+  const tidLower = tenantId ? String(tenantId).trim().toLowerCase() : ''
+  const isFamilieLicence =
+    licenceType === 'familie_monat' ||
+    licenceType === 'familie_jahr' ||
+    (tidLower && tidLower.startsWith('familie-'))
   const galerieUrl = isFamilieLicence
     ? b
-      ? `${b}/projects/k2-familie/meine-familie`
+      ? tenantId
+        ? `${b}/projects/k2-familie/meine-familie?t=${encodeURIComponent(tenantId)}`
+        : `${b}/projects/k2-familie/meine-familie`
       : null
     : buildGalerieUrl(baseUrl, tenantId)
 

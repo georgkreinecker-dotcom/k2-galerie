@@ -28,16 +28,38 @@ function buildAdminUrl(baseUrl, tenantId) {
 function buildAdminUrlForLicence(baseUrl, tenantId, licenceType) {
   const b = String(baseUrl || '').replace(/\/$/, '')
   if (!b) return 'https://k2-galerie.vercel.app/projects/k2-galerie'
+  const tidNorm = tenantId ? String(tenantId).trim().toLowerCase() : ''
   const fam =
     licenceType === 'familie_monat' ||
     licenceType === 'familie_jahr' ||
-    (tenantId && String(tenantId).startsWith('familie-'))
-  if (fam && tenantId) {
-    return `${b}/projects/k2-familie/meine-familie?t=${encodeURIComponent(tenantId)}`
+    (tidNorm && tidNorm.startsWith('familie-'))
+  if (fam && tidNorm) {
+    return `${b}/projects/k2-familie/meine-familie?t=${encodeURIComponent(tidNorm)}`
   }
-  return tenantId
-    ? `${b}/admin?tenantId=${encodeURIComponent(tenantId)}`
+  return tidNorm
+    ? `${b}/admin?tenantId=${encodeURIComponent(tidNorm)}`
     : `${b}/projects/k2-galerie`
+}
+
+/** Alte Webhook-Zeilen: /g/familie-… oder meine-familie ohne ?t= → Besucher-Link reparieren. */
+function normalizeFamilieGalerieResponseUrl(galerieUrl, tenantId, baseUrl) {
+  const b = String(baseUrl || '').replace(/\/$/, '')
+  const tid = String(tenantId || '').trim().toLowerCase()
+  if (!tid.startsWith('familie-')) return galerieUrl || null
+  const canonical = b
+    ? `${b}/projects/k2-familie/meine-familie?t=${encodeURIComponent(tid)}`
+    : null
+  const gu = String(galerieUrl || '').trim()
+  if (!gu) return canonical
+  const gl = gu.toLowerCase()
+  if (gl.includes('/g/familie-') || (gl.includes('/g/') && gl.includes(tid))) {
+    return canonical || gu
+  }
+  if (gl.includes('meine-familie') && !/[?&]t=/.test(gu)) {
+    const sep = gu.includes('?') ? '&' : '?'
+    return `${gu}${sep}t=${encodeURIComponent(tid)}`
+  }
+  return gu
 }
 
 function jsonFromDbLicence(licence, baseUrl) {
@@ -51,8 +73,9 @@ function jsonFromDbLicence(licence, baseUrl) {
   ) {
     productLine = 'k2_familie'
   }
+  const galerieOut = normalizeFamilieGalerieResponseUrl(licence.galerie_url, licence.tenant_id, baseUrl)
   return {
-    galerie_url: licence.galerie_url || null,
+    galerie_url: galerieOut,
     tenant_id: licence.tenant_id || null,
     admin_url: buildAdminUrlForLicence(baseUrl, licence.tenant_id, licenceType),
     name: licence.name || '',

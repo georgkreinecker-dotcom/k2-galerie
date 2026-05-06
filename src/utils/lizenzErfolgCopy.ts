@@ -8,6 +8,25 @@ export const LIZENZ_ERFOLG_LOADING_NEUTRAL =
 
 export { productLineFromLicenceType }
 
+/** tenantId / tenant_id aus Admin-Link (?tenantId= / ?tenant_id=) – für Erfolgsseite wenn DB nur /admin liefert. */
+export function parseTenantIdFromAdminUrl(adminUrl: string | null | undefined): string {
+  const s = String(adminUrl || '').trim()
+  if (!s) return ''
+  try {
+    const base = typeof window !== 'undefined' ? window.location.origin : 'https://k2-galerie.vercel.app'
+    const u = new URL(s, base)
+    return (u.searchParams.get('tenantId') || u.searchParams.get('tenant_id') || '').trim()
+  } catch {
+    const q = s.includes('?') ? s.slice(s.indexOf('?') + 1) : ''
+    try {
+      const p = new URLSearchParams(q)
+      return (p.get('tenantId') || p.get('tenant_id') || '').trim()
+    } catch {
+      return ''
+    }
+  }
+}
+
 export function normalizeProductLine(
   raw: string | null | undefined,
   licenceTypeFallback?: string | null,
@@ -27,11 +46,19 @@ export function normalizeProductLineFromApi(payload: {
   admin_url?: string | null
   tenant_id?: string | null
 }): LizenzProductLine {
-  const tid = String(payload.tenant_id || '').trim().toLowerCase()
+  const tidRaw = String(payload.tenant_id || '').trim()
+  const tidFromAdmin = parseTenantIdFromAdminUrl(payload.admin_url)
+  const tid = (tidRaw || tidFromAdmin).trim().toLowerCase()
   if (tid.startsWith('familie-')) return 'k2_familie'
-  const gu = String(payload.galerie_url || '')
-  if (gu.includes('k2-familie') || gu.includes('meine-familie')) return 'k2_familie'
-  const au = String(payload.admin_url || '')
+  const gu = String(payload.galerie_url || '').toLowerCase()
+  if (
+    gu.includes('k2-familie') ||
+    gu.includes('meine-familie') ||
+    gu.includes('/g/familie-')
+  ) {
+    return 'k2_familie'
+  }
+  const au = String(payload.admin_url || '').toLowerCase()
   if (au.includes('/projects/k2-familie/') || au.includes('meine-familie')) return 'k2_familie'
   return normalizeProductLine(payload.product_line, payload.licence_type)
 }

@@ -219,7 +219,7 @@ export default function LizenzErfolgPage() {
               {links.admin_url}
             </a>
           </p>
-          {/\/admin/i.test(links.admin_url) && (
+          {(/\/admin/i.test(links.admin_url) || /\/meine-familie/i.test(links.admin_url)) && (
             <div style={{ marginTop: '1.25rem' }}>
               <LicenseeAdminQrPanel
                 registrationComplete
