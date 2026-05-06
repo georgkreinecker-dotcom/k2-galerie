@@ -53,20 +53,17 @@ export async function createStripeCheckoutSession(opts) {
     throw err
   }
 
-  const empMeta =
-    empfehlerId && empfehlerId.trim() ? { empfehlerId: empfehlerId.trim().substring(0, 100) } : {}
-
   if (STRIPE_FAMILIE_CHECKOUT_TYPES.includes(lt)) {
     const tenantId = generateFamilieTenantId(email)
     const successUrl = `${b}/lizenz-erfolg?session_id={CHECKOUT_SESSION_ID}`
     const cancelUrl = `${b}/projects/k2-familie/lizenz-erwerben`
     const stripe = new Stripe(secretKey)
+    /** K2 Familie: kein Empfehlungsprogramm – empfehlerId wird nicht in Stripe-Metadaten geschrieben. */
     const metaBase = {
       licenceType: lt,
       customerName: (name || '').trim().substring(0, 200),
       tenantId,
       productLine: 'k2_familie',
-      ...empMeta,
     }
 
     if (lt === 'familie_jahr') {
@@ -94,7 +91,6 @@ export async function createStripeCheckoutSession(opts) {
             tenantId,
             licenceType: 'familie_jahr',
             productLine: 'k2_familie',
-            ...empMeta,
           },
         },
         success_url: successUrl,
@@ -137,6 +133,9 @@ export async function createStripeCheckoutSession(opts) {
       return { url: session.url }
     }
   }
+
+  const empMeta =
+    empfehlerId && empfehlerId.trim() ? { empfehlerId: empfehlerId.trim().substring(0, 100) } : {}
 
   const priceCents =
     lt && STRIPE_CHECKOUT_LICENCE_TYPES.includes(lt) ? STRIPE_LICENCE_PRICE_CENTS[lt] : undefined

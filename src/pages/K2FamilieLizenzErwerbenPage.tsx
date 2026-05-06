@@ -9,7 +9,6 @@ import { K2_FAMILIE_LIZENZPREISE } from '../config/licencePricing'
 import { AGB_ROUTE, BASE_APP_URL, PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
-import { isValidEmpfehlerIdFormat } from '../utils/empfehlerId'
 import { openCheckoutOrPaymentUrl } from '../utils/openCheckoutOrPaymentUrl'
 import { adminTheme } from '../config/theme'
 
@@ -45,7 +44,6 @@ export default function K2FamilieLizenzErwerbenPage() {
   const [plan, setPlan] = useState<FamiliePlan>('familie_jahr')
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
-  const [empfehlerId, setEmpfehlerId] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [checkoutNewTab, setCheckoutNewTab] = useState(false)
@@ -81,9 +79,6 @@ export default function K2FamilieLizenzErwerbenPage() {
           licenceType: plan,
           email: email.trim(),
           name: name.trim(),
-          ...(empfehlerId.trim() && isValidEmpfehlerIdFormat(empfehlerId)
-            ? { empfehlerId: empfehlerId.trim() }
-            : {}),
         }),
       })
       const data = await res.json().catch(() => ({}))
@@ -325,29 +320,6 @@ export default function K2FamilieLizenzErwerbenPage() {
                 boxSizing: 'border-box',
               }}
             />
-          </div>
-          <div style={{ marginBottom: '0.9rem' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.3rem', color: muted }}>
-              Empfehler-ID (optional)
-            </label>
-            <input
-              type="text"
-              value={empfehlerId}
-              onChange={(e) => setEmpfehlerId(e.target.value)}
-              placeholder="z. B. K2-E-XXXXXX"
-              style={{
-                width: '100%',
-                padding: '0.7rem 0.9rem',
-                border: `1px solid rgba(181,74,30,0.3)`,
-                borderRadius: 10,
-                fontFamily: a.fontBody,
-                fontSize: '1rem',
-                boxSizing: 'border-box',
-              }}
-            />
-            {empfehlerId && !isValidEmpfehlerIdFormat(empfehlerId) && (
-              <p style={{ fontSize: '0.78rem', color: muted, marginTop: '0.25rem' }}>Format: K2-E- und 6 Zeichen</p>
-            )}
           </div>
 
           <div style={{ marginBottom: '0.9rem' }}>

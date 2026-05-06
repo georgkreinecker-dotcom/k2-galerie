@@ -32,6 +32,7 @@ import {
 import {
   normalizeProductLine,
   normalizeProductLineFromApi,
+  parseTenantIdFromAdminUrl,
   resolveLizenzErfolgProductLine,
 } from '../utils/lizenzErfolgCopy'
 import {
@@ -165,6 +166,15 @@ describe('normalizeProductLineFromApi (URLs / tenant schlagen product_line)', ()
       }),
     ).toBe('k2_familie')
   })
+  it('admin_url nur ?t=familie-* (K2-Familie-Mandant) → k2_familie', () => {
+    expect(
+      normalizeProductLineFromApi({
+        product_line: 'k2_galerie',
+        licence_type: 'basic',
+        admin_url: 'https://x.app/admin?t=familie-georg-kreinecker-abc12',
+      }),
+    ).toBe('k2_familie')
+  })
   it('galerie_url /g/familie-… → k2_familie', () => {
     expect(
       normalizeProductLineFromApi({
@@ -173,6 +183,17 @@ describe('normalizeProductLineFromApi (URLs / tenant schlagen product_line)', ()
         galerie_url: 'https://x.app/g/familie-test-1',
       }),
     ).toBe('k2_familie')
+  })
+})
+
+describe('parseTenantIdFromAdminUrl', () => {
+  it('liest tenantId aus Query', () => {
+    expect(parseTenantIdFromAdminUrl('https://x.app/admin?tenantId=familie-x-1')).toBe('familie-x-1')
+  })
+  it('liest t=familie-* wenn kein tenantId', () => {
+    expect(parseTenantIdFromAdminUrl('https://x.app/meine-familie?t=familie-georg-8d5lu8')).toBe(
+      'familie-georg-8d5lu8',
+    )
   })
 })
 
@@ -401,6 +422,26 @@ describe('Webhook-Zeilen aus Session', () => {
       licence_id: 'lic-uuid',
     })
   })
+
+  it('K2 Familie: Empfehler in Metadaten wird ignoriert (kein Empfehlungsprogramm)', () => {
+    const pack = rowsFromCheckoutSession(
+      {
+        id: 'cs_fam_ref',
+        amount_total: 10000,
+        customer_email: 'c@fam.de',
+        metadata: {
+          licenceType: 'familie_jahr',
+          customerName: 'C',
+          tenantId: 'familie-test-abc12',
+          empfehlerId: 'ref-fam-1',
+        },
+      },
+      'https://k2-galerie.vercel.app',
+    )
+    expect(pack.licenceInsert.empfehler_id).toBeNull()
+    expect(pack.buildGutschriftInsert('pay-f', 'lic-f')).toBeNull()
+    expect(pack.gutschriftCents).toBe(0)
+  })
 })
 
 describe('Stripe invoice.paid – Verlängerung', () => {
@@ -431,6 +472,24 @@ describe('Stripe invoice.paid – Verlängerung', () => {
       payment_id: 'pay-renew',
       licence_id: 'lic-1',
     })
+  })
+
+  it('buildRenewalPaymentRow: K2 Familie → empfehler_id immer null', () => {
+    const row = buildRenewalPaymentRow(
+      { id: 'in_1abc', amount_paid: 9900, currency: 'eur' },
+      { id: 'lic-1', empfehler_id: 'e1', licence_type: 'familie_jahr' },
+    )
+    expect(row.empfehler_id).toBeNull()
+  })
+
+  it('buildRenewalGutschriftInsert: K2 Familie trotz alter empfehler_id → keine Gutschrift', () => {
+    expect(
+      buildRenewalGutschriftInsert(
+        { amount_paid: 10000 },
+        { id: 'lic-1', empfehler_id: 'ref12', licence_type: 'familie_monat' },
+        'pay-renew',
+      ),
+    ).toBeNull()
   })
 })
 

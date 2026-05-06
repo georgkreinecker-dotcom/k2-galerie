@@ -122,23 +122,25 @@ export function computeEmpfehlerGutschrift(amountTotal, empfehlerId) {
 export function rowsFromCheckoutSession(session, baseUrl) {
   const metadata = checkoutSessionEffectiveMetadata(session)
   const licenceType = resolveCheckoutLicenceType(session)
-  const empfehlerId = (metadata.empfehlerId || '').trim() || null
+  const empfehlerFromMeta = (metadata.empfehlerId || '').trim() || null
   const customerName = (metadata.customerName || '').trim() || 'Kunde'
   const tenantId = normalizeWebhookTenantId(metadata.tenantId)
   const amountTotal = session.amount_total ?? 0
   const customerEmail =
     session.customer_email || session.customer_details?.email || ''
   const amountEur = (amountTotal / 100).toFixed(2)
-  const { cents: gutschriftCents, eur: gutschriftEur } = computeEmpfehlerGutschrift(
-    amountTotal,
-    empfehlerId,
-  )
   const b = String(baseUrl || '').replace(/\/$/, '')
   const tidLower = tenantId ? String(tenantId).trim().toLowerCase() : ''
   const isFamilieLicence =
     licenceType === 'familie_monat' ||
     licenceType === 'familie_jahr' ||
     (tidLower && tidLower.startsWith('familie-'))
+  /** K2 Familie: kein Empfehlungsprogramm – Metadaten mit empfehlerId werden ignoriert. */
+  const empfehlerId = isFamilieLicence ? null : empfehlerFromMeta
+  const { cents: gutschriftCents, eur: gutschriftEur } = computeEmpfehlerGutschrift(
+    amountTotal,
+    empfehlerId,
+  )
   const galerieUrl = isFamilieLicence
     ? b
       ? tenantId
