@@ -12,9 +12,11 @@ export function normalizeProductLine(
   raw: string | null | undefined,
   licenceTypeFallback?: string | null,
 ): LizenzProductLine {
+  const fromLicenceType = productLineFromLicenceType(licenceTypeFallback) as LizenzProductLine
+  if (fromLicenceType === 'k2_familie') return 'k2_familie'
   if (raw === 'k2_familie') return 'k2_familie'
   if (raw === 'k2_galerie') return 'k2_galerie'
-  return productLineFromLicenceType(licenceTypeFallback) as LizenzProductLine
+  return fromLicenceType
 }
 
 export type LizenzErfolgCopy = {

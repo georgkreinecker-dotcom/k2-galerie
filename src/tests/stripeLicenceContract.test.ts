@@ -19,6 +19,7 @@ import {
 } from '../../api/stripeInvoiceRenewalShared.js'
 import {
   buildGalerieUrl,
+  checkoutSessionEffectiveMetadata,
   computeEmpfehlerGutschrift,
   normalizeWebhookTenantId,
   resolveCheckoutLicenceType,
@@ -117,7 +118,10 @@ describe('productLineFromLicenceType (eine Quelle API + Erfolgsseite)', () => {
 describe('normalizeProductLine (API-Felder + Fallback)', () => {
   it('bevorzugt product_line aus der Antwort', () => {
     expect(normalizeProductLine('k2_familie', 'basic')).toBe('k2_familie')
-    expect(normalizeProductLine('k2_galerie', 'familie_jahr')).toBe('k2_galerie')
+  })
+  it('licence_type K2 Familie hat Vorrang vor widersprüchlichem product_line Galerie', () => {
+    expect(normalizeProductLine('k2_galerie', 'familie_jahr')).toBe('k2_familie')
+    expect(normalizeProductLine('k2_galerie', 'familie_monat')).toBe('k2_familie')
   })
   it('ohne product_line: ableiten aus licence_type', () => {
     expect(normalizeProductLine(undefined, 'familie_jahr')).toBe('k2_familie')
@@ -151,6 +155,60 @@ describe('resolveCheckoutLicenceType (Metadaten-Lücken vs. K2 Familie)', () => 
         metadata: { tenantId: 'galerie-test-abc12' },
       }),
     ).toBe('basic')
+  })
+
+  it('leere Session-Metadaten aber K2-Familie-cancel_url + Betrag → Familie-Typ', () => {
+    expect(
+      resolveCheckoutLicenceType({
+        amount_total: STRIPE_FAMILIE_LICENCE_PRICE_CENTS.familie_monat,
+        metadata: {},
+        cancel_url: 'https://k2-galerie.vercel.app/projects/k2-familie/lizenz-erwerben',
+      }),
+    ).toBe('familie_monat')
+  })
+
+  it('Metadaten nur auf expandierter subscription → licenceType übernommen', () => {
+    expect(
+      resolveCheckoutLicenceType({
+        metadata: {},
+        subscription: {
+          metadata: {
+            licenceType: 'familie_jahr',
+            tenantId: 'familie-test-abc12',
+            productLine: 'k2_familie',
+          },
+        },
+        amount_total: 10000,
+      }),
+    ).toBe('familie_jahr')
+  })
+
+  it('line_items recurring month wenn Betrag nicht gemappt', () => {
+    expect(
+      resolveCheckoutLicenceType({
+        metadata: {},
+        cancel_url: 'https://x.app/projects/k2-familie/lizenz-erwerben',
+        amount_total: 999,
+        line_items: {
+          data: [{ price: { recurring: { interval: 'month' } } }],
+        },
+      }),
+    ).toBe('familie_monat')
+  })
+})
+
+describe('checkoutSessionEffectiveMetadata', () => {
+  it('übernimmt fehlende Keys von subscription.metadata', () => {
+    expect(
+      checkoutSessionEffectiveMetadata({
+        metadata: { customerName: 'A' },
+        subscription: { metadata: { licenceType: 'familie_jahr', tenantId: 'familie-x-y' } },
+      }),
+    ).toMatchObject({
+      customerName: 'A',
+      licenceType: 'familie_jahr',
+      tenantId: 'familie-x-y',
+    })
   })
 })
 

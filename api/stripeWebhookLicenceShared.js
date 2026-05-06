@@ -25,12 +25,51 @@ export function buildGalerieUrl(baseUrl, tenantId) {
 }
 
 /**
+ * Session + ggf. expandierte subscription: Metadaten zusammenführen (Stripe liefert im Webhook oft nur sub-ID).
+ */
+export function checkoutSessionEffectiveMetadata(session) {
+  const base = { ...(session?.metadata || {}) }
+  const sub = session?.subscription
+  if (sub && typeof sub === 'object' && sub.metadata) {
+    for (const [k, v] of Object.entries(sub.metadata)) {
+      const vk = String(v ?? '').trim()
+      if (vk && (!(k in base) || String(base[k] ?? '').trim() === '')) {
+        base[k] = v
+      }
+    }
+  }
+  return base
+}
+
+/** createCheckoutShared: K2 Familie nutzt diese cancel_url – eindeutig vs. Galerie (lizenz-kaufen). */
+function isFamilieCheckoutByCancelUrl(session) {
+  const cu = String(session?.cancel_url || '')
+  return cu.includes('k2-familie/lizenz-erwerben') || cu.includes('/projects/k2-familie/')
+}
+
+function subscriptionRecurringInterval(session) {
+  const sub = session?.subscription
+  if (!sub || typeof sub !== 'object') return null
+  const item = sub.items?.data?.[0]
+  const interval = item?.price?.recurring?.interval
+  return interval === 'month' || interval === 'year' ? interval : null
+}
+
+/** Bei Abo-Checkout oft zuverlässiger als subscription.items ohne weiteres expand. */
+function lineItemRecurringInterval(session) {
+  const data = session?.line_items?.data
+  if (!Array.isArray(data) || !data.length) return null
+  const interval = data[0]?.price?.recurring?.interval
+  return interval === 'month' || interval === 'year' ? interval : null
+}
+
+/**
  * Aus Checkout-Session: licence_type für DB/Webhook (Galerie vs. K2 Familie).
  * Absicherung wenn Metadaten in Stripe unvollständig ankommen – sonst Fallback „basic“ → falsche Erfolgsseite.
- * @param {object} session Stripe checkout.session
+ * @param {object} session Stripe checkout.session (optional expand: ['subscription'])
  */
 export function resolveCheckoutLicenceType(session) {
-  const metadata = session?.metadata || {}
+  const metadata = checkoutSessionEffectiveMetadata(session)
   let lt = String(metadata.licenceType || metadata.licence_type || '').trim()
   if (STRIPE_FAMILIE_CHECKOUT_TYPES.includes(lt)) return lt
   if (STRIPE_CHECKOUT_LICENCE_TYPES.includes(lt)) return lt
@@ -39,10 +78,14 @@ export function resolveCheckoutLicenceType(session) {
   const tenantNorm = normalizeWebhookTenantId(metadata.tenantId)
   const isFamilieTenant = Boolean(tenantNorm?.startsWith('familie-'))
   const isFamilieProduct = productLine === 'k2_familie' || isFamilieTenant
+  const isFamilieCancel = isFamilieCheckoutByCancelUrl(session)
 
-  if (isFamilieProduct) {
+  if (isFamilieProduct || isFamilieCancel) {
     const fromAmount = inferFamilieLicenceTypeFromAmount(session?.amount_total)
     if (fromAmount) return fromAmount
+    const interval = subscriptionRecurringInterval(session) || lineItemRecurringInterval(session)
+    if (interval === 'month') return 'familie_monat'
+    if (interval === 'year') return 'familie_jahr'
     return 'familie_jahr'
   }
 
@@ -76,7 +119,7 @@ export function computeEmpfehlerGutschrift(amountTotal, empfehlerId) {
  * @param {string} baseUrl z. B. https://k2-galerie.vercel.app
  */
 export function rowsFromCheckoutSession(session, baseUrl) {
-  const metadata = session?.metadata || {}
+  const metadata = checkoutSessionEffectiveMetadata(session)
   const licenceType = resolveCheckoutLicenceType(session)
   const empfehlerId = (metadata.empfehlerId || '').trim() || null
   const customerName = (metadata.customerName || '').trim() || 'Kunde'

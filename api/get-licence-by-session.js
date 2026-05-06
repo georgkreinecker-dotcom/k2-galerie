@@ -8,11 +8,15 @@
  */
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
-import { rowsFromCheckoutSession } from './stripeWebhookLicenceShared.js'
+import {
+  rowsFromCheckoutSession,
+  checkoutSessionEffectiveMetadata,
+} from './stripeWebhookLicenceShared.js'
 import { productLineFromLicenceType } from './lizenzProductLineShared.js'
 
 function productLineFromStripeSession(session, licenceType) {
-  const raw = String(session?.metadata?.productLine || '').trim()
+  const meta = checkoutSessionEffectiveMetadata(session)
+  const raw = String(meta.productLine || '').trim()
   if (raw === 'k2_familie' || raw === 'k2_galerie') return raw
   return productLineFromLicenceType(licenceType)
 }
@@ -45,6 +49,14 @@ function buildAdminUrlForLicence(baseUrl, tenantId, licenceType) {
 
 function jsonFromDbLicence(licence, baseUrl) {
   const licenceType = licence.licence_type || 'basic'
+  let productLine = productLineFromLicenceType(licenceType)
+  const gu = String(licence.galerie_url || '')
+  if (
+    productLine === 'k2_galerie' &&
+    (gu.includes('k2-familie') || gu.includes('/meine-familie'))
+  ) {
+    productLine = 'k2_familie'
+  }
   return {
     galerie_url: licence.galerie_url || null,
     tenant_id: licence.tenant_id || null,
@@ -52,7 +64,7 @@ function jsonFromDbLicence(licence, baseUrl) {
     name: licence.name || '',
     email: licence.email || '',
     licence_type: licenceType,
-    product_line: productLineFromLicenceType(licenceType),
+    product_line: productLine,
   }
 }
 
@@ -98,7 +110,9 @@ export default async function handler(req, res) {
     if (stripeSecret) {
       try {
         const stripe = new Stripe(stripeSecret)
-        const session = await stripe.checkout.sessions.retrieve(sessionId)
+        const session = await stripe.checkout.sessions.retrieve(sessionId, {
+          expand: ['subscription', 'line_items'],
+        })
 
         if (session.status === 'open') {
           return res.status(200).json({
