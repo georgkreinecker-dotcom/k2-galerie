@@ -1,5 +1,7 @@
 # Dialog-Stand
 
+**Letzter Stand:** 06.05.26 – **Lizenz-Erfolgsseite „wird noch geladen“:** Ursache = **keine Zeile** in Supabase `licences` für `stripe_session_id` (Webhook zu spät/ausgeblieben). **Fix:** `api/get-licence-by-session.js` – bei leerer DB **Stripe** `checkout.sessions.retrieve` (nur `complete` + `paid`/`no_payment_required`), gleiche URLs wie Webhook via `rowsFromCheckoutSession`, Flag `from_stripe`. **LizenzErfolgPage:** Erfolg bei `!data.error`, keine Warte-Retries bei „Sitzung unbekannt“ / Supabase fehlt, **Erneut prüfen**, Hinweis bei Stripe-Fallback. **Commit:** `9874aaf5` ✅ **main**
+
 **Letzter Stand:** 04.05.26 – **mök2 Viertel-Inserat:** Teal-Logo **kgm solution** lesbar (Padding/Clamp); Unterzeile **`Professionell zeigen, organisieren, privat teilen.`** ohne „mit kgm solution“ (`tenantConfig`); Layout Kacheln/Fuß/QR wie Session; Epson-Hinweis **Abschnitt 5a** (kein §). **Commit:** `8c0862db` ✅ **main**
 
 **Letzter Stand:** 02.05.26 – **mök2 Presse-Nachbericht: zwei Varianten in der App** – Georg sah nur einen Textkörper (Markdown hatte schon A/B). **`MarketingOek2Page`** **`#mok2-presse-nachbericht-eroeffnung`:** Kurzhinweis „Zwei Textkörper“, **Variante A** sachlich (+ Links/QR wie bisher), **Variante B** erzählerisch (Links verweisen auf A). Stand-Zeile **02.05.26**. **Commit:** `1a10acb8` ✅ **main**
