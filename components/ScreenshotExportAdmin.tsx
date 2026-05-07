@@ -15768,7 +15768,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 type="button"
                 onClick={() => {
                   if (activeTab === 'werke') {
-                    const galeriePath = tenant.dynamicTenantId
+                    const galeriePath = effectiveDynamicTenantId
                       ? currentDynamicTenantGalleryPath
                       : tenant.isVk2
                         ? PROJECT_ROUTES.vk2.galerie
@@ -15860,7 +15860,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 fontWeight: 600,
                 letterSpacing: '0.03em'
               }}>
-                {tenant.dynamicTenantId ? 'Lizenz ADMIN' : tenant.isVk2 ? 'VK2 ADMIN' : tenant.isOeffentlich ? (oek2PilotEinladungAktiv ? 'Testpilot' : 'Demo') : 'K2 ADMIN'}
+                {effectiveDynamicTenantId ? 'Lizenz ADMIN' : tenant.isVk2 ? 'VK2 ADMIN' : tenant.isOeffentlich ? (oek2PilotEinladungAktiv ? 'Testpilot' : 'Demo') : 'K2 ADMIN'}
               </span>
             </div>
 
@@ -15894,7 +15894,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
 
               {/* Galerie / Mitglieder ansehen – K2/ök2: Eintrittseite (nicht Vorschau), damit Modal „Wähle deinen Einstieg“ erscheint; VK2: Vorschau */}
               <Link
-                to={tenant.dynamicTenantId ? currentDynamicTenantGalleryPath : tenant.isVk2 ? PROJECT_ROUTES.vk2.galerieVorschau : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie}
+                to={effectiveDynamicTenantId ? currentDynamicTenantGalleryPath : tenant.isVk2 ? PROJECT_ROUTES.vk2.galerieVorschau : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie}
                 state={{
                   fromAdmin: true,
                   fromAdminTab: activeTab,
@@ -20974,7 +20974,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                                         const nextUrl = `${location.pathname}?${params.toString()}${location.hash || ''}`
                                         window.history.replaceState(window.history.state, '', nextUrl)
                                       } catch (_) {}
-                                      void saveDynamicTenantStateToServer({ silent: true, gallery: nextData, pageTexts: nextPageTexts })
+                                      void saveDynamicTenantStateToServer({ silent: true, gallery: nextData, pageTexts: nextPageTexts, tenantId: effectiveDynamicTenantId || undefined })
                                     }
                                     if (tenant.isOeffentlich) {
                                       try { persistStammdaten('oeffentlich', 'gallery', nextData) } catch (_) {}
