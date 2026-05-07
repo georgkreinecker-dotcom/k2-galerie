@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest'
 describe('Dynamischer Lizenznehmer-Admin – keine K2-LocalStorage-Daten', () => {
   const source = readFileSync(join(process.cwd(), 'components/ScreenshotExportAdmin.tsx'), 'utf8')
   const tenantGallerySource = readFileSync(join(process.cwd(), 'src/pages/GalerieTenantPage.tsx'), 'utf8')
+  const apiGalleryDataSource = readFileSync(join(process.cwd(), 'api/gallery-data.js'), 'utf8')
+  const apiGalleryDataGetSource = readFileSync(join(process.cwd(), 'api/gallery-data-get.js'), 'utf8')
 
   it('lädt bei ?tenantId=galerie-* keine lokalen K2-Werke als Fallback', () => {
     expect(source).toMatch(/async function loadArtworksWithResolvedImages[\s\S]*?if \(tenant\.dynamicTenantId\) return \[\]/)
@@ -90,5 +92,17 @@ describe('Dynamischer Lizenznehmer-Admin – keine K2-LocalStorage-Daten', () =>
     expect(tenantGallerySource).toContain('const artworks: TenantGalleryArtwork[] = serverArtworks.length > 0 ? serverArtworks : MUSTER_ARTWORKS')
     expect(tenantGallerySource).toContain('Muster-Erstgalerie')
     expect(tenantGallerySource).not.toContain('Noch keine Inhalte – gestalte deine Galerie im Admin.')
+  })
+
+  it('verbietet im API-Lesepfad den K2-Fallback bei übergebenem tenantId', () => {
+    expect(apiGalleryDataSource).toContain("if (hasTenantParam && !(LEGACY_TENANTS.includes(tenantId) || isSafeTenantId(tenantId)))")
+    expect(apiGalleryDataSource).toContain("return res.status(400).json({ error: 'Ungültiger tenantId' })")
+    expect(apiGalleryDataSource).toContain("const effectiveTenantId = hasTenantParam ? tenantId : 'k2'")
+    expect(apiGalleryDataSource).not.toContain("getBlobPath('k2')")
+
+    expect(apiGalleryDataGetSource).toContain("if (hasTenantParam && !(LEGACY_TENANTS.includes(tenantId) || isSafeTenantId(tenantId)))")
+    expect(apiGalleryDataGetSource).toContain("return res.status(400).json({ error: 'Ungültiger tenantId' })")
+    expect(apiGalleryDataGetSource).toContain("const effectiveTenantId = hasTenantParam ? tenantId : 'k2'")
+    expect(apiGalleryDataGetSource).not.toContain("getBlobPath('k2')")
   })
 })
