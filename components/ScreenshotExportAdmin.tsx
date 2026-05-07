@@ -5071,7 +5071,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   }
   
   /** options.silent = true: kein isDeploying, kein Erfolgs-Alert – für automatisches Sync nach Speichern (zentrale Stelle Vercel) */
-  const publishMobile = (options?: { silent?: boolean }) => {
+  const publishMobile = (options?: { silent?: boolean; artworks?: any[] }) => {
     const silent = options?.silent === true
     if (!silent && isDeploying) return
     // Tenantfähig: Veröffentlichen für K2, ök2 und VK2 (jeweils eigener Blob auf dem Server)
@@ -5127,7 +5127,10 @@ function ScreenshotExportAdmin(props?: AdminProps) {
 
         // Dynamischer Mandant (?tenantId=): nur State → API, kein localStorage
         if (tenant.dynamicTenantId) {
-          saveDynamicTenantStateToServer({ silent }).then(result => {
+          const artworksForTenantSave = Array.isArray(options?.artworks)
+            ? options.artworks
+            : (Array.isArray(allArtworksRef.current) ? allArtworksRef.current : [])
+          saveDynamicTenantStateToServer({ silent, artworks: artworksForTenantSave }).then(result => {
             if (!silent && isMountedRef.current) setIsDeploying(false)
             if (result.success) {
               if (silent) console.log('✅ Galerie-Daten gespeichert (Mandant)', tenant.dynamicTenantId)
@@ -13393,7 +13396,7 @@ ${'='.repeat(60)}
       
       // REGEL: Jedes Speichern einer Werkkarte wird sofort an Vercel hochgeladen – kein extra „An Server senden“ nötig, kleinere Datenmenge pro Schritt, für alle erreichbar.
       try {
-        publishMobile({ silent: true })
+        publishMobile({ silent: true, artworks: patchedWithRefs })
       } catch (e) {
         console.warn('Automatisches Hochladen nach Speichern fehlgeschlagen:', e)
       }
