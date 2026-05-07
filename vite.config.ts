@@ -926,6 +926,7 @@ const devCreateCheckoutMiddleware = () => {
             licenceType: lt,
             email,
             name,
+            focusDirection: body.focusDirection,
             empfehlerId: body.empfehlerId,
             productLine: body.productLine,
             secretKey: secret,

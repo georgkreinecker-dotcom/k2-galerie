@@ -39,13 +39,14 @@ export function generateFamilieTenantId(email) {
 }
 
 /**
- * @param {{ licenceType: string, email: string, name: string, empfehlerId?: string, productLine?: string, secretKey: string, baseUrl: string }} opts
+ * @param {{ licenceType: string, email: string, name: string, focusDirection?: string, empfehlerId?: string, productLine?: string, secretKey: string, baseUrl: string }} opts
  * @returns {Promise<{ url: string }>}
  */
 export async function createStripeCheckoutSession(opts) {
-  const { licenceType, email, name, empfehlerId, productLine, secretKey, baseUrl } = opts
+  const { licenceType, email, name, focusDirection, empfehlerId, productLine, secretKey, baseUrl } = opts
   const lt = typeof licenceType === 'string' ? licenceType.trim() : ''
   const productLineNorm = productLine === 'vk2' ? 'vk2' : productLine === 'k2_familie' ? 'k2_familie' : 'k2_galerie'
+  const focusDirectionNorm = normalizeFocusDirection(focusDirection)
   const b = baseUrl.replace(/\/$/, '')
 
   if (!email?.trim() || !name?.trim()) {
@@ -65,6 +66,7 @@ export async function createStripeCheckoutSession(opts) {
       customerName: (name || '').trim().substring(0, 200),
       tenantId,
       productLine: 'k2_familie',
+      focusDirection: focusDirectionNorm,
     }
 
     if (lt === 'familie_jahr') {
@@ -188,6 +190,7 @@ export async function createStripeCheckoutSession(opts) {
       customerName: (name || '').trim().substring(0, 200),
       tenantId,
       productLine: productLineNorm,
+      focusDirection: focusDirectionNorm,
       ...empMeta,
     },
     success_url: successUrl,
@@ -195,4 +198,11 @@ export async function createStripeCheckoutSession(opts) {
   })
 
   return { url: session.url }
+}
+
+const VALID_FOCUS_DIRECTIONS = new Set(['kunst', 'handwerk', 'design', 'mode', 'food', 'dienstleister'])
+
+function normalizeFocusDirection(value) {
+  const raw = typeof value === 'string' ? value.trim().toLowerCase() : ''
+  return VALID_FOCUS_DIRECTIONS.has(raw) ? raw : 'kunst'
 }

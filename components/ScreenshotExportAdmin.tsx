@@ -1960,6 +1960,7 @@ async function saveArtworks(tenant: ReturnType<typeof useTenant>, artworks: any[
 
 /** Lädt Werke mit aufgelösten Bildern aus IndexedDB (Speichermix). Für Anzeige. */
 async function loadArtworksWithResolvedImages(tenant: ReturnType<typeof useTenant>): Promise<any[]> {
+  if (tenant.dynamicTenantId) return []
   if (tenant.isVk2) return []
   const key = tenant.getArtworksKey()
   if (!key) return []
@@ -1974,6 +1975,7 @@ async function loadArtworksWithResolvedImages(tenant: ReturnType<typeof useTenan
 /** Lädt Werke ROH – über artworksStorage (Phase 1.2). Ohne Anzeige-Filter, für Schreibvorgänge.
  * ök2: Nur wenn Key fehlt (null) → Muster. Wenn Key existiert und ist [] (User hat alle gelöscht) → [] behalten, Muster nie wieder anzeigen. */
 function loadArtworksRaw(tenant: ReturnType<typeof useTenant>): any[] {
+  if (tenant.dynamicTenantId) return []
   if (tenant.isVk2) return []
   const key = tenant.getArtworksKey()
   if (tenant.isOeffentlich) {
@@ -2007,6 +2009,7 @@ function parseK2DuplicateRenumberParts(
 }
 
 function loadArtworks(tenant: ReturnType<typeof useTenant>): any[] {
+  if (tenant.dynamicTenantId) return []
   if (tenant.isVk2) return []
   const key = tenant.getArtworksKey()
   if (tenant.isOeffentlich) {
@@ -2484,6 +2487,62 @@ type AdminProps = {
   forceOeffentlichkeitsarbeitModal?: boolean
 }
 
+function normalizeAdminFocusDirection(raw: unknown): FocusDirectionId {
+  const value = typeof raw === 'string' ? raw.trim().toLowerCase() : ''
+  return (FOCUS_DIRECTIONS.some((d) => d.id === value) ? value : DEFAULT_OEK2_FOCUS_DIRECTION_ID) as FocusDirectionId
+}
+
+function buildDynamicTenantGalleryPath(tenantId: string, focusDirection?: string | null): string {
+  const fd = normalizeAdminFocusDirection(focusDirection)
+  return `/g/${encodeURIComponent(tenantId)}?focusDirection=${encodeURIComponent(fd)}`
+}
+
+function createDynamicTenantPersonDefaults() {
+  return {
+    name: '',
+    email: '',
+    phone: '',
+    website: '',
+    address: '',
+    city: '',
+    country: '',
+    vita: '',
+  }
+}
+
+function createDynamicTenantGalleryDefaults(focusDirection: FocusDirectionId) {
+  return {
+    name: 'Meine Galerie',
+    address: '',
+    city: '',
+    country: '',
+    phone: '',
+    email: '',
+    website: '',
+    internetadresse: '',
+    openingHours: '',
+    bankverbindung: '',
+    iban: '',
+    bic: '',
+    firmenname: '',
+    ustIdNr: '',
+    rechnungAddress: '',
+    rechnungCity: '',
+    rechnungCountry: '',
+    adminPassword: '',
+    soldArtworksDisplayDays: 30,
+    welcomeImage: '',
+    virtualTourImage: '',
+    galerieCardImage: '',
+    internetShopNotSetUp: true,
+    focusDirections: [focusDirection],
+    story: '',
+    socialYoutubeUrl: '',
+    socialInstagramUrl: '',
+    socialFeaturedVideoUrl: '',
+  }
+}
+
 function ScreenshotExportAdmin(props?: AdminProps) {
   const { forceTab, forceEventplanSubTab, forceOeffentlichkeitsarbeitModal } = props ?? {}
   const tenant = useTenant()
@@ -2491,6 +2550,14 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const showPraesentationsmappenAdmin = !tenant.isOeffentlich && !tenant.isVk2
   const navigate = useNavigate()
   const location = useLocation()
+  const dynamicFocusDirectionFromUrl = useMemo(() => {
+    const params = new URLSearchParams(location.search)
+    return normalizeAdminFocusDirection(params.get('focusDirection'))
+  }, [location.search])
+  const dynamicTenantGalleryPath = useMemo(() => {
+    return tenant.dynamicTenantId ? buildDynamicTenantGalleryPath(tenant.dynamicTenantId, dynamicFocusDirectionFromUrl) : ''
+  }, [tenant.dynamicTenantId, dynamicFocusDirectionFromUrl])
+  const isFocusDirectionTenant = tenant.isOeffentlich || !!tenant.dynamicTenantId
   // Singleton-Check: Verhindere doppeltes Mounten - KRITISCH gegen Crashes
   const mountId = React.useRef(`admin-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`)
   const isMountedRef = React.useRef(true)
@@ -3262,6 +3329,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   
   // Seitentexte (bearbeitbare Texte pro Seite) – K2 vs. ök2 vs. VK2 getrennt
   const [pageTexts, setPageTextsState] = useState<PageTextsConfig>(() => {
+    if (tenant.dynamicTenantId) return defaultPageTexts
     const raw = getPageTexts(tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)
     if (tenant.isVk2) {
       // VK2: K2-Standardtexte erkennen und mit VK2-Defaults überschreiben
@@ -3826,7 +3894,11 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   )
 
   // Seitengestaltung (Willkommensseite & Galerie-Vorschau) – K2 vs. ök2 getrennt
-  const [pageContent, setPageContent] = useState<PageContentGalerie>(() => getPageContentGalerie(tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined))
+  const [pageContent, setPageContent] = useState<PageContentGalerie>(() =>
+    tenant.dynamicTenantId
+      ? { welcomeImage: '', galerieCardImage: '', virtualTourImage: '', virtualTourVideo: '', virtualTourVideoSizeBytes: 0 }
+      : getPageContentGalerie(tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)
+  )
   const [videoUploadStatus, setVideoUploadStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle')
   const [videoUploadMsg, setVideoUploadMsg] = useState('')
   /** Dynamischer Mandant (?tenantId=): true bis Daten von API geladen (oder 404). */
@@ -3835,7 +3907,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     if (tenant.dynamicTenantId) return
     const pc = getPageContentGalerie(tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)
     // Wenn kein Bild im localStorage: nur bei K2 aus gallery-data.json nachladen (K2-Daten dürfen nie in VK2/ök2)
-    if (!pc.welcomeImage && !tenant.isOeffentlich && !tenant.isVk2) {
+    if (!pc.welcomeImage && !tenant.dynamicTenantId && !tenant.isOeffentlich && !tenant.isVk2) {
       fetch(`/gallery-data.json?_=${Date.now()}`)
         .then(r => r.json())
         .then(data => {
@@ -3914,6 +3986,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const designTenantKey = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : 'k2'
   useEffect(() => {
     if (activeTab !== 'design') return
+    if (tenant.dynamicTenantId) return
     const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
     setPageTextsState(getPageTexts(designTenant))
     setPageContent(getPageContentGalerie(designTenant))
@@ -3941,7 +4014,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         }
       }
     } catch (_) {}
-  }, [activeTab, designTenantKey])
+  }, [activeTab, designTenantKey, tenant.dynamicTenantId])
 
   // URL-Parameter context (oeffentlich / vk2) in sessionStorage übernehmen
   // WICHTIG: Wenn kein context-Parameter → K2-Admin → sessionStorage löschen (verhindert "hängenbleiben" im ök2-Kontext)
@@ -3960,6 +4033,18 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     const dynId = tenant.dynamicTenantId
     if (!dynId) return
     let isMounted = true
+    setDynamicTenantLoading(true)
+    setAllArtworksSafe([])
+    setEvents([])
+    setDocuments([])
+    setDesignSettings(K2_ORANGE_DESIGN)
+    setPageTextsState(defaultPageTexts)
+    setPageContent({ welcomeImage: '', galerieCardImage: '', virtualTourImage: '', virtualTourVideo: '', virtualTourVideoSizeBytes: 0 })
+    const dynamicPersonDefaults = createDynamicTenantPersonDefaults()
+    const dynamicGalleryDefaults = createDynamicTenantGalleryDefaults(dynamicFocusDirectionFromUrl)
+    setMartinaData(dynamicPersonDefaults as any)
+    setGeorgData(dynamicPersonDefaults as any)
+    setGalleryData(dynamicGalleryDefaults as any)
     const url = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&tenantId=${encodeURIComponent(dynId)}`
     apiGet(url, { retryOnce: false }).then((result) => {
       if (!isMounted) return
@@ -3969,9 +4054,9 @@ function ScreenshotExportAdmin(props?: AdminProps) {
           setAllArtworksSafe([])
           setEvents([])
           setDocuments([])
-          setMartinaData(K2_STAMMDATEN_DEFAULTS.martina as any)
-          setGeorgData(K2_STAMMDATEN_DEFAULTS.georg as any)
-          setGalleryData({ ...K2_STAMMDATEN_DEFAULTS.gallery, adminPassword: '', soldArtworksDisplayDays: 30, welcomeImage: '', virtualTourImage: '', galerieCardImage: '', internetShopNotSetUp: true })
+          setMartinaData(dynamicPersonDefaults as any)
+          setGeorgData(dynamicPersonDefaults as any)
+          setGalleryData(dynamicGalleryDefaults as any)
           setPageContent({ welcomeImage: '', galerieCardImage: '', virtualTourImage: '', virtualTourVideo: '', virtualTourVideoSizeBytes: 0 })
           setDesignSettings(K2_ORANGE_DESIGN)
           setPageTextsState(defaultPageTexts)
@@ -3980,38 +4065,22 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       }
       const data = (result.data || {}) as Record<string, unknown>
       const artworks = Array.isArray(data.artworks) ? data.artworks : []
-      const fromStorage = loadArtworks(tenant)
-      const withRefs = preserveStorageImageRefs(artworks, fromStorage, (x: any) => String(x?.number ?? x?.id ?? '').trim())
-      setAllArtworksSafe(withRefs)
-      if (!tenant.isOeffentlich && !tenant.isVk2) {
-        const localDesignRaw = typeof localStorage !== 'undefined' ? localStorage.getItem('k2-design-settings') : null
-        const localDesign = localDesignRaw ? (() => { try { return JSON.parse(localDesignRaw) } catch { return null } })() : null
-        const localPageTextsRaw = typeof localStorage !== 'undefined' ? localStorage.getItem('k2-page-texts') : null
-        const localPageTexts = localPageTextsRaw ? (() => { try { return JSON.parse(localPageTextsRaw) } catch { return null } })() : null
-        const toApply = applyServerPayloadK2(data, {
-          events: loadEventsFromStorage('k2'),
-          documents: loadDocumentsFromStorage('k2'),
-          designSettings: localDesign,
-          pageTexts: localPageTexts
-        })
-        setEvents(toApply.events != null ? toApply.events : loadEventsFromStorage('k2'))
-        setDocuments(toApply.documents != null ? toApply.documents : loadDocumentsFromStorage('k2'))
-        if (toApply.designSettings != null) setDesignSettings({ ...K2_ORANGE_DESIGN, ...toApply.designSettings } as any)
-        else if (localDesign) setDesignSettings({ ...K2_ORANGE_DESIGN, ...localDesign } as any)
-        if (toApply.pageTexts != null) setPageTextsState({ ...defaultPageTexts, ...toApply.pageTexts } as any)
-        else if (localPageTexts) setPageTextsState({ ...defaultPageTexts, ...localPageTexts } as any)
-      } else {
-        setEvents(Array.isArray(data.events) ? data.events : [])
-        setDocuments(Array.isArray(data.documents) ? data.documents : [])
-        if (data.designSettings && typeof data.designSettings === 'object') setDesignSettings({ ...K2_ORANGE_DESIGN, ...data.designSettings } as any)
-        if (data.pageTexts && typeof data.pageTexts === 'object') setPageTextsState({ ...defaultPageTexts, ...data.pageTexts } as any)
-      }
-      if (data.martina && typeof data.martina === 'object') setMartinaData({ ...K2_STAMMDATEN_DEFAULTS.martina, ...data.martina } as any)
-      else setMartinaData(K2_STAMMDATEN_DEFAULTS.martina as any)
-      if (data.georg && typeof data.georg === 'object') setGeorgData({ ...K2_STAMMDATEN_DEFAULTS.georg, ...data.georg } as any)
-      else setGeorgData(K2_STAMMDATEN_DEFAULTS.georg as any)
-      if (data.gallery && typeof data.gallery === 'object') setGalleryData({ ...K2_STAMMDATEN_DEFAULTS.gallery, ...data.gallery })
-      else setGalleryData({ ...K2_STAMMDATEN_DEFAULTS.gallery, adminPassword: '', soldArtworksDisplayDays: 30, welcomeImage: '', virtualTourImage: '', galerieCardImage: '', internetShopNotSetUp: true })
+      setAllArtworksSafe(artworks)
+      setEvents(Array.isArray(data.events) ? data.events : [])
+      setDocuments(Array.isArray(data.documents) ? data.documents : [])
+      if (data.designSettings && typeof data.designSettings === 'object') setDesignSettings({ ...K2_ORANGE_DESIGN, ...data.designSettings } as any)
+      if (data.pageTexts && typeof data.pageTexts === 'object') setPageTextsState({ ...defaultPageTexts, ...data.pageTexts } as any)
+      if (data.martina && typeof data.martina === 'object') setMartinaData({ ...dynamicPersonDefaults, ...data.martina } as any)
+      else setMartinaData(dynamicPersonDefaults as any)
+      if (data.georg && typeof data.georg === 'object') setGeorgData({ ...dynamicPersonDefaults, ...data.georg } as any)
+      else setGeorgData(dynamicPersonDefaults as any)
+      if (data.gallery && typeof data.gallery === 'object') {
+        const incomingGallery = data.gallery as Record<string, unknown>
+        const incomingFocus = Array.isArray(incomingGallery.focusDirections) && incomingGallery.focusDirections.length > 0
+          ? [normalizeAdminFocusDirection(incomingGallery.focusDirections[0])]
+          : [dynamicFocusDirectionFromUrl]
+        setGalleryData({ ...dynamicGalleryDefaults, ...incomingGallery, focusDirections: incomingFocus })
+      } else setGalleryData(dynamicGalleryDefaults as any)
       const pc = data.pageContentGalerie ?? data.pageContent
       if (pc != null) {
         const parsed = typeof pc === 'string' ? (() => { try { return JSON.parse(pc) } catch { return {} } })() : pc
@@ -4021,7 +4090,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       if (isMounted) setDynamicTenantLoading(false)
     })
     return () => { isMounted = false }
-  }, [tenant.dynamicTenantId])
+  }, [tenant.dynamicTenantId, dynamicFocusDirectionFromUrl])
 
   // ök2: Lager-Tab nicht verfügbar. VK2: Sicherheit und Lager nicht – auf Stammdaten wechseln
   useEffect(() => {
@@ -4102,7 +4171,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
 
   // K2: Verkaufte-Werke-Anzeige (Tage) aus k2-stammdaten-galerie laden (bei Werke-Tab) – isMounted gegen setState nach Unmount (HMR/Code 5)
   useEffect(() => {
-    if (tenant.isOeffentlich || tenant.isVk2) return
+    if (tenant.dynamicTenantId || tenant.isOeffentlich || tenant.isVk2) return
     let isMounted = true
     try {
       const g = loadStammdaten('k2', 'gallery') as { soldArtworksDisplayDays?: number }
@@ -5221,7 +5290,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   // Letzte Kategorie merken: beim Öffnen „Neues Werk“ wiederherstellen (Serien-Eingabe). ök2: nicht überschreiben – Richtung setzt Defaults.
   const K2_LAST_ARTWORK_CATEGORY_KEY = 'k2-last-artwork-category'
   useEffect(() => {
-    if (showAddModal && !editingArtwork && !tenant.isOeffentlich) {
+    if (showAddModal && !editingArtwork && !isFocusDirectionTenant) {
       try {
         const last = localStorage.getItem(K2_LAST_ARTWORK_CATEGORY_KEY)
         if (last && (ARTWORK_CATEGORIES.some((c) => c.id === last) || (tenant.isVk2 && getVk2Kunstrichtungen(vk2Stammdaten).some((c) => c.id === last)))) {
@@ -5231,14 +5300,14 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     }
   }, [showAddModal, editingArtwork])
 
-  // ök2: Nach Speichern der Richtung in Stammdaten – nur „Typ“ für Werkkatalog; Kategorie bleibt Nutzerwahl nicht aus Stammdaten überschreiben (Grund: siehe Reset bei Tab/Modal).
+  // ök2/Lizenznehmer: Nach Speichern der Richtung in Stammdaten – nur „Typ“ für Werkkatalog; Kategorie bleibt Nutzerwahl nicht überschreiben.
   useEffect(() => {
-    if (!tenant.isOeffentlich) return
+    if (!isFocusDirectionTenant) return
     const dirs = galleryData?.focusDirections
     const effective = Array.isArray(dirs) && dirs.length > 0 ? dirs : [DEFAULT_OEK2_FOCUS_DIRECTION_ID]
     const typ = getDefaultEntryTypeForFocusDirections(effective)
     setEntryTypeFilter(typ)
-  }, [tenant.isOeffentlich, galleryData?.focusDirections])
+  }, [tenant.isOeffentlich, tenant.dynamicTenantId, galleryData?.focusDirections])
 
   /** Werke verwalten: Kategorie-Filter immer wieder „Alle“, wenn man zur Listenansicht zurückkommt – sonst wirkt es wie „Werke weg“. */
   const prevActiveTabForCategoryRef = useRef<string | null>(null)
@@ -5257,16 +5326,16 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     prevShowAddModalForCategoryRef.current = showAddModal
   }, [showAddModal])
 
-  // ök2: Beim Öffnen „Neues Werk“ Sparte (Typ) und Kategorie aus gespeicherter Richtung vorausfüllen.
+  // ök2/Lizenznehmer: Beim Öffnen „Neues Werk“ Sparte (Typ) und Kategorie aus gespeicherter Richtung vorausfüllen.
   useEffect(() => {
-    if (!showAddModal || editingArtwork || !tenant.isOeffentlich) return
+    if (!showAddModal || editingArtwork || !isFocusDirectionTenant) return
     const dirs = galleryData?.focusDirections
     const dir = Array.isArray(dirs) && dirs.length > 0 ? dirs[0] : DEFAULT_OEK2_FOCUS_DIRECTION_ID
     setArtworkDirection(dir)
     setArtworkEntryType(getEntryTypeForDirection(dir))
     const cats = getCategoriesForDirection(dir)
     setArtworkCategory(cats[0]?.id ?? 'malerei')
-  }, [showAddModal, editingArtwork, tenant.isOeffentlich, galleryData?.focusDirections])
+  }, [showAddModal, editingArtwork, tenant.isOeffentlich, tenant.dynamicTenantId, galleryData?.focusDirections])
 
   /** In Cursor Preview (iframe) keine schweren Base64-Bilder im State halten → weniger Speicher, weniger Code-5-Crashes */
   const inIframe = typeof window !== 'undefined' && window.self !== window.top
@@ -5335,6 +5404,10 @@ function ScreenshotExportAdmin(props?: AdminProps) {
 
   // Werke aus localStorage laden – bei Kontextwechsel (K2/ök2/VK2) neu laden, sonst zeigt Admin nach Guide-Klick weiter K2-Daten
   useEffect(() => {
+    if (tenant.dynamicTenantId) {
+      setAllArtworksSafe([])
+      return
+    }
     let isMounted = true
     const t = setTimeout(() => {
       if (!isMounted) return
@@ -5414,7 +5487,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       }
     }, 400)
     return () => { isMounted = false; clearTimeout(t) }
-  }, [location.search])
+  }, [location.search, tenant.dynamicTenantId])
   
   // WICHTIG: Event-Listener für Mobile-Updates (damit Mobile-Werke im Admin angezeigt werden)
   // KRITISCH: K2 nie mit leerer Liste überschreiben – verhindert „alle Werke verschwunden“ nach Speichern
@@ -5428,6 +5501,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const lastArtworkSaveRef = useRef<Promise<boolean>>(Promise.resolve(true))
   const hasAutoLoadedFromServerRef = useRef(false)
   useEffect(() => {
+    if (tenant.dynamicTenantId) return
     const handleArtworksUpdate = (ev: Event) => {
       if (ignoreArtworksUpdatedRef.current) {
         console.log('🔄 artworks-updated ignoriert (gerade selbst gespeichert)')
@@ -5470,10 +5544,11 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     return () => {
       window.removeEventListener('artworks-updated', handleArtworksUpdate)
     }
-  }, [])
+  }, [tenant.dynamicTenantId])
 
   // Sync über Tabs: Wenn k2-artworks in anderem Tab geändert wird (z. B. „Vom Server laden“ in Galerie), Admin neu laden – damit Mac Galerie und Admin gleiche Daten zeigen
   useEffect(() => {
+    if (tenant.dynamicTenantId) return
     const artworksKey = tenant.getArtworksKey()
     if (!artworksKey) return
     const onStorage = (e: StorageEvent) => {
@@ -5520,33 +5595,22 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       }
       const data = (result.data || {}) as Record<string, unknown>
       const apiArtworks = Array.isArray(data.artworks) ? data.artworks : []
-      const fromStorage = loadArtworks(tenant)
-      const withRefs = preserveStorageImageRefs(apiArtworks, fromStorage, (x: any) => String(x?.number ?? x?.id ?? '').trim())
-      setAllArtworksSafe(withRefs)
-      if (!tenant.isOeffentlich && !tenant.isVk2) {
-        const localDesignRaw = typeof localStorage !== 'undefined' ? localStorage.getItem('k2-design-settings') : null
-        const localDesign = localDesignRaw ? (() => { try { return JSON.parse(localDesignRaw) } catch { return null } })() : null
-        const localPageTextsRaw = typeof localStorage !== 'undefined' ? localStorage.getItem('k2-page-texts') : null
-        const localPageTexts = localPageTextsRaw ? (() => { try { return JSON.parse(localPageTextsRaw) } catch { return null } })() : null
-        const toApply = applyServerPayloadK2(data, {
-          events: loadEventsFromStorage('k2'),
-          documents: loadDocumentsFromStorage('k2'),
-          designSettings: localDesign,
-          pageTexts: localPageTexts
-        })
-        setEvents(toApply.events != null ? toApply.events : loadEventsFromStorage('k2'))
-        setDocuments(toApply.documents != null ? toApply.documents : loadDocumentsFromStorage('k2'))
-        if (toApply.designSettings != null) setDesignSettings(prev => ({ ...prev, ...toApply.designSettings } as any))
-        if (toApply.pageTexts != null) setPageTextsState(prev => ({ ...prev, ...toApply.pageTexts } as any))
-      } else {
-        setEvents(Array.isArray(data.events) ? data.events : [])
-        setDocuments(Array.isArray(data.documents) ? data.documents : [])
-        if (data.designSettings && typeof data.designSettings === 'object') setDesignSettings(prev => ({ ...prev, ...(data.designSettings as object) } as any))
-        if (data.pageTexts && typeof data.pageTexts === 'object') setPageTextsState(prev => ({ ...prev, ...(data.pageTexts as object) } as any))
+      setAllArtworksSafe(apiArtworks)
+      setEvents(Array.isArray(data.events) ? data.events : [])
+      setDocuments(Array.isArray(data.documents) ? data.documents : [])
+      if (data.designSettings && typeof data.designSettings === 'object') setDesignSettings(prev => ({ ...prev, ...(data.designSettings as object) } as any))
+      if (data.pageTexts && typeof data.pageTexts === 'object') setPageTextsState(prev => ({ ...prev, ...(data.pageTexts as object) } as any))
+      const dynamicPersonDefaults = createDynamicTenantPersonDefaults()
+      const dynamicGalleryDefaults = createDynamicTenantGalleryDefaults(dynamicFocusDirectionFromUrl)
+      if (data.martina && typeof data.martina === 'object') setMartinaData({ ...dynamicPersonDefaults, ...data.martina } as any)
+      if (data.georg && typeof data.georg === 'object') setGeorgData({ ...dynamicPersonDefaults, ...data.georg } as any)
+      if (data.gallery && typeof data.gallery === 'object') {
+        const incomingGallery = data.gallery as Record<string, unknown>
+        const incomingFocus = Array.isArray(incomingGallery.focusDirections) && incomingGallery.focusDirections.length > 0
+          ? [normalizeAdminFocusDirection(incomingGallery.focusDirections[0])]
+          : [dynamicFocusDirectionFromUrl]
+        setGalleryData({ ...dynamicGalleryDefaults, ...incomingGallery, focusDirections: incomingFocus })
       }
-      if (data.martina && typeof data.martina === 'object') setMartinaData({ ...K2_STAMMDATEN_DEFAULTS.martina, ...data.martina } as any)
-      if (data.georg && typeof data.georg === 'object') setGeorgData({ ...K2_STAMMDATEN_DEFAULTS.georg, ...data.georg } as any)
-      if (data.gallery && typeof data.gallery === 'object') setGalleryData({ ...K2_STAMMDATEN_DEFAULTS.gallery, ...data.gallery })
       const pc = data.pageContentGalerie ?? data.pageContent
       if (pc != null) {
         const parsed = typeof pc === 'string' ? (() => { try { return JSON.parse(pc) } catch { return {} } })() : pc
@@ -6113,7 +6177,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       isMounted = false
       stopAutoSave()
     }
-  }, [tenant.tenantId, tenant.isOeffentlich, tenant.isVk2, martinaData, georgData, galleryData, allArtworks, events, documents, designSettings, pageTexts])
+  }, [tenant.tenantId, tenant.dynamicTenantId, tenant.isOeffentlich, tenant.isVk2, martinaData, georgData, galleryData, allArtworks, events, documents, designSettings, pageTexts])
 
   // Event hinzufügen/bearbeiten
   const handleSaveEvent = () => {
@@ -12541,7 +12605,7 @@ ${'='.repeat(60)}
       uid: ensureArtworkUid(baseUidSource || {}),
       title: (finalTitle || '').trim(),
       category: artworkCategory,
-      entryType: (tenant.isOeffentlich ? getEntryTypeForDirection(artworkDirection) : (artworkEntryType || editingArtwork?.entryType || 'artwork')) as EntryTypeId,
+      entryType: (isFocusDirectionTenant ? getEntryTypeForDirection(artworkDirection) : (artworkEntryType || editingArtwork?.entryType || 'artwork')) as EntryTypeId,
       artist: artworkArtist,
       description: artworkDescription,
       technik: artworkTechnik.trim() || undefined,
@@ -14444,10 +14508,14 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               <button type="button" onClick={() => {
                 // Erst alles in localStorage sichern, dann Galerie im gleichen Tab öffnen
                 // (gleicher Tab = localStorage sofort lesbar, neues Foto wird sofort angezeigt)
-                const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
-                setPageContentGalerie(pageContent, designTenant)
-                setPageTexts(pageTexts, designTenant)
-                const route = tenant.isVk2
+                if (!tenant.dynamicTenantId) {
+                  const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
+                  setPageContentGalerie(pageContent, designTenant)
+                  setPageTexts(pageTexts, designTenant)
+                }
+                const route = tenant.dynamicTenantId
+                  ? dynamicTenantGalleryPath
+                  : tenant.isVk2
                   ? PROJECT_ROUTES.vk2.galerie
                   : tenant.isOeffentlich
                   ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
@@ -14457,7 +14525,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   fromAdminTab: 'design' as const,
                   fromAdminContext: tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
                 }
-                navigate(route + '?vorschau=1', { state: backState })
+                navigate(route + (route.includes('?') ? '&' : '?') + 'vorschau=1', { state: backState })
               }} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: dtCompact ? '0.28rem 0.55rem' : '0.5rem 1.1rem', fontSize: dtCompact ? '0.78rem' : '1rem', fontWeight: 700, background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: dtCompact ? 8 : 10, color: '#10b981', cursor: 'pointer', fontFamily: 'inherit' }}>
                 <span style={{ fontSize: '0.8rem', fontWeight: 700 }}>2</span>{' '}
                 {dtCompact
@@ -14481,6 +14549,12 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         const tenantForUpload = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
                         const context = tenant.isOeffentlich ? ('oeffentlich' as const) : tenant.isVk2 ? ('vk2' as const) : ('k2' as const)
                         let contentToSave: PageContentGalerie = { ...pageContent }
+                        if (tenant.dynamicTenantId) {
+                          setPageContent(contentToSave)
+                          setDesignSaveFeedback('ok')
+                          setTimeout(() => setDesignSaveFeedback(null), 6000)
+                          return
+                        }
                         // Zuerst Willkommensbild als URL speichern (Upload vor Speichern) → kein großes Base64 in localStorage, kein Quota-Fehler
                         const welcomeFilename = context === 'oeffentlich' ? 'willkommen-demo.jpg' : 'willkommen.jpg'
                         const fileToUpload = pendingWelcomeFileRef.current
@@ -14532,11 +14606,6 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           }
                         }
                         setPageContent(contentToSave)
-                        if (tenant.dynamicTenantId) {
-                          setDesignSaveFeedback('ok')
-                          setTimeout(() => setDesignSaveFeedback(null), 6000)
-                          return
-                        }
                         const ok = setPageContentGalerie(contentToSave, designTenant)
                         if (!ok) {
                           alert('Speichern fehlgeschlagen – Speicher voll? Bitte weniger oder kleinere Bilder wählen.')
@@ -14561,7 +14630,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               </div>
               {!dtCompact ? <span style={{ color: s.muted, fontSize: '1.2rem' }}>→</span> : <span style={{ color: s.muted, fontSize: '0.75rem' }}>·</span>}
               {/* Schritt 4: Veröffentlichen – für alle sichtbar (Vercel / Handy) */}
-              <button type="button" onClick={() => publishMobile()} disabled={isDeploying || (!tenant.isOeffentlich && !tenant.isVk2 && allArtworks.length === 0)} title="Aktuellen Stand für alle sichtbar machen (Vercel / Besucher / Mobil)" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: dtCompact ? '0.28rem 0.55rem' : '0.5rem 1.1rem', fontSize: dtCompact ? '0.78rem' : '1rem', fontWeight: 700, background: isDeploying ? 'rgba(0,0,0,0.08)' : 'rgba(95,251,241,0.15)', border: `1.5px solid ${s.accent}`, borderRadius: dtCompact ? 8 : 10, color: s.accent, cursor: isDeploying ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (isDeploying || (!tenant.isOeffentlich && !tenant.isVk2 && allArtworks.length === 0)) ? 0.7 : 1 }}>
+              <button type="button" onClick={() => publishMobile()} disabled={isDeploying || (!tenant.dynamicTenantId && !tenant.isOeffentlich && !tenant.isVk2 && allArtworks.length === 0)} title="Aktuellen Stand für alle sichtbar machen (Vercel / Besucher / Mobil)" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: dtCompact ? '0.28rem 0.55rem' : '0.5rem 1.1rem', fontSize: dtCompact ? '0.78rem' : '1rem', fontWeight: 700, background: isDeploying ? 'rgba(0,0,0,0.08)' : 'rgba(95,251,241,0.15)', border: `1.5px solid ${s.accent}`, borderRadius: dtCompact ? 8 : 10, color: s.accent, cursor: isDeploying ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (isDeploying || (!tenant.dynamicTenantId && !tenant.isOeffentlich && !tenant.isVk2 && allArtworks.length === 0)) ? 0.7 : 1 }}>
                 <span style={{ fontSize: '0.8rem', fontWeight: 700 }}>4</span>{' '}
                 {isDeploying ? (dtCompact ? '⏳…' : '⏳ Wird veröffentlicht…') : dtCompact ? '📤 Veröff.' : <><span>📤 Veröffentlichen</span><br /><span style={{ fontSize: '0.75rem', fontWeight: 400, opacity: 0.9 }}>für alle jetzt sichtbar</span></>}
               </button>
@@ -14582,7 +14651,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             const tagline = tenant.isVk2 ? (vk2Stammdaten.vorstand?.name ? `Obfrau/Obmann: ${vk2Stammdaten.vorstand.name}` : tc.tagline) : tc.tagline
             const welcomeIntroDefault = tenant.isVk2
               ? 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.'
-              : (tenant.isOeffentlich && galleryData?.focusDirections?.length
+              : (isFocusDirectionTenant && galleryData?.focusDirections?.length
                 ? getWelcomeIntroForFocusDirections(galleryData.focusDirections)
                 : (defaultPageTexts.galerie.welcomeIntroText || 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.'))
             return (
@@ -15471,7 +15540,11 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 type="button"
                 onClick={() => {
                   if (activeTab === 'werke') {
-                    const galeriePath = tenant.isVk2 ? PROJECT_ROUTES.vk2.galerie : PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+                    const galeriePath = tenant.dynamicTenantId
+                      ? dynamicTenantGalleryPath
+                      : tenant.isVk2
+                        ? PROJECT_ROUTES.vk2.galerie
+                        : PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
                     navigate(galeriePath, { state: { fromAdmin: true } })
                   } else {
                     setActiveTab('werke')
@@ -15505,7 +15578,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
       })()}
 
       {/* ök2 Werke-Hub: Sparten immer (FOCUS_DIRECTIONS) – auch ohne grünen Guide, z. B. Einstieg von APf (dort wird kein Guide-Flow gestartet). */}
-      {tenant.isOeffentlich && activeTab === 'werke' && (
+      {isFocusDirectionTenant && activeTab === 'werke' && (
         <div
           role="note"
           aria-label="Sparten und Mein Weg"
@@ -15559,7 +15632,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 fontWeight: 600,
                 letterSpacing: '0.03em'
               }}>
-                {tenant.isVk2 ? 'VK2 ADMIN' : tenant.isOeffentlich ? (oek2PilotEinladungAktiv ? 'Testpilot' : 'Demo') : 'K2 ADMIN'}
+                {tenant.dynamicTenantId ? 'Lizenz ADMIN' : tenant.isVk2 ? 'VK2 ADMIN' : tenant.isOeffentlich ? (oek2PilotEinladungAktiv ? 'Testpilot' : 'Demo') : 'K2 ADMIN'}
               </span>
             </div>
 
@@ -15593,7 +15666,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
 
               {/* Galerie / Mitglieder ansehen – K2/ök2: Eintrittseite (nicht Vorschau), damit Modal „Wähle deinen Einstieg“ erscheint; VK2: Vorschau */}
               <Link
-                to={tenant.isVk2 ? PROJECT_ROUTES.vk2.galerieVorschau : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie}
+                to={tenant.dynamicTenantId ? dynamicTenantGalleryPath : tenant.isVk2 ? PROJECT_ROUTES.vk2.galerieVorschau : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie}
                 state={{
                   fromAdmin: true,
                   fromAdminTab: activeTab,
@@ -16630,7 +16703,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         setEditingArtwork(null)
                         if (tenant.isOeffentlich) {
                           setArtworkEntryType('product')
-                          const productCats = tenant.isOeffentlich && galleryData?.focusDirections?.length ? getCategoriesForEntryTypeAndDirection('product', galleryData.focusDirections) : getCategoriesForEntryType('product')
+                          const productCats = isFocusDirectionTenant && galleryData?.focusDirections?.length ? getCategoriesForEntryTypeAndDirection('product', galleryData.focusDirections) : getCategoriesForEntryType('product')
                           setArtworkCategory(productCats[0]?.id ?? 'serie')
                         } else {
                           setArtworkEntryType('artwork')
@@ -17129,7 +17202,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 </label>
                 {!tenant.isVk2 && (
                 <>
-                {tenant.isOeffentlich && galleryData?.focusDirections?.[0] && (
+                {isFocusDirectionTenant && galleryData?.focusDirections?.[0] && (
                   <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <span style={{ fontSize: 'clamp(0.9rem, 2.2vw, 1rem)', color: s.muted, whiteSpace: 'nowrap' }}>Typ</span>
                     <span style={{
@@ -17173,7 +17246,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 </>
                 )}
               </div>
-              {tenant.isOeffentlich && galleryData?.focusDirections?.[0] === 'dienstleister' && (
+              {isFocusDirectionTenant && galleryData?.focusDirections?.[0] === 'dienstleister' && (
                 <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', color: s.text, lineHeight: 1.45, fontWeight: 500 }}>
                   Was möchtest du präsentieren?
                 </p>
@@ -17345,7 +17418,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 const filtered = sortArtworksNewestFirst(
                   allArtworks.filter((artwork) => {
                     if (!artwork) return false
-                    if (tenant.isOeffentlich && galleryData?.focusDirections?.[0]) {
+                    if (isFocusDirectionTenant && galleryData?.focusDirections?.[0]) {
                       if (getEffectiveDirectionFromWork(artwork) !== galleryData.focusDirections[0]) return false
                     }
                     if (categoryFilter !== 'alle' && artwork.category !== categoryFilter) return false
@@ -17356,7 +17429,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 )
 
                 if (filtered.length === 0) {
-                  const fixedDir = tenant.isOeffentlich ? (galleryData?.focusDirections?.[0] ?? DEFAULT_OEK2_FOCUS_DIRECTION_ID) : null
+                  const fixedDir = isFocusDirectionTenant ? (galleryData?.focusDirections?.[0] ?? DEFAULT_OEK2_FOCUS_DIRECTION_ID) : null
                   const previewCategory = tenant.isOeffentlich
                     ? (categoryFilter === 'alle' ? (getCategoriesForDirection(fixedDir)[0]?.id ?? '') : categoryFilter)
                     : (artworkCategory || (ARTWORK_CATEGORIES[0]?.id ?? ''))
@@ -17533,7 +17606,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           zIndex: 2,
                           boxShadow: '0 2px 6px rgba(0, 0, 0, 0.25)'
                         }}>
-                          {tenant.isOeffentlich ? (FOCUS_DIRECTIONS.find((d) => d.id === getEffectiveDirectionFromWork(artwork))?.label ?? getEntryTypeLabel(artwork.entryType)) : getEntryTypeLabel(artwork.entryType)}
+                          {isFocusDirectionTenant ? (FOCUS_DIRECTIONS.find((d) => d.id === getEffectiveDirectionFromWork(artwork))?.label ?? getEntryTypeLabel(artwork.entryType)) : getEntryTypeLabel(artwork.entryType)}
                         </div>
                         {/* Nummer als Overlay auf dem Bild */}
                         {artwork.number && (
@@ -17572,7 +17645,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         fontSize: 'clamp(2rem, 5vw, 3rem)'
                       }}>
                         <span style={{ position: 'absolute', top: '0.5rem', left: '0.5rem', background: 'rgba(0,0,0,0.65)', color: '#fff', padding: '0.2rem 0.45rem', borderRadius: 6, fontSize: 'clamp(0.65rem, 1.8vw, 0.78rem)', fontWeight: 500, zIndex: 2 }}>
-                          {tenant.isOeffentlich ? (FOCUS_DIRECTIONS.find((d) => d.id === getEffectiveDirectionFromWork(artwork))?.label ?? getEntryTypeLabel(artwork.entryType)) : getEntryTypeLabel(artwork.entryType)}
+                          {isFocusDirectionTenant ? (FOCUS_DIRECTIONS.find((d) => d.id === getEffectiveDirectionFromWork(artwork))?.label ?? getEntryTypeLabel(artwork.entryType)) : getEntryTypeLabel(artwork.entryType)}
                         </span>
                         🖼️
                       </div>
@@ -17606,7 +17679,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
                       color: s.muted
                     }}>
-                      {tenant.isOeffentlich ? (
+                      {isFocusDirectionTenant ? (
                         <>
                           <span style={{ fontWeight: 600, color: s.text }}>Kategorie:</span> {getCategoryLabel(artwork.category)}
                         </>
@@ -17750,7 +17823,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           
                           const editEntryType = ENTRY_TYPES.some((t) => t.id === artwork.entryType) ? (artwork.entryType as EntryTypeId) : 'artwork'
                           setArtworkEntryType(editEntryType)
-                          const editCats = tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : (tenant.isOeffentlich && galleryData?.focusDirections?.length ? getCategoriesForEntryTypeAndDirection(editEntryType, galleryData.focusDirections) : getCategoriesForEntryType(editEntryType))
+                          const editCats = tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : (isFocusDirectionTenant && galleryData?.focusDirections?.length ? getCategoriesForEntryTypeAndDirection(editEntryType, galleryData.focusDirections) : getCategoriesForEntryType(editEntryType))
                           const category = editCats.some((c) => c.id === artwork.category) ? (artwork.category || editCats[0].id) : editCats[0].id
                           setArtworkCategory(category)
                           if (!tenant.isVk2 && category === 'keramik') {
@@ -18308,7 +18381,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         const tagline = tenant.isVk2 ? (vk2Stammdaten.vorstand?.name ? `Obfrau/Obmann: ${vk2Stammdaten.vorstand.name}` : tc.tagline) : tc.tagline
                         const welcomeIntroDefault = tenant.isVk2
                           ? 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.'
-                          : (tenant.isOeffentlich && galleryData?.focusDirections?.length
+                          : (isFocusDirectionTenant && galleryData?.focusDirections?.length
                             ? getWelcomeIntroForFocusDirections(galleryData.focusDirections)
                             : (defaultPageTexts.galerie.welcomeIntroText || 'Ein Neuanfang mit Leidenschaft …'))
                         const scale = 1
@@ -20641,8 +20714,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       Ausstellungs-Galerie – Adresse (für Impressum, Dokumente, Google Maps)
                     </h3>
                     <p style={{ margin: '0 0 0.5rem', fontSize: '0.78rem', color: s.muted }}>Diese Adresse ist die prominente Adresse nach außen: Impressum, alle Dokumente und Google Maps nutzen sie zuerst. Nur wenn hier nichts eingetragen ist, werden die Adressdaten der Kontaktperson verwendet.</p>
-                    {/* Nur ök2: Mein Weg – eine Sparte, fix aus Stammdaten (kommt in Werke verwalten automatisch). */}
-                    {tenant.isOeffentlich && (
+                    {/* ök2/Lizenznehmer: Mein Weg – eine Sparte, fix aus Stammdaten (kommt in Werke verwalten automatisch). */}
+                    {(tenant.isOeffentlich || tenant.dynamicTenantId) && (
                       <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px' }}>
                         <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', fontWeight: 600, color: s.text }}>Wofür nutzt du deine Galerie?</p>
                         <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.muted }}>Eine Sparte – Typ und Kategorien in „Werke verwalten“ kommen daraus.</p>
@@ -20658,7 +20731,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                                   onChange={() => {
                                     const nextData = { ...galleryData, focusDirections: [id] }
                                     setGalleryData(nextData)
-                                    try { persistStammdaten('oeffentlich', 'gallery', nextData) } catch (_) {}
+                                    if (tenant.isOeffentlich) {
+                                      try { persistStammdaten('oeffentlich', 'gallery', nextData) } catch (_) {}
+                                    }
                                   }}
                                   style={{ accentColor: s.accent }}
                                 />
@@ -20669,7 +20744,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         </div>
                       </div>
                     )}
-                    {tenant.isOeffentlich && galleryData?.focusDirections?.[0] && galleryData.focusDirections[0] !== 'kunst' && (
+                    {(tenant.isOeffentlich || tenant.dynamicTenantId) && galleryData?.focusDirections?.[0] && galleryData.focusDirections[0] !== 'kunst' && (
                       <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px' }}>
                         <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', fontWeight: 600, color: s.text }}>Deine Story für Presse &amp; PR</p>
                         <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.muted }}>Story z.&nbsp;B. in ChatGPT schreiben lassen, hier einfügen und Speichern – dann nutzen Presse, Flyer und Social diese Quelle.</p>
@@ -28403,7 +28478,7 @@ ${name}`
             setArtworkEntryType('artwork')
             try {
               const last = localStorage.getItem('k2-last-artwork-category')
-              const catsForArtwork = tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : (tenant.isOeffentlich && galleryData?.focusDirections?.length ? getCategoriesForEntryTypeAndDirection('artwork', galleryData.focusDirections) : getCategoriesForEntryType('artwork'))
+              const catsForArtwork = tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : (isFocusDirectionTenant && galleryData?.focusDirections?.length ? getCategoriesForEntryTypeAndDirection('artwork', galleryData.focusDirections) : getCategoriesForEntryType('artwork'))
               if (last && catsForArtwork.some((c: { id: string }) => c.id === last)) setArtworkCategory(last)
             } catch (_) {}
             setArtworkCeramicSubcategory('vase')
@@ -29329,7 +29404,7 @@ ${name}`
                       </div>
                   </div>
                 </div>
-              ) : tenant.isOeffentlich ? (
+              ) : isFocusDirectionTenant ? (
                 /* ök2 Künstler: Schnellversion oder Ausführliche Version – bei Änderungsarbeit jederzeit umschaltbar */
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -29343,7 +29418,7 @@ ${name}`
                     <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Titel *</label>
                     <input type="text" value={artworkTitle} onChange={(e) => setArtworkTitle(e.target.value)} placeholder="z.B. Frühlingslandschaft" style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none' }} />
                   </div>
-                  {tenant.isOeffentlich ? (
+                  {isFocusDirectionTenant ? (
                     <div>
                       <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Kategorie *</label>
                       <p style={{ margin: '0 0 0.35rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.55)' }}>Deine Sparte (z. B. Food & Genuss) kommt aus den Stammdaten.</p>
@@ -29381,7 +29456,7 @@ ${name}`
                     )}
                     <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
                       <div style={{ width: 100, minWidth: 100, height: 100, background: 'rgba(255,255,255,0.08)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.4)', fontSize: '0.7rem', position: 'relative' }}>
-                        <span style={{ position: 'absolute', top: 4, left: 4, background: 'rgba(0,0,0,0.6)', color: '#fff', padding: '2px 6px', borderRadius: 4, fontSize: '0.65rem' }}>{tenant.isOeffentlich ? (FOCUS_DIRECTIONS.find((d) => d.id === artworkDirection)?.label ?? getEntryTypeLabel(artworkEntryType)) : getEntryTypeLabel(artworkEntryType)}</span>
+                        <span style={{ position: 'absolute', top: 4, left: 4, background: 'rgba(0,0,0,0.6)', color: '#fff', padding: '2px 6px', borderRadius: 4, fontSize: '0.65rem' }}>{isFocusDirectionTenant ? (FOCUS_DIRECTIONS.find((d) => d.id === artworkDirection)?.label ?? getEntryTypeLabel(artworkEntryType)) : getEntryTypeLabel(artworkEntryType)}</span>
                         Bild
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -29550,15 +29625,15 @@ ${name}`
                       cursor: 'pointer'
                     }}
                   >
-                    {(tenant.isOeffentlich ? getCategoriesForDirection(galleryData?.focusDirections?.[0] ?? DEFAULT_OEK2_FOCUS_DIRECTION_ID) : (tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : getCategoriesForEntryType(artworkEntryType))).map((c) => (
+                    {(isFocusDirectionTenant ? getCategoriesForDirection(galleryData?.focusDirections?.[0] ?? DEFAULT_OEK2_FOCUS_DIRECTION_ID) : (tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : getCategoriesForEntryType(artworkEntryType))).map((c) => (
                       <option key={c.id} value={c.id}>{c.label}</option>
                     ))}
                   </select>
                 </div>
               </div>
               <div style={{ marginTop: '0.5rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>{tenant.isOeffentlich ? 'Typ (Sparte)' : 'Typ'}</label>
-                {tenant.isOeffentlich ? (
+                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>{isFocusDirectionTenant ? 'Typ (Sparte)' : 'Typ'}</label>
+                {isFocusDirectionTenant ? (
                   <span style={{ display: 'inline-block', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem' }}>
                     {FOCUS_DIRECTIONS.find((d) => d.id === (galleryData?.focusDirections?.[0] ?? DEFAULT_OEK2_FOCUS_DIRECTION_ID))?.label ?? 'Kunst & Galerie'}
                   </span>
@@ -30042,7 +30117,7 @@ ${name}`
                     setArtworkTitle('')
                     try {
                       const last = localStorage.getItem('k2-last-artwork-category')
-                      const catsForArtwork = tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : (tenant.isOeffentlich && galleryData?.focusDirections?.length ? getCategoriesForEntryTypeAndDirection('artwork', galleryData.focusDirections) : getCategoriesForEntryType('artwork'))
+                      const catsForArtwork = tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : (isFocusDirectionTenant && galleryData?.focusDirections?.length ? getCategoriesForEntryTypeAndDirection('artwork', galleryData.focusDirections) : getCategoriesForEntryType('artwork'))
                       if (last && catsForArtwork.some((c: { id: string }) => c.id === last)) setArtworkCategory(last)
                     } catch (_) {}
                     setArtworkCeramicSubcategory('vase')

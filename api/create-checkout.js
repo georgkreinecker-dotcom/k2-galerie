@@ -1,6 +1,6 @@
 /**
  * Vercel Serverless: Stripe Checkout Session für Lizenzkauf erstellen.
- * POST Body: { licenceType: 'basic'|'pro'|'proplus'|'propplus', email: string, name: string, empfehlerId?: string, productLine?: 'vk2' }
+ * POST Body: { licenceType: 'basic'|'pro'|'proplus'|'propplus', email: string, name: string, focusDirection?: string, empfehlerId?: string, productLine?: 'vk2' }
  * Antwort: { url: string } (Redirect zu Stripe Checkout)
  *
  * Umgebungsvariablen (Vercel): STRIPE_SECRET_KEY, VERCEL_URL (oder NEXT_PUBLIC_APP_URL) für Success/Cancel-URLs
@@ -32,7 +32,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Ungültiger JSON-Body' })
   }
 
-  const { licenceType, email, name, empfehlerId, productLine } = body
+  const { licenceType, email, name, focusDirection, empfehlerId, productLine } = body
 
   const baseUrl = process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
@@ -43,6 +43,7 @@ export default async function handler(req, res) {
       licenceType,
       email,
       name,
+      focusDirection,
       empfehlerId,
       productLine,
       secretKey: secret,

@@ -386,7 +386,28 @@ describe('Webhook-Zeilen aus Session', () => {
     )
     expect(pack.licenceInsert.tenant_id).toBe('galerie-test-abc12')
     expect(pack.licenceInsert.galerie_url).toBe(
-      'https://k2-galerie.vercel.app/g/galerie-test-abc12',
+      'https://k2-galerie.vercel.app/g/galerie-test-abc12?focusDirection=kunst',
+    )
+  })
+
+  it('gewählte Sparte wird in die Lizenz-Galerie-URL übernommen', () => {
+    const pack = rowsFromCheckoutSession(
+      {
+        id: 'cs_focus',
+        amount_total: 3500,
+        customer_email: 'x@y.z',
+        metadata: {
+          licenceType: 'pro',
+          customerName: 'Handwerk',
+          tenantId: 'galerie-handwerk-abc12',
+          focusDirection: 'handwerk',
+        },
+      },
+      'https://k2-galerie.vercel.app',
+    )
+    expect(pack.focusDirection).toBe('handwerk')
+    expect(pack.licenceInsert.galerie_url).toBe(
+      'https://k2-galerie.vercel.app/g/galerie-handwerk-abc12?focusDirection=handwerk',
     )
   })
 
@@ -557,7 +578,7 @@ describe('normalizeWebhookTenantId / buildGalerieUrl', () => {
   })
 
   it('buildGalerieUrl ohne Slash am Ende', () => {
-    expect(buildGalerieUrl('https://host/', 't1')).toBe('https://host/g/t1')
+    expect(buildGalerieUrl('https://host/', 't1')).toBe('https://host/g/t1?focusDirection=kunst')
   })
 })
 

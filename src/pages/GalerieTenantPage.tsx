@@ -6,7 +6,7 @@
  * Besucherzähler: Smoke-Test für Lizenz-Mandanten → docs/SMOKE-BESUCHERZAEHLER-LIZENZ.md
  */
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { reportPublicGalleryVisit } from '../utils/reportPublicGalleryVisit'
 import '../App.css'
 
@@ -14,6 +14,8 @@ const SAFE_TENANT_ID = /^[a-z0-9-]{1,64}$/
 
 export default function GalerieTenantPage() {
   const { tenantId } = useParams<{ tenantId: string }>()
+  const [searchParams] = useSearchParams()
+  const focusDirection = searchParams.get('focusDirection')?.trim() || 'kunst'
   const [data, setData] = useState<{
     artworks?: Array<{ number?: string; title?: string; imageRef?: string; image?: string }>
     pageTexts?: { galerie?: { heroTitle?: string } }
@@ -67,7 +69,7 @@ export default function GalerieTenantPage() {
     return () => { cancelled = true }
   }, [tenantId])
 
-  const adminUrl = `/admin?tenantId=${encodeURIComponent(tenantId || '')}`
+  const adminUrl = `/admin?tenantId=${encodeURIComponent(tenantId || '')}&focusDirection=${encodeURIComponent(focusDirection)}`
 
   if (!tenantId || !SAFE_TENANT_ID.test(tenantId)) {
     return (

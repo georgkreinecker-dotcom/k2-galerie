@@ -17,11 +17,29 @@ export function normalizeWebhookTenantId(raw) {
   return tenantIdRaw
 }
 
-export function buildGalerieUrl(baseUrl, tenantId) {
+export function normalizeFocusDirection(raw) {
+  const value = String(raw || '').trim().toLowerCase()
+  return ['kunst', 'handwerk', 'design', 'mode', 'food', 'dienstleister'].includes(value) ? value : 'kunst'
+}
+
+export function appendFocusDirection(url, focusDirection) {
+  if (!url) return url
+  const fd = normalizeFocusDirection(focusDirection)
+  try {
+    const u = new URL(url)
+    u.searchParams.set('focusDirection', fd)
+    return u.toString()
+  } catch {
+    const sep = String(url).includes('?') ? '&' : '?'
+    return `${url}${sep}focusDirection=${encodeURIComponent(fd)}`
+  }
+}
+
+export function buildGalerieUrl(baseUrl, tenantId, focusDirection) {
   if (!tenantId) return null
   const b = String(baseUrl || '').replace(/\/$/, '')
   if (!b) return null
-  return `${b}/g/${tenantId}`
+  return appendFocusDirection(`${b}/g/${tenantId}`, focusDirection)
 }
 
 /**
@@ -124,6 +142,7 @@ export function rowsFromCheckoutSession(session, baseUrl) {
   const metadata = checkoutSessionEffectiveMetadata(session)
   const licenceType = resolveCheckoutLicenceType(session)
   const productLineMeta = String(metadata.productLine || '').trim()
+  const focusDirection = normalizeFocusDirection(metadata.focusDirection)
   const empfehlerFromMeta = (metadata.empfehlerId || '').trim() || null
   const customerName = (metadata.customerName || '').trim() || 'Kunde'
   const tenantId = normalizeWebhookTenantId(metadata.tenantId)
@@ -155,7 +174,7 @@ export function rowsFromCheckoutSession(session, baseUrl) {
       : null
     : isVk2Licence && b
       ? `${b}/projects/vk2/galerie`
-      : buildGalerieUrl(baseUrl, tenantId)
+      : buildGalerieUrl(baseUrl, tenantId, focusDirection)
 
   const licenceInsert = {
     email: customerEmail,
@@ -200,6 +219,7 @@ export function rowsFromCheckoutSession(session, baseUrl) {
     gutschriftCents,
     licenceType,
     productLine: isFamilieLicence ? 'k2_familie' : isVk2Licence ? 'vk2' : 'k2_galerie',
+    focusDirection,
     customerEmail,
   }
 }

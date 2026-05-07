@@ -1,6 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 07.05.26 – **VK2 Lizenz-Erfolg repariert:** VK2-Checkout sendet jetzt **`productLine: 'vk2'`**; Webhook/API erkennen VK2 und liefern **`/projects/vk2/galerie`** + **`/admin?context=vk2`** statt Galerie/ök2-Fallback. Erfolgsseite zeigt VK2-Texte/QR-Dateiname. Doku/Regeln/Fehlerprotokoll ergänzt. **Tests:** `stripeLicenceContract.test.ts`, `publicLinks.test.ts`, **`npm run qs:local` grün**. **Commit:** _(nach Push)_ ✅ **main**
+**Letzter Stand:** 07.05.26 – **Lizenznehmer-Admin End-to-End repariert:** `/admin?tenantId=galerie-*` lädt keine K2-Stammdaten mehr, startet mit leeren Mandanten-Stammdaten und übernimmt `focusDirection` aus der Lizenz. **„Galerie ansehen“** führt jetzt auf `/g/<tenantId>?focusDirection=…` statt `/galerie`. Lizenzkauf sendet die gewählte Sparte in Stripe-Metadaten; Webhook/API schreiben sie in die Mandanten-Galerie-URL und Admin-URL. **Tests:** `stripeLicenceContract.test.ts` + `dynamicTenantAdminIsolation.test.ts` grün; **Build:** `npm run build` grün. **Commit:** noch nicht gepusht.
+
+**Vorher 07.05.26:** **Lizenznehmer-Admin Datentrennung repariert:** `/admin?tenantId=galerie-*` darf nie lokale K2-Daten laden. `ScreenshotExportAdmin` sperrt bei `tenant.dynamicTenantId` jetzt lokale K2-Werke/K2-Fallbacks/Auto-Save und lädt nur API-Daten des konkreten Mandanten. **Test:** `dynamicTenantAdminIsolation.test.ts` + Lizenztests grün. **Commit:** noch nicht gepusht.
+
+**Vorher 07.05.26:** **VK2 Lizenz-Erfolg repariert:** VK2-Checkout sendet jetzt **`productLine: 'vk2'`**; Webhook/API erkennen VK2 und liefern **`/projects/vk2/galerie`** + **`/admin?context=vk2`** statt Galerie/ök2-Fallback. Erfolgsseite zeigt VK2-Texte/QR-Dateiname. Doku/Regeln/Fehlerprotokoll ergänzt. **Tests:** `stripeLicenceContract.test.ts`, `publicLinks.test.ts`, **`npm run qs:local` grün**. **Commit:** _(nach Push)_ ✅ **main**
 
 **Session-Ende 06.05.26:** Offener Arbeitsstand (Marketing-Attribution, mök2-Assets, VK2-Leitfaden, Galerie-Pages, Regeln/Doku, Build-Info) mit **qs:local** grün committed und auf **main** gepusht. **Commit:** `916c8956` ✅ **main**
 

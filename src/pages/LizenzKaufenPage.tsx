@@ -12,6 +12,7 @@ import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbel
 import LizenzZeitplanPilotStripeInfo from '../components/LizenzZeitplanPilotStripeInfo'
 import { LIZENZ_MUSTER_EMAIL, LIZENZ_MUSTER_NAME } from '../utils/lizenzMusterDemo'
 import { openCheckoutOrPaymentUrl } from '../utils/openCheckoutOrPaymentUrl'
+import { DEFAULT_OEK2_FOCUS_DIRECTION_ID, FOCUS_DIRECTIONS, type FocusDirectionId } from '../config/tenantConfig'
 
 const LICENCE_OPTIONS = [
   { id: 'basic' as const, ...LIZENZPREISE.basic },
@@ -29,6 +30,7 @@ export default function LizenzKaufenPage() {
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
   const [empfehlerId, setEmpfehlerId] = useState(empfehlerFromUrl)
+  const [focusDirection, setFocusDirection] = useState<FocusDirectionId>(DEFAULT_OEK2_FOCUS_DIRECTION_ID)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   /** true = Stripe-Checkout wurde in neuem Tab geöffnet (z. B. Cursor-Vorschau/iframe) */
@@ -63,6 +65,7 @@ export default function LizenzKaufenPage() {
           licenceType,
           email: email.trim(),
           name: name.trim(),
+          focusDirection,
           ...(empfehlerId.trim() && isValidEmpfehlerIdFormat(empfehlerId) ? { empfehlerId: empfehlerId.trim() } : {}),
         }),
       })
@@ -245,6 +248,43 @@ export default function LizenzKaufenPage() {
 
         {/* 2. Kontaktdaten + optional Empfehler */}
         <form onSubmit={handleSubmit} style={{ background: bgCard, border: `1px solid ${accent}44`, borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.35rem', color: muted }}>Wofür nutzt du deine Galerie? *</label>
+            <div style={{ display: 'grid', gap: '0.45rem' }}>
+              {FOCUS_DIRECTIONS.map((direction) => {
+                const selected = focusDirection === direction.id
+                return (
+                  <label
+                    key={direction.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.55rem',
+                      padding: '0.55rem 0.7rem',
+                      border: selected ? `2px solid ${accent}` : `1px solid ${accent}33`,
+                      borderRadius: 10,
+                      background: selected ? `${accent}12` : bgLight,
+                      cursor: 'pointer',
+                      fontSize: '0.9rem',
+                      color: text,
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name="focusDirection"
+                      checked={selected}
+                      onChange={() => setFocusDirection(direction.id)}
+                      style={{ accentColor: accentDeep }}
+                    />
+                    {direction.label}
+                  </label>
+                )
+              })}
+            </div>
+            <p style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', color: muted, lineHeight: 1.4 }}>
+              Diese Sparte erscheint nach dem Kauf in deinen Stammdaten und steuert Typen und Kategorien.
+            </p>
+          </div>
           <div style={{ marginBottom: '1rem' }}>
             <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.35rem', color: muted }}>Name *</label>
             <input

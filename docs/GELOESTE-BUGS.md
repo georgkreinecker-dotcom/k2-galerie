@@ -22,6 +22,10 @@
 
 **Status:** ✅ Behoben (07.05.26).
 
+**Nachfix 07.05.26 – dynamischer Lizenznehmer-Admin zeigte K2-Werke:** Nach einem Galerie-Lizenzkauf führte `/admin?tenantId=galerie-*` zwar in den Mandanten-Admin, aber der Admin lud daneben lokale `k2-artworks`, K2-Design und K2-Texte als Fallback. Ergebnis: echte K2-Galerie-Werke im Lizenznehmer-Admin. **Fix:** Bei `tenant.dynamicTenantId` liest der Admin keine lokalen K2-Keys mehr, startet keinen Auto-Save und lädt nur API-Daten des konkreten Mandanten. Regression: `dynamicTenantAdminIsolation.test.ts`.
+
+**Nachfix 07.05.26 – Galerie ansehen + Sparte im Lizenznehmer-Admin:** Der dynamische Admin zeigte oben zwar die Mandanten-ID, aber **„Galerie ansehen“** führte weiter auf die echte K2-Galerie (`/galerie`). Außerdem startete der neue Mandant mit K2-Stammdaten-Defaults und ohne die beim Lizenzkauf gewählte Sparte. **Fix:** Interne Admin-Links für dynamische Mandanten führen jetzt auf `/g/<tenantId>?focusDirection=…`; neue Mandanten starten mit leeren Stammdaten und Sparten-Auswahl; Checkout/Webhook/API tragen `focusDirection` durch. Regression: `stripeLicenceContract.test.ts` + `dynamicTenantAdminIsolation.test.ts`.
+
 ---
 
 ## BUG-042 · Echtheitszertifikat zeigte für jedes Werk nur Martina (Künstler:in falsch, Keramik/Georg) (gelöst 22.03.26)

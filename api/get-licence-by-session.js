@@ -11,6 +11,8 @@ import { createClient } from '@supabase/supabase-js'
 import {
   rowsFromCheckoutSession,
   checkoutSessionEffectiveMetadata,
+  normalizeFocusDirection,
+  appendFocusDirection,
 } from './stripeWebhookLicenceShared.js'
 import { productLineFromLicenceType, productLineFromStripeSession } from './lizenzProductLineShared.js'
 
@@ -21,11 +23,11 @@ function resolveBaseUrl() {
 }
 
 function buildAdminUrl(baseUrl, tenantId) {
-  return buildAdminUrlForLicence(baseUrl, tenantId, null)
+  return buildAdminUrlForLicence(baseUrl, tenantId, null, null, null)
 }
 
 /** K2 Familie: Admin = Familie-Bereich mit Mandant, nicht nur Galerie-Admin. */
-function buildAdminUrlForLicence(baseUrl, tenantId, licenceType, productLine) {
+function buildAdminUrlForLicence(baseUrl, tenantId, licenceType, productLine, focusDirection) {
   const b = String(baseUrl || '').replace(/\/$/, '')
   if (!b) return 'https://k2-galerie.vercel.app/projects/k2-galerie'
   const tidNorm = tenantId ? String(tenantId).trim().toLowerCase() : ''
@@ -41,9 +43,20 @@ function buildAdminUrlForLicence(baseUrl, tenantId, licenceType, productLine) {
   if (fam && tidNorm) {
     return `${b}/projects/k2-familie/meine-familie?t=${encodeURIComponent(tidNorm)}`
   }
+  const fd = normalizeFocusDirection(focusDirection)
   return tidNorm
-    ? `${b}/admin?tenantId=${encodeURIComponent(tidNorm)}`
+    ? `${b}/admin?tenantId=${encodeURIComponent(tidNorm)}&focusDirection=${encodeURIComponent(fd)}`
     : `${b}/projects/k2-galerie`
+}
+
+function focusDirectionFromUrl(url) {
+  try {
+    const u = new URL(String(url || ''))
+    return normalizeFocusDirection(u.searchParams.get('focusDirection'))
+  } catch {
+    const match = String(url || '').match(/[?&]focusDirection=([^&]+)/)
+    return normalizeFocusDirection(match ? decodeURIComponent(match[1]) : '')
+  }
 }
 
 /** Alte Webhook-Zeilen: /g/familie-… oder meine-familie ohne ?t= → Besucher-Link reparieren. */
@@ -86,15 +99,18 @@ function jsonFromDbLicence(licence, baseUrl) {
   ) {
     productLine = 'k2_familie'
   }
-  const galerieOut = normalizeFamilieGalerieResponseUrl(licence.galerie_url, licence.tenant_id, baseUrl)
+  const focusDirection = focusDirectionFromUrl(licence.galerie_url)
+  const galerieOutRaw = normalizeFamilieGalerieResponseUrl(licence.galerie_url, licence.tenant_id, baseUrl)
+  const galerieOut = productLine === 'k2_galerie' ? appendFocusDirection(galerieOutRaw, focusDirection) : galerieOutRaw
   return {
     galerie_url: galerieOut,
     tenant_id: licence.tenant_id || null,
-    admin_url: buildAdminUrlForLicence(baseUrl, licence.tenant_id, licenceType, productLine),
+    admin_url: buildAdminUrlForLicence(baseUrl, licence.tenant_id, licenceType, productLine, focusDirection),
     name: licence.name || '',
     email: licence.email || '',
     licence_type: licenceType,
     product_line: productLine,
+    focus_direction: focusDirection,
   }
 }
 
@@ -171,15 +187,17 @@ export default async function handler(req, res) {
         const tenantId = ins.tenant_id || null
         const licenceType = ins.licence_type || 'basic'
         const productLine = rowPack.productLine || productLineFromStripeSession(session, licenceType, tenantId)
+        const focusDirection = rowPack.focusDirection || normalizeFocusDirection(checkoutSessionEffectiveMetadata(session).focusDirection)
 
         return res.status(200).json({
-          galerie_url: ins.galerie_url || null,
+          galerie_url: productLine === 'k2_galerie' ? appendFocusDirection(ins.galerie_url || null, focusDirection) : (ins.galerie_url || null),
           tenant_id: tenantId,
-          admin_url: buildAdminUrlForLicence(baseUrl, tenantId, licenceType, productLine),
+          admin_url: buildAdminUrlForLicence(baseUrl, tenantId, licenceType, productLine, focusDirection),
           name: ins.name || '',
           email: ins.email || '',
           licence_type: licenceType,
           product_line: productLine,
+          focus_direction: focusDirection,
           from_stripe: true,
         })
       } catch (stripeErr) {
