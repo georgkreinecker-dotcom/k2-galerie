@@ -40,10 +40,16 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Nur GET erlaubt' })
   }
 
-  const tenantId = String(req.query?.tenantId || req.query?.tenant || 'k2')
+  const tenantRaw = req.query?.tenantId ?? req.query?.tenant
+  const tenantId = String(tenantRaw || '')
     .toLowerCase()
     .trim()
-  const pathname = LEGACY_TENANTS.includes(tenantId) || isSafeTenantId(tenantId) ? getBlobPath(tenantId) : getBlobPath('k2')
+  const hasTenantParam = tenantRaw != null && String(tenantRaw).trim() !== ''
+  if (hasTenantParam && !(LEGACY_TENANTS.includes(tenantId) || isSafeTenantId(tenantId))) {
+    return res.status(400).json({ error: 'Ungültiger tenantId' })
+  }
+  const effectiveTenantId = hasTenantParam ? tenantId : 'k2'
+  const pathname = getBlobPath(effectiveTenantId)
 
   try {
     const result = await get(pathname, { access: 'public' })
