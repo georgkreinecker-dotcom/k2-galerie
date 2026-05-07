@@ -60,7 +60,7 @@ describe('Dynamischer Lizenznehmer-Admin – keine K2-LocalStorage-Daten', () =>
     expect(source).toContain("function isSafeDynamicTenantSaveId")
     expect(source).toContain("return !['k2', 'oeffentlich', 'vk2'].includes(value)")
     expect(source).toContain("tenantId: tenant.dynamicTenantId")
-    expect(source).toContain("const buildDynamicTenantExportPayload = (overrides?: { martina?: any; georg?: any; gallery?: any; pageTexts?: PageTextsConfig })")
+    expect(source).toContain("const buildDynamicTenantExportPayload = (overrides?: { martina?: any; georg?: any; gallery?: any; pageTexts?: PageTextsConfig; artworks?: any[] })")
     expect(source).toContain("const sourceMartina = overrides?.martina ?? martinaData")
     expect(source).toContain("const sourceGeorg = overrides?.georg ?? georgData")
     expect(source).toContain("const sourceGallery = overrides?.gallery ?? galleryData")

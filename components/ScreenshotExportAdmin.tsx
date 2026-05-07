@@ -4752,7 +4752,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     alert('✅ Musterdaten entfernt. Trage jetzt deine eigenen Daten ein.')
   }
 
-  const buildDynamicTenantExportPayload = (overrides?: { martina?: any; georg?: any; gallery?: any; pageTexts?: PageTextsConfig }) => {
+  const buildDynamicTenantExportPayload = (overrides?: { martina?: any; georg?: any; gallery?: any; pageTexts?: PageTextsConfig; artworks?: any[] }) => {
     const dynamicTenantIdForPayload = tenant.dynamicTenantId
     if (!isSafeDynamicTenantSaveId(dynamicTenantIdForPayload)) {
       throw new Error('Ungültiger Mandant. Stammdaten wurden nicht gespeichert.')
@@ -4773,7 +4773,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       martina: sanitizeDynamicTenantPersonData(sourceMartina),
       georg: sanitizeDynamicTenantPersonData(sourceGeorg),
       gallery: cleanGallery,
-      artworks: sortArtworksFavoritesFirstThenNewest(Array.isArray(allArtworks) ? [...allArtworks] : []),
+      artworks: sortArtworksFavoritesFirstThenNewest(Array.isArray(overrides?.artworks) ? [...overrides.artworks] : (Array.isArray(allArtworks) ? [...allArtworks] : [])),
       events: Array.isArray(events) ? events.slice(0, 100) : [],
       documents: Array.isArray(documents) ? documents.slice(0, 100) : [],
       designSettings: designSettings || {},
@@ -4787,7 +4787,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   }
 
   const saveDynamicTenantStateToServer = async (
-    options?: { silent?: boolean; martina?: any; georg?: any; gallery?: any; pageTexts?: PageTextsConfig }
+    options?: { silent?: boolean; martina?: any; georg?: any; gallery?: any; pageTexts?: PageTextsConfig; artworks?: any[] }
   ): Promise<{ success: boolean; size?: number; error?: string }> => {
     if (!isSafeDynamicTenantSaveId(tenant.dynamicTenantId)) return { success: false, error: 'Ungültiger Mandant. Stammdaten wurden nicht gespeichert.' }
     const silent = options?.silent === true
@@ -4796,6 +4796,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       georg: options?.georg,
       gallery: options?.gallery,
       pageTexts: options?.pageTexts,
+      artworks: options?.artworks,
     })
     if (data.tenantId !== tenant.dynamicTenantId) return { success: false, error: 'Mandanten-Ziel stimmt nicht. Speichern abgebrochen.' }
     const json = JSON.stringify(data)
@@ -12979,6 +12980,24 @@ ${'='.repeat(60)}
       pauseAutoSaveForMs(10000)
       // Warteschlange: Lese+Schreib-Block serialisieren, damit „30 speichern, dann 31“ nicht parallel läuft – sonst liest 31 vor Ende von 30 → Bild bei 30 weg
       const doSerializedWrite = async (): Promise<boolean> => {
+        // Dynamische Mandanten speichern Werke nie in localStorage, sondern direkt im eigenen Server-Blob.
+        if (tenant.dynamicTenantId) {
+          const result = await saveDynamicTenantStateToServer({
+            silent: true,
+            artworks,
+            martina: martinaData,
+            georg: georgData,
+            gallery: galleryData,
+            pageTexts,
+          })
+          if (!result.success) {
+            console.error('❌ Mandanten-Werke konnten nicht gespeichert werden:', result.error)
+            alert(`⚠️ Fehler beim Speichern der Werke.\n\n${result.error || 'Bitte erneut versuchen.'}`)
+            return false
+          }
+          return true
+        }
+
         let dataToStore = JSON.stringify(artworks)
         let currentSize = new Blob([dataToStore]).size
 
@@ -13097,36 +13116,38 @@ ${'='.repeat(60)}
         localStorage.setItem('k2-last-artwork-category', artworkCategory)
       } catch (_) {}
 
-      // KRITISCH: Prüfe ob Werk wirklich in localStorage steht (ROH – kein ök2-Anzeige-Filter)
-      let verifyRaw: any[] = []
-      try {
-        const key = tenant.getArtworksKey()
-        const stored = localStorage.getItem(key)
-        if (stored) verifyRaw = JSON.parse(stored)
-        if (!Array.isArray(verifyRaw)) verifyRaw = []
-      } catch (_) {}
-      const storedArtwork = verifyRaw.find((a: any) =>
-        (a?.number != null && artworkData?.number != null && String(a.number) === String(artworkData.number)) ||
-        (a?.id != null && artworkData?.id != null && String(a.id) === String(artworkData.id))
-      )
-      if (!storedArtwork) {
-        console.error('❌ KRITISCH: Werk wurde NICHT gespeichert!', {
-          gesucht: artworkData?.number || artworkData?.id,
-          anzahlRoh: verifyRaw.length
-        })
-        setWerkSaveToast({ kind: 'bad', text: `❌ Werk ${String(artworkData?.number ?? '')} wurde nicht in den Speicher übernommen.` })
-        setTimeout(() => setWerkSaveToast(null), 10000)
-        alert(`⚠️ Fehler: Werk konnte nicht gespeichert werden!\n\nNummer: ${artworkData?.number ?? ''}\n\nBitte versuche es erneut.`)
-        return
-      }
-      // Prüfen ob das gespeicherte Werk das Bild hat – bei Trunkierung (z. B. Speicher voll) nicht blockieren, nur warnen
-      const expectedLen = typeof artworkData.imageUrl === 'string' ? artworkData.imageUrl.length : 0
-      const storedLen = typeof storedArtwork.imageUrl === 'string' ? storedArtwork.imageUrl.length : 0
-      if (expectedLen > 100 && storedLen < 100) {
-        console.warn('⚠️ Gespeichertes Werk hat kürzeres Bild (evtl. Speichergrenze)', { expectedLen, storedLen })
-        // Nicht return – Save zählt als erfolgreich, UI aktualisieren; Nutzer kann bei Bedarf Bild erneut setzen
-      } else {
-        console.log('✅ Werk-Verifikation erfolgreich:', artworkData?.number, 'Anzahl:', verifyRaw.length, 'Bild:', storedLen > 0 ? 'OK' : '—')
+      if (!tenant.dynamicTenantId) {
+        // KRITISCH: Prüfe ob Werk wirklich in localStorage steht (ROH – kein ök2-Anzeige-Filter)
+        let verifyRaw: any[] = []
+        try {
+          const key = tenant.getArtworksKey()
+          const stored = localStorage.getItem(key)
+          if (stored) verifyRaw = JSON.parse(stored)
+          if (!Array.isArray(verifyRaw)) verifyRaw = []
+        } catch (_) {}
+        const storedArtwork = verifyRaw.find((a: any) =>
+          (a?.number != null && artworkData?.number != null && String(a.number) === String(artworkData.number)) ||
+          (a?.id != null && artworkData?.id != null && String(a.id) === String(artworkData.id))
+        )
+        if (!storedArtwork) {
+          console.error('❌ KRITISCH: Werk wurde NICHT gespeichert!', {
+            gesucht: artworkData?.number || artworkData?.id,
+            anzahlRoh: verifyRaw.length
+          })
+          setWerkSaveToast({ kind: 'bad', text: `❌ Werk ${String(artworkData?.number ?? '')} wurde nicht in den Speicher übernommen.` })
+          setTimeout(() => setWerkSaveToast(null), 10000)
+          alert(`⚠️ Fehler: Werk konnte nicht gespeichert werden!\n\nNummer: ${artworkData?.number ?? ''}\n\nBitte versuche es erneut.`)
+          return
+        }
+        // Prüfen ob das gespeicherte Werk das Bild hat – bei Trunkierung (z. B. Speicher voll) nicht blockieren, nur warnen
+        const expectedLen = typeof artworkData.imageUrl === 'string' ? artworkData.imageUrl.length : 0
+        const storedLen = typeof storedArtwork.imageUrl === 'string' ? storedArtwork.imageUrl.length : 0
+        if (expectedLen > 100 && storedLen < 100) {
+          console.warn('⚠️ Gespeichertes Werk hat kürzeres Bild (evtl. Speichergrenze)', { expectedLen, storedLen })
+          // Nicht return – Save zählt als erfolgreich, UI aktualisieren; Nutzer kann bei Bedarf Bild erneut setzen
+        } else {
+          console.log('✅ Werk-Verifikation erfolgreich:', artworkData?.number, 'Anzahl:', verifyRaw.length, 'Bild:', storedLen > 0 ? 'OK' : '—')
+        }
       }
       
       // KRITISCH: Markiere Nummer als verwendet für bessere Synchronisation
@@ -13173,32 +13194,34 @@ ${'='.repeat(60)}
         }
       }
       
-      // KRITISCH: Prüfe ob das neue Werk wirklich in localStorage steht (ROH lesen – kein ök2-Anzeige-Filter)
-      // Mehrere Retries mit längerer Wartezeit – localStorage/IndexedDB braucht auf Mobile oft einen Moment („erst zweites Mal speichern“-Bug)
-      const verifyNewInStorage = (): boolean => {
-        let raw: any[] = []
-        try {
-          const key = tenant.getArtworksKey()
-          const stored = localStorage.getItem(key)
-          if (stored) raw = JSON.parse(stored)
-          if (!Array.isArray(raw)) raw = []
-        } catch (_) {}
-        return raw.some((a: any) =>
-          (a?.number != null && artworkData?.number != null && String(a.number) === String(artworkData.number)) ||
-          (a?.id != null && artworkData?.id != null && String(a.id) === String(artworkData.id))
-        )
-      }
-      let containsNewArtwork = verifyNewInStorage()
-      for (let retry = 0; retry < 4 && !containsNewArtwork; retry++) {
-        await new Promise(r => setTimeout(r, 150))
-        containsNewArtwork = verifyNewInStorage()
-      }
-      if (!containsNewArtwork) {
-        console.error('❌ KRITISCH: Neues Werk nicht in localStorage gefunden (roh):', artworkData?.number)
-        setWerkSaveToast({ kind: 'bad', text: `⚠️ Nummer ${String(artworkData?.number ?? '')}: bitte „Speichern“ nochmals tippen.` })
-        setTimeout(() => setWerkSaveToast(null), 10000)
-        alert(`⚠️ Werk wurde gespeichert, aber nicht in der Liste gefunden.\n\nNummer: ${artworkData?.number ?? ''}\n\nBitte einmal erneut auf „Speichern“ tippen – dann erscheint es.`)
-        return
+      if (!tenant.dynamicTenantId) {
+        // KRITISCH: Prüfe ob das neue Werk wirklich in localStorage steht (ROH lesen – kein ök2-Anzeige-Filter)
+        // Mehrere Retries mit längerer Wartezeit – localStorage/IndexedDB braucht auf Mobile oft einen Moment („erst zweites Mal speichern“-Bug)
+        const verifyNewInStorage = (): boolean => {
+          let raw: any[] = []
+          try {
+            const key = tenant.getArtworksKey()
+            const stored = localStorage.getItem(key)
+            if (stored) raw = JSON.parse(stored)
+            if (!Array.isArray(raw)) raw = []
+          } catch (_) {}
+          return raw.some((a: any) =>
+            (a?.number != null && artworkData?.number != null && String(a.number) === String(artworkData.number)) ||
+            (a?.id != null && artworkData?.id != null && String(a.id) === String(artworkData.id))
+          )
+        }
+        let containsNewArtwork = verifyNewInStorage()
+        for (let retry = 0; retry < 4 && !containsNewArtwork; retry++) {
+          await new Promise(r => setTimeout(r, 150))
+          containsNewArtwork = verifyNewInStorage()
+        }
+        if (!containsNewArtwork) {
+          console.error('❌ KRITISCH: Neues Werk nicht in localStorage gefunden (roh):', artworkData?.number)
+          setWerkSaveToast({ kind: 'bad', text: `⚠️ Nummer ${String(artworkData?.number ?? '')}: bitte „Speichern“ nochmals tippen.` })
+          setTimeout(() => setWerkSaveToast(null), 10000)
+          alert(`⚠️ Werk wurde gespeichert, aber nicht in der Liste gefunden.\n\nNummer: ${artworkData?.number ?? ''}\n\nBitte einmal erneut auf „Speichern“ tippen – dann erscheint es.`)
+          return
+        }
       }
       
       // Liste mit aufgelösten Bildern laden (imageRef → imageUrl aus IndexedDB), damit andere Werke nicht „kein Bild“/schwarz zeigen
