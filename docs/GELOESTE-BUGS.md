@@ -26,6 +26,10 @@
 
 **Nachfix 07.05.26 – Galerie ansehen + Sparte im Lizenznehmer-Admin:** Der dynamische Admin zeigte oben zwar die Mandanten-ID, aber **„Galerie ansehen“** führte weiter auf die echte K2-Galerie (`/galerie`). Außerdem startete der neue Mandant mit K2-Stammdaten-Defaults und ohne die beim Lizenzkauf gewählte Sparte. **Fix:** Interne Admin-Links für dynamische Mandanten führen jetzt auf `/g/<tenantId>?focusDirection=…`; neue Mandanten starten mit leeren Stammdaten und Sparten-Auswahl; Checkout/Webhook/API tragen `focusDirection` durch. Regression: `stripeLicenceContract.test.ts` + `dynamicTenantAdminIsolation.test.ts`.
 
+**Nachfix 07.05.26 – Design-Vorschau im Lizenznehmer-Admin zeigte K2-Texte:** Der Einstieg war richtig (`/admin?tenantId=…`), aber im Tab **Galerie gestalten → Ansehen** kamen weiter „K2 Galerie“, „Kunst & Keramik – Martina und Georg Kreinecker“ und der K2-Willkommenstext. **Ursache:** Die interne Design-Vorschau nutzte bei dynamischen Mandanten `defaultPageTexts`; diese Defaults sind K2. **Fix:** Dynamische Mandanten bekommen eigene Start-Seitentexte (`Meine Galerie`, gewählte Sparte, spartenbezogener Willkommenstext); alte K2-Defaults aus Mandanten-Blobs werden beim Anzeigen ersetzt. Regression: `dynamicTenantAdminIsolation.test.ts`.
+
+**Nachfix 07.05.26 – Sparten zeigten immer Kunst-Kategorien:** Im Lizenznehmer-Admin war der Typ z. B. „Handwerk & Manufaktur“, aber die Kategorien waren weiter Bilder/Keramik/Grafik/Skulptur/Sonstiges. **Ursache:** Der Kategorien-Pfad prüfte noch nur `tenant.isOeffentlich`; Lizenznehmer fielen dadurch auf `ARTWORK_CATEGORIES` zurück. **Fix:** Kategorie-Dropdown, Preview-Fallback und Reset nutzen `isFocusDirectionTenant` und damit `getCategoriesForDirection`. Regression: `dynamicTenantAdminIsolation.test.ts`.
+
 ---
 
 ## BUG-042 · Echtheitszertifikat zeigte für jedes Werk nur Martina (Künstler:in falsch, Keramik/Georg) (gelöst 22.03.26)

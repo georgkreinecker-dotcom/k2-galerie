@@ -1,5 +1,7 @@
 # Dialog-Stand
 
+**Letzter Stand:** 07.05.26 – **Lizenznehmer-Sparten nachgezogen:** Dynamische Galerie-Lizenznehmer nutzen jetzt in **Galerie gestalten → Ansehen** eigene Starttexte (`Meine Galerie`, gewählte Sparte) statt K2-Defaults. In **Werke verwalten** zeigt das Kategorie-Dropdown bei Lizenznehmern nun die Kategorien der gewählten Sparte (z. B. Handwerk: Möbel, Schmuck, Textil …) statt immer Kunst-Kategorien. **Tests:** `dynamicTenantAdminIsolation.test.ts` + Lizenztests grün; **Build:** `npm run build` grün. **Commit:** noch nicht gepusht.
+
 **Letzter Stand:** 07.05.26 – **Lizenznehmer-Admin End-to-End repariert:** `/admin?tenantId=galerie-*` lädt keine K2-Stammdaten mehr, startet mit leeren Mandanten-Stammdaten und übernimmt `focusDirection` aus der Lizenz. **„Galerie ansehen“** führt jetzt auf `/g/<tenantId>?focusDirection=…` statt `/galerie`. Lizenzkauf sendet die gewählte Sparte in Stripe-Metadaten; Webhook/API schreiben sie in die Mandanten-Galerie-URL und Admin-URL. **Tests:** `stripeLicenceContract.test.ts` + `dynamicTenantAdminIsolation.test.ts` grün; **Build:** `npm run build` grün. **Commit:** `c3142866` ✅ **main**
 
 **Vorher 07.05.26:** **Lizenznehmer-Admin Datentrennung repariert:** `/admin?tenantId=galerie-*` darf nie lokale K2-Daten laden. `ScreenshotExportAdmin` sperrt bei `tenant.dynamicTenantId` jetzt lokale K2-Werke/K2-Fallbacks/Auto-Save und lädt nur API-Daten des konkreten Mandanten. **Test:** `dynamicTenantAdminIsolation.test.ts` + Lizenztests grün. **Commit:** noch nicht gepusht.

@@ -23,10 +23,29 @@ describe('Dynamischer Lizenznehmer-Admin – keine K2-LocalStorage-Daten', () =>
 
   it('setzt neue Mandanten ohne echte K2-Stammdaten und mit Sparte aus der URL auf', () => {
     expect(source).toContain("function createDynamicTenantGalleryDefaults")
+    expect(source).toContain("function createDynamicTenantPageTexts")
+    expect(source).toContain("function mergeDynamicTenantPageTexts")
     expect(source).toContain("name: 'Meine Galerie'")
+    expect(source).toContain("heroTitle: 'Meine Galerie'")
     expect(source).toContain("focusDirections: [focusDirection]")
     expect(source).toContain("setMartinaData(dynamicPersonDefaults as any)")
+    expect(source).toContain("setPageTextsState(createDynamicTenantPageTexts(dynamicFocusDirectionFromUrl))")
+    expect(source).toContain("setPageTextsState(mergeDynamicTenantPageTexts(data.pageTexts, dynamicFocusDirectionFromUrl))")
     expect(source).not.toMatch(/tenant\.dynamicTenantId[\s\S]{0,800}setMartinaData\(K2_STAMMDATEN_DEFAULTS\.martina/)
     expect(source).not.toMatch(/tenant\.dynamicTenantId[\s\S]{0,800}setGalleryData\(\{ \.\.\.K2_STAMMDATEN_DEFAULTS\.gallery/)
+  })
+
+  it('nutzt in der Design-Vorschau für dynamische Mandanten keine K2-Fallback-Texte', () => {
+    expect(source).toContain("const galleryName = tenant.dynamicTenantId")
+    expect(source).toContain("const tagline = tenant.dynamicTenantId")
+    expect(source).toContain("if (galerie.welcomeSubtext === defaultPageTexts.galerie.welcomeSubtext) galerie.welcomeSubtext = dynamicDefaults.galerie.welcomeSubtext")
+    expect(source).toContain("if (galerie.welcomeIntroText === defaultPageTexts.galerie.welcomeIntroText) galerie.welcomeIntroText = dynamicDefaults.galerie.welcomeIntroText")
+  })
+
+  it('nutzt für Kategorie-Dropdowns bei Lizenznehmern die gewählte Sparte statt Kunst-Standard', () => {
+    expect(source).toContain("if (categoryFilter !== 'alle' && !allowed.has(categoryFilter)) setCategoryFilter('alle')")
+    expect(source).toContain('isFocusDirectionTenant\n                      ? getCategoriesForDirection')
+    expect(source).toContain('const previewCategory = isFocusDirectionTenant')
+    expect(source).toContain('const previewTypLabel = isFocusDirectionTenant')
   })
 })

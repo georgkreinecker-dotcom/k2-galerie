@@ -8,17 +8,24 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { reportPublicGalleryVisit } from '../utils/reportPublicGalleryVisit'
+import { FOCUS_DIRECTIONS, getWelcomeIntroForFocusDirections, type FocusDirectionId } from '../config/tenantConfig'
 import '../App.css'
 
 const SAFE_TENANT_ID = /^[a-z0-9-]{1,64}$/
+const DEFAULT_FOCUS_DIRECTION: FocusDirectionId = 'kunst'
+
+function normalizeFocusDirection(raw: string | null): FocusDirectionId {
+  const value = String(raw || '').trim().toLowerCase()
+  return (FOCUS_DIRECTIONS.some((d) => d.id === value) ? value : DEFAULT_FOCUS_DIRECTION) as FocusDirectionId
+}
 
 export default function GalerieTenantPage() {
   const { tenantId } = useParams<{ tenantId: string }>()
   const [searchParams] = useSearchParams()
-  const focusDirection = searchParams.get('focusDirection')?.trim() || 'kunst'
+  const focusDirection = normalizeFocusDirection(searchParams.get('focusDirection'))
   const [data, setData] = useState<{
     artworks?: Array<{ number?: string; title?: string; imageRef?: string; image?: string }>
-    pageTexts?: { galerie?: { heroTitle?: string } }
+    pageTexts?: { galerie?: { heroTitle?: string; welcomeSubtext?: string; welcomeIntroText?: string } }
     designSettings?: Record<string, string>
   } | null>(null)
   const [loading, setLoading] = useState(true)
@@ -103,12 +110,22 @@ export default function GalerieTenantPage() {
   }
 
   const artworks = Array.isArray(data.artworks) ? data.artworks : []
-  const title = data.pageTexts?.galerie?.heroTitle?.trim() || 'Galerie'
+  const focusLabel = FOCUS_DIRECTIONS.find((d) => d.id === focusDirection)?.label ?? 'Kunst & Galerie'
+  const rawTitle = data.pageTexts?.galerie?.heroTitle?.trim() || ''
+  const rawSubtext = data.pageTexts?.galerie?.welcomeSubtext?.trim() || ''
+  const rawIntro = data.pageTexts?.galerie?.welcomeIntroText?.trim() || ''
+  const title = rawTitle === 'K2 Galerie' ? 'Meine Galerie' : (rawTitle || 'Meine Galerie')
+  const subtext = rawSubtext === 'Kunst & Keramik – Martina und Georg Kreinecker' ? focusLabel : (rawSubtext || focusLabel)
+  const intro = rawIntro === 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.'
+    ? getWelcomeIntroForFocusDirections([focusDirection])
+    : (rawIntro || getWelcomeIntroForFocusDirections([focusDirection]))
 
   return (
     <main className="galerie-tenant-page" style={{ maxWidth: 900, margin: '0 auto', padding: '1rem' }}>
       <header style={{ textAlign: 'center', marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--k2-fg, #1a1a1a)' }}>{title}</h1>
+        <p style={{ color: 'var(--k2-muted)', margin: '0.35rem 0 0' }}>{subtext}</p>
+        <p style={{ color: 'var(--k2-muted)', maxWidth: 620, margin: '0.75rem auto 0', lineHeight: 1.55 }}>{intro}</p>
       </header>
       {artworks.length === 0 ? (
         <p style={{ textAlign: 'center', color: 'var(--k2-muted)', marginBottom: '1.5rem' }}>

@@ -2543,6 +2543,52 @@ function createDynamicTenantGalleryDefaults(focusDirection: FocusDirectionId) {
   }
 }
 
+function createDynamicTenantPageTexts(focusDirection: FocusDirectionId): PageTextsConfig {
+  const focusLabel = FOCUS_DIRECTIONS.find((d) => d.id === focusDirection)?.label ?? 'Kunst & Galerie'
+  const welcomeIntroText = getWelcomeIntroForFocusDirections([focusDirection])
+  const galerie = {
+    ...defaultPageTexts.galerie,
+    pageTitle: 'Meine Galerie',
+    heroTitle: 'Meine Galerie',
+    welcomeHeading: 'Willkommen bei',
+    welcomeSubtext: focusLabel,
+    welcomeIntroText,
+    eventSectionHeading: 'Aktuelles',
+    kunstschaffendeHeading: 'Meine Werke und Ideen',
+    martinaBio: '',
+    georgBio: '',
+    gemeinsamText: '',
+    galerieButtonText: 'Galerie ansehen',
+    virtualTourButtonText: 'Rundgang ansehen',
+  }
+  return { ...defaultPageTexts, galerie }
+}
+
+function mergeDynamicTenantPageTexts(raw: unknown, focusDirection: FocusDirectionId): PageTextsConfig {
+  const dynamicDefaults = createDynamicTenantPageTexts(focusDirection)
+  const incoming = raw && typeof raw === 'object' ? raw as Partial<PageTextsConfig> : {}
+  const incomingGalerie = incoming.galerie && typeof incoming.galerie === 'object' ? incoming.galerie : {}
+  const galerie = {
+    ...dynamicDefaults.galerie,
+    ...incomingGalerie,
+  }
+
+  // Alte fehlerhafte Mandanten-Blobs können K2-Defaults enthalten. In dynamischen Mandanten
+  // werden diese nur angezeigt, wenn der Nutzer sie später ausdrücklich selbst einträgt.
+  if (galerie.heroTitle === defaultPageTexts.galerie.heroTitle) galerie.heroTitle = dynamicDefaults.galerie.heroTitle
+  if (galerie.pageTitle === defaultPageTexts.galerie.pageTitle) galerie.pageTitle = dynamicDefaults.galerie.pageTitle
+  if (galerie.welcomeSubtext === defaultPageTexts.galerie.welcomeSubtext) galerie.welcomeSubtext = dynamicDefaults.galerie.welcomeSubtext
+  if (galerie.welcomeIntroText === defaultPageTexts.galerie.welcomeIntroText) galerie.welcomeIntroText = dynamicDefaults.galerie.welcomeIntroText
+  if (galerie.martinaBio === defaultPageTexts.galerie.martinaBio) galerie.martinaBio = ''
+  if (galerie.georgBio === defaultPageTexts.galerie.georgBio) galerie.georgBio = ''
+
+  return {
+    ...dynamicDefaults,
+    ...incoming,
+    galerie,
+  }
+}
+
 function ScreenshotExportAdmin(props?: AdminProps) {
   const { forceTab, forceEventplanSubTab, forceOeffentlichkeitsarbeitModal } = props ?? {}
   const tenant = useTenant()
@@ -3329,7 +3375,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   
   // Seitentexte (bearbeitbare Texte pro Seite) – K2 vs. ök2 vs. VK2 getrennt
   const [pageTexts, setPageTextsState] = useState<PageTextsConfig>(() => {
-    if (tenant.dynamicTenantId) return defaultPageTexts
+    if (tenant.dynamicTenantId) return createDynamicTenantPageTexts(dynamicFocusDirectionFromUrl)
     const raw = getPageTexts(tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)
     if (tenant.isVk2) {
       // VK2: K2-Standardtexte erkennen und mit VK2-Defaults überschreiben
@@ -4038,7 +4084,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     setEvents([])
     setDocuments([])
     setDesignSettings(K2_ORANGE_DESIGN)
-    setPageTextsState(defaultPageTexts)
+    setPageTextsState(createDynamicTenantPageTexts(dynamicFocusDirectionFromUrl))
     setPageContent({ welcomeImage: '', galerieCardImage: '', virtualTourImage: '', virtualTourVideo: '', virtualTourVideoSizeBytes: 0 })
     const dynamicPersonDefaults = createDynamicTenantPersonDefaults()
     const dynamicGalleryDefaults = createDynamicTenantGalleryDefaults(dynamicFocusDirectionFromUrl)
@@ -4059,7 +4105,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
           setGalleryData(dynamicGalleryDefaults as any)
           setPageContent({ welcomeImage: '', galerieCardImage: '', virtualTourImage: '', virtualTourVideo: '', virtualTourVideoSizeBytes: 0 })
           setDesignSettings(K2_ORANGE_DESIGN)
-          setPageTextsState(defaultPageTexts)
+          setPageTextsState(createDynamicTenantPageTexts(dynamicFocusDirectionFromUrl))
         }
         return
       }
@@ -4069,7 +4115,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       setEvents(Array.isArray(data.events) ? data.events : [])
       setDocuments(Array.isArray(data.documents) ? data.documents : [])
       if (data.designSettings && typeof data.designSettings === 'object') setDesignSettings({ ...K2_ORANGE_DESIGN, ...data.designSettings } as any)
-      if (data.pageTexts && typeof data.pageTexts === 'object') setPageTextsState({ ...defaultPageTexts, ...data.pageTexts } as any)
+      setPageTextsState(mergeDynamicTenantPageTexts(data.pageTexts, dynamicFocusDirectionFromUrl))
       if (data.martina && typeof data.martina === 'object') setMartinaData({ ...dynamicPersonDefaults, ...data.martina } as any)
       else setMartinaData(dynamicPersonDefaults as any)
       if (data.georg && typeof data.georg === 'object') setGeorgData({ ...dynamicPersonDefaults, ...data.georg } as any)
@@ -5308,6 +5354,13 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     const typ = getDefaultEntryTypeForFocusDirections(effective)
     setEntryTypeFilter(typ)
   }, [tenant.isOeffentlich, tenant.dynamicTenantId, galleryData?.focusDirections])
+
+  useEffect(() => {
+    if (!isFocusDirectionTenant) return
+    const dir = galleryData?.focusDirections?.[0] ?? DEFAULT_OEK2_FOCUS_DIRECTION_ID
+    const allowed = new Set(getCategoriesForDirection(dir).map((c) => c.id))
+    if (categoryFilter !== 'alle' && !allowed.has(categoryFilter)) setCategoryFilter('alle')
+  }, [isFocusDirectionTenant, galleryData?.focusDirections, categoryFilter])
 
   /** Werke verwalten: Kategorie-Filter immer wieder „Alle“, wenn man zur Listenansicht zurückkommt – sonst wirkt es wie „Werke weg“. */
   const prevActiveTabForCategoryRef = useRef<string | null>(null)
@@ -14647,8 +14700,13 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
           <input type="file" accept="image/*" ref={virtualTourImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'pageHero' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – im Fenster „Bild übernehmen“ klicken'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
           {(() => {
             const tc = tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich : tenant.isVk2 ? TENANT_CONFIGS.vk2 : TENANT_CONFIGS.k2
-            const galleryName = tenant.isVk2 ? (vk2Stammdaten.verein?.name || tc.galleryName) : tc.galleryName
-            const tagline = tenant.isVk2 ? (vk2Stammdaten.vorstand?.name ? `Obfrau/Obmann: ${vk2Stammdaten.vorstand.name}` : tc.tagline) : tc.tagline
+            const dynamicFocusLabel = FOCUS_DIRECTIONS.find((d) => d.id === (galleryData?.focusDirections?.[0] ?? dynamicFocusDirectionFromUrl))?.label ?? 'Kunst & Galerie'
+            const galleryName = tenant.dynamicTenantId
+              ? ((galleryData?.name && String(galleryData.name).trim()) || 'Meine Galerie')
+              : tenant.isVk2 ? (vk2Stammdaten.verein?.name || tc.galleryName) : tc.galleryName
+            const tagline = tenant.dynamicTenantId
+              ? dynamicFocusLabel
+              : tenant.isVk2 ? (vk2Stammdaten.vorstand?.name ? `Obfrau/Obmann: ${vk2Stammdaten.vorstand.name}` : tc.tagline) : tc.tagline
             const welcomeIntroDefault = tenant.isVk2
               ? 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.'
               : (isFocusDirectionTenant && galleryData?.focusDirections?.length
@@ -17234,7 +17292,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     }}
                   >
                     <option value="alle" style={{ background: s.bgCard, color: s.text }}>Alle</option>
-                    {tenant.isOeffentlich
+                    {isFocusDirectionTenant
                       ? getCategoriesForDirection(galleryData?.focusDirections?.[0]).map((c) => (
                           <option key={c.id} value={c.id} style={{ background: s.bgCard, color: s.text }}>{c.label}</option>
                         ))
@@ -17251,7 +17309,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   Was möchtest du präsentieren?
                 </p>
               )}
-              {tenant.isOeffentlich && (
+              {isFocusDirectionTenant && (
                 <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', color: s.text, lineHeight: 1.45, fontWeight: 500 }}>
                   Deine Sparte kommt aus den Stammdaten. <strong>Kategorie</strong> = Feinzuordnung (z. B. Speise, Getränk, Malerei).
                 </p>
@@ -17430,10 +17488,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
 
                 if (filtered.length === 0) {
                   const fixedDir = isFocusDirectionTenant ? (galleryData?.focusDirections?.[0] ?? DEFAULT_OEK2_FOCUS_DIRECTION_ID) : null
-                  const previewCategory = tenant.isOeffentlich
+                  const previewCategory = isFocusDirectionTenant
                     ? (categoryFilter === 'alle' ? (getCategoriesForDirection(fixedDir)[0]?.id ?? '') : categoryFilter)
                     : (artworkCategory || (ARTWORK_CATEGORIES[0]?.id ?? ''))
-                  const previewTypLabel = tenant.isOeffentlich && fixedDir
+                  const previewTypLabel = isFocusDirectionTenant && fixedDir
                     ? (FOCUS_DIRECTIONS.find((d) => d.id === fixedDir)?.label ?? 'Kunst & Galerie')
                     : getEntryTypeLabel(artworkEntryType || 'artwork')
                   return (
@@ -18377,8 +18435,13 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     <div style={{ overflow: 'auto', maxHeight: 'min(85vh, 640px)', borderRadius: 16, border: `2px solid ${fAccent}`, background: 'var(--k2-bg-1)' }}>
                       {(() => {
                         const tc = tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich : tenant.isVk2 ? TENANT_CONFIGS.vk2 : TENANT_CONFIGS.k2
-                        const galleryName = tenant.isVk2 ? (vk2Stammdaten.verein?.name || tc.galleryName) : tc.galleryName
-                        const tagline = tenant.isVk2 ? (vk2Stammdaten.vorstand?.name ? `Obfrau/Obmann: ${vk2Stammdaten.vorstand.name}` : tc.tagline) : tc.tagline
+                        const dynamicFocusLabel = FOCUS_DIRECTIONS.find((d) => d.id === (galleryData?.focusDirections?.[0] ?? dynamicFocusDirectionFromUrl))?.label ?? 'Kunst & Galerie'
+                        const galleryName = tenant.dynamicTenantId
+                          ? ((galleryData?.name && String(galleryData.name).trim()) || 'Meine Galerie')
+                          : tenant.isVk2 ? (vk2Stammdaten.verein?.name || tc.galleryName) : tc.galleryName
+                        const tagline = tenant.dynamicTenantId
+                          ? dynamicFocusLabel
+                          : tenant.isVk2 ? (vk2Stammdaten.vorstand?.name ? `Obfrau/Obmann: ${vk2Stammdaten.vorstand.name}` : tc.tagline) : tc.tagline
                         const welcomeIntroDefault = tenant.isVk2
                           ? 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.'
                           : (isFocusDirectionTenant && galleryData?.focusDirections?.length
