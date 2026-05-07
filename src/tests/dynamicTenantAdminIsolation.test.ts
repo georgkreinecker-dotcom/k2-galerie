@@ -67,8 +67,8 @@ describe('Dynamischer Lizenznehmer-Admin – keine K2-LocalStorage-Daten', () =>
     expect(source).toContain("const sourceGallery = overrides?.gallery ?? galleryData")
     expect(source).toContain("const targetTenantId = options?.tenantId ?? effectiveDynamicTenantId")
     expect(source).toContain("if (data.tenantId !== targetTenantId) return { success: false, error: 'Mandanten-Ziel stimmt nicht. Speichern abgebrochen.' }")
-    expect(source).toMatch(/if \(tenant\.dynamicTenantId\) \{\s+saveDynamicTenantStateToServer\(\{[\s\S]*?martina: martinaData,[\s\S]*?georg: georgData,[\s\S]*?gallery: galleryData,/)
-    expect(source).toContain("await saveDynamicTenantStateToServer({ silent: true })")
+    expect(source).toMatch(/if \(effectiveDynamicTenantId\) \{\s+saveDynamicTenantStateToServer\(\{[\s\S]*?martina: martinaData,[\s\S]*?georg: georgData,[\s\S]*?gallery: galleryData,/)
+    expect(source).toContain("await saveDynamicTenantStateToServer({ silent: true, tenantId: effectiveDynamicTenantId })")
     expect(source).toContain("„Speichern“ und „Veröffentlichen“ schreiben in genau diesen Mandanten, nicht in K2.")
   })
 

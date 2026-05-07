@@ -2667,8 +2667,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const dynamicTenantIdFromSearch = useMemo(() => getSafeDynamicTenantIdFromSearch(location.search), [location.search])
   const effectiveDynamicTenantId = tenant.dynamicTenantId ?? dynamicTenantIdFromSearch
   const dynamicTenantGalleryPath = useMemo(() => {
-    return tenant.dynamicTenantId ? buildDynamicTenantGalleryPath(tenant.dynamicTenantId, dynamicFocusDirectionFromUrl) : ''
-  }, [tenant.dynamicTenantId, dynamicFocusDirectionFromUrl])
+    return effectiveDynamicTenantId ? buildDynamicTenantGalleryPath(effectiveDynamicTenantId, dynamicFocusDirectionFromUrl) : ''
+  }, [effectiveDynamicTenantId, dynamicFocusDirectionFromUrl])
   const isFocusDirectionTenant = tenant.isOeffentlich || !!tenant.dynamicTenantId
   // Singleton-Check: Verhindere doppeltes Mounten - KRITISCH gegen Crashes
   const mountId = React.useRef(`admin-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`)
@@ -4013,8 +4013,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       ? galleryData.focusDirections[0]
       : dynamicFocusDirectionFromUrl
   )
-  const currentDynamicTenantGalleryPath = tenant.dynamicTenantId
-    ? buildDynamicTenantGalleryPath(tenant.dynamicTenantId, currentDynamicFocusDirection)
+  const currentDynamicTenantGalleryPath = effectiveDynamicTenantId
+    ? buildDynamicTenantGalleryPath(effectiveDynamicTenantId, currentDynamicFocusDirection)
     : dynamicTenantGalleryPath
 
   // Seitengestaltung (Willkommensseite & Galerie-Vorschau) – K2 vs. ök2 getrennt
@@ -4715,8 +4715,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const saveAllForVorschau = () => {
     const run = async () => {
       try {
-        if (tenant.dynamicTenantId) {
-          await saveDynamicTenantStateToServer({ silent: true })
+        if (effectiveDynamicTenantId) {
+          await saveDynamicTenantStateToServer({ silent: true, tenantId: effectiveDynamicTenantId })
           return
         }
         if (tenant.isVk2) {
@@ -4827,13 +4827,14 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   // Stammdaten speichern - bei ök2: Demo-Stammdaten (inkl. Mein Weg) in k2-oeffentlich-stammdaten-*; bei VK2 in k2-vk2-stammdaten; dynamische Mandanten: direkt in eigenen Server-Blob; K2: echte Stammdaten
   const saveStammdaten = () => {
     return new Promise<void>((resolve, reject) => {
-      if (tenant.dynamicTenantId) {
+      if (effectiveDynamicTenantId) {
         saveDynamicTenantStateToServer({
           silent: true,
           martina: martinaData,
           georg: georgData,
           gallery: galleryData,
           pageTexts,
+          tenantId: effectiveDynamicTenantId,
         })
           .then((result) => {
             if (result.success) resolve()
@@ -5126,14 +5127,14 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         }
 
         // Dynamischer Mandant (?tenantId=): nur State → API, kein localStorage
-        if (tenant.dynamicTenantId) {
+        if (effectiveDynamicTenantId) {
           const artworksForTenantSave = Array.isArray(options?.artworks)
             ? options.artworks
             : (Array.isArray(allArtworksRef.current) ? allArtworksRef.current : [])
-          saveDynamicTenantStateToServer({ silent, artworks: artworksForTenantSave }).then(result => {
+          saveDynamicTenantStateToServer({ silent, artworks: artworksForTenantSave, tenantId: effectiveDynamicTenantId }).then(result => {
             if (!silent && isMountedRef.current) setIsDeploying(false)
             if (result.success) {
-              if (silent) console.log('✅ Galerie-Daten gespeichert (Mandant)', tenant.dynamicTenantId)
+              if (silent) console.log('✅ Galerie-Daten gespeichert (Mandant)', effectiveDynamicTenantId)
               else {
                 setSyncStatusBar({ phase: 'success', message: 'Gesendet.' })
                 setPublishSuccessModal({ size: result.size || 0, version: 1 })
@@ -14719,8 +14720,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               <button type="button" onClick={async () => {
                 // Erst alles in localStorage sichern, dann Galerie im gleichen Tab öffnen
                 // (gleicher Tab = localStorage sofort lesbar, neues Foto wird sofort angezeigt)
-                if (tenant.dynamicTenantId) {
-                  const saved = await saveDynamicTenantStateToServer({ silent: true })
+                if (effectiveDynamicTenantId) {
+                  const saved = await saveDynamicTenantStateToServer({ silent: true, tenantId: effectiveDynamicTenantId })
                   if (!saved.success) {
                     setPublishErrorMsg(saved.error || 'Daten konnten nicht gespeichert werden.')
                     return
@@ -14730,7 +14731,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   setPageContentGalerie(pageContent, designTenant)
                   setPageTexts(pageTexts, designTenant)
                 }
-                const route = tenant.dynamicTenantId
+                const route = effectiveDynamicTenantId
                   ? currentDynamicTenantGalleryPath
                   : tenant.isVk2
                   ? PROJECT_ROUTES.vk2.galerie
@@ -14766,9 +14767,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         const tenantForUpload = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
                         const context = tenant.isOeffentlich ? ('oeffentlich' as const) : tenant.isVk2 ? ('vk2' as const) : ('k2' as const)
                         let contentToSave: PageContentGalerie = { ...pageContent }
-                        if (tenant.dynamicTenantId) {
+                        if (effectiveDynamicTenantId) {
                           setPageContent(contentToSave)
-                          const saved = await saveDynamicTenantStateToServer({ silent: true })
+                          const saved = await saveDynamicTenantStateToServer({ silent: true, tenantId: effectiveDynamicTenantId })
                           if (!saved.success) {
                             alert('Speichern fehlgeschlagen: ' + (saved.error || 'Daten konnten nicht gespeichert werden.'))
                             return
