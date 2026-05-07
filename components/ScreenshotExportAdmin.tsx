@@ -2666,6 +2666,14 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   }, [location.search])
   const dynamicTenantIdFromSearch = useMemo(() => getSafeDynamicTenantIdFromSearch(location.search), [location.search])
   const effectiveDynamicTenantId = tenant.dynamicTenantId ?? dynamicTenantIdFromSearch
+  useEffect(() => {
+    try {
+      if (effectiveDynamicTenantId) sessionStorage.setItem('k2-active-dynamic-tenant', effectiveDynamicTenantId)
+      else sessionStorage.removeItem('k2-active-dynamic-tenant')
+    } catch {
+      /* ignore */
+    }
+  }, [effectiveDynamicTenantId])
   const dynamicTenantGalleryPath = useMemo(() => {
     return effectiveDynamicTenantId ? buildDynamicTenantGalleryPath(effectiveDynamicTenantId, dynamicFocusDirectionFromUrl) : ''
   }, [effectiveDynamicTenantId, dynamicFocusDirectionFromUrl])
@@ -11621,6 +11629,10 @@ ${'='.repeat(60)}
 
   // Eröffnungsevent 24.–26. April anlegen (wie gestern angelegt) – Dokumente danach im Event hinzufügen
   const handleCreateEröffnungsevent = () => {
+    if (effectiveDynamicTenantId) {
+      alert('Für Lizenzmandanten ist das K2-Eröffnungsevent deaktiviert.')
+      return
+    }
     const location = getProminenteAdresseFormatiert(galleryData, martinaData, georgData) || ''
     const newEvent = {
       id: `event-${Date.now()}`,
@@ -23390,9 +23402,11 @@ ${name}`
                   Noch keine Events vorhanden
                 </p>
                 <p style={{ fontSize: 'clamp(0.85rem, 2vw, 1rem)', marginTop: '0.5rem', color: s.muted }}>
-                  {tenant.isOeffentlich ? 'Klicke auf „Event hinzufügen“.' : 'Klicke auf „Event hinzufügen“ oder stelle das Eröffnungsevent 24.–26. April wieder her.'}
+                  {(tenant.isOeffentlich || effectiveDynamicTenantId)
+                    ? 'Klicke auf „Event hinzufügen“.'
+                    : 'Klicke auf „Event hinzufügen“ oder stelle das Eröffnungsevent 24.–26. April wieder her.'}
                 </p>
-                {!tenant.isOeffentlich && (
+                {!tenant.isOeffentlich && !effectiveDynamicTenantId && (
                 <button
                   type="button"
                   onClick={handleCreateEröffnungsevent}

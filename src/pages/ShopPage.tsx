@@ -873,6 +873,14 @@ const ShopPage = () => {
   // Ök2: „Zur Galerie“ und Kontakt – eine zentrale Quelle (Phase 5.3). Muss vor Galerie-Stammdaten-Load stehen.
   const stateDynamicTenantId =
     ((location.state as { dynamicTenantId?: string } | null)?.dynamicTenantId || '').trim().toLowerCase()
+  const openAsKasseFromState = (location.state as { openAsKasse?: boolean } | null)?.openAsKasse === true
+  const openAsKasseFromQuery = (() => {
+    try {
+      return new URLSearchParams(location.search || '').get('openAsKasse') === '1'
+    } catch {
+      return false
+    }
+  })()
   const queryDynamicTenantId = (() => {
     try {
       const params = new URLSearchParams(location.search || '')
@@ -881,12 +889,17 @@ const ShopPage = () => {
       return ''
     }
   })()
+  const activeDynamicTenantId =
+    (typeof sessionStorage !== 'undefined' ? String(sessionStorage.getItem('k2-active-dynamic-tenant') || '') : '')
+      .trim()
+      .toLowerCase()
   const storedDynamicTenantId =
     (typeof sessionStorage !== 'undefined' ? String(sessionStorage.getItem('k2-shop-dynamic-tenant') || '') : '')
       .trim()
       .toLowerCase()
-  const dynamicTenantId = (stateDynamicTenantId || queryDynamicTenantId || storedDynamicTenantId || '').match(/^[a-z0-9-]{1,64}$/)
-    ? (stateDynamicTenantId || queryDynamicTenantId || storedDynamicTenantId || '')
+  const fallbackDynamicTenantId = (openAsKasseFromState || openAsKasseFromQuery) ? (storedDynamicTenantId || activeDynamicTenantId) : ''
+  const dynamicTenantId = (stateDynamicTenantId || queryDynamicTenantId || fallbackDynamicTenantId || '').match(/^[a-z0-9-]{1,64}$/)
+    ? (stateDynamicTenantId || queryDynamicTenantId || fallbackDynamicTenantId || '')
     : ''
   const isDynamicTenantKassa = !!dynamicTenantId
   const fromOeffentlich = isOeffentlichDisplayContext(location.state)
@@ -993,6 +1006,8 @@ const ShopPage = () => {
       try {
         if (stateDynamicTenantId) {
           sessionStorage.setItem('k2-shop-dynamic-tenant', stateDynamicTenantId)
+          sessionStorage.setItem('k2-active-dynamic-tenant', stateDynamicTenantId)
+          sessionStorage.setItem('k2-admin-context', 'k2')
         } else if (state.fromVk2) {
           sessionStorage.setItem('k2-admin-context', 'vk2')
         } else {
