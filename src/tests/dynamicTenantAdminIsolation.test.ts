@@ -7,6 +7,7 @@ describe('Dynamischer Lizenznehmer-Admin – keine K2-LocalStorage-Daten', () =>
   const tenantGallerySource = readFileSync(join(process.cwd(), 'src/pages/GalerieTenantPage.tsx'), 'utf8')
   const apiGalleryDataSource = readFileSync(join(process.cwd(), 'api/gallery-data.js'), 'utf8')
   const apiGalleryDataGetSource = readFileSync(join(process.cwd(), 'api/gallery-data-get.js'), 'utf8')
+  const apiWriteGalleryDataSource = readFileSync(join(process.cwd(), 'api/write-gallery-data.js'), 'utf8')
 
   it('lädt bei ?tenantId=galerie-* keine lokalen K2-Werke als Fallback', () => {
     expect(source).toMatch(/async function loadArtworksWithResolvedImages[\s\S]*?if \(tenant\.dynamicTenantId\) return \[\]/)
@@ -104,5 +105,12 @@ describe('Dynamischer Lizenznehmer-Admin – keine K2-LocalStorage-Daten', () =>
     expect(apiGalleryDataGetSource).toContain("return res.status(400).json({ error: 'Ungültiger tenantId' })")
     expect(apiGalleryDataGetSource).toContain("const effectiveTenantId = hasTenantParam ? tenantId : 'k2'")
     expect(apiGalleryDataGetSource).not.toContain("getBlobPath('k2')")
+  })
+
+  it('verbietet im API-Schreibpfad den K2-Fallback bei ungültigem tenantId', () => {
+    expect(apiWriteGalleryDataSource).toContain("function parseTenantIdOrNull(rawValue)")
+    expect(apiWriteGalleryDataSource).toContain("if (parsed.data?.tenantId != null && !parseTenantIdOrNull(parsed.data?.tenantId))")
+    expect(apiWriteGalleryDataSource).toContain("if (tenantFromBody != null && !parseTenantIdOrNull(tenantFromBody))")
+    expect(apiWriteGalleryDataSource).toContain("return res.status(400).json({ error: 'Ungültiger tenantId' })")
   })
 })

@@ -28,6 +28,13 @@ function getBlobPath(tenantId) {
   return 'gallery-data.json'
 }
 
+function parseTenantIdOrNull(rawValue) {
+  const raw = String(rawValue ?? '').toLowerCase().trim()
+  if (!raw) return null
+  if (LEGACY_TENANTS.includes(raw) || isSafeTenantId(raw)) return raw
+  return null
+}
+
 const API_KEY_HEADER = 'x-api-key'
 const AUTH_HEADER = 'authorization'
 
@@ -100,8 +107,10 @@ export default async function handler(req, res) {
   const uploadIdSafe = isChunked && /^[a-z0-9-]{1,80}$/.test(parsed.uploadId.trim())
 
   if (isChunked && uploadIdSafe) {
-    const tenantIdRaw = (parsed.data?.tenantId ?? 'k2').toLowerCase().trim()
-    const tenantId = (LEGACY_TENANTS.includes(tenantIdRaw) || isSafeTenantId(tenantIdRaw)) ? tenantIdRaw : 'k2'
+    const tenantId = parseTenantIdOrNull(parsed.data?.tenantId) ?? 'k2'
+    if (parsed.data?.tenantId != null && !parseTenantIdOrNull(parsed.data?.tenantId)) {
+      return res.status(400).json({ error: 'Ungültiger tenantId' })
+    }
     const chunkPath = `upload/${tenantId}/${parsed.uploadId.trim()}/${parsed.chunkIndex}.json`
     const chunkBody = JSON.stringify(parsed.data)
     const maxChunkBytes = 1024 * 1024 // 1 MB pro Chunk
@@ -183,8 +192,11 @@ export default async function handler(req, res) {
     })
   }
 
-  const tenantIdRaw = (parsed?.tenantId ?? parsed?.kontext ?? 'k2').toLowerCase().trim()
-  const tenantId = (LEGACY_TENANTS.includes(tenantIdRaw) || isSafeTenantId(tenantIdRaw)) ? tenantIdRaw : 'k2'
+  const tenantFromBody = parsed?.tenantId ?? parsed?.kontext
+  const tenantId = parseTenantIdOrNull(tenantFromBody) ?? 'k2'
+  if (tenantFromBody != null && !parseTenantIdOrNull(tenantFromBody)) {
+    return res.status(400).json({ error: 'Ungültiger tenantId' })
+  }
   const BLOB_PATHNAME = getBlobPath(tenantId)
 
   let artworksCount = 0
