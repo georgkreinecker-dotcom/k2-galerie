@@ -21625,6 +21625,7 @@ ${name}`
                       licenceType: lizenzLicenceType,
                       email,
                       name,
+                      ...(tenant.isVk2 ? { productLine: 'vk2' } : {}),
                       ...(lizenzEmpfehlerId.trim() && isValidEmpfehlerIdFormat(lizenzEmpfehlerId) ? { empfehlerId: lizenzEmpfehlerId.trim() } : {}),
                     }),
                   })

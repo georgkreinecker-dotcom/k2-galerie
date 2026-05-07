@@ -72,10 +72,11 @@ export function resolveCheckoutLicenceType(session) {
   const metadata = checkoutSessionEffectiveMetadata(session)
   const tenantNorm = normalizeWebhookTenantId(metadata.tenantId)
   const isFamilieTenant = Boolean(tenantNorm?.startsWith('familie-'))
+  const isVk2Tenant = tenantNorm === 'vk2' || Boolean(tenantNorm?.startsWith('vk2-'))
   let lt = String(metadata.licenceType || metadata.licence_type || '').trim()
   if (STRIPE_FAMILIE_CHECKOUT_TYPES.includes(lt)) return lt
   /** Galerie-Stufen (basic, …) nicht zurückgeben, wenn tenantId eindeutig K2 Familie ist – sonst falsche URLs/Erfolgsseite. */
-  if (STRIPE_CHECKOUT_LICENCE_TYPES.includes(lt) && !isFamilieTenant) return lt
+  if (STRIPE_CHECKOUT_LICENCE_TYPES.includes(lt) && !isFamilieTenant) return isVk2Tenant ? 'pro' : lt
 
   const productLine = String(metadata.productLine || '').trim()
   const isFamilieProduct = productLine === 'k2_familie' || isFamilieTenant
@@ -122,6 +123,7 @@ export function computeEmpfehlerGutschrift(amountTotal, empfehlerId) {
 export function rowsFromCheckoutSession(session, baseUrl) {
   const metadata = checkoutSessionEffectiveMetadata(session)
   const licenceType = resolveCheckoutLicenceType(session)
+  const productLineMeta = String(metadata.productLine || '').trim()
   const empfehlerFromMeta = (metadata.empfehlerId || '').trim() || null
   const customerName = (metadata.customerName || '').trim() || 'Kunde'
   const tenantId = normalizeWebhookTenantId(metadata.tenantId)
@@ -135,6 +137,10 @@ export function rowsFromCheckoutSession(session, baseUrl) {
     licenceType === 'familie_monat' ||
     licenceType === 'familie_jahr' ||
     (tidLower && tidLower.startsWith('familie-'))
+  const isVk2Licence =
+    productLineMeta === 'vk2' ||
+    tidLower === 'vk2' ||
+    (tidLower && tidLower.startsWith('vk2-'))
   /** K2 Familie: kein Empfehlungsprogramm – Metadaten mit empfehlerId werden ignoriert. */
   const empfehlerId = isFamilieLicence ? null : empfehlerFromMeta
   const { cents: gutschriftCents, eur: gutschriftEur } = computeEmpfehlerGutschrift(
@@ -147,7 +153,9 @@ export function rowsFromCheckoutSession(session, baseUrl) {
         ? `${b}/projects/k2-familie/meine-familie?t=${encodeURIComponent(tenantId)}`
         : `${b}/projects/k2-familie/meine-familie`
       : null
-    : buildGalerieUrl(baseUrl, tenantId)
+    : isVk2Licence && b
+      ? `${b}/projects/vk2/galerie`
+      : buildGalerieUrl(baseUrl, tenantId)
 
   const licenceInsert = {
     email: customerEmail,
@@ -191,6 +199,7 @@ export function rowsFromCheckoutSession(session, baseUrl) {
     buildGutschriftInsert,
     gutschriftCents,
     licenceType,
+    productLine: isFamilieLicence ? 'k2_familie' : isVk2Licence ? 'vk2' : 'k2_galerie',
     customerEmail,
   }
 }

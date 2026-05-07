@@ -1,6 +1,6 @@
 import { productLineFromLicenceType } from '../../api/lizenzProductLineShared.js'
 
-export type LizenzProductLine = 'k2_galerie' | 'k2_familie'
+export type LizenzProductLine = 'k2_galerie' | 'k2_familie' | 'vk2'
 
 /** Wenn product_line noch unbekannt (nur Session-ID, noch keine API-Antwort). */
 export const LIZENZ_ERFOLG_LOADING_NEUTRAL =
@@ -41,6 +41,7 @@ export function normalizeProductLine(
 ): LizenzProductLine {
   const fromLicenceType = productLineFromLicenceType(licenceTypeFallback) as LizenzProductLine
   if (fromLicenceType === 'k2_familie') return 'k2_familie'
+  if (raw === 'vk2') return 'vk2'
   if (raw === 'k2_familie') return 'k2_familie'
   if (raw === 'k2_galerie') return 'k2_galerie'
   return fromLicenceType
@@ -57,8 +58,10 @@ export function normalizeProductLineFromApi(payload: {
   const tidRaw = String(payload.tenant_id || '').trim()
   const tidFromAdmin = parseTenantIdFromAdminUrl(payload.admin_url)
   const tid = (tidRaw || tidFromAdmin).trim().toLowerCase()
+  if (tid === 'vk2' || tid.startsWith('vk2-')) return 'vk2'
   if (tid.startsWith('familie-')) return 'k2_familie'
   const gu = String(payload.galerie_url || '').toLowerCase()
+  if (gu.includes('/projects/vk2') || gu.includes('context=vk2')) return 'vk2'
   if (
     gu.includes('k2-familie') ||
     gu.includes('meine-familie') ||
@@ -67,6 +70,7 @@ export function normalizeProductLineFromApi(payload: {
     return 'k2_familie'
   }
   const au = String(payload.admin_url || '').toLowerCase()
+  if (au.includes('/admin?context=vk2') || au.includes('&context=vk2') || au.includes('/projects/vk2')) return 'vk2'
   if (au.includes('/projects/k2-familie/') || au.includes('meine-familie')) return 'k2_familie'
   /** Query ?tenantId=familie-… / ?t=familie-… (auch wenn Pfad noch /admin) */
   if (/\btenantid=familie-/.test(au) || /\btenant_id=familie-/.test(au)) return 'k2_familie'
@@ -90,6 +94,7 @@ export function resolveLizenzErfolgProductLine(payload: {
     admin_url: payload.admin_url,
     tenant_id: payload.tenant_id,
   })
+  if (fromFields === 'vk2' || fromAnchorsOnly === 'vk2') return 'vk2'
   return fromFields === 'k2_familie' || fromAnchorsOnly === 'k2_familie' ? 'k2_familie' : 'k2_galerie'
 }
 
@@ -116,6 +121,26 @@ export type LizenzErfolgCopy = {
 }
 
 export function getLizenzErfolgCopy(productLine: LizenzProductLine): LizenzErfolgCopy {
+  if (productLine === 'vk2') {
+    return {
+      openPrimaryLabel: 'VK2 Vereinsplattform öffnen',
+      adminButtonLabel: 'VK2 bearbeiten (Admin)',
+      accessBlurbAfterDeine:
+        'VK2-Zugänge: Vereinsseite für Besucher und Admin zum Bearbeiten – nicht die ök2-Demo und nicht die normale Galerie-Lizenz.',
+      visitorUrlPrintLabel: 'VK2 Vereinsplattform',
+      loadingLine:
+        'Deine Links für VK2 werden geladen… Meist nur wenige Sekunden nach der Zahlung.',
+      adminQrBodyUrlsClause:
+        'stehen VK2-Seite und VK2-Admin-Adresse. Den QR kannst du als Bild sichern oder den Link kopieren.',
+      optionalFooterTitle: '',
+      entdeckenFooterLabel: '',
+      printMissingUrlsHint:
+        'Sobald VK2- und Admin-Adresse oben geladen sind, erscheinen sie in diesem Kasten.',
+      screenAdminQrHint:
+        'Admin-QR: Oben unter „Admin-QR fürs Handy“ – Link kopieren oder QR-Bild speichern und zu den Vereinsunterlagen legen.',
+      showOptionalPlatformFooter: false,
+    }
+  }
   if (productLine === 'k2_familie') {
     return {
       openPrimaryLabel: 'K2 Familie öffnen',

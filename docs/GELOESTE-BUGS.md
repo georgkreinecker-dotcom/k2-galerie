@@ -10,6 +10,20 @@
 
 ---
 
+## BUG-043 · VK2 Lizenz-Erfolg zeigte Galerie/ök2-Zugänge statt VK2 (gelöst 07.05.26)
+
+**Symptom:** Nach VK2-Anmeldung erschienen auf der Erfolgsseite normale Galerie-Zugänge (`/g/galerie-*`, `/admin?tenantId=…`) statt VK2. Georg meldete: „bei vk2 haben wir das gleiche problem wie bei k2 familie gestern“.
+
+**Ursache:** Die Lizenzkette kannte nur zwei Produktlinien: `k2_galerie` und `k2_familie`. Der VK2-Checkout schickte kein `productLine: 'vk2'`; dadurch bauten Webhook/API und Erfolgsseite automatisch Galerie-Links.
+
+**Lösung:** VK2 ist jetzt eigene Produktlinie in der Lizenz-Erfolg-Kette. Checkout aus dem VK2-Admin sendet `productLine: 'vk2'`; Webhook/API liefern `projects/vk2/galerie` und `admin?context=vk2`; Erfolgsseite zeigt VK2-Texte. Regression in `stripeLicenceContract.test.ts`.
+
+**Betroffene Dateien:** `components/ScreenshotExportAdmin.tsx`, `api/createCheckoutShared.js`, `api/create-checkout.js`, `api/stripeWebhookLicenceShared.js`, `api/get-licence-by-session.js`, `api/lizenzProductLineShared.js`, `src/utils/lizenzErfolgCopy.ts`, `src/pages/LizenzErfolgPage.tsx`, `src/tests/stripeLicenceContract.test.ts`.
+
+**Status:** ✅ Behoben (07.05.26).
+
+---
+
 ## BUG-042 · Echtheitszertifikat zeigte für jedes Werk nur Martina (Künstler:in falsch, Keramik/Georg) (gelöst 22.03.26)
 
 **Symptom:** Auf dem gedruckten Echtheitszertifikat stand bei Werken, die eigentlich Georg (z. B. Keramik K2-K-…) zugeordnet sind, fälschlich „Martina“ – Datenverwechslung, von Georg zufällig entdeckt; besonders inakzeptabel wenn ök2-Demo dasselbe Muster abbilden müsste.

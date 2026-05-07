@@ -927,6 +927,7 @@ const devCreateCheckoutMiddleware = () => {
             email,
             name,
             empfehlerId: body.empfehlerId,
+            productLine: body.productLine,
             secretKey: secret,
             baseUrl,
           })

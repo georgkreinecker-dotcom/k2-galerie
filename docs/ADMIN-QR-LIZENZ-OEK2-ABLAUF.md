@@ -12,6 +12,7 @@ Kurzreferenz, damit QR/Link **nicht** mit Galerie-Besucher-QR verwechselt werden
 | **ök2-Demo** (nur Plattform) | Admin → Einstellungen → Stammdaten, unter Vita | `{origin}/admin?context=oeffentlich` | immer (Demo) |
 | **Lizenznehmer** (eigene Instanz) | Admin → Einstellungen → Stammdaten (oben) | `{origin}/admin` (+ ggf. Query aus API) | nach **Lizenznummer** unter Registrierung |
 | **Nach Lizenzkauf – K2 Galerie** | `/lizenz-erfolg?session_id=…` | `admin_url` aus API → meist `{origin}/admin?tenantId=…` | wenn URL **`/admin`** |
+| **Nach Lizenzkauf – VK2** | dieselbe Seite | API: **`…/projects/vk2/galerie`** und Admin **`…/admin?context=vk2`** | wenn URL **`/admin?context=vk2`** |
 | **Nach Lizenzkauf – K2 Familie** | dieselbe Seite | API: **`…/projects/k2-familie/meine-familie?t=…`** (Mandant in **`t=`**) | wenn URL **`/admin`** oder **`/meine-familie`** |
 
 ---
@@ -22,6 +23,7 @@ Kurzreferenz, damit QR/Link **nicht** mit Galerie-Besucher-QR verwechselt werden
 - **Kanonische URL + QR mit Cache-Bust:** `normalizeLicenseeAdminUrl`, `getLicenseeAdminQrTargetUrl` in `src/utils/publicLinks.ts` → `buildQrUrlWithBust` + **Server-Stand** (`useQrVersionTimestamp` aus `useServerBuildTimestamp.ts`).
 - **Regel:** QR enthält `v=<Server-Timestamp>&_=<Date.now()>` – entspricht der Projektregel „Stand & QR“ (nicht nur lokaler Build).
 - **K2 Familie (Raumschiff):** **`normalizeLicenseeAdminUrl`** lässt **`/projects/k2-familie/…`** unverändert. **Nicht** zu **`/admin?t=`** umbiegen – sonst Galerie-Admin statt Meine Familie (`tenantId` ≠ `t` im TenantContext). Regression: **`publicLinks.test.ts`**.
+- **VK2:** Checkout sendet **`productLine: 'vk2'`**. API/Webhook liefern **`/projects/vk2/galerie`** und **`/admin?context=vk2`** – niemals `/g/galerie-*` oder ök2/Galerie-Fallback. Regression: **`stripeLicenceContract.test.ts`**.
 
 ---
 

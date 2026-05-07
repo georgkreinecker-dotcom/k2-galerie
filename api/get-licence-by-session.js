@@ -25,10 +25,15 @@ function buildAdminUrl(baseUrl, tenantId) {
 }
 
 /** K2 Familie: Admin = Familie-Bereich mit Mandant, nicht nur Galerie-Admin. */
-function buildAdminUrlForLicence(baseUrl, tenantId, licenceType) {
+function buildAdminUrlForLicence(baseUrl, tenantId, licenceType, productLine) {
   const b = String(baseUrl || '').replace(/\/$/, '')
   if (!b) return 'https://k2-galerie.vercel.app/projects/k2-galerie'
   const tidNorm = tenantId ? String(tenantId).trim().toLowerCase() : ''
+  const vk2 =
+    productLine === 'vk2' ||
+    tidNorm === 'vk2' ||
+    (tidNorm && tidNorm.startsWith('vk2-'))
+  if (vk2) return `${b}/admin?context=vk2`
   const fam =
     licenceType === 'familie_monat' ||
     licenceType === 'familie_jahr' ||
@@ -68,6 +73,14 @@ function jsonFromDbLicence(licence, baseUrl) {
   const tid = String(licence.tenant_id || '').trim().toLowerCase()
   const gu = String(licence.galerie_url || '')
   if (
+    tid === 'vk2' ||
+    tid.startsWith('vk2-') ||
+    gu.includes('/projects/vk2') ||
+    gu.includes('context=vk2')
+  ) {
+    productLine = 'vk2'
+  }
+  if (
     productLine === 'k2_galerie' &&
     (tid.startsWith('familie-') || gu.includes('k2-familie') || gu.includes('/meine-familie'))
   ) {
@@ -77,7 +90,7 @@ function jsonFromDbLicence(licence, baseUrl) {
   return {
     galerie_url: galerieOut,
     tenant_id: licence.tenant_id || null,
-    admin_url: buildAdminUrlForLicence(baseUrl, licence.tenant_id, licenceType),
+    admin_url: buildAdminUrlForLicence(baseUrl, licence.tenant_id, licenceType, productLine),
     name: licence.name || '',
     email: licence.email || '',
     licence_type: licenceType,
@@ -157,15 +170,16 @@ export default async function handler(req, res) {
         const ins = rowPack.licenceInsert
         const tenantId = ins.tenant_id || null
         const licenceType = ins.licence_type || 'basic'
+        const productLine = rowPack.productLine || productLineFromStripeSession(session, licenceType, tenantId)
 
         return res.status(200).json({
           galerie_url: ins.galerie_url || null,
           tenant_id: tenantId,
-          admin_url: buildAdminUrlForLicence(baseUrl, tenantId, licenceType),
+          admin_url: buildAdminUrlForLicence(baseUrl, tenantId, licenceType, productLine),
           name: ins.name || '',
           email: ins.email || '',
           licence_type: licenceType,
-          product_line: productLineFromStripeSession(session, licenceType, tenantId),
+          product_line: productLine,
           from_stripe: true,
         })
       } catch (stripeErr) {

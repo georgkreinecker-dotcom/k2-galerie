@@ -39,12 +39,13 @@ export function generateFamilieTenantId(email) {
 }
 
 /**
- * @param {{ licenceType: string, email: string, name: string, empfehlerId?: string, secretKey: string, baseUrl: string }} opts
+ * @param {{ licenceType: string, email: string, name: string, empfehlerId?: string, productLine?: string, secretKey: string, baseUrl: string }} opts
  * @returns {Promise<{ url: string }>}
  */
 export async function createStripeCheckoutSession(opts) {
-  const { licenceType, email, name, empfehlerId, secretKey, baseUrl } = opts
+  const { licenceType, email, name, empfehlerId, productLine, secretKey, baseUrl } = opts
   const lt = typeof licenceType === 'string' ? licenceType.trim() : ''
+  const productLineNorm = productLine === 'vk2' ? 'vk2' : productLine === 'k2_familie' ? 'k2_familie' : 'k2_galerie'
   const b = baseUrl.replace(/\/$/, '')
 
   if (!email?.trim() || !name?.trim()) {
@@ -124,7 +125,6 @@ export async function createStripeCheckoutSession(opts) {
             tenantId,
             licenceType: 'familie_monat',
             productLine: 'k2_familie',
-            ...empMeta,
           },
         },
         success_url: successUrl,
@@ -145,9 +145,9 @@ export async function createStripeCheckoutSession(opts) {
     throw err
   }
 
-  const tenantId = generateTenantId(email)
+  const tenantId = productLineNorm === 'vk2' ? 'vk2' : generateTenantId(email)
   const successUrl = `${b}/lizenz-erfolg?session_id={CHECKOUT_SESSION_ID}`
-  const cancelUrl = `${b}/projects/k2-galerie/lizenz-kaufen`
+  const cancelUrl = productLineNorm === 'vk2' ? `${b}/admin?context=vk2` : `${b}/projects/k2-galerie/lizenz-kaufen`
 
   const stripe = new Stripe(secretKey)
   const productLabel =
@@ -174,8 +174,8 @@ export async function createStripeCheckoutSession(opts) {
         price_data: {
           currency: 'eur',
           product_data: {
-            name: `K2 Galerie – ${productLabel}`,
-            description: productDesc,
+            name: productLineNorm === 'vk2' ? 'VK2 Vereinsplattform – Kunstvereine' : `K2 Galerie – ${productLabel}`,
+            description: productLineNorm === 'vk2' ? '35 €/Monat – Vereinslizenz VK2 (wie Pro)' : productDesc,
           },
           unit_amount: priceCents,
         },
@@ -187,6 +187,7 @@ export async function createStripeCheckoutSession(opts) {
       licenceType: lt,
       customerName: (name || '').trim().substring(0, 200),
       tenantId,
+      productLine: productLineNorm,
       ...empMeta,
     },
     success_url: successUrl,

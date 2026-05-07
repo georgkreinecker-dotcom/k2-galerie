@@ -1,5 +1,7 @@
 # Dialog-Stand
 
+**Letzter Stand:** 07.05.26 – **VK2 Lizenz-Erfolg repariert:** VK2-Checkout sendet jetzt **`productLine: 'vk2'`**; Webhook/API erkennen VK2 und liefern **`/projects/vk2/galerie`** + **`/admin?context=vk2`** statt Galerie/ök2-Fallback. Erfolgsseite zeigt VK2-Texte/QR-Dateiname. Doku/Regeln/Fehlerprotokoll ergänzt. **Tests:** `stripeLicenceContract.test.ts`, `publicLinks.test.ts`, **`npm run qs:local` grün**. **Commit:** _(nach Push)_ ✅ **main**
+
 **Session-Ende 06.05.26:** Offener Arbeitsstand (Marketing-Attribution, mök2-Assets, VK2-Leitfaden, Galerie-Pages, Regeln/Doku, Build-Info) mit **qs:local** grün committed und auf **main** gepusht. **Commit:** `916c8956` ✅ **main**
 
 **Letzter Stand:** 06.05.26 – **K2 Familie: kein Empfehlungsprogramm:** **K2FamilieLizenzErwerbenPage** ohne Empfehler-Feld; **createCheckoutShared.js** – bei **familie_monat/jahr** keine **empfehlerId** in Session-/Abo-Metadaten; **stripeWebhookLicenceShared.js** – **rowsFromCheckoutSession** setzt **empfehler_id** und Gutschrift bei Familie-Lizenz immer **null** (auch wenn Metadaten manipuliert); **stripeInvoiceRenewalShared.js** – Verlängerung: **empfehler_id** in Zahlung **null**, keine Gutschrift für **familie_***. Tests **stripeLicenceContract.test.ts** grün. **Commit:** `e308d83e` ✅ **main**
@@ -80,9 +82,9 @@
 
 **Letzter Stand:** 30.04.26 – **mök2: Inserat Viertel – K2, Typo, QR** – Linkes Feld: großes **K2** + „GALERIE“ (`K2_GALERIE_PUBLIC_BRAND`), darunter Bild/Teal; rechts größere Header-Zeilen und fetter Werbesatz; drei Karten mit dickerer Farbleiste und Maximal-Schrift; QR ~100px, Druck 24mm, Teal-Rahmen. **Build grün.** **Commit:** (älterer Stand – siehe oben)
 
-**Was wir JETZT tun:** – **K2 Familie:** Nach **Push** Production **`k2-galerie.vercel.app`** – `/lizenz-erfolg?session_id=…` erneut: **Admin-QR** muss **`…/meine-familie?t=familie-…`** encodieren (nicht **`/admin?t=`**).
+**Was wir JETZT tun:** – **VK2 Lizenz-Erfolg nach Push prüfen:** Auf Production muss `/lizenz-erfolg?session_id=…` bei VK2 **VK2 öffnen** + **`/admin?context=vk2`** zeigen, nicht `/g/galerie-*` und nicht ök2.
 
-**Einordnung:** Stripe-Webhook und Session-API liefern konsistent `licence_type` / `product_line`; Mandantenwechsel in K2 Familie über URL-Parameter **`t`** (wie Einladung).
+**Einordnung:** Lizenz-Erfolg ist jetzt eine Produktlinien-Kette: Galerie (`tenantId`), VK2 (`context=vk2`), K2 Familie (`t`). Keine zweite URL-Logik pro Produkt.
 
 **Pause / Kasse:** Nächster Schritt optional: K2-Kasse am **iPad** mit **Print-Server** + **Epson-IP** – erster Button **Epson**, zweiter **PDF/Teilen**; am **Mac** weiter zuerst Druckdialog.
 

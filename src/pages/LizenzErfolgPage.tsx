@@ -295,7 +295,11 @@ export default function LizenzErfolgPage() {
                 primaryButtonBg="#b54a1e"
                 primaryButtonColor="#fff"
                 downloadFileName={
-                  linksForUi.product_line === 'k2_familie' ? 'admin-qr-k2-familie.png' : 'admin-qr-k2-galerie.png'
+                  linksForUi.product_line === 'k2_familie'
+                    ? 'admin-qr-k2-familie.png'
+                    : linksForUi.product_line === 'vk2'
+                      ? 'admin-qr-vk2.png'
+                      : 'admin-qr-k2-galerie.png'
                 }
                 heading="Admin-QR fürs Handy"
                 adminIntro={
@@ -308,6 +312,11 @@ export default function LizenzErfolgPage() {
                     ) : linksForUi.product_line === 'k2_familie' ? (
                       <>
                         <strong>Admin-Zugang</strong> für K2 Familie. Unten in der{' '}
+                        <strong>Lizenzbestätigung zum Drucken</strong> {copy.adminQrBodyUrlsClause}
+                      </>
+                    ) : linksForUi.product_line === 'vk2' ? (
+                      <>
+                        <strong>Admin-Zugang</strong> für VK2. Unten in der{' '}
                         <strong>Lizenzbestätigung zum Drucken</strong> {copy.adminQrBodyUrlsClause}
                       </>
                     ) : (

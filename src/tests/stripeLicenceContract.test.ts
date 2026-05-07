@@ -135,6 +135,9 @@ describe('normalizeProductLine (API-Felder + Fallback)', () => {
     expect(normalizeProductLine(undefined, 'familie_jahr')).toBe('k2_familie')
     expect(normalizeProductLine(null, 'pro')).toBe('k2_galerie')
   })
+  it('VK2 product_line bleibt VK2, obwohl licence_type technisch Pro ist', () => {
+    expect(normalizeProductLine('vk2', 'pro')).toBe('vk2')
+  })
 })
 
 describe('normalizeProductLineFromApi (URLs / tenant schlagen product_line)', () => {
@@ -184,6 +187,17 @@ describe('normalizeProductLineFromApi (URLs / tenant schlagen product_line)', ()
       }),
     ).toBe('k2_familie')
   })
+  it('VK2 URLs und tenant_id schlagen Galerie-Fallback', () => {
+    expect(
+      normalizeProductLineFromApi({
+        product_line: 'k2_galerie',
+        licence_type: 'pro',
+        tenant_id: 'vk2',
+        galerie_url: 'https://x.app/projects/vk2/galerie',
+        admin_url: 'https://x.app/admin?context=vk2',
+      }),
+    ).toBe('vk2')
+  })
 })
 
 describe('parseTenantIdFromAdminUrl', () => {
@@ -208,6 +222,16 @@ describe('resolveLizenzErfolgProductLine', () => {
       }),
     ).toBe('k2_familie')
   })
+  it('API product_line Galerie + VK2 URL/Admin → vk2', () => {
+    expect(
+      resolveLizenzErfolgProductLine({
+        product_line: 'k2_galerie',
+        licence_type: 'pro',
+        galerie_url: 'https://x.app/projects/vk2/galerie',
+        admin_url: 'https://x.app/admin?context=vk2',
+      }),
+    ).toBe('vk2')
+  })
 })
 
 describe('productLineFromStripeSession', () => {
@@ -228,6 +252,16 @@ describe('productLineFromStripeSession', () => {
         'familie-georg-kreinecker-0gjans',
       ),
     ).toBe('k2_familie')
+  })
+  it('VK2 metadata oder tenant reicht trotz licence_type pro', () => {
+    expect(
+      productLineFromStripeSession(
+        { metadata: { productLine: 'vk2' } },
+        'pro',
+        'vk2',
+      ),
+    ).toBe('vk2')
+    expect(productLineFromStripeSession({ metadata: {} }, 'pro', 'vk2')).toBe('vk2')
   })
 })
 
@@ -441,6 +475,28 @@ describe('Webhook-Zeilen aus Session', () => {
     expect(pack.licenceInsert.empfehler_id).toBeNull()
     expect(pack.buildGutschriftInsert('pay-f', 'lic-f')).toBeNull()
     expect(pack.gutschriftCents).toBe(0)
+  })
+
+  it('VK2 Vereinslizenz → VK2-Produktlinie und VK2-Galerie statt normaler Galerie', () => {
+    const base = 'https://k2-galerie.vercel.app'
+    const pack = rowsFromCheckoutSession(
+      {
+        id: 'cs_vk2',
+        amount_total: 3500,
+        customer_email: 'verein@vk2.at',
+        metadata: {
+          licenceType: 'pro',
+          productLine: 'vk2',
+          customerName: 'Kunstverein',
+          tenantId: 'vk2',
+        },
+      },
+      base,
+    )
+    expect(pack.productLine).toBe('vk2')
+    expect(pack.licenceInsert.tenant_id).toBe('vk2')
+    expect(pack.licenceInsert.licence_type).toBe('pro')
+    expect(pack.licenceInsert.galerie_url).toBe('https://k2-galerie.vercel.app/projects/vk2/galerie')
   })
 })
 
