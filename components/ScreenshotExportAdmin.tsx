@@ -2596,6 +2596,17 @@ function isSafeDynamicTenantSaveId(raw: unknown): raw is string {
   return !['k2', 'oeffentlich', 'vk2'].includes(value)
 }
 
+function getSafeDynamicTenantIdFromSearch(search: string): string | null {
+  try {
+    const raw = new URLSearchParams(search || '').get('tenantId')
+    if (!raw) return null
+    const value = raw.toLowerCase().trim()
+    return isSafeDynamicTenantSaveId(value) ? value : null
+  } catch {
+    return null
+  }
+}
+
 function createDynamicTenantPageTexts(focusDirection: FocusDirectionId): PageTextsConfig {
   const focusLabel = FOCUS_DIRECTIONS.find((d) => d.id === focusDirection)?.label ?? 'Kunst & Galerie'
   const welcomeIntroText = getWelcomeIntroForFocusDirections([focusDirection])
@@ -2653,6 +2664,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     const params = new URLSearchParams(location.search)
     return normalizeAdminFocusDirection(params.get('focusDirection'))
   }, [location.search])
+  const dynamicTenantIdFromSearch = useMemo(() => getSafeDynamicTenantIdFromSearch(location.search), [location.search])
+  const effectiveDynamicTenantId = tenant.dynamicTenantId ?? dynamicTenantIdFromSearch
   const dynamicTenantGalleryPath = useMemo(() => {
     return tenant.dynamicTenantId ? buildDynamicTenantGalleryPath(tenant.dynamicTenantId, dynamicFocusDirectionFromUrl) : ''
   }, [tenant.dynamicTenantId, dynamicFocusDirectionFromUrl])
@@ -4752,8 +4765,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     alert('✅ Musterdaten entfernt. Trage jetzt deine eigenen Daten ein.')
   }
 
-  const buildDynamicTenantExportPayload = (overrides?: { martina?: any; georg?: any; gallery?: any; pageTexts?: PageTextsConfig; artworks?: any[] }) => {
-    const dynamicTenantIdForPayload = tenant.dynamicTenantId
+  const buildDynamicTenantExportPayload = (overrides?: { martina?: any; georg?: any; gallery?: any; pageTexts?: PageTextsConfig; artworks?: any[]; tenantId?: string }) => {
+    const dynamicTenantIdForPayload = overrides?.tenantId ?? effectiveDynamicTenantId
     if (!isSafeDynamicTenantSaveId(dynamicTenantIdForPayload)) {
       throw new Error('Ungültiger Mandant. Stammdaten wurden nicht gespeichert.')
     }
@@ -4787,9 +4800,10 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   }
 
   const saveDynamicTenantStateToServer = async (
-    options?: { silent?: boolean; martina?: any; georg?: any; gallery?: any; pageTexts?: PageTextsConfig; artworks?: any[] }
+    options?: { silent?: boolean; martina?: any; georg?: any; gallery?: any; pageTexts?: PageTextsConfig; artworks?: any[]; tenantId?: string }
   ): Promise<{ success: boolean; size?: number; error?: string }> => {
-    if (!isSafeDynamicTenantSaveId(tenant.dynamicTenantId)) return { success: false, error: 'Ungültiger Mandant. Stammdaten wurden nicht gespeichert.' }
+    const targetTenantId = options?.tenantId ?? effectiveDynamicTenantId
+    if (!isSafeDynamicTenantSaveId(targetTenantId)) return { success: false, error: 'Ungültiger Mandant. Stammdaten wurden nicht gespeichert.' }
     const silent = options?.silent === true
     const data = buildDynamicTenantExportPayload({
       martina: options?.martina,
@@ -4797,8 +4811,9 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       gallery: options?.gallery,
       pageTexts: options?.pageTexts,
       artworks: options?.artworks,
+      tenantId: targetTenantId,
     })
-    if (data.tenantId !== tenant.dynamicTenantId) return { success: false, error: 'Mandanten-Ziel stimmt nicht. Speichern abgebrochen.' }
+    if (data.tenantId !== targetTenantId) return { success: false, error: 'Mandanten-Ziel stimmt nicht. Speichern abgebrochen.' }
     const json = JSON.stringify(data)
     if (json.length > 5000000) return { success: false, error: 'Daten zu groß. Bitte reduzieren.' }
     const result = await apiPost(WRITE_GALLERY_DATA_API_URL, json, { timeoutMs: 30000 })
@@ -12981,7 +12996,7 @@ ${'='.repeat(60)}
       // Warteschlange: Lese+Schreib-Block serialisieren, damit „30 speichern, dann 31“ nicht parallel läuft – sonst liest 31 vor Ende von 30 → Bild bei 30 weg
       const doSerializedWrite = async (): Promise<boolean> => {
         // Dynamische Mandanten speichern Werke nie in localStorage, sondern direkt im eigenen Server-Blob.
-        if (tenant.dynamicTenantId) {
+        if (effectiveDynamicTenantId) {
           const result = await saveDynamicTenantStateToServer({
             silent: true,
             artworks,
@@ -12989,6 +13004,7 @@ ${'='.repeat(60)}
             georg: georgData,
             gallery: galleryData,
             pageTexts,
+            tenantId: effectiveDynamicTenantId,
           })
           if (!result.success) {
             console.error('❌ Mandanten-Werke konnten nicht gespeichert werden:', result.error)
@@ -13116,7 +13132,7 @@ ${'='.repeat(60)}
         localStorage.setItem('k2-last-artwork-category', artworkCategory)
       } catch (_) {}
 
-      if (!tenant.dynamicTenantId) {
+      if (!effectiveDynamicTenantId) {
         // KRITISCH: Prüfe ob Werk wirklich in localStorage steht (ROH – kein ök2-Anzeige-Filter)
         let verifyRaw: any[] = []
         try {
@@ -13194,7 +13210,7 @@ ${'='.repeat(60)}
         }
       }
       
-      if (!tenant.dynamicTenantId) {
+      if (!effectiveDynamicTenantId) {
         // KRITISCH: Prüfe ob das neue Werk wirklich in localStorage steht (ROH lesen – kein ök2-Anzeige-Filter)
         // Mehrere Retries mit längerer Wartezeit – localStorage/IndexedDB braucht auf Mobile oft einen Moment („erst zweites Mal speichern“-Bug)
         const verifyNewInStorage = (): boolean => {
