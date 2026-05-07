@@ -15926,7 +15926,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 <>
                   <Link
                     to={PROJECT_ROUTES['k2-galerie'].shop}
-                    state={{ openAsKasse: true, fromVk2: true }}
+                    state={{ openAsKasse: true, fromVk2: true, dynamicTenantId: effectiveDynamicTenantId || undefined }}
                     title="Guide: Öffnet die Vereins-Kasse – Einnahmen erfassen, Belege drucken, Überblick behalten."
                     style={{
                       padding: '0.55rem 1.1rem',
@@ -15977,7 +15977,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 <>
                   <Link
                     to={PROJECT_ROUTES['k2-galerie'].shop}
-                    state={{ openAsKasse: true, fromOeffentlich: tenant.isOeffentlich || undefined }}
+                    state={{ openAsKasse: true, fromOeffentlich: tenant.isOeffentlich || undefined, dynamicTenantId: effectiveDynamicTenantId || undefined }}
                     title="Guide: Öffnet die Kasse – hier nimmst du Verkäufe auf, druckst Belege und behältst den Überblick."
                     style={{
                       padding: '0.55rem 1.1rem',
@@ -16249,7 +16249,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       sessionStorage.setItem('k2-admin-context', tenant.isOeffentlich ? 'oeffentlich' : 'k2')
                       if (tenant.isOeffentlich) sessionStorage.setItem('k2-shop-from-oeffentlich', '1')
                     } catch (_) {}
-                    if (typeof window !== 'undefined' && window.self === window.top) window.location.href = '/projects/k2-galerie/shop?openAsKasse=1'
+                    if (typeof window !== 'undefined' && window.self === window.top) {
+                      const dyn = effectiveDynamicTenantId ? `&tenantId=${encodeURIComponent(effectiveDynamicTenantId)}` : ''
+                      window.location.href = `/projects/k2-galerie/shop?openAsKasse=1${dyn}`
+                    }
                   }
                   // Abgestimmte Kartenfarben (Werke + Galerie gestalten gleich präsent), Rest harmonisch
                   const GRID_CARD_STYLE: Record<string, { bg: string; text: string; sub: string; border: string }> = {

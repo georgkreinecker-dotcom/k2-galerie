@@ -871,19 +871,39 @@ const ShopPage = () => {
   }
 
   // Ök2: „Zur Galerie“ und Kontakt – eine zentrale Quelle (Phase 5.3). Muss vor Galerie-Stammdaten-Load stehen.
+  const stateDynamicTenantId =
+    ((location.state as { dynamicTenantId?: string } | null)?.dynamicTenantId || '').trim().toLowerCase()
+  const queryDynamicTenantId = (() => {
+    try {
+      const params = new URLSearchParams(location.search || '')
+      return String(params.get('tenantId') || '').trim().toLowerCase()
+    } catch {
+      return ''
+    }
+  })()
+  const storedDynamicTenantId =
+    (typeof sessionStorage !== 'undefined' ? String(sessionStorage.getItem('k2-shop-dynamic-tenant') || '') : '')
+      .trim()
+      .toLowerCase()
+  const dynamicTenantId = (stateDynamicTenantId || queryDynamicTenantId || storedDynamicTenantId || '').match(/^[a-z0-9-]{1,64}$/)
+    ? (stateDynamicTenantId || queryDynamicTenantId || storedDynamicTenantId || '')
+    : ''
+  const isDynamicTenantKassa = !!dynamicTenantId
   const fromOeffentlich = isOeffentlichDisplayContext(location.state)
   const fromVk2 =
     (location.state as { fromVk2?: boolean } | null)?.fromVk2 === true ||
     (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-admin-context') === 'vk2')
+  const effectiveFromOeffentlich = !isDynamicTenantKassa && fromOeffentlich
+  const effectiveFromVk2 = !isDynamicTenantKassa && fromVk2
   // Kontexteigene Keys (Datensicherheit: keine K2-Daten in ök2/VK2 und umgekehrt)
-  const { ordersKey, soldArtworksKey } = getShopStorageKeys(fromOeffentlich, fromVk2)
+  const { ordersKey, soldArtworksKey } = getShopStorageKeys(effectiveFromOeffentlich, effectiveFromVk2, dynamicTenantId || null)
   const receiptPaperWidthMm = useMemo(
-    () => getReceiptPaperWidthMm(shopTenantIdForReceipt(fromOeffentlich, fromVk2)),
-    [fromOeffentlich, fromVk2]
+    () => getReceiptPaperWidthMm(shopTenantIdForReceipt(effectiveFromOeffentlich, effectiveFromVk2)),
+    [effectiveFromOeffentlich, effectiveFromVk2]
   )
   /** K2: Epson-IP + Print-Server-URL gesetzt → Button „Bon direkt an Epson“ anbieten. */
   const k2EpsonDirectBonPrinter = useMemo(() => {
-    if (fromOeffentlich || fromVk2) return null
+    if (effectiveFromOeffentlich || effectiveFromVk2 || isDynamicTenantKassa) return null
     const ps = loadPrinterSettingsForTenant('k2')
     if (
       !canOfferK2EpsonBonOneClick({
@@ -894,17 +914,19 @@ const ShopPage = () => {
     )
       return null
     return ps
-  }, [fromOeffentlich, fromVk2])
+  }, [effectiveFromOeffentlich, effectiveFromVk2, isDynamicTenantKassa])
   /** iPad + K2 + Epson/Print-Server eingetragen: Epson zuerst – nicht den System-Dialog als ersten Schritt. */
   const touchK2BonEpsonZuerst = useMemo(
-    () => !fromOeffentlich && !fromVk2 && isBonTouchDevice() && k2EpsonDirectBonPrinter != null,
-    [fromOeffentlich, fromVk2, k2EpsonDirectBonPrinter]
+    () => !effectiveFromOeffentlich && !effectiveFromVk2 && !isDynamicTenantKassa && isBonTouchDevice() && k2EpsonDirectBonPrinter != null,
+    [effectiveFromOeffentlich, effectiveFromVk2, isDynamicTenantKassa, k2EpsonDirectBonPrinter]
   )
   const vk2Mitglieder = (() => { try { const sd = loadVk2Stammdaten(); return Array.isArray(sd?.mitglieder) ? sd.mitglieder : [] } catch { return [] } })()
-  const showVk2Mitglieder = fromVk2 && (vk2Bezeichnung === 'Spende' || vk2Bezeichnung === 'Mitgliedsbeitrag')
-  const galerieLink = fromOeffentlich
+  const showVk2Mitglieder = effectiveFromVk2 && (vk2Bezeichnung === 'Spende' || vk2Bezeichnung === 'Mitgliedsbeitrag')
+  const galerieLink = isDynamicTenantKassa
+    ? `/g/${encodeURIComponent(dynamicTenantId)}`
+    : effectiveFromOeffentlich
     ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau
-    : fromVk2
+    : effectiveFromVk2
       ? PROJECT_ROUTES.vk2.galerie
       : PROJECT_ROUTES['k2-galerie'].galerieVorschau
 
@@ -914,7 +936,7 @@ const ShopPage = () => {
   const [galleryPhone, setGalleryPhone] = useState('')
   useEffect(() => {
     try {
-      const tenant = fromOeffentlich ? 'oeffentlich' : 'k2'
+      const tenant = effectiveFromOeffentlich ? 'oeffentlich' : 'k2'
       const data = loadStammdaten(tenant as 'k2' | 'oeffentlich', 'gallery')
       if (data && typeof data === 'object') {
         setBankverbindung((data as any).bankverbindung || '')
@@ -923,7 +945,7 @@ const ShopPage = () => {
         setInternetShopNotSetUp((data as any).internetShopNotSetUp !== false)
       }
     } catch (_) {}
-  }, [fromOeffentlich])
+  }, [effectiveFromOeffentlich])
 
   // Von Galerie (Willkommensseite oder Galerie-Vorschau) zum Shop → Kundenansicht. Flag + Referrer (State geht bei SPA oft verloren).
   const fromStorage = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-from-galerie-view') === '1'
@@ -934,9 +956,9 @@ const ShopPage = () => {
     fromStorage ||
     (location.state as { fromGalerieView?: boolean } | null)?.fromGalerieView === true ||
     fromReferrer
-  const displayPhone = fromOeffentlich ? MUSTER_TEXTE.gallery.phone : galleryPhone
-  const displayEmail = fromOeffentlich ? MUSTER_TEXTE.gallery.email : galleryEmail
-  const kuenstlerFbShop = useMemo(() => readKuenstlerFallbackShop(fromOeffentlich), [fromOeffentlich])
+  const displayPhone = effectiveFromOeffentlich ? MUSTER_TEXTE.gallery.phone : galleryPhone
+  const displayEmail = effectiveFromOeffentlich ? MUSTER_TEXTE.gallery.email : galleryEmail
+  const kuenstlerFbShop = useMemo(() => readKuenstlerFallbackShop(effectiveFromOeffentlich), [effectiveFromOeffentlich])
 
   // Ök2-Flag entfernen, wenn Shop von K2/APf aus geöffnet wurde (kein State, Referrer nicht von galerie-oeffentlich). Nicht entfernen wenn ök2-Kassa (k2-admin-context === oeffentlich).
   useEffect(() => {
@@ -969,7 +991,9 @@ const ShopPage = () => {
     const state = location.state as { openAsKasse?: boolean; fromOeffentlich?: boolean; fromVk2?: boolean } | null
     if (state?.openAsKasse) {
       try {
-        if (state.fromVk2) {
+        if (stateDynamicTenantId) {
+          sessionStorage.setItem('k2-shop-dynamic-tenant', stateDynamicTenantId)
+        } else if (state.fromVk2) {
           sessionStorage.setItem('k2-admin-context', 'vk2')
         } else {
           sessionStorage.setItem('k2-admin-context', state.fromOeffentlich ? 'oeffentlich' : 'k2')
@@ -978,7 +1002,7 @@ const ShopPage = () => {
       } catch (_) {}
       setForceKasseOpen(true)
     }
-  }, [location.state])
+  }, [location.state, stateDynamicTenantId])
 
   // Nur mit Admin-Login: Kasse. Von Galerie kommend = Kundenansicht. „Als Kasse öffnen“ setzt forceKasseOpen.
   const hasStoredAdminLogin =
@@ -997,6 +1021,7 @@ const ShopPage = () => {
     typeof sessionStorage !== 'undefined'
       ? (() => {
           const ctx = sessionStorage.getItem('k2-admin-context')
+          if (isDynamicTenantKassa && dynamicTenantId) return `/admin?tenantId=${encodeURIComponent(dynamicTenantId)}`
           if (ctx === 'vk2') return '/admin?context=vk2'
           if (ctx === 'oeffentlich') return '/admin?context=oeffentlich'
           return '/admin'
@@ -1032,7 +1057,15 @@ const ShopPage = () => {
   // Alle Werke laden für Suche – im ök2-Kontext Musterwerke, sonst k2-artworks
   useEffect(() => {
     const loadArtworks = () => {
-      if (fromOeffentlich) {
+      if (isDynamicTenantKassa && dynamicTenantId) {
+        fetch(`/api/gallery-data?tenantId=${encodeURIComponent(dynamicTenantId)}`)
+          .then((res) => (res.ok ? res.json() : null))
+          .then((json) => {
+            const artworks = Array.isArray(json?.artworks) ? json.artworks : []
+            setAllArtworks(artworks)
+          })
+          .catch(() => setAllArtworks([]))
+      } else if (effectiveFromOeffentlich) {
         setAllArtworks(readArtworksRawForContext(true, false))
       } else {
         const artworks = readArtworksRawByKey('k2-artworks')
@@ -1042,7 +1075,7 @@ const ShopPage = () => {
     loadArtworks()
     window.addEventListener('artworks-updated', loadArtworks)
     return () => window.removeEventListener('artworks-updated', loadArtworks)
-  }, [fromOeffentlich])
+  }, [effectiveFromOeffentlich, isDynamicTenantKassa, dynamicTenantId])
 
   // Level 5: Falls ein alter Warenkorb noch keine artworkUid hat, beim Vorliegen der Werkliste ergänzen
   useEffect(() => {

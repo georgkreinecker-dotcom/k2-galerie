@@ -6,21 +6,23 @@
 
 import { pilotScopeVk2Key } from './vk2StorageKeys'
 
-export function getShopOrdersKey(fromOeffentlich: boolean, fromVk2: boolean): string {
+export function getShopOrdersKey(fromOeffentlich: boolean, fromVk2: boolean, dynamicTenantId?: string | null): string {
+  if (dynamicTenantId) return `k2-tenant-${dynamicTenantId}-orders`
   if (fromVk2) return pilotScopeVk2Key('k2-vk2-orders')
   if (fromOeffentlich) return 'k2-oeffentlich-orders'
   return 'k2-orders'
 }
 
-export function getShopSoldArtworksKey(fromOeffentlich: boolean, fromVk2: boolean): string {
+export function getShopSoldArtworksKey(fromOeffentlich: boolean, fromVk2: boolean, dynamicTenantId?: string | null): string {
+  if (dynamicTenantId) return `k2-tenant-${dynamicTenantId}-sold-artworks`
   if (fromVk2) return pilotScopeVk2Key('k2-vk2-sold-artworks')
   if (fromOeffentlich) return 'k2-oeffentlich-sold-artworks'
   return 'k2-sold-artworks'
 }
 
-export function getShopStorageKeys(fromOeffentlich: boolean, fromVk2: boolean): { ordersKey: string; soldArtworksKey: string } {
+export function getShopStorageKeys(fromOeffentlich: boolean, fromVk2: boolean, dynamicTenantId?: string | null): { ordersKey: string; soldArtworksKey: string } {
   return {
-    ordersKey: getShopOrdersKey(fromOeffentlich, fromVk2),
-    soldArtworksKey: getShopSoldArtworksKey(fromOeffentlich, fromVk2),
+    ordersKey: getShopOrdersKey(fromOeffentlich, fromVk2, dynamicTenantId),
+    soldArtworksKey: getShopSoldArtworksKey(fromOeffentlich, fromVk2, dynamicTenantId),
   }
 }
