@@ -28,6 +28,8 @@ export default function GalerieTenantPage() {
     artworks?: TenantGalleryArtwork[]
     pageTexts?: { galerie?: { heroTitle?: string; welcomeSubtext?: string; welcomeIntroText?: string } }
     designSettings?: Record<string, string>
+    pageContentGalerie?: string | { welcomeImage?: string }
+    pageContent?: string | { welcomeImage?: string }
   } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -108,16 +110,74 @@ export default function GalerieTenantPage() {
   const intro = rawIntro === 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.'
     ? getWelcomeIntroForFocusDirections([focusDirection])
     : (rawIntro || getWelcomeIntroForFocusDirections([focusDirection]))
+  const pageContentRaw = data?.pageContentGalerie ?? data?.pageContent
+  const parsedPageContent = typeof pageContentRaw === 'string'
+    ? (() => { try { return JSON.parse(pageContentRaw) } catch { return {} } })()
+    : (pageContentRaw || {})
+  const welcomeImage = typeof parsedPageContent === 'object' && parsedPageContent != null
+    ? String((parsedPageContent as { welcomeImage?: string }).welcomeImage || '').trim()
+    : ''
 
   return (
-    <main className="galerie-tenant-page" style={{ maxWidth: 900, margin: '0 auto', padding: '1rem' }}>
-      <header style={{ textAlign: 'center', marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--k2-fg, #1a1a1a)' }}>{title}</h1>
-        <p style={{ color: 'var(--k2-muted)', margin: '0.35rem 0 0' }}>{subtext}</p>
-        <p style={{ color: 'var(--k2-muted)', maxWidth: 620, margin: '0.75rem auto 0', lineHeight: 1.55 }}>{intro}</p>
+    <main
+      className="galerie-tenant-page"
+      style={{
+        maxWidth: 980,
+        margin: '0 auto',
+        padding: '1.25rem',
+        minHeight: '100vh',
+        background: '#f4efe8',
+        color: '#1f1a15',
+      }}
+    >
+      <header
+        style={{
+          textAlign: 'center',
+          marginBottom: '1.5rem',
+          background: '#fff',
+          border: '1px solid #ddd2c4',
+          borderRadius: 14,
+          padding: '1.1rem 1rem',
+        }}
+      >
+        <h1 style={{ fontSize: '1.85rem', fontWeight: 800, color: '#1f1a15', margin: 0 }}>{title}</h1>
+        <p style={{ color: '#4b433c', margin: '0.45rem 0 0', fontWeight: 600 }}>{subtext}</p>
+        <p style={{ color: '#3f3933', maxWidth: 700, margin: '0.8rem auto 0', lineHeight: 1.6 }}>{intro}</p>
       </header>
+      <section
+        style={{
+          marginBottom: '1.5rem',
+          background: '#fff',
+          border: '1px solid #ddd2c4',
+          borderRadius: 14,
+          padding: '0.9rem',
+        }}
+      >
+        {welcomeImage ? (
+          <img
+            src={welcomeImage}
+            alt="Willkommensbild"
+            style={{ width: '100%', maxHeight: 360, objectFit: 'cover', borderRadius: 10, display: 'block' }}
+          />
+        ) : (
+          <div
+            style={{
+              minHeight: 140,
+              borderRadius: 10,
+              background: 'linear-gradient(135deg, #efe4d7, #f8f2e8)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#6a5f54',
+              fontWeight: 600,
+            }}
+          >
+            Willkommen in meiner Galerie
+          </div>
+        )}
+      </section>
       {isMusterStart && (
-        <p style={{ textAlign: 'center', color: 'var(--k2-muted)', margin: '-0.75rem 0 1.5rem' }}>
+        <p style={{ textAlign: 'center', color: '#5f564d', margin: '-0.3rem 0 1.2rem', fontWeight: 600 }}>
           Muster-Erstgalerie – ersetze diese Beispiele im Admin durch deine eigenen Inhalte.
         </p>
       )}
@@ -141,7 +201,8 @@ export default function GalerieTenantPage() {
                 background: 'var(--k2-card-bg, #fff)',
                 borderRadius: 12,
                 overflow: 'hidden',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
+                border: '1px solid #ddd2c4',
               }}
             >
               {(a.imageRef || a.image || a.imageUrl) && (
@@ -152,8 +213,8 @@ export default function GalerieTenantPage() {
                 />
               )}
               <div style={{ padding: '0.75rem' }}>
-                <div style={{ fontSize: '0.85rem', color: 'var(--k2-muted)' }}>{a.number || ''}</div>
-                <div style={{ fontWeight: 600, color: 'var(--k2-fg, #1a1a1a)' }}>{a.title || 'Ohne Titel'}</div>
+                <div style={{ fontSize: '0.85rem', color: '#5f564d' }}>{a.number || ''}</div>
+                <div style={{ fontWeight: 700, color: '#1f1a15' }}>{a.title || 'Ohne Titel'}</div>
               </div>
             </div>
           ))}
