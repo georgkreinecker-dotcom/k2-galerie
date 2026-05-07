@@ -11,6 +11,7 @@ import {
   isPlatformInstance,
   K2_DEFAULT_VITA_MARTINA,
   K2_DEFAULT_VITA_GEORG,
+  VK2_STAMMDATEN_DEFAULTS,
 } from '../config/tenantConfig'
 import { sanitizeK2ParsedStammdatenRecord, sanitizeK2WebsiteField } from './k2StammdatenWebSanitize'
 import { pilotScopeVk2Key } from './vk2StorageKeys'
@@ -367,13 +368,77 @@ export function loadVk2Stammdaten(): any {
   }
 }
 
+function pickVk2Value(incoming: unknown, existing: unknown, fallback: unknown = ''): unknown {
+  const inc = typeof incoming === 'string' ? incoming.trim() : incoming
+  const ex = typeof existing === 'string' ? existing.trim() : existing
+  if (inc !== undefined && inc !== null && String(inc).trim()) return incoming
+  if (ex !== undefined && ex !== null && String(ex).trim()) return existing
+  return fallback
+}
+
+function mergeVk2NameBlock(incoming: unknown, existing: unknown, fallback: { name: string }): { name: string } {
+  const inc = incoming && typeof incoming === 'object' ? incoming as Record<string, unknown> : {}
+  const ex = existing && typeof existing === 'object' ? existing as Record<string, unknown> : {}
+  return { name: String(pickVk2Value(inc.name, ex.name, fallback.name) || '') }
+}
+
+function mergeVk2StammdatenForSave(data: any): any {
+  const existing = loadVk2Stammdaten()
+  const incoming = data && typeof data === 'object' && !Array.isArray(data) ? data as Record<string, unknown> : {}
+  const prev = existing && typeof existing === 'object' && !Array.isArray(existing) ? existing as Record<string, unknown> : {}
+  const { kommunikation: _vk2KommEntfernt, ...rest } = incoming
+  const incVerein = rest.verein && typeof rest.verein === 'object' ? rest.verein as Record<string, unknown> : {}
+  const prevVerein = prev.verein && typeof prev.verein === 'object' ? prev.verein as Record<string, unknown> : {}
+  const defVerein = VK2_STAMMDATEN_DEFAULTS.verein as Record<string, unknown>
+  const verein = {
+    ...defVerein,
+    ...prevVerein,
+    ...incVerein,
+    name: pickVk2Value(incVerein.name, prevVerein.name, defVerein.name),
+    address: pickVk2Value(incVerein.address, prevVerein.address, defVerein.address),
+    city: pickVk2Value(incVerein.city, prevVerein.city, defVerein.city),
+    country: pickVk2Value(incVerein.country, prevVerein.country, defVerein.country),
+    vereinsnummer: pickVk2Value(incVerein.vereinsnummer, prevVerein.vereinsnummer, defVerein.vereinsnummer),
+    email: pickVk2Value(incVerein.email, prevVerein.email, defVerein.email),
+    website: pickVk2Value(incVerein.website, prevVerein.website, defVerein.website),
+    socialYoutubeUrl: pickVk2Value(incVerein.socialYoutubeUrl, prevVerein.socialYoutubeUrl, defVerein.socialYoutubeUrl),
+    socialInstagramUrl: pickVk2Value(incVerein.socialInstagramUrl, prevVerein.socialInstagramUrl, defVerein.socialInstagramUrl),
+    socialFeaturedVideoUrl: pickVk2Value(incVerein.socialFeaturedVideoUrl, prevVerein.socialFeaturedVideoUrl, defVerein.socialFeaturedVideoUrl),
+    bankverbindung: pickVk2Value(incVerein.bankverbindung, prevVerein.bankverbindung, defVerein.bankverbindung),
+    iban: pickVk2Value(incVerein.iban, prevVerein.iban, defVerein.iban),
+  }
+  const incomingMitglieder = Array.isArray(rest.mitglieder) ? rest.mitglieder : null
+  const existingMitglieder = Array.isArray(prev.mitglieder) ? prev.mitglieder : []
+  const incomingNichtReg = Array.isArray(rest.mitgliederNichtRegistriert) ? rest.mitgliederNichtRegistriert : null
+  const existingNichtReg = Array.isArray(prev.mitgliederNichtRegistriert) ? prev.mitgliederNichtRegistriert : []
+  const incomingEigeneKat = Array.isArray(rest.eigeneKategorien) ? rest.eigeneKategorien : null
+  const existingEigeneKat = Array.isArray(prev.eigeneKategorien) ? prev.eigeneKategorien : []
+  const incomingVereinsTyp = typeof rest.vereinsTyp === 'string' ? rest.vereinsTyp.trim() : ''
+  const existingVereinsTyp = typeof prev.vereinsTyp === 'string' ? prev.vereinsTyp.trim() : ''
+  const vereinsTyp =
+    incomingVereinsTyp && !(incomingVereinsTyp === 'kunst' && existingVereinsTyp && existingVereinsTyp !== 'kunst')
+      ? incomingVereinsTyp
+      : existingVereinsTyp || incomingVereinsTyp
+  return {
+    ...VK2_STAMMDATEN_DEFAULTS,
+    ...prev,
+    ...rest,
+    verein,
+    vorstand: mergeVk2NameBlock(rest.vorstand, prev.vorstand, VK2_STAMMDATEN_DEFAULTS.vorstand),
+    vize: mergeVk2NameBlock(rest.vize, prev.vize, VK2_STAMMDATEN_DEFAULTS.vize),
+    kassier: mergeVk2NameBlock(rest.kassier, prev.kassier, VK2_STAMMDATEN_DEFAULTS.kassier),
+    schriftfuehrer: mergeVk2NameBlock(rest.schriftfuehrer, prev.schriftfuehrer, VK2_STAMMDATEN_DEFAULTS.schriftfuehrer),
+    beisitzer: mergeVk2NameBlock(rest.beisitzer, prev.beisitzer, VK2_STAMMDATEN_DEFAULTS.beisitzer || { name: '' }),
+    mitglieder: incomingMitglieder && (incomingMitglieder.length > 0 || existingMitglieder.length === 0) ? incomingMitglieder : existingMitglieder,
+    mitgliederNichtRegistriert: incomingNichtReg && (incomingNichtReg.length > 0 || existingNichtReg.length === 0) ? incomingNichtReg : existingNichtReg,
+    eigeneKategorien: incomingEigeneKat && (incomingEigeneKat.length > 0 || existingEigeneKat.length === 0) ? incomingEigeneKat : existingEigeneKat,
+    vereinsTyp,
+  }
+}
+
 export function saveVk2Stammdaten(data: any): void {
   try {
-    let payload = data
-    if (data && typeof data === 'object' && !Array.isArray(data)) {
-      const { kommunikation: _vk2KommEntfernt, ...rest } = data as Record<string, unknown>
-      payload = rest
-    }
+    const payload = mergeVk2StammdatenForSave(data)
     const json = JSON.stringify(payload)
     if (json.length > 10_000_000) {
       console.error('❌ stammdatenStorage: VK2-Daten zu groß')

@@ -2589,6 +2589,13 @@ function sanitizeDynamicTenantGalleryData(raw: unknown, focusDirection: FocusDir
   }
 }
 
+function isSafeDynamicTenantSaveId(raw: unknown): raw is string {
+  if (typeof raw !== 'string') return false
+  const value = raw.trim()
+  if (!/^[a-z0-9-]{1,64}$/.test(value)) return false
+  return !['k2', 'oeffentlich', 'vk2'].includes(value)
+}
+
 function createDynamicTenantPageTexts(focusDirection: FocusDirectionId): PageTextsConfig {
   const focusLabel = FOCUS_DIRECTIONS.find((d) => d.id === focusDirection)?.label ?? 'Kunst & Galerie'
   const welcomeIntroText = getWelcomeIntroForFocusDirections([focusDirection])
@@ -4137,15 +4144,16 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     const dynId = tenant.dynamicTenantId
     if (!dynId) return
     let isMounted = true
+    const initialFocusDirection = dynamicFocusDirectionFromUrl
     setDynamicTenantLoading(true)
     setAllArtworksSafe([])
     setEvents([])
     setDocuments([])
     setDesignSettings(K2_ORANGE_DESIGN)
-    setPageTextsState(createDynamicTenantPageTexts(dynamicFocusDirectionFromUrl))
+    setPageTextsState(createDynamicTenantPageTexts(initialFocusDirection))
     setPageContent({ welcomeImage: '', galerieCardImage: '', virtualTourImage: '', virtualTourVideo: '', virtualTourVideoSizeBytes: 0 })
     const dynamicPersonDefaults = createDynamicTenantPersonDefaults()
-    const dynamicGalleryDefaults = createDynamicTenantGalleryDefaults(dynamicFocusDirectionFromUrl)
+    const dynamicGalleryDefaults = createDynamicTenantGalleryDefaults(initialFocusDirection)
     setMartinaData(dynamicPersonDefaults as any)
     setGeorgData(dynamicPersonDefaults as any)
     setGalleryData(dynamicGalleryDefaults as any)
@@ -4163,7 +4171,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
           setGalleryData(dynamicGalleryDefaults as any)
           setPageContent({ welcomeImage: '', galerieCardImage: '', virtualTourImage: '', virtualTourVideo: '', virtualTourVideoSizeBytes: 0 })
           setDesignSettings(K2_ORANGE_DESIGN)
-          setPageTextsState(createDynamicTenantPageTexts(dynamicFocusDirectionFromUrl))
+          setPageTextsState(createDynamicTenantPageTexts(initialFocusDirection))
         }
         return
       }
@@ -4173,17 +4181,18 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       setEvents(Array.isArray(data.events) ? data.events : [])
       setDocuments(Array.isArray(data.documents) ? data.documents : [])
       if (data.designSettings && typeof data.designSettings === 'object') setDesignSettings({ ...K2_ORANGE_DESIGN, ...data.designSettings } as any)
-      setPageTextsState(mergeDynamicTenantPageTexts(data.pageTexts, dynamicFocusDirectionFromUrl))
       setMartinaData(sanitizeDynamicTenantPersonData(data.martina) as any)
       setGeorgData(sanitizeDynamicTenantPersonData(data.georg) as any)
+      let effectiveFocus = initialFocusDirection
       if (data.gallery && typeof data.gallery === 'object') {
         const incomingGallery = data.gallery as Record<string, unknown>
         const incomingFocus = Array.isArray(incomingGallery.focusDirections) && incomingGallery.focusDirections.length > 0
           ? normalizeAdminFocusDirection(incomingGallery.focusDirections[0])
-          : dynamicFocusDirectionFromUrl
-        const effectiveFocus = dynamicFocusDirectionFromUrl !== DEFAULT_OEK2_FOCUS_DIRECTION_ID ? dynamicFocusDirectionFromUrl : incomingFocus
+          : initialFocusDirection
+        effectiveFocus = incomingFocus
         setGalleryData(sanitizeDynamicTenantGalleryData(incomingGallery, effectiveFocus) as any)
       } else setGalleryData(dynamicGalleryDefaults as any)
+      setPageTextsState(mergeDynamicTenantPageTexts(data.pageTexts, effectiveFocus))
       const pc = data.pageContentGalerie ?? data.pageContent
       if (pc != null) {
         const parsed = typeof pc === 'string' ? (() => { try { return JSON.parse(pc) } catch { return {} } })() : pc
@@ -4193,7 +4202,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       if (isMounted) setDynamicTenantLoading(false)
     })
     return () => { isMounted = false }
-  }, [tenant.dynamicTenantId, dynamicFocusDirectionFromUrl])
+  }, [tenant.dynamicTenantId])
 
   // ök2: Lager-Tab nicht verfügbar. VK2: Sicherheit und Lager nicht – auf Stammdaten wechseln
   useEffect(() => {
@@ -4743,18 +4752,26 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     alert('✅ Musterdaten entfernt. Trage jetzt deine eigenen Daten ein.')
   }
 
-  const buildDynamicTenantExportPayload = () => {
+  const buildDynamicTenantExportPayload = (overrides?: { martina?: any; georg?: any; gallery?: any; pageTexts?: PageTextsConfig }) => {
+    const dynamicTenantIdForPayload = tenant.dynamicTenantId
+    if (!isSafeDynamicTenantSaveId(dynamicTenantIdForPayload)) {
+      throw new Error('Ungültiger Mandant. Stammdaten wurden nicht gespeichert.')
+    }
+    const sourceMartina = overrides?.martina ?? martinaData
+    const sourceGeorg = overrides?.georg ?? georgData
+    const sourceGallery = overrides?.gallery ?? galleryData
+    const sourcePageTexts = overrides?.pageTexts ?? pageTexts
     const focusDirection = normalizeAdminFocusDirection(
-      Array.isArray(galleryData?.focusDirections) && galleryData.focusDirections[0]
-        ? galleryData.focusDirections[0]
+      Array.isArray(sourceGallery?.focusDirections) && sourceGallery.focusDirections[0]
+        ? sourceGallery.focusDirections[0]
         : dynamicFocusDirectionFromUrl
     )
-    const cleanGallery = sanitizeDynamicTenantGalleryData({ ...(galleryData || {}), focusDirections: [focusDirection] }, focusDirection)
-    const cleanPageTexts = mergeDynamicTenantPageTexts(pageTexts, focusDirection)
+    const cleanGallery = sanitizeDynamicTenantGalleryData({ ...(sourceGallery || {}), focusDirections: [focusDirection] }, focusDirection)
+    const cleanPageTexts = mergeDynamicTenantPageTexts(sourcePageTexts, focusDirection)
     const pageContentGalerieRaw = typeof pageContent === 'object' && pageContent != null ? JSON.stringify(pageContent) : undefined
     return {
-      martina: sanitizeDynamicTenantPersonData(martinaData),
-      georg: sanitizeDynamicTenantPersonData(georgData),
+      martina: sanitizeDynamicTenantPersonData(sourceMartina),
+      georg: sanitizeDynamicTenantPersonData(sourceGeorg),
       gallery: cleanGallery,
       artworks: sortArtworksFavoritesFirstThenNewest(Array.isArray(allArtworks) ? [...allArtworks] : []),
       events: Array.isArray(events) ? events.slice(0, 100) : [],
@@ -4765,14 +4782,22 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       exportedAt: new Date().toISOString(),
       version: 1,
       buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
-      tenantId: tenant.dynamicTenantId,
+      tenantId: dynamicTenantIdForPayload,
     }
   }
 
-  const saveDynamicTenantStateToServer = async (options?: { silent?: boolean }): Promise<{ success: boolean; size?: number; error?: string }> => {
-    if (!tenant.dynamicTenantId) return { success: false, error: 'Kein dynamischer Mandant' }
+  const saveDynamicTenantStateToServer = async (
+    options?: { silent?: boolean; martina?: any; georg?: any; gallery?: any; pageTexts?: PageTextsConfig }
+  ): Promise<{ success: boolean; size?: number; error?: string }> => {
+    if (!isSafeDynamicTenantSaveId(tenant.dynamicTenantId)) return { success: false, error: 'Ungültiger Mandant. Stammdaten wurden nicht gespeichert.' }
     const silent = options?.silent === true
-    const data = buildDynamicTenantExportPayload()
+    const data = buildDynamicTenantExportPayload({
+      martina: options?.martina,
+      georg: options?.georg,
+      gallery: options?.gallery,
+      pageTexts: options?.pageTexts,
+    })
+    if (data.tenantId !== tenant.dynamicTenantId) return { success: false, error: 'Mandanten-Ziel stimmt nicht. Speichern abgebrochen.' }
     const json = JSON.stringify(data)
     if (json.length > 5000000) return { success: false, error: 'Daten zu groß. Bitte reduzieren.' }
     const result = await apiPost(WRITE_GALLERY_DATA_API_URL, json, { timeoutMs: 30000 })
@@ -4787,7 +4812,13 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const saveStammdaten = () => {
     return new Promise<void>((resolve, reject) => {
       if (tenant.dynamicTenantId) {
-        saveDynamicTenantStateToServer({ silent: true })
+        saveDynamicTenantStateToServer({
+          silent: true,
+          martina: martinaData,
+          georg: georgData,
+          gallery: galleryData,
+          pageTexts,
+        })
           .then((result) => {
             if (result.success) resolve()
             else reject(new Error(result.error || 'Daten konnten nicht gespeichert werden.'))
@@ -20890,9 +20921,17 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                                   onChange={() => {
                                     const nextFocus = normalizeAdminFocusDirection(id)
                                     const nextData = { ...galleryData, focusDirections: [nextFocus] }
+                                    const nextPageTexts = createDynamicTenantPageTexts(nextFocus)
                                     setGalleryData(nextData)
                                     if (tenant.dynamicTenantId) {
-                                      setPageTextsState(createDynamicTenantPageTexts(nextFocus))
+                                      setPageTextsState(nextPageTexts)
+                                      try {
+                                        const params = new URLSearchParams(location.search)
+                                        params.set('focusDirection', nextFocus)
+                                        const nextUrl = `${location.pathname}?${params.toString()}${location.hash || ''}`
+                                        window.history.replaceState(window.history.state, '', nextUrl)
+                                      } catch (_) {}
+                                      void saveDynamicTenantStateToServer({ silent: true, gallery: nextData, pageTexts: nextPageTexts })
                                     }
                                     if (tenant.isOeffentlich) {
                                       try { persistStammdaten('oeffentlich', 'gallery', nextData) } catch (_) {}

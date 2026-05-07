@@ -129,4 +129,36 @@ describe('Kundendaten-Schutz: VK2 Mitglieder', () => {
     sessionStorage.removeItem('k2-pilot-einladung')
   })
 
+  it('VK2-Stammdaten-Speichern überschreibt bestehende Vereinsdaten und Mitglieder nicht mit leerem Rückfall', async () => {
+    const { saveVk2Stammdaten } = await import('../utils/stammdatenStorage')
+
+    localStorage.setItem('k2-vk2-stammdaten', JSON.stringify({
+      verein: { name: 'Echter Verein', email: 'verein@test.at', city: 'Linz' },
+      vorstand: { name: 'Obfrau Echt' },
+      mitglieder: [{ name: 'Mitglied Echt', email: 'mitglied@test.at' }],
+      mitgliederNichtRegistriert: ['Externes Mitglied'],
+      eigeneKategorien: [{ id: 'handwerk', label: 'Handwerk' }],
+      vereinsTyp: 'handwerk',
+    }))
+
+    saveVk2Stammdaten({
+      verein: { name: '', email: '', city: '' },
+      vorstand: { name: '' },
+      mitglieder: [],
+      mitgliederNichtRegistriert: [],
+      eigeneKategorien: [],
+      vereinsTyp: 'kunst',
+    })
+
+    const stored = JSON.parse(localStorage.getItem('k2-vk2-stammdaten') || '{}')
+    expect(stored.verein.name).toBe('Echter Verein')
+    expect(stored.verein.email).toBe('verein@test.at')
+    expect(stored.verein.city).toBe('Linz')
+    expect(stored.vorstand.name).toBe('Obfrau Echt')
+    expect(stored.mitglieder[0].name).toBe('Mitglied Echt')
+    expect(stored.mitgliederNichtRegistriert).toEqual(['Externes Mitglied'])
+    expect(stored.eigeneKategorien).toEqual([{ id: 'handwerk', label: 'Handwerk' }])
+    expect(stored.vereinsTyp).toBe('handwerk')
+  })
+
 })

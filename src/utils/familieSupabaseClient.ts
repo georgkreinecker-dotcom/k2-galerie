@@ -12,6 +12,7 @@ import {
   loadEvents,
   loadEinstellungen,
   mergeEinstellungenFromServer,
+  isValidFamilieTenantId,
   savePersonen,
   saveMomente,
   saveEvents,
@@ -169,6 +170,14 @@ export function getFamilieLoadHinweisFuerNutzer(loadMeta: FamilieLoadMeta): stri
  * **loadMeta:** Bei Fehler oder fehlender Konfiguration bleibt die Anzeige oft leer – dann zeigt die UI den Grund.
  */
 export async function loadFamilieFromSupabase(tenantId: string): Promise<FamilieLoadResult> {
+  if (!isValidFamilieTenantId(tenantId)) {
+    return withMeta(localSnapshot(tenantId), {
+      ok: false,
+      source: 'local_only',
+      reason: 'parse',
+      networkDetail: 'ungueltiger-tenant',
+    })
+  }
   if (!isSupabaseConfigured() || !FAMILIE_API_URL) {
     return withMeta(localSnapshot(tenantId), {
       ok: false,
@@ -291,6 +300,14 @@ export async function loadFamilieFromSupabase(tenantId: string): Promise<Familie
  * Danach einmal `loadFamilieFromSupabase(tenantId)` für volle Daten.
  */
 export async function fetchFamilieIdentityLite(tenantId: string): Promise<FamilieLoadResult> {
+  if (!isValidFamilieTenantId(tenantId)) {
+    return withMeta(localSnapshot(tenantId), {
+      ok: false,
+      source: 'local_only',
+      reason: 'parse',
+      networkDetail: 'ungueltiger-tenant',
+    })
+  }
   if (!isSupabaseConfigured() || !FAMILIE_API_URL) {
     return withMeta(localSnapshot(tenantId), {
       ok: false,
@@ -362,6 +379,10 @@ export async function fetchFamilieIdentityLite(tenantId: string): Promise<Famili
  * Schreibt Familie-Daten nach Supabase (alle drei Listen für den Tenant).
  */
 export async function saveFamilieToSupabase(tenantId: string, payload: FamilieData): Promise<boolean> {
+  if (!isValidFamilieTenantId(tenantId)) {
+    console.warn('saveFamilieToSupabase: ungültiger Tenant, Speichern abgebrochen', tenantId)
+    return false
+  }
   if (!isSupabaseConfigured() || !FAMILIE_API_URL) return false
   try {
     const res = await fetchFamilieWithTimeout(FAMILIE_API_URL, {

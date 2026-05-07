@@ -8,11 +8,12 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { reportPublicGalleryVisit } from '../utils/reportPublicGalleryVisit'
-import { FOCUS_DIRECTIONS, getWelcomeIntroForFocusDirections, type FocusDirectionId } from '../config/tenantConfig'
+import { FOCUS_DIRECTIONS, MUSTER_ARTWORKS, getWelcomeIntroForFocusDirections, type FocusDirectionId } from '../config/tenantConfig'
 import '../App.css'
 
 const SAFE_TENANT_ID = /^[a-z0-9-]{1,64}$/
 const DEFAULT_FOCUS_DIRECTION: FocusDirectionId = 'kunst'
+type TenantGalleryArtwork = { number?: string; title?: string; imageRef?: string; image?: string; imageUrl?: string }
 
 function normalizeFocusDirection(raw: string | null): FocusDirectionId {
   const value = String(raw || '').trim().toLowerCase()
@@ -24,7 +25,7 @@ export default function GalerieTenantPage() {
   const [searchParams] = useSearchParams()
   const focusDirection = normalizeFocusDirection(searchParams.get('focusDirection'))
   const [data, setData] = useState<{
-    artworks?: Array<{ number?: string; title?: string; imageRef?: string; image?: string }>
+    artworks?: TenantGalleryArtwork[]
     pageTexts?: { galerie?: { heroTitle?: string; welcomeSubtext?: string; welcomeIntroText?: string } }
     designSettings?: Record<string, string>
   } | null>(null)
@@ -95,25 +96,13 @@ export default function GalerieTenantPage() {
     )
   }
 
-  if (error || !data) {
-    return (
-      <main style={{ maxWidth: 560, margin: '3rem auto', padding: '1rem', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Deine Galerie</h1>
-        <p style={{ color: 'var(--k2-muted)', marginBottom: '1.5rem' }}>
-          Noch keine Inhalte – gestalte deine Galerie im Admin.
-        </p>
-        <a href={adminUrl} className="btn primary-btn" style={{ display: 'inline-block' }}>
-          Galerie gestalten
-        </a>
-      </main>
-    )
-  }
-
-  const artworks = Array.isArray(data.artworks) ? data.artworks : []
+  const serverArtworks: TenantGalleryArtwork[] = !error && Array.isArray(data?.artworks) ? data.artworks : []
+  const artworks: TenantGalleryArtwork[] = serverArtworks.length > 0 ? serverArtworks : MUSTER_ARTWORKS
+  const isMusterStart = serverArtworks.length === 0
   const focusLabel = FOCUS_DIRECTIONS.find((d) => d.id === focusDirection)?.label ?? 'Kunst & Galerie'
-  const rawTitle = data.pageTexts?.galerie?.heroTitle?.trim() || ''
-  const rawSubtext = data.pageTexts?.galerie?.welcomeSubtext?.trim() || ''
-  const rawIntro = data.pageTexts?.galerie?.welcomeIntroText?.trim() || ''
+  const rawTitle = data?.pageTexts?.galerie?.heroTitle?.trim() || ''
+  const rawSubtext = data?.pageTexts?.galerie?.welcomeSubtext?.trim() || ''
+  const rawIntro = data?.pageTexts?.galerie?.welcomeIntroText?.trim() || ''
   const title = rawTitle === 'K2 Galerie' ? 'Meine Galerie' : (rawTitle || 'Meine Galerie')
   const subtext = rawSubtext === 'Kunst & Keramik – Martina und Georg Kreinecker' ? focusLabel : (rawSubtext || focusLabel)
   const intro = rawIntro === 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.'
@@ -127,6 +116,11 @@ export default function GalerieTenantPage() {
         <p style={{ color: 'var(--k2-muted)', margin: '0.35rem 0 0' }}>{subtext}</p>
         <p style={{ color: 'var(--k2-muted)', maxWidth: 620, margin: '0.75rem auto 0', lineHeight: 1.55 }}>{intro}</p>
       </header>
+      {isMusterStart && (
+        <p style={{ textAlign: 'center', color: 'var(--k2-muted)', margin: '-0.75rem 0 1.5rem' }}>
+          Muster-Erstgalerie – ersetze diese Beispiele im Admin durch deine eigenen Inhalte.
+        </p>
+      )}
       {artworks.length === 0 ? (
         <p style={{ textAlign: 'center', color: 'var(--k2-muted)', marginBottom: '1.5rem' }}>
           Noch keine Werke – im Admin hinzufügen.
@@ -150,9 +144,9 @@ export default function GalerieTenantPage() {
                 boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
               }}
             >
-              {(a.imageRef || a.image) && (
+              {(a.imageRef || a.image || a.imageUrl) && (
                 <img
-                  src={a.imageRef || a.image || ''}
+                  src={a.imageRef || a.image || a.imageUrl || ''}
                   alt=""
                   style={{ width: '100%', aspectRatio: '1', objectFit: 'cover' }}
                 />

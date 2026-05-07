@@ -33,6 +33,12 @@ export function isValidFamilieTenantId(id: string): boolean {
   return /^[a-z0-9]+(-[a-z0-9]+)*$/.test(lower)
 }
 
+function canWriteFamilieTenantId(tenantId: string, where: string): boolean {
+  if (isValidFamilieTenantId(tenantId)) return true
+  console.warn(`⚠️ familieStorage: ${where} für ungültigen Tenant abgelehnt`, tenantId)
+  return false
+}
+
 /** Max. 10 MB pro Key (localStorage). Großfamilien: Fotos komprimieren oder extern; siehe docs/K2-FAMILIE-SKALIERUNG-GROSSFAMILIEN.md */
 const MAX_JSON_SIZE = 10_000_000
 
@@ -60,6 +66,7 @@ export function savePersonen(
   list: K2FamiliePerson[],
   options: { allowReduce?: boolean; skipMusterDemoGuard?: boolean } = {}
 ): boolean {
+  if (!canWriteFamilieTenantId(tenantId, 'Personen speichern')) return false
   if (!options.skipMusterDemoGuard && isFamilieMusterHuberDemoReadOnly(tenantId)) {
     console.warn('⚠️ familieStorage: Musterfamilie (Demo-Sitzung) ist nur lesend – Speichern abgelehnt')
     return false
@@ -128,6 +135,7 @@ export function saveMomente(
   list: K2FamilieMoment[],
   options: { allowReduce?: boolean; skipMusterDemoGuard?: boolean } = {}
 ): boolean {
+  if (!canWriteFamilieTenantId(tenantId, 'Momente speichern')) return false
   if (!options.skipMusterDemoGuard && isFamilieMusterHuberDemoReadOnly(tenantId)) {
     console.warn('⚠️ familieStorage: Musterfamilie (Demo-Sitzung) ist nur lesend – Momente speichern abgelehnt')
     return false
@@ -189,6 +197,7 @@ export function saveEvents(
   list: K2FamilieEvent[],
   options: { allowReduce?: boolean; skipMusterDemoGuard?: boolean } = {}
 ): boolean {
+  if (!canWriteFamilieTenantId(tenantId, 'Events speichern')) return false
   if (!options.skipMusterDemoGuard && isFamilieMusterHuberDemoReadOnly(tenantId)) {
     console.warn('⚠️ familieStorage: Musterfamilie (Demo-Sitzung) ist nur lesend – Events speichern abgelehnt')
     return false
@@ -249,6 +258,7 @@ export function saveGaben(
   list: K2FamilieGabe[],
   options: { skipMusterDemoGuard?: boolean } = {}
 ): boolean {
+  if (!canWriteFamilieTenantId(tenantId, 'Gaben speichern')) return false
   if (!options.skipMusterDemoGuard && isFamilieMusterHuberDemoReadOnly(tenantId)) {
     console.warn('⚠️ familieStorage: Musterfamilie (Demo-Sitzung) ist nur lesend – Gaben speichern abgelehnt')
     return false
@@ -292,6 +302,7 @@ export function saveBeitraege(
   list: K2FamilieBeitrag[],
   options: { skipMusterDemoGuard?: boolean } = {}
 ): boolean {
+  if (!canWriteFamilieTenantId(tenantId, 'Beiträge speichern')) return false
   if (!options.skipMusterDemoGuard && isFamilieMusterHuberDemoReadOnly(tenantId)) {
     console.warn('⚠️ familieStorage: Musterfamilie (Demo-Sitzung) ist nur lesend – Beiträge speichern abgelehnt')
     return false
@@ -316,6 +327,7 @@ export function saveBeitraege(
  * Lädt Einstellungen (Startpunkt etc.) für einen Tenant.
  */
 export function loadEinstellungen(tenantId: string): K2FamilieEinstellungen {
+  if (!isValidFamilieTenantId(tenantId)) return {}
   const key = getK2FamilieEinstellungenKey(tenantId)
   try {
     const stored = localStorage.getItem(key)
@@ -338,6 +350,12 @@ export function mergeEinstellungenFromServer(
   server: K2FamilieEinstellungen
 ): K2FamilieEinstellungen {
   const merged: K2FamilieEinstellungen = { ...local, ...server }
+  if (local.familyDisplayName?.trim() && !server.familyDisplayName?.trim()) {
+    merged.familyDisplayName = local.familyDisplayName
+  }
+  if (local.mitgliedsNummerAdmin?.trim() && !server.mitgliedsNummerAdmin?.trim()) {
+    merged.mitgliedsNummerAdmin = local.mitgliedsNummerAdmin
+  }
   const ichLocal = local.ichBinPersonId?.trim()
   if (ichLocal) {
     merged.ichBinPersonId = local.ichBinPersonId
@@ -356,6 +374,7 @@ export function saveEinstellungen(
   data: K2FamilieEinstellungen,
   options: { skipMusterDemoGuard?: boolean } = {}
 ): boolean {
+  if (!canWriteFamilieTenantId(tenantId, 'Einstellungen speichern')) return false
   if (!options.skipMusterDemoGuard && isFamilieMusterHuberDemoReadOnly(tenantId)) {
     console.warn('⚠️ familieStorage: Musterfamilie (Demo-Sitzung) ist nur lesend – Einstellungen speichern abgelehnt')
     return false
@@ -364,6 +383,12 @@ export function saveEinstellungen(
   const patch = data && typeof data === 'object' ? data : {}
   const prev = loadEinstellungen(tenantId)
   let merged: K2FamilieEinstellungen = { ...prev, ...patch }
+  if (prev.familyDisplayName?.trim() && patch.familyDisplayName != null && !patch.familyDisplayName.trim()) {
+    merged.familyDisplayName = prev.familyDisplayName
+  }
+  if (prev.mitgliedsNummerAdmin?.trim() && patch.mitgliedsNummerAdmin != null && !patch.mitgliedsNummerAdmin.trim()) {
+    merged.mitgliedsNummerAdmin = prev.mitgliedsNummerAdmin
+  }
 
   const ich = merged.ichBinPersonId?.trim()
   const hadDesignated = prev.inhaberPersonId?.trim()
@@ -437,6 +462,7 @@ export function saveZweige(
   list: K2FamilieZweig[],
   options: { skipMusterDemoGuard?: boolean } = {}
 ): boolean {
+  if (!canWriteFamilieTenantId(tenantId, 'Zweige speichern')) return false
   if (!options.skipMusterDemoGuard && isFamilieMusterHuberDemoReadOnly(tenantId)) {
     console.warn('⚠️ familieStorage: Musterfamilie (Demo-Sitzung) ist nur lesend – Zweige speichern abgelehnt')
     return false
@@ -480,6 +506,7 @@ export function saveGeschichten(
   list: K2FamilieGeschichte[],
   options: { skipMusterDemoGuard?: boolean } = {}
 ): boolean {
+  if (!canWriteFamilieTenantId(tenantId, 'Geschichten speichern')) return false
   if (!options.skipMusterDemoGuard && isFamilieMusterHuberDemoReadOnly(tenantId)) {
     console.warn('⚠️ familieStorage: Musterfamilie (Demo-Sitzung) ist nur lesend – Geschichten speichern abgelehnt')
     return false

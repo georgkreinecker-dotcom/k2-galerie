@@ -10,6 +10,20 @@
 
 ---
 
+## BUG-045 · Lizenznehmer-Stammdaten/Sparte fielen nach Galerie-Rückkehr zurück (gelöst 07.05.26)
+
+**Symptom:** Ein Lizenznehmer änderte Stammdaten und wählte z. B. **Handwerk**, aber nach **Galerie ansehen → Galerie bearbeiten** standen Stammdaten bzw. Sparte wieder auf Start-/Kunst-Werten. Eine leere Lizenznehmer-Galerie zeigte außerdem keine Muster-Erstgalerie.
+
+**Ursache:** Der dynamische Mandanten-Lader hing noch am URL-Parameter `focusDirection`. Wenn die URL wechselte, wurde der Mandant erneut geladen und die Stammdaten wurden kurz auf Startwerte gesetzt. Außerdem war der Speicherweg nicht hart genug gegen falsche Ziele abgesichert.
+
+**Lösung:** Dynamische Mandanten laden nur noch bei Mandantenwechsel, nicht bei bloßem URL-Spartenwechsel. Gespeicherte Blob-Sparte hat Vorrang vor altem URL-Wert. Beim Stammdaten-Speichern wird ein vollständiger aktueller Snapshot (`martina`, `georg`, `gallery`, `pageTexts`) in den eigenen Mandanten-Blob geschrieben; Ziele `k2`, `oeffentlich`, `vk2` und ungültige IDs werden vor dem Schreiben geblockt. Die öffentliche Lizenznehmer-Galerie nutzt bei leerem Blob jetzt `MUSTER_ARTWORKS` als Muster-Erstgalerie statt „Noch keine Inhalte“. Dieselbe Fehlerklasse ist zusätzlich für **VK2** und **K2 Familie** abgesichert: `saveVk2Stammdaten` bewahrt bestehende Vereinsdaten, Mitglieder und Vereins-Sparte vor leerem/Kunst-Rückfall; `familieStorage` blockt ungültige Familien-Tenants und erhält lokale Familien-Stammdaten bei leerem UI-/Server-Rückfall.
+
+**Betroffene Dateien:** `components/ScreenshotExportAdmin.tsx`, `src/pages/GalerieTenantPage.tsx`, `src/utils/stammdatenStorage.ts`, `src/utils/familieStorage.ts`, `src/utils/familieSupabaseClient.ts`, `src/tests/dynamicTenantAdminIsolation.test.ts`, `src/tests/kundendaten-schutz.test.ts`, `src/tests/familieTenantId.test.ts`.
+
+**Status:** ✅ Behoben und per Regressionstest abgesichert (07.05.26).
+
+---
+
 ## BUG-044 · Lizenznehmer-Stammdaten/Sparte fielen auf K2 zurück (gelöst 07.05.26)
 
 **Symptom:** Im dynamischen Lizenznehmer-Admin (`/admin?tenantId=galerie-*`) erschienen weiterhin K2-Stammdaten als Muster. Die in der Anmeldung gewählte oder in den Stammdaten geänderte Sparte fiel wieder zurück und ließ sich nicht zuverlässig speichern.

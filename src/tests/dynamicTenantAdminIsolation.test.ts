@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 
 describe('Dynamischer Lizenznehmer-Admin – keine K2-LocalStorage-Daten', () => {
   const source = readFileSync(join(process.cwd(), 'components/ScreenshotExportAdmin.tsx'), 'utf8')
+  const tenantGallerySource = readFileSync(join(process.cwd(), 'src/pages/GalerieTenantPage.tsx'), 'utf8')
 
   it('lädt bei ?tenantId=galerie-* keine lokalen K2-Werke als Fallback', () => {
     expect(source).toMatch(/async function loadArtworksWithResolvedImages[\s\S]*?if \(tenant\.dynamicTenantId\) return \[\]/)
@@ -32,8 +33,10 @@ describe('Dynamischer Lizenznehmer-Admin – keine K2-LocalStorage-Daten', () =>
     expect(source).toContain("if (tenant.dynamicTenantId) return createDynamicTenantPersonDefaults() as any")
     expect(source).toContain("tenant.dynamicTenantId\n      ? createDynamicTenantGalleryDefaults(dynamicFocusDirectionFromUrl)")
     expect(source).toContain("setMartinaData(dynamicPersonDefaults as any)")
-    expect(source).toContain("setPageTextsState(createDynamicTenantPageTexts(dynamicFocusDirectionFromUrl))")
-    expect(source).toContain("setPageTextsState(mergeDynamicTenantPageTexts(data.pageTexts, dynamicFocusDirectionFromUrl))")
+    expect(source).toContain("const initialFocusDirection = dynamicFocusDirectionFromUrl")
+    expect(source).toContain("setPageTextsState(createDynamicTenantPageTexts(initialFocusDirection))")
+    expect(source).toContain("setPageTextsState(mergeDynamicTenantPageTexts(data.pageTexts, effectiveFocus))")
+    expect(source).toContain("}, [tenant.dynamicTenantId])")
     expect(source).not.toMatch(/tenant\.dynamicTenantId[\s\S]{0,800}setMartinaData\(K2_STAMMDATEN_DEFAULTS\.martina/)
     expect(source).not.toMatch(/tenant\.dynamicTenantId[\s\S]{0,800}setGalleryData\(\{ \.\.\.K2_STAMMDATEN_DEFAULTS\.gallery/)
   })
@@ -54,9 +57,36 @@ describe('Dynamischer Lizenznehmer-Admin – keine K2-LocalStorage-Daten', () =>
 
   it('speichert Lizenznehmer-Stammdaten nicht in K2-LocalStorage, sondern in den eigenen Mandanten-Blob', () => {
     expect(source).toContain("const saveDynamicTenantStateToServer")
+    expect(source).toContain("function isSafeDynamicTenantSaveId")
+    expect(source).toContain("return !['k2', 'oeffentlich', 'vk2'].includes(value)")
     expect(source).toContain("tenantId: tenant.dynamicTenantId")
-    expect(source).toMatch(/if \(tenant\.dynamicTenantId\) \{\s+saveDynamicTenantStateToServer\(\{ silent: true \}\)/)
+    expect(source).toContain("const buildDynamicTenantExportPayload = (overrides?: { martina?: any; georg?: any; gallery?: any; pageTexts?: PageTextsConfig })")
+    expect(source).toContain("const sourceMartina = overrides?.martina ?? martinaData")
+    expect(source).toContain("const sourceGeorg = overrides?.georg ?? georgData")
+    expect(source).toContain("const sourceGallery = overrides?.gallery ?? galleryData")
+    expect(source).toContain("if (data.tenantId !== tenant.dynamicTenantId) return { success: false, error: 'Mandanten-Ziel stimmt nicht. Speichern abgebrochen.' }")
+    expect(source).toMatch(/if \(tenant\.dynamicTenantId\) \{\s+saveDynamicTenantStateToServer\(\{[\s\S]*?martina: martinaData,[\s\S]*?georg: georgData,[\s\S]*?gallery: galleryData,/)
     expect(source).toContain("await saveDynamicTenantStateToServer({ silent: true })")
     expect(source).toContain("„Speichern“ und „Veröffentlichen“ schreiben in genau diesen Mandanten, nicht in K2.")
+  })
+
+  it('übergibt beim Stammdaten-Speichern den kompletten aktuellen Stammdaten-Snapshot', () => {
+    expect(source).toContain("martina: martinaData")
+    expect(source).toContain("georg: georgData")
+    expect(source).toContain("gallery: galleryData")
+    expect(source).toContain("pageTexts,")
+  })
+
+  it('schreibt Spartenwechsel sofort in Mandanten-Blob und URL, damit kein Rückfall auf Kunst passiert', () => {
+    expect(source).toContain("params.set('focusDirection', nextFocus)")
+    expect(source).toContain("window.history.replaceState(window.history.state, '', nextUrl)")
+    expect(source).toContain("void saveDynamicTenantStateToServer({ silent: true, gallery: nextData, pageTexts: nextPageTexts })")
+  })
+
+  it('zeigt bei leerer Lizenznehmer-Galerie eine Muster-Erstgalerie statt leerer Seite', () => {
+    expect(tenantGallerySource).toContain('MUSTER_ARTWORKS')
+    expect(tenantGallerySource).toContain('const artworks: TenantGalleryArtwork[] = serverArtworks.length > 0 ? serverArtworks : MUSTER_ARTWORKS')
+    expect(tenantGallerySource).toContain('Muster-Erstgalerie')
+    expect(tenantGallerySource).not.toContain('Noch keine Inhalte – gestalte deine Galerie im Admin.')
   })
 })
