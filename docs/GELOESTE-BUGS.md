@@ -10,6 +10,20 @@
 
 ---
 
+## BUG-044 · Lizenznehmer-Stammdaten/Sparte fielen auf K2 zurück (gelöst 07.05.26)
+
+**Symptom:** Im dynamischen Lizenznehmer-Admin (`/admin?tenantId=galerie-*`) erschienen weiterhin K2-Stammdaten als Muster. Die in der Anmeldung gewählte oder in den Stammdaten geänderte Sparte fiel wieder zurück und ließ sich nicht zuverlässig speichern.
+
+**Ursache:** Zwei K2-Rückfälle waren noch offen: (1) die ersten Stammdaten-States für dynamische Mandanten fielen vor dem API-Laden auf K2-Defaults zurück; (2) `saveStammdaten` und `saveAllForVorschau` behandelten `!oeffentlich && !vk2` weiter als K2 und schrieben damit Lizenznehmer-Stammdaten in `k2-stammdaten-*` bzw. nicht in den Mandanten-Blob.
+
+**Lösung:** Dynamische Mandanten starten jetzt sofort mit leeren Lizenznehmer-Stammdaten. Eingehende K2-Altwerte werden beim Laden sanitisiert. `Stammdaten speichern`, `Speichern`, `Galerie ansehen` und `Veröffentlichen` schreiben bei `tenant.dynamicTenantId` in den eigenen Mandanten-Blob (`tenantId: galerie-*`) und nie in K2-localStorage. Die Galerie-Links nutzen die aktuell gewählte Sparte aus dem State.
+
+**Betroffene Dateien:** `components/ScreenshotExportAdmin.tsx`, `src/tests/dynamicTenantAdminIsolation.test.ts`.
+
+**Status:** ✅ Behoben (07.05.26).
+
+---
+
 ## BUG-043 · VK2 Lizenz-Erfolg zeigte Galerie/ök2-Zugänge statt VK2 (gelöst 07.05.26)
 
 **Symptom:** Nach VK2-Anmeldung erschienen auf der Erfolgsseite normale Galerie-Zugänge (`/g/galerie-*`, `/admin?tenantId=…`) statt VK2. Georg meldete: „bei vk2 haben wir das gleiche problem wie bei k2 familie gestern“.

@@ -2543,6 +2543,52 @@ function createDynamicTenantGalleryDefaults(focusDirection: FocusDirectionId) {
   }
 }
 
+function isK2DefaultLikeValue(value: unknown, field?: string): boolean {
+  if (typeof value !== 'string') return false
+  const v = value.trim()
+  if (!v) return false
+  const sources = [
+    K2_STAMMDATEN_DEFAULTS.martina as Record<string, unknown>,
+    K2_STAMMDATEN_DEFAULTS.georg as Record<string, unknown>,
+    K2_STAMMDATEN_DEFAULTS.gallery as Record<string, unknown>,
+    MUSTER_TEXTE.martina as Record<string, unknown>,
+    MUSTER_TEXTE.georg as Record<string, unknown>,
+    MUSTER_TEXTE.gallery as Record<string, unknown>,
+  ]
+  if (field && sources.some((source) => typeof source[field] === 'string' && String(source[field]).trim() === v)) return true
+  const lower = v.toLowerCase()
+  return lower.includes('martina') && lower.includes('georg') && lower.includes('kreinecker')
+}
+
+function sanitizeDynamicTenantPersonData(raw: unknown) {
+  const defaults = createDynamicTenantPersonDefaults()
+  const incoming = raw && typeof raw === 'object' ? { ...(raw as Record<string, unknown>) } : {}
+  ;['name', 'email', 'phone', 'website', 'address', 'city', 'country', 'vita', 'bio'].forEach((key) => {
+    if (isK2DefaultLikeValue(incoming[key], key)) delete incoming[key]
+  })
+  return { ...defaults, ...incoming }
+}
+
+function sanitizeDynamicTenantGalleryData(raw: unknown, focusDirection: FocusDirectionId) {
+  const defaults = createDynamicTenantGalleryDefaults(focusDirection)
+  const incoming = raw && typeof raw === 'object' ? { ...(raw as Record<string, unknown>) } : {}
+  ;[
+    'name', 'subtitle', 'description', 'address', 'city', 'country', 'phone', 'email', 'website',
+    'internetadresse', 'openingHours', 'bankverbindung', 'iban', 'bic', 'firmenname', 'ustIdNr',
+    'rechnungAddress', 'rechnungCity', 'rechnungCountry', 'story',
+  ].forEach((key) => {
+    if (isK2DefaultLikeValue(incoming[key], key)) delete incoming[key]
+  })
+  return {
+    ...defaults,
+    ...incoming,
+    welcomeImage: typeof incoming.welcomeImage === 'string' && !incoming.welcomeImage.startsWith('data:') ? incoming.welcomeImage : '',
+    virtualTourImage: typeof incoming.virtualTourImage === 'string' && !incoming.virtualTourImage.startsWith('data:') ? incoming.virtualTourImage : '',
+    galerieCardImage: typeof incoming.galerieCardImage === 'string' && !incoming.galerieCardImage.startsWith('data:') ? incoming.galerieCardImage : '',
+    focusDirections: [focusDirection],
+  }
+}
+
 function createDynamicTenantPageTexts(focusDirection: FocusDirectionId): PageTextsConfig {
   const focusLabel = FOCUS_DIRECTIONS.find((d) => d.id === focusDirection)?.label ?? 'Kunst & Galerie'
   const welcomeIntroText = getWelcomeIntroForFocusDirections([focusDirection])
@@ -3883,6 +3929,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   
   // Stammdaten – ök2 aus localStorage; K2 sofort aus k2-stammdaten-* (sonst Auto-Save vor useEffect mit Repo-Defaults → falsche Telefon-Merge)
   const [martinaData, setMartinaData] = useState(() => {
+    if (tenant.dynamicTenantId) return createDynamicTenantPersonDefaults() as any
     if (tenant.isOeffentlich) return loadStammdaten('oeffentlich', 'martina') as any
     if (tenant.isVk2) {
       return {
@@ -3898,6 +3945,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     return buildK2PersonStateForAdmin('martina') as any
   })
   const [georgData, setGeorgData] = useState(() => {
+    if (tenant.dynamicTenantId) return createDynamicTenantPersonDefaults() as any
     if (tenant.isOeffentlich) return loadStammdaten('oeffentlich', 'georg') as any
     if (tenant.isVk2) {
       return {
@@ -3913,7 +3961,9 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     return buildK2PersonStateForAdmin('georg') as any
   })
   const [galleryData, setGalleryData] = useState<any>(() =>
-    tenant.isOeffentlich
+    tenant.dynamicTenantId
+      ? createDynamicTenantGalleryDefaults(dynamicFocusDirectionFromUrl)
+      : tenant.isOeffentlich
       ? (loadStammdaten('oeffentlich', 'gallery') as any)
       : {
           name: K2_STAMMDATEN_DEFAULTS.gallery.name,
@@ -3938,6 +3988,14 @@ function ScreenshotExportAdmin(props?: AdminProps) {
           internetShopNotSetUp: true
         }
   )
+  const currentDynamicFocusDirection = normalizeAdminFocusDirection(
+    Array.isArray(galleryData?.focusDirections) && galleryData.focusDirections[0]
+      ? galleryData.focusDirections[0]
+      : dynamicFocusDirectionFromUrl
+  )
+  const currentDynamicTenantGalleryPath = tenant.dynamicTenantId
+    ? buildDynamicTenantGalleryPath(tenant.dynamicTenantId, currentDynamicFocusDirection)
+    : dynamicTenantGalleryPath
 
   // Seitengestaltung (Willkommensseite & Galerie-Vorschau) – K2 vs. ök2 getrennt
   const [pageContent, setPageContent] = useState<PageContentGalerie>(() =>
@@ -4116,16 +4174,15 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       setDocuments(Array.isArray(data.documents) ? data.documents : [])
       if (data.designSettings && typeof data.designSettings === 'object') setDesignSettings({ ...K2_ORANGE_DESIGN, ...data.designSettings } as any)
       setPageTextsState(mergeDynamicTenantPageTexts(data.pageTexts, dynamicFocusDirectionFromUrl))
-      if (data.martina && typeof data.martina === 'object') setMartinaData({ ...dynamicPersonDefaults, ...data.martina } as any)
-      else setMartinaData(dynamicPersonDefaults as any)
-      if (data.georg && typeof data.georg === 'object') setGeorgData({ ...dynamicPersonDefaults, ...data.georg } as any)
-      else setGeorgData(dynamicPersonDefaults as any)
+      setMartinaData(sanitizeDynamicTenantPersonData(data.martina) as any)
+      setGeorgData(sanitizeDynamicTenantPersonData(data.georg) as any)
       if (data.gallery && typeof data.gallery === 'object') {
         const incomingGallery = data.gallery as Record<string, unknown>
         const incomingFocus = Array.isArray(incomingGallery.focusDirections) && incomingGallery.focusDirections.length > 0
-          ? [normalizeAdminFocusDirection(incomingGallery.focusDirections[0])]
-          : [dynamicFocusDirectionFromUrl]
-        setGalleryData({ ...dynamicGalleryDefaults, ...incomingGallery, focusDirections: incomingFocus })
+          ? normalizeAdminFocusDirection(incomingGallery.focusDirections[0])
+          : dynamicFocusDirectionFromUrl
+        const effectiveFocus = dynamicFocusDirectionFromUrl !== DEFAULT_OEK2_FOCUS_DIRECTION_ID ? dynamicFocusDirectionFromUrl : incomingFocus
+        setGalleryData(sanitizeDynamicTenantGalleryData(incomingGallery, effectiveFocus) as any)
       } else setGalleryData(dynamicGalleryDefaults as any)
       const pc = data.pageContentGalerie ?? data.pageContent
       if (pc != null) {
@@ -4636,6 +4693,10 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const saveAllForVorschau = () => {
     const run = async () => {
       try {
+        if (tenant.dynamicTenantId) {
+          await saveDynamicTenantStateToServer({ silent: true })
+          return
+        }
         if (tenant.isVk2) {
           saveVk2Stammdaten(vk2Stammdaten)
         } else if (!tenant.isOeffentlich) {
@@ -4682,9 +4743,58 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     alert('✅ Musterdaten entfernt. Trage jetzt deine eigenen Daten ein.')
   }
 
-  // Stammdaten speichern - bei ök2: Demo-Stammdaten (inkl. Mein Weg) in k2-oeffentlich-stammdaten-*; bei VK2 in k2-vk2-stammdaten; K2: echte Stammdaten
+  const buildDynamicTenantExportPayload = () => {
+    const focusDirection = normalizeAdminFocusDirection(
+      Array.isArray(galleryData?.focusDirections) && galleryData.focusDirections[0]
+        ? galleryData.focusDirections[0]
+        : dynamicFocusDirectionFromUrl
+    )
+    const cleanGallery = sanitizeDynamicTenantGalleryData({ ...(galleryData || {}), focusDirections: [focusDirection] }, focusDirection)
+    const cleanPageTexts = mergeDynamicTenantPageTexts(pageTexts, focusDirection)
+    const pageContentGalerieRaw = typeof pageContent === 'object' && pageContent != null ? JSON.stringify(pageContent) : undefined
+    return {
+      martina: sanitizeDynamicTenantPersonData(martinaData),
+      georg: sanitizeDynamicTenantPersonData(georgData),
+      gallery: cleanGallery,
+      artworks: sortArtworksFavoritesFirstThenNewest(Array.isArray(allArtworks) ? [...allArtworks] : []),
+      events: Array.isArray(events) ? events.slice(0, 100) : [],
+      documents: Array.isArray(documents) ? documents.slice(0, 100) : [],
+      designSettings: designSettings || {},
+      pageTexts: cleanPageTexts,
+      pageContentGalerie: pageContentGalerieRaw,
+      exportedAt: new Date().toISOString(),
+      version: 1,
+      buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
+      tenantId: tenant.dynamicTenantId,
+    }
+  }
+
+  const saveDynamicTenantStateToServer = async (options?: { silent?: boolean }): Promise<{ success: boolean; size?: number; error?: string }> => {
+    if (!tenant.dynamicTenantId) return { success: false, error: 'Kein dynamischer Mandant' }
+    const silent = options?.silent === true
+    const data = buildDynamicTenantExportPayload()
+    const json = JSON.stringify(data)
+    if (json.length > 5000000) return { success: false, error: 'Daten zu groß. Bitte reduzieren.' }
+    const result = await apiPost(WRITE_GALLERY_DATA_API_URL, json, { timeoutMs: 30000 })
+    if (result.success && result.data) {
+      if (silent) console.log('✅ Galerie-Daten gespeichert (Mandant)', tenant.dynamicTenantId)
+      return { success: true, size: json.length }
+    }
+    return { success: false, error: result.error || 'Daten konnten nicht gespeichert werden.' }
+  }
+
+  // Stammdaten speichern - bei ök2: Demo-Stammdaten (inkl. Mein Weg) in k2-oeffentlich-stammdaten-*; bei VK2 in k2-vk2-stammdaten; dynamische Mandanten: direkt in eigenen Server-Blob; K2: echte Stammdaten
   const saveStammdaten = () => {
     return new Promise<void>((resolve, reject) => {
+      if (tenant.dynamicTenantId) {
+        saveDynamicTenantStateToServer({ silent: true })
+          .then((result) => {
+            if (result.success) resolve()
+            else reject(new Error(result.error || 'Daten konnten nicht gespeichert werden.'))
+          })
+          .catch(reject)
+        return
+      }
       if (tenant.isOeffentlich) {
         try {
           const { welcomeImage: _w, galerieCardImage: _c, virtualTourImage: _v, ...galleryStammdaten } = galleryData
@@ -4970,37 +5080,13 @@ function ScreenshotExportAdmin(props?: AdminProps) {
 
         // Dynamischer Mandant (?tenantId=): nur State → API, kein localStorage
         if (tenant.dynamicTenantId) {
-          const exportedAt = new Date().toISOString()
-          const artworksForDyn = sortArtworksFavoritesFirstThenNewest(Array.isArray(allArtworks) ? [...allArtworks] : [])
-          const pageContentGalerieRaw = typeof pageContent === 'object' && pageContent != null ? JSON.stringify(pageContent) : undefined
-          const data = {
-            martina: martinaData || {},
-            georg: georgData || {},
-            gallery: galleryData || {},
-            artworks: artworksForDyn,
-            events: Array.isArray(events) ? events.slice(0, 100) : [],
-            documents: Array.isArray(documents) ? documents.slice(0, 100) : [],
-            designSettings: designSettings || {},
-            pageTexts: pageTexts ?? {},
-            pageContentGalerie: pageContentGalerieRaw,
-            exportedAt,
-            version: 1,
-            buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
-            tenantId: tenant.dynamicTenantId,
-          }
-          const json = JSON.stringify(data)
-          if (json.length > 5000000) {
-            if (isMountedRef.current && !silent) setIsDeploying(false)
-            if (!silent) alert('⚠️ Daten zu groß. Bitte reduzieren.')
-            return
-          }
-          apiPost(WRITE_GALLERY_DATA_API_URL, json, { timeoutMs: 30000 }).then(result => {
+          saveDynamicTenantStateToServer({ silent }).then(result => {
             if (!silent && isMountedRef.current) setIsDeploying(false)
-            if (result.success && result.data) {
+            if (result.success) {
               if (silent) console.log('✅ Galerie-Daten gespeichert (Mandant)', tenant.dynamicTenantId)
               else {
                 setSyncStatusBar({ phase: 'success', message: 'Gesendet.' })
-                setPublishSuccessModal({ size: json.length, version: 1 })
+                setPublishSuccessModal({ size: result.size || 0, version: 1 })
               }
             } else {
               if (!silent) {
@@ -5652,18 +5738,17 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       setEvents(Array.isArray(data.events) ? data.events : [])
       setDocuments(Array.isArray(data.documents) ? data.documents : [])
       if (data.designSettings && typeof data.designSettings === 'object') setDesignSettings(prev => ({ ...prev, ...(data.designSettings as object) } as any))
-      if (data.pageTexts && typeof data.pageTexts === 'object') setPageTextsState(prev => ({ ...prev, ...(data.pageTexts as object) } as any))
-      const dynamicPersonDefaults = createDynamicTenantPersonDefaults()
-      const dynamicGalleryDefaults = createDynamicTenantGalleryDefaults(dynamicFocusDirectionFromUrl)
-      if (data.martina && typeof data.martina === 'object') setMartinaData({ ...dynamicPersonDefaults, ...data.martina } as any)
-      if (data.georg && typeof data.georg === 'object') setGeorgData({ ...dynamicPersonDefaults, ...data.georg } as any)
+      setPageTextsState(mergeDynamicTenantPageTexts(data.pageTexts, dynamicFocusDirectionFromUrl))
       if (data.gallery && typeof data.gallery === 'object') {
         const incomingGallery = data.gallery as Record<string, unknown>
         const incomingFocus = Array.isArray(incomingGallery.focusDirections) && incomingGallery.focusDirections.length > 0
-          ? [normalizeAdminFocusDirection(incomingGallery.focusDirections[0])]
-          : [dynamicFocusDirectionFromUrl]
-        setGalleryData({ ...dynamicGalleryDefaults, ...incomingGallery, focusDirections: incomingFocus })
+          ? normalizeAdminFocusDirection(incomingGallery.focusDirections[0])
+          : dynamicFocusDirectionFromUrl
+        const effectiveFocus = dynamicFocusDirectionFromUrl !== DEFAULT_OEK2_FOCUS_DIRECTION_ID ? dynamicFocusDirectionFromUrl : incomingFocus
+        setGalleryData(sanitizeDynamicTenantGalleryData(incomingGallery, effectiveFocus) as any)
       }
+      setMartinaData(sanitizeDynamicTenantPersonData(data.martina) as any)
+      setGeorgData(sanitizeDynamicTenantPersonData(data.georg) as any)
       const pc = data.pageContentGalerie ?? data.pageContent
       if (pc != null) {
         const parsed = typeof pc === 'string' ? (() => { try { return JSON.parse(pc) } catch { return {} } })() : pc
@@ -14558,16 +14643,22 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               </div>
               {!dtCompact ? <span style={{ color: s.muted, fontSize: '1.2rem' }}>→</span> : <span style={{ color: s.muted, fontSize: '0.75rem' }}>·</span>}
               {/* Schritt 2: Galerie ansehen – erst Bild in localStorage speichern, dann öffnen */}
-              <button type="button" onClick={() => {
+              <button type="button" onClick={async () => {
                 // Erst alles in localStorage sichern, dann Galerie im gleichen Tab öffnen
                 // (gleicher Tab = localStorage sofort lesbar, neues Foto wird sofort angezeigt)
-                if (!tenant.dynamicTenantId) {
+                if (tenant.dynamicTenantId) {
+                  const saved = await saveDynamicTenantStateToServer({ silent: true })
+                  if (!saved.success) {
+                    setPublishErrorMsg(saved.error || 'Daten konnten nicht gespeichert werden.')
+                    return
+                  }
+                } else {
                   const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
                   setPageContentGalerie(pageContent, designTenant)
                   setPageTexts(pageTexts, designTenant)
                 }
                 const route = tenant.dynamicTenantId
-                  ? dynamicTenantGalleryPath
+                  ? currentDynamicTenantGalleryPath
                   : tenant.isVk2
                   ? PROJECT_ROUTES.vk2.galerie
                   : tenant.isOeffentlich
@@ -14604,6 +14695,11 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         let contentToSave: PageContentGalerie = { ...pageContent }
                         if (tenant.dynamicTenantId) {
                           setPageContent(contentToSave)
+                          const saved = await saveDynamicTenantStateToServer({ silent: true })
+                          if (!saved.success) {
+                            alert('Speichern fehlgeschlagen: ' + (saved.error || 'Daten konnten nicht gespeichert werden.'))
+                            return
+                          }
                           setDesignSaveFeedback('ok')
                           setTimeout(() => setDesignSaveFeedback(null), 6000)
                           return
@@ -14677,7 +14773,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         alert('Fehler beim Speichern: ' + (e instanceof Error ? e.message : String(e)))
                       }
                     }} style={{ padding: dtCompact ? '0.28rem 0.55rem' : '0.5rem 1.25rem', fontSize: dtCompact ? '0.78rem' : '1rem', fontWeight: 700, borderRadius: dtCompact ? 8 : 10 }}>
-                      <span style={{ fontSize: '0.8rem', fontWeight: 700, marginRight: '0.25rem' }}>3</span>{dtCompact ? '💾' : '💾 Speichern (auf diesem Gerät)'}
+                      <span style={{ fontSize: '0.8rem', fontWeight: 700, marginRight: '0.25rem' }}>3</span>{dtCompact ? '💾' : tenant.dynamicTenantId ? '💾 Speichern' : '💾 Speichern (auf diesem Gerät)'}
                     </button>
                 }
               </div>
@@ -15380,10 +15476,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
         </div>
       )}
 
-      {/* Dynamischer Mandant: Hinweis – Änderungen nur über Veröffentlichen speichern */}
+      {/* Dynamischer Mandant: Hinweis – Änderungen gehen in den eigenen Mandanten-Serverstand */}
       {tenant.dynamicTenantId && !dynamicTenantLoading && (
         <div style={{ background: 'rgba(181,74,30,0.12)', border: '1px solid rgba(181,74,30,0.4)', padding: '0.5rem 1rem', fontSize: '0.85rem', color: s.text, display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <span>📌 Du bearbeitest die Galerie <strong>{tenant.dynamicTenantId}</strong>. Änderungen mit „Veröffentlichen“ speichern.</span>
+          <span>📌 Du bearbeitest die Galerie <strong>{tenant.dynamicTenantId}</strong>. „Speichern“ und „Veröffentlichen“ schreiben in genau diesen Mandanten, nicht in K2.</span>
         </div>
       )}
 
@@ -15599,7 +15695,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 onClick={() => {
                   if (activeTab === 'werke') {
                     const galeriePath = tenant.dynamicTenantId
-                      ? dynamicTenantGalleryPath
+                      ? currentDynamicTenantGalleryPath
                       : tenant.isVk2
                         ? PROJECT_ROUTES.vk2.galerie
                         : PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
@@ -15724,7 +15820,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
 
               {/* Galerie / Mitglieder ansehen – K2/ök2: Eintrittseite (nicht Vorschau), damit Modal „Wähle deinen Einstieg“ erscheint; VK2: Vorschau */}
               <Link
-                to={tenant.dynamicTenantId ? dynamicTenantGalleryPath : tenant.isVk2 ? PROJECT_ROUTES.vk2.galerieVorschau : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie}
+                to={tenant.dynamicTenantId ? currentDynamicTenantGalleryPath : tenant.isVk2 ? PROJECT_ROUTES.vk2.galerieVorschau : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie}
                 state={{
                   fromAdmin: true,
                   fromAdminTab: activeTab,
@@ -20792,8 +20888,12 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                                   name="focusDirection"
                                   checked={!!selected}
                                   onChange={() => {
-                                    const nextData = { ...galleryData, focusDirections: [id] }
+                                    const nextFocus = normalizeAdminFocusDirection(id)
+                                    const nextData = { ...galleryData, focusDirections: [nextFocus] }
                                     setGalleryData(nextData)
+                                    if (tenant.dynamicTenantId) {
+                                      setPageTextsState(createDynamicTenantPageTexts(nextFocus))
+                                    }
                                     if (tenant.isOeffentlich) {
                                       try { persistStammdaten('oeffentlich', 'gallery', nextData) } catch (_) {}
                                     }

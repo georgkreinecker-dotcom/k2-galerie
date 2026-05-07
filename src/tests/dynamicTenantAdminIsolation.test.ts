@@ -18,16 +18,19 @@ describe('Dynamischer Lizenznehmer-Admin – keine K2-LocalStorage-Daten', () =>
 
   it('nutzt für Galerie ansehen den Mandanten-Link /g/:tenantId statt /galerie', () => {
     expect(source).toContain('function buildDynamicTenantGalleryPath')
-    expect(source).toContain("tenant.dynamicTenantId ? dynamicTenantGalleryPath")
+    expect(source).toContain("tenant.dynamicTenantId ? currentDynamicTenantGalleryPath")
   })
 
   it('setzt neue Mandanten ohne echte K2-Stammdaten und mit Sparte aus der URL auf', () => {
     expect(source).toContain("function createDynamicTenantGalleryDefaults")
+    expect(source).toContain("function sanitizeDynamicTenantGalleryData")
     expect(source).toContain("function createDynamicTenantPageTexts")
     expect(source).toContain("function mergeDynamicTenantPageTexts")
     expect(source).toContain("name: 'Meine Galerie'")
     expect(source).toContain("heroTitle: 'Meine Galerie'")
     expect(source).toContain("focusDirections: [focusDirection]")
+    expect(source).toContain("if (tenant.dynamicTenantId) return createDynamicTenantPersonDefaults() as any")
+    expect(source).toContain("tenant.dynamicTenantId\n      ? createDynamicTenantGalleryDefaults(dynamicFocusDirectionFromUrl)")
     expect(source).toContain("setMartinaData(dynamicPersonDefaults as any)")
     expect(source).toContain("setPageTextsState(createDynamicTenantPageTexts(dynamicFocusDirectionFromUrl))")
     expect(source).toContain("setPageTextsState(mergeDynamicTenantPageTexts(data.pageTexts, dynamicFocusDirectionFromUrl))")
@@ -47,5 +50,13 @@ describe('Dynamischer Lizenznehmer-Admin – keine K2-LocalStorage-Daten', () =>
     expect(source).toContain('isFocusDirectionTenant\n                      ? getCategoriesForDirection')
     expect(source).toContain('const previewCategory = isFocusDirectionTenant')
     expect(source).toContain('const previewTypLabel = isFocusDirectionTenant')
+  })
+
+  it('speichert Lizenznehmer-Stammdaten nicht in K2-LocalStorage, sondern in den eigenen Mandanten-Blob', () => {
+    expect(source).toContain("const saveDynamicTenantStateToServer")
+    expect(source).toContain("tenantId: tenant.dynamicTenantId")
+    expect(source).toMatch(/if \(tenant\.dynamicTenantId\) \{\s+saveDynamicTenantStateToServer\(\{ silent: true \}\)/)
+    expect(source).toContain("await saveDynamicTenantStateToServer({ silent: true })")
+    expect(source).toContain("„Speichern“ und „Veröffentlichen“ schreiben in genau diesen Mandanten, nicht in K2.")
   })
 })
