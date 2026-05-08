@@ -14,6 +14,7 @@ import '../App.css'
 const SAFE_TENANT_ID = /^[a-z0-9-]{1,64}$/
 const DEFAULT_FOCUS_DIRECTION: FocusDirectionId = 'kunst'
 type TenantGalleryArtwork = { number?: string; title?: string; imageRef?: string; image?: string; imageUrl?: string }
+type PageContentGalTenant = { welcomeImage?: string; virtualTourImage?: string; virtualTourVideo?: string }
 
 function normalizeFocusDirection(raw: string | null): FocusDirectionId {
   const value = String(raw || '').trim().toLowerCase()
@@ -117,10 +118,13 @@ export default function GalerieTenantPage() {
   const parsedPageContent = typeof pageContentRaw === 'string'
     ? (() => { try { return JSON.parse(pageContentRaw) } catch { return {} } })()
     : (pageContentRaw || {})
-  const welcomeImage = typeof parsedPageContent === 'object' && parsedPageContent != null
-    ? String((parsedPageContent as { welcomeImage?: string }).welcomeImage || '').trim()
-    : ''
   const galleryStamm = (data?.gallery && typeof data.gallery === 'object') ? data.gallery as Record<string, unknown> : {}
+  const pageContentParsed = (typeof parsedPageContent === 'object' && parsedPageContent != null
+    ? parsedPageContent
+    : {}) as PageContentGalTenant
+  const welcomeImage = String(pageContentParsed.welcomeImage || '').trim()
+  const virtualTourImage = String(pageContentParsed.virtualTourImage || galleryStamm.virtualTourImage || '').trim()
+  const virtualTourVideo = String(pageContentParsed.virtualTourVideo || '').trim()
   const martinaStamm = (data?.martina && typeof data.martina === 'object') ? data.martina as Record<string, unknown> : {}
   const georgStamm = (data?.georg && typeof data.georg === 'object') ? data.georg as Record<string, unknown> : {}
   const impressumEmail = String(galleryStamm.email || martinaStamm.email || georgStamm.email || '').trim()
@@ -176,41 +180,49 @@ export default function GalerieTenantPage() {
         color: '#1f1a15',
       }}
     >
-      <div style={{ position: 'fixed', top: '0.9rem', left: '1rem', zIndex: 30 }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '0.75rem',
+          marginBottom: '0.7rem',
+        }}
+      >
         <Link to="/" style={{ color: '#6b5848', textDecoration: 'none', fontSize: '0.86rem', fontWeight: 600 }}>
           {PRODUCT_BRAND_NAME} ©
         </Link>
-      </div>
-      <div style={{ position: 'fixed', top: '0.9rem', right: '1rem', zIndex: 30, display: 'flex', gap: '0.5rem' }}>
-        <button
-          type="button"
-          onClick={() => { void handleShare() }}
-          style={{
-            border: '1px solid #d1c0ae',
-            background: '#fff',
-            color: '#5f4c3d',
-            borderRadius: 999,
-            padding: '0.42rem 0.7rem',
-            fontSize: '0.82rem',
-            cursor: 'pointer',
-          }}
-        >
-          📤 Teilen
-        </button>
-        <a
-          href={adminUrl}
-          style={{
-            border: '1px solid #d1c0ae',
-            background: '#fff',
-            color: '#5f4c3d',
-            borderRadius: 999,
-            padding: '0.42rem 0.7rem',
-            fontSize: '0.82rem',
-            textDecoration: 'none',
-          }}
-        >
-          🔐 Admin
-        </a>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <button
+            type="button"
+            onClick={() => { void handleShare() }}
+            style={{
+              border: '1px solid #d1c0ae',
+              background: '#fff',
+              color: '#5f4c3d',
+              borderRadius: 999,
+              padding: '0.42rem 0.7rem',
+              fontSize: '0.82rem',
+              cursor: 'pointer',
+            }}
+          >
+            📤 Teilen
+          </button>
+          <a
+            href={adminUrl}
+            style={{
+              border: '1px solid #d1c0ae',
+              background: '#fff',
+              color: '#5f4c3d',
+              borderRadius: 999,
+              padding: '0.42rem 0.7rem',
+              fontSize: '0.82rem',
+              textDecoration: 'none',
+            }}
+          >
+            🔐 Admin
+          </a>
+        </div>
       </div>
       <header
         id="start"
@@ -239,6 +251,7 @@ export default function GalerieTenantPage() {
       >
         {[
           { href: '#willkommen', label: 'Willkommen' },
+          { href: '#rundgang', label: 'Rundgang' },
           { href: '#werke', label: 'Werke' },
           { href: '#admin', label: 'Admin' },
           { href: '#impressum', label: 'Impressum' },
@@ -293,6 +306,47 @@ export default function GalerieTenantPage() {
             Willkommen in meiner Galerie
           </div>
         )}
+      </section>
+      <section
+        id="rundgang"
+        style={{
+          marginBottom: '1.5rem',
+          background: TEMPLATE.sectionBg,
+          border: TEMPLATE.sectionBorder,
+          borderRadius: TEMPLATE.sectionRadius,
+          padding: TEMPLATE.sectionPadding,
+        }}
+      >
+        <h2 style={{ margin: '0 0 0.75rem', fontSize: '1.08rem', color: '#1f1a15' }}>Virtueller Rundgang</h2>
+        <div
+          style={{
+            borderRadius: 10,
+            overflow: 'hidden',
+            border: '1px solid #ddd2c4',
+            background: 'linear-gradient(135deg, #ede4d8, #f6f0e6)',
+            minHeight: 220,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {virtualTourVideo ? (
+            <video
+              src={virtualTourVideo}
+              controls
+              playsInline
+              style={{ width: '100%', maxHeight: 360, display: 'block', objectFit: 'cover' }}
+            />
+          ) : virtualTourImage ? (
+            <img
+              src={virtualTourImage}
+              alt="Virtueller Rundgang"
+              style={{ width: '100%', maxHeight: 360, objectFit: 'cover', display: 'block' }}
+            />
+          ) : (
+            <div style={{ color: '#6b6055', fontWeight: 600, fontSize: '0.95rem' }}>Rundgang folgt</div>
+          )}
+        </div>
       </section>
       {isMusterStart && (
         <p style={{ textAlign: 'center', color: '#5f564d', margin: '-0.3rem 0 1.2rem', fontWeight: 600 }}>
