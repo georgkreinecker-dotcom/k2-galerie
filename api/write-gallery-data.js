@@ -14,6 +14,32 @@ const REPO_NAME = 'k2-galerie'
 const FILE_PATH = 'public/gallery-data.json'
 const LEGACY_TENANTS = ['k2', 'oeffentlich', 'vk2']
 
+/**
+ * Lizenz-Mandanten: kein K2-Produktionsbestand (viele Werke mit K2-M-/K2-K-/…-Nummern) in den Mandanten-Blob schreiben.
+ * @returns {{ status: number, body: object } | null}
+ */
+function rejectK2StyleBulkForNonLegacyTenant(tenantId, artworks) {
+  if (LEGACY_TENANTS.includes(tenantId)) return null
+  if (!Array.isArray(artworks) || artworks.length < 15) return null
+  let k2Style = 0
+  for (const a of artworks) {
+    const n = String(a?.number ?? a?.id ?? '').trim()
+    if (/^K2-[MGKSO]-\d+/i.test(n)) k2Style++
+  }
+  const ratio = k2Style / artworks.length
+  if (k2Style >= 15 && ratio >= 0.35) {
+    return {
+      status: 400,
+      body: {
+        error: 'Speichern abgelehnt (Mandantenschutz)',
+        hint:
+          'Auffällig viele Werke mit K2-Galerie-Nummerierung (K2-M-/K2-K-…). Lizenz-Galerien enthalten keine K2-Produktionsbestände. Admin mit korrektem ?tenantId= öffnen oder Support.',
+      },
+    }
+  }
+  return null
+}
+
 /** Erlaubt: Kleinbuchstaben, Ziffern, Bindestrich; 1–64 Zeichen. */
 function isSafeTenantId(id) {
   if (!id || typeof id !== 'string') return false
@@ -164,6 +190,8 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Keine Chunks gefunden', hint: 'Upload erneut starten.' })
       }
       merged.artworks = allArtworks
+      const rejMerge = rejectK2StyleBulkForNonLegacyTenant(tenantId, allArtworks)
+      if (rejMerge) return res.status(rejMerge.status).json(rejMerge.body)
       const finalBody = JSON.stringify(merged)
       const BLOB_PATHNAME = getBlobPath(tenantId)
       await put(BLOB_PATHNAME, finalBody, {
@@ -204,6 +232,9 @@ export default async function handler(req, res) {
   try {
     artworksCount = Array.isArray(parsed.artworks) ? parsed.artworks.length : 0
   } catch {}
+
+  const rejDirect = rejectK2StyleBulkForNonLegacyTenant(tenantId, parsed.artworks)
+  if (rejDirect) return res.status(rejDirect.status).json(rejDirect.body)
 
   // 1. Primär: Vercel Blob (ein Aufruf, gesamte Daten)
   try {

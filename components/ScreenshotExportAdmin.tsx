@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { createPortal, flushSync } from 'react-dom'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { useTenant } from '../src/context/TenantContext'
+import { useTenant, resolveDynamicTenantIdFromLocation } from '../src/context/TenantContext'
 import QRCode from 'qrcode'
 import {
   PROJECT_ROUTES,
@@ -1940,9 +1940,20 @@ try {
   // Ignoriere Import-Fehler
 }
 
+/** Lizenz-Mandant: Werke nur im Server-Blob, nie aus k2-artworks. Gleiche Regel wie TenantContext + URL (ein Frame kann context vor search aktualisieren). */
+function adminUsesDynamicTenantBlob(tenant: ReturnType<typeof useTenant>): boolean {
+  if (tenant.dynamicTenantId) return true
+  if (typeof window === 'undefined') return false
+  try {
+    return !!resolveDynamicTenantIdFromLocation(window.location.pathname, window.location.search || '')
+  } catch {
+    return false
+  }
+}
+
 // Phase 1.2: Eine Schicht – Schreiben nur über artworksStorage. Speichermix: große Bilder in IndexedDB.
 async function saveArtworks(tenant: ReturnType<typeof useTenant>, artworks: any[]): Promise<boolean> {
-  if (tenant.dynamicTenantId) return true
+  if (adminUsesDynamicTenantBlob(tenant)) return true
   if (tenant.isVk2) return false
   const key = tenant.getArtworksKey()
   let ok = await saveArtworksByKeyWithImageStore(key!, artworks, { filterK2Only: tenant.tenantId === 'k2', allowReduce: true })
@@ -1978,7 +1989,7 @@ async function saveArtworks(tenant: ReturnType<typeof useTenant>, artworks: any[
 
 /** Lädt Werke mit aufgelösten Bildern aus IndexedDB (Speichermix). Für Anzeige. */
 async function loadArtworksWithResolvedImages(tenant: ReturnType<typeof useTenant>): Promise<any[]> {
-  if (tenant.dynamicTenantId) return []
+  if (adminUsesDynamicTenantBlob(tenant)) return []
   if (tenant.isVk2) return []
   const key = tenant.getArtworksKey()
   if (!key) return []
@@ -1993,7 +2004,7 @@ async function loadArtworksWithResolvedImages(tenant: ReturnType<typeof useTenan
 /** Lädt Werke ROH – über artworksStorage (Phase 1.2). Ohne Anzeige-Filter, für Schreibvorgänge.
  * ök2: Nur wenn Key fehlt (null) → Muster. Wenn Key existiert und ist [] (User hat alle gelöscht) → [] behalten, Muster nie wieder anzeigen. */
 function loadArtworksRaw(tenant: ReturnType<typeof useTenant>): any[] {
-  if (tenant.dynamicTenantId) return []
+  if (adminUsesDynamicTenantBlob(tenant)) return []
   if (tenant.isVk2) return []
   const key = tenant.getArtworksKey()
   if (tenant.isOeffentlich) {
@@ -2027,7 +2038,7 @@ function parseK2DuplicateRenumberParts(
 }
 
 function loadArtworks(tenant: ReturnType<typeof useTenant>): any[] {
-  if (tenant.dynamicTenantId) return []
+  if (adminUsesDynamicTenantBlob(tenant)) return []
   if (tenant.isVk2) return []
   const key = tenant.getArtworksKey()
   if (tenant.isOeffentlich) {
@@ -5775,7 +5786,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
 
   // Werke aus localStorage laden – bei Kontextwechsel (K2/ök2/VK2) neu laden, sonst zeigt Admin nach Guide-Klick weiter K2-Daten
   useEffect(() => {
-    if (tenant.dynamicTenantId) {
+    if (effectiveDynamicTenantId) {
       setAllArtworksSafe([])
       return
     }
@@ -5858,7 +5869,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       }
     }, 400)
     return () => { isMounted = false; clearTimeout(t) }
-  }, [location.search, tenant.dynamicTenantId])
+  }, [location.search, effectiveDynamicTenantId])
   
   // WICHTIG: Event-Listener für Mobile-Updates (damit Mobile-Werke im Admin angezeigt werden)
   // KRITISCH: K2 nie mit leerer Liste überschreiben – verhindert „alle Werke verschwunden“ nach Speichern
@@ -5872,7 +5883,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const lastArtworkSaveRef = useRef<Promise<boolean>>(Promise.resolve(true))
   const hasAutoLoadedFromServerRef = useRef(false)
   useEffect(() => {
-    if (tenant.dynamicTenantId) return
+    if (effectiveDynamicTenantId) return
     const handleArtworksUpdate = (ev: Event) => {
       if (ignoreArtworksUpdatedRef.current) {
         console.log('🔄 artworks-updated ignoriert (gerade selbst gespeichert)')
@@ -5915,11 +5926,11 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     return () => {
       window.removeEventListener('artworks-updated', handleArtworksUpdate)
     }
-  }, [tenant.dynamicTenantId])
+  }, [effectiveDynamicTenantId])
 
   // Sync über Tabs: Wenn k2-artworks in anderem Tab geändert wird (z. B. „Vom Server laden“ in Galerie), Admin neu laden – damit Mac Galerie und Admin gleiche Daten zeigen
   useEffect(() => {
-    if (tenant.dynamicTenantId) return
+    if (effectiveDynamicTenantId) return
     const artworksKey = tenant.getArtworksKey()
     if (!artworksKey) return
     const onStorage = (e: StorageEvent) => {
@@ -5953,10 +5964,10 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   /** Tenantfähig: Daten von Vercel laden (K2/ök2: Werke mergen; ök2/VK2: Backup-Format in Keys schreiben; dynamischer Mandant: von API in State). options.silent = true: kein Alert, nur Sync-Balken (für automatisches Laden beim Neuladen). */
   const handleLoadFromServer = async (options?: { silent?: boolean }) => {
     const silent = options?.silent === true
-    if (tenant.dynamicTenantId) {
+    if (effectiveDynamicTenantId) {
       setIsLoadingFromServer(true)
       setSyncStatusBar({ phase: 'loading', message: 'Daten werden geladen…' })
-      const url = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&tenantId=${encodeURIComponent(tenant.dynamicTenantId)}`
+      const url = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&tenantId=${encodeURIComponent(effectiveDynamicTenantId)}`
       const result = await apiGet(url, { retryOnce: false })
       setIsLoadingFromServer(false)
       if (!result.success) {
@@ -6258,7 +6269,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
 
   /** K2: Server-Meta korrigieren (Stammdaten/Events/Design), ohne Server-Werke anzutasten. */
   const handleFixServerMetaK2 = useCallback(async () => {
-    if (tenant.isOeffentlich || tenant.isVk2 || tenant.dynamicTenantId) {
+    if (tenant.isOeffentlich || tenant.isVk2 || effectiveDynamicTenantId) {
       alert('Dieser Fix ist nur für K2 (ohne dynamischen Mandanten) gedacht.')
       return
     }
@@ -6287,22 +6298,22 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       setTimeout(() => setSyncStatusBar({ phase: 'idle', message: '' }), 8000)
       alert(`❌ Meta-Korrektur fehlgeschlagen:\n\n${e instanceof Error ? e.message : String(e)}`)
     }
-  }, [tenant])
+  }, [tenant, effectiveDynamicTenantId])
 
   // REGEL: Nach jedem Neuladen des Geräts (Seite/Admin geöffnet) automatisch Daten vom Vercel-Server holen – keine manuelle Eingabe nötig. Einmal pro Mount, nur K2, still (kein Alert).
   useEffect(() => {
-    if (tenant.isOeffentlich || tenant.isVk2 || tenant.dynamicTenantId) return
+    if (tenant.isOeffentlich || tenant.isVk2 || effectiveDynamicTenantId) return
     if (hasAutoLoadedFromServerRef.current) return
     hasAutoLoadedFromServerRef.current = true
     const t = setTimeout(() => {
       handleLoadFromServer({ silent: true })
     }, 1500)
     return () => clearTimeout(t)
-  }, [tenant.isOeffentlich, tenant.isVk2, tenant.dynamicTenantId])
+  }, [tenant.isOeffentlich, tenant.isVk2, effectiveDynamicTenantId])
 
   /** K2: Werke aus der veröffentlichten gallery-data.json (Vercel) laden und in k2-artworks wiederherstellen. Server-Stand als Basis, lokale Bilddaten (imageUrl/imageRef) werden erhalten – keine Überschreibung mit leeren Bildern (z. B. 30–48). */
   const handleRestoreWerkeFromPublished = async () => {
-    if (tenant.isOeffentlich || tenant.isVk2) return
+    if (tenant.isOeffentlich || tenant.isVk2 || effectiveDynamicTenantId) return
     setIsRestoringWerkeFromPublished(true)
     const urlPrimary = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&_=${Math.random()}`
     const urlFallback = `${CENTRAL_GALLERY_DATA_FALLBACK_URL}?v=${Date.now()}&_=${Math.random()}`
@@ -6411,7 +6422,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
 
   // Dokumente aus localStorage laden – bei Kontextwechsel sofort (0 ms), damit richtiger Key/Kontext vor jedem Speichern gilt
   useEffect(() => {
-    if (tenant.dynamicTenantId) return
+    if (effectiveDynamicTenantId) return
     let isMounted = true
     try {
       const docs = loadDocuments()
@@ -6421,7 +6432,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       if (isMounted) setDocuments([])
     }
     return () => { isMounted = false }
-  }, [location.search])
+  }, [location.search, effectiveDynamicTenantId])
 
   // Speichern aus geöffnetem Social-Media-Dokument (postMessage vom Kind-Fenster)
   useEffect(() => {
@@ -6536,7 +6547,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     const search = typeof location !== 'undefined' ? (location.search || '').toLowerCase() : ''
     const urlSaysOeffentlich = search.includes('context=oeffentlich')
     const urlSaysVk2 = search.includes('context=vk2')
-    if (tenant.dynamicTenantId) {
+    if (effectiveDynamicTenantId) {
       // Kein Auto-Save – Speichern nur über „Veröffentlichen“ → write-gallery-data
     } else if (!tenant.isOeffentlich && !tenant.isVk2 && !urlSaysOeffentlich && !urlSaysVk2) {
       startAutoSave(getAllData)
@@ -6547,7 +6558,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       isMounted = false
       stopAutoSave()
     }
-  }, [tenant.tenantId, tenant.dynamicTenantId, tenant.isOeffentlich, tenant.isVk2, martinaData, georgData, galleryData, allArtworks, events, documents, designSettings, pageTexts])
+  }, [tenant.tenantId, effectiveDynamicTenantId, tenant.isOeffentlich, tenant.isVk2, martinaData, georgData, galleryData, allArtworks, events, documents, designSettings, pageTexts])
 
   // Event hinzufügen/bearbeiten
   const handleSaveEvent = () => {

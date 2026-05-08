@@ -1,10 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Lizenz-Admin `/admin?tenantId=…`: Event anlegen/ändern/löschen, Seite neu laden – Events müssen aus **gallery-data** (Mandanten-Blob) wieder da sein; bei Bedarf öffentliche Galerie `/g/<id>` kurz prüfen.
+**Was wir JETZT tun:** Kurz prüfen: Lizenz-Admin mit **`?tenantId=`** (auch **Dev-View** / **Projekt k2-galerie**) – keine K2-Werke in Liste/Blob; bei Bedarf **Veröffentlichen** testen.
 
-**Einordnung:** Eventplanung für **dynamische Mandanten** hing bisher an **`saveEvents` → `k2-events`**, weil **`tenant.tenantId`** dort **K2** ist. Laden lief über **API** – Speichern landete falsch und wirkte wie „wird nicht abgespeichert“. Jetzt: **`persistDynamicTenantEventsFn`** + **`saveDynamicTenantStateToServer`** mit **`events`-Override** im Payload (Rest aus State).
+**Einordnung:** **Mehrschichtig:** (1) **TenantContext** setzt **`dynamicTenantId`** auf APf-Pfaden. (2) **Admin** nutzt **`effectiveDynamicTenantId`** + **`adminUsesDynamicTenantBlob`** (URL-Spiegel zu Context), damit nie **`k2-artworks`** in den Mandanten-State rutscht. (3) **write-gallery-data** lehnt **K2-Bulk-Nummerierung** für Nicht-Legacy-**tenantId** ab.
 
-**Letzter Stand:** 08.05.26 – **Lizenz-Admin Eventplanung → Server-Blob:** **`ScreenshotExportAdmin`** – bei **`effectiveDynamicTenantId`** schreibt **`saveEvents`** nicht mehr in **`k2-events`**, sondern **POST write-gallery-data** mit aktueller Event-Liste (`buildDynamicTenantExportPayload` **`events`/`documents`-Overrides**). K2 / ök2 / VK2 unverändert. **qs:local** grün. **Commit:** `8c17c591` ✅ **main**
+**Letzter Stand:** 08.05.26 – **Lizenz-Mandant: K2-Leak mehrschichtig abgesichert:** **`adminUsesDynamicTenantBlob`** in **`ScreenshotExportAdmin`** (Werke laden/speichern + Effects: localStorage-Fallback, **`handleLoadFromServer`**, Auto-Load K2, Auto-Save, Dokumente, Restore, Meta-Fix) an **`effectiveDynamicTenantId`** / URL gekoppelt. **`api/write-gallery-data.js`:** **`rejectK2StyleBulkForNonLegacyTenant`** vor Blob-**put** (normal + chunked). Tests **`dynamicTenantAdminIsolation.test.ts`** erweitert. **`npm run build`** grün. **Commit:** _(nach Push)_ ✅ **main**
+
+**Letzter Stand:** 08.05.26 – **Lizenz-Admin Eventplanung → Server-Blob:** **`ScreenshotExportAdmin`** – bei **`effectiveDynamicTenantId`** schreibt **`saveEvents`** nicht mehr in **`k2-events`**, sondern **POST write-gallery-data** mit aktueller Event-Liste (`buildDynamicTenantExportPayload` **`events`/`documents`-Overrides**). K2 / ök2 / VK2 unverändert. **qs:local** grün. **Commit:** `7c3ea642` ✅ **main**
 
 **Letzter Stand:** 08.05.26 – **Lizenz-Galerie: Überschrift = Galerie-Name:** **`GalerieTenantPage`** – wenn **heroTitle** leer/generisch (`Meine Galerie` / K2-Platzhalter), wird die **große Überschrift** aus **`gallery.name`** (Stammdaten) genommen. **Admin** (nur **`effectiveDynamicTenantId`): Bei Änderung **Galerie-Name** werden **heroTitle** und **pageTitle** mitgezogen, solange sie noch generisch sind – ein Speichern/Veröffentlichen übernimmt beides. **qs:local** grün. **Commit:** `8e8c04d4` ✅ **main**
 

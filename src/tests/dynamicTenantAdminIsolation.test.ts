@@ -3,21 +3,30 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 describe('Dynamischer Lizenznehmer-Admin – keine K2-LocalStorage-Daten', () => {
+  const tenantContextSource = readFileSync(join(process.cwd(), 'src/context/TenantContext.tsx'), 'utf8')
   const source = readFileSync(join(process.cwd(), 'components/ScreenshotExportAdmin.tsx'), 'utf8')
   const tenantGallerySource = readFileSync(join(process.cwd(), 'src/pages/GalerieTenantPage.tsx'), 'utf8')
   const apiGalleryDataSource = readFileSync(join(process.cwd(), 'api/gallery-data.js'), 'utf8')
   const apiGalleryDataGetSource = readFileSync(join(process.cwd(), 'api/gallery-data-get.js'), 'utf8')
   const apiWriteGalleryDataSource = readFileSync(join(process.cwd(), 'api/write-gallery-data.js'), 'utf8')
 
+  it('setzt dynamicTenantId im Kontext auch auf DevView und Projekt-K2-Galerie (nicht nur /admin)', () => {
+    expect(tenantContextSource).toContain('resolveDynamicTenantIdFromLocation')
+    expect(tenantContextSource).toContain('pathname.startsWith(K2_GALERIE_PROJECT_PREFIX)')
+    expect(tenantContextSource).toMatch(/const dynamicTenantId = useMemo\(\(\) => resolveDynamicTenantIdFromLocation\(pathname, search\)/)
+  })
+
   it('lädt bei ?tenantId=galerie-* keine lokalen K2-Werke als Fallback', () => {
-    expect(source).toMatch(/async function loadArtworksWithResolvedImages[\s\S]*?if \(tenant\.dynamicTenantId\) return \[\]/)
-    expect(source).toMatch(/function loadArtworksRaw[\s\S]*?if \(tenant\.dynamicTenantId\) return \[\]/)
-    expect(source).toMatch(/function loadArtworks[\s\S]*?if \(tenant\.dynamicTenantId\) return \[\]/)
+    expect(source).toContain('function adminUsesDynamicTenantBlob')
+    expect(source).toContain('resolveDynamicTenantIdFromLocation(window.location.pathname')
+    expect(source).toMatch(/async function loadArtworksWithResolvedImages[\s\S]*?if \(adminUsesDynamicTenantBlob\(tenant\)\) return \[\]/)
+    expect(source).toMatch(/function loadArtworksRaw[\s\S]*?if \(adminUsesDynamicTenantBlob\(tenant\)\) return \[\]/)
+    expect(source).toMatch(/function loadArtworks[\s\S]*?if \(adminUsesDynamicTenantBlob\(tenant\)\) return \[\]/)
   })
 
   it('überspringt den lokalen Werke-Lader und Auto-Save für dynamische Mandanten', () => {
-    expect(source).toContain('if (tenant.dynamicTenantId) {\n      setAllArtworksSafe([])\n      return\n    }')
-    expect(source).toContain('if (tenant.dynamicTenantId) {\n      // Kein Auto-Save')
+    expect(source).toContain('if (effectiveDynamicTenantId) {\n      setAllArtworksSafe([])\n      return\n    }')
+    expect(source).toContain('if (effectiveDynamicTenantId) {\n      // Kein Auto-Save')
   })
 
   it('nutzt für Galerie ansehen den Mandanten-Link /g/:tenantId statt /galerie', () => {
@@ -40,7 +49,7 @@ describe('Dynamischer Lizenznehmer-Admin – keine K2-LocalStorage-Daten', () =>
     expect(source).toContain("const initialFocusDirection = dynamicFocusDirectionFromUrl")
     expect(source).toContain("setPageTextsState(createDynamicTenantPageTexts(initialFocusDirection))")
     expect(source).toContain("setPageTextsState(mergeDynamicTenantPageTexts(data.pageTexts, effectiveFocus))")
-    expect(source).toContain("}, [tenant.dynamicTenantId])")
+    expect(source).toContain("}, [effectiveDynamicTenantId, dynamicFocusDirectionFromUrl])")
     expect(source).not.toMatch(/tenant\.dynamicTenantId[\s\S]{0,800}setMartinaData\(K2_STAMMDATEN_DEFAULTS\.martina/)
     expect(source).not.toMatch(/tenant\.dynamicTenantId[\s\S]{0,800}setGalleryData\(\{ \.\.\.K2_STAMMDATEN_DEFAULTS\.gallery/)
   })
@@ -65,7 +74,9 @@ describe('Dynamischer Lizenznehmer-Admin – keine K2-LocalStorage-Daten', () =>
     expect(source).toContain("return !['k2', 'oeffentlich', 'vk2'].includes(value)")
     expect(source).toContain("const dynamicTenantIdFromSearch = useMemo(() => getSafeDynamicTenantIdFromSearch(location.search), [location.search])")
     expect(source).toContain("const effectiveDynamicTenantId = tenant.dynamicTenantId ?? dynamicTenantIdFromSearch")
-    expect(source).toContain("const buildDynamicTenantExportPayload = (overrides?: { martina?: any; georg?: any; gallery?: any; pageTexts?: PageTextsConfig; artworks?: any[]; tenantId?: string })")
+    expect(source).toContain('const buildDynamicTenantExportPayload = (overrides?: {')
+    expect(source).toContain('tenantId?: string')
+    expect(source).toContain('const dynamicTenantIdForPayload = overrides?.tenantId ?? effectiveDynamicTenantId')
     expect(source).toContain("const sourceMartina = overrides?.martina ?? martinaData")
     expect(source).toContain("const sourceGeorg = overrides?.georg ?? georgData")
     expect(source).toContain("const sourceGallery = overrides?.gallery ?? galleryData")
@@ -113,5 +124,11 @@ describe('Dynamischer Lizenznehmer-Admin – keine K2-LocalStorage-Daten', () =>
     expect(apiWriteGalleryDataSource).toContain("const chunkTenantRaw = parsed.data?.tenantId ?? parsed.data?.kontext")
     expect(apiWriteGalleryDataSource).toContain("if (!tenantId)")
     expect(apiWriteGalleryDataSource).toContain("return res.status(400).json({ error: 'tenantId fehlt oder ist ungültig' })")
+  })
+
+  it('lehnt auf dem Server K2-Bulk-Werke für Lizenz-Mandanten ab (Blob-Schutz)', () => {
+    expect(apiWriteGalleryDataSource).toContain('function rejectK2StyleBulkForNonLegacyTenant')
+    expect(apiWriteGalleryDataSource).toContain('rejectK2StyleBulkForNonLegacyTenant(tenantId, allArtworks)')
+    expect(apiWriteGalleryDataSource).toContain('rejectK2StyleBulkForNonLegacyTenant(tenantId, parsed.artworks)')
   })
 })
