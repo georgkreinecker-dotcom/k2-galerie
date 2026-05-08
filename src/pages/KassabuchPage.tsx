@@ -4,7 +4,7 @@
  */
 
 import { useState, useMemo } from 'react'
-import { useNavigate, useLocation, Link } from 'react-router-dom'
+import { useNavigate, useLocation, Link, useSearchParams } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
 import {
   getKassabuchMitEingaengen,
@@ -38,11 +38,39 @@ function getTenant(location: ReturnType<typeof useLocation>): 'k2' | 'oeffentlic
 export default function KassabuchPage() {
   const navigate = useNavigate()
   const location = useLocation()
+  const [searchParams] = useSearchParams()
+  const stateDynamicTenantId =
+    ((location.state as { dynamicTenantId?: string } | null)?.dynamicTenantId || '').trim().toLowerCase()
+  const queryDynamicTenantId = String(searchParams.get('tenantId') || '').trim().toLowerCase()
+  const dynamicTenantId = (stateDynamicTenantId || queryDynamicTenantId).match(/^[a-z0-9-]{1,64}$/)
+    ? (stateDynamicTenantId || queryDynamicTenantId)
+    : ''
+  const isDynamicTenantKassabuch = !!dynamicTenantId
   const tenant = getTenant(location)
-  const kassaVerfuegbar = hasKassa(tenant)
-  const kassabuchVoll = hasKassabuchVoll(tenant)
+  const kassaVerfuegbar = isDynamicTenantKassabuch ? true : hasKassa(tenant)
+  const kassabuchVoll = isDynamicTenantKassabuch ? false : hasKassabuchVoll(tenant)
   const [aktiv, setAktiv] = useState(() => isKassabuchAktiv(tenant))
-  const [entries, setEntries] = useState<KassabuchEintrag[]>(() => getKassabuchMitEingaengen(tenant))
+  const [entries, setEntries] = useState<KassabuchEintrag[]>(() => {
+    if (!isDynamicTenantKassabuch) return getKassabuchMitEingaengen(tenant)
+    try {
+      const raw = localStorage.getItem(`k2-tenant-${dynamicTenantId}-orders`)
+      const orders = raw ? JSON.parse(raw) : []
+      const list = Array.isArray(orders) ? orders : []
+      return list
+        .filter((o: any) => o && (o.date || o.soldAt))
+        .map((o: any) => ({
+          id: o?.id ? `order-eingang-${o.id}` : `order-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          datum: String(o.date || o.soldAt || '').slice(0, 10),
+          betrag: typeof o.total === 'number' ? o.total : 0,
+          art: 'eingang' as const,
+          verkaufId: o?.id,
+          verwendungszweck: String(o?.orderNumber || o?.id || 'Verkauf'),
+        }))
+        .sort((a: KassabuchEintrag, b: KassabuchEintrag) => a.datum.localeCompare(b.datum) || 0)
+    } catch {
+      return []
+    }
+  })
   const [von, setVon] = useState('')
   const [bis, setBis] = useState('')
 
@@ -65,7 +93,29 @@ export default function KassabuchPage() {
   }, [filteredByPeriod])
 
   const refresh = () => {
-    setEntries(getKassabuchMitEingaengen(tenant))
+    if (!isDynamicTenantKassabuch) {
+      setEntries(getKassabuchMitEingaengen(tenant))
+    } else {
+      try {
+        const raw = localStorage.getItem(`k2-tenant-${dynamicTenantId}-orders`)
+        const orders = raw ? JSON.parse(raw) : []
+        const list = Array.isArray(orders) ? orders : []
+        const mapped = list
+          .filter((o: any) => o && (o.date || o.soldAt))
+          .map((o: any) => ({
+            id: o?.id ? `order-eingang-${o.id}` : `order-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            datum: String(o.date || o.soldAt || '').slice(0, 10),
+            betrag: typeof o.total === 'number' ? o.total : 0,
+            art: 'eingang' as const,
+            verkaufId: o?.id,
+            verwendungszweck: String(o?.orderNumber || o?.id || 'Verkauf'),
+          }))
+          .sort((a: KassabuchEintrag, b: KassabuchEintrag) => a.datum.localeCompare(b.datum) || 0)
+        setEntries(mapped)
+      } catch {
+        setEntries([])
+      }
+    }
     setAktiv(isKassabuchAktiv(tenant))
   }
   const handleExportCsv = () => {
@@ -110,13 +160,13 @@ export default function KassabuchPage() {
 
   const navLinks = (
     <div className="kassabuch-nav no-print" style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-      <Link to={PROJECT_ROUTES['k2-galerie'].kassa} style={{ color: s.text, textDecoration: 'none', fontSize: '0.95rem', fontWeight: 600, padding: '0.5rem 0.75rem', background: s.card, border: `1px solid ${s.muted}`, borderRadius: 8 }}>
+      <Link to={isDynamicTenantKassabuch ? `${PROJECT_ROUTES['k2-galerie'].shop}?tenantId=${encodeURIComponent(dynamicTenantId)}&openAsKasse=1` : PROJECT_ROUTES['k2-galerie'].kassa} style={{ color: s.text, textDecoration: 'none', fontSize: '0.95rem', fontWeight: 600, padding: '0.5rem 0.75rem', background: s.card, border: `1px solid ${s.muted}`, borderRadius: 8 }}>
         ← Kassa
       </Link>
-      <Link to={PROJECT_ROUTES['k2-galerie'].buchhaltung} state={{ fromOeffentlich: tenant === 'oeffentlich' }} style={{ color: s.text, textDecoration: 'none', fontSize: '0.95rem', fontWeight: 600, padding: '0.5rem 0.75rem', background: s.card, border: `1px solid ${s.muted}`, borderRadius: 8 }}>
+      <Link to={isDynamicTenantKassabuch ? `${PROJECT_ROUTES['k2-galerie'].buchhaltung}?tenantId=${encodeURIComponent(dynamicTenantId)}` : PROJECT_ROUTES['k2-galerie'].buchhaltung} state={{ fromOeffentlich: tenant === 'oeffentlich', dynamicTenantId: dynamicTenantId || undefined }} style={{ color: s.text, textDecoration: 'none', fontSize: '0.95rem', fontWeight: 600, padding: '0.5rem 0.75rem', background: s.card, border: `1px solid ${s.muted}`, borderRadius: 8 }}>
         Buchhaltung
       </Link>
-      <Link to="/admin" style={{ color: s.text, textDecoration: 'none', fontSize: '0.95rem', fontWeight: 600, padding: '0.5rem 0.75rem', background: s.card, border: `1px solid ${s.muted}`, borderRadius: 8 }}>
+      <Link to={isDynamicTenantKassabuch ? `/admin?tenantId=${encodeURIComponent(dynamicTenantId)}` : '/admin'} style={{ color: s.text, textDecoration: 'none', fontSize: '0.95rem', fontWeight: 600, padding: '0.5rem 0.75rem', background: s.card, border: `1px solid ${s.muted}`, borderRadius: 8 }}>
         Admin
       </Link>
     </div>

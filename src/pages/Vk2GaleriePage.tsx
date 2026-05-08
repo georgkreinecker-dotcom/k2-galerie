@@ -206,6 +206,29 @@ const Vk2GaleriePage: React.FC = () => {
   const introText = pageTexts.welcomeIntroText?.trim() || 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.'
   const eventHeading = pageTexts.eventSectionHeading?.trim() || 'Vereinstermine & Events'
   const welcomeImage = getVk2SafeDisplayImageUrl(pageContent.welcomeImage) || ''
+  const galleryEntered = useMemo(
+    () => new URLSearchParams(location.search).get('enter') === 'gallery',
+    [location.search],
+  )
+  const vk2GalleryEntryUrl = useMemo(() => {
+    const params = new URLSearchParams(location.search)
+    params.set('enter', 'gallery')
+    return `${PROJECT_ROUTES.vk2.galerie}?${params.toString()}#werke-auswahl`
+  }, [location.search])
+  const vereinsWerke = useMemo(() => {
+    const members = Array.isArray(stammdaten?.mitglieder) ? stammdaten!.mitglieder : []
+    return members
+      .map((m: any, idx: number) => ({
+        id: String(m?.id || `mitglied-${idx}`),
+        title: String(m?.name || m?.titel || `Mitglied ${idx + 1}`),
+        imageUrl: String(m?.mitgliedFotoUrl || m?.imageUrl || '').trim(),
+        role: String(m?.rolle || m?.funktion || '').trim(),
+      }))
+      .filter((item) => item.title || item.imageUrl)
+  }, [stammdaten])
+  const [selectedVereinsWerkIdx, setSelectedVereinsWerkIdx] = useState(0)
+  const safeVereinsWerkIdx = Math.max(0, Math.min(selectedVereinsWerkIdx, Math.max(vereinsWerke.length - 1, 0)))
+  const selectedVereinsWerk = vereinsWerke[safeVereinsWerkIdx] || null
 
   const socialLinksResolved = useMemo(() => {
     const pc = pageContent
@@ -617,7 +640,8 @@ const Vk2GaleriePage: React.FC = () => {
       >
         {[
           { href: '#willkommen', label: 'Willkommen' },
-          { href: '#bereiche', label: 'Bereiche' },
+          { href: '#rundgang', label: 'Rundgang' },
+          { href: '#werke', label: 'Bereiche' },
           { href: '#events', label: 'Events' },
           { href: '#admin', label: 'Admin' },
           { href: '#impressum', label: 'Impressum' },
@@ -644,12 +668,12 @@ const Vk2GaleriePage: React.FC = () => {
 
       {/* ── EINGANGSKARTEN ── */}
       <div
-        id="bereiche"
+        id="werke"
         {...(showVk2LeitfadenUi ? { 'data-leitfaden-focus': 'eingangskarten' as const } : {})}
         style={{ padding: '1.2rem clamp(1.25rem, 5vw, 3rem)', background: C.bg }}
       >
-        <div style={{ maxWidth: TEMPLATE.maxWidth, margin: '0 auto', background: TEMPLATE.cardBg, border: TEMPLATE.cardBorder, borderRadius: TEMPLATE.cardRadius, padding: TEMPLATE.cardPadding }}>
-          <Vk2Eingangskarten key={location.search} stammdaten={stammdaten} welcomeImage={welcomeImage} />
+        <div id="bereiche" style={{ maxWidth: TEMPLATE.maxWidth, margin: '0 auto', background: TEMPLATE.cardBg, border: TEMPLATE.cardBorder, borderRadius: TEMPLATE.cardRadius, padding: TEMPLATE.cardPadding }}>
+          <Vk2Eingangskarten key={location.search} stammdaten={stammdaten} welcomeImage={welcomeImage} galleryEntryUrl={vk2GalleryEntryUrl} />
         </div>
       </div>
 
@@ -685,43 +709,105 @@ const Vk2GaleriePage: React.FC = () => {
         </div>
       </div>
 
+      {galleryEntered ? (
+        <section id="werke-auswahl" style={{ padding: '0 clamp(1.25rem, 5vw, 3rem) 1.4rem' }}>
+          <div style={{ maxWidth: TEMPLATE.maxWidth, margin: '0 auto', background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 14, padding: '1rem 1.05rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.7rem', flexWrap: 'wrap', marginBottom: '0.7rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.05rem', color: C.text, fontFamily: 'system-ui, sans-serif' }}>Vereinsgalerie - Auswahl</h3>
+              <Link to={PROJECT_ROUTES.vk2.galerie} style={{ textDecoration: 'none', border: `1px solid ${C.border}`, borderRadius: 999, padding: '0.35rem 0.75rem', color: C.textMid, background: '#fff', fontSize: '0.82rem', fontFamily: 'system-ui, sans-serif' }}>
+                ← Zur Startseite
+              </Link>
+            </div>
+            <p style={{ margin: '0 0 0.8rem', color: C.textMid, fontSize: '0.9rem', fontFamily: 'system-ui, sans-serif' }}>
+              Werke und Profile aus unserer Vereinsvielfalt - waehle ein Motiv und entdecke die Details.
+            </p>
+            {vereinsWerke.length > 0 ? (
+              <>
+                <div style={{ border: `1px solid ${C.border}`, borderRadius: 12, overflow: 'hidden', marginBottom: '0.8rem', background: '#f6f1ea' }}>
+                  {selectedVereinsWerk?.imageUrl ? (
+                    <img src={selectedVereinsWerk.imageUrl} alt={selectedVereinsWerk.title} style={{ width: '100%', maxHeight: 520, objectFit: 'contain', display: 'block' }} />
+                  ) : (
+                    <div style={{ minHeight: 220, display: 'grid', placeItems: 'center', color: C.textLight, fontFamily: 'system-ui, sans-serif' }}>Kein Bild</div>
+                  )}
+                  <div style={{ padding: '0.65rem 0.8rem', background: '#fff' }}>
+                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: C.text, fontFamily: 'system-ui, sans-serif' }}>{selectedVereinsWerk?.title || 'Mitglied'}</div>
+                    {selectedVereinsWerk?.role ? <div style={{ marginTop: '0.2rem', fontSize: '0.82rem', color: C.textMid, fontFamily: 'system-ui, sans-serif' }}>{selectedVereinsWerk.role}</div> : null}
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '0.55rem' }}>
+                  {vereinsWerke.slice(0, 24).map((w, idx) => (
+                    <button
+                      key={w.id}
+                      type="button"
+                      onClick={() => setSelectedVereinsWerkIdx(idx)}
+                      style={{
+                        border: safeVereinsWerkIdx === idx ? `2px solid ${C.accent}` : `1px solid ${C.border}`,
+                        borderRadius: 10,
+                        overflow: 'hidden',
+                        background: '#fff',
+                        cursor: 'pointer',
+                        padding: 0,
+                        textAlign: 'left',
+                      }}
+                    >
+                      {w.imageUrl ? (
+                        <img src={w.imageUrl} alt={w.title} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', display: 'block' }} />
+                      ) : (
+                        <div style={{ width: '100%', aspectRatio: '1/1', display: 'grid', placeItems: 'center', color: C.textLight, fontSize: '0.74rem', fontFamily: 'system-ui, sans-serif' }}>Kein Bild</div>
+                      )}
+                      <div style={{ padding: '0.35rem 0.45rem', fontSize: '0.76rem', color: C.text, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: 'system-ui, sans-serif' }}>{w.title}</div>
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div style={{ minHeight: 120, border: `1px solid ${C.border}`, borderRadius: 10, display: 'grid', placeItems: 'center', color: C.textMid, fontFamily: 'system-ui, sans-serif' }}>
+                Noch keine Vereinsmotive vorhanden.
+              </div>
+            )}
+          </div>
+        </section>
+      ) : null}
+
       {/* ── EVENTS ── */}
       {upcomingEvents.length > 0 && (
-        <div id="events" style={{ padding: '0 clamp(1.25rem, 5vw, 3rem) 1.4rem' }}>
-          <div style={{ maxWidth: TEMPLATE.maxWidth, margin: '0 auto', background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 14, padding: '1.1rem 1.15rem', borderLeft: `4px solid ${C.accent}`, boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
-            <p style={{ margin: '0 0 0.75rem', fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: C.textLight, fontWeight: 700, fontFamily: 'system-ui, sans-serif' }}>
-              {eventHeading}
-            </p>
-            <ul style={{ margin: 0, paddingLeft: '1.1rem', color: C.text, fontSize: '0.95rem', lineHeight: 1.7, fontFamily: 'system-ui, sans-serif' }}>
-              {upcomingEvents.map((ev: any) => (
-                <li key={ev.id || ev.date} style={{ marginBottom: '0.5rem' }}>
-                  <button
-                    type="button"
-                    onClick={() => openVk2EventA3Plakat(ev.id)}
-                    title={eventPlakatMoreInfoTitle(ev)}
-                    aria-label={
-                      ev.date
-                        ? `${ev.title}, ${formatEventTerminKomplett(ev, { mode: 'compact', emptyFallback: '' })}. Plakat anzeigen.`
-                        : `${ev.title}. Plakat anzeigen.`
-                    }
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      padding: 0,
-                      margin: 0,
-                      cursor: 'pointer',
-                      color: 'inherit',
-                      font: 'inherit',
-                      textAlign: 'left',
-                      width: '100%',
-                      fontFamily: 'system-ui, sans-serif',
-                    }}
-                  >
-                    <strong>{ev.title}</strong>
-                  </button>
-                </li>
-              ))}
-            </ul>
+        <div id="rundgang" style={{ padding: '0 clamp(1.25rem, 5vw, 3rem) 1.4rem' }}>
+          <div id="events" style={{ maxWidth: TEMPLATE.maxWidth, margin: '0 auto' }}>
+            <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 14, padding: '1.1rem 1.15rem', borderLeft: `4px solid ${C.accent}`, boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
+              <p style={{ margin: '0 0 0.75rem', fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: C.textLight, fontWeight: 700, fontFamily: 'system-ui, sans-serif' }}>
+                {eventHeading}
+              </p>
+              <ul style={{ margin: 0, paddingLeft: '1.1rem', color: C.text, fontSize: '0.95rem', lineHeight: 1.7, fontFamily: 'system-ui, sans-serif' }}>
+                {upcomingEvents.map((ev: any) => (
+                  <li key={ev.id || ev.date} style={{ marginBottom: '0.5rem' }}>
+                    <button
+                      type="button"
+                      onClick={() => openVk2EventA3Plakat(ev.id)}
+                      title={eventPlakatMoreInfoTitle(ev)}
+                      aria-label={
+                        ev.date
+                          ? `${ev.title}, ${formatEventTerminKomplett(ev, { mode: 'compact', emptyFallback: '' })}. Plakat anzeigen.`
+                          : `${ev.title}. Plakat anzeigen.`
+                      }
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        padding: 0,
+                        margin: 0,
+                        cursor: 'pointer',
+                        color: 'inherit',
+                        font: 'inherit',
+                        textAlign: 'left',
+                        width: '100%',
+                        fontFamily: 'system-ui, sans-serif',
+                      }}
+                    >
+                      <strong>{ev.title}</strong>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       )}
@@ -940,7 +1026,7 @@ function loadEingangskarten(): EingangskarteData[] {
 /** Ziel-Route pro Karte: 0 = Vereinskatalog, 1 = Mitglieder & Künstler:innen – ein Einstieg pro Karte, keine Doppel-Buttons */
 const KARTEN_ZIEL: (keyof typeof PROJECT_ROUTES.vk2)[] = ['katalog', 'galerieVorschau']
 
-function Vk2Eingangskarten({ stammdaten, welcomeImage }: { stammdaten: Vk2Stammdaten | null; welcomeImage?: string }) {
+function Vk2Eingangskarten({ stammdaten, welcomeImage, galleryEntryUrl }: { stammdaten: Vk2Stammdaten | null; welcomeImage?: string; galleryEntryUrl?: string }) {
   const navigate = useNavigate()
   const [karten, setKarten] = React.useState<EingangskarteData[]>(loadEingangskarten)
 
@@ -982,6 +1068,10 @@ function Vk2Eingangskarten({ stammdaten, welcomeImage }: { stammdaten: Vk2Stammd
           data={k}
           index={i}
           onClick={() => {
+            if (i === 0 && galleryEntryUrl) {
+              navigate(galleryEntryUrl)
+              return
+            }
             const route = KARTEN_ZIEL[i] && PROJECT_ROUTES.vk2[KARTEN_ZIEL[i]]
             if (route) {
               const state = route === PROJECT_ROUTES.vk2.galerieVorschau ? { fromVk2Galerie: true } : undefined

@@ -810,6 +810,25 @@ const ShopPage = () => {
         }
       }
     }
+    if (isDynamicTenantKassa) {
+      return {
+        version: 1,
+        capturedAt,
+        tenant: 'k2',
+        gallery: {
+          name: galleryName || undefined,
+          address: galleryAddress || undefined,
+          city: galleryCity || undefined,
+          country: galleryCountry || undefined,
+          phone: galleryPhone || undefined,
+          email: galleryEmail || undefined,
+          website: galleryWebsite || undefined,
+          ustIdNr: galleryUstIdNr || undefined,
+          bankverbindung: bankverbindung || undefined,
+          iban: galleryIban || undefined,
+        }
+      }
+    }
     const tenant = fromOeffentlich ? 'oeffentlich' : 'k2'
     const g = loadStammdaten(tenant as 'k2' | 'oeffentlich', 'gallery') || {}
     return {
@@ -889,6 +908,14 @@ const ShopPage = () => {
       return ''
     }
   })()
+  const fromGalleryQuery = (() => {
+    try {
+      const params = new URLSearchParams(location.search || '')
+      return params.get('from') === 'gallery'
+    } catch {
+      return false
+    }
+  })()
   const activeDynamicTenantId =
     (typeof sessionStorage !== 'undefined' ? String(sessionStorage.getItem('k2-active-dynamic-tenant') || '') : '')
       .trim()
@@ -945,20 +972,66 @@ const ShopPage = () => {
 
   // Galerie-Stammdaten: Kontext getrennt – K2 = echte Daten, ök2 = nur oeffentlich/Muster
   const [internetShopNotSetUp, setInternetShopNotSetUp] = useState(true)
+  const [galleryName, setGalleryName] = useState('')
+  const [galleryAddress, setGalleryAddress] = useState('')
+  const [galleryCity, setGalleryCity] = useState('')
+  const [galleryCountry, setGalleryCountry] = useState('')
+  const [galleryWebsite, setGalleryWebsite] = useState('')
+  const [galleryUstIdNr, setGalleryUstIdNr] = useState('')
+  const [galleryIban, setGalleryIban] = useState('')
   const [galleryEmail, setGalleryEmail] = useState('')
   const [galleryPhone, setGalleryPhone] = useState('')
   useEffect(() => {
+    if (isDynamicTenantKassa && dynamicTenantId) {
+      fetch(`/api/gallery-data?tenantId=${encodeURIComponent(dynamicTenantId)}`, { cache: 'no-store' })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((json) => {
+          const gallery = json?.gallery && typeof json.gallery === 'object' ? json.gallery : {}
+          setGalleryName(String((gallery as any).name || ''))
+          setGalleryAddress(String((gallery as any).address || ''))
+          setGalleryCity(String((gallery as any).city || ''))
+          setGalleryCountry(String((gallery as any).country || ''))
+          setGalleryWebsite(String((gallery as any).website || ''))
+          setGalleryUstIdNr(String((gallery as any).ustIdNr || ''))
+          setGalleryIban(String((gallery as any).iban || ''))
+          setBankverbindung(String((gallery as any).bankverbindung || ''))
+          setGalleryEmail(String((gallery as any).email || ''))
+          setGalleryPhone(String((gallery as any).phone || ''))
+          setInternetShopNotSetUp((gallery as any).internetShopNotSetUp !== false)
+        })
+        .catch(() => {
+          setGalleryName('')
+          setGalleryAddress('')
+          setGalleryCity('')
+          setGalleryCountry('')
+          setGalleryWebsite('')
+          setGalleryUstIdNr('')
+          setGalleryIban('')
+          setBankverbindung('')
+          setGalleryEmail('')
+          setGalleryPhone('')
+          setInternetShopNotSetUp(true)
+        })
+      return
+    }
     try {
       const tenant = effectiveFromOeffentlich ? 'oeffentlich' : 'k2'
       const data = loadStammdaten(tenant as 'k2' | 'oeffentlich', 'gallery')
       if (data && typeof data === 'object') {
+        setGalleryName((data as any).name || '')
+        setGalleryAddress((data as any).address || '')
+        setGalleryCity((data as any).city || '')
+        setGalleryCountry((data as any).country || '')
+        setGalleryWebsite((data as any).website || '')
+        setGalleryUstIdNr((data as any).ustIdNr || '')
+        setGalleryIban((data as any).iban || '')
         setBankverbindung((data as any).bankverbindung || '')
         setGalleryEmail((data as any).email || '')
         setGalleryPhone((data as any).phone || '')
         setInternetShopNotSetUp((data as any).internetShopNotSetUp !== false)
       }
     } catch (_) {}
-  }, [effectiveFromOeffentlich])
+  }, [effectiveFromOeffentlich, isDynamicTenantKassa, dynamicTenantId])
 
   // Von Galerie (Willkommensseite oder Galerie-Vorschau) zum Shop → Kundenansicht. Flag + Referrer (State geht bei SPA oft verloren).
   const fromStorage = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-from-galerie-view') === '1'
@@ -968,7 +1041,8 @@ const ShopPage = () => {
   const fromGalerieView =
     fromStorage ||
     (location.state as { fromGalerieView?: boolean } | null)?.fromGalerieView === true ||
-    fromReferrer
+    fromReferrer ||
+    fromGalleryQuery
   const displayPhone = effectiveFromOeffentlich ? MUSTER_TEXTE.gallery.phone : galleryPhone
   const displayEmail = effectiveFromOeffentlich ? MUSTER_TEXTE.gallery.email : galleryEmail
   const kuenstlerFbShop = useMemo(() => readKuenstlerFallbackShop(effectiveFromOeffentlich), [effectiveFromOeffentlich])
@@ -994,10 +1068,10 @@ const ShopPage = () => {
         }
       } catch (_) {}
       if ((location.state as { fromGalerieView?: boolean } | null)?.fromGalerieView === true) {
-        navigate(location.pathname, { replace: true, state: {} })
+        navigate(`${location.pathname}${location.search || ''}`, { replace: true, state: {} })
       }
     }
-  }, [fromGalerieView, location.state, location.pathname, navigate])
+  }, [fromGalerieView, location.state, location.pathname, location.search, navigate])
 
   // Admin: openAsKasse → direkt Kasse öffnen. Bei ök2/VK2: Kontext setzen.
   useEffect(() => {
@@ -2160,8 +2234,21 @@ ${bankBlock}
     const tenant = fromOeffentlich ? 'oeffentlich' : 'k2'
     const kuenstlerFbA4 = readKuenstlerFallbackShop(fromOeffentlich)
     let gStamm: any = null
-    if (snap && snap.version === 1 && snap.tenant === tenant && snap.gallery) {
+    if (snap && snap.version === 1 && snap.gallery && (snap.tenant === tenant || (isDynamicTenantKassa && snap.tenant === 'k2'))) {
       gStamm = snap.gallery
+    } else if (isDynamicTenantKassa) {
+      gStamm = {
+        name: galleryName,
+        address: galleryAddress,
+        city: galleryCity,
+        country: galleryCountry,
+        phone: galleryPhone,
+        email: galleryEmail,
+        website: galleryWebsite,
+        ustIdNr: galleryUstIdNr,
+        bankverbindung: bankverbindung,
+        iban: galleryIban,
+      }
     } else {
       try {
         gStamm = loadStammdaten(tenant as 'k2' | 'oeffentlich', 'gallery')
@@ -2179,22 +2266,26 @@ ${bankBlock}
       minute: '2-digit'
     })
 
-    const defaultHeaderName = fromOeffentlich ? 'Galerie Muster' : 'K2 Galerie'
-    const defaultSub = fromOeffentlich ? 'Kunst & Keramik (Demo)' : 'Kunst & Keramik'
-    const defaultAddress = fromOeffentlich ? [MUSTER_TEXTE.gallery.address, MUSTER_TEXTE.gallery.city, MUSTER_TEXTE.gallery.country].filter(Boolean).join(', ') || 'Musterstraße 1, 12345 Musterstadt' : 'Schlossergasse 4, 4070 Eferding, Österreich'
+    const defaultHeaderName = isDynamicTenantKassa ? (galleryName || 'Meine Galerie') : (fromOeffentlich ? 'Galerie Muster' : 'K2 Galerie')
+    const defaultSub = isDynamicTenantKassa ? 'Online-Galerie' : (fromOeffentlich ? 'Kunst & Keramik (Demo)' : 'Kunst & Keramik')
+    const defaultAddress = isDynamicTenantKassa
+      ? [galleryAddress, galleryCity, galleryCountry].filter(Boolean).join(', ')
+      : (fromOeffentlich ? [MUSTER_TEXTE.gallery.address, MUSTER_TEXTE.gallery.city, MUSTER_TEXTE.gallery.country].filter(Boolean).join(', ') || 'Musterstraße 1, 12345 Musterstadt' : 'Schlossergasse 4, 4070 Eferding, Österreich')
     const sellerNameForHeader = (gStamm && (gStamm as any).name && String((gStamm as any).name).trim()) ? String((gStamm as any).name) : defaultHeaderName
     const sellerTaglineA4 = defaultSub
     const sellerWebsiteA4 = (gStamm && (gStamm as any).website && String((gStamm as any).website).trim()) ? String((gStamm as any).website) : (fromOeffentlich ? (MUSTER_TEXTE.gallery.website || '') : '')
 
-    let docTitle = fromOeffentlich ? 'Kassenbon - Galerie Muster' : 'Kassenbon - K2 Galerie'
+    let docTitle = isDynamicTenantKassa ? `Kassenbon - ${sellerNameForHeader}` : (fromOeffentlich ? 'Kassenbon - Galerie Muster' : 'Kassenbon - K2 Galerie')
     let headerTitle = sellerNameForHeader.toUpperCase()
     let headerSub = defaultSub
     let nrLabel = 'Bon-Nr.:'
     let nrValue = order.orderNumber
     if (asRechnung) {
-      docTitle = fromOeffentlich ? 'Rechnung - Galerie Muster' : 'Rechnung - K2 Galerie'
+      docTitle = isDynamicTenantKassa ? `Rechnung - ${sellerNameForHeader}` : (fromOeffentlich ? 'Rechnung - Galerie Muster' : 'Rechnung - K2 Galerie')
       headerTitle = 'RECHNUNG'
-      headerSub = sellerNameForHeader + (fromOeffentlich ? ' (Demo)' : ' · Kunst & Keramik')
+      headerSub = isDynamicTenantKassa
+        ? `${sellerNameForHeader} · Online-Galerie`
+        : (sellerNameForHeader + (fromOeffentlich ? ' (Demo)' : ' · Kunst & Keramik'))
       nrLabel = 'Rechnungsnr.:'
       const existingRe = (order as any).rechnungsNr && String((order as any).rechnungsNr).trim()
       if (existingRe) {
@@ -3919,7 +4010,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
         gap: '1rem'
       }}>
         <span style={{ fontFamily: s.fontHeading, color: '#c8a882', fontSize: '0.95rem', fontWeight: '600', letterSpacing: '0.04em' }}>
-          {fromOeffentlich ? 'Galerie Muster' : 'K2 Galerie'}
+          {galleryName || (fromOeffentlich ? 'Galerie Muster' : 'K2 Galerie')}
         </span>
         {cart.length > 0 && (
           <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem' }}>

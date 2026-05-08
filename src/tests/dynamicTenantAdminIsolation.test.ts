@@ -22,7 +22,8 @@ describe('Dynamischer Lizenznehmer-Admin – keine K2-LocalStorage-Daten', () =>
 
   it('nutzt für Galerie ansehen den Mandanten-Link /g/:tenantId statt /galerie', () => {
     expect(source).toContain('function buildDynamicTenantGalleryPath')
-    expect(source).toContain("effectiveDynamicTenantId ? currentDynamicTenantGalleryPath")
+    expect(source).toContain('const currentDynamicTenantGalleryPath = effectiveDynamicTenantId')
+    expect(source).toMatch(/publicGalleryPathForCurrentContext\s*=\s*effectiveDynamicTenantId[\s\S]*\?\s*currentDynamicTenantGalleryPath/)
   })
 
   it('setzt neue Mandanten ohne echte K2-Stammdaten und mit Sparte aus der URL auf', () => {
@@ -91,7 +92,7 @@ describe('Dynamischer Lizenznehmer-Admin – keine K2-LocalStorage-Daten', () =>
   it('zeigt bei leerer Lizenznehmer-Galerie eine Muster-Erstgalerie statt leerer Seite', () => {
     expect(tenantGallerySource).toContain('MUSTER_ARTWORKS')
     expect(tenantGallerySource).toContain('const artworks: TenantGalleryArtwork[] = serverArtworks.length > 0 ? serverArtworks : MUSTER_ARTWORKS')
-    expect(tenantGallerySource).toContain('Muster-Erstgalerie')
+    expect(tenantGallerySource).toContain('const isMusterStart = serverArtworks.length === 0')
     expect(tenantGallerySource).not.toContain('Noch keine Inhalte – gestalte deine Galerie im Admin.')
   })
 

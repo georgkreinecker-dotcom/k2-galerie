@@ -150,7 +150,9 @@ const k2PlakatEmbed =
   typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('k2PlakatEmbed') === '1'
 const liveTemplateEmbed =
   typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('liveTemplate') === '1'
-if (rootElement && inIframe && !embeddedInApf && !k2DocViewerEmbed && !k2PlakatEmbed && !liveTemplateEmbed) {
+const iframeGalleryRoute =
+  typeof window !== 'undefined' && window.location.pathname.startsWith('/g/')
+if (rootElement && inIframe && !embeddedInApf && !k2DocViewerEmbed && !k2PlakatEmbed && !liveTemplateEmbed && !iframeGalleryRoute) {
   const port = typeof window !== 'undefined' && window.location.port ? window.location.port : '5177'
   // Volle URL (Pfad + Suchparameter), damit z. B. /projects/k2-galerie?page=handbuch&doc=... im Browser genau diese Seite öffnet
   const fullUrl = typeof window !== 'undefined'

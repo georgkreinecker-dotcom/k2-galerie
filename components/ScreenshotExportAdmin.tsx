@@ -2656,16 +2656,31 @@ function mergeDynamicTenantPageTexts(raw: unknown, focusDirection: FocusDirectio
 function ScreenshotExportAdmin(props?: AdminProps) {
   const { forceTab, forceEventplanSubTab, forceOeffentlichkeitsarbeitModal } = props ?? {}
   const tenant = useTenant()
-  /** Präsentationsmappen-Tab und PM-Karte in Öffentlichkeitsarbeit nur K2 – nicht ök2/VK2. */
-  const showPraesentationsmappenAdmin = !tenant.isOeffentlich && !tenant.isVk2
   const navigate = useNavigate()
   const location = useLocation()
   const dynamicFocusDirectionFromUrl = useMemo(() => {
     const params = new URLSearchParams(location.search)
     return normalizeAdminFocusDirection(params.get('focusDirection'))
   }, [location.search])
+  const hasTenantIdQuery = useMemo(() => {
+    try {
+      const fromRouter = String(new URLSearchParams(location.search).get('tenantId') || '').trim().length > 0
+      if (fromRouter) return true
+      if (typeof window !== 'undefined') {
+        const href = String(window.location.href || '')
+        if (href.includes('tenantId=')) return true
+      }
+      return false
+    } catch {
+      return false
+    }
+  }, [location.search])
   const dynamicTenantIdFromSearch = useMemo(() => getSafeDynamicTenantIdFromSearch(location.search), [location.search])
   const effectiveDynamicTenantId = tenant.dynamicTenantId ?? dynamicTenantIdFromSearch
+  /** Präsentationsmappen-Tab und PM-Karte in Öffentlichkeitsarbeit nur K2 – nicht ök2/VK2/Lizenznehmer. */
+  const showPraesentationsmappenAdmin = !tenant.isOeffentlich && !tenant.isVk2 && !effectiveDynamicTenantId
+  const isDynamicTenantDesignMode = !!effectiveDynamicTenantId || hasTenantIdQuery
+  const isVk2DesignMode = tenant.isVk2 || (typeof window !== 'undefined' && String(window.location.search || '').includes('context=vk2'))
   useEffect(() => {
     try {
       if (effectiveDynamicTenantId) sessionStorage.setItem('k2-active-dynamic-tenant', effectiveDynamicTenantId)
@@ -3187,6 +3202,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   }, [])
   const previewContainerRef = React.useRef<HTMLDivElement>(null)
   const welcomeImageInputRef = React.useRef<HTMLInputElement>(null)
+  const virtualTourVideoInputRef = React.useRef<HTMLInputElement>(null)
+  const [showLiveFineTuning, setShowLiveFineTuning] = useState(false)
 
   // VK2 Eingangskarten (2 Stück, editierbar im Design-Tab)
   const VK2_KARTEN_KEY = 'k2-vk2-eingangskarten'
@@ -3386,12 +3403,12 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     return () => ro.disconnect()
   }, [designSubTab])
 
-  // Eingangsseite „Entdecken“: nur K2 (Toolbar + Speicher in k2-page-content-entdecken). ök2/VK2: kein Button, Tab zurücksetzen.
+  // Eingangsseite „Entdecken“: nur K2 (Toolbar + Speicher in k2-page-content-entdecken). ök2/VK2/Lizenznehmer: kein Button, Tab zurücksetzen.
   useEffect(() => {
-    if (tenant.isOeffentlich || tenant.isVk2) {
+    if (tenant.isOeffentlich || tenant.isVk2 || !!effectiveDynamicTenantId) {
       setDesignSubTab((tab) => (tab === 'eingangsseite' ? 'vorschau' : tab))
     }
-  }, [tenant.isOeffentlich, tenant.isVk2])
+  }, [tenant.isOeffentlich, tenant.isVk2, effectiveDynamicTenantId])
 
   // Design-Vorschau: Ziehen am unteren Rand zum Vergrößern/Verkleinern (Maus + Touch)
   useEffect(() => {
@@ -4034,7 +4051,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         : PROJECT_ROUTES['k2-galerie'].galerie
   const publicGalleryUrlForCurrentContext = `${BASE_APP_URL}${publicGalleryPathForCurrentContext}`
   const designLiveTemplateBaseRoute = publicGalleryPathForCurrentContext
-  const designLiveTemplateRoute = `${designLiveTemplateBaseRoute}${designLiveTemplateBaseRoute.includes('?') ? '&' : '?'}liveTemplate=1&_=${designLivePreviewVersion}`
+  const designLiveTemplateRoute = `${designLiveTemplateBaseRoute}${designLiveTemplateBaseRoute.includes('?') ? '&' : '?'}liveTemplate=1&k2DocViewer=1&_=${designLivePreviewVersion}`
 
   // Seitengestaltung (Willkommensseite & Galerie-Vorschau) – K2 vs. ök2 getrennt
   const [pageContent, setPageContent] = useState<PageContentGalerie>(() =>
@@ -4124,12 +4141,33 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     }
   }, [pageContent, tenant])
 
+  const handleQuickPageImageFile = useCallback(async (
+    field: 'welcomeImage' | 'galerieCardImage' | 'virtualTourImage',
+    file: File,
+    okLabel: string,
+  ) => {
+    try {
+      const img = await compressImageForStorage(file, { context: 'pageHero' })
+      const next = { ...pageContent, [field]: img }
+      setPageContent(next)
+      if (field === 'welcomeImage') pendingWelcomeFileRef.current = file
+      if (!effectiveDynamicTenantId) {
+        const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
+        setPageContentGalerie(next, designTenant)
+      }
+      setImageUploadStatus(`✓ ${okLabel} übernommen`)
+      setTimeout(() => setImageUploadStatus(null), 3500)
+    } catch {
+      alert('Fehler beim Bild')
+    }
+  }, [pageContent, effectiveDynamicTenantId, tenant.isOeffentlich, tenant.isVk2])
+
   // Design-Vorschau = immer aktuelle gespeicherte Seite anzeigen (keine alten Daten)
   // Beim Wechsel in den Design-Tab ODER Mandanten (K2/ök2/VK2): Seitentexte, Seitengestaltung und Design aus dem richtigen Key nachladen – sonst landet K2-Bild in VK2 beim Speichern
   const designTenantKey = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : 'k2'
   useEffect(() => {
     if (activeTab !== 'design') return
-    if (tenant.dynamicTenantId) return
+    if (effectiveDynamicTenantId) return
     const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
     setPageTextsState(getPageTexts(designTenant))
     setPageContent(getPageContentGalerie(designTenant))
@@ -4157,7 +4195,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         }
       }
     } catch (_) {}
-  }, [activeTab, designTenantKey, tenant.dynamicTenantId])
+  }, [activeTab, designTenantKey, effectiveDynamicTenantId])
 
   // URL-Parameter context (oeffentlich / vk2) in sessionStorage übernehmen
   // WICHTIG: Wenn kein context-Parameter → K2-Admin → sessionStorage löschen (verhindert "hängenbleiben" im ök2-Kontext)
@@ -4173,7 +4211,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
 
   // Dynamischer Mandant (?tenantId=): Daten von API laden, in State übernehmen – kein localStorage
   useEffect(() => {
-    const dynId = tenant.dynamicTenantId
+    const dynId = effectiveDynamicTenantId
     if (!dynId) return
     let isMounted = true
     const initialFocusDirection = dynamicFocusDirectionFromUrl
@@ -4234,7 +4272,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       if (isMounted) setDynamicTenantLoading(false)
     })
     return () => { isMounted = false }
-  }, [tenant.dynamicTenantId])
+  }, [effectiveDynamicTenantId, dynamicFocusDirectionFromUrl])
 
   // ök2: Lager-Tab nicht verfügbar. VK2: Sicherheit und Lager nicht – auf Stammdaten wechseln
   useEffect(() => {
@@ -4315,18 +4353,18 @@ function ScreenshotExportAdmin(props?: AdminProps) {
 
   // K2: Verkaufte-Werke-Anzeige (Tage) aus k2-stammdaten-galerie laden (bei Werke-Tab) – isMounted gegen setState nach Unmount (HMR/Code 5)
   useEffect(() => {
-    if (tenant.dynamicTenantId || tenant.isOeffentlich || tenant.isVk2) return
+    if (effectiveDynamicTenantId || tenant.isOeffentlich || tenant.isVk2) return
     let isMounted = true
     try {
       const g = loadStammdaten('k2', 'gallery') as { soldArtworksDisplayDays?: number }
       if (isMounted && g && typeof g.soldArtworksDisplayDays === 'number') setSoldArtworksDisplayDaysK2(g.soldArtworksDisplayDays)
     } catch (_) {}
     return () => { isMounted = false }
-  }, [activeTab, tenant.isOeffentlich, tenant.isVk2])
+  }, [activeTab, tenant.isOeffentlich, tenant.isVk2, effectiveDynamicTenantId])
 
   // Stammdaten aus localStorage laden – bei ök2-Kontext aus k2-oeffentlich-stammdaten-*; bei VK2 aus k2-vk2-stammdaten
   useEffect(() => {
-    if (tenant.dynamicTenantId) return
+    if (effectiveDynamicTenantId) return
     if (tenant.isOeffentlich) return
     if (tenant.isVk2) return // VK2 lädt in separatem Effect
     let isMounted = true
@@ -4479,7 +4517,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       isMounted = false
       clearTimeout(timeoutId)
     }
-  }, [])
+  }, [effectiveDynamicTenantId, tenant.isOeffentlich, tenant.isVk2])
 
   // VK2-Stammdaten aus localStorage laden (nur bei VK2-Kontext)
   useEffect(() => {
@@ -4735,6 +4773,19 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     const run = async () => {
       try {
         if (effectiveDynamicTenantId) {
+          try {
+            localStorage.setItem(
+              `k2-live-template-preview-${effectiveDynamicTenantId}`,
+              JSON.stringify({
+                tenantId: effectiveDynamicTenantId,
+                pageTexts,
+                pageContentGalerie: pageContent,
+                designSettings,
+                gallery: galleryData,
+                ts: Date.now(),
+              }),
+            )
+          } catch (_) {}
           await saveDynamicTenantStateToServer({ silent: true, tenantId: effectiveDynamicTenantId })
           return
         }
@@ -4761,7 +4812,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
 
   // Im Design-Modal stets die echte Frontseiten-Struktur spiegeln (Live-Template)
   useEffect(() => {
-    if (activeTab !== 'design' || designSubTab !== 'vorschau') return
+    if (activeTab !== 'design') return
     const t = setTimeout(() => {
       saveAllForVorschau()
       setDesignLivePreviewVersion((v) => v + 1)
@@ -14428,10 +14479,30 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
   const renderLiveTemplatePanel = (heightPx: number) => (
     <div style={{ marginTop: '0.6rem', padding: '0.55rem', background: 'rgba(255,255,255,0.04)', border: `1px solid ${s.accent}33`, borderRadius: 10 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.35rem' }}>
-        <strong style={{ color: s.text, fontSize: '0.88rem' }}>Live-Template-Vorschau (1:1 Frontseite)</strong>
-        <Link to={designLiveTemplateRoute} target="_blank" rel="noopener noreferrer" style={{ color: s.accent, fontSize: '0.8rem', fontWeight: 700 }}>
-          Im Tab öffnen
-        </Link>
+        <strong style={{ color: s.text, fontSize: '0.88rem' }}>Live-Template-Vorschau (1:1 Frontseite) [NEU]</strong>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginLeft: 'auto' }}>
+          <button
+            type="button"
+            onClick={() => { void publishMobile() }}
+            disabled={isDeploying}
+            style={{
+              padding: '0.32rem 0.65rem',
+              borderRadius: 8,
+              border: `1.5px solid ${s.accent}`,
+              background: isDeploying ? 'rgba(0,0,0,0.1)' : 'rgba(95,251,241,0.18)',
+              color: s.accent,
+              fontWeight: 800,
+              fontSize: '0.78rem',
+              cursor: isDeploying ? 'not-allowed' : 'pointer',
+            }}
+            title="Änderungen jetzt öffentlich auf allen Geräten aktualisieren"
+          >
+            {isDeploying ? '⏳ Veröffentlicht…' : '📤 Öffentlich aktualisieren'}
+          </button>
+          <Link to={designLiveTemplateRoute} target="_blank" rel="noopener noreferrer" style={{ color: s.accent, fontSize: '0.8rem', fontWeight: 700 }}>
+            Im Tab öffnen
+          </Link>
+        </div>
       </div>
       <iframe
         title="Live Template Vorschau"
@@ -14444,6 +14515,184 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
           background: '#fff',
         }}
       />
+      {(isDynamicTenantDesignMode || isVk2DesignMode) ? (
+        <div style={{ marginTop: '0.65rem', display: 'grid', gap: '0.55rem', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+          <label style={{ display: 'grid', gap: '0.2rem' }}>
+            <span style={{ color: s.text, fontSize: '0.8rem', fontWeight: 700 }}>Titel</span>
+            <input
+              value={pageTexts.galerie?.heroTitle ?? ''}
+              onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, heroTitle: e.target.value } }))}
+              style={{ width: '100%', padding: '0.45rem 0.55rem', borderRadius: 8, border: `1px solid ${s.accent}44`, background: 'rgba(255,255,255,0.06)', color: s.text }}
+            />
+          </label>
+          <label style={{ display: 'grid', gap: '0.2rem' }}>
+            <span style={{ color: s.text, fontSize: '0.8rem', fontWeight: 700 }}>Untertitel</span>
+            <input
+              value={pageTexts.galerie?.welcomeSubtext ?? ''}
+              onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, welcomeSubtext: e.target.value } }))}
+              style={{ width: '100%', padding: '0.45rem 0.55rem', borderRadius: 8, border: `1px solid ${s.accent}44`, background: 'rgba(255,255,255,0.06)', color: s.text }}
+            />
+          </label>
+          <label style={{ display: 'grid', gap: '0.2rem', gridColumn: '1 / -1' }}>
+            <span style={{ color: s.text, fontSize: '0.8rem', fontWeight: 700 }}>Einleitung</span>
+            <textarea
+              rows={2}
+              value={pageTexts.galerie?.welcomeIntroText ?? ''}
+              onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, welcomeIntroText: e.target.value } }))}
+              style={{ width: '100%', padding: '0.45rem 0.55rem', borderRadius: 8, border: `1px solid ${s.accent}44`, background: 'rgba(255,255,255,0.06)', color: s.text, resize: 'vertical' }}
+            />
+          </label>
+          <div style={{ gridColumn: '1 / -1', border: `1px solid ${s.accent}33`, borderRadius: 10, padding: '0.6rem', background: 'rgba(255,255,255,0.04)' }}>
+            <div style={{ fontSize: '0.78rem', color: s.text, fontWeight: 700, marginBottom: '0.4rem' }}>Text-Feinabstimmung</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.6rem' }}>
+              <label style={{ display: 'grid', gap: '0.2rem', fontSize: '0.74rem', color: s.muted }}>
+                Titelgröße ({Number(designSettings.titleFontSize || 1.85).toFixed(2)}rem)
+                <input type="range" min={1.2} max={2.6} step={0.05} value={Number(designSettings.titleFontSize || 1.85)} onChange={(e) => handleDesignChange('titleFontSize', String(e.target.value))} />
+              </label>
+              <label style={{ display: 'grid', gap: '0.2rem', fontSize: '0.74rem', color: s.muted }}>
+                Untertitelgröße ({Number(designSettings.subtextFontSize || 1.0).toFixed(2)}rem)
+                <input type="range" min={0.8} max={1.4} step={0.05} value={Number(designSettings.subtextFontSize || 1.0)} onChange={(e) => handleDesignChange('subtextFontSize', String(e.target.value))} />
+              </label>
+              <label style={{ display: 'grid', gap: '0.2rem', fontSize: '0.74rem', color: s.muted }}>
+                Fließtextgröße ({Number(designSettings.bodyFontSize || 1.0).toFixed(2)}rem)
+                <input type="range" min={0.85} max={1.3} step={0.05} value={Number(designSettings.bodyFontSize || 1.0)} onChange={(e) => handleDesignChange('bodyFontSize', String(e.target.value))} />
+              </label>
+              <label style={{ display: 'grid', gap: '0.2rem', fontSize: '0.74rem', color: s.muted }}>
+                Willkommen-Bildhöhe ({Math.round(Number(designSettings.welcomeImageHeightPx || 260))}px)
+                <input type="range" min={170} max={520} step={5} value={Number(designSettings.welcomeImageHeightPx || 260)} onChange={(e) => handleDesignChange('welcomeImageHeightPx', String(e.target.value))} />
+              </label>
+              <label style={{ display: 'grid', gap: '0.2rem', fontSize: '0.74rem', color: s.muted }}>
+                Rundgang-Bildhöhe ({Math.round(Number(designSettings.tourImageHeightPx || 260))}px)
+                <input type="range" min={170} max={520} step={5} value={Number(designSettings.tourImageHeightPx || 260)} onChange={(e) => handleDesignChange('tourImageHeightPx', String(e.target.value))} />
+              </label>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap', gridColumn: '1 / -1' }}>
+            <button type="button" onClick={() => { applyTheme('default'); setShowLiveFineTuning(true) }} style={{ padding: '0.36rem 0.7rem', borderRadius: 8, border: `1px solid ${s.accent}44`, background: '#7a4a2b', color: '#fff', cursor: 'pointer' }}>Terrakotta</button>
+            <button type="button" onClick={() => { applyTheme('elegant'); setShowLiveFineTuning(true) }} style={{ padding: '0.36rem 0.7rem', borderRadius: 8, border: `1px solid ${s.accent}44`, background: '#205a8e', color: '#fff', cursor: 'pointer' }}>Blau</button>
+            <button type="button" onClick={() => { applyTheme('modern'); setShowLiveFineTuning(true) }} style={{ padding: '0.36rem 0.7rem', borderRadius: 8, border: `1px solid ${s.accent}44`, background: '#b54a1e', color: '#fff', cursor: 'pointer' }}>Orange</button>
+            <button type="button" onClick={() => setShowLiveFineTuning((v) => !v)} style={{ padding: '0.36rem 0.7rem', borderRadius: 8, border: `1px solid ${s.accent}44`, background: showLiveFineTuning ? `${s.accent}22` : 'rgba(255,255,255,0.08)', color: s.text, cursor: 'pointer' }}>
+              {showLiveFineTuning ? 'Feinabstimmung schließen' : 'Feinabstimmung öffnen'}
+            </button>
+          </div>
+          {showLiveFineTuning ? (
+            <div style={{ gridColumn: '1 / -1', border: `1px solid ${s.accent}33`, borderRadius: 10, padding: '0.65rem', background: 'rgba(255,255,255,0.04)' }}>
+              <div style={{ fontSize: '0.78rem', color: s.text, fontWeight: 700, marginBottom: '0.45rem' }}>Feinabstimmung (Schrift & Hintergrund)</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '0.55rem' }}>
+                <label style={{ display: 'grid', gap: '0.2rem', fontSize: '0.74rem', color: s.muted }}>
+                  Akzent
+                  <input type="color" value={String(designSettings.accentColor || '#b54a1e')} onChange={(e) => handleDesignChange('accentColor', e.target.value)} style={{ width: '100%', height: 34, border: 'none', borderRadius: 8, background: 'transparent' }} />
+                </label>
+                <label style={{ display: 'grid', gap: '0.2rem', fontSize: '0.74rem', color: s.muted }}>
+                  Hintergrund
+                  <input type="color" value={String(designSettings.backgroundColor1 || '#f4efe8')} onChange={(e) => handleDesignChange('backgroundColor1', e.target.value)} style={{ width: '100%', height: 34, border: 'none', borderRadius: 8, background: 'transparent' }} />
+                </label>
+                <label style={{ display: 'grid', gap: '0.2rem', fontSize: '0.74rem', color: s.muted }}>
+                  Textfarbe
+                  <input type="color" value={String(designSettings.textColor || '#1f1a15')} onChange={(e) => handleDesignChange('textColor', e.target.value)} style={{ width: '100%', height: 34, border: 'none', borderRadius: 8, background: 'transparent' }} />
+                </label>
+              </div>
+            </div>
+          ) : null}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.5rem', gridColumn: '1 / -1' }}>
+            <label
+              style={{ border: `1px dashed ${s.accent}66`, borderRadius: 10, padding: '0.5rem', background: 'rgba(255,255,255,0.04)', cursor: 'pointer', minHeight: 110 }}
+              onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLLabelElement).style.borderColor = s.accent }}
+              onDragLeave={(e) => { (e.currentTarget as HTMLLabelElement).style.borderColor = `${s.accent}66` }}
+              onDrop={async (e) => {
+                e.preventDefault()
+                ;(e.currentTarget as HTMLLabelElement).style.borderColor = `${s.accent}66`
+                const f = e.dataTransfer.files?.[0]
+                if (!f || !f.type.startsWith('image/')) return
+                await handleQuickPageImageFile('welcomeImage', f, 'Willkommen-Bild')
+              }}
+            >
+              <input
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={async (e) => {
+                  const f = e.target.files?.[0]
+                  if (f) await handleQuickPageImageFile('welcomeImage', f, 'Willkommen-Bild')
+                  e.target.value = ''
+                }}
+              />
+              <div style={{ fontSize: '0.74rem', color: s.muted, marginBottom: '0.35rem', fontWeight: 700 }}>Willkommen-Bild (ziehen oder klicken)</div>
+              {(pendingPageImage?.field === 'welcomeImage' ? pendingPageImage.dataUrl : pageContent.welcomeImage) ? (
+                <img src={pendingPageImage?.field === 'welcomeImage' ? pendingPageImage.dataUrl : pageContent.welcomeImage} alt="Willkommen Vorschau" style={{ width: '100%', height: 72, objectFit: 'cover', borderRadius: 8, display: 'block' }} />
+              ) : (
+                <div style={{ height: 72, borderRadius: 8, display: 'grid', placeItems: 'center', border: `1px solid ${s.accent}22`, color: s.muted, fontSize: '0.75rem' }}>Keine Vorschau</div>
+              )}
+            </label>
+
+            <label
+              style={{ border: `1px dashed ${s.accent}66`, borderRadius: 10, padding: '0.5rem', background: 'rgba(255,255,255,0.04)', cursor: 'pointer', minHeight: 110 }}
+              onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLLabelElement).style.borderColor = s.accent }}
+              onDragLeave={(e) => { (e.currentTarget as HTMLLabelElement).style.borderColor = `${s.accent}66` }}
+              onDrop={async (e) => {
+                e.preventDefault()
+                ;(e.currentTarget as HTMLLabelElement).style.borderColor = `${s.accent}66`
+                const f = e.dataTransfer.files?.[0]
+                if (!f || !f.type.startsWith('image/')) return
+                await handleQuickPageImageFile('galerieCardImage', f, 'Galerie-Bild')
+              }}
+            >
+              <input
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={async (e) => {
+                  const f = e.target.files?.[0]
+                  if (f) await handleQuickPageImageFile('galerieCardImage', f, 'Galerie-Bild')
+                  e.target.value = ''
+                }}
+              />
+              <div style={{ fontSize: '0.74rem', color: s.muted, marginBottom: '0.35rem', fontWeight: 700 }}>Galerie-Bild (ziehen oder klicken)</div>
+              {(pendingPageImage?.field === 'galerieCardImage' ? pendingPageImage.dataUrl : pageContent.galerieCardImage) ? (
+                <img src={pendingPageImage?.field === 'galerieCardImage' ? pendingPageImage.dataUrl : pageContent.galerieCardImage} alt="Galerie Vorschau" style={{ width: '100%', height: 72, objectFit: 'cover', borderRadius: 8, display: 'block' }} />
+              ) : (
+                <div style={{ height: 72, borderRadius: 8, display: 'grid', placeItems: 'center', border: `1px solid ${s.accent}22`, color: s.muted, fontSize: '0.75rem' }}>Keine Vorschau</div>
+              )}
+            </label>
+
+            <label
+              style={{ border: `1px dashed ${s.accent}66`, borderRadius: 10, padding: '0.5rem', background: 'rgba(255,255,255,0.04)', cursor: 'pointer', minHeight: 110 }}
+              onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLLabelElement).style.borderColor = s.accent }}
+              onDragLeave={(e) => { (e.currentTarget as HTMLLabelElement).style.borderColor = `${s.accent}66` }}
+              onDrop={async (e) => {
+                e.preventDefault()
+                ;(e.currentTarget as HTMLLabelElement).style.borderColor = `${s.accent}66`
+                const f = e.dataTransfer.files?.[0]
+                if (!f || !f.type.startsWith('video/')) return
+                await handleVirtualTourVideoFile(f)
+              }}
+            >
+              <input
+                ref={virtualTourVideoInputRef}
+                type="file"
+                accept="video/*"
+                style={{ display: 'none' }}
+                onChange={async (e) => {
+                  const f = e.target.files?.[0]
+                  if (f) await handleVirtualTourVideoFile(f)
+                  e.target.value = ''
+                }}
+              />
+              <div style={{ fontSize: '0.74rem', color: s.muted, marginBottom: '0.35rem', fontWeight: 700 }}>Rundgang-Video (ziehen oder klicken, max. 2 Min / 100 MB)</div>
+              {pageContent.virtualTourVideo ? (
+                <video src={pageContent.virtualTourVideo} muted controls style={{ width: '100%', height: 72, objectFit: 'cover', borderRadius: 8, display: 'block' }} />
+              ) : (
+                <div style={{ height: 72, borderRadius: 8, display: 'grid', placeItems: 'center', border: `1px solid ${s.accent}22`, color: s.muted, fontSize: '0.75rem' }}>Keine Vorschau</div>
+              )}
+            </label>
+          </div>
+          {videoUploadMsg ? (
+            <div style={{ gridColumn: '1 / -1', fontSize: '0.76rem', color: videoUploadStatus === 'error' ? '#ffb3b3' : s.muted }}>
+              {videoUploadMsg}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   )
 
@@ -14515,7 +14764,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 </div>
               </>
             )}
-            <div style={{ marginTop: dtCompact ? '0.35rem' : 0 }}>{renderLiveTemplatePanel(dtCompact ? 320 : 420)}</div>
+            <div style={{ marginTop: dtCompact ? '0.35rem' : 0 }}>{renderLiveTemplatePanel(dtCompact ? 500 : 680)}</div>
             {/* Nur K2: Entdecken-Seite (Landing) – ein Klick = Bild wählen, sofort gespeichert */}
             {false && !tenant.isOeffentlich && !tenant.isVk2 && (() => {
               const entdeckenHeroVorschauSrc =
@@ -14766,7 +15015,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               </div>
               )
             })()}
-            {/* Workflow Schritte 1–4 + Zoom */}
+            {/* Workflow Schritte 1–4 + Zoom (nur klassischer K2/ök2-Flow) */}
+            {!(isDynamicTenantDesignMode || isVk2DesignMode) && (
             <div style={{ display: 'flex', alignItems: 'center', gap: dtCompact ? '0.25rem' : '0.5rem', flexWrap: 'wrap' }}>
               {/* Schritt 1 */}
               <div style={{ display: 'flex', alignItems: 'center', gap: dtCompact ? '0.25rem' : '0.5rem', background: 'rgba(0,0,0,0.06)', border: `1px solid ${s.accent}33`, borderRadius: dtCompact ? 8 : 10, padding: dtCompact ? '0.22rem 0.45rem' : '0.45rem 1rem' }}>
@@ -14790,13 +15040,12 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   setPageContentGalerie(pageContent, designTenant)
                   setPageTexts(pageTexts, designTenant)
                 }
-                const route = publicGalleryPathForCurrentContext
                 const backState = {
                   fromAdmin: true,
                   fromAdminTab: 'design' as const,
                   fromAdminContext: tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
                 }
-                navigate(route + (route.includes('?') ? '&' : '?') + 'vorschau=1', { state: backState })
+                navigate(designLiveTemplateRoute, { state: backState })
               }} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: dtCompact ? '0.28rem 0.55rem' : '0.5rem 1.1rem', fontSize: dtCompact ? '0.78rem' : '1rem', fontWeight: 700, background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: dtCompact ? 8 : 10, color: '#10b981', cursor: 'pointer', fontFamily: 'inherit' }}>
                 <span style={{ fontSize: '0.8rem', fontWeight: 700 }}>2</span>{' '}
                 {dtCompact
@@ -14809,7 +15058,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               {/* Schritt 3: Speichern */}
               <div style={{ display: 'flex', alignItems: 'center', gap: dtCompact ? '0.25rem' : '0.5rem' }}>
                 <button type="button" onClick={() => setDesignSubTab('farben')} style={{ padding: dtCompact ? '0.28rem 0.45rem' : '0.5rem 1rem', fontSize: dtCompact ? '0.76rem' : '0.95rem', fontWeight: 600, background: `${s.accent}18`, border: `1px solid ${s.accent}66`, borderRadius: dtCompact ? 8 : 10, color: s.accent, cursor: 'pointer' }}>{dtCompact ? '🎨 Farbe' : '🎨 Farbe ändern'}</button>
-                {!tenant.isOeffentlich && !tenant.isVk2 ? (
+                {!tenant.isOeffentlich && !tenant.isVk2 && !effectiveDynamicTenantId ? (
                   <button type="button" onClick={() => { setDesignSubTab('eingangsseite'); setEntdeckenForm(getPageContentEntdecken()) }} style={{ padding: dtCompact ? '0.28rem 0.45rem' : '0.5rem 1rem', fontSize: dtCompact ? '0.76rem' : '0.95rem', fontWeight: 600, background: 'rgba(95,251,241,0.12)', border: '1px solid rgba(95,251,241,0.5)', borderRadius: dtCompact ? 8 : 10, color: '#5ffbf1', cursor: 'pointer' }}>{dtCompact ? '🚪 Eingang' : '🚪 Eingangsseite'}</button>
                 ) : null}
                 {designSaveFeedback === 'ok'
@@ -14918,10 +15167,14 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 ))}
               </div>
             </div>
+            )}
           </div>
           <input type="file" accept="image/*" ref={galerieImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'pageHero' }); setPendingPageImage({ field: 'galerieCardImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Galerie-Karte – im Fenster „Bild übernehmen“ klicken'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
           <input type="file" accept="image/*" ref={virtualTourImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'pageHero' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – im Fenster „Bild übernehmen“ klicken'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
           {(() => {
+            if (effectiveDynamicTenantId) {
+              return null
+            }
             const tc = tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich : tenant.isVk2 ? TENANT_CONFIGS.vk2 : TENANT_CONFIGS.k2
             const dynamicFocusLabel = FOCUS_DIRECTIONS.find((d) => d.id === (galleryData?.focusDirections?.[0] ?? dynamicFocusDirectionFromUrl))?.label ?? 'Kunst & Galerie'
             const galleryName = tenant.dynamicTenantId
@@ -15943,7 +16196,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
 
               {/* Galerie / Mitglieder ansehen – K2/ök2: Eintrittseite (nicht Vorschau), damit Modal „Wähle deinen Einstieg“ erscheint; VK2: Vorschau */}
               <Link
-                to={effectiveDynamicTenantId ? currentDynamicTenantGalleryPath : tenant.isVk2 ? PROJECT_ROUTES.vk2.galerieVorschau : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie}
+                to={effectiveDynamicTenantId ? designLiveTemplateRoute : tenant.isVk2 ? PROJECT_ROUTES.vk2.galerieVorschau : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie}
                 state={{
                   fromAdmin: true,
                   fromAdminTab: activeTab,
@@ -15998,7 +16251,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   </Link>
                   <Link
                     to={PROJECT_ROUTES['k2-galerie'].buchhaltung}
-                    state={{ fromVk2: true }}
+                    state={{ fromVk2: true, dynamicTenantId: effectiveDynamicTenantId || undefined }}
                     title="Guide: Führt zur Buchhaltung – Verkäufe, Belege, Lager und Listen an einem Ort."
                     style={{
                       padding: '0.55rem 1.1rem',
@@ -16048,8 +16301,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     💰 Kasse öffnen
                   </Link>
                   <Link
-                    to={PROJECT_ROUTES['k2-galerie'].buchhaltung}
-                    state={{ fromOeffentlich: tenant.isOeffentlich || undefined }}
+                    to={effectiveDynamicTenantId ? `${PROJECT_ROUTES['k2-galerie'].buchhaltung}?tenantId=${encodeURIComponent(effectiveDynamicTenantId)}` : PROJECT_ROUTES['k2-galerie'].buchhaltung}
+                    state={{ fromOeffentlich: tenant.isOeffentlich || undefined, dynamicTenantId: effectiveDynamicTenantId || undefined }}
                     title="Guide: Führt zur Buchhaltung – Verkäufe, Belege, Lager und Listen an einem Ort."
                     style={{
                       padding: '0.55rem 1.1rem',
@@ -18557,7 +18810,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             {/* Vorschau – wie in K2: Seite 1 / Seite 2 / Farben, für K2 und ök2 gleich */}
             {designSubTab === 'vorschau' && renderDesignVorschau()}
 
-            {designSubTab === 'eingangsseite' && (() => {
+            {designSubTab === 'eingangsseite' && !effectiveDynamicTenantId && (() => {
               const ec = entdeckenForm
               const fText = '#1c1a18'
               const fMuted = '#5c5650'
@@ -18601,6 +18854,17 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             })()}
 
             {designSubTab === 'farben' && (() => {
+              if (isDynamicTenantDesignMode || isVk2DesignMode) {
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+                    {renderLiveTemplatePanel(320)}
+                    <div style={{ padding: '0.7rem 0.9rem', borderRadius: 10, border: `1px solid ${s.accent}33`, background: 'rgba(255,255,255,0.04)', color: s.muted, fontSize: '0.83rem', lineHeight: 1.45 }}>
+                      Für {isVk2DesignMode ? 'VK2' : 'Lizenznehmer'} läuft die Bearbeitung hier nur noch über die Live-Template-Vorschau oben (Texte, Farben, Bilder).
+                      Der alte Doppelbereich darunter ist bewusst ausgeblendet.
+                    </div>
+                  </div>
+                )
+              }
               const simpleKeys = ['accentColor', 'backgroundColor1', 'textColor'] as const
               const labels: Record<string, string> = { accentColor: 'Akzentfarbe', backgroundColor1: 'Hintergrund', textColor: 'Textfarbe' }
               const fText = '#1c1a18'
@@ -20665,7 +20929,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         Musterfelder leeren: oben unter <strong>Einstellungen</strong> auf <strong>„Demo &amp; Muster zurücksetzen“</strong> tippen → <strong>🗑️ Musterfelder leeren</strong>.
                       </p>
                     )}
-                    {!isPlatformInstance() && !tenant.isOeffentlich && (
+                    {!isPlatformInstance() && !tenant.isOeffentlich && !effectiveDynamicTenantId && (
                       <LicenseeAdminQrPanel
                         registrationComplete={!!(registrierungConfig.lizenznummer || '').trim()}
                         adminBaseUrl={`${APP_BASE_URL}/admin`}
@@ -20817,7 +21081,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           }
                         />
                       )}
-                      {!tenant.isOeffentlich && !tenant.isVk2 && isPlatformInstance() && (
+                      {!tenant.isOeffentlich && !tenant.isVk2 && isPlatformInstance() && !effectiveDynamicTenantId && (
                         <LicenseeAdminQrPanel
                           registrationComplete
                           adminBaseUrl={`${APP_BASE_URL}/admin`}
@@ -20838,11 +21102,31 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           }
                         />
                       )}
+                      {effectiveDynamicTenantId && (
+                        <LicenseeAdminQrPanel
+                          registrationComplete
+                          adminBaseUrl={`${APP_BASE_URL}/admin?tenantId=${encodeURIComponent(effectiveDynamicTenantId)}&focusDirection=${encodeURIComponent(dynamicFocusDirectionFromUrl)}`}
+                          accent={s.accent}
+                          bgCard={s.bgCard}
+                          text={s.text}
+                          muted={s.muted}
+                          radius="12px"
+                          heading="Admin-Zugang für diesen Lizenznehmer"
+                          adminIntro={
+                            <p style={{ margin: 0 }}>
+                              Hier siehst du den <strong>Admin-Link und QR-Code nur für diesen Lizenznehmer</strong>.
+                              Link kann gespeichert/geteilt werden, der QR kann auf das Handy übernommen werden.
+                              Öffentliche Besucher nutzen weiterhin nur den Galerie-QR auf der Homepage.
+                            </p>
+                          }
+                          downloadFileName={`admin-qr-${effectiveDynamicTenantId}.png`}
+                        />
+                      )}
                     </div>
                   </div>
 
-                  {/* Künstler:in 2 (Georg) – nur K2, nicht ök2 */}
-                  {!tenant.isOeffentlich && (
+                  {/* Künstler:in 2 (Georg) – nur interner K2-Kontext; NICHT für öffentl./VK2/Lizenzbetrieb */}
+                  {!tenant.isOeffentlich && !tenant.isVk2 && !effectiveDynamicTenantId && (
                   <div style={{
                     background: s.bgCard,
                     border: `1px solid ${s.accent}22`,
@@ -25545,6 +25829,7 @@ ${name}`
                           {/* Arbeitsplattform-Header: Event + Fortschritt auf einen Blick */}
                           {(() => {
                             const evForFlyerPlakat = resolveEventForMediengeneratorCard(events, event)
+                            const isK2WorldOnlyDocs = !(tenant.isOeffentlich || tenant.isVk2 || !!effectiveDynamicTenantId)
                             const plakatFlyerMasterDocs = [
                               ...buildFlyerMasterPlakatVirtualDocs(evForFlyerPlakat, flyerTenant),
                               ...buildEntdeckenPlakatVirtualDocs(evForFlyerPlakat),
@@ -25568,31 +25853,33 @@ ${name}`
                                   generateEditableNewsletterPDF(evSug?.newsletter || generateNewsletterContent(ev), ev)
                                 }
                               },
-                              {
-                                typ: 'plakat' as const,
-                                icon: '🖼️',
-                                titel: 'Plakat & Druckformate',
-                                beschreibung:
-                                  'A5, A3, A6, Visitenkarten wie im Flyer-Master; A5 Öffnungszeiten K2; plus A1 Produktvorstellung und Social-PDF Quadrat zum Teilen. Checkboxen, dann Druckerei bzw. Versand.',
-                                docs: plakatFlyerMasterDocs,
-                                onOpen: (doc: any) => handleViewEventDocument(doc, event),
-                                onDelete: (doc: any) => {
-                                  if (
-                                    doc?.flyerMasterSlot ||
-                                    doc?.entdeckenPlakatA1Slot ||
-                                    doc?.entdeckenPlakatSocialSlot ||
-                                    doc?.oeffnungszeitenFlyerA5K2Slot
-                                  )
-                                    return
-                                  handleDeleteWerbematerialDocument(doc.id)
-                                },
-                                onErstellen: () => {
-                                  const ev = resolveEventForMediengeneratorCard(events, event)
-                                  navigateFromOeffentlichkeitsarbeitOverlay(
-                                    flyerEventBogenUrl({ tenant: flyerTenant, eventId: ev?.id ?? event?.id }),
-                                  )
-                                },
-                              },
+                              ...(isK2WorldOnlyDocs
+                                ? [{
+                                    typ: 'plakat' as const,
+                                    icon: '🖼️',
+                                    titel: 'Plakat & Druckformate',
+                                    beschreibung:
+                                      'A5, A3, A6, Visitenkarten wie im Flyer-Master; A5 Öffnungszeiten K2; plus A1 Produktvorstellung und Social-PDF Quadrat zum Teilen. Checkboxen, dann Druckerei bzw. Versand.',
+                                    docs: plakatFlyerMasterDocs,
+                                    onOpen: (doc: any) => handleViewEventDocument(doc, event),
+                                    onDelete: (doc: any) => {
+                                      if (
+                                        doc?.flyerMasterSlot ||
+                                        doc?.entdeckenPlakatA1Slot ||
+                                        doc?.entdeckenPlakatSocialSlot ||
+                                        doc?.oeffnungszeitenFlyerA5K2Slot
+                                      )
+                                        return
+                                      handleDeleteWerbematerialDocument(doc.id)
+                                    },
+                                    onErstellen: () => {
+                                      const ev = resolveEventForMediengeneratorCard(events, event)
+                                      navigateFromOeffentlichkeitsarbeitOverlay(
+                                        flyerEventBogenUrl({ tenant: flyerTenant, eventId: ev?.id ?? event?.id }),
+                                      )
+                                    },
+                                  }]
+                                : []),
                               {
                                 typ: 'presse' as const,
                                 icon: '📰',
@@ -25661,7 +25948,7 @@ ${name}`
                                   openSocialRedaction(ev, null, { ...(evSug?.socialMedia || generateSocialMediaContent(ev)), imageDataUrl: (evSug?.socialMedia as any)?.imageDataUrl ?? '' })
                                 }
                               },
-                              ...(tenant.isOeffentlich || tenant.isVk2
+                              ...(tenant.isOeffentlich || tenant.isVk2 || !!effectiveDynamicTenantId
                                 ? []
                                 : [
                                     {
@@ -25696,7 +25983,7 @@ ${name}`
                                     </div>
                                   </div>
                                   <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0, flexWrap: 'wrap' }}>
-                                    {!(tenant.isOeffentlich || tenant.isVk2) && (
+                                    {!(tenant.isOeffentlich || tenant.isVk2 || !!effectiveDynamicTenantId) && (
                                     <button
                                       type="button"
                                       onClick={() => openMedienpaketVorschlagDocument(event)}
@@ -25716,7 +26003,7 @@ ${name}`
                                       📑 Medienpaket (dieses Event)
                                     </button>
                                     )}
-                                    {!(tenant.isOeffentlich || tenant.isVk2) && (
+                                    {!(tenant.isOeffentlich || tenant.isVk2 || !!effectiveDynamicTenantId) && (
                                     <button
                                       type="button"
                                       onClick={() => void applyMedienpaketAlsGespeicherteWerbemittel(event)}

@@ -67,6 +67,69 @@ function loadHomepageDesignForFlyer(isOeffentlich: boolean, isVk2: boolean): Hom
   }
 }
 
+function readStorageObject(key: string): Record<string, unknown> {
+  if (typeof window === 'undefined') return {}
+  try {
+    const raw = localStorage.getItem(key)
+    if (!raw) return {}
+    const parsed = JSON.parse(raw) as unknown
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {}
+    return parsed as Record<string, unknown>
+  } catch {
+    return {}
+  }
+}
+
+function dynamicTenantStorageKey(dynamicTenantId: string, suffix: string): string {
+  const id = String(dynamicTenantId || '').trim().toLowerCase()
+  return `k2-${id}-${suffix}`
+}
+
+function loadDynamicTenantGallery(dynamicTenantId: string): Record<string, unknown> {
+  if (!dynamicTenantId) return {}
+  return readStorageObject(dynamicTenantStorageKey(dynamicTenantId, 'stammdaten-galerie'))
+}
+
+function loadDynamicTenantPageTexts(dynamicTenantId: string): Record<string, unknown> {
+  if (!dynamicTenantId) return {}
+  return readStorageObject(dynamicTenantStorageKey(dynamicTenantId, 'page-texts'))
+}
+
+function loadDynamicTenantEvents(dynamicTenantId: string): any[] {
+  if (!dynamicTenantId || typeof window === 'undefined') return []
+  try {
+    const raw = localStorage.getItem(dynamicTenantStorageKey(dynamicTenantId, 'events'))
+    if (!raw) return []
+    const parsed = JSON.parse(raw) as unknown
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+function loadDynamicTenantBasics(dynamicTenantId: string) {
+  const gallery = loadDynamicTenantGallery(dynamicTenantId)
+  const pageTexts = loadDynamicTenantPageTexts(dynamicTenantId)
+  const galerieTexts = pageTexts?.galerie && typeof pageTexts.galerie === 'object'
+    ? (pageTexts.galerie as Record<string, unknown>)
+    : {}
+  const galleryName = String(gallery.name || galerieTexts.heroTitle || galerieTexts.pageTitle || 'Meine Galerie').trim()
+  const welcomeIntro = String(galerieTexts.welcomeIntroText || '').trim()
+  const welcomeSubtext = String(galerieTexts.welcomeSubtext || '').trim()
+  return {
+    galleryName,
+    brandLine: galleryName,
+    brandSub: welcomeSubtext || 'Kunst & Galerie',
+    backCardTitle: galleryName,
+    intro: welcomeIntro || 'Willkommen in unserer Galerie. Entdecken Sie Werke, Ideen und aktuelle Termine.',
+    subtitle: welcomeSubtext || '',
+    address: String(gallery.address || '').trim(),
+    city: String(gallery.city || '').trim(),
+    phone: String(gallery.phone || '').trim(),
+    email: String(gallery.email || '').trim(),
+  }
+}
+
 function hexToRgbaFlyer(hex: string, alpha: number): string {
   const h = hex.replace(/^#/, '')
   if (h.length !== 6 && h.length !== 3) return `rgba(15, 111, 102, ${alpha})`
@@ -239,7 +302,12 @@ async function compressLeftSrcForFlyerStorage(leftSrc: string, mode: FlyerLeftCo
   }
 }
 
-function galleryFallbackImagePath(isOeffentlich: boolean, isVk2: boolean): string {
+function galleryFallbackImagePath(isOeffentlich: boolean, isVk2: boolean, dynamicTenantId?: string): string {
+  if (dynamicTenantId) {
+    const g = loadDynamicTenantGallery(dynamicTenantId)
+    const gi = getGalerieImages(g)
+    return gi.galerieCardImage || gi.welcomeImage || FLYER_DUMMY_BILD_OEK2_VK2
+  }
   if (isOeffentlich || isVk2) return flyerImageFallbackPath(isOeffentlich, isVk2)
   const g = loadStammdaten('k2', 'gallery')
   const gi = getGalerieImages(g)
@@ -290,7 +358,19 @@ function loadFlyerEventBogenPersisted(storageKey: string): Partial<FlyerEventBog
 function defaultMasterTextFromBase(
   isOeffentlich: boolean,
   isVk2: boolean,
+  dynamicTenantId?: string,
 ): FlyerEventBogenPersistedV1['masterText'] {
+  if (dynamicTenantId) {
+    const b = loadDynamicTenantBasics(dynamicTenantId)
+    return {
+      intro: b.intro,
+      backSlogan: 'für Menschen mit Ideen, die gesehen werden wollen.',
+      backPower: 'Ihre Ideen verdienen eine starke, professionelle Präsentation.',
+      backSub: 'Ihre Online-Galerie macht Werke, Angebote und Termine sichtbar.',
+      backInvite: 'Scannen Sie den QR-Code und entdecken Sie die aktuelle Galerie online.',
+      marketingBlocksRaw: '',
+    }
+  }
   if (isVk2) {
     const b = getVk2FlyerBasics()
     return {
@@ -317,8 +397,9 @@ function mergeMasterTextFromPersisted(
   persisted: Partial<FlyerEventBogenPersistedV1> | null,
   isOeffentlich: boolean,
   isVk2: boolean,
+  dynamicTenantId?: string,
 ): FlyerEventBogenPersistedV1['masterText'] {
-  const d = defaultMasterTextFromBase(isOeffentlich, isVk2)
+  const d = defaultMasterTextFromBase(isOeffentlich, isVk2, dynamicTenantId)
   if (!persisted?.masterText) return d
   const m = persisted.masterText
   return {
@@ -485,12 +566,14 @@ export default function FlyerEventBogenNeuPage() {
   const { isOeffentlich, isVk2, dynamicTenantId } = useTenant()
   const [searchParams] = useSearchParams()
   const dynamicTenantIdFromSearch = String(searchParams.get('tenantId') || '').trim().toLowerCase()
-  const effectiveDynamicTenantId = dynamicTenantId || dynamicTenantIdFromSearch || ''
-  const isK2 = !isOeffentlich && !isVk2
+  const sessionDynamicTenantId =
+    typeof window !== 'undefined' ? String(sessionStorage.getItem('k2-active-dynamic-tenant') || '').trim().toLowerCase() : ''
+  const effectiveDynamicTenantId = dynamicTenantId || dynamicTenantIdFromSearch || sessionDynamicTenantId || ''
+  const isK2 = !isOeffentlich && !isVk2 && !effectiveDynamicTenantId
   const flyerStorageKey = getFlyerEventBogenStorageKey(isOeffentlich, isVk2, effectiveDynamicTenantId || undefined)
   const flyerImgFallback = useMemo(
-    () => flyerImageFallbackPath(isOeffentlich, isVk2),
-    [isOeffentlich, isVk2],
+    () => (effectiveDynamicTenantId ? FLYER_DUMMY_BILD_OEK2_VK2 : flyerImageFallbackPath(isOeffentlich, isVk2)),
+    [effectiveDynamicTenantId, isOeffentlich, isVk2],
   )
   const frontQrPathExplain = useMemo(() => {
     if (effectiveDynamicTenantId) return `/g/${encodeURIComponent(effectiveDynamicTenantId)}`
@@ -526,17 +609,65 @@ export default function FlyerEventBogenNeuPage() {
   const { versionTimestamp } = useQrVersionTimestamp()
   /** Neu laden bei Event-/Stammdaten-Änderung (Admin, anderes Tab, Tab-Rückkehr). */
   const [flyerDataTick, setFlyerDataTick] = useState(0)
+  const [dynamicServerPayload, setDynamicServerPayload] = useState<any | null>(null)
+  useEffect(() => {
+    if (!effectiveDynamicTenantId) {
+      setDynamicServerPayload(null)
+      return
+    }
+    const controller = new AbortController()
+    fetch(`${BASE_APP_URL}/api/gallery-data?tenantId=${encodeURIComponent(effectiveDynamicTenantId)}&_=${Date.now()}`, {
+      cache: 'no-store',
+      signal: controller.signal,
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((payload) => setDynamicServerPayload(payload && typeof payload === 'object' ? payload : null))
+      .catch(() => setDynamicServerPayload(null))
+    return () => controller.abort()
+  }, [effectiveDynamicTenantId, flyerDataTick])
   const homepageDesignForFlyer = useMemo(
     () => loadHomepageDesignForFlyer(isOeffentlich, isVk2),
     [isOeffentlich, isVk2, flyerDataTick],
   )
   const flyerTheme = useMemo(() => buildFlyerThemeInject(homepageDesignForFlyer), [homepageDesignForFlyer])
   const base = useMemo(() => {
+    if (effectiveDynamicTenantId) {
+      const local = loadDynamicTenantBasics(effectiveDynamicTenantId)
+      const serverGallery = dynamicServerPayload?.gallery && typeof dynamicServerPayload.gallery === 'object'
+        ? (dynamicServerPayload.gallery as Record<string, unknown>)
+        : {}
+      const serverPageTexts = dynamicServerPayload?.pageTexts && typeof dynamicServerPayload.pageTexts === 'object'
+        ? (dynamicServerPayload.pageTexts as Record<string, unknown>)
+        : {}
+      const serverGalerieTexts = serverPageTexts?.galerie && typeof serverPageTexts.galerie === 'object'
+        ? (serverPageTexts.galerie as Record<string, unknown>)
+        : {}
+      const galleryName = String(serverGallery.name || local.galleryName || '').trim() || 'Meine Galerie'
+      return {
+        ...local,
+        galleryName,
+        brandLine: galleryName,
+        backCardTitle: galleryName,
+        brandSub: String(serverGalerieTexts.welcomeSubtext || local.brandSub || '').trim() || 'Kunst & Galerie',
+        intro: String(serverGalerieTexts.welcomeIntroText || local.intro || '').trim() || local.intro,
+        address: String(serverGallery.address || local.address || '').trim(),
+        city: String(serverGallery.city || local.city || '').trim(),
+        phone: String(serverGallery.phone || local.phone || '').trim(),
+        email: String(serverGallery.email || local.email || '').trim(),
+      }
+    }
     if (isOeffentlich) return getOek2MusterBasics()
     if (isVk2) return getVk2FlyerBasics()
     return getK2Basics()
-  }, [isOeffentlich, isVk2, flyerDataTick])
+  }, [effectiveDynamicTenantId, isOeffentlich, isVk2, flyerDataTick, dynamicServerPayload])
   const gallery = useMemo(() => {
+    if (effectiveDynamicTenantId) {
+      const local = loadDynamicTenantGallery(effectiveDynamicTenantId)
+      const server = dynamicServerPayload?.gallery && typeof dynamicServerPayload.gallery === 'object'
+        ? (dynamicServerPayload.gallery as Record<string, unknown>)
+        : {}
+      return { ...local, ...server }
+    }
     if (isOeffentlich) return loadStammdaten('oeffentlich', 'gallery')
     if (isVk2) {
       const vk = getVk2FlyerBasics()
@@ -554,7 +685,7 @@ export default function FlyerEventBogenNeuPage() {
       }
     }
     return loadStammdaten('k2', 'gallery')
-  }, [flyerDataTick, isOeffentlich, isVk2])
+  }, [effectiveDynamicTenantId, flyerDataTick, isOeffentlich, isVk2, dynamicServerPayload])
   const galerieImages = useMemo(() => {
     if (isVk2) {
       const pc = getPageContentGalerie('vk2')
@@ -575,8 +706,8 @@ export default function FlyerEventBogenNeuPage() {
   const [leftSrc, setLeftSrc] = useState(() => {
     const p = loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich, isVk2, effectiveDynamicTenantId || undefined))
     const s = p?.leftSrc
-    const fb = flyerImageFallbackPath(isOeffentlich, isVk2)
-    const demo = isOeffentlich || isVk2
+    const fb = flyerImgFallback
+    const demo = isOeffentlich || isVk2 || !!effectiveDynamicTenantId
     if (demo) {
       if (typeof s === 'string' && s.length > 0 && (s.startsWith('data:image') || s.startsWith('blob:'))) {
         return s
@@ -585,6 +716,11 @@ export default function FlyerEventBogenNeuPage() {
     }
     if (typeof s === 'string' && s.length > 0 && !s.startsWith('blob:')) {
       return s
+    }
+    if (effectiveDynamicTenantId) {
+      const g = loadDynamicTenantGallery(effectiveDynamicTenantId)
+      const gi = getGalerieImages(g)
+      return gi.galerieCardImage || gi.welcomeImage || fb
     }
     const g = loadStammdaten('k2', 'gallery')
     const gi = getGalerieImages(g)
@@ -608,6 +744,7 @@ export default function FlyerEventBogenNeuPage() {
       loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich, isVk2, effectiveDynamicTenantId || undefined)),
       isOeffentlich,
       isVk2,
+      effectiveDynamicTenantId || undefined,
     ),
   )
   const [introFollowsGallery, setIntroFollowsGallery] = useState(() => {
@@ -678,7 +815,7 @@ export default function FlyerEventBogenNeuPage() {
     }
 
     const applyFromLocal = () => {
-      const g = loadStammdaten('k2', 'gallery')
+      const g = effectiveDynamicTenantId ? loadDynamicTenantGallery(effectiveDynamicTenantId) : loadStammdaten('k2', 'gallery')
       const gi = getGalerieImages(g)
       if (!active) return
       setMiddleSrc(gi.welcomeImage || fb)
@@ -712,7 +849,7 @@ export default function FlyerEventBogenNeuPage() {
     return () => {
       active = false
     }
-  }, [derivationOnlyViewer, fromPublicGalerie, isOeffentlich, isVk2, flyerDataTick, flyerImgFallback, versionTimestamp])
+  }, [derivationOnlyViewer, fromPublicGalerie, isOeffentlich, isVk2, flyerDataTick, flyerImgFallback, versionTimestamp, effectiveDynamicTenantId])
 
   /**
    * Master A5 (A4 mit 2×A5) aus Galerie („Aktuelles“):
@@ -760,7 +897,7 @@ export default function FlyerEventBogenNeuPage() {
     }
 
     const applyFromLocal = () => {
-      const g = loadStammdaten('k2', 'gallery')
+      const g = effectiveDynamicTenantId ? loadDynamicTenantGallery(effectiveDynamicTenantId) : loadStammdaten('k2', 'gallery')
       const gi = getGalerieImages(g)
       if (!active) return
       setLeftSrc(gi.galerieCardImage || gi.welcomeImage || fb)
@@ -948,7 +1085,7 @@ export default function FlyerEventBogenNeuPage() {
       json = JSON.stringify(payload)
     }
 
-    const fallbackPath = galleryFallbackImagePath(isOeffentlich, isVk2)
+    const fallbackPath = galleryFallbackImagePath(isOeffentlich, isVk2, effectiveDynamicTenantId)
     if (json.length > FLYER_SAVE_MAX_BYTES) {
       payload = buildPayload(fallbackPath)
       json = JSON.stringify(payload)
@@ -1153,6 +1290,21 @@ export default function FlyerEventBogenNeuPage() {
         marketing: 'Marketing-Text rechts über die große Fläche bearbeiten.',
       }
     }
+    if (effectiveDynamicTenantId) {
+      return {
+        hero:
+          'Kopfzeile: Titel und Unterzeile kommen aus den eigenen Lizenznehmer-Stammdaten und Texten.',
+        invite: `Einladungsblock: Termin aus Ihrer Eventplanung. Adresse und Ort nur aus Ihren eigenen Stammdaten. ${oh}`,
+        qrFooter: `QR „Zur Galerie online“: direkte Lizenznehmer-Galerie ${frontQrPathExplain}, immer mit aktuellem Server-Stand.`,
+        image:
+          'Bild: aus Ihrem Galeriebild/Willkommensbild oder neutralem Platzhalter. Keine K2-Altbilder als Fallback.',
+        intro: 'Intro: live aus Ihren Galerie-Texten oder manuell bearbeitet.',
+        backTitle: 'Rückseiten-Überschrift: aus Ihrer eigenen Stammdaten-Linie.',
+        qrBack: `QR Rückseite: ${backQrPathExplain} (allgemeiner Einstieg).`,
+        copyright: 'Copyright: Produktstandard (kgm solution).',
+        marketing: 'Fließtext rechts über die große Fläche bearbeiten.',
+      }
+    }
     return {
       hero:
         'Kopfzeile: Galerietitel und Namen aus K2-Stammdaten; die Veranstaltungszeile aus dem Eröffnungs- bzw. Hauptevent der K2-Eventplanung.',
@@ -1166,7 +1318,7 @@ export default function FlyerEventBogenNeuPage() {
       copyright: 'Copyright: Produktstandard (kgm solution).',
       marketing: 'Fließtext rechts über die große Fläche bearbeiten.',
     }
-  }, [isOeffentlich, isVk2, frontQrPathExplain, backQrPathExplain])
+  }, [isOeffentlich, isVk2, effectiveDynamicTenantId, frontQrPathExplain, backQrPathExplain])
 
   const frontGalleryQr = useMemo(() => {
     const path = effectiveDynamicTenantId
@@ -1190,20 +1342,26 @@ export default function FlyerEventBogenNeuPage() {
         if (active) setFrontQrDataUrl(url)
       })
       .catch(() => {})
-    void QRCode.toDataURL(oek2TorQr, { width: 520, margin: 1 })
-      .then((url) => {
-        if (active) setBackQrDataUrl(url)
-      })
-      .catch(() => {})
+    if (!effectiveDynamicTenantId) {
+      void QRCode.toDataURL(oek2TorQr, { width: 520, margin: 1 })
+        .then((url) => {
+          if (active) setBackQrDataUrl(url)
+        })
+        .catch(() => {})
+    } else {
+      setBackQrDataUrl('')
+    }
     return () => {
       active = false
     }
-  }, [frontGalleryQr, oek2TorQr])
+  }, [frontGalleryQr, oek2TorQr, effectiveDynamicTenantId])
 
   useEffect(() => {
     const evts = isOeffentlich
       ? getOeffentlichEventsWithMusterFallback()
-      : loadEvents(isVk2 ? 'vk2' : 'k2')
+      : effectiveDynamicTenantId
+        ? (Array.isArray(dynamicServerPayload?.events) ? dynamicServerPayload.events : loadDynamicTenantEvents(effectiveDynamicTenantId))
+        : loadEvents(isVk2 ? 'vk2' : 'k2')
     const list = Array.isArray(evts) ? evts : []
     let eroeffnung: EventTerminLike | null = null
     if (eventIdFromUrl) {
@@ -1226,7 +1384,7 @@ export default function FlyerEventBogenNeuPage() {
       setEroeffnungEvent(null)
       setEventDateLine('Termin folgt')
     }
-  }, [flyerDataTick, isOeffentlich, isVk2, eventIdFromUrl])
+  }, [flyerDataTick, isOeffentlich, isVk2, eventIdFromUrl, effectiveDynamicTenantId, dynamicServerPayload])
 
   /**
    * Event-Ableitungen (A3/A6/Karte): Wenn ein Event per eventId gewählt wurde und ein sinnvolles
@@ -1277,14 +1435,16 @@ export default function FlyerEventBogenNeuPage() {
       const ce = ev as CustomEvent<{ tenant?: string }>
       const t = ce.detail?.tenant
       if (isOeffentlich && t === 'oeffentlich') bump()
-      if (!isOeffentlich && !isVk2 && t === 'k2') bump()
+      if (!isOeffentlich && !isVk2 && !effectiveDynamicTenantId && t === 'k2') bump()
+      if (effectiveDynamicTenantId && t === effectiveDynamicTenantId) bump()
     }
     window.addEventListener('k2-tenant-stammdaten-updated', onTenantStam as EventListener)
     const onGalleryStam = (ev: Event) => {
       const ce = ev as CustomEvent<{ tenant?: string }>
       const t = ce.detail?.tenant
       if (isOeffentlich && t === 'oeffentlich') bump()
-      if (!isOeffentlich && !isVk2 && t === 'k2') bump()
+      if (!isOeffentlich && !isVk2 && !effectiveDynamicTenantId && t === 'k2') bump()
+      if (effectiveDynamicTenantId && t === effectiveDynamicTenantId) bump()
     }
     window.addEventListener('k2-gallery-stammdaten-updated', onGalleryStam as EventListener)
     const onVk2Stam = () => {
@@ -1317,6 +1477,18 @@ export default function FlyerEventBogenNeuPage() {
           e.key === 'k2-vk2-page-texts'
         )
           bump()
+      } else if (effectiveDynamicTenantId) {
+        const prefix = `k2-${effectiveDynamicTenantId}-`
+        if (
+          e.key === `${prefix}events` ||
+          e.key === `${prefix}stammdaten-galerie` ||
+          e.key === `${prefix}stammdaten-martina` ||
+          e.key === `${prefix}stammdaten-georg` ||
+          e.key === `${prefix}page-texts` ||
+          e.key === `${prefix}page-content-galerie`
+        ) {
+          bump()
+        }
       } else if (
         e.key === 'k2-events' ||
         e.key === 'k2-stammdaten-galerie' ||
@@ -1345,7 +1517,7 @@ export default function FlyerEventBogenNeuPage() {
       window.removeEventListener('k2-page-content-updated', onDesignSaved)
       document.removeEventListener('visibilitychange', onVis)
     }
-  }, [isOeffentlich, isVk2])
+  }, [isOeffentlich, isVk2, effectiveDynamicTenantId])
 
   useEffect(() => {
     setShowDerivationFullscreen(false)
@@ -1703,10 +1875,12 @@ export default function FlyerEventBogenNeuPage() {
         <p className="vc-back-power">{masterText.backPower}</p>
       </div>
       <p className="vc-back-sub">{masterText.backSub}</p>
-      <div className="vc-back-qr-wrap">
-        {backQrDataUrl ? <img src={backQrDataUrl} alt="QR Eingangstor ök2" className="vc-back-qr" /> : <div className="vc-back-qr-ph">QR</div>}
-        <p className="vc-back-invite">{masterText.backInvite}</p>
-      </div>
+      {!effectiveDynamicTenantId ? (
+        <div className="vc-back-qr-wrap">
+          {backQrDataUrl ? <img src={backQrDataUrl} alt="QR Eingangstor ök2" className="vc-back-qr" /> : <div className="vc-back-qr-ph">QR</div>}
+          <p className="vc-back-invite">{masterText.backInvite}</p>
+        </div>
+      ) : null}
       <div className="vc-back-copy">
         <small>{PRODUCT_COPYRIGHT_BRAND_ONLY}</small>
       </div>
@@ -1715,7 +1889,7 @@ export default function FlyerEventBogenNeuPage() {
 
   const renderBackCard = (interactive: boolean) => (
     <div className="card back back-page-2">
-      <div className="back-left">
+      <div className={`back-left${effectiveDynamicTenantId ? ' back-left-no-qr' : ''}`}>
         <div className="back-hero">
           <div className={interactive ? 'master-hotspot-parent back-hero-title-wrap' : undefined}>
             {interactive ? (
@@ -1767,39 +1941,41 @@ export default function FlyerEventBogenNeuPage() {
           ) : null}
           <p className="marketing-sub">{masterText.backSub}</p>
         </div>
-        <div className="back-left-bottom">
-          <div className={interactive ? 'master-hotspot-parent back-qr-img-wrap' : undefined}>
-            {interactive ? (
-              <button
-                type="button"
-                className="master-info-hotspot"
-                aria-label="Info QR Rückseite"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setMasterLiveInfo(masterClickInfoTexts.qrBack)
-                }}
-              >
-                i
-              </button>
-            ) : null}
-            {backQrDataUrl ? (
-              <img src={backQrDataUrl} alt="QR Eingangstor ök2" className="qr" />
-            ) : (
-              <div className="qr-placeholder">QR</div>
-            )}
+        {!effectiveDynamicTenantId ? (
+          <div className="back-left-bottom">
+            <div className={interactive ? 'master-hotspot-parent back-qr-img-wrap' : undefined}>
+              {interactive ? (
+                <button
+                  type="button"
+                  className="master-info-hotspot"
+                  aria-label="Info QR Rückseite"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setMasterLiveInfo(masterClickInfoTexts.qrBack)
+                  }}
+                >
+                  i
+                </button>
+              ) : null}
+              {backQrDataUrl ? (
+                <img src={backQrDataUrl} alt="QR Eingangstor ök2" className="qr" />
+              ) : (
+                <div className="qr-placeholder">QR</div>
+              )}
+            </div>
+            <div className={interactive ? 'master-hotspot-parent back-invite-wrap' : undefined}>
+              {interactive ? (
+                <button
+                  type="button"
+                  className="master-hotspot"
+                  aria-label={MASTER_EDIT_LABELS.backInvite}
+                  onClick={() => setMasterEditField('backInvite')}
+                />
+              ) : null}
+              <p className="back-qr-invite">{masterText.backInvite}</p>
+            </div>
           </div>
-          <div className={interactive ? 'master-hotspot-parent back-invite-wrap' : undefined}>
-            {interactive ? (
-              <button
-                type="button"
-                className="master-hotspot"
-                aria-label={MASTER_EDIT_LABELS.backInvite}
-                onClick={() => setMasterEditField('backInvite')}
-              />
-            ) : null}
-            <p className="back-qr-invite">{masterText.backInvite}</p>
-          </div>
-        </div>
+        ) : null}
         <div className={`back-copyright${interactive ? ' master-hotspot-parent' : ''}`}>
           {interactive ? (
             <button
@@ -2724,6 +2900,9 @@ export default function FlyerEventBogenNeuPage() {
           grid-template-rows:auto auto minmax(0,1fr) auto;
           align-items:stretch;
         }
+        .${ROOT} .back.back-page-2 .back-left.back-left-no-qr{
+          grid-template-rows:auto minmax(0,1fr) auto;
+        }
         .${ROOT} .back.back-page-2 .back-left .back-hero{
           gap:.65mm;
           padding-left:1.5mm;
@@ -2737,6 +2916,12 @@ export default function FlyerEventBogenNeuPage() {
           line-height:1.34;
           max-width:34ch;
           font-weight:560;
+        }
+        .${ROOT} .back.back-page-2 .back-left.back-left-no-qr .marketing-sub{
+          max-width:none;
+          height:100%;
+          overflow:auto;
+          align-self:stretch;
         }
         .${ROOT} .back.back-page-2 .back-left .back-left-bottom{
           display:flex;
@@ -2765,6 +2950,10 @@ export default function FlyerEventBogenNeuPage() {
           font-weight:680;
         }
         .${ROOT} .back.back-page-2 .back-left .back-copyright small{font-size:9.5px}
+        .${ROOT} .back.back-page-2 .back-left.back-left-no-qr .back-copyright{
+          margin-top:auto;
+          align-self:end;
+        }
         .${ROOT} .back-right.back-right-marketing{
           display:flex;
           flex-direction:column;
@@ -2780,7 +2969,7 @@ export default function FlyerEventBogenNeuPage() {
         .${ROOT} .back.back-page-2 .back-right-marketing{
           gap:1.05mm;
           padding:1.9mm 2.1mm 2.1mm 2.2mm;
-          justify-content:space-between;
+          justify-content:flex-start;
         }
         .${ROOT} .back-mkt-heading{
           margin:0;
@@ -2797,6 +2986,8 @@ export default function FlyerEventBogenNeuPage() {
           line-height:1.38;
           color:#2d2a27;
           white-space:pre-line;
+          overflow-wrap:anywhere;
+          word-break:break-word;
         }
         .${ROOT} .back.back-page-2 .back-mkt-body{font-size:13.4px;line-height:1.44;color:#2a2622}
         .${ROOT} .back-left{
@@ -3073,9 +3264,9 @@ export default function FlyerEventBogenNeuPage() {
             break-after:auto;
           }
           .${ROOT} .back.back-page-2 .back-right-marketing{
-            overflow:hidden;
+            overflow:auto;
             gap:1.1mm;
-            justify-content:space-between;
+            justify-content:flex-start;
           }
           .${ROOT} .back.back-page-2 .back-mkt-heading{
             font-size:18.4px;
@@ -3483,7 +3674,7 @@ export default function FlyerEventBogenNeuPage() {
           >
             {fromPublicGalerie ? '← Zurück zur Galerie' : '← Zurück'}
           </button>
-          {!isVk2 && !isOeffentlich ? (
+          {!isVk2 && !isOeffentlich && !effectiveDynamicTenantId ? (
             <Link
               to={`${PROJECT_ROUTES['k2-galerie'].marketingOek2}#mok2-9`}
               className="toolbar-back-mok2"
@@ -3491,7 +3682,7 @@ export default function FlyerEventBogenNeuPage() {
               ← Zurück zum mök2 (Werbeunterlagen)
             </Link>
           ) : null}
-          {!isVk2 && !isOeffentlich ? (
+          {!isVk2 && !isOeffentlich && !effectiveDynamicTenantId ? (
             <Link to={PROJECT_ROUTES['k2-galerie'].werbeunterlagen}>Werbeunterlagen</Link>
           ) : null}
           <button

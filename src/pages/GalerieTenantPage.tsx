@@ -5,16 +5,21 @@
  *
  * Besucherzähler: Smoke-Test für Lizenz-Mandanten → docs/SMOKE-BESUCHERZAEHLER-LIZENZ.md
  */
-import { useEffect, useState } from 'react'
-import { useParams, Link, useSearchParams } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { useParams, Link, useSearchParams, useLocation } from 'react-router-dom'
+import QRCode from 'qrcode'
 import { reportPublicGalleryVisit } from '../utils/reportPublicGalleryVisit'
-import { FOCUS_DIRECTIONS, MUSTER_ARTWORKS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, getWelcomeIntroForFocusDirections, type FocusDirectionId } from '../config/tenantConfig'
+import { FOCUS_DIRECTIONS, MUSTER_ARTWORKS, getWelcomeIntroForFocusDirections, type FocusDirectionId } from '../config/tenantConfig'
+import { TenantHomepageTemplate } from '../components/TenantHomepageTemplate'
+import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import { APP_BASE_URL_SHAREABLE } from '../config/externalUrls'
 import '../App.css'
 
 const SAFE_TENANT_ID = /^[a-z0-9-]{1,64}$/
 const DEFAULT_FOCUS_DIRECTION: FocusDirectionId = 'kunst'
 type TenantGalleryArtwork = { number?: string; title?: string; imageRef?: string; image?: string; imageUrl?: string }
-type PageContentGalTenant = { welcomeImage?: string; virtualTourImage?: string; virtualTourVideo?: string }
+type PageContentGalTenant = { welcomeImage?: string; virtualTourImage?: string; virtualTourVideo?: string; galerieCardImage?: string }
+type TenantEvent = { title?: string; date?: string; endDate?: string }
 
 function normalizeFocusDirection(raw: string | null): FocusDirectionId {
   const value = String(raw || '').trim().toLowerCase()
@@ -24,9 +29,15 @@ function normalizeFocusDirection(raw: string | null): FocusDirectionId {
 export default function GalerieTenantPage() {
   const { tenantId } = useParams<{ tenantId: string }>()
   const [searchParams] = useSearchParams()
+  const location = useLocation()
   const focusDirection = normalizeFocusDirection(searchParams.get('focusDirection'))
+  const liveTemplateMode = searchParams.get('liveTemplate') === '1'
+  const adminPreviewMode = searchParams.get('vorschau') === '1' || searchParams.get('k2DocViewer') === '1'
+  const useLiveOverlay = liveTemplateMode || adminPreviewMode
+  const allowAdminEntryOnPublicPage = searchParams.get('adminEntry') === '1' || useLiveOverlay
   const [data, setData] = useState<{
     artworks?: TenantGalleryArtwork[]
+    events?: TenantEvent[]
     gallery?: Record<string, unknown>
     martina?: Record<string, unknown>
     georg?: Record<string, unknown>
@@ -37,6 +48,8 @@ export default function GalerieTenantPage() {
   } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [qrDataUrl, setQrDataUrl] = useState('')
+  const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
 
   useEffect(() => {
     if (tenantId && SAFE_TENANT_ID.test(tenantId)) {
@@ -56,7 +69,8 @@ export default function GalerieTenantPage() {
     let cancelled = false
     setLoading(true)
     setError(false)
-    fetch(`/api/gallery-data?tenantId=${encodeURIComponent(tenantId)}`)
+    const bust = Date.now()
+    fetch(`/api/gallery-data?tenantId=${encodeURIComponent(tenantId)}&_=${bust}`, { cache: 'no-store' })
       .then((res) => {
         if (cancelled) return
         if (!res.ok) {
@@ -83,7 +97,42 @@ export default function GalerieTenantPage() {
     return () => { cancelled = true }
   }, [tenantId])
 
+  useEffect(() => {
+    if (!useLiveOverlay) return
+    if (typeof window === 'undefined') return
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }, [useLiveOverlay, tenantId])
+  const liveTemplateOverlay = useMemo(() => {
+    if (!useLiveOverlay || !tenantId || typeof window === 'undefined') return null
+    try {
+      const raw = localStorage.getItem(`k2-live-template-preview-${tenantId}`)
+      if (!raw) return null
+      const parsed = JSON.parse(raw) as {
+        tenantId?: string
+        pageTexts?: { galerie?: { heroTitle?: string; welcomeSubtext?: string; welcomeIntroText?: string } }
+        pageContentGalerie?: string | { welcomeImage?: string; virtualTourImage?: string; virtualTourVideo?: string }
+        designSettings?: Record<string, string>
+        gallery?: Record<string, unknown>
+      }
+      if (String(parsed.tenantId || '') !== tenantId) return null
+      return parsed
+    } catch {
+      return null
+    }
+  }, [useLiveOverlay, tenantId, searchParams])
+
   const adminUrl = `/admin?tenantId=${encodeURIComponent(tenantId || '')}&focusDirection=${encodeURIComponent(focusDirection)}`
+  const shareBaseUrl = APP_BASE_URL_SHAREABLE.replace(/\/$/, '')
+  const shareUrl = `${shareBaseUrl}/g/${encodeURIComponent(tenantId || '')}?focusDirection=${encodeURIComponent(focusDirection)}`
+
+  useEffect(() => {
+    let cancelled = false
+    const targetUrl = buildQrUrlWithBust(shareUrl, qrVersionTs)
+    QRCode.toDataURL(targetUrl, { width: 100, margin: 1 })
+      .then((url) => { if (!cancelled) setQrDataUrl(url) })
+      .catch(() => { if (!cancelled) setQrDataUrl('') })
+    return () => { cancelled = true }
+  }, [shareUrl, qrVersionTs])
 
   if (!tenantId || !SAFE_TENANT_ID.test(tenantId)) {
     return (
@@ -106,352 +155,182 @@ export default function GalerieTenantPage() {
   const artworks: TenantGalleryArtwork[] = serverArtworks.length > 0 ? serverArtworks : MUSTER_ARTWORKS
   const isMusterStart = serverArtworks.length === 0
   const focusLabel = FOCUS_DIRECTIONS.find((d) => d.id === focusDirection)?.label ?? 'Kunst & Galerie'
-  const rawTitle = data?.pageTexts?.galerie?.heroTitle?.trim() || ''
-  const rawSubtext = data?.pageTexts?.galerie?.welcomeSubtext?.trim() || ''
-  const rawIntro = data?.pageTexts?.galerie?.welcomeIntroText?.trim() || ''
+  const galleryHintText = focusDirection === 'kunst'
+    ? 'In der Galerie findest du auch unseren Shop.'
+    : `In der Galerie findest du Angebote und Auswahlen aus dem Bereich ${focusLabel}.`
+  const galleryPageTitle = focusDirection === 'kunst' ? 'Galerie & Shop' : `${focusLabel} - Auswahl`
+  const effectiveGalerieTexts = (liveTemplateOverlay?.pageTexts?.galerie && typeof liveTemplateOverlay.pageTexts.galerie === 'object')
+    ? liveTemplateOverlay.pageTexts.galerie
+    : data?.pageTexts?.galerie
+  const rawTitle = effectiveGalerieTexts?.heroTitle?.trim() || ''
+  const rawSubtext = effectiveGalerieTexts?.welcomeSubtext?.trim() || ''
+  const rawIntro = effectiveGalerieTexts?.welcomeIntroText?.trim() || ''
   const title = rawTitle === 'K2 Galerie' ? 'Meine Galerie' : (rawTitle || 'Meine Galerie')
   const subtext = rawSubtext === 'Kunst & Keramik – Martina und Georg Kreinecker' ? focusLabel : (rawSubtext || focusLabel)
   const intro = rawIntro === 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.'
     ? getWelcomeIntroForFocusDirections([focusDirection])
     : (rawIntro || getWelcomeIntroForFocusDirections([focusDirection]))
-  const pageContentRaw = data?.pageContentGalerie ?? data?.pageContent
+  const pageContentRaw = liveTemplateOverlay?.pageContentGalerie ?? data?.pageContentGalerie ?? data?.pageContent
   const parsedPageContent = typeof pageContentRaw === 'string'
     ? (() => { try { return JSON.parse(pageContentRaw) } catch { return {} } })()
     : (pageContentRaw || {})
-  const galleryStamm = (data?.gallery && typeof data.gallery === 'object') ? data.gallery as Record<string, unknown> : {}
+  const galleryStamm = (liveTemplateOverlay?.gallery && typeof liveTemplateOverlay.gallery === 'object')
+    ? liveTemplateOverlay.gallery
+    : ((data?.gallery && typeof data.gallery === 'object') ? data.gallery as Record<string, unknown> : {})
   const pageContentParsed = (typeof parsedPageContent === 'object' && parsedPageContent != null
     ? parsedPageContent
     : {}) as PageContentGalTenant
   const welcomeImage = String(pageContentParsed.welcomeImage || '').trim()
+  const galerieCardImage = String(pageContentParsed.galerieCardImage || galleryStamm.galerieCardImage || '').trim()
   const virtualTourImage = String(pageContentParsed.virtualTourImage || galleryStamm.virtualTourImage || '').trim()
   const virtualTourVideo = String(pageContentParsed.virtualTourVideo || '').trim()
   const martinaStamm = (data?.martina && typeof data.martina === 'object') ? data.martina as Record<string, unknown> : {}
   const georgStamm = (data?.georg && typeof data.georg === 'object') ? data.georg as Record<string, unknown> : {}
   const impressumEmail = String(galleryStamm.email || martinaStamm.email || georgStamm.email || '').trim()
   const impressumPhone = String(galleryStamm.phone || martinaStamm.phone || georgStamm.phone || '').trim()
+  const impressumName = String(galleryStamm.name || title || 'Meine Galerie').trim()
+  const contactName1 = String(martinaStamm.name || '').trim()
+  const contactPhone1 = String(martinaStamm.phone || '').trim()
+  const contactName2 = String(georgStamm.name || '').trim()
+  const contactPhone2 = String(georgStamm.phone || '').trim()
+  const pickFirstText = (...values: unknown[]): string => {
+    for (const value of values) {
+      const text = String(value || '').trim()
+      if (text) return text
+    }
+    return ''
+  }
+  const impressumStreet = pickFirstText(
+    galleryStamm.address,
+    galleryStamm.strasse,
+    martinaStamm.address,
+    martinaStamm.strasse,
+    georgStamm.address,
+    georgStamm.strasse,
+  )
+  const impressumZip = pickFirstText(
+    galleryStamm.zip,
+    galleryStamm.plz,
+    martinaStamm.zip,
+    martinaStamm.plz,
+    georgStamm.zip,
+    georgStamm.plz,
+  )
+  const impressumCity = pickFirstText(
+    galleryStamm.city,
+    galleryStamm.ort,
+    martinaStamm.city,
+    martinaStamm.ort,
+    georgStamm.city,
+    georgStamm.ort,
+  )
+  const impressumCountry = pickFirstText(
+    galleryStamm.country,
+    galleryStamm.land,
+    martinaStamm.country,
+    martinaStamm.land,
+    georgStamm.country,
+    georgStamm.land,
+  )
   const impressumAddress = [
-    String(galleryStamm.address || '').trim(),
-    String(galleryStamm.zip || '').trim(),
-    String(galleryStamm.city || '').trim(),
-    String(galleryStamm.country || '').trim(),
+    impressumStreet,
+    impressumZip,
+    impressumCity,
+    impressumCountry,
   ].filter(Boolean).join(', ')
   const mapsUrl = impressumAddress ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(impressumAddress)}` : ''
-
-  const shareUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/g/${encodeURIComponent(tenantId)}?focusDirection=${encodeURIComponent(focusDirection)}`
-    : `/g/${encodeURIComponent(tenantId)}?focusDirection=${encodeURIComponent(focusDirection)}`
-  const TEMPLATE = {
-    maxWidth: 1000,
-    sectionRadius: 14,
-    sectionBorder: '1px solid #ddd2c4',
-    sectionBg: '#fff',
-    sectionPadding: '1rem',
-    chipBorder: '1px solid #d7c9ba',
-    chipBg: '#fffefb',
-    chipColor: '#5a4738',
+  const openingHours = String(galleryStamm.openingHours || '').trim()
+  const normalizeExternalUrl = (raw: unknown): string => {
+    const value = String(raw || '').trim()
+    if (!value) return ''
+    if (/^https?:\/\//i.test(value)) return value
+    return `https://${value}`
   }
-  const handleShare = async () => {
-    const shareText = `${title} – ${subtext}`
-    try {
-      if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
-        await navigator.share({ title, text: shareText, url: shareUrl })
-        return
-      }
-      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(shareUrl)
-        alert('Link kopiert.')
-        return
-      }
-    } catch {
-      // Fallback unten
-    }
-    if (typeof window !== 'undefined') window.prompt('Link kopieren:', shareUrl)
-  }
+  const instagramUrl = normalizeExternalUrl(galleryStamm.instagram)
+  const facebookUrl = normalizeExternalUrl(galleryStamm.facebook)
+  const websiteUrl = normalizeExternalUrl(galleryStamm.website || galleryStamm.internetadresse)
+  const events = Array.isArray(data?.events) ? data.events.slice(0, 10).map((e) => ({
+    title: String(e?.title || '').trim(),
+    date: String(e?.date || '').trim(),
+    endDate: String(e?.endDate || '').trim(),
+  })).filter((e) => e.title || e.date || e.endDate) : []
+  const galleryEntered = searchParams.get('enter') === 'gallery' || String(location.hash || '').toLowerCase() === '#werke'
+  const galleryEnterParams = new URLSearchParams(searchParams)
+  galleryEnterParams.set('enter', 'gallery')
+  const galleryEnterUrl = `/g/${encodeURIComponent(tenantId)}?${galleryEnterParams.toString()}#werke`
+  const galleryCloseParams = new URLSearchParams(searchParams)
+  galleryCloseParams.delete('enter')
+  const galleryCloseQuery = galleryCloseParams.toString()
+  const galleryCloseUrl = `/g/${encodeURIComponent(tenantId)}${galleryCloseQuery ? `?${galleryCloseQuery}` : ''}`
+  const shopParams = new URLSearchParams()
+  shopParams.set('tenantId', tenantId)
+  if (focusDirection) shopParams.set('focusDirection', focusDirection)
+  shopParams.set('from', 'gallery')
+  const shopUrl = `/projects/k2-galerie/shop?${shopParams.toString()}`
+  const liveDesign = (liveTemplateOverlay?.designSettings && typeof liveTemplateOverlay.designSettings === 'object')
+    ? liveTemplateOverlay.designSettings as Record<string, string>
+    : ((data?.designSettings && typeof data.designSettings === 'object')
+      ? data.designSettings as Record<string, string>
+      : {})
+  const liveAccent = String(liveDesign.accentColor || '#b54a1e')
+  const liveBg1 = String(liveDesign.backgroundColor1 || '#f4efe8')
+  const liveBg2 = String(liveDesign.backgroundColor2 || '#ede4d8')
+  const liveText = String(liveDesign.textColor || '#1f1a15')
+  const liveMuted = String(liveDesign.mutedColor || '#5f564d')
+  const liveSectionBg = String(liveDesign.cardBg1 || '#fff')
+  const titleFontSizeRem = Number(liveDesign.titleFontSize || 1.85)
+  const subtextFontSizeRem = Number(liveDesign.subtextFontSize || 1.0)
+  const bodyFontSizeRem = Number(liveDesign.bodyFontSize || 1.0)
+  const welcomeImageHeightPx = Number(liveDesign.welcomeImageHeightPx || 260)
+  const tourImageHeightPx = Number(liveDesign.tourImageHeightPx || 260)
 
   return (
-    <main
-      className="galerie-tenant-page"
-      style={{
-        maxWidth: 980,
-        margin: '0 auto',
-        padding: '1.25rem',
-        minHeight: '100vh',
-        background: '#f4efe8',
-        color: '#1f1a15',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          gap: '0.75rem',
-          marginBottom: '0.7rem',
-        }}
-      >
-        <Link to="/" style={{ color: '#6b5848', textDecoration: 'none', fontSize: '0.86rem', fontWeight: 600 }}>
-          {PRODUCT_BRAND_NAME} ©
-        </Link>
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-          <button
-            type="button"
-            onClick={() => { void handleShare() }}
-            style={{
-              border: '1px solid #d1c0ae',
-              background: '#fff',
-              color: '#5f4c3d',
-              borderRadius: 999,
-              padding: '0.42rem 0.7rem',
-              fontSize: '0.82rem',
-              cursor: 'pointer',
-            }}
-          >
-            📤 Teilen
-          </button>
-          <a
-            href={adminUrl}
-            style={{
-              border: '1px solid #d1c0ae',
-              background: '#fff',
-              color: '#5f4c3d',
-              borderRadius: 999,
-              padding: '0.42rem 0.7rem',
-              fontSize: '0.82rem',
-              textDecoration: 'none',
-            }}
-          >
-            🔐 Admin
-          </a>
-        </div>
-      </div>
-      <header
-        id="start"
-        style={{
-          textAlign: 'center',
-          marginBottom: '1.5rem',
-          background: TEMPLATE.sectionBg,
-          border: TEMPLATE.sectionBorder,
-          borderRadius: TEMPLATE.sectionRadius,
-          padding: '1.1rem 1.05rem',
-        }}
-      >
-        <h1 style={{ fontSize: '1.85rem', fontWeight: 800, color: '#1f1a15', margin: 0 }}>{title}</h1>
-        <p style={{ color: '#4b433c', margin: '0.45rem 0 0', fontWeight: 600 }}>{subtext}</p>
-        <p style={{ color: '#3f3933', maxWidth: 700, margin: '0.8rem auto 0', lineHeight: 1.6 }}>{intro}</p>
-      </header>
-      <nav
-        aria-label="Seitenbereiche"
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-          gap: '0.55rem',
-          margin: '0 0 1.1rem',
-        }}
-      >
-        {[
-          { href: '#willkommen', label: 'Willkommen' },
-          { href: '#rundgang', label: 'Rundgang' },
-          { href: '#werke', label: 'Werke' },
-          { href: '#admin', label: 'Admin' },
-          { href: '#impressum', label: 'Impressum' },
-        ].map((item) => (
-          <a
-            key={item.href}
-            href={item.href}
-            style={{
-              textDecoration: 'none',
-              border: TEMPLATE.chipBorder,
-              background: TEMPLATE.chipBg,
-              color: TEMPLATE.chipColor,
-              borderRadius: 999,
-              padding: '0.34rem 0.74rem',
-              fontSize: '0.82rem',
-              fontWeight: 600,
-            }}
-          >
-            {item.label}
-          </a>
-        ))}
-      </nav>
-      <section
-        id="willkommen"
-        style={{
-          marginBottom: '1.5rem',
-          background: TEMPLATE.sectionBg,
-          border: TEMPLATE.sectionBorder,
-          borderRadius: TEMPLATE.sectionRadius,
-          padding: TEMPLATE.sectionPadding,
-        }}
-      >
-        {welcomeImage ? (
-          <img
-            src={welcomeImage}
-            alt="Willkommensbild"
-            style={{ width: '100%', maxHeight: 360, objectFit: 'cover', borderRadius: 10, display: 'block' }}
-          />
-        ) : (
-          <div
-            style={{
-              minHeight: 140,
-              borderRadius: 10,
-              background: 'linear-gradient(135deg, #efe4d7, #f8f2e8)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#6a5f54',
-              fontWeight: 600,
-            }}
-          >
-            Willkommen in meiner Galerie
-          </div>
-        )}
-      </section>
-      <section
-        id="rundgang"
-        style={{
-          marginBottom: '1.5rem',
-          background: TEMPLATE.sectionBg,
-          border: TEMPLATE.sectionBorder,
-          borderRadius: TEMPLATE.sectionRadius,
-          padding: TEMPLATE.sectionPadding,
-        }}
-      >
-        <h2 style={{ margin: '0 0 0.75rem', fontSize: '1.08rem', color: '#1f1a15' }}>Virtueller Rundgang</h2>
-        <div
-          style={{
-            borderRadius: 10,
-            overflow: 'hidden',
-            border: '1px solid #ddd2c4',
-            background: 'linear-gradient(135deg, #ede4d8, #f6f0e6)',
-            minHeight: 220,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          {virtualTourVideo ? (
-            <video
-              src={virtualTourVideo}
-              controls
-              playsInline
-              style={{ width: '100%', maxHeight: 360, display: 'block', objectFit: 'cover' }}
-            />
-          ) : virtualTourImage ? (
-            <img
-              src={virtualTourImage}
-              alt="Virtueller Rundgang"
-              style={{ width: '100%', maxHeight: 360, objectFit: 'cover', display: 'block' }}
-            />
-          ) : (
-            <div style={{ color: '#6b6055', fontWeight: 600, fontSize: '0.95rem' }}>Rundgang folgt</div>
-          )}
-        </div>
-      </section>
-      {isMusterStart && (
-        <p style={{ textAlign: 'center', color: '#5f564d', margin: '-0.3rem 0 1.2rem', fontWeight: 600 }}>
-          Muster-Erstgalerie – ersetze diese Beispiele im Admin durch deine eigenen Inhalte.
-        </p>
-      )}
-      <section
-        id="werke"
-        style={{
-          background: TEMPLATE.sectionBg,
-          border: TEMPLATE.sectionBorder,
-          borderRadius: TEMPLATE.sectionRadius,
-          padding: TEMPLATE.sectionPadding,
-          marginBottom: '1rem',
-        }}
-      >
-        <h2 style={{ margin: '0 0 0.85rem', fontSize: '1.08rem', color: '#1f1a15' }}>Werke</h2>
-      {artworks.length === 0 ? (
-        <p style={{ textAlign: 'center', color: 'var(--k2-muted)', marginBottom: '1.5rem' }}>
-          Noch keine Werke – im Admin hinzufügen.
-        </p>
-      ) : (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-            gap: '1rem',
-            marginBottom: '2rem',
-          }}
-        >
-          {artworks.map((a, i) => (
-            <div
-              key={a.number || i}
-              style={{
-                background: 'var(--k2-card-bg, #fff)',
-                borderRadius: 12,
-                overflow: 'hidden',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
-                border: '1px solid #ddd2c4',
-              }}
-            >
-              {(a.imageRef || a.image || a.imageUrl) && (
-                <img
-                  src={a.imageRef || a.image || a.imageUrl || ''}
-                  alt=""
-                  style={{ width: '100%', aspectRatio: '1', objectFit: 'cover' }}
-                />
-              )}
-              <div style={{ padding: '0.75rem' }}>
-                <div style={{ fontSize: '0.85rem', color: '#5f564d' }}>{a.number || ''}</div>
-                <div style={{ fontWeight: 700, color: '#1f1a15' }}>{a.title || 'Ohne Titel'}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-      </section>
-      <section
-        id="admin"
-        style={{
-          marginBottom: '2.2rem',
-          background: TEMPLATE.sectionBg,
-          border: TEMPLATE.sectionBorder,
-          borderRadius: TEMPLATE.sectionRadius,
-          padding: TEMPLATE.sectionPadding,
-          textAlign: 'center',
-        }}
-      >
-        <h2 style={{ margin: '0 0 0.55rem', fontSize: '1.08rem', color: '#1f1a15' }}>Admin-Zugang</h2>
-        <p style={{ margin: '0 0 0.75rem', color: '#5f564d', fontSize: '0.93rem' }}>
-          Inhalte, Design und Stammdaten pflegen.
-        </p>
-      <p style={{ textAlign: 'center', marginBottom: 0 }}>
-        <a href={adminUrl} style={{ color: 'var(--k2-accent)', fontSize: '0.95rem' }}>
-          Galerie bearbeiten →
-        </a>
-      </p>
-      </section>
-      <section
-        id="impressum"
-        style={{
-          marginTop: '0.5rem',
-          borderTop: TEMPLATE.sectionBorder,
-          paddingTop: '1.05rem',
-          color: '#5d544c',
-          fontSize: '0.88rem',
-          lineHeight: 1.5,
-        }}
-      >
-        <h3 style={{ margin: '0 0 0.6rem', color: '#1f1a15', fontSize: '1rem' }}>Impressum</h3>
-        <p style={{ margin: '0 0 0.35rem', fontWeight: 600 }}>{title}</p>
-        {impressumAddress ? (
-          <p style={{ margin: '0 0 0.3rem' }}>
-            📍 <a href={mapsUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#7a4f34', textDecoration: 'none' }}>{impressumAddress}</a>
-          </p>
-        ) : null}
-        {impressumPhone ? <p style={{ margin: '0 0 0.3rem' }}>📞 {impressumPhone}</p> : null}
-        {impressumEmail ? (
-          <p style={{ margin: '0 0 0.5rem' }}>
-            ✉️ <a href={`mailto:${impressumEmail}`} style={{ color: '#7a4f34', textDecoration: 'none' }}>{impressumEmail}</a>
-          </p>
-        ) : null}
-        <p style={{ margin: '0.6rem 0 0', fontSize: '0.8rem', color: '#7f756d' }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
-        <p style={{ margin: '0.2rem 0 0', fontSize: '0.76rem', color: '#8b8179' }}>{PRODUCT_URHEBER_ANWENDUNG}</p>
-      </section>
-    </main>
+    <TenantHomepageTemplate
+      tenantId={tenantId}
+      title={title}
+      subtext={subtext}
+      intro={intro}
+      adminUrl={adminUrl}
+      shareUrl={shareUrl}
+      artworks={artworks}
+      isMusterStart={isMusterStart}
+      welcomeImage={welcomeImage}
+      virtualTourImage={virtualTourImage}
+      virtualTourVideo={virtualTourVideo}
+      galerieCardImage={galerieCardImage}
+      impressumAddress={impressumAddress}
+      impressumPhone={impressumPhone}
+      impressumEmail={impressumEmail}
+      mapsUrl={mapsUrl}
+      openingHours={openingHours}
+      instagramUrl={instagramUrl}
+      facebookUrl={facebookUrl}
+      websiteUrl={websiteUrl}
+      events={events}
+      contactName1={contactName1}
+      contactPhone1={contactPhone1}
+      contactName2={contactName2}
+      contactPhone2={contactPhone2}
+      qrDataUrl={qrDataUrl}
+      impressumName={impressumName}
+      hideAdminEntry={!allowAdminEntryOnPublicPage}
+      liveAccent={liveAccent}
+      liveBg1={liveBg1}
+      liveBg2={liveBg2}
+      liveText={liveText}
+      liveMuted={liveMuted}
+      liveSectionBg={liveSectionBg}
+      titleFontSizeRem={Number.isFinite(titleFontSizeRem) ? titleFontSizeRem : 1.85}
+      subtextFontSizeRem={Number.isFinite(subtextFontSizeRem) ? subtextFontSizeRem : 1.0}
+      bodyFontSizeRem={Number.isFinite(bodyFontSizeRem) ? bodyFontSizeRem : 1.0}
+      welcomeImageHeightPx={Number.isFinite(welcomeImageHeightPx) ? welcomeImageHeightPx : 260}
+      tourImageHeightPx={Number.isFinite(tourImageHeightPx) ? tourImageHeightPx : 260}
+      galleryEntered={galleryEntered}
+      galleryEnterUrl={galleryEnterUrl}
+      galleryHintText={galleryHintText}
+      galleryPageTitle={galleryPageTitle}
+      galleryCloseUrl={galleryCloseUrl}
+      shopUrl={shopUrl}
+    />
   )
 }

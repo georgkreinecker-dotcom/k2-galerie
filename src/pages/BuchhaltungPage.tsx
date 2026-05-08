@@ -4,7 +4,7 @@
  */
 
 import { useState, useMemo } from 'react'
-import { useLocation, Link } from 'react-router-dom'
+import { useLocation, Link, useSearchParams } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
 import {
   getKassabuchMitEingaengen,
@@ -61,9 +61,10 @@ interface OrderRow {
   buyerSnapshot?: { version?: number; name?: string; firma?: string; street?: string; plz?: string; city?: string; email?: string; phone?: string; uid?: string }
 }
 
-function loadOrders(tenant: KassabuchTenant): OrderRow[] {
+function loadOrders(tenant: KassabuchTenant, dynamicTenantId?: string): OrderRow[] {
   try {
-    const raw = localStorage.getItem(ORDERS_KEY[tenant])
+    const key = dynamicTenantId ? `k2-tenant-${dynamicTenantId}-orders` : ORDERS_KEY[tenant]
+    const raw = localStorage.getItem(key)
     const list = raw ? JSON.parse(raw) : []
     return Array.isArray(list) ? list : []
   } catch {
@@ -129,6 +130,13 @@ function downloadCsv(content: string, filename: string) {
 
 export default function BuchhaltungPage() {
   const location = useLocation()
+  const [searchParams] = useSearchParams()
+  const stateDynamicTenantId =
+    ((location.state as { dynamicTenantId?: string } | null)?.dynamicTenantId || '').trim().toLowerCase()
+  const queryDynamicTenantId = String(searchParams.get('tenantId') || '').trim().toLowerCase()
+  const dynamicTenantId = (stateDynamicTenantId || queryDynamicTenantId).match(/^[a-z0-9-]{1,64}$/)
+    ? (stateDynamicTenantId || queryDynamicTenantId)
+    : ''
   const tenant = getTenant(location)
   const kassaVerfuegbar = hasKassa(tenant)
   const kassabuchVoll = hasKassabuchVoll(tenant)
@@ -136,8 +144,8 @@ export default function BuchhaltungPage() {
 
   const [von, setVon] = useState('')
   const [bis, setBis] = useState('')
-  const [entries, setEntries] = useState<KassabuchEintrag[]>(() => getKassabuchMitEingaengen(tenant))
-  const [orders, setOrders] = useState<OrderRow[]>(() => loadOrders(tenant))
+  const [entries, setEntries] = useState<KassabuchEintrag[]>(() => (dynamicTenantId ? [] : getKassabuchMitEingaengen(tenant)))
+  const [orders, setOrders] = useState<OrderRow[]>(() => loadOrders(tenant, dynamicTenantId || undefined))
   const [artworksOeffRohertrag, setArtworksOeffRohertrag] = useState<unknown[]>(() =>
     tenant === 'oeffentlich' ? loadOeffentlichArtworksForRohertrag() : []
   )
@@ -180,8 +188,8 @@ export default function BuchhaltungPage() {
   )
 
   const refresh = () => {
-    setEntries(getKassabuchMitEingaengen(tenant))
-    setOrders(loadOrders(tenant))
+    setEntries(dynamicTenantId ? [] : getKassabuchMitEingaengen(tenant))
+    setOrders(loadOrders(tenant, dynamicTenantId || undefined))
     if (tenant === 'oeffentlich') setArtworksOeffRohertrag(loadOeffentlichArtworksForRohertrag())
   }
 
@@ -252,10 +260,13 @@ export default function BuchhaltungPage() {
     )
   }
 
-  const adminLink =
-    tenant === 'vk2' ? '/admin?context=vk2' : tenant === 'oeffentlich' ? '/admin?context=oeffentlich' : '/admin'
+  const adminLink = dynamicTenantId
+    ? `/admin?tenantId=${encodeURIComponent(dynamicTenantId)}`
+    : (tenant === 'vk2' ? '/admin?context=vk2' : tenant === 'oeffentlich' ? '/admin?context=oeffentlich' : '/admin')
   const kassaTo = tenant === 'vk2'
     ? { pathname: PROJECT_ROUTES['k2-galerie'].shop, state: { openAsKasse: true, fromVk2: true } }
+    : dynamicTenantId
+      ? `${PROJECT_ROUTES['k2-galerie'].shop}?tenantId=${encodeURIComponent(dynamicTenantId)}&openAsKasse=1`
     : tenant === 'oeffentlich'
       ? { pathname: PROJECT_ROUTES['k2-galerie'].kassa, state: { fromOeffentlich: true } }
       : PROJECT_ROUTES['k2-galerie'].kassa
