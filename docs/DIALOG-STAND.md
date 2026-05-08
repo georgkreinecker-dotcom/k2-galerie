@@ -4,7 +4,7 @@
 
 **Einordnung:** **Mandanten-Werke** leben nur im **Server-Blob** (`gallery-data-<id>.json`). **Löschen** muss aus **`allArtworks`** gehen und **`saveDynamicTenantStateToServer`** aufrufen – nicht aus leerem **`loadArtworks`** (war ein Loch). K2 / ök2 / VK2 unverändert.
 
-**Letzter Stand:** 08.05.26 – **Lizenz-Erfolg: nur kundennahe Texte (Galerie-Lizenz):** Keine **Stripe-Session-ID** auf der Bestätigung; stattdessen Hinweis auf **Zahlungs-E-Mail**. **Optionaler Plattform-Footer** (Lizenzen kgM / Entdecken) für **`k2_galerie` aus**; **VK2**-Blurb ohne **ök2**-Vergleich; Admin-QR-Intro ohne **Demo**-Bezug; Druck-Hinweis bei fehlenden URLs ohne **Webhook/Vercel**-Jargon (**`printMissingUrlsStillMissingLine`** in **`lizenzErfolgCopy.ts`**). **qs:local** grün. **Commit:** _(nach Push)_ ✅ **main**
+**Letzter Stand:** 08.05.26 – **Lizenz-Erfolg: nur kundennahe Texte (Galerie-Lizenz):** Keine **Stripe-Session-ID** auf der Bestätigung; stattdessen Hinweis auf **Zahlungs-E-Mail**. **Optionaler Plattform-Footer** (Lizenzen kgM / Entdecken) für **`k2_galerie` aus**; **VK2**-Blurb ohne **ök2**-Vergleich; Admin-QR-Intro ohne **Demo**-Bezug; Druck-Hinweis bei fehlenden URLs ohne **Webhook/Vercel**-Jargon (**`printMissingUrlsStillMissingLine`** in **`lizenzErfolgCopy.ts`**). **qs:local** grün. **Commit:** `1c9b1b23` ✅ **main**
 
 **Letzter Stand:** 08.05.26 – **Lizenz-Mandant: „Werk löschen“ schreibt Blob:** **`ScreenshotExportAdmin`** – bei **`adminUsesDynamicTenantBlob`** Quelle **`allArtworksRef`**, danach **`saveDynamicTenantStateToServer`** (silent); Fehler → Hinweis wie bei K2-Veröffentlichen. **qs:local** grün vor Commit. **Commit:** `3c82a6a4` ✅ **main**
 

@@ -11,11 +11,33 @@
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { rowsFromCheckoutSession } from './stripeWebhookLicenceShared.js'
+import { seedGalerieLicenceBlobIfMissing } from './licenceBlobSeedShared.js'
 import {
   buildRenewalGutschriftInsert,
   buildRenewalPaymentRow,
   isSubscriptionRenewalInvoice,
 } from './stripeInvoiceRenewalShared.js'
+
+/** Nach Lizenz+Zahlung: Mandanten-Blob mit Name/Sparte aus Checkout (nur wenn Blob noch fehlt). */
+async function trySeedK2GalerieBlob(rowPack) {
+  if (rowPack.productLine !== 'k2_galerie') return
+  const tenantId = rowPack.licenceInsert?.tenant_id
+  if (!tenantId) return
+  try {
+    const out = await seedGalerieLicenceBlobIfMissing({
+      tenantId,
+      customerName: rowPack.licenceInsert?.name || '',
+      customerEmail: rowPack.customerEmail || rowPack.licenceInsert?.email || '',
+      focusDirection: rowPack.focusDirection,
+    })
+    if (out.seeded) console.log('webhook-stripe: gallery blob seeded', tenantId)
+    else if (out.skipped && out.reason === 'blob-exists') {
+      /* ok */
+    } else console.log('webhook-stripe: gallery blob seed', out)
+  } catch (e) {
+    console.error('webhook-stripe: gallery blob seed error', e)
+  }
+}
 
 /** Raw-Body aus Request-Stream lesen (für Stripe-Signaturprüfung erforderlich). */
 function getRawBody(req) {
@@ -215,6 +237,7 @@ export default async function handler(req, res) {
 
       if (existingPay?.id) {
         console.log('webhook-stripe: session already processed', sessionId)
+        await trySeedK2GalerieBlob(rowPack)
         return res.status(200).json({ received: true, duplicate: true })
       }
 
@@ -237,6 +260,7 @@ export default async function handler(req, res) {
       }
 
       console.log('webhook-stripe: payment catch-up', { sessionId, paymentId: payment.id })
+      await trySeedK2GalerieBlob(rowPack)
       return res.status(200).json({ received: true, catchUp: true })
     }
 
@@ -261,6 +285,7 @@ export default async function handler(req, res) {
             .maybeSingle()
           if (racedPay?.id) {
             console.log('webhook-stripe: race → already complete', sessionId)
+            await trySeedK2GalerieBlob(rowPack)
             return res.status(200).json({ received: true, duplicate: true })
           }
           const payRow = rowPack.buildPaymentInsert(raced.id)
@@ -279,6 +304,7 @@ export default async function handler(req, res) {
             if (errG) console.error('webhook-stripe: gutschriften after race failed', errG)
           }
           console.log('webhook-stripe: payment after licence race', sessionId)
+          await trySeedK2GalerieBlob(rowPack)
           return res.status(200).json({ received: true, catchUp: true })
         }
       }
@@ -313,6 +339,7 @@ export default async function handler(req, res) {
       customerEmail: rowPack.customerEmail,
       gutschriftCents: rowPack.gutschriftCents,
     })
+    await trySeedK2GalerieBlob(rowPack)
   } catch (err) {
     console.error('webhook-stripe:', err)
     return res.status(500).end()

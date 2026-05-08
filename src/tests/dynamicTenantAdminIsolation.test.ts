@@ -9,6 +9,7 @@ describe('Dynamischer Lizenznehmer-Admin – keine K2-LocalStorage-Daten', () =>
   const apiGalleryDataSource = readFileSync(join(process.cwd(), 'api/gallery-data.js'), 'utf8')
   const apiGalleryDataGetSource = readFileSync(join(process.cwd(), 'api/gallery-data-get.js'), 'utf8')
   const apiWriteGalleryDataSource = readFileSync(join(process.cwd(), 'api/write-gallery-data.js'), 'utf8')
+  const apiSanitizeNonLegacySource = readFileSync(join(process.cwd(), 'api/sanitizeNonLegacyTenantArtworks.js'), 'utf8')
 
   it('setzt dynamicTenantId im Kontext auch auf DevView und Projekt-K2-Galerie (nicht nur /admin)', () => {
     expect(tenantContextSource).toContain('resolveDynamicTenantIdFromLocation')
@@ -66,6 +67,11 @@ describe('Dynamischer Lizenznehmer-Admin – keine K2-LocalStorage-Daten', () =>
     expect(source).toContain('isFocusDirectionTenant\n                      ? getCategoriesForDirection')
     expect(source).toContain('const previewCategory = isFocusDirectionTenant')
     expect(source).toContain('const previewTypLabel = isFocusDirectionTenant')
+  })
+
+  it('beim Werk-Speichern: Lizenz-Mandant nutzt allArtworksRef, keinen k2-artworks-localStorage-Fallback', () => {
+    expect(source).toMatch(/adminUsesDynamicTenantBlob\(tenant\)[\s\S]{0,400}allArtworksRef\.current/)
+    expect(source).toContain('niemals k2-artworks-Fallback')
   })
 
   it('speichert Lizenznehmer-Stammdaten nicht in K2-LocalStorage, sondern in den eigenen Mandanten-Blob', () => {
@@ -126,9 +132,11 @@ describe('Dynamischer Lizenznehmer-Admin – keine K2-LocalStorage-Daten', () =>
     expect(apiWriteGalleryDataSource).toContain("return res.status(400).json({ error: 'tenantId fehlt oder ist ungültig' })")
   })
 
-  it('lehnt auf dem Server K2-Bulk-Werke für Lizenz-Mandanten ab (Blob-Schutz)', () => {
-    expect(apiWriteGalleryDataSource).toContain('function rejectK2StyleBulkForNonLegacyTenant')
-    expect(apiWriteGalleryDataSource).toContain('rejectK2StyleBulkForNonLegacyTenant(tenantId, allArtworks)')
-    expect(apiWriteGalleryDataSource).toContain('rejectK2StyleBulkForNonLegacyTenant(tenantId, parsed.artworks)')
+  it('filtert K2-Produktions-Werke auf dem Server für Lizenz-Mandanten (Sanitize, kein harter Bulk-Stop mehr)', () => {
+    expect(apiWriteGalleryDataSource).toContain("from './sanitizeNonLegacyTenantArtworks.js'")
+    expect(apiSanitizeNonLegacySource).toContain('export function sanitizeArtworksForNonLegacyTenant')
+    expect(apiWriteGalleryDataSource).not.toContain('rejectK2StyleBulkForNonLegacyTenant')
+    expect(apiWriteGalleryDataSource).toContain('merged.artworks = sanitizeArtworksForNonLegacyTenant(tenantId, allArtworks)')
+    expect(apiWriteGalleryDataSource).toContain('parsed.artworks = sanitizeArtworksForNonLegacyTenant(tenantId, parsed.artworks)')
   })
 })

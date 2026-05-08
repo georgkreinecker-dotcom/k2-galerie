@@ -142,6 +142,8 @@ import { publishGalleryDataToServer, publishK2MetaToServerPreserveArtworks } fro
 import { stripBase64FromArtworks } from '../src/utils/artworkExport'
 import { parseEkFromForm } from '../src/utils/artworkEkVk'
 import { apiPost, apiGet } from '../src/utils/apiClient'
+import { BUILD_LABEL } from '../src/buildInfo.generated'
+import { isLikelyK2ProductionBulkInfection, stripK2ProductionStyleArtworks } from '../src/utils/k2BulkInfectionGuard'
 import { safeReload } from '../src/utils/env'
 import { shareBlobAsFile } from '../src/utils/sharePrintFile'
 import { compressImageForStorage } from '../src/utils/compressImageForStorage'
@@ -4289,7 +4291,13 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         return
       }
       const data = (result.data || {}) as Record<string, unknown>
-      const artworks = Array.isArray(data.artworks) ? data.artworks : []
+      let artworks = Array.isArray(data.artworks) ? data.artworks : []
+      if (isLikelyK2ProductionBulkInfection(artworks)) {
+        console.warn(
+          '⚠️ Lizenz-Mandant: Werke sahen nach K2-Produktionsbestand aus – Liste verworfen (sonst kein Speichern möglich). Trage Werke bitte neu ein.'
+        )
+        artworks = []
+      }
       setAllArtworksSafe(artworks)
       setEvents(Array.isArray(data.events) ? data.events : [])
       setDocuments(Array.isArray(data.documents) ? data.documents : [])
@@ -4935,11 +4943,25 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     const cleanGallery = sanitizeDynamicTenantGalleryData({ ...(sourceGallery || {}), focusDirections: [focusDirection] }, focusDirection)
     const cleanPageTexts = mergeDynamicTenantPageTexts(sourcePageTexts, focusDirection)
     const pageContentGalerieRaw = typeof pageContent === 'object' && pageContent != null ? JSON.stringify(pageContent) : undefined
+    const rawArtworks = Array.isArray(overrides?.artworks)
+      ? [...overrides.artworks]
+      : Array.isArray(allArtworks)
+        ? [...allArtworks]
+        : []
+    const licenceArtworks = stripK2ProductionStyleArtworks(rawArtworks)
+    if (licenceArtworks.length !== rawArtworks.length) {
+      console.warn(
+        '⚠️ Lizenz-Mandant: Einträge mit K2-Produktions-Werknummern (K2-M-/K2-K-/…) wurden vor dem Speichern entfernt – keine Altlasten im Mandanten-Blob.',
+        rawArtworks.length - licenceArtworks.length,
+        'von',
+        rawArtworks.length
+      )
+    }
     return {
       martina: sanitizeDynamicTenantPersonData(sourceMartina),
       georg: sanitizeDynamicTenantPersonData(sourceGeorg),
       gallery: cleanGallery,
-      artworks: sortArtworksFavoritesFirstThenNewest(Array.isArray(overrides?.artworks) ? [...overrides.artworks] : (Array.isArray(allArtworks) ? [...allArtworks] : [])),
+      artworks: sortArtworksFavoritesFirstThenNewest(licenceArtworks),
       events: Array.isArray(overrides?.events)
         ? overrides.events.slice(0, 100)
         : (Array.isArray(events) ? events.slice(0, 100) : []),
@@ -4988,9 +5010,15 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     const result = await apiPost(WRITE_GALLERY_DATA_API_URL, json, { timeoutMs: 30000 })
     if (result.success && result.data) {
       if (silent) console.log('✅ Galerie-Daten gespeichert (Mandant)', tenant.dynamicTenantId)
+      try {
+        const written = Array.isArray(data.artworks) ? data.artworks : []
+        setAllArtworksSafe(written)
+      } catch (_) {}
       return { success: true, size: json.length }
     }
-    return { success: false, error: result.error || 'Daten konnten nicht gespeichert werden.' }
+    const err = result.error || 'Daten konnten nicht gespeichert werden.'
+    const hint = result.hint && String(result.hint).trim()
+    return { success: false, error: hint ? `${err}\n\n${hint}` : err }
   }
 
   const saveDynamicTenantStateToServerRef = React.useRef(saveDynamicTenantStateToServer)
@@ -5091,6 +5119,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   // Mobile Version veröffentlichen - Daten speichern + JSON-Datei erstellen + Vercel öffnen
   const [isDeploying, setIsDeploying] = React.useState(false)
   const [publishErrorMsg, setPublishErrorMsg] = React.useState<string | null>(null)
+  /** Voller Server-Fehler inkl. Hint – ohne DevTools (Lesen, Kopieren, Schließen) */
+  const [apiSpeichernFehlerDialog, setApiSpeichernFehlerDialog] = React.useState<{ title: string; detail: string } | null>(null)
   const [publishSuccessModal, setPublishSuccessModal] = React.useState<{
     size: number
     version: number
@@ -5334,7 +5364,10 @@ function ScreenshotExportAdmin(props?: AdminProps) {
             } else {
               if (!silent) {
                 setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
-                setPublishErrorMsg(result.error || 'Daten konnten nicht gespeichert werden.')
+                setApiSpeichernFehlerDialog({
+                  title: 'An Server senden fehlgeschlagen',
+                  detail: result.error || 'Daten konnten nicht gespeichert werden.',
+                })
               }
             }
           }).finally(() => { if (isMountedRef.current && !silent) setIsDeploying(false) })
@@ -5976,7 +6009,13 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         return
       }
       const data = (result.data || {}) as Record<string, unknown>
-      const apiArtworks = Array.isArray(data.artworks) ? data.artworks : []
+      let apiArtworks = Array.isArray(data.artworks) ? data.artworks : []
+      if (isLikelyK2ProductionBulkInfection(apiArtworks)) {
+        console.warn(
+          '⚠️ Lizenz-Mandant: Werke sahen nach K2-Produktionsbestand aus – Liste verworfen (sonst kein Speichern möglich). Trage Werke bitte neu ein.'
+        )
+        apiArtworks = []
+      }
       setAllArtworksSafe(apiArtworks)
       setEvents(Array.isArray(data.events) ? data.events : [])
       setDocuments(Array.isArray(data.documents) ? data.documents : [])
@@ -12253,6 +12292,57 @@ ${'='.repeat(60)}
     const letter = getCategoryPrefixLetter(category, entryType)
     let categoryPrefix: string
     let prefix: string
+
+    // Lizenz-Mandant (?tenantId=…): keine K2-M-/K2-K-/…-Nummern und kein Zentral-K2-Abgleich – Server filtert K2-Produktionsnummern; lokale Nummern wie M-0001.
+    if (effectiveDynamicTenantId && !forVk2 && !forOek2) {
+      if (entryType === 'product') {
+        categoryPrefix = 'P'
+        prefix = 'P'
+      } else if (entryType === 'idea') {
+        categoryPrefix = 'I'
+        prefix = 'I'
+      } else {
+        categoryPrefix = `${letter}-`
+        prefix = letter
+      }
+      const localArtworksDyn = Array.isArray(allArtworksRef.current) ? allArtworksRef.current : []
+      let maxNumDyn = 0
+      const usedDyn = new Set<string>()
+      localArtworksDyn.forEach((a: any) => {
+        if (!a.number) return
+        usedDyn.add(a.number)
+        if (a.number.startsWith(categoryPrefix)) {
+          const numStr = a.number.replace(categoryPrefix, '').replace(/[^0-9]/g, '')
+          const num = parseInt(numStr || '0', 10)
+          if (num > maxNumDyn) maxNumDyn = num
+        }
+      })
+      let nextDyn = maxNumDyn + 1
+      const padDyn =
+        entryType === 'product' || entryType === 'idea'
+          ? (n: number) => String(n)
+          : (n: number) => String(n).padStart(4, '0')
+      let formattedDyn = `${categoryPrefix}${padDyn(nextDyn)}`
+      let attemptsDyn = 0
+      while (usedDyn.has(formattedDyn) && attemptsDyn < 100) {
+        nextDyn++
+        formattedDyn = `${categoryPrefix}${padDyn(nextDyn)}`
+        attemptsDyn++
+      }
+      if (usedDyn.has(formattedDyn)) {
+        const timestamp = Date.now().toString().slice(-6)
+        const deviceHash =
+          (localStorage.getItem('k2-device-id') || '').split('-').pop()?.substring(0, 2) ||
+          Math.floor(Math.random() * 100).toString().padStart(2, '0')
+        formattedDyn = `${categoryPrefix}${timestamp}${deviceHash}`
+      }
+      try {
+        localStorage.setItem(`k2-last-artwork-number-${prefix}`, String(nextDyn))
+      } catch (_) {}
+      console.log('🔢 Neue Nummer (Lizenz-Mandant):', formattedDyn, '(Kategorie:', category, ')')
+      return formattedDyn
+    }
+
     if (forOek2) {
       if (entryType === 'product') { categoryPrefix = 'P'; prefix = 'P' }
       else if (entryType === 'idea') { categoryPrefix = 'I'; prefix = 'I' }
@@ -13028,8 +13118,8 @@ ${'='.repeat(60)}
       artworkData.purchasePrice = ekParsed
     }
 
-    // K2: Martinas Malerei mit fälschlich K2-K- → K2-M- (Stammdaten + Kategorie; kein manuelles Nummern-Fummeln)
-    if (!forOek2 && !tenant.isVk2 && !editingArtwork) {
+    // K2: Martinas Malerei mit fälschlich K2-K- → K2-M- (Stammdaten + Kategorie; kein manuelles Nummern-Fummeln). Lizenz-Mandant: nicht anwenden.
+    if (!forOek2 && !tenant.isVk2 && !editingArtwork && !adminUsesDynamicTenantBlob(tenant)) {
       const preList = loadArtworksRaw(tenant)
       const mName = String(loadStammdaten('k2', 'martina')?.name ?? '').trim()
       const gName = String(loadStammdaten('k2', 'georg')?.name ?? '').trim()
@@ -13041,21 +13131,26 @@ ${'='.repeat(60)}
       }
     }
     
-    // Werk in localStorage speichern – immer ROH-Liste (nie gefiltert), sonst gehen Werke verloren
-    let artworks = loadArtworksRaw(tenant)
-    // SCHUTZ: Wenn geladene Liste leer ist, aber im Speicher noch Werke stehen → nicht überschreiben (sonst wären alle anderen weg)
-    if (!forOek2 && !tenant.isVk2 && artworks.length === 0) {
-      try {
-        const key = tenant.getArtworksKey()
-        const raw = key ? localStorage.getItem(key) : null
-        if (raw && raw.length > 2) {
-          const parsed = JSON.parse(raw)
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            console.warn('⚠️ loadArtworksRaw war leer, Speicher hat', parsed.length, 'Werke – nutze direkten Lesewert')
-            artworks = parsed
+    // Werk speichern: ROH-Liste. Lizenz-Mandant (?tenantId=): nur Server-State (allArtworksRef) – niemals k2-artworks-Fallback, sonst voller K2-Bestand im Payload.
+    let artworks: any[]
+    if (adminUsesDynamicTenantBlob(tenant)) {
+      artworks = Array.isArray(allArtworksRef.current) ? [...allArtworksRef.current] : []
+    } else {
+      artworks = loadArtworksRaw(tenant)
+      // SCHUTZ: Wenn geladene Liste leer ist, aber im Speicher noch Werke stehen → nicht überschreiben (sonst wären alle anderen weg)
+      if (!forOek2 && !tenant.isVk2 && artworks.length === 0) {
+        try {
+          const key = tenant.getArtworksKey()
+          const raw = key ? localStorage.getItem(key) : null
+          if (raw && raw.length > 2) {
+            const parsed = JSON.parse(raw)
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              console.warn('⚠️ loadArtworksRaw war leer, Speicher hat', parsed.length, 'Werke – nutze direkten Lesewert')
+              artworks = parsed
+            }
           }
-        }
-      } catch (_) {}
+        } catch (_) {}
+      }
     }
     if (!forOek2 && !tenant.isVk2 && artworks.length === 0 && editingArtwork) {
       setWerkSaveToast({ kind: 'bad', text: '❌ Werkliste leer. Seite neu laden, dann erneut speichern.' })
@@ -13114,7 +13209,7 @@ ${'='.repeat(60)}
       if (index !== -1) {
         artworkData.number = artworks[index].number
         artworkData.id = artworks[index].id
-        if (!forOek2 && !tenant.isVk2) {
+        if (!forOek2 && !tenant.isVk2 && !adminUsesDynamicTenantBlob(tenant)) {
           const mName = String(loadStammdaten('k2', 'martina')?.name ?? '').trim()
           const gName = String(loadStammdaten('k2', 'georg')?.name ?? '').trim()
           const correctedEdit = computeK2MalereiMartinaCorrectedNumber(artworkData, artworks, mName, gName)
@@ -13141,8 +13236,8 @@ ${'='.repeat(60)}
       // Neues Werk hinzufügen - prüfe nochmal ob Nummer eindeutig ist
       const existing = artworks.find((a: any) => a.number === finalArtworkNumber)
       if (existing) {
-        // 🔒 K2: Kein Timestamp-Fallback (würde „neue Version“ erzeugen). Lieber abbrechen und sichtbar machen.
-        if (!forOek2 && !tenant.isVk2) {
+        // 🔒 K2-Kern: Kein Timestamp-Fallback (würde „neue Version“ erzeugen). Lizenz-Mandant: wie ök2 eindeutige Nummer ohne K2-Präfix.
+        if (!forOek2 && !tenant.isVk2 && !adminUsesDynamicTenantBlob(tenant)) {
           setWerkSaveToast({ kind: 'bad', text: `❌ Nummer ${finalArtworkNumber} existiert schon. Stand neu laden oder Doppler bereinigen.` })
           setTimeout(() => setWerkSaveToast(null), 10000)
           alert(
@@ -13150,15 +13245,26 @@ ${'='.repeat(60)}
           )
           return
         }
-        // ök2/VK2: darf weiterhin einen eindeutigen Fallback erhalten (kein K2-Kern)
+        // ök2 / VK2 / Lizenz-Mandant: eindeutiger Fallback (Mandant nie K2-…-Timestamp)
         const timestamp = Date.now().toString().slice(-6)
         const random = Math.floor(Math.random() * 100).toString().padStart(2, '0')
         const conflictEntryType = artworkData.entryType || 'artwork'
-        const prefix = forOek2 ? (conflictEntryType === 'product' ? 'P' : conflictEntryType === 'idea' ? 'I' : 'W') : getCategoryPrefixLetter(artworkCategory, conflictEntryType)
-        finalArtworkNumber = (forOek2 && (conflictEntryType === 'product' || conflictEntryType === 'idea')) ? `${prefix}${timestamp}${random}` : `K2-${prefix}-${timestamp}${random}`
+        const usesDyn = adminUsesDynamicTenantBlob(tenant)
+        if (forOek2 && (conflictEntryType === 'product' || conflictEntryType === 'idea')) {
+          const prefix = conflictEntryType === 'product' ? 'P' : 'I'
+          finalArtworkNumber = `${prefix}${timestamp}${random}`
+        } else if (usesDyn) {
+          const letter = getCategoryPrefixLetter(artworkCategory, conflictEntryType)
+          if (conflictEntryType === 'product') finalArtworkNumber = `P${timestamp}${random}`
+          else if (conflictEntryType === 'idea') finalArtworkNumber = `I${timestamp}${random}`
+          else finalArtworkNumber = `${letter}-${timestamp}${random}`
+        } else {
+          const prefix = forOek2 ? (conflictEntryType === 'product' ? 'P' : conflictEntryType === 'idea' ? 'I' : 'W') : getCategoryPrefixLetter(artworkCategory, conflictEntryType)
+          finalArtworkNumber = (forOek2 && (conflictEntryType === 'product' || conflictEntryType === 'idea')) ? `${prefix}${timestamp}${random}` : `K2-${prefix}-${timestamp}${random}`
+        }
         artworkData.number = finalArtworkNumber
         artworkData.id = finalArtworkNumber
-        console.warn('⚠️ Fallback-Nummer (nicht K2):', finalArtworkNumber)
+        console.warn('⚠️ Fallback-Nummer (Konflikt):', finalArtworkNumber)
       }
       artworks.push(artworkData)
     }
@@ -13190,7 +13296,10 @@ ${'='.repeat(60)}
           })
           if (!result.success) {
             console.error('❌ Mandanten-Werke konnten nicht gespeichert werden:', result.error)
-            alert(`⚠️ Fehler beim Speichern der Werke.\n\n${result.error || 'Bitte erneut versuchen.'}`)
+            setApiSpeichernFehlerDialog({
+              title: 'Werke konnten nicht gespeichert werden',
+              detail: result.error || 'Bitte erneut versuchen.',
+            })
             return false
           }
           return true
@@ -15123,7 +15232,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 if (effectiveDynamicTenantId) {
                   const saved = await saveDynamicTenantStateToServer({ silent: true, tenantId: effectiveDynamicTenantId })
                   if (!saved.success) {
-                    setPublishErrorMsg(saved.error || 'Daten konnten nicht gespeichert werden.')
+                    setApiSpeichernFehlerDialog({
+                      title: 'Zwischenspeichern fehlgeschlagen',
+                      detail: saved.error || 'Daten konnten nicht gespeichert werden.',
+                    })
                     return
                   }
                 } else {
@@ -15164,7 +15276,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           setPageContent(contentToSave)
                           const saved = await saveDynamicTenantStateToServer({ silent: true, tenantId: effectiveDynamicTenantId })
                           if (!saved.success) {
-                            alert('Speichern fehlgeschlagen: ' + (saved.error || 'Daten konnten nicht gespeichert werden.'))
+                            setApiSpeichernFehlerDialog({
+                              title: 'Design konnte nicht gespeichert werden',
+                              detail: saved.error || 'Daten konnten nicht gespeichert werden.',
+                            })
                             return
                           }
                           setDesignSaveFeedback('ok')
@@ -17659,6 +17774,25 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                               <strong style={{ color: s.text }}>Jedes Speichern wird automatisch an Vercel gesendet.</strong> Beim Öffnen des Admin werden die Daten automatisch vom Server geholt – keine manuelle Eingabe nötig. „An Server senden“ / „Vom Server laden“ nur bei Bedarf.
                             </p>
                           )}
+                          {effectiveDynamicTenantId && (
+                            <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.72rem', color: s.muted, lineHeight: 1.5 }}>
+                              <strong style={{ color: s.text }}>Orientierung (Lizenz-Mandant):</strong>{' '}
+                              Seite{' '}
+                              <code style={{ fontSize: '0.68rem', color: s.text }}>{typeof window !== 'undefined' ? window.location.host : '—'}</code>
+                              {' · Daten-API '}
+                              <code style={{ fontSize: '0.68rem', color: s.text }}>{VERCEL_APP_BASE.replace(/^https:\/\//, '')}</code>
+                              {' · Build '}
+                              <code style={{ fontSize: '0.68rem', color: s.text }}>{BUILD_LABEL}</code>
+                              {typeof window !== 'undefined' && /localhost|127\.0\.0\.1/i.test(window.location.hostname || '') ? (
+                                <>
+                                  {' '}
+                                  <span style={{ color: '#b45309' }}>
+                                    (Lokal geöffnet: Speichern/Laden läuft trotzdem gegen diese Production-API – nicht gegen einen rein lokalen Stand.)
+                                  </span>
+                                </>
+                              ) : null}
+                            </p>
+                          )}
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'flex-end' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                               <button
@@ -18533,11 +18667,13 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                                   tenantId: effectiveDynamicTenantId || undefined,
                                 })
                                 if (!result.success) {
-                                  alert(
-                                    '⚠️ In der Liste entfernt – aber der öffentliche Stand wurde nicht aktualisiert.\n\n' +
-                                      'Beim nächsten Laden können die Werke wieder erscheinen. Bitte bei gutem Netz **Veröffentlichen**.\n\n' +
-                                      (result.error ? String(result.error) : '')
-                                  )
+                                  setApiSpeichernFehlerDialog({
+                                    title: 'Löschen nur lokal – Server nicht aktualisiert',
+                                    detail:
+                                      'Das Werk ist in der Liste weg, aber der Server hat den neuen Stand nicht übernommen.\n\n' +
+                                      'Beim nächsten Laden kann es wieder erscheinen. Bitte bei gutem Netz erneut speichern oder „Veröffentlichen“.\n\n' +
+                                      (result.error ? String(result.error) : ''),
+                                  })
                                 }
                               } catch (e) {
                                 alert(
@@ -29069,6 +29205,114 @@ ${name}`
             >
               OK
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Server-Fehler (Lizenz-Mandant u. a.): voller Text + Kopieren – kein DevTools nötig */}
+      {apiSpeichernFehlerDialog && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.78)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 100000,
+            padding: '1rem',
+          }}
+          onClick={() => setApiSpeichernFehlerDialog(null)}
+        >
+          <div
+            style={{
+              background: '#1a1d24',
+              borderRadius: '16px',
+              maxWidth: '520px',
+              width: '100%',
+              padding: '1.35rem 1.5rem 1.5rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.85rem',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.55)',
+              border: '1px solid rgba(245,158,11,0.35)',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ fontSize: '1.35rem', textAlign: 'center' }}>⚠️</div>
+            <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#f59e0b', textAlign: 'center', lineHeight: 1.35 }}>
+              {apiSpeichernFehlerDialog.title}
+            </div>
+            <p style={{ fontSize: '0.88rem', color: '#94a3b8', margin: 0, lineHeight: 1.5, textAlign: 'center' }}>
+              Hier steht die genaue Meldung vom Server (inkl. Hinweis). Zum Weitergeben: „Text kopieren“.
+            </p>
+            <div
+              style={{
+                fontSize: '0.88rem',
+                color: '#e2e8f0',
+                textAlign: 'left',
+                maxHeight: 'min(52vh, 380px)',
+                overflowY: 'auto',
+                padding: '0.85rem',
+                background: '#0f172a',
+                border: '1px solid rgba(245,158,11,0.35)',
+                borderRadius: '10px',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                lineHeight: 1.45,
+              }}
+            >
+              {apiSpeichernFehlerDialog.detail}
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.55rem', justifyContent: 'center', marginTop: '0.35rem' }}>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(apiSpeichernFehlerDialog.detail)
+                    setWerkSaveToast({ kind: 'ok', text: '✅ Text kopiert' })
+                    setTimeout(() => setWerkSaveToast(null), 3500)
+                  } catch {
+                    setWerkSaveToast({ kind: 'bad', text: 'Kopieren nicht möglich (Browser)' })
+                    setTimeout(() => setWerkSaveToast(null), 4000)
+                  }
+                }}
+                style={{
+                  padding: '0.65rem 1.25rem',
+                  background: 'rgba(245,158,11,0.95)',
+                  color: '#1a1d24',
+                  border: 'none',
+                  borderRadius: '10px',
+                  fontSize: '0.95rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                }}
+              >
+                Text kopieren
+              </button>
+              <button
+                type="button"
+                onClick={() => setApiSpeichernFehlerDialog(null)}
+                style={{
+                  padding: '0.65rem 1.25rem',
+                  background: 'rgba(255,255,255,0.12)',
+                  color: '#e2e8f0',
+                  border: '1px solid rgba(255,255,255,0.28)',
+                  borderRadius: '10px',
+                  fontSize: '0.95rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                }}
+              >
+                Schließen
+              </button>
+            </div>
           </div>
         </div>
       )}
