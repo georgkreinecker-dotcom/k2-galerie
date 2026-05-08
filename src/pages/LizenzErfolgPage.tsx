@@ -8,6 +8,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import '../App.css'
 import { PROJECT_ROUTES, ENTDECKEN_ROUTE, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
+import { APP_BASE_URL_SHAREABLE } from '../config/externalUrls'
 import { LicenseeAdminQrPanel } from '../components/LicenseeAdminQrPanel'
 import { buildLizenzMusterErfolgLinks } from '../utils/lizenzMusterDemo'
 import { rewriteLicenceUrlForCustomerDisplay } from '../utils/publicLinks'
@@ -32,6 +33,64 @@ type LicenceLinks = {
 
 /** Diese API-Fehler sinnlos mit Warte-Retries wiederholen */
 const LIZENZ_SESSION_NO_RETRY_ERRORS = new Set(['Sitzung unbekannt', 'Supabase nicht konfiguriert'])
+
+function resolveBaseForLicenceLinks() {
+  const b = String(APP_BASE_URL_SHAREABLE || '').trim().replace(/\/$/, '')
+  if (b) return b
+  if (typeof window !== 'undefined') return String(window.location.origin || '').replace(/\/$/, '')
+  return 'https://k2-galerie.vercel.app'
+}
+
+function focusDirectionFromLicenceUrl(rawUrl: string | null | undefined) {
+  const fallback = 'kunst'
+  const value = String(rawUrl || '').trim()
+  if (!value) return fallback
+  try {
+    const u = new URL(value, `${resolveBaseForLicenceLinks()}/`)
+    return String(u.searchParams.get('focusDirection') || '').trim() || fallback
+  } catch {
+    const match = value.match(/[?&]focusDirection=([^&]+)/)
+    return match?.[1] ? decodeURIComponent(match[1]) : fallback
+  }
+}
+
+function tenantIdFromGalerieUrl(rawUrl: string | null | undefined): string {
+  const value = String(rawUrl || '').trim()
+  if (!value) return ''
+  try {
+    const u = new URL(value, `${resolveBaseForLicenceLinks()}/`)
+    const path = String(u.pathname || '').trim()
+    const gMatch = path.match(/^\/g\/([a-z0-9-]{1,64})$/i)
+    if (gMatch?.[1]) return String(gMatch[1]).toLowerCase()
+    const familyT = String(u.searchParams.get('t') || '').trim().toLowerCase()
+    if (/^[a-z0-9-]{1,64}$/.test(familyT)) return familyT
+    return ''
+  } catch {
+    const gMatch = value.match(/\/g\/([a-z0-9-]{1,64})(?:[/?#]|$)/i)
+    if (gMatch?.[1]) return String(gMatch[1]).toLowerCase()
+    const tMatch = value.match(/[?&]t=([a-z0-9-]{1,64})(?:[&#]|$)/i)
+    if (tMatch?.[1]) return String(tMatch[1]).toLowerCase()
+    return ''
+  }
+}
+
+function deriveAdminUrlFromLicenceData(args: { tenantId?: string | null; productLine?: LizenzProductLine | null; galerieUrl?: string | null }) {
+  const base = resolveBaseForLicenceLinks()
+  const tenantIdDirect = String(args.tenantId || '').trim().toLowerCase()
+  const tenantId = tenantIdDirect || tenantIdFromGalerieUrl(args.galerieUrl)
+  const productLine = args.productLine || 'k2_galerie'
+  if (productLine === 'vk2' || tenantId === 'vk2' || tenantId.startsWith('vk2-')) {
+    return `${base}/admin?context=vk2`
+  }
+  if (productLine === 'k2_familie' || tenantId.startsWith('familie-')) {
+    return tenantId
+      ? `${base}/projects/k2-familie/meine-familie?t=${encodeURIComponent(tenantId)}`
+      : `${base}/projects/k2-familie/meine-familie`
+  }
+  if (!tenantId) return K2_GALERIE_APF_EINSTIEG
+  const focusDirection = focusDirectionFromLicenceUrl(args.galerieUrl)
+  return `${base}/admin?tenantId=${encodeURIComponent(tenantId)}&focusDirection=${encodeURIComponent(focusDirection)}`
+}
 
 export default function LizenzErfolgPage() {
   const [searchParams] = useSearchParams()
@@ -104,7 +163,6 @@ export default function LizenzErfolgPage() {
             const aIn = data.admin_url
             let admin_url =
               aIn != null && String(aIn).trim() !== '' ? String(aIn).trim() : prev?.admin_url || ''
-            if (!admin_url) admin_url = K2_GALERIE_APF_EINSTIEG
             const licence_type = data.licence_type ?? prev?.licence_type ?? null
             const product_line = resolveLizenzErfolgProductLine({
               product_line: data.product_line,
@@ -113,6 +171,9 @@ export default function LizenzErfolgPage() {
               admin_url,
               tenant_id,
             })
+            if (!admin_url || /\/projects\/k2-galerie\?apf=1/i.test(admin_url)) {
+              admin_url = deriveAdminUrlFromLicenceData({ tenantId: tenant_id, productLine: product_line, galerieUrl: galerie_url })
+            }
             const name = (data.name && String(data.name).trim()) ? String(data.name) : prev?.name || ''
             const email = (data.email && String(data.email).trim()) ? String(data.email) : prev?.email || ''
             return {
