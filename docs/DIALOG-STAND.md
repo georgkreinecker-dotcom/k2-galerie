@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Was wir JETZT tun:** Vercel-Deploy nach Push abwarten; bei Bedarf Lizenznehmer-Flow erneut testen.
+
+**Einordnung:** Build-Fix rein typisiert (`LiveDesignSettings` modulweit), keine Änderung der Admin-Abläufe.
+
+**Letzter Stand:** 08.05.26 – **Vercel `tsc:build`:** `designSettings.titleFontSize` & Co. – **`LiveDesignSettings`** auf Dateiebene exportiert, **`K2_ORANGE_DESIGN`** explizit typisiert, aus **localStorage** werden die optionalen Felder mitgelesen. **`npm run tsc:build`** grün. **Commit:** `0fcb122b` ✅ **main**
+
 **Letzter Stand:** 07.05.26 – **Lizenznehmer-Sparten nachgezogen:** Dynamische Galerie-Lizenznehmer nutzen jetzt in **Galerie gestalten → Ansehen** eigene Starttexte (`Meine Galerie`, gewählte Sparte) statt K2-Defaults. In **Werke verwalten** zeigt das Kategorie-Dropdown bei Lizenznehmern nun die Kategorien der gewählten Sparte (z. B. Handwerk: Möbel, Schmuck, Textil …) statt immer Kunst-Kategorien. **Tests:** `dynamicTenantAdminIsolation.test.ts` + Lizenztests grün; **Build:** `npm run build` grün. **Commit:** `dc31704b` ✅ **main**
 
 **Letzter Stand:** 07.05.26 – **Lizenznehmer-Admin End-to-End repariert:** `/admin?tenantId=galerie-*` lädt keine K2-Stammdaten mehr, startet mit leeren Mandanten-Stammdaten und übernimmt `focusDirection` aus der Lizenz. **„Galerie ansehen“** führt jetzt auf `/g/<tenantId>?focusDirection=…` statt `/galerie`. Lizenzkauf sendet die gewählte Sparte in Stripe-Metadaten; Webhook/API schreiben sie in die Mandanten-Galerie-URL und Admin-URL. **Tests:** `stripeLicenceContract.test.ts` + `dynamicTenantAdminIsolation.test.ts` grün; **Build:** `npm run build` grün. **Commit:** `c3142866` ✅ **main**
