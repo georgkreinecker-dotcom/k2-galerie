@@ -1,8 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Vercel-Deploy nach Push abwarten; bei Bedarf Lizenznehmer-Flow erneut testen.
+**Was wir JETZT tun:** Nach Deploy: Grafiker-Tisch mit `?tenantId=<lizenz-id>` testen; direkter Link `/g/<id>` bleibt der öffentliche Einstieg.
 
-**Einordnung:** Build-Fix rein typisiert (`LiveDesignSettings` modulweit), keine Änderung der Admin-Abläufe.
+**Einordnung:** APf zeigte bei „Galerie“ absichtlich K2 (`/galerie`); Lizenz-Vorschau braucht `/g/…` oder neu `tenantId` in der Projekt-URL.
+
+**Letzter Stand:** 08.05.26 – **Grafiker-Tisch Lizenz-Vorschau:** Mit **`/projects/k2-galerie?…&tenantId=<mandant>`** lädt der iframe **Lizenz-Galerie** (`/g/<id>`, Werke-Vorschau: `?vorschau=1`). Ohne Parameter weiterhin **K2 Galerie (echt)**. **Commit:** `ff5f975f` ✅ **main**
 
 **Letzter Stand:** 08.05.26 – **Vercel `tsc:build`:** `designSettings.titleFontSize` & Co. – **`LiveDesignSettings`** auf Dateiebene exportiert, **`K2_ORANGE_DESIGN`** explizit typisiert, aus **localStorage** werden die optionalen Felder mitgelesen. **`npm run tsc:build`** grün. **Commit:** `0fcb122b` ✅ **main**
 
