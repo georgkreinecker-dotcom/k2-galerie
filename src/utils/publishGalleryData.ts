@@ -50,6 +50,7 @@ function tenantKey(tenantId: PublishTenantId, suffix: string): string {
 function getFlyerMasterKeyForTenant(tenantId: PublishTenantId): string {
   if (tenantId === 'oeffentlich') return FLYER_EVENT_BOGEN_STORAGE_KEY_OEFF
   if (tenantId === 'vk2') return getFlyerEventBogenStorageKey(false, true)
+  if (tenantId !== 'k2') return getFlyerEventBogenStorageKey(false, false, String(tenantId))
   return FLYER_EVENT_BOGEN_STORAGE_KEY_K2
 }
 

@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { reportPublicGalleryVisit } from '../utils/reportPublicGalleryVisit'
-import { FOCUS_DIRECTIONS, MUSTER_ARTWORKS, getWelcomeIntroForFocusDirections, type FocusDirectionId } from '../config/tenantConfig'
+import { FOCUS_DIRECTIONS, MUSTER_ARTWORKS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, getWelcomeIntroForFocusDirections, type FocusDirectionId } from '../config/tenantConfig'
 import '../App.css'
 
 const SAFE_TENANT_ID = /^[a-z0-9-]{1,64}$/
@@ -26,6 +26,9 @@ export default function GalerieTenantPage() {
   const focusDirection = normalizeFocusDirection(searchParams.get('focusDirection'))
   const [data, setData] = useState<{
     artworks?: TenantGalleryArtwork[]
+    gallery?: Record<string, unknown>
+    martina?: Record<string, unknown>
+    georg?: Record<string, unknown>
     pageTexts?: { galerie?: { heroTitle?: string; welcomeSubtext?: string; welcomeIntroText?: string } }
     designSettings?: Record<string, string>
     pageContentGalerie?: string | { welcomeImage?: string }
@@ -117,6 +120,49 @@ export default function GalerieTenantPage() {
   const welcomeImage = typeof parsedPageContent === 'object' && parsedPageContent != null
     ? String((parsedPageContent as { welcomeImage?: string }).welcomeImage || '').trim()
     : ''
+  const galleryStamm = (data?.gallery && typeof data.gallery === 'object') ? data.gallery as Record<string, unknown> : {}
+  const martinaStamm = (data?.martina && typeof data.martina === 'object') ? data.martina as Record<string, unknown> : {}
+  const georgStamm = (data?.georg && typeof data.georg === 'object') ? data.georg as Record<string, unknown> : {}
+  const impressumEmail = String(galleryStamm.email || martinaStamm.email || georgStamm.email || '').trim()
+  const impressumPhone = String(galleryStamm.phone || martinaStamm.phone || georgStamm.phone || '').trim()
+  const impressumAddress = [
+    String(galleryStamm.address || '').trim(),
+    String(galleryStamm.zip || '').trim(),
+    String(galleryStamm.city || '').trim(),
+    String(galleryStamm.country || '').trim(),
+  ].filter(Boolean).join(', ')
+  const mapsUrl = impressumAddress ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(impressumAddress)}` : ''
+
+  const shareUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/g/${encodeURIComponent(tenantId)}?focusDirection=${encodeURIComponent(focusDirection)}`
+    : `/g/${encodeURIComponent(tenantId)}?focusDirection=${encodeURIComponent(focusDirection)}`
+  const TEMPLATE = {
+    maxWidth: 1000,
+    sectionRadius: 14,
+    sectionBorder: '1px solid #ddd2c4',
+    sectionBg: '#fff',
+    sectionPadding: '1rem',
+    chipBorder: '1px solid #d7c9ba',
+    chipBg: '#fffefb',
+    chipColor: '#5a4738',
+  }
+  const handleShare = async () => {
+    const shareText = `${title} – ${subtext}`
+    try {
+      if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+        await navigator.share({ title, text: shareText, url: shareUrl })
+        return
+      }
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl)
+        alert('Link kopiert.')
+        return
+      }
+    } catch {
+      // Fallback unten
+    }
+    if (typeof window !== 'undefined') window.prompt('Link kopieren:', shareUrl)
+  }
 
   return (
     <main
@@ -130,27 +176,99 @@ export default function GalerieTenantPage() {
         color: '#1f1a15',
       }}
     >
+      <div style={{ position: 'fixed', top: '0.9rem', left: '1rem', zIndex: 30 }}>
+        <Link to="/" style={{ color: '#6b5848', textDecoration: 'none', fontSize: '0.86rem', fontWeight: 600 }}>
+          {PRODUCT_BRAND_NAME} ©
+        </Link>
+      </div>
+      <div style={{ position: 'fixed', top: '0.9rem', right: '1rem', zIndex: 30, display: 'flex', gap: '0.5rem' }}>
+        <button
+          type="button"
+          onClick={() => { void handleShare() }}
+          style={{
+            border: '1px solid #d1c0ae',
+            background: '#fff',
+            color: '#5f4c3d',
+            borderRadius: 999,
+            padding: '0.42rem 0.7rem',
+            fontSize: '0.82rem',
+            cursor: 'pointer',
+          }}
+        >
+          📤 Teilen
+        </button>
+        <a
+          href={adminUrl}
+          style={{
+            border: '1px solid #d1c0ae',
+            background: '#fff',
+            color: '#5f4c3d',
+            borderRadius: 999,
+            padding: '0.42rem 0.7rem',
+            fontSize: '0.82rem',
+            textDecoration: 'none',
+          }}
+        >
+          🔐 Admin
+        </a>
+      </div>
       <header
+        id="start"
         style={{
           textAlign: 'center',
           marginBottom: '1.5rem',
-          background: '#fff',
-          border: '1px solid #ddd2c4',
-          borderRadius: 14,
-          padding: '1.1rem 1rem',
+          background: TEMPLATE.sectionBg,
+          border: TEMPLATE.sectionBorder,
+          borderRadius: TEMPLATE.sectionRadius,
+          padding: '1.1rem 1.05rem',
         }}
       >
         <h1 style={{ fontSize: '1.85rem', fontWeight: 800, color: '#1f1a15', margin: 0 }}>{title}</h1>
         <p style={{ color: '#4b433c', margin: '0.45rem 0 0', fontWeight: 600 }}>{subtext}</p>
         <p style={{ color: '#3f3933', maxWidth: 700, margin: '0.8rem auto 0', lineHeight: 1.6 }}>{intro}</p>
       </header>
+      <nav
+        aria-label="Seitenbereiche"
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          gap: '0.55rem',
+          margin: '0 0 1.1rem',
+        }}
+      >
+        {[
+          { href: '#willkommen', label: 'Willkommen' },
+          { href: '#werke', label: 'Werke' },
+          { href: '#admin', label: 'Admin' },
+          { href: '#impressum', label: 'Impressum' },
+        ].map((item) => (
+          <a
+            key={item.href}
+            href={item.href}
+            style={{
+              textDecoration: 'none',
+              border: TEMPLATE.chipBorder,
+              background: TEMPLATE.chipBg,
+              color: TEMPLATE.chipColor,
+              borderRadius: 999,
+              padding: '0.34rem 0.74rem',
+              fontSize: '0.82rem',
+              fontWeight: 600,
+            }}
+          >
+            {item.label}
+          </a>
+        ))}
+      </nav>
       <section
+        id="willkommen"
         style={{
           marginBottom: '1.5rem',
-          background: '#fff',
-          border: '1px solid #ddd2c4',
-          borderRadius: 14,
-          padding: '0.9rem',
+          background: TEMPLATE.sectionBg,
+          border: TEMPLATE.sectionBorder,
+          borderRadius: TEMPLATE.sectionRadius,
+          padding: TEMPLATE.sectionPadding,
         }}
       >
         {welcomeImage ? (
@@ -181,6 +299,17 @@ export default function GalerieTenantPage() {
           Muster-Erstgalerie – ersetze diese Beispiele im Admin durch deine eigenen Inhalte.
         </p>
       )}
+      <section
+        id="werke"
+        style={{
+          background: TEMPLATE.sectionBg,
+          border: TEMPLATE.sectionBorder,
+          borderRadius: TEMPLATE.sectionRadius,
+          padding: TEMPLATE.sectionPadding,
+          marginBottom: '1rem',
+        }}
+      >
+        <h2 style={{ margin: '0 0 0.85rem', fontSize: '1.08rem', color: '#1f1a15' }}>Werke</h2>
       {artworks.length === 0 ? (
         <p style={{ textAlign: 'center', color: 'var(--k2-muted)', marginBottom: '1.5rem' }}>
           Noch keine Werke – im Admin hinzufügen.
@@ -220,11 +349,55 @@ export default function GalerieTenantPage() {
           ))}
         </div>
       )}
-      <p style={{ textAlign: 'center' }}>
+      </section>
+      <section
+        id="admin"
+        style={{
+          marginBottom: '2.2rem',
+          background: TEMPLATE.sectionBg,
+          border: TEMPLATE.sectionBorder,
+          borderRadius: TEMPLATE.sectionRadius,
+          padding: TEMPLATE.sectionPadding,
+          textAlign: 'center',
+        }}
+      >
+        <h2 style={{ margin: '0 0 0.55rem', fontSize: '1.08rem', color: '#1f1a15' }}>Admin-Zugang</h2>
+        <p style={{ margin: '0 0 0.75rem', color: '#5f564d', fontSize: '0.93rem' }}>
+          Inhalte, Design und Stammdaten pflegen.
+        </p>
+      <p style={{ textAlign: 'center', marginBottom: 0 }}>
         <a href={adminUrl} style={{ color: 'var(--k2-accent)', fontSize: '0.95rem' }}>
           Galerie bearbeiten →
         </a>
       </p>
+      </section>
+      <section
+        id="impressum"
+        style={{
+          marginTop: '0.5rem',
+          borderTop: TEMPLATE.sectionBorder,
+          paddingTop: '1.05rem',
+          color: '#5d544c',
+          fontSize: '0.88rem',
+          lineHeight: 1.5,
+        }}
+      >
+        <h3 style={{ margin: '0 0 0.6rem', color: '#1f1a15', fontSize: '1rem' }}>Impressum</h3>
+        <p style={{ margin: '0 0 0.35rem', fontWeight: 600 }}>{title}</p>
+        {impressumAddress ? (
+          <p style={{ margin: '0 0 0.3rem' }}>
+            📍 <a href={mapsUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#7a4f34', textDecoration: 'none' }}>{impressumAddress}</a>
+          </p>
+        ) : null}
+        {impressumPhone ? <p style={{ margin: '0 0 0.3rem' }}>📞 {impressumPhone}</p> : null}
+        {impressumEmail ? (
+          <p style={{ margin: '0 0 0.5rem' }}>
+            ✉️ <a href={`mailto:${impressumEmail}`} style={{ color: '#7a4f34', textDecoration: 'none' }}>{impressumEmail}</a>
+          </p>
+        ) : null}
+        <p style={{ margin: '0.6rem 0 0', fontSize: '0.8rem', color: '#7f756d' }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
+        <p style={{ margin: '0.2rem 0 0', fontSize: '0.76rem', color: '#8b8179' }}>{PRODUCT_URHEBER_ANWENDUNG}</p>
+      </section>
     </main>
   )
 }

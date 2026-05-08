@@ -3036,6 +3036,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [previewFullscreenPage, setPreviewFullscreenPage] = useState<1 | 2>(1) // welche Seite in der Vorschau (immer nur eine)
   const [designPreviewHeightPx, setDesignPreviewHeightPx] = useState(560) // Vorschau-Höhe – per Ziehen anpassbar
   const [designPreviewScale, setDesignPreviewScale] = useState(1) // 1 = 100%, manuell vergrößerbar
+  const [designLivePreviewVersion, setDesignLivePreviewVersion] = useState(0)
   /** Vorschau-Tab: kompakte Toolbar + weniger Text oben = mehr Platz für die Galerie-Vorschau (sessionStorage). */
   const [designToolbarCompact, setDesignToolbarCompact] = useState(() => {
     try {
@@ -4024,6 +4025,16 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const currentDynamicTenantGalleryPath = effectiveDynamicTenantId
     ? buildDynamicTenantGalleryPath(effectiveDynamicTenantId, currentDynamicFocusDirection)
     : dynamicTenantGalleryPath
+  const publicGalleryPathForCurrentContext = effectiveDynamicTenantId
+    ? currentDynamicTenantGalleryPath
+    : tenant.isVk2
+      ? PROJECT_ROUTES.vk2.galerie
+      : tenant.isOeffentlich
+        ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+        : PROJECT_ROUTES['k2-galerie'].galerie
+  const publicGalleryUrlForCurrentContext = `${BASE_APP_URL}${publicGalleryPathForCurrentContext}`
+  const designLiveTemplateBaseRoute = publicGalleryPathForCurrentContext
+  const designLiveTemplateRoute = `${designLiveTemplateBaseRoute}${designLiveTemplateBaseRoute.includes('?') ? '&' : '?'}liveTemplate=1&_=${designLivePreviewVersion}`
 
   // Seitengestaltung (Willkommensseite & Galerie-Vorschau) – K2 vs. ök2 getrennt
   const [pageContent, setPageContent] = useState<PageContentGalerie>(() =>
@@ -4747,6 +4758,37 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     }
     void run()
   }
+
+  // Im Design-Modal stets die echte Frontseiten-Struktur spiegeln (Live-Template)
+  useEffect(() => {
+    if (activeTab !== 'design' || designSubTab !== 'vorschau') return
+    const t = setTimeout(() => {
+      saveAllForVorschau()
+      setDesignLivePreviewVersion((v) => v + 1)
+    }, 220)
+    return () => clearTimeout(t)
+  }, [activeTab, designSubTab, pageTexts, pageContent, designSettings, galleryData?.name])
+
+  // Auch in Presse/Social/Newsletter-Redaktion dieselbe Frontseite live spiegeln
+  useEffect(() => {
+    if (!redactionEvent && !socialRedactionEvent && !newsletterRedactionEvent) return
+    const t = setTimeout(() => {
+      saveAllForVorschau()
+      setDesignLivePreviewVersion((v) => v + 1)
+    }, 220)
+    return () => clearTimeout(t)
+  }, [
+    redactionEvent,
+    socialRedactionEvent,
+    newsletterRedactionEvent,
+    redactionPresseTitle,
+    redactionPresseContent,
+    socialRedactionInstagram,
+    socialRedactionFacebook,
+    socialRedactionWhatsApp,
+    newsletterRedactionSubject,
+    newsletterRedactionBody,
+  ])
 
   /** Pilot/ök2: Musterdaten auf einen Klick leeren – eigene Eintragung ohne umständliches Rauslöschen. */
   const clearStammdatenMuster = () => {
@@ -6540,7 +6582,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   /** Presseaussendung: Redaktions-Modal (Split-Ansicht). optionalOverride = z. B. frisch generiert neutral/lokal; sonst Vorschlag aus k2-pr-suggestions oder Standard. */
   const openRedaction = (event: any, optionalOverride?: any) => {
     closeOeffentlichkeitsarbeitFullscreenOverlay()
-    const defaultQr = BASE_APP_URL + (tenant.isVk2 ? PROJECT_ROUTES.vk2.galerie : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie)
+    const defaultQr = publicGalleryUrlForCurrentContext
     try {
       const raw = localStorage.getItem('k2-pr-suggestions') || '[]'
       const list = JSON.parse(raw)
@@ -7203,7 +7245,7 @@ ${adresse ? `Adresse: ${adresse}` : ''}
       return galleryData || {}
     })()
     const adresseK2 = !tenant.isVk2 ? getProminenteAdresseFormatiert(galleryData, martinaData, georgData) : ''
-    const galerieUrl = BASE_APP_URL + (tenant.isVk2 ? PROJECT_ROUTES.vk2.galerie : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie)
+    const galerieUrl = publicGalleryUrlForCurrentContext
 
     const text = `
 ${'='.repeat(60)}
@@ -7256,7 +7298,7 @@ ${'='.repeat(60)}
   }
 
   const exportSocialMediaAsText = (socialMedia: any, event: any) => {
-    const galerieUrl = BASE_APP_URL + (tenant.isVk2 ? PROJECT_ROUTES.vk2.galerie : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie)
+    const galerieUrl = publicGalleryUrlForCurrentContext
     const text = `
 ${'='.repeat(60)}
 SOCIAL MEDIA POSTS
@@ -7293,7 +7335,7 @@ ${'='.repeat(60)}
   }
 
   const exportNewsletterAsText = (newsletter: any, event: any) => {
-    const galerieUrl = BASE_APP_URL + (tenant.isVk2 ? PROJECT_ROUTES.vk2.galerie : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie)
+    const galerieUrl = publicGalleryUrlForCurrentContext
     const text = `
 ${'='.repeat(60)}
 E-MAIL NEWSLETTER
@@ -7686,7 +7728,7 @@ ${'='.repeat(60)}
         ``,
         `───────────────────────────────────────`,
         `TEILEN: Bitte verbreiten Sie diese Einladung in Ihren Netzwerken.`,
-        `Link zur Galerie: ${BASE_APP_URL}${tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie}`,
+        `Link zur Galerie: ${publicGalleryUrlForCurrentContext}`,
         HINWEIS_LINK_QR_VORAB_SIE,
         `───────────────────────────────────────`,
         ``,
@@ -7777,7 +7819,7 @@ ${'='.repeat(60)}
         ``,
         `─────────────────────────────────────────`,
         ``,
-        `Bitte teilen Sie diese Einladung in Ihren Netzwerken. Link: ${BASE_APP_URL}${tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie}`,
+        `Bitte teilen Sie diese Einladung in Ihren Netzwerken. Link: ${publicGalleryUrlForCurrentContext}`,
         HINWEIS_LINK_QR_VORAB_SIE,
         ``,
         g.openingHours ? `Öffnungszeiten: ${g.openingHours}` : '',
@@ -9779,13 +9821,7 @@ ${'='.repeat(60)}
     const galleryName = isVk2
       ? vk2Stammdaten?.verein?.name || 'Kunstverein Muster'
       : galleryData?.name || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
-    const galerieUrl =
-      BASE_APP_URL +
-      (tenant.isVk2
-        ? PROJECT_ROUTES.vk2.galerie
-        : tenant.isOeffentlich
-          ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
-          : PROJECT_ROUTES['k2-galerie'].galerie)
+      const galerieUrl = publicGalleryUrlForCurrentContext
     const demoUrl = BASE_APP_URL + ENTDECKEN_ROUTE
     const mappeUrl = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe
     const ort = esc(ev.location || '')
@@ -10074,13 +10110,7 @@ ${'='.repeat(60)}
       }
 
       // Links (immer sichtbar): Galerie + Demo/Eingangstor + Präsentationsmappe
-      const galerieUrlP =
-        BASE_APP_URL +
-        (tenant.isVk2
-          ? PROJECT_ROUTES.vk2.galerie
-          : tenant.isOeffentlich
-            ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
-            : PROJECT_ROUTES['k2-galerie'].galerie)
+      const galerieUrlP = publicGalleryUrlForCurrentContext
       const demoUrlP = BASE_APP_URL + ENTDECKEN_ROUTE
       const mappeUrlP = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe
       const linksBlockP = `<div class="presse-block" style="margin-top: 0.9rem; padding-top: 0.75rem; border-top: 1px solid rgba(0,0,0,0.15);">
@@ -11142,13 +11172,7 @@ ${'='.repeat(60)}
         }
       }
 
-      const galerieUrlForPresse =
-        BASE_APP_URL +
-        (tenant.isVk2
-          ? PROJECT_ROUTES.vk2.galerie
-          : tenant.isOeffentlich
-            ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
-            : PROJECT_ROUTES['k2-galerie'].galerie)
+      const galerieUrlForPresse = publicGalleryUrlForCurrentContext
       const demoUrlForPresse = BASE_APP_URL + ENTDECKEN_ROUTE
       const mappeUrlForPresse = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe
       const flyerTenantForPresse: FlyerEventBogenTenantContext = tenant.isVk2 ? 'vk2' : tenant.isOeffentlich ? 'oeffentlich' : 'k2'
@@ -14401,6 +14425,28 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
     )
   }
 
+  const renderLiveTemplatePanel = (heightPx: number) => (
+    <div style={{ marginTop: '0.6rem', padding: '0.55rem', background: 'rgba(255,255,255,0.04)', border: `1px solid ${s.accent}33`, borderRadius: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.35rem' }}>
+        <strong style={{ color: s.text, fontSize: '0.88rem' }}>Live-Template-Vorschau (1:1 Frontseite)</strong>
+        <Link to={designLiveTemplateRoute} target="_blank" rel="noopener noreferrer" style={{ color: s.accent, fontSize: '0.8rem', fontWeight: 700 }}>
+          Im Tab öffnen
+        </Link>
+      </div>
+      <iframe
+        title="Live Template Vorschau"
+        src={designLiveTemplateRoute}
+        style={{
+          width: '100%',
+          height: heightPx,
+          border: `1px solid ${s.accent}22`,
+          borderRadius: 8,
+          background: '#fff',
+        }}
+      />
+    </div>
+  )
+
   const renderDesignVorschau = () => {
     const dtCompact = designToolbarCompact
     return (
@@ -14469,8 +14515,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 </div>
               </>
             )}
+            <div style={{ marginTop: dtCompact ? '0.35rem' : 0 }}>{renderLiveTemplatePanel(dtCompact ? 320 : 420)}</div>
             {/* Nur K2: Entdecken-Seite (Landing) – ein Klick = Bild wählen, sofort gespeichert */}
-            {!tenant.isOeffentlich && !tenant.isVk2 && (() => {
+            {false && !tenant.isOeffentlich && !tenant.isVk2 && (() => {
               const entdeckenHeroVorschauSrc =
                 entdeckenHeroLocalPreview ||
                 entdeckenHeroIdbPreview ||
@@ -14743,13 +14790,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   setPageContentGalerie(pageContent, designTenant)
                   setPageTexts(pageTexts, designTenant)
                 }
-                const route = effectiveDynamicTenantId
-                  ? currentDynamicTenantGalleryPath
-                  : tenant.isVk2
-                  ? PROJECT_ROUTES.vk2.galerie
-                  : tenant.isOeffentlich
-                  ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
-                  : PROJECT_ROUTES['k2-galerie'].galerie
+                const route = publicGalleryPathForCurrentContext
                 const backState = {
                   fromAdmin: true,
                   fromAdminTab: 'design' as const,
@@ -15780,11 +15821,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 type="button"
                 onClick={() => {
                   if (activeTab === 'werke') {
-                    const galeriePath = effectiveDynamicTenantId
-                      ? currentDynamicTenantGalleryPath
-                      : tenant.isVk2
-                        ? PROJECT_ROUTES.vk2.galerie
-                        : PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+                    const galeriePath = publicGalleryPathForCurrentContext
                     navigate(galeriePath, { state: { fromAdmin: true } })
                   } else {
                     setActiveTab('werke')
@@ -16092,8 +16129,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       sessionStorage.removeItem(ADMIN_CONTEXT_KEY)
                       clearAdminUnlock()
                     } catch (_) {}
-                    if (tenant.isVk2) navigate(PROJECT_ROUTES.vk2.galerie)
-                    else navigate(PROJECT_ROUTES['k2-galerie'].galerie)
+                    navigate(publicGalleryPathForCurrentContext)
                   }}
                   style={{
                     padding: '0.4rem 0.8rem',
@@ -18528,6 +18564,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               const fAccent = '#b54a1e'
               return (
                 <>
+                  {renderLiveTemplatePanel(360)}
                   <div style={{ position: 'sticky', top: 0, zIndex: 20, background: s.bgDark, borderBottom: `2px solid ${s.accent}33`, padding: '0.75rem 1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                     <button type="button" onClick={() => setDesignSubTab('vorschau')} style={{ padding: '0.5rem 1rem', border: `1px solid ${s.accent}44`, borderRadius: 8, fontSize: '0.95rem', background: s.bgElevated, color: s.text, cursor: 'pointer', fontWeight: 600 }}>← Vorschau</button>
                     <span style={{ fontSize: '0.85rem', color: s.muted, flex: 1 }}>Eingangsseite „Entdecken“ nur für die echte K2-Galerie – Hero-Bild und Texte; Farben aus dem Design-Tab</span>
@@ -18570,7 +18607,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               const fMuted = '#5c5650'
               const fAccent = '#b54a1e'
               return (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'clamp(1.5rem, 4vw, 2.5rem)', alignItems: 'start' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+                  {renderLiveTemplatePanel(320)}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'clamp(1.5rem, 4vw, 2.5rem)', alignItems: 'start' }}>
                   {/* Linke Spalte: einfache Farbwahl – auf hellem Hintergrund dunkle Schrift (Lesbarkeit). */}
                   <div style={{ flex: '1 1 260px', minWidth: 260, maxWidth: 420, display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                     <div>
@@ -18664,6 +18703,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         )
                       })()}
                     </div>
+                  </div>
                   </div>
                 </div>
               )
@@ -18824,7 +18864,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               <div style={{ fontSize: '0.9rem', fontWeight: 600, color: s.text, marginBottom: '0.5rem' }}>🔗 Link zu deiner Galerie</div>
               <p style={{ fontSize: '0.85rem', color: s.muted, margin: '0 0 0.75rem', lineHeight: 1.5 }}>Deine Galerie bringst du genauso einfach in den Verteiler: WhatsApp, Mail, Social Media, Flyer. Ein Klick – Kopieren oder direkt teilen.</p>
               {(() => {
-                const galeriePath = tenant.isVk2 ? PROJECT_ROUTES.vk2.galerie : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie
+                const galeriePath = publicGalleryPathForCurrentContext
                 const galerieUrl = BASE_APP_URL + galeriePath
                 const shareText = 'Schau dir meine Galerie an ' + galerieUrl
                 const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
@@ -19541,7 +19581,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             </div>
 
             {/* Backup Sub-Tab – K2: Werkzeuge + Vollbackup; VK2: nur Vereins-Sicherung */}
-            {settingsSubTab === 'backup' && !tenant.isOeffentlich && (
+            {settingsSubTab === 'backup' && !tenant.isOeffentlich && !effectiveDynamicTenantId && (
               <div ref={settingsContentRef} style={{ marginTop: '1rem' }}>
                 <h3 style={{ margin: '0 0 1rem', fontSize: '1.1rem', color: s.text }}>{tenant.isVk2 ? '💾 Backup & Daten (VK2)' : '💾 Backup & Bilder'}</h3>
                 <p style={{ color: s.muted, fontSize: '0.9rem', marginBottom: '1rem', lineHeight: 1.55 }}>
@@ -19918,23 +19958,12 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           return
                         }
                         if (tenant.isVk2) {
-                          if (kontext !== 'vk2' && kontext !== 'unbekannt') {
-                            const kontextName = kontext === 'k2' ? 'K2 Galerie' : 'ök2 Demo'
-                            if (!confirm(`Diese Sicherungsdatei stammt von „${kontextName}“. Du bist im VK2-Vereinsbereich – üblich sind VK2-Sicherungen.\n\nTrotzdem einspielen?`)) {
-                              setRestoreProgress('idle')
-                              return
-                            }
+                          if (kontext !== 'vk2') {
+                            setRestoreProgress('idle')
+                            alert('Diese Sicherungsdatei ist nicht von VK2. Im VK2-Bereich dürfen nur VK2-Backups wiederhergestellt werden.')
+                            return
                           }
-                          let ok = false
-                          if (kontext === 'vk2') {
-                            ok = restoreVk2FromBackup(backup).ok
-                          } else if (kontext === 'oeffentlich') {
-                            ok = restoreOek2FromBackup(backup).ok
-                          } else if (kontext === 'k2') {
-                            ok = restoreK2FromBackup(backup).ok || restoreFromBackupFile(backup)
-                          } else {
-                            ok = restoreVk2FromBackup(backup).ok
-                          }
+                          const ok = restoreVk2FromBackup(backup).ok
                           if (!ok) {
                             setRestoreProgress('idle')
                             alert('Diese Datei ist keine gültige VK2-Sicherung. Bitte eine Datei wählen, die du hier mit „Sicherungskopie herunterladen“ erstellt hast.')
@@ -19944,24 +19973,13 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           setTimeout(() => safeReload(), 800)
                           return
                         }
-                        if (kontext !== 'k2' && kontext !== 'unbekannt') {
-                          const kontextName = kontext === 'vk2' ? 'VK2 Verein' : 'ök2 Demo'
-                          if (!confirm(`Hinweis: Diese Sicherungsdatei stammt von „${kontextName}“, du bist aber in der K2 Galerie.\n\nTrotzdem wiederherstellen?`)) {
-                            setRestoreProgress('idle')
-                            return
-                          }
+                        if (kontext !== 'k2') {
+                          setRestoreProgress('idle')
+                          alert('Diese Sicherungsdatei ist nicht von K2. In der K2 Galerie dürfen nur K2-Backups wiederhergestellt werden.')
+                          return
                         }
-                        let ok = false
-                        if (kontext === 'vk2') {
-                          const r = restoreVk2FromBackup(backup)
-                          ok = r.ok
-                        } else if (kontext === 'oeffentlich') {
-                          const r = restoreOek2FromBackup(backup)
-                          ok = r.ok
-                        } else {
-                          const r = restoreK2FromBackup(backup)
-                          ok = r.ok || restoreFromBackupFile(backup)
-                        }
+                        const r = restoreK2FromBackup(backup)
+                        const ok = r.ok
                         if (!ok) {
                           setRestoreProgress('idle')
                           alert('Diese Datei ist keine gültige Sicherungsdatei von dieser App.')
@@ -27226,13 +27244,7 @@ ${name}`
           imageBlock += `<div class="presse-block" style="margin: 0.75rem 0;"><img src="${redactionPresseImageUrl.replace(/"/g, '&quot;')}" alt="" style="max-width: 100%; height: auto; border-radius: 8px; display: block;" /></div>`
         }
         const qrBlock = redactionPresseQrShow && redactionPresseQrDataUrl ? `<div class="presse-block" style="margin: 0.75rem 0; text-align: center;"><img src="${redactionPresseQrDataUrl}" alt="QR-Code" style="width: 120px; height: 120px;" /><p style="font-size: 0.75rem; margin-top: 0.35rem;">Scan für Link</p></div>` : ''
-        const galerieUrl =
-          BASE_APP_URL +
-          (tenant.isVk2
-            ? PROJECT_ROUTES.vk2.galerie
-            : tenant.isOeffentlich
-              ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
-              : PROJECT_ROUTES['k2-galerie'].galerie)
+        const galerieUrl = publicGalleryUrlForCurrentContext
         const demoUrl = BASE_APP_URL + ENTDECKEN_ROUTE
         const mappeUrl = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe
         const linksBlock = `<div class="presse-block" style="margin-top: 0.9rem; padding-top: 0.75rem; border-top: 1px solid rgba(0,0,0,0.15);">
@@ -27500,14 +27512,22 @@ ${name}`
                   </button>
                 </div>
               </div>
-              <div style={{ minHeight: 400, borderRadius: '12px', overflow: 'hidden', border: `1px solid ${(s?.accent ?? '#0d9488')}33`, background: s?.bgCard ?? '#fff' }}>
+              <div style={{ minHeight: 400, borderRadius: '12px', overflow: 'hidden', border: `1px solid ${(s?.accent ?? '#0d9488')}33`, background: s?.bgCard ?? '#fff', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', color: s?.muted ?? '#94a3b8', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}>
+                  Live-Template – identisch zur Frontseite
+                </div>
+                <iframe
+                  title="Presse Live-Template"
+                  src={designLiveTemplateRoute}
+                  style={{ width: '100%', height: 200, border: 'none', display: 'block', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}
+                />
                 <div style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', color: s?.muted ?? '#94a3b8', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}>
                   Vorschau – so kommt der Text im Dokument an (Links klickbar, Bild & QR wenn gesetzt)
                 </div>
                 <iframe
                   title="Presse-Vorschau"
                   srcDoc={previewHtml}
-                  style={{ width: '100%', height: 'calc(100% - 28px)', minHeight: 380, border: 'none', display: 'block' }}
+                  style={{ width: '100%', height: 'calc(100% - 228px)', minHeight: 260, border: 'none', display: 'block' }}
                   sandbox="allow-same-origin allow-scripts"
                 />
               </div>
@@ -27729,14 +27749,22 @@ ${name}`
                   </button>
                 </div>
               </div>
-              <div style={{ minHeight: 400, borderRadius: '12px', overflow: 'hidden', border: `1px solid ${(s?.accent ?? '#0d9488')}33`, background: s?.bgCard ?? '#fff' }}>
+              <div style={{ minHeight: 400, borderRadius: '12px', overflow: 'hidden', border: `1px solid ${(s?.accent ?? '#0d9488')}33`, background: s?.bgCard ?? '#fff', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', color: s?.muted ?? '#94a3b8', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}>
+                  Live-Template – identisch zur Frontseite
+                </div>
+                <iframe
+                  title="Social Live-Template"
+                  src={designLiveTemplateRoute}
+                  style={{ width: '100%', height: 200, border: 'none', display: 'block', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}
+                />
                 <div style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', color: s?.muted ?? '#94a3b8', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}>
                   Vorschau – so kommt der Post im Dokument an
                 </div>
                 <iframe
                   title="Social-Media-Vorschau"
                   srcDoc={previewHtml}
-                  style={{ width: '100%', height: 'calc(100% - 28px)', minHeight: 380, border: 'none', display: 'block' }}
+                  style={{ width: '100%', height: 'calc(100% - 228px)', minHeight: 260, border: 'none', display: 'block' }}
                   sandbox="allow-same-origin allow-scripts"
                 />
               </div>
@@ -28358,14 +28386,22 @@ ${name}`
                   </button>
                 </div>
               </div>
-              <div style={{ minHeight: 400, borderRadius: '12px', overflow: 'hidden', border: `1px solid ${(s?.accent ?? '#0d9488')}33`, background: s?.bgCard ?? '#fff' }}>
+              <div style={{ minHeight: 400, borderRadius: '12px', overflow: 'hidden', border: `1px solid ${(s?.accent ?? '#0d9488')}33`, background: s?.bgCard ?? '#fff', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', color: s?.muted ?? '#94a3b8', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}>
+                  Live-Template – identisch zur Frontseite
+                </div>
+                <iframe
+                  title="Newsletter Live-Template"
+                  src={designLiveTemplateRoute}
+                  style={{ width: '100%', height: 200, border: 'none', display: 'block', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}
+                />
                 <div style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', color: s?.muted ?? '#94a3b8', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}>
                   Vorschau – so kommt der Newsletter im Dokument an
                 </div>
                 <iframe
                   title="Newsletter-Vorschau"
                   srcDoc={previewHtml}
-                  style={{ width: '100%', height: 'calc(100% - 28px)', minHeight: 380, border: 'none', display: 'block' }}
+                  style={{ width: '100%', height: 'calc(100% - 228px)', minHeight: 260, border: 'none', display: 'block' }}
                   sandbox="allow-same-origin allow-scripts"
                 />
               </div>

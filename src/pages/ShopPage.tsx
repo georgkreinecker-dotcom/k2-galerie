@@ -1263,10 +1263,20 @@ const ShopPage = () => {
         setOrders(prev => prev.filter((o: any) => (o.id || `${o.orderNumber}-${o.date}`) !== orderKey))
       }
       window.dispatchEvent(new CustomEvent('artworks-updated'))
-      setAllArtworks(prev => {
-        const next = fromOeffentlich ? readArtworksRawForContext(true, false) : readArtworksRawByKey('k2-artworks')
-        return Array.isArray(next) ? next : prev
-      })
+      if (isDynamicTenantKassa && dynamicTenantId) {
+        fetch(`/api/gallery-data?tenantId=${encodeURIComponent(dynamicTenantId)}`)
+          .then((r) => r.json().catch(() => ({})))
+          .then((data) => {
+            const next = Array.isArray(data?.artworks) ? data.artworks : []
+            setAllArtworks(next)
+          })
+          .catch(() => {})
+      } else {
+        setAllArtworks(prev => {
+          const next = fromOeffentlich ? readArtworksRawForContext(true, false) : readArtworksRawByKey('k2-artworks')
+          return Array.isArray(next) ? next : prev
+        })
+      }
       alert('✅ Verkauf storniert. Die Werke sind wieder verfügbar.')
     } catch (_) {
       alert('⚠️ Storno fehlgeschlagen.')
@@ -1328,24 +1338,36 @@ const ShopPage = () => {
       arr.splice(removeIdx, 1)
       localStorage.setItem(soldArtworksKey, JSON.stringify(arr))
       const artworkKey = fromOeffentlich ? 'k2-oeffentlich-artworks' : 'k2-artworks'
-      const artworks = fromOeffentlich ? [...readArtworksRawForContext(true, false)] : readArtworksRawByKey(artworkKey)
-      const uid = String((removed as any)?.artworkUid ?? '').trim()
-      const idx = artworks.findIndex((a: any) => {
-        const aUid = String(a?.uid ?? '').trim()
-        if (uid && aUid && aUid === uid) return true
-        return (a.number || a.id) === removed.number
-      })
-      if (idx !== -1) {
-        const a = artworks[idx]
-        const q = a.quantity != null ? Number(a.quantity) : 0
-        artworks[idx] = { ...a, quantity: q + 1, inShop: true }
-        saveArtworksByKey(artworkKey, artworks, { filterK2Only: artworkKey === 'k2-artworks', allowReduce: true })
+      if (!isDynamicTenantKassa) {
+        const artworks = fromOeffentlich ? [...readArtworksRawForContext(true, false)] : readArtworksRawByKey(artworkKey)
+        const uid = String((removed as any)?.artworkUid ?? '').trim()
+        const idx = artworks.findIndex((a: any) => {
+          const aUid = String(a?.uid ?? '').trim()
+          if (uid && aUid && aUid === uid) return true
+          return (a.number || a.id) === removed.number
+        })
+        if (idx !== -1) {
+          const a = artworks[idx]
+          const q = a.quantity != null ? Number(a.quantity) : 0
+          artworks[idx] = { ...a, quantity: q + 1, inShop: true }
+          saveArtworksByKey(artworkKey, artworks, { filterK2Only: artworkKey === 'k2-artworks', allowReduce: true })
+        }
       }
       window.dispatchEvent(new CustomEvent('artworks-updated'))
-      setAllArtworks(prev => {
-        const next = fromOeffentlich ? readArtworksRawForContext(true, false) : readArtworksRawByKey(artworkKey)
-        return Array.isArray(next) ? next : prev
-      })
+      if (isDynamicTenantKassa && dynamicTenantId) {
+        fetch(`/api/gallery-data?tenantId=${encodeURIComponent(dynamicTenantId)}`)
+          .then((r) => r.json().catch(() => ({})))
+          .then((data) => {
+            const next = Array.isArray(data?.artworks) ? data.artworks : []
+            setAllArtworks(next)
+          })
+          .catch(() => {})
+      } else {
+        setAllArtworks(prev => {
+          const next = fromOeffentlich ? readArtworksRawForContext(true, false) : readArtworksRawByKey(artworkKey)
+          return Array.isArray(next) ? next : prev
+        })
+      }
       loadVerkaufslisteForStorno()
       alert('✅ Verkauf storniert.')
     } catch (_) {

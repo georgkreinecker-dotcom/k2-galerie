@@ -6,7 +6,9 @@ export const FLYER_EVENT_BOGEN_STORAGE_KEY_OEFF = 'k2-oeffentlich-flyer-event-bo
 /** VK2: Basis-Key; zur Laufzeit pilotScopeVk2Key (Testpilot-Mandant). */
 export const FLYER_EVENT_BOGEN_STORAGE_KEY_VK2 = 'k2-vk2-flyer-event-bogen-neu-v1'
 
-export function getFlyerEventBogenStorageKey(isOeffentlich: boolean, isVk2: boolean): string {
+export function getFlyerEventBogenStorageKey(isOeffentlich: boolean, isVk2: boolean, dynamicTenantId?: string | null): string {
+  const dyn = String(dynamicTenantId || '').trim().toLowerCase()
+  if (dyn) return `k2-tenant-${dyn}-flyer-event-bogen-neu-v1`
   if (isOeffentlich) return FLYER_EVENT_BOGEN_STORAGE_KEY_OEFF
   if (isVk2) return pilotScopeVk2Key(FLYER_EVENT_BOGEN_STORAGE_KEY_VK2)
   return FLYER_EVENT_BOGEN_STORAGE_KEY_K2

@@ -107,9 +107,10 @@ export default async function handler(req, res) {
   const uploadIdSafe = isChunked && /^[a-z0-9-]{1,80}$/.test(parsed.uploadId.trim())
 
   if (isChunked && uploadIdSafe) {
-    const tenantId = parseTenantIdOrNull(parsed.data?.tenantId) ?? 'k2'
-    if (parsed.data?.tenantId != null && !parseTenantIdOrNull(parsed.data?.tenantId)) {
-      return res.status(400).json({ error: 'Ungültiger tenantId' })
+    const chunkTenantRaw = parsed.data?.tenantId ?? parsed.data?.kontext
+    const tenantId = parseTenantIdOrNull(chunkTenantRaw)
+    if (!tenantId) {
+      return res.status(400).json({ error: 'tenantId fehlt oder ist ungültig' })
     }
     const chunkPath = `upload/${tenantId}/${parsed.uploadId.trim()}/${parsed.chunkIndex}.json`
     const chunkBody = JSON.stringify(parsed.data)
@@ -193,9 +194,9 @@ export default async function handler(req, res) {
   }
 
   const tenantFromBody = parsed?.tenantId ?? parsed?.kontext
-  const tenantId = parseTenantIdOrNull(tenantFromBody) ?? 'k2'
-  if (tenantFromBody != null && !parseTenantIdOrNull(tenantFromBody)) {
-    return res.status(400).json({ error: 'Ungültiger tenantId' })
+  const tenantId = parseTenantIdOrNull(tenantFromBody)
+  if (!tenantId) {
+    return res.status(400).json({ error: 'tenantId fehlt oder ist ungültig' })
   }
   const BLOB_PATHNAME = getBlobPath(tenantId)
 

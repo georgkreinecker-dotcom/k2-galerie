@@ -109,8 +109,8 @@ describe('Dynamischer Lizenznehmer-Admin – keine K2-LocalStorage-Daten', () =>
 
   it('verbietet im API-Schreibpfad den K2-Fallback bei ungültigem tenantId', () => {
     expect(apiWriteGalleryDataSource).toContain("function parseTenantIdOrNull(rawValue)")
-    expect(apiWriteGalleryDataSource).toContain("if (parsed.data?.tenantId != null && !parseTenantIdOrNull(parsed.data?.tenantId))")
-    expect(apiWriteGalleryDataSource).toContain("if (tenantFromBody != null && !parseTenantIdOrNull(tenantFromBody))")
-    expect(apiWriteGalleryDataSource).toContain("return res.status(400).json({ error: 'Ungültiger tenantId' })")
+    expect(apiWriteGalleryDataSource).toContain("const chunkTenantRaw = parsed.data?.tenantId ?? parsed.data?.kontext")
+    expect(apiWriteGalleryDataSource).toContain("if (!tenantId)")
+    expect(apiWriteGalleryDataSource).toContain("return res.status(400).json({ error: 'tenantId fehlt oder ist ungültig' })")
   })
 })

@@ -6,6 +6,7 @@ import { getPublicGalerieUrl } from '../utils/publicLinks'
 import {
   initVk2DemoStammdatenIfEmpty,
   isPlatformInstance,
+  PRODUCT_BRAND_NAME,
   PRODUCT_COPYRIGHT_BRAND_ONLY,
   PRODUCT_URHEBER_ANWENDUNG,
   type Vk2Stammdaten,
@@ -243,6 +244,15 @@ const Vk2GaleriePage: React.FC = () => {
     goldBg: '#fdf6e8',
     border: '#e8e2da',
     heroOverlay: 'linear-gradient(to bottom, rgba(0,0,0,0.0) 0%, rgba(20,12,8,0.65) 70%, rgba(20,12,8,0.95) 100%)',
+  }
+  const TEMPLATE = {
+    maxWidth: 1000,
+    cardBg: '#fff',
+    cardBorder: `1px solid ${C.border}`,
+    cardRadius: 14,
+    cardPadding: '1rem',
+    chipBg: '#fffefb',
+    chipBorder: `1px solid ${C.border}`,
   }
 
   return (
@@ -574,6 +584,7 @@ const Vk2GaleriePage: React.FC = () => {
 
       {/* ── HERO: Foto mit Titel-Overlay ── */}
       <div
+        id="start"
         {...(showVk2LeitfadenUi ? { 'data-leitfaden-focus': 'willkommen' as const } : {})}
         style={{ position: 'relative', width: '100%', height: 'clamp(320px, 52vh, 540px)', overflow: 'hidden' }}
       >
@@ -593,12 +604,53 @@ const Vk2GaleriePage: React.FC = () => {
         </div>
       </div>
 
+      {/* Homepage-Navigation wie Muster: klare Abschnitte */}
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          gap: '0.55rem',
+          padding: '0.85rem 1rem 0.45rem',
+          background: C.bg,
+        }}
+      >
+        {[
+          { href: '#willkommen', label: 'Willkommen' },
+          { href: '#bereiche', label: 'Bereiche' },
+          { href: '#events', label: 'Events' },
+          { href: '#admin', label: 'Admin' },
+          { href: '#impressum', label: 'Impressum' },
+        ].map((item) => (
+          <a
+            key={item.href}
+            href={item.href}
+            style={{
+              textDecoration: 'none',
+              border: TEMPLATE.chipBorder,
+              background: TEMPLATE.chipBg,
+              color: C.textMid,
+              borderRadius: 999,
+              padding: '0.34rem 0.74rem',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              fontFamily: 'system-ui, sans-serif',
+            }}
+          >
+            {item.label}
+          </a>
+        ))}
+      </div>
+
       {/* ── EINGANGSKARTEN ── */}
       <div
+        id="bereiche"
         {...(showVk2LeitfadenUi ? { 'data-leitfaden-focus': 'eingangskarten' as const } : {})}
-        style={{ padding: '1.75rem clamp(1.25rem, 5vw, 3rem)', background: C.bg }}
+        style={{ padding: '1.2rem clamp(1.25rem, 5vw, 3rem)', background: C.bg }}
       >
-        <Vk2Eingangskarten key={location.search} stammdaten={stammdaten} welcomeImage={welcomeImage} />
+        <div style={{ maxWidth: TEMPLATE.maxWidth, margin: '0 auto', background: TEMPLATE.cardBg, border: TEMPLATE.cardBorder, borderRadius: TEMPLATE.cardRadius, padding: TEMPLATE.cardPadding }}>
+          <Vk2Eingangskarten key={location.search} stammdaten={stammdaten} welcomeImage={welcomeImage} />
+        </div>
       </div>
 
       {/* ── TRENNLINIE ── */}
@@ -606,13 +658,15 @@ const Vk2GaleriePage: React.FC = () => {
 
       {/* Kurzer Intro-Text – Einstieg nur über die Karten (ein Klick pro Ziel) */}
       <div
+        id="willkommen"
         {...(showVk2LeitfadenUi ? { 'data-leitfaden-focus': 'gemeinschaft' as const } : {})}
-        style={{ padding: '0 clamp(1.25rem, 5vw, 3rem)', maxWidth: 720 }}
+        style={{ padding: '0 clamp(1.25rem, 5vw, 3rem)' }}
       >
-        <p style={{ margin: 0, color: C.textMid, fontSize: '1.05rem', lineHeight: 1.75, fontWeight: 400 }}>
-          {introText}
-        </p>
-        <div style={{ marginTop: '1rem', padding: '0.9rem 1rem', background: '#fff', border: `1px solid ${C.border}`, borderRadius: 12 }}>
+        <div style={{ maxWidth: TEMPLATE.maxWidth, margin: '0 auto', background: TEMPLATE.cardBg, border: TEMPLATE.cardBorder, borderRadius: TEMPLATE.cardRadius, padding: TEMPLATE.cardPadding }}>
+          <p style={{ margin: 0, color: C.textMid, fontSize: '1.05rem', lineHeight: 1.75, fontWeight: 400 }}>
+            {introText}
+          </p>
+          <div style={{ marginTop: '1rem', padding: '0.9rem 1rem', background: '#fff', border: `1px solid ${C.border}`, borderRadius: 12 }}>
           <p style={{ margin: '0 0 0.45rem', fontSize: '0.78rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: C.textLight, fontWeight: 700, fontFamily: 'system-ui, sans-serif' }}>
             Social Media
           </p>
@@ -627,13 +681,14 @@ const Vk2GaleriePage: React.FC = () => {
               Noch keine Social-Links hinterlegt. Im Admin unter <strong>Einstellungen → Stammdaten</strong> YouTube, Instagram oder Highlight-Video eintragen.
             </p>
           )}
+          </div>
         </div>
       </div>
 
       {/* ── EVENTS ── */}
       {upcomingEvents.length > 0 && (
-        <div style={{ padding: '0 clamp(1.25rem, 5vw, 3rem) 2rem', maxWidth: 720 }}>
-          <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 14, padding: '1.25rem 1.5rem', borderLeft: `4px solid ${C.accent}`, boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
+        <div id="events" style={{ padding: '0 clamp(1.25rem, 5vw, 3rem) 1.4rem' }}>
+          <div style={{ maxWidth: TEMPLATE.maxWidth, margin: '0 auto', background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 14, padding: '1.1rem 1.15rem', borderLeft: `4px solid ${C.accent}`, boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
             <p style={{ margin: '0 0 0.75rem', fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: C.textLight, fontWeight: 700, fontFamily: 'system-ui, sans-serif' }}>
               {eventHeading}
             </p>
@@ -671,12 +726,47 @@ const Vk2GaleriePage: React.FC = () => {
         </div>
       )}
 
+      {/* Fester Admin-Bereich wie Muster-Homestruktur */}
+      <section
+        id="admin"
+        style={{
+          padding: '0 clamp(1.25rem, 5vw, 3rem)',
+          marginTop: '0.6rem',
+        }}
+      >
+        <div style={{ maxWidth: TEMPLATE.maxWidth, margin: '0 auto', background: '#fff', border: `1px solid ${C.border}`, borderRadius: 12, padding: '1rem 1.1rem', fontFamily: 'system-ui, sans-serif' }}>
+          <h3 style={{ margin: '0 0 0.45rem', fontSize: '1rem', color: C.text }}>Admin-Zugang</h3>
+          <p style={{ margin: '0 0 0.7rem', color: C.textMid, fontSize: '0.9rem', lineHeight: 1.45 }}>
+            Vereinsdaten, Karten, Texte und Inhalte pflegen.
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate('/mein-bereich?context=vk2')}
+            style={{
+              padding: '0.5rem 0.9rem',
+              background: '#1e5cb5',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              fontWeight: 600,
+              fontSize: '0.88rem',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+            }}
+          >
+            Mit mir in den Admin →
+          </button>
+        </div>
+      </section>
+
       {/* ── Einladung: Eigene Galerie – bewusst zurückhaltend (Vereinsseite), kein lauter Aktions-Button ── */}
-      <div style={{ padding: '0 clamp(1.25rem, 5vw, 3rem)', maxWidth: 720, marginTop: 'clamp(2rem, 4vw, 2.5rem)' }}>
+      <div style={{ padding: '0 clamp(1.25rem, 5vw, 3rem)', marginTop: 'clamp(1.2rem, 3vw, 1.6rem)' }}>
         <Link
           to={ENTDECKEN_ROUTE}
           style={{
             display: 'block',
+            maxWidth: TEMPLATE.maxWidth,
+            margin: '0 auto',
             padding: '0.75rem 1rem',
             background: C.bgCard,
             border: `1px solid ${C.border}`,
@@ -711,6 +801,7 @@ const Vk2GaleriePage: React.FC = () => {
 
       {/* Impressum – gleiche Struktur wie GaleriePage (section, grid 1fr auto, links Brand + Vereinsdaten, rechts QR) */}
       <footer
+        id="impressum"
         {...(showVk2LeitfadenUi ? { 'data-leitfaden-focus': 'impressum' as const } : {})}
         style={{ marginTop: '1rem', paddingTop: 'clamp(1rem, 2vw, 1.5rem)', borderTop: `1px solid ${C.border}`, background: '#f2ede6', fontFamily: 'system-ui, sans-serif' }}
       >
@@ -739,6 +830,9 @@ const Vk2GaleriePage: React.FC = () => {
           <p style={{ marginTop: '1.5rem', marginBottom: 0, paddingTop: '1rem', borderTop: `1px solid ${C.border}`, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: C.textMid, letterSpacing: '0.01em' }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
           <p style={{ marginTop: '0.35rem', marginBottom: 0, fontSize: 'clamp(0.72rem, 1.6vw, 0.82rem)', color: C.textMid, opacity: 0.95 }}>{PRODUCT_URHEBER_ANWENDUNG}</p>
           <AppVerlassenFooterLink accentColor={C.accent} mutedColor={C.textMid} />
+          <p style={{ marginTop: '0.75rem', marginBottom: 0, fontSize: '0.78rem', color: C.textLight }}>
+            {PRODUCT_BRAND_NAME} ©
+          </p>
         </div>
       </footer>
 

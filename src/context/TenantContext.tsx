@@ -172,7 +172,12 @@ export interface TenantContextValue {
 
 function keysForTenant(tenantId: AdminTenantId) {
   return {
-    getArtworksKey: () => (tenantId === 'oeffentlich' ? 'k2-oeffentlich-artworks' : 'k2-artworks'),
+    getArtworksKey: () =>
+      tenantId === 'oeffentlich'
+        ? 'k2-oeffentlich-artworks'
+        : tenantId === 'vk2'
+          ? pilotScopeVk2Key('k2-vk2-artworks')
+          : 'k2-artworks',
     getEventsKey: () =>
       tenantId === 'vk2'
         ? pilotScopeVk2Key('k2-vk2-events')

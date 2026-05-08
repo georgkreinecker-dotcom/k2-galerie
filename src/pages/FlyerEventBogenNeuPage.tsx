@@ -482,20 +482,23 @@ function eventHasFlyerZeiten(e: EventTerminLike | null | undefined): boolean {
 
 export default function FlyerEventBogenNeuPage() {
   const navigate = useNavigate()
-  const { isOeffentlich, isVk2 } = useTenant()
+  const { isOeffentlich, isVk2, dynamicTenantId } = useTenant()
+  const [searchParams] = useSearchParams()
+  const dynamicTenantIdFromSearch = String(searchParams.get('tenantId') || '').trim().toLowerCase()
+  const effectiveDynamicTenantId = dynamicTenantId || dynamicTenantIdFromSearch || ''
   const isK2 = !isOeffentlich && !isVk2
-  const flyerStorageKey = getFlyerEventBogenStorageKey(isOeffentlich, isVk2)
+  const flyerStorageKey = getFlyerEventBogenStorageKey(isOeffentlich, isVk2, effectiveDynamicTenantId || undefined)
   const flyerImgFallback = useMemo(
     () => flyerImageFallbackPath(isOeffentlich, isVk2),
     [isOeffentlich, isVk2],
   )
   const frontQrPathExplain = useMemo(() => {
+    if (effectiveDynamicTenantId) return `/g/${encodeURIComponent(effectiveDynamicTenantId)}`
     if (isOeffentlich) return PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
     if (isVk2) return PROJECT_ROUTES.vk2.galerie
     return PROJECT_ROUTES['k2-galerie'].galerie
-  }, [isOeffentlich, isVk2])
+  }, [effectiveDynamicTenantId, isOeffentlich, isVk2])
   const backQrPathExplain = PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
-  const [searchParams] = useSearchParams()
   const isA3Mode = searchParams.get('mode') === 'a3'
   const isA6Mode = searchParams.get('mode') === 'a6'
   const isCardMode = searchParams.get('mode') === 'card'
@@ -570,7 +573,7 @@ export default function FlyerEventBogenNeuPage() {
   const defaultRight = galerieImages.virtualTourImage || galerieImages.welcomeImage || flyerImgFallback
 
   const [leftSrc, setLeftSrc] = useState(() => {
-    const p = loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich, isVk2))
+    const p = loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich, isVk2, effectiveDynamicTenantId || undefined))
     const s = p?.leftSrc
     const fb = flyerImageFallbackPath(isOeffentlich, isVk2)
     const demo = isOeffentlich || isVk2
@@ -590,7 +593,7 @@ export default function FlyerEventBogenNeuPage() {
   const [middleSrc, setMiddleSrc] = useState(defaultMiddle)
   const [rightSrc, setRightSrc] = useState(defaultRight)
   const [leftWerkLabel, setLeftWerkLabel] = useState(() => {
-    const p = loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich, isVk2))?.leftWerkLabel
+    const p = loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich, isVk2, effectiveDynamicTenantId || undefined))?.leftWerkLabel
     return typeof p === 'string' && p.trim() ? p : 'Bild aus Datei'
   })
   const [isLeftDropActive, setIsLeftDropActive] = useState(false)
@@ -602,13 +605,13 @@ export default function FlyerEventBogenNeuPage() {
   const [frontVariant, setFrontVariant] = useState<'A' | 'B'>('A')
   const [masterText, setMasterText] = useState(() =>
     mergeMasterTextFromPersisted(
-      loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich, isVk2)),
+      loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich, isVk2, effectiveDynamicTenantId || undefined)),
       isOeffentlich,
       isVk2,
     ),
   )
   const [introFollowsGallery, setIntroFollowsGallery] = useState(() => {
-    const p = loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich, isVk2)) as
+    const p = loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich, isVk2, effectiveDynamicTenantId || undefined)) as
       | (Partial<FlyerEventBogenPersistedV1> & { introFollowsGallery?: boolean })
       | null
     if (p && typeof p.introFollowsGallery === 'boolean') return p.introFollowsGallery
@@ -687,7 +690,7 @@ export default function FlyerEventBogenNeuPage() {
     if (fromPublicGalerie) {
       const controller = new AbortController()
       const t = setTimeout(() => controller.abort(), 8000)
-      fetch(`${BASE_APP_URL}/api/gallery-data?tenantId=k2&_=${Date.now()}`, { cache: 'no-store', signal: controller.signal })
+      fetch(`${BASE_APP_URL}/api/gallery-data?tenantId=${encodeURIComponent(effectiveDynamicTenantId || 'k2')}&_=${Date.now()}`, { cache: 'no-store', signal: controller.signal })
         .then((r) => (r.ok ? r.json() : null))
         .then((payload) => {
           clearTimeout(t)
@@ -768,7 +771,7 @@ export default function FlyerEventBogenNeuPage() {
 
     const controller = new AbortController()
     const t = setTimeout(() => controller.abort(), 8000)
-    fetch(`${BASE_APP_URL}/api/gallery-data?tenantId=k2&_=${Date.now()}`, { cache: 'no-store', signal: controller.signal })
+    fetch(`${BASE_APP_URL}/api/gallery-data?tenantId=${encodeURIComponent(effectiveDynamicTenantId || 'k2')}&_=${Date.now()}`, { cache: 'no-store', signal: controller.signal })
       .then((r) => (r.ok ? r.json() : null))
       .then((payload) => {
         clearTimeout(t)
@@ -785,7 +788,7 @@ export default function FlyerEventBogenNeuPage() {
       clearTimeout(t)
       controller.abort()
     }
-  }, [fromPublicGalerie, isOeffentlich, isVk2, isA3Mode, isA6Mode, isCardMode, flyerImgFallback])
+  }, [fromPublicGalerie, isOeffentlich, isVk2, isA3Mode, isA6Mode, isCardMode, flyerImgFallback, effectiveDynamicTenantId])
 
   useEffect(() => {
     if (derivationOnlyViewer) setShowDerivationFullscreen(true)
@@ -823,10 +826,11 @@ export default function FlyerEventBogenNeuPage() {
 
   const werbeunterlagenHref = useMemo(() => {
     const b = PROJECT_ROUTES['k2-galerie'].werbeunterlagen
+    if (effectiveDynamicTenantId) return `${b}?context=k2&tenantId=${encodeURIComponent(effectiveDynamicTenantId)}`
     if (isOeffentlich) return `${b}?context=oeffentlich`
     if (isVk2) return `${b}?context=vk2`
     return `${b}?context=k2`
-  }, [isOeffentlich, isVk2])
+  }, [effectiveDynamicTenantId, isOeffentlich, isVk2])
 
   const handleToolbarBack = useCallback(() => {
     if (fromPublicGalerie) {
@@ -874,6 +878,7 @@ export default function FlyerEventBogenNeuPage() {
     (extra: Record<string, string>) => {
       const base = PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu
       const sp = new URLSearchParams()
+      if (effectiveDynamicTenantId) sp.set('tenantId', effectiveDynamicTenantId)
       if (isOeffentlich) sp.set('context', 'oeffentlich')
       else if (isVk2) sp.set('context', 'vk2')
       else sp.set('context', 'k2')
@@ -889,7 +894,7 @@ export default function FlyerEventBogenNeuPage() {
       const q = sp.toString()
       return q ? `${base}?${q}` : base
     },
-    [isOeffentlich, isVk2, eventIdFromUrl, fromPublicGalerie, fromAdminFlyerDerivation],
+    [effectiveDynamicTenantId, isOeffentlich, isVk2, eventIdFromUrl, fromPublicGalerie, fromAdminFlyerDerivation],
   )
 
   /** Werk aus Raster: Vorderseite setzen; data:/blob: sofort für Flyer verkleinern (Speichern & Vorschau). */
@@ -1164,13 +1169,15 @@ export default function FlyerEventBogenNeuPage() {
   }, [isOeffentlich, isVk2, frontQrPathExplain, backQrPathExplain])
 
   const frontGalleryQr = useMemo(() => {
-    const path = isOeffentlich
-      ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
-      : isVk2
-        ? PROJECT_ROUTES.vk2.galerie
-        : PROJECT_ROUTES['k2-galerie'].galerie
+    const path = effectiveDynamicTenantId
+      ? `/g/${encodeURIComponent(effectiveDynamicTenantId)}`
+      : isOeffentlich
+        ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+        : isVk2
+          ? PROJECT_ROUTES.vk2.galerie
+          : PROJECT_ROUTES['k2-galerie'].galerie
     return buildQrUrlWithBust(BASE_APP_URL + path, versionTimestamp)
-  }, [isOeffentlich, isVk2, versionTimestamp])
+  }, [effectiveDynamicTenantId, isOeffentlich, isVk2, versionTimestamp])
   const oek2TorQr = useMemo(
     () => buildQrUrlWithBust(BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].galerieOeffentlich, versionTimestamp),
     [versionTimestamp]

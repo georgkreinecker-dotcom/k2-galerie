@@ -360,6 +360,7 @@ export type FlyerEventBogenTenantContext = 'k2' | 'oeffentlich' | 'vk2'
 export function flyerEventBogenUrl(params: {
   mode?: 'a3' | 'a6' | 'card'
   tenant?: FlyerEventBogenTenantContext
+  tenantId?: string
   /** Aus Admin/Marketing: gleiches Event wie auf der Karte (sonst nur Eröffnungs-Heuristik). */
   eventId?: string | number | null | undefined
   /**
@@ -376,9 +377,11 @@ export function flyerEventBogenUrl(params: {
   const base = PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu
   const q = new URLSearchParams()
   const t = params.tenant ?? 'k2'
+  const dynamicTenantId = String(params.tenantId || '').trim().toLowerCase()
   if (t === 'oeffentlich') q.set('context', 'oeffentlich')
   else if (t === 'vk2') q.set('context', 'vk2')
   else q.set('context', 'k2')
+  if (dynamicTenantId) q.set('tenantId', dynamicTenantId)
   q.set('layout', 'variant2')
   if (params.mode) q.set('mode', params.mode)
   const eid = params.eventId != null ? String(params.eventId).trim() : ''

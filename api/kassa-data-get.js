@@ -8,6 +8,14 @@ function isSafeTenantId(id) {
   return /^[a-z0-9-]{1,64}$/.test(id)
 }
 
+function parseTenantIdOrNull(rawValue) {
+  const raw = String(rawValue ?? '').toLowerCase().trim()
+  if (!raw) return null
+  if (raw === 'k2' || raw === 'oeffentlich' || raw === 'vk2') return raw
+  if (isSafeTenantId(raw)) return raw
+  return null
+}
+
 function isSafePilotId(id) {
   if (!id || typeof id !== 'string') return false
   return /^\d{1,8}$/.test(id)
@@ -36,8 +44,10 @@ export default async function handler(req, res) {
   }
 
   const q = req.query || {}
-  const tRaw = String(q.tenantId || q.tenant || 'k2').toLowerCase().trim()
-  const tenantId = tRaw === 'oeffentlich' || tRaw === 'vk2' || tRaw === 'k2' ? tRaw : 'k2'
+  const tenantId = parseTenantIdOrNull(q.tenantId ?? q.tenant)
+  if (!tenantId) {
+    return res.status(400).json({ error: 'tenantId fehlt oder ist ungültig' })
+  }
   const pilotRaw = q.vk2PilotId != null ? String(q.vk2PilotId).replace(/\D/g, '').slice(0, 8) : ''
   const pathname = getBlobPath(tenantId, pilotRaw && tenantId === 'vk2' ? pilotRaw : null)
 
