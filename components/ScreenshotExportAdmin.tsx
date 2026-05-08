@@ -1914,7 +1914,7 @@ import {
   getFlyerEventBogenStorageKey,
 } from '../src/utils/flyerEventBogenStorageKeys'
 import { startAutoSave, stopAutoSave, setupBeforeUnloadSave, pauseAutoSaveForMs, restoreFromBackup, restoreFromBackupFile, hasBackup, getBackupTimestamp, getBackupTimestamps, recordLastBackupDownloadExported, getLastBackupDownloadExported, createK2Backup, createOek2Backup, createVk2Backup, downloadBackupAsFile, restoreK2FromBackup, restoreOek2FromBackup, restoreVk2FromBackup, detectBackupKontext } from '../src/utils/autoSave'
-import { sortArtworksNewestFirst, sortArtworksFavoritesFirstThenNewest } from '../src/utils/artworkSort'
+import { sortArtworksNewestFirst, sortArtworksFavoritesFirstThenNewest, type WithFavorite } from '../src/utils/artworkSort'
 import { getShopSoldArtworksKey, getShopStorageKeys } from '../src/utils/shopContextKeys'
 import { getArtworkLagerInfo, getArtworkNumberKey, revertOneOrderUnitForArtwork, revertOneSoldUnitInList } from '../src/utils/artworkLagerStatus'
 import { urlWithBuildVersion } from '../src/buildInfo.generated'
@@ -4961,7 +4961,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       martina: sanitizeDynamicTenantPersonData(sourceMartina),
       georg: sanitizeDynamicTenantPersonData(sourceGeorg),
       gallery: cleanGallery,
-      artworks: sortArtworksFavoritesFirstThenNewest(licenceArtworks),
+      artworks: sortArtworksFavoritesFirstThenNewest(licenceArtworks as WithFavorite[]),
       events: Array.isArray(overrides?.events)
         ? overrides.events.slice(0, 100)
         : (Array.isArray(events) ? events.slice(0, 100) : []),

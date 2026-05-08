@@ -17,9 +17,9 @@ function normalizeK2WerkNummerForGuard(raw: unknown): string {
  * Lizenz-Mandanten: K2-Produktionsnummerierung (K2-M-/K2-K-/…) darf nie in den Mandanten-Blob.
  * Hard-Filter auf dem Weg zum Server – unabhängig davon, wie die Liste vergiftet wurde.
  */
-export function stripK2ProductionStyleArtworks(artworks: unknown): unknown[] {
+export function stripK2ProductionStyleArtworks<T>(artworks: readonly T[] | unknown): T[] {
   if (!Array.isArray(artworks)) return []
-  return artworks.filter((a) => {
+  return (artworks as T[]).filter((a) => {
     const n = normalizeK2WerkNummerForGuard((a as { number?: unknown; id?: unknown })?.number ?? (a as { id?: unknown })?.id ?? '')
     return !K2_STYLE_NUM.test(n)
   })

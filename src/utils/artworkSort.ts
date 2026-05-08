@@ -11,7 +11,7 @@ export function sortArtworksNewestFirst<T extends { addedToGalleryAt?: string; c
 }
 
 /** Typ für Werke mit optionalem Favoriten-Flag (imVereinskatalog = Favorit für Vorreihung + Vereinskatalog). */
-type WithFavorite = { imVereinskatalog?: boolean; addedToGalleryAt?: string; createdAt?: string }
+export type WithFavorite = { imVereinskatalog?: boolean; addedToGalleryAt?: string; createdAt?: string }
 
 /**
  * Sortiert Werke: Favoriten (imVereinskatalog) zuerst, dann neueste zuerst.
