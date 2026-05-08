@@ -1,8 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Kurz prüfen: Lizenz-Admin mit **`?tenantId=`** (auch **Dev-View** / **Projekt k2-galerie**) – keine K2-Werke in Liste/Blob; bei Bedarf **Veröffentlichen** testen.
+**Was wir JETZT tun:** Nach **Vercel Ready:** Lizenz-Admin **`/admin?tenantId=yogawerkstatt`** (o. ä.) – **Werk löschen** testen; öffentliche **`/g/…`** muss weniger Werke zeigen (Blob sofort mitgeschrieben).
 
-**Einordnung:** **Mehrschichtig:** (1) **TenantContext** setzt **`dynamicTenantId`** auf APf-Pfaden. (2) **Admin** nutzt **`effectiveDynamicTenantId`** + **`adminUsesDynamicTenantBlob`** (URL-Spiegel zu Context), damit nie **`k2-artworks`** in den Mandanten-State rutscht. (3) **write-gallery-data** lehnt **K2-Bulk-Nummerierung** für Nicht-Legacy-**tenantId** ab.
+**Einordnung:** **Mandanten-Werke** leben nur im **Server-Blob** (`gallery-data-<id>.json`). **Löschen** muss aus **`allArtworks`** gehen und **`saveDynamicTenantStateToServer`** aufrufen – nicht aus leerem **`loadArtworks`** (war ein Loch). K2 / ök2 / VK2 unverändert.
+
+**Letzter Stand:** 08.05.26 – **Lizenz-Mandant: „Werk löschen“ schreibt Blob:** **`ScreenshotExportAdmin`** – bei **`adminUsesDynamicTenantBlob`** Quelle **`allArtworksRef`**, danach **`saveDynamicTenantStateToServer`** (silent); Fehler → Hinweis wie bei K2-Veröffentlichen. **qs:local** grün vor Commit. **Commit:** `3c82a6a4` ✅ **main**
 
 **Letzter Stand:** 08.05.26 – **Nachziehen:** **`resolveDynamicTenantIdFromLocation`** + **`MeinBereich` → Admin mit `tenantId`** + Tests waren lokal offen und fehlten im ersten Push → **`9bfdffc2`** (sonst Build-Import-Fehler). **Commit:** `9bfdffc2` ✅ **main**
 
