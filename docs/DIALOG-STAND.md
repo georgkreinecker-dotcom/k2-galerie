@@ -1,10 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nach Push: öffentliche Lizenz-Galerie `/g/<id>` prüfen – große Überschrift = Galerie-Name aus Stammdaten, wenn **Galerie gestalten** noch „Meine Galerie“ hat; optional Webhook-Seed aus Stripe-Name (noch offen).
+**Was wir JETZT tun:** Lizenz-Admin `/admin?tenantId=…`: Event anlegen/ändern/löschen, Seite neu laden – Events müssen aus **gallery-data** (Mandanten-Blob) wieder da sein; bei Bedarf öffentliche Galerie `/g/<id>` kurz prüfen.
 
-**Einordnung:** Stammdaten **Galerie-Name** und **Seitentext heroTitle** sind zwei Felder; bisher konnte Impressum stimmen und die Start-Überschrift trotzdem generisch bleiben – jetzt gekoppelt für Lizenzmandanten und auf der öffentlichen Seite abgefedert.
+**Einordnung:** Eventplanung für **dynamische Mandanten** hing bisher an **`saveEvents` → `k2-events`**, weil **`tenant.tenantId`** dort **K2** ist. Laden lief über **API** – Speichern landete falsch und wirkte wie „wird nicht abgespeichert“. Jetzt: **`persistDynamicTenantEventsFn`** + **`saveDynamicTenantStateToServer`** mit **`events`-Override** im Payload (Rest aus State).
 
-**Letzter Stand:** 08.05.26 – **Lizenz-Galerie: Überschrift = Galerie-Name:** **`GalerieTenantPage`** – wenn **heroTitle** leer/generisch (`Meine Galerie` / K2-Platzhalter), wird die **große Überschrift** aus **`gallery.name`** (Stammdaten) genommen. **Admin** (nur **`effectiveDynamicTenantId`): Bei Änderung **Galerie-Name** werden **heroTitle** und **pageTitle** mitgezogen, solange sie noch generisch sind – ein Speichern/Veröffentlichen übernimmt beides. **qs:local** grün. **Commit:** _(nach Push)_ ✅ **main**
+**Letzter Stand:** 08.05.26 – **Lizenz-Admin Eventplanung → Server-Blob:** **`ScreenshotExportAdmin`** – bei **`effectiveDynamicTenantId`** schreibt **`saveEvents`** nicht mehr in **`k2-events`**, sondern **POST write-gallery-data** mit aktueller Event-Liste (`buildDynamicTenantExportPayload` **`events`/`documents`-Overrides**). K2 / ök2 / VK2 unverändert. **qs:local** grün. **Commit:** `8c17c591` ✅ **main**
+
+**Letzter Stand:** 08.05.26 – **Lizenz-Galerie: Überschrift = Galerie-Name:** **`GalerieTenantPage`** – wenn **heroTitle** leer/generisch (`Meine Galerie` / K2-Platzhalter), wird die **große Überschrift** aus **`gallery.name`** (Stammdaten) genommen. **Admin** (nur **`effectiveDynamicTenantId`): Bei Änderung **Galerie-Name** werden **heroTitle** und **pageTitle** mitgezogen, solange sie noch generisch sind – ein Speichern/Veröffentlichen übernimmt beides. **qs:local** grün. **Commit:** `8e8c04d4` ✅ **main**
 
 **Letzter Stand:** 08.05.26 – **Grafiker-Tisch Lizenz-Vorschau:** Mit **`/projects/k2-galerie?…&tenantId=<mandant>`** lädt der iframe **Lizenz-Galerie** (`/g/<id>`, Werke-Vorschau: `?vorschau=1`). Ohne Parameter weiterhin **K2 Galerie (echt)**. **Commit:** `ff5f975f` ✅ **main**
 

@@ -2213,9 +2213,16 @@ function loadArtworks(tenant: ReturnType<typeof useTenant>): any[] {
   }
 }
 
+/** Wird gesetzt, wenn Admin im Lizenzmandanten-Modus (?tenantId=): Events → Server-Blob, nicht k2-events. */
+let persistDynamicTenantEventsFn: ((events: any[]) => void) | null = null
+
 // Event-Speicher nur über zentrale eventsStorage-Schicht (kein direkter localStorage-Write).
 function saveEvents(tenant: ReturnType<typeof useTenant>, events: any[]): void {
   try {
+    if (persistDynamicTenantEventsFn) {
+      persistDynamicTenantEventsFn(Array.isArray(events) ? events : [])
+      return
+    }
     if (tenant.isOeffentlich) {
       saveEventsToStorage('oeffentlich', events)
       return
@@ -4891,7 +4898,16 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     alert('✅ Musterdaten entfernt. Trage jetzt deine eigenen Daten ein.')
   }
 
-  const buildDynamicTenantExportPayload = (overrides?: { martina?: any; georg?: any; gallery?: any; pageTexts?: PageTextsConfig; artworks?: any[]; tenantId?: string }) => {
+  const buildDynamicTenantExportPayload = (overrides?: {
+    martina?: any
+    georg?: any
+    gallery?: any
+    pageTexts?: PageTextsConfig
+    artworks?: any[]
+    events?: any[]
+    documents?: any[]
+    tenantId?: string
+  }) => {
     const dynamicTenantIdForPayload = overrides?.tenantId ?? effectiveDynamicTenantId
     if (!isSafeDynamicTenantSaveId(dynamicTenantIdForPayload)) {
       throw new Error('Ungültiger Mandant. Stammdaten wurden nicht gespeichert.')
@@ -4913,8 +4929,12 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       georg: sanitizeDynamicTenantPersonData(sourceGeorg),
       gallery: cleanGallery,
       artworks: sortArtworksFavoritesFirstThenNewest(Array.isArray(overrides?.artworks) ? [...overrides.artworks] : (Array.isArray(allArtworks) ? [...allArtworks] : [])),
-      events: Array.isArray(events) ? events.slice(0, 100) : [],
-      documents: Array.isArray(documents) ? documents.slice(0, 100) : [],
+      events: Array.isArray(overrides?.events)
+        ? overrides.events.slice(0, 100)
+        : (Array.isArray(events) ? events.slice(0, 100) : []),
+      documents: Array.isArray(overrides?.documents)
+        ? overrides.documents.slice(0, 100)
+        : (Array.isArray(documents) ? documents.slice(0, 100) : []),
       designSettings: designSettings || {},
       pageTexts: cleanPageTexts,
       pageContentGalerie: pageContentGalerieRaw,
@@ -4926,7 +4946,17 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   }
 
   const saveDynamicTenantStateToServer = async (
-    options?: { silent?: boolean; martina?: any; georg?: any; gallery?: any; pageTexts?: PageTextsConfig; artworks?: any[]; tenantId?: string }
+    options?: {
+      silent?: boolean
+      martina?: any
+      georg?: any
+      gallery?: any
+      pageTexts?: PageTextsConfig
+      artworks?: any[]
+      events?: any[]
+      documents?: any[]
+      tenantId?: string
+    }
   ): Promise<{ success: boolean; size?: number; error?: string }> => {
     const targetTenantId = options?.tenantId ?? effectiveDynamicTenantId
     if (!isSafeDynamicTenantSaveId(targetTenantId)) return { success: false, error: 'Ungültiger Mandant. Stammdaten wurden nicht gespeichert.' }
@@ -4937,6 +4967,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       gallery: options?.gallery,
       pageTexts: options?.pageTexts,
       artworks: options?.artworks,
+      events: options?.events,
+      documents: options?.documents,
       tenantId: targetTenantId,
     })
     if (data.tenantId !== targetTenantId) return { success: false, error: 'Mandanten-Ziel stimmt nicht. Speichern abgebrochen.' }
@@ -4949,6 +4981,29 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     }
     return { success: false, error: result.error || 'Daten konnten nicht gespeichert werden.' }
   }
+
+  const saveDynamicTenantStateToServerRef = React.useRef(saveDynamicTenantStateToServer)
+  saveDynamicTenantStateToServerRef.current = saveDynamicTenantStateToServer
+
+  useEffect(() => {
+    const dynId = effectiveDynamicTenantId
+    if (!dynId || !isSafeDynamicTenantSaveId(dynId)) {
+      persistDynamicTenantEventsFn = null
+      return () => {
+        persistDynamicTenantEventsFn = null
+      }
+    }
+    persistDynamicTenantEventsFn = (ev: any[]) => {
+      void saveDynamicTenantStateToServerRef.current({
+        silent: true,
+        events: ev,
+        tenantId: dynId,
+      })
+    }
+    return () => {
+      persistDynamicTenantEventsFn = null
+    }
+  }, [effectiveDynamicTenantId])
 
   // Stammdaten speichern - bei ök2: Demo-Stammdaten (inkl. Mein Weg) in k2-oeffentlich-stammdaten-*; bei VK2 in k2-vk2-stammdaten; dynamische Mandanten: direkt in eigenen Server-Blob; K2: echte Stammdaten
   const saveStammdaten = () => {
