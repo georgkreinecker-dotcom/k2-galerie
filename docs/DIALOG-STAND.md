@@ -4,6 +4,8 @@
 
 **Einordnung:** **Mehrschichtig:** (1) **TenantContext** setzt **`dynamicTenantId`** auf APf-Pfaden. (2) **Admin** nutzt **`effectiveDynamicTenantId`** + **`adminUsesDynamicTenantBlob`** (URL-Spiegel zu Context), damit nie **`k2-artworks`** in den Mandanten-State rutscht. (3) **write-gallery-data** lehnt **K2-Bulk-Nummerierung** für Nicht-Legacy-**tenantId** ab.
 
+**Letzter Stand:** 08.05.26 – **Nachziehen:** **`resolveDynamicTenantIdFromLocation`** + **`MeinBereich` → Admin mit `tenantId`** + Tests waren lokal offen und fehlten im ersten Push → **`9bfdffc2`** (sonst Build-Import-Fehler). **Commit:** `9bfdffc2` ✅ **main**
+
 **Letzter Stand:** 08.05.26 – **Lizenz-Mandant: K2-Leak mehrschichtig abgesichert:** **`adminUsesDynamicTenantBlob`** in **`ScreenshotExportAdmin`** (Werke laden/speichern + Effects: localStorage-Fallback, **`handleLoadFromServer`**, Auto-Load K2, Auto-Save, Dokumente, Restore, Meta-Fix) an **`effectiveDynamicTenantId`** / URL gekoppelt. **`api/write-gallery-data.js`:** **`rejectK2StyleBulkForNonLegacyTenant`** vor Blob-**put** (normal + chunked). Tests **`dynamicTenantAdminIsolation.test.ts`** erweitert. **`npm run build`** grün. **Commit:** `82223b1c` ✅ **main**
 
 **Letzter Stand:** 08.05.26 – **Lizenz-Admin Eventplanung → Server-Blob:** **`ScreenshotExportAdmin`** – bei **`effectiveDynamicTenantId`** schreibt **`saveEvents`** nicht mehr in **`k2-events`**, sondern **POST write-gallery-data** mit aktueller Event-Liste (`buildDynamicTenantExportPayload` **`events`/`documents`-Overrides**). K2 / ök2 / VK2 unverändert. **qs:local** grün. **Commit:** `7c3ea642` ✅ **main**
