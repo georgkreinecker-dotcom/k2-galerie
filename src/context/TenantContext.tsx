@@ -50,6 +50,20 @@ function getDynamicTenantIdFromUrl(search: string): string | null {
   }
 }
 
+/**
+ * Lizenz-Mandant in TenantContext – nicht nur auf /admin.
+ * Wenn nur pathname === '/admin' geprüft wurde, blieb dynamicTenantId in APf (DevView, Projekt-K2-Galerie) null,
+ * obwohl ?tenantId= in der URL stand → K2-Werke aus localStorage wurden geladen und konnten den Mandanten-Blob vergiften.
+ */
+export function resolveDynamicTenantIdFromLocation(pathname: string, search: string): string | null {
+  const id = getDynamicTenantIdFromUrl(search)
+  if (!id) return null
+  if (pathname === '/admin' || pathname === '/mein-bereich') return id
+  if (pathname === DEV_VIEW_PREFIX || pathname.startsWith(`${DEV_VIEW_PREFIX}/`)) return id
+  if (pathname.startsWith(K2_GALERIE_PROJECT_PREFIX)) return id
+  return null
+}
+
 /** APf /dev-view: Mandant aus ?page= (eingebettete Tabs), wenn kein ?context= gesetzt. */
 function tenantIdFromDevViewPageParam(search: string, onPlatform: boolean): AdminTenantId | null {
   try {
@@ -206,7 +220,7 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
   }
 
   const tenantId = useMemo(() => deriveTenantId(pathname, search), [pathname, search])
-  const dynamicTenantId = useMemo(() => (pathname === '/admin' ? getDynamicTenantIdFromUrl(search) : null), [pathname, search])
+  const dynamicTenantId = useMemo(() => resolveDynamicTenantIdFromLocation(pathname, search), [pathname, search])
 
   useEffect(() => {
     if (pathname.startsWith(VK2_PROJECT_PREFIX)) {
@@ -241,7 +255,7 @@ export function useTenant(): TenantContextValue {
       }
       syncStorageFromUrl(pathname, search)
       const tid = deriveTenantId(pathname, search)
-      const dynId = pathname === '/admin' ? getDynamicTenantIdFromUrl(search) : null
+      const dynId = resolveDynamicTenantIdFromLocation(pathname, search)
       const keys = keysForTenant(tid)
       return {
         tenantId: tid,

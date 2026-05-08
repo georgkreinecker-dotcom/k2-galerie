@@ -23,6 +23,14 @@ export default function MeinBereichPage() {
     const guidetab = searchParams.get('guidetab')
     const guidesubtab = searchParams.get('guidesubtab')
     const embedded = searchParams.get('embedded')
+    const tenantIdParam = searchParams.get('tenantId')?.trim().toLowerCase() ?? ''
+    const safeTenantId =
+      tenantIdParam &&
+      tenantIdParam.length <= 64 &&
+      /^[a-z0-9-]+$/.test(tenantIdParam) &&
+      !['k2', 'oeffentlich', 'vk2'].includes(tenantIdParam)
+        ? tenantIdParam
+        : ''
     const parts: string[] = []
     if (context !== 'k2') parts.push(`context=${context}`)
     if (embedded === '1') parts.push('embedded=1')
@@ -33,6 +41,7 @@ export default function MeinBereichPage() {
     if (pfad) parts.push(`pfad=${encodeURIComponent(pfad)}`)
     if (guidetab) parts.push(`guidetab=${encodeURIComponent(guidetab)}`)
     if (guidesubtab) parts.push(`guidesubtab=${encodeURIComponent(guidesubtab)}`)
+    if (safeTenantId) parts.push(`tenantId=${encodeURIComponent(safeTenantId)}`)
     try {
       sessionStorage.setItem('k2-admin-context', context)
     } catch (_) {}
