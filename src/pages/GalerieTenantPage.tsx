@@ -159,13 +159,21 @@ export default function GalerieTenantPage() {
     ? 'In der Galerie findest du auch unseren Shop.'
     : `In der Galerie findest du Angebote und Auswahlen aus dem Bereich ${focusLabel}.`
   const galleryPageTitle = focusDirection === 'kunst' ? 'Galerie & Shop' : `${focusLabel} - Auswahl`
+  const galleryStamm = (liveTemplateOverlay?.gallery && typeof liveTemplateOverlay.gallery === 'object')
+    ? liveTemplateOverlay.gallery
+    : ((data?.gallery && typeof data.gallery === 'object') ? data.gallery as Record<string, unknown> : {})
   const effectiveGalerieTexts = (liveTemplateOverlay?.pageTexts?.galerie && typeof liveTemplateOverlay.pageTexts.galerie === 'object')
     ? liveTemplateOverlay.pageTexts.galerie
     : data?.pageTexts?.galerie
   const rawTitle = effectiveGalerieTexts?.heroTitle?.trim() || ''
   const rawSubtext = effectiveGalerieTexts?.welcomeSubtext?.trim() || ''
   const rawIntro = effectiveGalerieTexts?.welcomeIntroText?.trim() || ''
-  const title = rawTitle === 'K2 Galerie' ? 'Meine Galerie' : (rawTitle || 'Meine Galerie')
+  let title = rawTitle === 'K2 Galerie' ? 'Meine Galerie' : (rawTitle || 'Meine Galerie')
+  const galleryNameStamm = String(galleryStamm.name || '').trim()
+  const heroLooksUnsetOrGeneric = !rawTitle || rawTitle === 'K2 Galerie' || rawTitle === 'Meine Galerie'
+  if (heroLooksUnsetOrGeneric && galleryNameStamm) {
+    title = galleryNameStamm
+  }
   const subtext = rawSubtext === 'Kunst & Keramik – Martina und Georg Kreinecker' ? focusLabel : (rawSubtext || focusLabel)
   const intro = rawIntro === 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.'
     ? getWelcomeIntroForFocusDirections([focusDirection])
@@ -174,9 +182,6 @@ export default function GalerieTenantPage() {
   const parsedPageContent = typeof pageContentRaw === 'string'
     ? (() => { try { return JSON.parse(pageContentRaw) } catch { return {} } })()
     : (pageContentRaw || {})
-  const galleryStamm = (liveTemplateOverlay?.gallery && typeof liveTemplateOverlay.gallery === 'object')
-    ? liveTemplateOverlay.gallery
-    : ((data?.gallery && typeof data.gallery === 'object') ? data.gallery as Record<string, unknown> : {})
   const pageContentParsed = (typeof parsedPageContent === 'object' && parsedPageContent != null
     ? parsedPageContent
     : {}) as PageContentGalTenant

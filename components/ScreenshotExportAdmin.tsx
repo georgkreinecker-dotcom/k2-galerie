@@ -21354,7 +21354,25 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         <input
                           type="text"
                           value={galleryData.name || ''}
-                          onChange={(e) => setGalleryData({ ...galleryData, name: e.target.value })}
+                          onChange={(e) => {
+                            const name = e.target.value
+                            setGalleryData({ ...galleryData, name })
+                            if (effectiveDynamicTenantId) {
+                              const trimmed = name.trim()
+                              const ht = String(pageTexts.galerie?.heroTitle ?? '').trim()
+                              const pt = String(pageTexts.galerie?.pageTitle ?? '').trim()
+                              const heroGeneric = !ht || ht === 'Meine Galerie' || ht === 'K2 Galerie'
+                              const pageTitleGeneric = !pt || pt === 'Meine Galerie' || pt === 'K2 Galerie'
+                              if (trimmed && (heroGeneric || pageTitleGeneric)) {
+                                setPageTextsState((prev) => {
+                                  const g = { ...defaultPageTexts.galerie, ...prev.galerie }
+                                  if (heroGeneric) g.heroTitle = trimmed
+                                  if (pageTitleGeneric) g.pageTitle = trimmed
+                                  return { ...prev, galerie: g }
+                                })
+                              }
+                            }
+                          }}
                           placeholder="z. B. Galerie am Platz"
                           style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />

@@ -1,8 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nach Deploy: Grafiker-Tisch mit `?tenantId=<lizenz-id>` testen; direkter Link `/g/<id>` bleibt der öffentliche Einstieg.
+**Was wir JETZT tun:** Nach Push: öffentliche Lizenz-Galerie `/g/<id>` prüfen – große Überschrift = Galerie-Name aus Stammdaten, wenn **Galerie gestalten** noch „Meine Galerie“ hat; optional Webhook-Seed aus Stripe-Name (noch offen).
 
-**Einordnung:** APf zeigte bei „Galerie“ absichtlich K2 (`/galerie`); Lizenz-Vorschau braucht `/g/…` oder neu `tenantId` in der Projekt-URL.
+**Einordnung:** Stammdaten **Galerie-Name** und **Seitentext heroTitle** sind zwei Felder; bisher konnte Impressum stimmen und die Start-Überschrift trotzdem generisch bleiben – jetzt gekoppelt für Lizenzmandanten und auf der öffentlichen Seite abgefedert.
+
+**Letzter Stand:** 08.05.26 – **Lizenz-Galerie: Überschrift = Galerie-Name:** **`GalerieTenantPage`** – wenn **heroTitle** leer/generisch (`Meine Galerie` / K2-Platzhalter), wird die **große Überschrift** aus **`gallery.name`** (Stammdaten) genommen. **Admin** (nur **`effectiveDynamicTenantId`): Bei Änderung **Galerie-Name** werden **heroTitle** und **pageTitle** mitgezogen, solange sie noch generisch sind – ein Speichern/Veröffentlichen übernimmt beides. **qs:local** grün. **Commit:** _(nach Push)_ ✅ **main**
 
 **Letzter Stand:** 08.05.26 – **Grafiker-Tisch Lizenz-Vorschau:** Mit **`/projects/k2-galerie?…&tenantId=<mandant>`** lädt der iframe **Lizenz-Galerie** (`/g/<id>`, Werke-Vorschau: `?vorschau=1`). Ohne Parameter weiterhin **K2 Galerie (echt)**. **Commit:** `ff5f975f` ✅ **main**
 
