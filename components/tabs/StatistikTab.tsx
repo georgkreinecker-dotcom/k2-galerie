@@ -1,7 +1,7 @@
 import React from 'react'
 import { WERBEUNTERLAGEN_STIL } from '../../src/config/marketingWerbelinie'
 import { getCategoryLabel } from '../../src/config/tenantConfig'
-import { getShopSoldArtworksKey } from '../../src/utils/shopContextKeys'
+import { getReservedArtworksStorageKey, getShopSoldArtworksKey } from '../../src/utils/shopContextKeys'
 import {
   resolveArtistLabelForGalerieStatistik,
   type KuenstlerFallbackNamen,
@@ -27,6 +27,8 @@ interface StatistikTabProps {
   /** Verkaufsliste aus dem passenden Key (K2 / ök2 / VK2). */
   isOeffentlich?: boolean
   isVk2?: boolean
+  /** Lizenz-Mandant (?tenantId=): gleiche Key-Ebene wie Shop/Kassa. */
+  dynamicTenantId?: string | null
 }
 
 export default function StatistikTab({
@@ -38,12 +40,14 @@ export default function StatistikTab({
   showPreisspanneVerkauf = false,
   isOeffentlich = false,
   isVk2 = false,
+  dynamicTenantId = null,
 }: StatistikTabProps) {
-  const soldStorageKey = getShopSoldArtworksKey(!!isOeffentlich, !!isVk2)
+  const soldStorageKey = getShopSoldArtworksKey(!!isOeffentlich, !!isVk2, dynamicTenantId || undefined)
+  const reservedStorageKey = getReservedArtworksStorageKey(!!isOeffentlich, !!isVk2, dynamicTenantId || undefined)
   let soldEntries: any[] = []
   try { soldEntries = JSON.parse(localStorage.getItem(soldStorageKey) || '[]') } catch (_) {}
   let reservedEntries: any[] = []
-  try { reservedEntries = JSON.parse(localStorage.getItem('k2-reserved-artworks') || '[]') } catch (_) {}
+  try { reservedEntries = JSON.parse(localStorage.getItem(reservedStorageKey) || '[]') } catch (_) {}
 
   const soldNumbers = new Set(soldEntries.map((e: any) => e.number))
   const soldWerke = allArtworks.filter((a: any) => soldNumbers.has(a.number || a.id))

@@ -1915,7 +1915,7 @@ import {
 } from '../src/utils/flyerEventBogenStorageKeys'
 import { startAutoSave, stopAutoSave, setupBeforeUnloadSave, pauseAutoSaveForMs, restoreFromBackup, restoreFromBackupFile, hasBackup, getBackupTimestamp, getBackupTimestamps, recordLastBackupDownloadExported, getLastBackupDownloadExported, createK2Backup, createOek2Backup, createVk2Backup, downloadBackupAsFile, restoreK2FromBackup, restoreOek2FromBackup, restoreVk2FromBackup, detectBackupKontext } from '../src/utils/autoSave'
 import { sortArtworksNewestFirst, sortArtworksFavoritesFirstThenNewest, type WithFavorite } from '../src/utils/artworkSort'
-import { getShopSoldArtworksKey, getShopStorageKeys } from '../src/utils/shopContextKeys'
+import { getReservedArtworksStorageKey, getShopSoldArtworksKey, getShopStorageKeys } from '../src/utils/shopContextKeys'
 import { getArtworkLagerInfo, getArtworkNumberKey, revertOneOrderUnitForArtwork, revertOneSoldUnitInList } from '../src/utils/artworkLagerStatus'
 import { urlWithBuildVersion } from '../src/buildInfo.generated'
 import { getOrCreateEmpfehlerId, isValidEmpfehlerIdFormat } from '../src/utils/empfehlerId'
@@ -12683,16 +12683,17 @@ ${'='.repeat(60)}
 
   // Werk reservieren / Reservierung aufheben
   const handleMarkAsReserved = (artworkNumber: string, name: string) => {
-    const reserved = JSON.parse(localStorage.getItem('k2-reserved-artworks') || '[]')
+    const reservedKey = getReservedArtworksStorageKey(!!tenant.isOeffentlich, !!tenant.isVk2, effectiveDynamicTenantId || null)
+    const reserved = JSON.parse(localStorage.getItem(reservedKey) || '[]')
     const existing = reserved.find((a: any) => a.number === artworkNumber)
     if (existing) {
       // Reservierung aufheben
       const updated = reserved.filter((a: any) => a.number !== artworkNumber)
-      localStorage.setItem('k2-reserved-artworks', JSON.stringify(updated))
+      localStorage.setItem(reservedKey, JSON.stringify(updated))
       alert(`✅ Reservierung für Werk ${artworkNumber} aufgehoben.`)
     } else {
       reserved.push({ number: artworkNumber, reservedAt: new Date().toISOString(), reservedFor: name.trim() })
-      localStorage.setItem('k2-reserved-artworks', JSON.stringify(reserved))
+      localStorage.setItem(reservedKey, JSON.stringify(reserved))
       alert(`✅ Werk ${artworkNumber} ist reserviert${name.trim() ? ` für ${name.trim()}` : ''}.`)
     }
     loadArtworksWithResolvedImages(tenant).then(setAllArtworksSafe)
@@ -17000,6 +17001,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 showPreisspanneVerkauf={tenant.isOeffentlich}
                 isOeffentlich={!!tenant.isOeffentlich}
                 isVk2={!!tenant.isVk2}
+                dynamicTenantId={effectiveDynamicTenantId || null}
                 kuenstlerFallback={
                   tenant.isVk2
                     ? undefined
@@ -17144,6 +17146,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               onToggleInExhibition={handleToggleInExhibition}
               isOeffentlich={tenant.isOeffentlich}
               isVk2={tenant.isVk2}
+              dynamicTenantId={effectiveDynamicTenantId || null}
               entryTypeFilter={entryTypeFilter}
               setEntryTypeFilter={setEntryTypeFilter}
               categoryFilter={categoryFilter}

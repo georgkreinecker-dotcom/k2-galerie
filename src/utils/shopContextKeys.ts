@@ -20,6 +20,14 @@ export function getShopSoldArtworksKey(fromOeffentlich: boolean, fromVk2: boolea
   return 'k2-sold-artworks'
 }
 
+/** Reservierungen (Admin Statistik/Werkkatalog) – pro Mandant wie Orders/Sold, nicht global nur K2. */
+export function getReservedArtworksStorageKey(fromOeffentlich: boolean, fromVk2: boolean, dynamicTenantId?: string | null): string {
+  if (dynamicTenantId) return `k2-tenant-${dynamicTenantId}-reserved-artworks`
+  if (fromVk2) return pilotScopeVk2Key('k2-vk2-reserved-artworks')
+  if (fromOeffentlich) return 'k2-oeffentlich-reserved-artworks'
+  return 'k2-reserved-artworks'
+}
+
 export function getShopStorageKeys(fromOeffentlich: boolean, fromVk2: boolean, dynamicTenantId?: string | null): { ordersKey: string; soldArtworksKey: string } {
   return {
     ordersKey: getShopOrdersKey(fromOeffentlich, fromVk2, dynamicTenantId),

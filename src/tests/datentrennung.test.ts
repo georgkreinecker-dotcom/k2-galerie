@@ -18,7 +18,12 @@ import {
 } from '../config/pageContentGalerie'
 import { loadEvents, saveEvents } from '../utils/eventsStorage'
 import { loadDocuments, saveDocuments } from '../utils/documentsStorage'
-import { getShopOrdersKey, getShopSoldArtworksKey, getShopStorageKeys } from '../utils/shopContextKeys'
+import {
+  getReservedArtworksStorageKey,
+  getShopOrdersKey,
+  getShopSoldArtworksKey,
+  getShopStorageKeys,
+} from '../utils/shopContextKeys'
 
 const K2_KEY = 'k2-page-content-galerie'
 const OEK2_KEY = 'k2-oeffentlich-page-content-galerie'
@@ -387,5 +392,16 @@ describe('Shop/Kassa – kontexteigene Keys (Datensicherheit)', () => {
     expect(k2.soldArtworksKey).not.toBe(oek2.soldArtworksKey)
     expect(k2.soldArtworksKey).not.toBe(vk2.soldArtworksKey)
     expect(oek2.soldArtworksKey).not.toBe(vk2.soldArtworksKey)
+  })
+
+  it('Reservierungen: Lizenz-Mandant eigener Key (wie Sold)', () => {
+    expect(getReservedArtworksStorageKey(false, false, 'galerie-demo')).toBe('k2-tenant-galerie-demo-reserved-artworks')
+    expect(getShopSoldArtworksKey(false, false, 'galerie-demo')).toBe('k2-tenant-galerie-demo-sold-artworks')
+  })
+
+  it('Reservierungen: K2 / ök2 / VK2 wie bisher benannt', () => {
+    expect(getReservedArtworksStorageKey(false, false)).toBe('k2-reserved-artworks')
+    expect(getReservedArtworksStorageKey(true, false)).toBe('k2-oeffentlich-reserved-artworks')
+    expect(getReservedArtworksStorageKey(false, true)).toBe('k2-vk2-reserved-artworks')
   })
 })

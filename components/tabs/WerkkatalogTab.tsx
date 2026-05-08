@@ -11,7 +11,7 @@ import {
 } from '../../src/config/tenantConfig'
 import { isEchteK2Werknummer, resolveArtworkImages } from '../../src/utils/artworksStorage'
 import { formatEkAnzeige } from '../../src/utils/artworkEkVk'
-import { getShopSoldArtworksKey } from '../../src/utils/shopContextKeys'
+import { getReservedArtworksStorageKey, getShopSoldArtworksKey } from '../../src/utils/shopContextKeys'
 import {
   resolveArtistLabelForGalerieStatistik,
   type KuenstlerFallbackNamen,
@@ -251,6 +251,8 @@ interface WerkkatalogTabProps {
   setCategoryFilter?: (v: string) => void
   /** K2/ök2: Künstler aus Stammdaten ableiten wenn `artist` leer (wie Statistik); VK2: nicht setzen. */
   kuenstlerFallback?: KuenstlerFallbackNamen | null
+  /** Lizenz-Mandant: Reservierungen/Verkäufe aus mandantenspezifischen Keys wie die Kassa. */
+  dynamicTenantId?: string | null
 }
 
 const ALLE_SPALTEN = [
@@ -285,6 +287,7 @@ export default function WerkkatalogTab({
   setCategoryFilter,
   isVk2 = false,
   kuenstlerFallback = null,
+  dynamicTenantId = null,
 }: WerkkatalogTabProps) {
   /** Typ-/Kategorie-Filter nur ök2; VK2 = nur Katalog der Mitgliederwerke (Kategorisierung in Stammdaten/Werkkarten). */
   const showTypAndCategory = !!isOeffentlich && !isVk2
@@ -297,12 +300,12 @@ export default function WerkkatalogTab({
   const enriched = useMemo(() => {
     const soldMap = new Map<string, any>()
     try {
-      const soldRaw = localStorage.getItem(getShopSoldArtworksKey(!!isOeffentlich, !!isVk2))
+      const soldRaw = localStorage.getItem(getShopSoldArtworksKey(!!isOeffentlich, !!isVk2, dynamicTenantId || undefined))
       if (soldRaw) JSON.parse(soldRaw).forEach((s: any) => soldMap.set(s.number, s))
     } catch (_) {}
     const reservedMap = new Map<string, any>()
     try {
-      const resRaw = localStorage.getItem('k2-reserved-artworks')
+      const resRaw = localStorage.getItem(getReservedArtworksStorageKey(!!isOeffentlich, !!isVk2, dynamicTenantId || undefined))
       if (resRaw) JSON.parse(resRaw).forEach((r: any) => reservedMap.set(r.number, r))
     } catch (_) {}
     return allArtworks.map((a: any) => {
@@ -319,7 +322,7 @@ export default function WerkkatalogTab({
         reservedAt: resEntry?.reservedAt || '',
       }
     })
-  }, [allArtworks, isOeffentlich, isVk2])
+  }, [allArtworks, isOeffentlich, isVk2, dynamicTenantId])
 
   const artistFuerDruck = useCallback(
     (work: any) => {
