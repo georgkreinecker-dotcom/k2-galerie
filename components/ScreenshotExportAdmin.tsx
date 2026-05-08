@@ -91,6 +91,24 @@ const WRITE_GALLERY_DATA_API_URL = `${VERCEL_APP_BASE}/api/write-gallery-data`
 const CENTRAL_GALLERY_DATA_URL = `${VERCEL_APP_BASE}/api/gallery-data`
 /** Fallback wenn Blob noch leer (z. B. erste Deploy): statische Datei aus Build */
 const CENTRAL_GALLERY_DATA_FALLBACK_URL = `${VERCEL_APP_BASE}/gallery-data.json`
+
+/** Live-Template / Design-Panel: Farben plus optionale Text- und Bildmaße (tsc: ein Typ für ganzes File). */
+export type LiveDesignSettings = {
+  accentColor: string
+  backgroundColor1: string
+  backgroundColor2: string
+  backgroundColor3: string
+  textColor: string
+  mutedColor: string
+  cardBg1: string
+  cardBg2: string
+  titleFontSize?: string
+  subtextFontSize?: string
+  bodyFontSize?: string
+  welcomeImageHeightPx?: string
+  tourImageHeightPx?: string
+}
+
 import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, K2_DEFAULT_VITA_MARTINA, K2_DEFAULT_VITA_GEORG, isPlatformInstance, TENANT_CONFIGS, PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SWEET_SPOT, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, getCategoriesForEntryTypeAndDirection, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_VEREINSTYP_OPTIONS, getVk2KategorienVorschlagFuerTyp, getVk2Kunstrichtungen, isVk2VereinsTypId, VK2_STAMMDATEN_DEFAULTS, VK2_DEMO_STAMMDATEN, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoStammdatenIfEmpty, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, OEK2_DEPRECATED_MUSTER_PR_DOC_IDS, getProminenteAdresseFormatiert, getProminenteAdresse, FOCUS_DIRECTIONS, getDefaultEntryTypeForFocusDirections, getWelcomeIntroForFocusDirections, getCategoriesForDirection, getEffectiveDirectionFromWork, getEntryTypeForDirection, DEFAULT_OEK2_FOCUS_DIRECTION_ID, type TenantId, type FocusDirectionId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import { getStoryForPr } from '../src/utils/prStory'
@@ -3485,7 +3503,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   })
 
   // Altes Blau-Theme erkennen → K2-Standard = Terracotta (wie erste Vorlage)
-  const K2_ORANGE_DESIGN = {
+  const K2_ORANGE_DESIGN: LiveDesignSettings = {
     accentColor: '#d97a50',
     backgroundColor1: '#1c1210',
     backgroundColor2: '#2a1e1a',
@@ -3500,7 +3518,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
 
   const getDesignStorageKey = () => tenant.isOeffentlich ? KEY_OEF_DESIGN : tenant.isVk2 ? KEY_VK2_DESIGN : 'k2-design-settings'
   // Design-Einstellungen – aus localStorage; K2: altes Blau → K2-Orange; ök2: eigener Key, Standard = OEF_DESIGN_DEFAULT
-  const [designSettings, setDesignSettings] = useState(() => {
+  const [designSettings, setDesignSettings] = useState<LiveDesignSettings>(() => {
     try {
       const key = getDesignStorageKey()
       const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null
@@ -3512,6 +3530,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
             return K2_ORANGE_DESIGN
           }
           const defaults = tenant.isOeffentlich ? OEF_DESIGN_DEFAULT : tenant.isVk2 ? K2_ORANGE_DESIGN : K2_ORANGE_DESIGN
+          const p = parsed as Record<string, unknown>
+          const optStr = (k: string) => (typeof p[k] === 'string' ? (p[k] as string) : undefined)
           return {
             accentColor: parsed.accentColor ?? (defaults as Record<string, string>).accentColor,
             backgroundColor1: parsed.backgroundColor1 ?? (defaults as Record<string, string>).backgroundColor1,
@@ -3520,12 +3540,17 @@ function ScreenshotExportAdmin(props?: AdminProps) {
             textColor: parsed.textColor ?? (defaults as Record<string, string>).textColor,
             mutedColor: parsed.mutedColor ?? (defaults as Record<string, string>).mutedColor,
             cardBg1: parsed.cardBg1 ?? (defaults as Record<string, string>).cardBg1,
-            cardBg2: parsed.cardBg2 ?? (defaults as Record<string, string>).cardBg2
+            cardBg2: parsed.cardBg2 ?? (defaults as Record<string, string>).cardBg2,
+            titleFontSize: optStr('titleFontSize'),
+            subtextFontSize: optStr('subtextFontSize'),
+            bodyFontSize: optStr('bodyFontSize'),
+            welcomeImageHeightPx: optStr('welcomeImageHeightPx'),
+            tourImageHeightPx: optStr('tourImageHeightPx'),
           }
         }
       }
     } catch (_) {}
-    return { ...(tenant.isOeffentlich ? OEF_DESIGN_DEFAULT : K2_ORANGE_DESIGN) }
+    return { ...(tenant.isOeffentlich ? OEF_DESIGN_DEFAULT : K2_ORANGE_DESIGN) } as LiveDesignSettings
   })
   const [showAddModal, setShowAddModal] = useState(false)
   const [showVitaEditor, setShowVitaEditor] = useState(false)
