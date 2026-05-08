@@ -382,8 +382,8 @@ export default function LizenzErfolgPage() {
                       </>
                     ) : (
                       <>
-                        Das ist <strong>dein eigener</strong> Admin-Zugang nach dem Lizenzkauf – nicht der QR der ök2-Muster-Demo.
-                        Unten in der <strong>Lizenzbestätigung zum Drucken</strong> {copy.adminQrBodyUrlsClause}
+                        <strong>Dein Admin-Zugang</strong> nach dem Lizenzkauf. Unten in der{' '}
+                        <strong>Lizenzbestätigung zum Drucken</strong> {copy.adminQrBodyUrlsClause}
                       </>
                     )}
                   </p>
@@ -425,10 +425,12 @@ export default function LizenzErfolgPage() {
           </p>
         )}
         {sessionId && (
-          <p style={{ margin: 0, fontSize: '0.85rem', color: '#666', wordBreak: 'break-all' }}>Referenz: {sessionId}</p>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: '#666', lineHeight: 1.45 }}>
+            Eine Übersicht zur Zahlung erhältst du auch in der Bestätigungs-E-Mail deines Zahlungsanbieters.
+          </p>
         )}
         {!sessionId && musterVorschau && (
-          <p style={{ margin: 0, fontSize: '0.85rem', color: '#666' }}>Referenz: Mustervorschau (keine Stripe-Session)</p>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: '#666' }}>Muster – keine echte Zahlung, keine rechtsgültige Bestätigung.</p>
         )}
         {linksForUi?.galerie_url && (
           <p style={{ margin: '0.75rem 0 0.35rem', fontSize: '0.9rem', color: '#333', lineHeight: 1.45, wordBreak: 'break-all' }}>
@@ -452,9 +454,7 @@ export default function LizenzErfolgPage() {
             </>
           ) : (
             <>
-              <strong>Hinweis:</strong> {copy.printMissingUrlsHint} Fehlen sie nach der Zahlung dauerhaft, ist die
-              serverseitige Verarbeitung (Webhook) noch nicht eingerichtet – siehe Dokumentation STRIPE-TEST / Webhook in
-              Vercel.
+              <strong>Hinweis:</strong> {copy.printMissingUrlsHint} {copy.printMissingUrlsStillMissingLine}
             </>
           )}
         </p>

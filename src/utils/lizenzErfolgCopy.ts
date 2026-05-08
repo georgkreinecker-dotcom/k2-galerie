@@ -114,6 +114,8 @@ export type LizenzErfolgCopy = {
   entdeckenFooterLabel: string
   /** Druck: Hinweis wenn URLs noch fehlen */
   printMissingUrlsHint: string
+  /** Druck: wenn Links nach Zahlung ausbleiben (ohne interne Technik-Begriffe) */
+  printMissingUrlsStillMissingLine: string
   /** Nur Bildschirm: wo Admin-QR (unterhalb Druckkasten) */
   screenAdminQrHint: string
   /** true = optionaler Footer mit Lizenzen/Entdecken anzeigen */
@@ -126,7 +128,7 @@ export function getLizenzErfolgCopy(productLine: LizenzProductLine): LizenzErfol
       openPrimaryLabel: 'VK2 Vereinsplattform öffnen',
       adminButtonLabel: 'VK2 bearbeiten (Admin)',
       accessBlurbAfterDeine:
-        'VK2-Zugänge: Vereinsseite für Besucher und Admin zum Bearbeiten – nicht die ök2-Demo und nicht die normale Galerie-Lizenz.',
+        'VK2-Zugänge: Vereinsseite für Besucher und Admin zum Bearbeiten.',
       visitorUrlPrintLabel: 'VK2 Vereinsplattform',
       loadingLine:
         'Deine Links für VK2 werden geladen… Meist nur wenige Sekunden nach der Zahlung.',
@@ -136,6 +138,8 @@ export function getLizenzErfolgCopy(productLine: LizenzProductLine): LizenzErfol
       entdeckenFooterLabel: '',
       printMissingUrlsHint:
         'Sobald VK2- und Admin-Adresse oben geladen sind, erscheinen sie in diesem Kasten.',
+      printMissingUrlsStillMissingLine:
+        'Fehlen die Adressen nach einigen Minuten weiterhin, findest du Zugangsdaten oft auch in der Bestätigungs-E-Mail zur Zahlung.',
       screenAdminQrHint:
         'Admin-QR: Oben unter „Admin-QR fürs Handy“ – Link kopieren oder QR-Bild speichern und zu den Vereinsunterlagen legen.',
       showOptionalPlatformFooter: false,
@@ -156,6 +160,8 @@ export function getLizenzErfolgCopy(productLine: LizenzProductLine): LizenzErfol
       entdeckenFooterLabel: '',
       printMissingUrlsHint:
         'Sobald Gäste- und Admin-Adresse oben geladen sind, erscheinen sie in diesem Kasten.',
+      printMissingUrlsStillMissingLine:
+        'Fehlen die Adressen nach einigen Minuten weiterhin, findest du Zugangsdaten oft auch in der Bestätigungs-E-Mail zur Zahlung.',
       screenAdminQrHint:
         'Admin-QR: Oben unter „Admin-QR fürs Handy“ – Link kopieren oder QR-Bild speichern und zu deinen Unterlagen legen.',
       showOptionalPlatformFooter: false,
@@ -165,18 +171,20 @@ export function getLizenzErfolgCopy(productLine: LizenzProductLine): LizenzErfol
     openPrimaryLabel: 'Meine Galerie öffnen',
     adminButtonLabel: 'Galerie bearbeiten (Admin)',
     accessBlurbAfterDeine:
-      'Seiten (Galerie für Besucher, Admin zum Bearbeiten) – nicht die allgemeine Lizenz-Übersicht oder die öffentliche Entdeckung.',
+      'Seiten: deine Galerie für Besucher und der Bereich zum Bearbeiten.',
     visitorUrlPrintLabel: 'Galerie (Besucher)',
     loadingLine:
       'Deine persönlichen Links (Galerie + Admin) werden geladen… Das dauert meist ein paar Sekunden, bis die Zahlung am Server eingetroffen ist.',
     adminQrBodyUrlsClause:
       'stehen Galerie- und Admin-Adresse mit; den QR kannst du hier als Bild sichern oder den Link kopieren.',
-    optionalFooterTitle: 'Optional – allgemeine Plattform (nicht deine persönliche Galerie)',
-    entdeckenFooterLabel: 'Öffentliche Galerie-Entdeckung →',
+    optionalFooterTitle: '',
+    entdeckenFooterLabel: '',
     printMissingUrlsHint:
       'Sobald Galerie- und Admin-Adresse oben geladen sind, erscheinen sie in diesem Kasten.',
+    printMissingUrlsStillMissingLine:
+      'Fehlen die Adressen nach einigen Minuten weiterhin, findest du Zugangsdaten oft auch in der Bestätigungs-E-Mail zur Zahlung.',
     screenAdminQrHint:
-      'QR-Code für den Admin: Auf dem Bildschirm oberhalb dieses Kastens unter „Admin-QR fürs Handy“ – dort Link kopieren oder QR-Bild speichern und mit zu deinen Unterlagen legen. Das ist dein persönlicher Zugang nach dem Lizenzkauf (nicht der ök2-Demo-QR).',
-    showOptionalPlatformFooter: true,
+      'Unter „Admin-QR fürs Handy“ (oberhalb dieses Kastens): Link kopieren oder QR-Bild speichern – für deinen dauerhaften Admin-Zugang.',
+    showOptionalPlatformFooter: false,
   }
 }
