@@ -90,6 +90,19 @@ function normalizeApfPageId(page: string | null | undefined): string | null {
   return p
 }
 
+/** Wie TenantContext getDynamicTenantIdFromUrl: Lizenz-Mandant aus ?tenantId= (nicht k2/oeffentlich/vk2). */
+function getLicenseeTenantIdFromParams(params: URLSearchParams): string | null {
+  try {
+    const raw = params.get('tenantId')?.toLowerCase().trim() ?? ''
+    if (!raw || raw.length > 64) return null
+    if (!/^[a-z0-9-]{1,64}$/.test(raw)) return null
+    if (raw === 'k2' || raw === 'oeffentlich' || raw === 'vk2') return null
+    return raw
+  } catch {
+    return null
+  }
+}
+
 const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -453,10 +466,15 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
 
   // Grafiker-Tisch: aktive Seite → iframe-URL (default = aktuelle Seite, nicht immer ök2)
   const getGrafikerUrl = (): string => {
+    const licTid = getLicenseeTenantIdFromParams(searchParams)
     switch (currentPage) {
-      case 'galerie': return PROJECT_ROUTES['k2-galerie'].galerie
+      case 'galerie':
+        return licTid ? `/g/${encodeURIComponent(licTid)}` : PROJECT_ROUTES['k2-galerie'].galerie
+      case 'galerie-vorschau':
+        return licTid
+          ? `/g/${encodeURIComponent(licTid)}?vorschau=1`
+          : PROJECT_ROUTES['k2-galerie'].galerieVorschau
       case 'galerie-oeffentlich': return PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
-      case 'galerie-vorschau': return PROJECT_ROUTES['k2-galerie'].galerieVorschau
       case 'galerie-oeffentlich-vorschau': return PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau
       case 'willkommen': return '/willkommen'
       default: return getPathForPage(currentPage)
@@ -517,10 +535,13 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
     return base.includes('?') ? `${base}&embedded=1` : `${base}?embedded=1`
   }
   const getGrafikerLabel = (): string => {
+    const licTid = getLicenseeTenantIdFromParams(searchParams)
     switch (currentPage) {
-      case 'galerie': return '🏛️ K2 Galerie (echt)'
+      case 'galerie':
+        return licTid ? `🏷️ Lizenz-Galerie (${licTid})` : '🏛️ K2 Galerie (echt)'
       case 'galerie-oeffentlich': return '🖼️ Galerie ök2'
-      case 'galerie-vorschau': return '🎨 Werke-Vorschau K2'
+      case 'galerie-vorschau':
+        return licTid ? `🏷️ Lizenz Werke-Vorschau (${licTid})` : '🎨 Werke-Vorschau K2'
       case 'galerie-oeffentlich-vorschau': return '🎨 Werke-Vorschau ök2'
       case 'willkommen': return '👋 Willkommensseite'
       default: return '🖼️ Galerie'
