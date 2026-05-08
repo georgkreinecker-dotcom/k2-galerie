@@ -18518,8 +18518,36 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       <button 
                         onClick={async () => {
                             if (confirm(`Möchtest du "${artwork.title || artwork.number}" wirklich löschen?`)) {
-                            const artworks = loadArtworks(tenant)
+                            const usesDynBlob = adminUsesDynamicTenantBlob(tenant)
+                            const artworks = usesDynBlob
+                              ? [...(Array.isArray(allArtworksRef.current) ? allArtworksRef.current : [])]
+                              : loadArtworks(tenant)
                             const filtered = artworks.filter((a: any) => a.number !== artwork.number && a.id !== artwork.id)
+                            if (usesDynBlob) {
+                              setAllArtworksSafe(filtered)
+                              window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromLocalWrite: true } }))
+                              try {
+                                const result = await saveDynamicTenantStateToServer({
+                                  silent: true,
+                                  artworks: filtered,
+                                  tenantId: effectiveDynamicTenantId || undefined,
+                                })
+                                if (!result.success) {
+                                  alert(
+                                    '⚠️ In der Liste entfernt – aber der öffentliche Stand wurde nicht aktualisiert.\n\n' +
+                                      'Beim nächsten Laden können die Werke wieder erscheinen. Bitte bei gutem Netz **Veröffentlichen**.\n\n' +
+                                      (result.error ? String(result.error) : '')
+                                  )
+                                }
+                              } catch (e) {
+                                alert(
+                                  '⚠️ In der Liste entfernt – Senden an den Server fehlgeschlagen: ' +
+                                    (e instanceof Error ? e.message : String(e)) +
+                                    '\n\nBitte später **Veröffentlichen**.'
+                                )
+                              }
+                              return
+                            }
                             const saved = await saveArtworks(tenant, filtered)
                             if (saved) {
                               if (tenant.isOeffentlich && filtered.length === 0) {
