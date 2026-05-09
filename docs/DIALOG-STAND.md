@@ -4,7 +4,7 @@
 
 **Einordnung:** Dynamischer Mandant schrieb **`flyerMaster` nie** in den Blob → jeder **`saveDynamicTenantStateToServer`**-POST ließ **`flyerMaster`** weg → öffentlicher Flyer fiel auf Galerie-Fallback. Jetzt: **`readFlyerMasterForPublishByTenantId`** + bei Bedarf **GET gallery-data** zum Erhalten des bestehenden Server-Masters.
 
-**Letzter Stand:** 09.05.26 – **Lizenz-Blob: flyerMaster mitschicken:** **`publishGalleryData.ts`** export **`readFlyerMasterForPublishByTenantId`**; **`ScreenshotExportAdmin`** **`resolveFlyerMasterForDynamicTenantSave`** + **`saveDynamicTenantStateToServer`** hängt **`flyerMaster`** an die Payload (lokal URL wie Veröffentlichen, sonst Server mergen). **`qs:local`** grün. **Commit:** _(nach Push)_ ✅ **main**
+**Letzter Stand:** 09.05.26 – **Lizenz-Blob: flyerMaster mitschicken:** **`publishGalleryData.ts`** export **`readFlyerMasterForPublishByTenantId`**; **`ScreenshotExportAdmin`** **`resolveFlyerMasterForDynamicTenantSave`** + **`saveDynamicTenantStateToServer`** hängt **`flyerMaster`** an die Payload (lokal URL wie Veröffentlichen, sonst Server mergen). **`qs:local`** grün. **Commit:** `443012d4` ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **Flyer: öffentlicher Master links = wie Ableitungen:** **`FlyerEventBogenNeuPage`** – Effect **`fromPublicGalerie` + `publicMasterViewOnly`**: **`applyFromServer` / `applyFromLocal`** setzen **`leftSrc`** über **`resolveFlyerDerivationLeftFromMasterPersistGallery`** + **`flyerStorageKey`**; Dependency ergänzt. **`build:vercel`** + **`test:changed`** grün. **Commit:** _(vorheriger Push)_ ✅ **main**
 
