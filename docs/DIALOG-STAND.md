@@ -1,10 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Lizenz-Admin **„Werke verwalten“** zeigt Produkt-Werke mit mehrdeutiger Kategorie (z. B. **Möbel**) wieder, wenn die **Stammdaten-Sparte** (z. B. **Design**) passt – **`getEffectiveDirectionFromWork`** + Aufrufer; Tests **`getEffectiveDirectionFromWork.test.ts`**.
+**Was wir JETZT tun:** Stand sichern nach **Master-Flyer-Farben** (Lizenz-Mandant = gleiche Quelle wie Homepage-Vorschau).
 
-**Einordnung:** Öffentliche **`/g/…`** listet alle Werke ohne Sparten-Filter; Admin filterte nach **`getEffectiveDirectionFromWork`** vs. **`focusDirections[0]`** – bei **moebel** / **accessoires** / **sonstiges_produkt** gewann fälschlich **Handwerk** statt **Design**.
+**Einordnung:** **`FlyerEventBogenNeuPage`** lud Design nur aus **K2/ök2/VK2**-Keys – nicht aus **`k2-<mandant>-design-settings`** / Server-**`designSettings`**.
 
-**Letzter Stand:** 09.05.26 – **Lizenz „Werke verwalten“ leer trotz Galerie:** **`tenantConfig.getEffectiveDirectionFromWork(work, tenantPrimaryFocus?)`** bei mehrdeutigen Produkt-Kategorien; **`ScreenshotExportAdmin`** + **`WerkkatalogTab`** übergeben **`galleryData.focusDirections[0]`** / **`oek2SparteId`**; Bearbeiten setzt **`artworkDirection`** für Lizenz-Mandant. **qs:local** grün. **Commit:** _(nach Push)_ ✅ **main**
+**Letzter Stand:** 09.05.26 – **Master-Flyer übernimmt Homepage-Farben (Lizenz):** **`FlyerEventBogenNeuPage`** – `loadHomepageDesignForFlyer(..., dynamicTenantId)` liest **`k2-<tenant>-design-settings`**; Merge **`gallery-data.designSettings`** + localStorage (wie **`GalerieTenantPage`**); **`storage`**-Listener ergänzt **`…-design-settings`**. **qs:local** grün. **Commit:** _(nach Push)_ ✅ **main**
+
+**Letzter Stand:** 09.05.26 – **Lizenz „Werke verwalten“ leer trotz Galerie:** **`tenantConfig.getEffectiveDirectionFromWork(work, tenantPrimaryFocus?)`** bei mehrdeutigen Produkt-Kategorien; **`ScreenshotExportAdmin`** + **`WerkkatalogTab`** übergeben **`galleryData.focusDirections[0]`** / **`oek2SparteId`**; Bearbeiten setzt **`artworkDirection`** für Lizenz-Mandant. **qs:local** grün. **Commit:** `f733dcb0` ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **Lizenz `/g/…` ohne Admin für Besucher:** **`GalerieTenantPage`** – **`hideAdminEntry`** nur wenn **`showLicenseeAdminInHeader`** (Vorschau/Live-Overlay, embedded, `fromAdmin` + Session wie K2, PWA standalone); **`useLayoutEffect`** setzt **`k2-galerie-from-admin`**. Test in **`licensee-release-gate.test.ts`**. **Commit:** `9c36bd33` ✅ **main**
 

@@ -55,16 +55,44 @@ function flyerDesignStorageKey(isOeffentlich: boolean, isVk2: boolean): string {
   return 'k2-design-settings'
 }
 
-function loadHomepageDesignForFlyer(isOeffentlich: boolean, isVk2: boolean): HomepageDesign | null {
-  if (typeof window === 'undefined') return null
+/** Wie GalerieTenantPage: Server-Stand + nicht-leere lokale Werte (Live-Vorschau / gleicher Tab). */
+function mergeFlyerDesignServerWithLocal(
+  server: Record<string, string> | undefined,
+  local: HomepageDesign | null | undefined,
+): HomepageDesign | null {
+  const base = server && typeof server === 'object' ? { ...server } : {}
+  if (!local || typeof local !== 'object') {
+    return Object.keys(base).length > 0 ? (base as HomepageDesign) : null
+  }
+  const out = { ...base } as Record<string, string>
+  for (const [k, v] of Object.entries(local)) {
+    if (v !== undefined && v !== null && String(v).trim() !== '') {
+      out[k] = v
+    }
+  }
+  return Object.keys(out).length > 0 ? (out as HomepageDesign) : null
+}
+
+function parseHomepageDesignRaw(raw: string | null): HomepageDesign | null {
+  if (!raw) return null
   try {
-    const raw = localStorage.getItem(flyerDesignStorageKey(isOeffentlich, isVk2))
-    if (!raw) return null
     const o = JSON.parse(raw) as HomepageDesign
     return o && typeof o === 'object' ? o : null
   } catch {
     return null
   }
+}
+
+function loadHomepageDesignForFlyer(
+  isOeffentlich: boolean,
+  isVk2: boolean,
+  dynamicTenantId?: string,
+): HomepageDesign | null {
+  if (typeof window === 'undefined') return null
+  const key = dynamicTenantId
+    ? dynamicTenantStorageKey(dynamicTenantId, 'design-settings')
+    : flyerDesignStorageKey(isOeffentlich, isVk2)
+  return parseHomepageDesignRaw(localStorage.getItem(key))
 }
 
 function readStorageObject(key: string): Record<string, unknown> {
@@ -625,10 +653,15 @@ export default function FlyerEventBogenNeuPage() {
       .catch(() => setDynamicServerPayload(null))
     return () => controller.abort()
   }, [effectiveDynamicTenantId, flyerDataTick])
-  const homepageDesignForFlyer = useMemo(
-    () => loadHomepageDesignForFlyer(isOeffentlich, isVk2),
-    [isOeffentlich, isVk2, flyerDataTick],
-  )
+  const homepageDesignForFlyer = useMemo(() => {
+    const local = loadHomepageDesignForFlyer(isOeffentlich, isVk2, effectiveDynamicTenantId || undefined)
+    if (!effectiveDynamicTenantId) return local
+    const server = dynamicServerPayload?.designSettings
+    if (server && typeof server === 'object') {
+      return mergeFlyerDesignServerWithLocal(server as Record<string, string>, local || undefined) ?? local
+    }
+    return local
+  }, [isOeffentlich, isVk2, effectiveDynamicTenantId, flyerDataTick, dynamicServerPayload])
   const flyerTheme = useMemo(() => buildFlyerThemeInject(homepageDesignForFlyer), [homepageDesignForFlyer])
   const base = useMemo(() => {
     if (effectiveDynamicTenantId) {
@@ -1485,7 +1518,8 @@ export default function FlyerEventBogenNeuPage() {
           e.key === `${prefix}stammdaten-martina` ||
           e.key === `${prefix}stammdaten-georg` ||
           e.key === `${prefix}page-texts` ||
-          e.key === `${prefix}page-content-galerie`
+          e.key === `${prefix}page-content-galerie` ||
+          e.key === `${prefix}design-settings`
         ) {
           bump()
         }
