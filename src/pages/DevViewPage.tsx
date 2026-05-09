@@ -44,8 +44,6 @@ import { BUILD_TIMESTAMP } from '../buildInfo.generated'
 import { getPageContentGalerie } from '../config/pageContentGalerie'
 import { loadEvents } from '../utils/eventsStorage'
 import { loadDocuments } from '../utils/documentsStorage'
-import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
-import { resolveKreineckerPresentationTenantIdFromEnv } from '../data/k2FamilieKreineckerStammbaumQuelle'
 
 /** In Cursor Preview (iframe): Admin nicht laden – nur Hinweis (Code-5-Vermeidung). */
 function AdminPreviewPlaceholder() {
@@ -511,12 +509,6 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       case 'produkt-vorschau': return PROJECT_ROUTES['k2-galerie'].produktVorschau
       case 'platzanordnung': return PROJECT_ROUTES['k2-galerie'].platzanordnung
       case 'k2-familie': return '/familie'
-      case 'k2-familie-muster-huber':
-        return `/familie?t=${encodeURIComponent(FAMILIE_HUBER_TENANT_ID)}`
-      case 'k2-familie-stamm-kreinecker': {
-        const kreineckerTid = resolveKreineckerPresentationTenantIdFromEnv()
-        return kreineckerTid ? `/familie?t=${encodeURIComponent(kreineckerTid)}` : '/familie'
-      }
       case 'uebersicht': return PROJECT_ROUTES['k2-galerie'].uebersicht
       case 'lizenzen': return `${PROJECT_ROUTES['k2-galerie'].licences}#testpilot-einladen`
       case 'notizen': return PROJECT_ROUTES['k2-galerie'].notizen
@@ -1139,8 +1131,6 @@ end tell`
     { id: 'k2-familie-praesentationsmappe-kunde', name: 'K2 Familie – Präsentationsmappe (Kunde)', component: K2FamiliePraesentationsmappeKundePage },
     { id: 'k2-familie-praesentationsmappe', name: 'K2 Familie – Vertriebsunterlagen', component: K2FamiliePraesentationsmappePage },
     { id: 'k2-familie', name: 'K2 Familie', component: () => <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--k2-muted)' }}>K2 Familie – im APf-Desktop im Browser</div> },
-    { id: 'k2-familie-muster-huber', name: 'K2 Familie – Musterfamilie Huber', component: () => <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--k2-muted)' }}>K2 Familie – im APf-Desktop im Browser</div> },
-    { id: 'k2-familie-stamm-kreinecker', name: 'K2 Familie – Stammfamilie Kreinecker', component: () => <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--k2-muted)' }}>K2 Familie – im APf-Desktop im Browser</div> },
   ]
 
   // Auf Mobile: "Plattform Start" Tab ausblenden (nur für Mac)

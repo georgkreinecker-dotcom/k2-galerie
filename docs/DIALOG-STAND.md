@@ -1,10 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** APf im Browser: Mappe **K2 Familie** im Smart Panel – **Musterfamilie Huber** und **Stammfamilie Kreinecker** antippen; iframe soll **`/familie?t=…`** laden. Parallel weiter: Lizenz-Kunde Domain (**`docs/LIZENZ-KUNDE-DOMAIN-KARTEIKARTE.md`**) wenn aktiv.
+**Was wir JETZT tun:** Georg arbeitet weiter bei **Lizenz / ök2** (Flyer, Mandanten, Handbuch) – **keine** unaufgeforderten Smart-Panel-/APf-Zusätze mit Huber-Schnellwahl. K2 Familie im Panel wieder wie vorher: **Zur Startseite**, Handbuch, Doku.
 
-**Einordnung:** K2 Familie = sensible Daten → **`PlatformOnlyRoute`** wie ök2/VK2; Doku **`SICHERHEIT-LIZENZNEHMER-KEIN-OEK2-VK2.md`** + **`K2-FAMILIE-LEHREN`** §0c.
+**Einordnung:** Die Schnelllinks **Musterfamilie Huber** im Smart Panel waren für Georg falsch priorisiert (**Kreinecker** sollte nicht durch Huber verdrängt werden). Ursache: wir hatten **SmartPanel + DevView** ergänzt, obwohl der Fokus nur Lizenz/ök2 war → **Revert**.
 
-**Letzter Stand:** 09.05.26 – **Smart Panel K2 Familie: zwei fehlende Schnelllinks:** Unter Mappe **K2 Familie** jetzt **Musterfamilie Huber** (`onNavigate` **`k2-familie-muster-huber`** → **`/familie?t=huber`**) und **Stammfamilie Kreinecker** (**`k2-familie-stamm-kreinecker`** → **`resolveKreineckerPresentationTenantIdFromEnv()`**, sonst **`/familie`**). **`DevViewPage`:** **`getPathForPage`** + **`allPages`**-Einträge für iframe/Vollbild. **`qs:local`** grün. **Commit:** _(nach Push)_ ✅ **main**
+**Letzter Stand:** 09.05.26 – **Revert Smart Panel / DevView (Huber-Schnelllinks):** **`SmartPanel.tsx`** und **`DevViewPage.tsx`** wieder ohne **`k2-familie-muster-huber`** / **`k2-familie-stamm-kreinecker`**. Georg: falsche Familie = Folge der Huber-Vordergrund-Taste, nicht der Lizenz-Arbeit. **`qs:local`** grün. **Commit:** `663347a2` ✅ **main**
+
+**Letzter Stand:** 09.05.26 – **Smart Panel K2 Familie: zwei fehlende Schnelllinks** _(zurückgenommen – siehe Revert oben)._ ~~Unter Mappe **K2 Familie** …~~ **Commit:** `5633f156` (überholt)
 
 **Letzter Stand:** 09.05.26 – **K2 Familie APf: Musterfamilie Huber + Kreinecker-Stamm:** **`isK2FamilieApfArbeitsplattform`** (localhost oder **`isPlatformInstance`**); **`ensureFamilieHuberInTenantListForPicker`**; **`FamilieApfMeineFamilieSync`**; Toolbar (**`K2FamilieLayout`**) nicht mehr nur auf einen Stamm-Mandanten reduziert; **`K2FamilieHomePage`** Musterfamilie-Karte auch bei aktiver **`familie-*`** wenn Huber fehlt. **`tsc:build`** grün. **Commit:** `43c36016` ✅ **main**
 
