@@ -2212,45 +2212,7 @@ end tell`
         >
           {panelMinimized ? '▶' : '◀'}
         </button>
-        
-        {/* Button außerhalb des Panels wenn minimiert - IMMER sichtbar */}
-        {panelMinimized && (
-          <button
-            onClick={() => setPanelMinimized(false)}
-            style={{
-              position: 'fixed',
-              top: '1rem',
-              left: '1rem',
-              padding: '0.5rem 0.75rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-              background: 'rgba(255, 140, 66, 0.2)',
-              border: '2px solid rgba(255, 140, 66, 0.4)',
-              borderRadius: '12px',
-              color: 'var(--k2-accent)',
-              cursor: 'pointer',
-              fontSize: '0.9rem',
-              fontWeight: 600,
-              zIndex: 10003,
-              boxShadow: '0 4px 12px rgba(255, 140, 66, 0.3)',
-              transition: 'all 0.2s ease',
-              fontFamily: 'inherit'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 140, 66, 0.3)'
-              e.currentTarget.style.transform = 'scale(1.05)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 140, 66, 0.2)'
-              e.currentTarget.style.transform = 'scale(1)'
-            }}
-            title="Smart Panel einblenden"
-          >
-            <span>▶</span><span>Panel</span>
-          </button>
-        )}
-        
+
         {/* Smart Panel Content */}
         {!panelMinimized && (
           <>
@@ -2292,6 +2254,46 @@ end tell`
           </>
         )}
       </div>
+
+      {/* Nicht im gleichen Block wie backdropFilter: sonst ist fixed relativ zum Panel → bei left:-420px unsichtbar (Georg: Panel „weg“). */}
+      {panelMinimized && (
+        <button
+          type="button"
+          onClick={() => setPanelMinimized(false)}
+          style={{
+            position: 'fixed',
+            top: '1rem',
+            left: '1rem',
+            padding: '0.5rem 0.75rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.35rem',
+            background: 'rgba(255, 140, 66, 0.2)',
+            border: '2px solid rgba(255, 140, 66, 0.4)',
+            borderRadius: '12px',
+            color: 'var(--k2-accent)',
+            cursor: 'pointer',
+            fontSize: '0.9rem',
+            fontWeight: 600,
+            zIndex: 10005,
+            boxShadow: '0 4px 12px rgba(255, 140, 66, 0.3)',
+            transition: 'all 0.2s ease',
+            fontFamily: 'inherit',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 140, 66, 0.3)'
+            e.currentTarget.style.transform = 'scale(1.05)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 140, 66, 0.2)'
+            e.currentTarget.style.transform = 'scale(1)'
+          }}
+          title="Smart Panel einblenden"
+        >
+          <span>▶</span>
+          <span>Panel</span>
+        </button>
+      )}
 
       {/* ── GRAFIKER-TISCH – rechtes Panel, kontextsensitiv ── */}
       {grafikerTischOpen && (
