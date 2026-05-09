@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from 'react'
 import { createPortal, flushSync } from 'react-dom'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useTenant, resolveDynamicTenantIdFromLocation } from '../src/context/TenantContext'
@@ -4852,24 +4852,33 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     localStorage.setItem(key, JSON.stringify(cfg))
   }
 
+  /** Lizenz-Mandant: sofortiger Snapshot für iframe Live-Template (gleicher localStorage wie /g/:tenantId?liveTemplate=1). */
+  const syncLiveTemplatePreviewLocal = React.useCallback(() => {
+    const tid = effectiveDynamicTenantId
+    if (!tid || !isSafeDynamicTenantSaveId(tid)) return
+    try {
+      localStorage.setItem(
+        `k2-live-template-preview-${tid}`,
+        JSON.stringify({
+          tenantId: tid,
+          pageTexts,
+          pageContentGalerie: pageContent,
+          designSettings,
+          gallery: galleryData,
+          ts: Date.now(),
+        }),
+      )
+    } catch (_) {
+      /* Quota u. ä. – Vorschau bleibt ggf. einen Tick alt */
+    }
+  }, [effectiveDynamicTenantId, pageTexts, pageContent, designSettings, galleryData])
+
   /** Speichert alle aktuellen Admin-Daten in localStorage (K2/ök2/VK2-Key), damit „Seiten prüfen“ die neuesten Änderungen anzeigt. Design wird hier nicht mitgeschrieben – nur über „Speichern“ im Design-Tab. Sportwagenmodus: ImageStore. */
   const saveAllForVorschau = () => {
     const run = async () => {
       try {
         if (effectiveDynamicTenantId) {
-          try {
-            localStorage.setItem(
-              `k2-live-template-preview-${effectiveDynamicTenantId}`,
-              JSON.stringify({
-                tenantId: effectiveDynamicTenantId,
-                pageTexts,
-                pageContentGalerie: pageContent,
-                designSettings,
-                gallery: galleryData,
-                ts: Date.now(),
-              }),
-            )
-          } catch (_) {}
+          syncLiveTemplatePreviewLocal()
           await saveDynamicTenantStateToServer({ silent: true, tenantId: effectiveDynamicTenantId })
           return
         }
@@ -4894,15 +4903,27 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     void run()
   }
 
-  // Im Design-Modal stets die echte Frontseiten-Struktur spiegeln (Live-Template)
+  // Live-Template iframe liest sofort aus localStorage (Polling im Mandanten-Template); ohne Verzögerung sonst Text/Bilder ≠ Eingaben.
+  useLayoutEffect(() => {
+    if (activeTab !== 'design') return
+    if (!effectiveDynamicTenantId) return
+    syncLiveTemplatePreviewLocal()
+  }, [activeTab, effectiveDynamicTenantId, syncLiveTemplatePreviewLocal])
+
   useEffect(() => {
     if (activeTab !== 'design') return
+    setDesignLivePreviewVersion((v) => v + 1)
+  }, [activeTab, designSubTab])
+
+  // K2 / ök2 / VK2: weiterhin voller Vorschau-Speicherpfad mit kurzer Entprellung
+  useEffect(() => {
+    if (activeTab !== 'design') return
+    if (effectiveDynamicTenantId) return
     const t = setTimeout(() => {
       saveAllForVorschau()
-      setDesignLivePreviewVersion((v) => v + 1)
     }, 220)
     return () => clearTimeout(t)
-  }, [activeTab, designSubTab, pageTexts, pageContent, designSettings, galleryData?.name])
+  }, [activeTab, designSubTab, pageTexts, pageContent, designSettings, galleryData?.name, effectiveDynamicTenantId])
 
   // Auch in Presse/Social/Newsletter-Redaktion dieselbe Frontseite live spiegeln
   useEffect(() => {
@@ -5053,6 +5074,17 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     const hint = result.hint && String(result.hint).trim()
     return { success: false, error: hint ? `${err}\n\n${hint}` : err }
   }
+
+  // Mandanten-Design: Server-Stand debounced mitschreiben (nach Definition von saveDynamicTenantStateToServer).
+  useEffect(() => {
+    if (activeTab !== 'design') return
+    if (!effectiveDynamicTenantId) return
+    const tid = effectiveDynamicTenantId
+    const t = window.setTimeout(() => {
+      void saveDynamicTenantStateToServer({ silent: true, tenantId: tid })
+    }, 650)
+    return () => window.clearTimeout(t)
+  }, [activeTab, effectiveDynamicTenantId, pageTexts, pageContent, designSettings, galleryData])
 
   const saveDynamicTenantStateToServerRef = React.useRef(saveDynamicTenantStateToServer)
   saveDynamicTenantStateToServerRef.current = saveDynamicTenantStateToServer

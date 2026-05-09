@@ -172,9 +172,9 @@ export default function GalerieTenantPage() {
       }
     }
     tick()
-    const id = window.setInterval(tick, 450)
+    const id = window.setInterval(tick, liveTemplateMode ? 200 : 450)
     return () => window.clearInterval(id)
-  }, [useLiveOverlay, tenantId])
+  }, [useLiveOverlay, tenantId, liveTemplateMode])
 
   const liveTemplateOverlay = useMemo(() => {
     if (!useLiveOverlay || !tenantId || typeof window === 'undefined') return null
@@ -236,9 +236,17 @@ export default function GalerieTenantPage() {
   const galleryStamm = (liveTemplateOverlay?.gallery && typeof liveTemplateOverlay.gallery === 'object')
     ? liveTemplateOverlay.gallery
     : ((data?.gallery && typeof data.gallery === 'object') ? data.gallery as Record<string, unknown> : {})
-  const effectiveGalerieTexts = (liveTemplateOverlay?.pageTexts?.galerie && typeof liveTemplateOverlay.pageTexts.galerie === 'object')
-    ? liveTemplateOverlay.pageTexts.galerie
-    : data?.pageTexts?.galerie
+  /** Server-Texte + Live-Overlay-Zweig: Overlay-Felder überschreiben (kein „entweder Server oder Preview“). */
+  const effectiveGalerieTexts = (() => {
+    const serverGalerie =
+      data?.pageTexts?.galerie && typeof data.pageTexts.galerie === 'object'
+        ? data.pageTexts.galerie
+        : {}
+    if (!liveTemplateOverlay) return serverGalerie
+    const og = liveTemplateOverlay.pageTexts?.galerie
+    if (og && typeof og === 'object') return { ...serverGalerie, ...og }
+    return serverGalerie
+  })()
   const rawTitle = effectiveGalerieTexts?.heroTitle?.trim() || ''
   const rawSubtext = effectiveGalerieTexts?.welcomeSubtext?.trim() || ''
   const rawIntro = effectiveGalerieTexts?.welcomeIntroText?.trim() || ''
