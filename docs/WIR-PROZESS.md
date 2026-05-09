@@ -280,6 +280,8 @@ Wenn nein: wir lassen es.
 
 ---
 
+**Session-Reflexion (09.05.26, Abend):** K2-Familie-Lizenz: Name aus Stripe (**`customerName`** / **`customer_details.name`**) kommt als **`fn`** in Galerie- und Session-Links → **`familyDisplayName`** und ohne eigene Seitentexte sofort **`welcomeTitle`** beim Gestalten; Webhook + **`get-licence-by-session`** + Erfolgsseite abgesichert.
+
 **Session-Reflexion (09.05.26):** Lizenz-Mandant: **`saveDynamicTenantStateToServer`** hatte **`flyerMaster` nie im JSON** – jeder Sync hat den Blob ohne Master-Bild überschrieben → öffentlicher Event-Flyer fiel auf Willkommens-Fallback; Fix = gleiche Leselogik wie Veröffentlichen + Server-Erhalt.
 
 **Session-Reflexion (06.05.26):** K2 Familie = **kein** Empfehlungsprogramm (nicht nur UI): Checkout/Webhook/Verlängerung ignorieren `empfehlerId` bei Familie-Lizenzen. Georg kann schließen ohne offenen lokalen Stand – Rest mit `qs:local` + Push.
