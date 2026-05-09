@@ -4,6 +4,8 @@
 
 **Einordnung:** Produkt-Footer bleibt mit **Copyright** (tenantConfig); ohne „App verlassen“.
 
+**Letzter Stand:** 09.05.26 – **K2 Familie Top-Nav: erste Pille war fest „Familie Kreinecker“** auf Start + Unterseiten (nicht aus `familyDisplayName`). Jetzt **`FamilieNav`** → **`getFamilieTenantDisplayName`** + **`familieStorageRevision`** (wie nach Speichern erwartet). **Commit:** `3393e539` ✅ **main**
+
 **Letzter Stand:** 09.05.26 – **K2 Familie: Huber-Demo nur bei Huber-Tenant + korrekter Familienname:** **`isFamilieHuberNurMusterBesuch`** – Toolbar/Rundgang/Leitfaden, **`FamilieNav`** (volle Muster-Leiste, erste Pille **`getFamilieTenantDisplayName(currentTenantId)`**), **`FamilieLayoutInner`** (Shell **`--nur-muster`**, Leitstruktur, Demo-Hints), **`FamilieRolleLeisteHaupt/Kompakt`** – alles an **`currentTenantId === huber`** + Nur-Muster-Session gekoppelt (nicht mehr nur Session-Flag). Mit **`getFamilieTenantDisplayName`** (Plattform Kreinecker), **`pageTextsFamilie`** (Huber-Intro unter fremder tenantId zurücksetzen), **`K2FamilieEinstiegPage`** (Lesetext auf hellem Grund dunkel). **`qs:local`** grün. **Commit:** `994ce606` ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **Footer „App verlassen“ entfernt:** Komponente **`AppVerlassenFooterLink`** gelöscht; Aufrufe aus **`GaleriePage`**, **`GalerieVorschauPage`**, **`Vk2GaleriePage`**, **`Vk2GalerieVorschauPage`**, **`K2FamilieLayout`** entfernt. **`qs:local`** grün. **Commit:** `b500e505` ✅ **main**
