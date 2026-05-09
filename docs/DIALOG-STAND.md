@@ -4,7 +4,7 @@
 
 **Einordnung:** K2 Familie = sensible Daten → **`PlatformOnlyRoute`** wie ök2/VK2; Doku **`SICHERHEIT-LIZENZNEHMER-KEIN-OEK2-VK2.md`** + **`K2-FAMILIE-LEHREN`** §0c.
 
-**Letzter Stand:** 09.05.26 – **K2 Familie nur Plattform-Host:** **`App.tsx`** – **`/familie`**, **`/projects/k2-familie/*`**, Willkommen, **`/k2-familie-handbuch`** mit **`PlatformOnlyRoute`**; Regel + Doku + Lehren-Doku + Test **`platformOnlyRouteLicensee.test.ts`**. **qs:local** grün (ohne Build-Info-Commit). **Commit:** `6e805dca` ✅ **main**
+**Letzter Stand:** 09.05.26 – **K2 Familie nur Plattform-Host:** **`App.tsx`** – **`/familie`**, **`/projects/k2-familie/*`**, Willkommen, **`/k2-familie-handbuch`** mit **`PlatformOnlyRoute`**; Regel + Doku + Lehren-Doku + Test **`platformOnlyRouteLicensee.test.ts`**. **qs:local** grün (ohne Build-Info-Commit). **Commit:** `92c1dce7` ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **Lizenz-Kunde Domain-Karteikarte:** **`docs/LIZENZ-KUNDE-DOMAIN-KARTEIKARTE.md`** (Pilot Eferding-Muster, leere Vorlage, Vercel/Supabase Copy-Paste); Verweise in **`SICHERHEIT-LIZENZNEHMER-KEIN-OEK2-VK2.md`**, **`k2team-handbuch/25`**, **`00-INDEX`** (docs + Handbuch). **`test:changed`** grün. **Commit:** `5e8835ce` ✅ **main**
 
