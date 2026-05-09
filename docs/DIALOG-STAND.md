@@ -1,8 +1,8 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **Verifikation erledigt** (Georg: alles ok auf Vercel). Nächster inhaltlicher Schritt: **von Georg** (oder Ruhe – nichts Offenes aus dieser Baustelle).
+**Was wir JETZT tun:** Nach Push: Lizenz-**`/g/…`** – **Galerie schließen** und **Gefällt** kurz prüfen (Kontrast gegen dunkles Design).
 
-**Einordnung:** Lizenz-**`/g/…`** Shop, Preise, Werk-Link – bestätigt live nach **`9748da1c`**. Sportwagenmodus: ein Preis-Parser, eine Shop-Seite.
+**Einordnung:** **`TenantHomepageTemplate`:** Chips nicht mehr **`#fff` + `liveText`** (bei hellem Text auf dunklem Theme unleserlich); gleiche Logik wie **„Erwerben“** (**`liveSectionBg`**).
 
 **Letzter Stand:** 09.05.26 – **Vercel bestätigt:** Georg meldet **funktioniert** (Lizenz-Galerie Shop/Preis/Werk-URL). **Commit-Stand Feature:** `9748da1c` ✅ **main**
 

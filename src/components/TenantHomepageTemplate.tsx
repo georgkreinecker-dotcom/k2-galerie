@@ -411,7 +411,18 @@ export function TenantHomepageTemplate(props: TenantHomepageTemplateProps) {
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.7rem', flexWrap: 'wrap', marginBottom: '0.7rem' }}>
             <h3 style={{ margin: 0, fontSize: '1.1rem', color: props.liveText }}>{galleryPageTitle}</h3>
-            <Link to={props.galleryCloseUrl || props.shareUrl} style={{ border: TEMPLATE.chipBorder, borderRadius: 999, padding: '0.35rem 0.75rem', textDecoration: 'none', color: props.liveText, background: '#fff' }}>
+            <Link
+              to={props.galleryCloseUrl || props.shareUrl}
+              style={{
+                border: `1px solid ${props.liveAccent}66`,
+                borderRadius: 999,
+                padding: '0.35rem 0.75rem',
+                textDecoration: 'none',
+                color: props.liveText,
+                background: props.liveSectionBg,
+                fontWeight: 600,
+              }}
+            >
               Galerie schließen
             </Link>
           </div>
@@ -431,7 +442,7 @@ export function TenantHomepageTemplate(props: TenantHomepageTemplateProps) {
                         border: selectedArea === area ? `1px solid ${props.liveAccent}` : TEMPLATE.chipBorder,
                         borderRadius: 999,
                         padding: '0.34rem 0.7rem',
-                        background: selectedArea === area ? `${props.liveAccent}18` : '#fff',
+                        background: selectedArea === area ? `${props.liveAccent}18` : props.liveSectionBg,
                         color: selectedArea === area ? props.liveText : props.liveMuted,
                         fontSize: '0.8rem',
                         fontWeight: 600,
@@ -500,7 +511,7 @@ export function TenantHomepageTemplate(props: TenantHomepageTemplateProps) {
                         borderRadius: 999,
                         padding: '0.34rem 0.8rem',
                         color: selectedIsLiked ? '#fff' : props.liveText,
-                        background: selectedIsLiked ? props.liveAccent : '#fff',
+                        background: selectedIsLiked ? props.liveAccent : props.liveSectionBg,
                         fontSize: '0.8rem',
                         fontWeight: 700,
                         cursor: 'pointer',
@@ -654,7 +665,23 @@ export function TenantHomepageTemplate(props: TenantHomepageTemplateProps) {
             <div style={{ display: 'flex', gap: '0.55rem', flexWrap: 'wrap' }}>
               {socialLinks.map((link) => (
                 link.url ? (
-                  <a key={link.label} href={link.url} target="_blank" rel="noopener noreferrer" style={{ border: TEMPLATE.chipBorder, borderRadius: 999, padding: '0.35rem 0.75rem', textDecoration: 'none', color: props.liveText, background: '#fff' }}>{link.label}</a>
+                  <a
+                    key={link.label}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      border: `1px solid ${props.liveAccent}66`,
+                      borderRadius: 999,
+                      padding: '0.35rem 0.75rem',
+                      textDecoration: 'none',
+                      color: props.liveText,
+                      background: props.liveSectionBg,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {link.label}
+                  </a>
                 ) : (
                   <span key={link.label} style={{ border: TEMPLATE.chipBorder, borderRadius: 999, padding: '0.35rem 0.75rem', color: props.liveMuted, background: 'rgba(255,255,255,0.05)' }}>{link.label} (Muster)</span>
                 )
