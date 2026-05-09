@@ -1,8 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nach **Vercel Ready:** Lizenz-Admin **`/admin?tenantId=yogawerkstatt`** (o. ä.) – **Werk löschen** testen; öffentliche **`/g/…`** muss weniger Werke zeigen (Blob sofort mitgeschrieben).
+**Was wir JETZT tun:** In **Safari/Chrome** (normaler Tab, nicht Vercel-iframe): **`https://k2-galerie.vercel.app`** – nach **Deployment Ready** Lizenz-**`/g/…`**: Preise, Shop, **`?werk=`** / Reservieren, Kassa/Bon testen.
 
-**Einordnung:** **Mandanten-Werke** leben nur im **Server-Blob** (`gallery-data-<id>.json`). **Löschen** muss aus **`allArtworks`** gehen und **`saveDynamicTenantStateToServer`** aufrufen – nicht aus leerem **`loadArtworks`** (war ein Loch). K2 / ök2 / VK2 unverändert.
+**Einordnung:** **Shop/Preis** für Lizenz-Mandanten nutzt **`parseArtworkPriceEurFromWork`** wie der gemeinsame Standard; **`TenantHomepageTemplate`** + **`ShopPage`**; Regel **vor-commit-umsetzung-pruefen** (lokal sichtbar → Build → Push → Vercel-Tab). K2 echte Galerie-Logik unverändert.
+
+**Letzter Stand:** 09.05.26 – **Lizenz-Galerie Shop/Preis wie Standard:** **`parseArtworkPriceEur.ts`** (Felder price/vk/preis/verkaufspreis); **`TenantHomepageTemplate`** (Anzeige, Warenkorb, Shop-Navigation, `?werk=`); **`ShopPage`** überall **`parseArtworkPriceEurFromWork`** + URL-**`werk=`** / Hash / Cleanup; Regeln **mac-lokal-zuerst-speedmodus**, **vor-commit-umsetzung-pruefen**; Build-Infos. **`npm run build`** grün. **Commit:** `9748da1c` ✅ **main**
 
 **Letzter Stand:** 08.05.26 – **Lizenz-Erfolg: nur kundennahe Texte (Galerie-Lizenz):** Keine **Stripe-Session-ID** auf der Bestätigung; stattdessen Hinweis auf **Zahlungs-E-Mail**. **Optionaler Plattform-Footer** (Lizenzen kgM / Entdecken) für **`k2_galerie` aus**; **VK2**-Blurb ohne **ök2**-Vergleich; Admin-QR-Intro ohne **Demo**-Bezug; Druck-Hinweis bei fehlenden URLs ohne **Webhook/Vercel**-Jargon (**`printMissingUrlsStillMissingLine`** in **`lizenzErfolgCopy.ts`**). **qs:local** grün. **Commit:** `1c9b1b23` ✅ **main**
 
