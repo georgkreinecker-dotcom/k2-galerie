@@ -330,11 +330,31 @@ async function compressLeftSrcForFlyerStorage(leftSrc: string, mode: FlyerLeftCo
   }
 }
 
+/** Links Flyer-Hauptbild: Mandanten-Homepage nutzt Willkommen als Hero → dort Willkommen zuerst; K2-Standard bleibt Galerie-Karte zuerst. */
+function flyerLeftSrcDefaultFromGalleryFields(
+  welcome: string,
+  card: string,
+  fb: string,
+  welcomeFirst: boolean,
+): string {
+  const w = String(welcome || '').trim()
+  const c = String(card || '').trim()
+  return welcomeFirst ? w || c || fb : c || w || fb
+}
+
+function flyerLeftSrcDefaultFromGi(
+  gi: { galerieCardImage?: string; welcomeImage?: string },
+  fb: string,
+  welcomeFirst: boolean,
+): string {
+  return flyerLeftSrcDefaultFromGalleryFields(gi.welcomeImage || '', gi.galerieCardImage || '', fb, welcomeFirst)
+}
+
 function galleryFallbackImagePath(isOeffentlich: boolean, isVk2: boolean, dynamicTenantId?: string): string {
   if (dynamicTenantId) {
     const g = loadDynamicTenantGallery(dynamicTenantId)
     const gi = getGalerieImages(g)
-    return gi.galerieCardImage || gi.welcomeImage || FLYER_DUMMY_BILD_OEK2_VK2
+    return flyerLeftSrcDefaultFromGi(gi, FLYER_DUMMY_BILD_OEK2_VK2, true)
   }
   if (isOeffentlich || isVk2) return flyerImageFallbackPath(isOeffentlich, isVk2)
   const g = loadStammdaten('k2', 'gallery')
@@ -740,8 +760,8 @@ export default function FlyerEventBogenNeuPage() {
     }
     return getGalerieImages(gallery, isOeffentlich ? 'oeffentlich' : undefined)
   }, [isVk2, isOeffentlich, gallery, flyerDataTick])
-  const defaultLeft =
-    galerieImages.galerieCardImage || galerieImages.welcomeImage || flyerImgFallback
+  const flyerLeftWelcomeFirst = !!effectiveDynamicTenantId
+  const defaultLeft = flyerLeftSrcDefaultFromGi(galerieImages, flyerImgFallback, flyerLeftWelcomeFirst)
   const defaultMiddle = galerieImages.welcomeImage || flyerImgFallback
   const defaultRight = galerieImages.virtualTourImage || galerieImages.welcomeImage || flyerImgFallback
 
@@ -762,7 +782,7 @@ export default function FlyerEventBogenNeuPage() {
     if (effectiveDynamicTenantId) {
       const g = loadDynamicTenantGallery(effectiveDynamicTenantId)
       const gi = getGalerieImages(g)
-      return gi.galerieCardImage || gi.welcomeImage || fb
+      return flyerLeftSrcDefaultFromGi(gi, fb, true)
     }
     const g = loadStammdaten('k2', 'gallery')
     const gi = getGalerieImages(g)
@@ -935,12 +955,12 @@ export default function FlyerEventBogenNeuPage() {
       const masterLabel = String(flyerMaster?.leftWerkLabel || '').trim()
 
       if (!active) return
-      // Links (Hauptbild): Karte > Willkommen > Fallback – NICHT aus lokaler Persistenz.
+      // Links (Hauptbild): K2 = Karte > Willkommen; Lizenz-Mandant = Willkommen > Karte (wie Startseiten-Hero). Ohne Master-URL – nicht aus lokaler Persistenz.
       if (masterLeft && !masterLeft.startsWith('data:') && !masterLeft.startsWith('blob:')) {
         setLeftSrc(masterLeft)
         setLeftWerkLabel(masterLabel || 'Masterflyer')
       } else {
-        setLeftSrc(card || welcome || fb)
+        setLeftSrc(flyerLeftSrcDefaultFromGalleryFields(welcome, card, fb, !!effectiveDynamicTenantId))
         setLeftWerkLabel('Galeriebild')
       }
       // Mitte/Rechts: Willkommen / Virtueller Rundgang
@@ -952,7 +972,7 @@ export default function FlyerEventBogenNeuPage() {
       const g = effectiveDynamicTenantId ? loadDynamicTenantGallery(effectiveDynamicTenantId) : loadStammdaten('k2', 'gallery')
       const gi = getGalerieImages(g)
       if (!active) return
-      setLeftSrc(gi.galerieCardImage || gi.welcomeImage || fb)
+      setLeftSrc(flyerLeftSrcDefaultFromGi(gi, fb, !!effectiveDynamicTenantId))
       setLeftWerkLabel('Galeriebild')
       setMiddleSrc(gi.welcomeImage || fb)
       setRightSrc(gi.virtualTourImage || gi.welcomeImage || fb)
