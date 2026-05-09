@@ -8,6 +8,8 @@ const HANDBUCH_DOC_ZENTRALE_THEMEN = '16-ZENTRALE-THEMEN-FUER-NUTZER.md'
 const HANDBUCH_DOC_NOTFALL = '23-NOTFALL-CHECKLISTE.md'
 import { PROJECT_ROUTES, PLATFORM_ROUTES, MOK2_ROUTE, ENTDECKEN_ROUTE } from '../config/navigation'
 import { K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
+import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
+import { resolveKreineckerPresentationTenantIdFromEnv } from '../data/k2FamilieKreineckerStammbaumQuelle'
 import { prepareFreshOek2VisitorSession } from '../utils/oek2FreshStart'
 import { openAppOrHttpUrlInNewTab } from '../utils/safeExternalUrl'
 const GUIDE_KEY = 'k2-entdecken-guide-antworten'
@@ -262,6 +264,15 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
     if (browserPath.startsWith('/k2team-handbuch')) return 'handbuch'
     return currentPage || ''
   }, [browserPath, currentPage])
+
+  const k2FamilieHuberPanelLink = useMemo(
+    () => `${K2_FAMILIE_APP_SHORT_PATH}?t=${encodeURIComponent(FAMILIE_HUBER_TENANT_ID)}`,
+    [],
+  )
+  const k2FamilieStammKreineckerPanelLink = useMemo(() => {
+    const tid = resolveKreineckerPresentationTenantIdFromEnv()
+    return tid ? `${K2_FAMILIE_APP_SHORT_PATH}?t=${encodeURIComponent(tid)}` : K2_FAMILIE_APP_SHORT_PATH
+  }, [])
 
   const nav = (page: string, url: string) => {
     if (page === 'galerie-oeffentlich' || url.includes('/galerie-oeffentlich')) {
@@ -1263,6 +1274,26 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                 {mappe.id === 'familie' && (
                   <>
                     <p style={{ margin: '0 0 0.4rem 0', fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)' }}>Eigenes Projekt – keine Ausgrenzung, Respekt für jeden.</p>
+                    {onNavigate ? (
+                      <span role="button" tabIndex={0} onClick={() => onNavigate('k2-familie-muster-huber')} onKeyDown={(e) => e.key === 'Enter' && onNavigate('k2-familie-muster-huber')}
+                        style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'rgba(13,148,136,0.15)', border: '1px solid rgba(13,148,136,0.4)', borderRadius: '8px', color: '#14b8a6', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', fontFamily: 'inherit', marginBottom: '0.35rem' }}>
+                        👨‍👩‍👧‍👦 Musterfamilie Huber
+                      </span>
+                    ) : (
+                      <Link to={k2FamilieHuberPanelLink} style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'rgba(13,148,136,0.15)', border: '1px solid rgba(13,148,136,0.4)', borderRadius: '8px', color: '#14b8a6', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none', fontFamily: 'inherit', marginBottom: '0.35rem' }}>
+                        👨‍👩‍👧‍👦 Musterfamilie Huber
+                      </Link>
+                    )}
+                    {onNavigate ? (
+                      <span role="button" tabIndex={0} onClick={() => onNavigate('k2-familie-stamm-kreinecker')} onKeyDown={(e) => e.key === 'Enter' && onNavigate('k2-familie-stamm-kreinecker')}
+                        style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'rgba(13,148,136,0.15)', border: '1px solid rgba(13,148,136,0.4)', borderRadius: '8px', color: '#14b8a6', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', fontFamily: 'inherit', marginBottom: '0.35rem' }}>
+                        🏠 Stammfamilie Kreinecker
+                      </span>
+                    ) : (
+                      <Link to={k2FamilieStammKreineckerPanelLink} style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'rgba(13,148,136,0.15)', border: '1px solid rgba(13,148,136,0.4)', borderRadius: '8px', color: '#14b8a6', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none', fontFamily: 'inherit', marginBottom: '0.35rem' }}>
+                        🏠 Stammfamilie Kreinecker
+                      </Link>
+                    )}
                     {onNavigate ? (
                       <span role="button" tabIndex={0} onClick={() => onNavigate('k2-familie')} onKeyDown={(e) => e.key === 'Enter' && onNavigate('k2-familie')}
                         style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'rgba(13,148,136,0.15)', border: '1px solid rgba(13,148,136,0.4)', borderRadius: '8px', color: '#14b8a6', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', fontFamily: 'inherit' }}>

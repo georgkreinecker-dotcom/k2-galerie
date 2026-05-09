@@ -1,8 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Neuen Lizenz-Kunden mit eigener Domain: **`docs/LIZENZ-KUNDE-DOMAIN-KARTEIKARTE.md`** (Karteikarte 2) ausfüllen; Vercel Env **anhängen**, Deploy; Smoke-Test **`/galerie-oeffentlich`** und **`/familie`** auf Kunden-Host (**`/familie`** muss nach **`/`** umleiten).
+**Was wir JETZT tun:** APf im Browser: Mappe **K2 Familie** im Smart Panel – **Musterfamilie Huber** und **Stammfamilie Kreinecker** antippen; iframe soll **`/familie?t=…`** laden. Parallel weiter: Lizenz-Kunde Domain (**`docs/LIZENZ-KUNDE-DOMAIN-KARTEIKARTE.md`**) wenn aktiv.
 
 **Einordnung:** K2 Familie = sensible Daten → **`PlatformOnlyRoute`** wie ök2/VK2; Doku **`SICHERHEIT-LIZENZNEHMER-KEIN-OEK2-VK2.md`** + **`K2-FAMILIE-LEHREN`** §0c.
+
+**Letzter Stand:** 09.05.26 – **Smart Panel K2 Familie: zwei fehlende Schnelllinks:** Unter Mappe **K2 Familie** jetzt **Musterfamilie Huber** (`onNavigate` **`k2-familie-muster-huber`** → **`/familie?t=huber`**) und **Stammfamilie Kreinecker** (**`k2-familie-stamm-kreinecker`** → **`resolveKreineckerPresentationTenantIdFromEnv()`**, sonst **`/familie`**). **`DevViewPage`:** **`getPathForPage`** + **`allPages`**-Einträge für iframe/Vollbild. **`qs:local`** grün. **Commit:** _(nach Push)_ ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **K2 Familie APf: Musterfamilie Huber + Kreinecker-Stamm:** **`isK2FamilieApfArbeitsplattform`** (localhost oder **`isPlatformInstance`**); **`ensureFamilieHuberInTenantListForPicker`**; **`FamilieApfMeineFamilieSync`**; Toolbar (**`K2FamilieLayout`**) nicht mehr nur auf einen Stamm-Mandanten reduziert; **`K2FamilieHomePage`** Musterfamilie-Karte auch bei aktiver **`familie-*`** wenn Huber fehlt. **`tsc:build`** grün. **Commit:** `43c36016` ✅ **main**
 
