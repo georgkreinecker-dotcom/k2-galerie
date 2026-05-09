@@ -4,7 +4,7 @@
 
 **Einordnung:** **Eine Auflösungskette:** zuerst **VITE** (`KREINECKER_STAMMBAUM` / `APF_MEINE_FAMILIE`), sonst auf **Plattform-Hosts** (`isPlatformInstance`) fest **`familie-1773759510983`** (`k2FamilieKreineckerStammbaumQuelle` → Links, APf, Board). **Kein** Fallback auf Lizenznehmer-Domains.
 
-**Letzter Stand:** 09.05.26 – **K2 Familie Mandant = Einstellungen (familie-1773759510983):** **`resolveKreineckerPresentationTenantIdFromEnv`** – nach Env **Plattform-Fallback** **`K2_PLATTFORM_STAMM_FAMILIE_KREINECKER_TENANT_ID`** + **`tenantIdErlaubtFuerKreineckerStammKette`**; **`.env.example`** dokumentiert. Gleiche ID wie auf dem Gerät unter „Technische ID“. **`qs:local`** grün. **Commit:** `00413a3a` ✅ **main**
+**Letzter Stand:** 09.05.26 – **K2 Familie Mandant = Einstellungen (familie-1773759510983):** **`resolveKreineckerPresentationTenantIdFromEnv`** – nach Env **Plattform-Fallback** **`K2_PLATTFORM_STAMM_FAMILIE_KREINECKER_TENANT_ID`** + **`tenantIdErlaubtFuerKreineckerStammKette`**; **`.env.example`** dokumentiert. Gleiche ID wie auf dem Gerät unter „Technische ID“. **`qs:local`** grün. **Commit:** `80b2cf01` ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **K2 Familie „Meine Familie“ = Kreinecker (Nav + Aktiv-Logik):** **`K2FamilieLayout`** – Top-Nav und Vollpfad-Leiste mit **`MEINE_FAMILIE_TOP_NAV_TO`**; **`isFamilieNavItemActive`** delegiert zu **`isFamilieNavSectionActive`** (mit **`loc.search`**); **`k2FamilieStructure`** – explizites **`?t=`** (nicht Huber): aktiv auch bei **leerem** `search`; **`familieMusterDemoHints`** – Tooltip für **`/familie?t=…`**; Tests ergänzt. Zuvor: **`FamilieApfMeineFamilieSync`** / **`k2FamilieApfDefaults`** (ohne Env: Mandant ≠ Huber/Default). **`qs:local`** grün. **Commit:** `b5fbffe2` ✅ **main**
 
