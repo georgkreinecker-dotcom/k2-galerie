@@ -1,6 +1,7 @@
 /**
- * Eiserne Regel: ök2 und VK2 existieren nur auf der Plattform-Instanz (kgm).
+ * Eiserne Regel: ök2, VK2 und K2 Familie existieren nur auf der Plattform-Instanz (kgm).
  * Lizenznehmer-Clone dürfen diese Routen nicht erreichen – Redirect auf Start.
+ * K2 Familie: besonders sensible private Nutzerdaten → gleicher Host-Schutz wie Demo/VK2.
  * Doku: docs/SICHERHEIT-LIZENZNEHMER-KEIN-OEK2-VK2.md
  */
 
@@ -14,7 +15,7 @@ interface PlatformOnlyRouteProps {
   fallbackTo?: string
 }
 
-/** Rendert Kinder nur auf der Plattform-Instanz; sonst Redirect (Lizenznehmer haben keinen Zugriff auf ök2/VK2). */
+/** Rendert Kinder nur auf der Plattform-Instanz; sonst Redirect (Lizenznehmer: kein ök2/VK2/K2-Familien-UI). */
 export function PlatformOnlyRoute({ children, fallbackTo = '/' }: PlatformOnlyRouteProps) {
   if (!isPlatformInstance()) {
     return <Navigate to={fallbackTo} replace />

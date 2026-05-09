@@ -24,6 +24,14 @@
 
 ---
 
+## 0c. Nur Plattform-Host: Familien-UI auf Lizenz-Domains gesperrt
+
+**Warum:** K2 Familie verarbeitet **sehr private** Nutzerdaten. Dieselbe SPA kann auf **Lizenz-Galerie-Hostnamen** (`VITE_LICENSEE_PUBLIC_HOSTNAMES`) laufen wie die öffentliche Galerie – ohne Guard wäre **`/familie`** oder **`/projects/k2-familie/…`** technisch aufrufbar.
+
+**Umsetzung:** In **`App.tsx`** sind **`/familie`**, **`/projects/k2-familie/*`**, **Willkommen** und **`/k2-familie-handbuch`** mit **`PlatformOnlyRoute`** gewrappt (wie ök2/VK2). **`!isPlatformInstance()`** → Redirect **`/`**. **Doku:** **docs/SICHERHEIT-LIZENZNEHMER-KEIN-OEK2-VK2.md**. **Test:** **`src/tests/platformOnlyRouteLicensee.test.ts`**.
+
+---
+
 ## 0. K2 Familie = eigenes Projekt (niemals von außen überschreiben)
 
 **K2 Familie ist ein eigenes Projekt.** Kein anderer Bereich (K2 Galerie, APf, Admin, ök2, VK2, Backup/Restore anderer Kontexte) darf K2-Familie-Daten überschreiben oder die Tenant-Liste leeren.
@@ -127,6 +135,7 @@
 ## Checkliste vor Änderungen an K2 Familie
 
 - [ ] **Lizenz / Admin-QR / `normalizeLicenseeAdminUrl`:** Familie-URLs mit **`?t=`** nicht auf **`/admin`** umbiegen (siehe **0b**).
+- [ ] **Neue K2-Familie-Besucher-Route?** → **`PlatformOnlyRoute`** in **`App.tsx`** (siehe **0c**); Lizenz-Domains dürfen kein Familien-UI laden.
 - [ ] Schreibe ich in den **richtigen Kontext**? Nur `k2-familie-*` Keys.
 - [ ] Kann es **stilles Überschreiben** oder **Löschen ohne User-Aktion** geben? → Verboten.
 - [ ] **Neue Route/Unterseite?** → Route vor `/projects/:projectId`, Link mit korrektem path.

@@ -7,7 +7,7 @@ alwaysApply: true
 
 ## Grundsatz (unveränderlich)
 
-**Erst durch die Lizenzerteilung erhält der Nutzer einen Clone der App, den er verwenden kann – aber niemals Zugriff auf die ök2- oder VK2-Struktur.** Das muss 100 % abgesichert sein. Auch Hackerangriffe von Userseite sind durch eiserne Regeln zu verhindern.
+**Erst durch die Lizenzerteilung erhält der Nutzer einen Clone der App, den er verwenden kann – aber niemals Zugriff auf die ök2-, VK2- oder K2-Familien-Oberfläche** (private Daten). Das muss 100 % abgesichert sein. Auch Hackerangriffe von Userseite sind durch eiserne Regeln zu verhindern.
 
 ---
 
@@ -16,7 +16,7 @@ alwaysApply: true
 | Wer | Was erhält | Was er nie erhält |
 |-----|------------|-------------------|
 | **Plattform (kgm)** | Volle App inkl. Demo ök2, Vereinsplattform VK2, Admin, APf | – |
-| **Lizenznehmer** | Clone der App (eigene Galerie, eigener Mandant) | Kein Zugriff auf ök2, kein Zugriff auf VK2, keine Routen/Links dorthin, keine Keys/Speicher |
+| **Lizenznehmer** | Clone der App (eigene Galerie, eigener Mandant) | Kein ök2, kein VK2, **kein K2 Familie** (Routen/Handbuch/Familien-UI), keine Demo-/Vereins-/Familien-Keys über diese Oberfläche |
 
 ---
 
@@ -40,7 +40,7 @@ alwaysApply: true
 
 ## Checkliste bei Änderungen
 
-- [ ] Wird eine neue Route oder ein Link zu ök2/VK2 eingeführt? → Nur innerhalb von PlatformOnlyRoute oder nur auf Plattform anzeigen.
+- [ ] Wird eine neue Route oder ein Link zu ök2/VK2/**K2 Familie** eingeführt? → Nur innerhalb von PlatformOnlyRoute oder nur auf Plattform anzeigen.
 - [ ] Wird Kontext aus URL/sessionStorage gelesen? → TenantContext nutzen; auf Nicht-Plattform liefert er nie oeffentlich/vk2.
 - [ ] Neue User-Eingabe (Formular, URL-Param)? → Validierung (Länge, Zeichensatz), kein eval.
 
@@ -50,8 +50,8 @@ alwaysApply: true
 
 - **Doku:** docs/SICHERHEIT-LIZENZNEHMER-KEIN-OEK2-VK2.md
 - **Code:** src/config/tenantConfig.ts (isPlatformInstance, PLATFORM_HOSTNAMES), src/context/TenantContext.tsx, src/components/PlatformOnlyRoute.tsx
-- **Regressionstests (Lizenznehmer simuliert):** `src/tests/tenantContextLicenseeInstance.test.ts` – `?context=oeffentlich|vk2`, `/projects/vk2/*`, Dev-View-Ök2/VK2-Seiten → Mandant bleibt **k2**.
+- **Regressionstests (Lizenznehmer simuliert):** `src/tests/tenantContextLicenseeInstance.test.ts` – `?context=oeffentlich|vk2`, `/projects/vk2/*`, Dev-View-Ök2/VK2-Seiten → Mandant bleibt **k2**. Zusätzlich **`src/tests/platformOnlyRouteLicensee.test.ts`** – geschützte Route bei `!isPlatformInstance` → Redirect.
 
 ## Kurzfassung
 
-**Lizenznehmer = Clone ohne ök2/VK2. Nur Plattform-Hostnamen haben ök2/VK2. URL-Manipulation und Hackerangriffe werden durch Hostname-Check und Kontext-Ignoranz abgeblockt.**
+**Lizenznehmer = Clone ohne ök2/VK2/K2-Familien-UI. Nur Plattform-Hostnamen haben diese Bereiche. URL-Manipulation und Hackerangriffe werden durch Hostname-Check und Kontext-Ignoranz abgeblockt.**

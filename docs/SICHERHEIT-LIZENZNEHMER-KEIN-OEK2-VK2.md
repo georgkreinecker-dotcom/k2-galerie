@@ -2,20 +2,21 @@
 
 ## Grundsatz
 
-**Erst durch die Lizenzerteilung erhält der Nutzer einen Clone der App, den er verwenden kann – aber niemals Zugriff auf die ök2- oder VK2-Struktur.** Das ist 100 % abgesichert. Auch Hackerangriffe von Userseite werden durch eiserne Regeln verhindert.
+**Erst durch die Lizenzerteilung erhält der Nutzer einen Clone der App, den er verwenden kann – aber niemals Zugriff auf die ök2-, VK2- oder K2-Familien-Oberfläche.** Das ist 100 % abgesichert. Auch Hackerangriffe von Userseite werden durch eiserne Regeln verhindert. **K2 Familie** enthält besonders private Nutzerdaten – dieselbe Host-/Routen-Absicherung wie bei ök2/VK2.
 
 ---
 
 ## 1. Wer hat Zugriff worauf?
 
-| Instanz | Hostnamen (Beispiele) | ök2 (Demo) | VK2 (Vereinsplattform) | K2 / eigene Galerie |
-|--------|------------------------|------------|------------------------|----------------------|
-| **Plattform (kgm)** | localhost, k2-galerie.vercel.app, kgm.at | ✅ | ✅ | ✅ |
-| **Lizenznehmer (Clone)** | Eigene Domain/Subdomain nach Lizenz | ❌ | ❌ | ✅ (nur eigene) |
+| Instanz | Hostnamen (Beispiele) | ök2 (Demo) | VK2 (Vereinsplattform) | K2 Familie | K2 / eigene Galerie |
+|--------|------------------------|------------|------------------------|------------|----------------------|
+| **Plattform (kgm)** | localhost, k2-galerie.vercel.app, kgm.at | ✅ | ✅ | ✅ | ✅ |
+| **Lizenznehmer (Clone)** | Eigene Domain/Subdomain nach Lizenz | ❌ | ❌ | ❌ | ✅ (nur eigene) |
 
 - **ök2** = öffentliche Demo-Galerie (Musterwerke, Demo für Piloten/Lizenzinteressenten).
 - **VK2** = Vereinsplattform (Mitglieder, Katalog, Admin mit PIN).
-- Beide sind **nur auf der Plattform-Instanz** erreichbar. Auf einer Lizenznehmer-Instanz existieren die Routen und der Kontext „oeffentlich“/„vk2“ nicht.
+- **K2 Familie** = Stammbaum, Personen, Einladungen – private Daten; **nur Plattform**.
+- ök2, VK2 und K2 Familie sind **nur auf der Plattform-Instanz** erreichbar. Auf einer Lizenznehmer-Instanz existieren die Routen und der Kontext „oeffentlich“/„vk2“ nicht; **Familien-Routen** werden per `PlatformOnlyRoute` auf `/` umgeleitet.
 
 ---
 
@@ -27,7 +28,7 @@
   `PLATFORM_HOSTNAMES` = Liste der Hostnamen, auf denen die volle Plattform läuft (z. B. localhost, k2-galerie.vercel.app, kgm.at).  
   `isPlatformInstance()` = true nur, wenn `window.location.hostname` in dieser Liste ist.
 
-- **Lizenznehmer-Deployment:** Wenn die App unter einer anderen Domain/Subdomain läuft (z. B. nach Lizenz eigener QR/URL), ist es keine Plattform-Instanz → ök2/VK2 sind nicht verfügbar.
+- **Lizenznehmer-Deployment:** Wenn die App unter einer anderen Domain/Subdomain läuft (z. B. nach Lizenz eigener QR/URL), ist es keine Plattform-Instanz → ök2/VK2/K2 Familie sind nicht verfügbar.
 
 ### 2.2 TenantContext (Kontext niemals erzwingbar)
 
@@ -39,11 +40,11 @@
 
 - **Folge:** Auch bei direkter URL-Eingabe (z. B. `/admin?context=oeffentlich`) oder Manipulation der Parameter erhält ein Lizenznehmer nie den Kontext ök2 oder VK2.
 
-### 2.3 Routen-Guard (ök2/VK2 nur auf Plattform)
+### 2.3 Routen-Guard (ök2/VK2/K2 Familie nur auf Plattform)
 
 - **Komponente:** `src/components/PlatformOnlyRoute.tsx`
-- **Verwendung:** Alle Routen zu ök2 (galerie-oeffentlich, galerie-oeffentlich-vorschau) und zu VK2 (alle `/projects/vk2/*`, VK2-Login) sind mit `<PlatformOnlyRoute>` gewrappt.
-- **Verhalten:** Wenn `!isPlatformInstance()`, Redirect auf Start (`/`). Es werden keine ök2-/VK2-Seiten gerendert, keine Daten geladen.
+- **Verwendung:** Alle Routen zu ök2 (galerie-oeffentlich, galerie-oeffentlich-vorschau), zu VK2 (alle `/projects/vk2/*`, VK2-Login) und zu **K2 Familie** (`/familie`, `/projects/k2-familie/*`, Willkommen, `/k2-familie-handbuch`) sind mit `<PlatformOnlyRoute>` gewrappt (`App.tsx`).
+- **Verhalten:** Wenn `!isPlatformInstance()`, Redirect auf Start (`/`). Es werden keine Demo-/VK2-/Familien-Seiten gerendert, keine Familien-UI ausgeliefert.
 
 ### 2.4 Sichere Mandanten-ID aus URL (tenantId)
 
@@ -85,7 +86,7 @@ Wenn die Plattform unter einem weiteren Hostnamen betrieben wird, diesen in `PLA
 
 - **`src/config/tenantConfig.ts`**: `isLicenseePublicHostname(host)` prüft die Liste aus **`VITE_LICENSEE_PUBLIC_HOSTNAMES`**.
 - **`isPlatformHostname`**: wenn Lizenz-Host → **sofort false** (vor `PLATFORM_HOSTNAMES` und Vercel-Prefix-Regel).
-- **`PlatformOnlyRoute`**, **`TenantContext`**, **`isPlatformInstance()`** nutzen dieselbe Kette → ök2/VK2 und Demo-Kontext entfallen auf dieser Domain.
+- **`PlatformOnlyRoute`**, **`TenantContext`**, **`isPlatformInstance()`** nutzen dieselbe Kette → ök2/VK2/K2 Familie und Demo-Kontext entfallen auf dieser Domain.
 
 ### Was du nicht tun solltest
 

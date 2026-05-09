@@ -886,13 +886,13 @@ function App() {
       <Route path={PROJECT_ROUTES.vk2.vollversion} element={<PlatformOnlyRoute><Navigate to="/admin?context=vk2" replace /></PlatformOnlyRoute>} />
       {/* Dynamischer Mandant (Lizenz-URL nach Checkout): /g/:tenantId */}
       <Route path="/g/:tenantId" element={<GalerieTenantPage />} />
-      {/* K2 Familie: kurze App-URL – gleiche Startseite wie meine-familie, ohne Redirect (Icon/Lesezeichen) */}
-      <Route path="/familie" element={<K2FamilieLayout />}>
+      {/* K2 Familie – nur Plattform-Instanz (private Daten; auf Lizenz-/Mandanten-Host kein Familien-UI). Siehe docs/SICHERHEIT-LIZENZNEHMER-KEIN-OEK2-VK2.md */}
+      <Route path="/familie" element={<PlatformOnlyRoute><K2FamilieLayout /></PlatformOnlyRoute>}>
         <Route index element={<K2FamilieHomePage />} />
       </Route>
       {/* K2 Familie: Marketing-Einstieg (ohne Layout – nur Lesen / CTA, vergleichbar /willkommen bei der Galerie) */}
-      <Route path={PROJECT_ROUTES['k2-familie'].willkommen} element={<K2FamilieWillkommenPage />} />
-      <Route path={PROJECT_ROUTES['k2-familie'].home} element={<K2FamilieLayout />}>
+      <Route path={PROJECT_ROUTES['k2-familie'].willkommen} element={<PlatformOnlyRoute><K2FamilieWillkommenPage /></PlatformOnlyRoute>} />
+      <Route path={PROJECT_ROUTES['k2-familie'].home} element={<PlatformOnlyRoute><K2FamilieLayout /></PlatformOnlyRoute>}>
         <Route index element={<K2FamilieRootIndexRedirect />} />
         <Route path="einstieg" element={<K2FamilieEinstiegPage />} />
         <Route path="meine-familie" element={<K2FamilieHomePage />} />
@@ -973,7 +973,7 @@ function App() {
       <Route path="/testprotokoll-testuser" element={<TestprotokollTestuserPage />} />
       <Route path="/k2-galerie-handbuch" element={<K2GalerieHandbuchPage />} />
       <Route path="/benutzer-handbuch" element={<BenutzerHandbuchPage />} />
-      <Route path="/k2-familie-handbuch" element={<K2FamilieBenutzerHandbuchPage />} />
+      <Route path="/k2-familie-handbuch" element={<PlatformOnlyRoute><K2FamilieBenutzerHandbuchPage /></PlatformOnlyRoute>} />
       <Route path="/vk2-handbuch" element={<Vk2HandbuchPage />} />
       
       {/* Legacy-Routen (Redirect für bestehende Links) */}
