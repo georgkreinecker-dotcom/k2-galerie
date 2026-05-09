@@ -4,7 +4,7 @@
 
 **Einordnung:** Produkt-Footer bleibt mit **Copyright** (tenantConfig); ohne „App verlassen“.
 
-**Letzter Stand:** 09.05.26 – **Session beendet (Abend):** Arbeitsbaum leer, **main** mit Stripe-fn + DIALOG-STAND (**Commits** `ed97805c`, `6cd7188c`). Nächster Einstieg: oben **„K2 Familie Lizenz: Stripe-Anmeldename …“**.
+**Letzter Stand:** 09.05.26 – **Session beendet (Abend):** Arbeitsbaum leer, **main** mit Stripe-fn + Abschluss-Doku (**Commits** `ed97805c`, `6cd7188c`, **`0d300aef`**). Nächster Einstieg: **„K2 Familie Lizenz: Stripe-Anmeldename …“** darunter.
 
 **Letzter Stand:** 09.05.26 – **K2 Familie Lizenz: Stripe-Anmeldename = erster Familien-Anzeigename** – **`appendFamilieFnQueryParam`** in **`stripeWebhookLicenceShared`** (Galerie-URL in DB), **`get-licence-by-session`** (Admin- + Galerie-Link + alte DB-Zeilen mit **name**), **`LizenzErfolgPage`** (Fallback **appendFamilieDisplayNameParamIfMissing**), **`familieEinladungsUrls`**, **`FamilieEinladungQuerySync`** (**bump** nach **fn**-Speichern), **`pageTextsFamilie`** (keine Seitentexte: **welcomeTitle** = **familyDisplayName**). **customerName** optional aus **session.customer_details.name**. Tests angepasst. **qs:local** grün. **Commit:** `ed97805c` ✅ **main**
 
