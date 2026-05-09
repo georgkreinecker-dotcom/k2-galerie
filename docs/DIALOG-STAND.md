@@ -4,7 +4,7 @@
 
 **Einordnung:** Die Schnelllinks **Musterfamilie Huber** im Smart Panel waren für Georg falsch priorisiert (**Kreinecker** sollte nicht durch Huber verdrängt werden). Ursache: wir hatten **SmartPanel + DevView** ergänzt, obwohl der Fokus nur Lizenz/ök2 war → **Revert**.
 
-**Letzter Stand:** 09.05.26 – **Revert Smart Panel / DevView (Huber-Schnelllinks):** **`SmartPanel.tsx`** und **`DevViewPage.tsx`** wieder ohne **`k2-familie-muster-huber`** / **`k2-familie-stamm-kreinecker`**. Georg: falsche Familie = Folge der Huber-Vordergrund-Taste, nicht der Lizenz-Arbeit. **`qs:local`** grün. **Commit:** `663347a2` ✅ **main**
+**Letzter Stand:** 09.05.26 – **Revert Smart Panel / DevView (Huber-Schnelllinks):** **`SmartPanel.tsx`** und **`DevViewPage.tsx`** wieder ohne **`k2-familie-muster-huber`** / **`k2-familie-stamm-kreinecker`**. Georg: falsche Familie = Folge der Huber-Vordergrund-Taste, nicht der Lizenz-Arbeit. **`qs:local`** grün. **Commit:** `1cdd0ebd` ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **Smart Panel K2 Familie: zwei fehlende Schnelllinks** _(zurückgenommen – siehe Revert oben)._ ~~Unter Mappe **K2 Familie** …~~ **Commit:** `5633f156` (überholt)
 
