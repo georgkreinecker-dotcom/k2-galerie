@@ -4,7 +4,7 @@
 
 **Einordnung:** **Live-Vorschau** = gemeinsames **localStorage** + iframe **`/g/…?liveTemplate=1`** – sofortiger Snapshot + Merge mit Server-**pageTexts**, damit Titel/Zeilen wie die Eingaben wirken (nicht nur Verzögerung).
 
-**Letzter Stand:** 09.05.26 – **Live-Template: Texte/Zeilen wie Eingaben:** **`ScreenshotExportAdmin`** – Mandanten-Design: **`syncLiveTemplatePreviewLocal`** per **`useLayoutEffect`** (ohne 220 ms Verzögerung); Server-POST nur noch **debounced**; K2/ök2/VK2 weiter **saveAllForVorschau**. **`GalerieTenantPage`** – **`effectiveGalerieTexts`** = Server-**galerie** + Overlay **gemerged**; Polling **200 ms** bei **`liveTemplate`**. **homepageTemplateContract** + **qs:local** grün. **Commit:** _(nach Push)_ ✅ **main**
+**Letzter Stand:** 09.05.26 – **Live-Template: Texte/Zeilen wie Eingaben:** **`ScreenshotExportAdmin`** – Mandanten-Design: **`syncLiveTemplatePreviewLocal`** per **`useLayoutEffect`** (ohne 220 ms Verzögerung); Server-POST nur noch **debounced**; K2/ök2/VK2 weiter **saveAllForVorschau**. **`GalerieTenantPage`** – **`effectiveGalerieTexts`** = Server-**galerie** + Overlay **gemerged**; Polling **200 ms** bei **`liveTemplate`**. **homepageTemplateContract** + **qs:local** grün. **Commit:** edff7ad3 ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **Event-Flyer nur Master (öffentlich):** **`flyerEventBogenUrl`** optional **`publicMasterView`** → Query **`view=publicMaster`**; **`FlyerEventBogenNeuPage`**: schlanke Toolbar wie Ableitungen, **Vorder-/Rückseite** ohne Hotspots, Header-Hinweis aus; **`gallery-data`**-Fetch für Mandanten wie bei **`fromPublicGalerie`**-Master; **`TenantHomepageTemplate`** setzt **`publicMasterView: true`**. **qs:local** grün. **Commit:** `049f5344` ✅ **main**
 
