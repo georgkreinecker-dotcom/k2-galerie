@@ -4,6 +4,8 @@
 
 **Einordnung:** K2 Familie = sensible Daten → **`PlatformOnlyRoute`** wie ök2/VK2; Doku **`SICHERHEIT-LIZENZNEHMER-KEIN-OEK2-VK2.md`** + **`K2-FAMILIE-LEHREN`** §0c.
 
+**Letzter Stand:** 09.05.26 – **K2 Familie APf: Musterfamilie Huber + Kreinecker-Stamm:** **`isK2FamilieApfArbeitsplattform`** (localhost oder **`isPlatformInstance`**); **`ensureFamilieHuberInTenantListForPicker`**; **`FamilieApfMeineFamilieSync`**; Toolbar (**`K2FamilieLayout`**) nicht mehr nur auf einen Stamm-Mandanten reduziert; **`K2FamilieHomePage`** Musterfamilie-Karte auch bei aktiver **`familie-*`** wenn Huber fehlt. **`tsc:build`** grün. **Commit:** `43c36016` ✅ **main**
+
 **Letzter Stand:** 09.05.26 – **APf Smart Panel „weg“:** **`DevViewPage`** – **`▶ Panel`** lag im **`backdropFilter`**-Container → bei minimiertem Panel (`left: -420px`) war **`position: fixed`** relativ zu diesem Block → Button unsichtbar. **Einblend-Button** jetzt **Geschwister außerhalb** des Panels (`z-index` **10005**). **qs:local** grün. **Commit:** `35292ee5` ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **Handbuch Lizenznehmer + Lizenz-Texte:** **`public/benutzer-handbuch/06-OEK2-DEMO-LIZENZ.md`** (Kaufablauf: Schwerpunkt/Sparte, Empfehler-ID **K2-E-**, AGB, Stripe; nur Basic–Pro++ auf Galerie-Kaufseite; VK2 → VK2-Handbuch; Hinweis eigene Instanz + SDS IT); **`lang/06`** nur Verweis; **`public/benutzer-handbuch/00-INDEX`** Kurzbeschreibung Kapitel 6; **`k2team-handbuch/27`** + **`public/k2team-handbuch/27`** (**`focusDirection`** in Admin-URL, API-Verweis); **`LicenseManager`** / **`LicencesPage`** Basic **ohne Kassa** wie **`LizenzKaufenPage`**/Prospekt. **qs:local** grün. **Commit:** `0d2b9886` ✅ **main**
