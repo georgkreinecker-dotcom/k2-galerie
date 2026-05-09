@@ -40,7 +40,10 @@ import { loadEinstellungen, loadPersonen } from '../utils/familieStorage'
 import { loadIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
 import { isK2FamilieMeineFamilieHomePath, K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
 import { getMeineFamilieLeitstrukturPath, isFamilieNavSectionActive } from '../config/k2FamilieStructure'
-import { K2_FAMILIE_NAV_LABEL_GESCHICHTE } from '../config/k2FamilieNavLabels'
+import {
+  K2_FAMILIE_NAV_LABEL_FAMILIE_KREINECKER,
+  K2_FAMILIE_NAV_LABEL_GESCHICHTE,
+} from '../config/k2FamilieNavLabels'
 import { resolveFamiliePwaResumeTarget, writeFamiliePwaLastPath } from '../utils/familiePwaLastPath'
 import { useK2FamiliePresentationMode } from '../hooks/useK2FamiliePresentationMode'
 import { FamilieMusterDemoHintProvider } from '../context/FamilieMusterDemoHintContext'
@@ -856,7 +859,7 @@ const familieRoutes = PROJECT_ROUTES['k2-familie']
 /** Muster-Demo: Start in der Leiste = Huber mit ?t=huber (nicht nur /familie → „meine“ echte Familie). */
 const FAMILIE_MUSTER_HOME_NAV_TO = `${familieRoutes.meineFamilie}?t=${FAMILIE_HUBER_TENANT_ID}`
 
-/** Stammbaum/Leitstruktur und Top-Nav: gleiches Ziel wie Sidebar „Meine Familie“ (`?t=` wenn Env gesetzt). */
+/** Stammbaum/Leitstruktur und Top-Nav: gleiches Ziel wie Sidebar „Familie Kreinecker“ (`?t=` wenn Env gesetzt). */
 const MEINE_FAMILIE_TOP_NAV_TO = getMeineFamilieLeitstrukturPath()
 
 type FamilieNavItem = {
@@ -866,9 +869,9 @@ type FamilieNavItem = {
   activePrefixes?: readonly string[]
 }
 
-/** Volle Leiste auf allen Unterseiten. Auf „Meine Familie“-Start: oben Meine Familie, Handbuch, Einstellungen – Stammbaum/Events usw. bleiben als Kacheln. */
+/** Volle Leiste auf allen Unterseiten. Auf Familie-Kreinecker-Start: oben dieselbe Pillenzeile wie in der Leitstruktur, Handbuch, Einstellungen – Stammbaum/Events usw. bleiben als Kacheln. */
 const FAMILIE_NAV: FamilieNavItem[] = [
-  { to: MEINE_FAMILIE_TOP_NAV_TO, label: 'Meine Familie' },
+  { to: MEINE_FAMILIE_TOP_NAV_TO, label: K2_FAMILIE_NAV_LABEL_FAMILIE_KREINECKER },
   { to: familieRoutes.stammbaum, label: 'Stammbaum' },
   { to: familieRoutes.events, label: 'Events' },
   { to: familieRoutes.kalender, label: 'Kalender' },
@@ -924,7 +927,7 @@ function FamilieNav() {
         ]
       }
       return [
-        { to: MEINE_FAMILIE_TOP_NAV_TO, label: 'Meine Familie' },
+        { to: MEINE_FAMILIE_TOP_NAV_TO, label: K2_FAMILIE_NAV_LABEL_FAMILIE_KREINECKER },
         { to: familieRoutes.benutzerHandbuch, label: 'Handbuch' },
         {
           to: familieRoutes.einstellungen,

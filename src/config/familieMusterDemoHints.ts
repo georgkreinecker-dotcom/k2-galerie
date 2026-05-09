@@ -10,7 +10,7 @@ import { getMusterfamilieHuberMeineFamiliePathWithQuery } from '../data/k2Famili
 const R = PROJECT_ROUTES['k2-familie']
 
 export const MUSTER_HINT_NAV_MEINE_FAMILIE =
-  'Meine Familie: Einstieg mit Willkommen, Bild und Kacheln zu Stammbaum, Terminen und mehr.'
+  'Familie Kreinecker: Einstieg mit Willkommen, Bild und Kacheln zu Stammbaum, Terminen und mehr.'
 
 /** Erster Punkt in der Muster-Orientierungsleiste (Link mit ?t=huber). */
 export const MUSTER_HINT_NAV_MUSTERFAMILIE_HOME =

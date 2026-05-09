@@ -19,6 +19,7 @@ import {
 import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
 import { clearFamilieNurMusterSession, setFamilieNurMusterSession } from '../utils/familieMusterSession'
 import { ensureFamilieHuberInTenantListForPicker } from '../utils/familieTenantCookieBackup'
+import { K2_FAMILIE_DEFAULT_TENANT } from '../utils/familieStorage'
 import { isK2FamilieMeineFamilieHomePath } from '../utils/k2FamiliePwaBranding'
 
 function hasFamilieEinladungOrMusterQuery(search: string): boolean {
@@ -56,10 +57,15 @@ export function FamilieApfMeineFamilieSync() {
     if (!isK2FamilieApfArbeitsplattform()) return
     const preferred = resolveApfMeineFamilieTenantIdPreferNonDemo()
     if (!preferred) return
-    /** Nach Einladungs-QR: anderer Mandant als Stamm aktiv – nicht auf Kreinecker zurücksetzen. */
-    if (currentTenantId !== FAMILIE_HUBER_TENANT_ID && currentTenantId !== preferred) {
-      return
-    }
+    /**
+     * Nur abbrechen, wenn bereits eine **andere echte Familie** aktiv ist – nicht Demo/Platzhalter.
+     * Sonst blieb bei `default` oder nach Reset nie ein Wechsel von Huber zum Stamm möglich.
+     */
+    const skipSwitch =
+      currentTenantId !== FAMILIE_HUBER_TENANT_ID &&
+      currentTenantId !== K2_FAMILIE_DEFAULT_TENANT &&
+      currentTenantId !== preferred
+    if (skipSwitch) return
     if (currentTenantId === preferred) return
     ensureTenantInListAndSelect(preferred)
   }, [

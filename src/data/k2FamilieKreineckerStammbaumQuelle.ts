@@ -13,17 +13,25 @@
  *    hängt `?t=<id>` an Stammbaum- bzw. Meine-Familie-Pfad.
  * 3) **App** – `?t=` setzt den Mandanten (`FamilieTenantContext`); **Stammbaum**-Seite zeigt die Daten
  *    dieses Mandanten.
- * 4) **Nur APf (localhost)**, wenn **kein** `t` in der URL und **keine** der beiden VITE-Variablen:
- *    `resolveApfMeineFamilieTenantId` in `k2FamilieApfDefaults` sucht in **localStorage** nach
- *    `familyDisplayName` mit „kreinecker“ + „stamm“ oder „alkoven“ (Fallback auf echte Stammfamilie
- *    ohne harte ID im Build).
+ * 4) **Plattform ohne VITE:** `resolveKreineckerPresentationTenantIdFromEnv` liefert
+ *    `K2_PLATTFORM_STAMM_FAMILIE_KREINECKER_TENANT_ID` (nur wenn `isPlatformInstance()`).
+ * 5) **Sonst APf:** `resolveApfMeineFamilieTenantId` sucht in **localStorage** nach Anzeigename
+ *    „kreinecker“ + „stamm“/„alkoven“ oder ersten Nicht-Demo-Mandanten.
  *
  * **Nicht** verwechseln: Musterfamilie **Huber** = `?t=huber` (siehe `k2FamilieMusterHuberQuelle.ts`).
  * Kreinecker = eure Stammfamilie über `t=familie-…` (Einladung) oder VITE.
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
+import { isPlatformInstance } from '../config/tenantConfig'
 import { tenantIdErlaubtFuerKreineckerStammKette } from '../utils/familieMandantTrennung'
+
+/**
+ * **Nur kgm-Plattform** (localhost, k2-galerie.vercel.app, kgm.at, …): technische Mandanten-ID der Stammfamilie Kreinecker
+ * – derselbe Wert wie unter Einstellungen („t=familie-…“). Lizenznehmer-Instanzen: `isPlatformInstance()` false → kein Fallback.
+ * Übersteuerbar durch `VITE_K2_FAMILIE_KREINECKER_STAMMBAUM_TENANT_ID` / `VITE_K2_FAMILIE_APF_MEINE_FAMILIE_TENANT_ID`.
+ */
+export const K2_PLATTFORM_STAMM_FAMILIE_KREINECKER_TENANT_ID = 'familie-1773759510983'
 
 const ENV_KEYS = [
   'VITE_K2_FAMILIE_KREINECKER_STAMMBAUM_TENANT_ID',
@@ -49,13 +57,23 @@ function firstValidTenantFromEnvValues(rawList: (string | undefined)[]): string 
  */
 export function resolveKreineckerPresentationTenantIdFromEnv(): string {
   try {
-    return firstValidTenantFromEnvValues([
+    const fromEnv = firstValidTenantFromEnvValues([
       import.meta.env.VITE_K2_FAMILIE_KREINECKER_STAMMBAUM_TENANT_ID,
       import.meta.env.VITE_K2_FAMILIE_APF_MEINE_FAMILIE_TENANT_ID,
     ])
+    if (fromEnv) return fromEnv
   } catch {
-    return ''
+    /* ignore */
   }
+  try {
+    if (typeof window !== 'undefined' && isPlatformInstance()) {
+      const gate = tenantIdErlaubtFuerKreineckerStammKette(K2_PLATTFORM_STAMM_FAMILIE_KREINECKER_TENANT_ID)
+      if (gate.ok) return gate.id
+    }
+  } catch {
+    /* ignore */
+  }
+  return ''
 }
 
 /** Präsentationsboard: ob mindestens eine der beiden VITE-Variablen einen gültigen Mandanten liefert. */
