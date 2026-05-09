@@ -490,8 +490,6 @@ export default function K2FamilieHomePage() {
   const nurMusterDemo = isFamilieNurMusterSession()
   const musterHintProps = (text: string) =>
     nurMusterDemo ? ({ 'data-muster-hint': text } as const) : ({} as const)
-  /** Echte Familie aktiv (Lizenz-Mandant) – Demo-Karte „Musterfamilie laden“ nicht anzeigen. */
-  const istEchteFamilieTenantAktiv = currentTenantId.startsWith('familie-')
   /** Demo Huber (Nur-Muster-Sitzung): kein gelber Code-Banner – Rechte gelten über familieIdentitaet. */
   const showIdentitaetSessionBanner = needsIdentitaetSessionBanner && !isDemoMusterHuber
   /** Ohne Personenliste oder ohne gespeicherten Code auf der Karte (lokal) gibt es nichts zum Abgleichen – zuerst Server laden. */
@@ -1288,7 +1286,7 @@ export default function K2FamilieHomePage() {
             </div>
           </section>
 
-          {!tenantList.includes(FAMILIE_HUBER_TENANT_ID) && kannInstanz && !istEchteFamilieTenantAktiv && (
+          {!tenantList.includes(FAMILIE_HUBER_TENANT_ID) && kannInstanz && (
             <div
               style={{
                 marginTop: '1.5rem',

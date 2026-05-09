@@ -1,12 +1,13 @@
 /**
- * APf (localhost): „Meine Familie“ soll die echte Stammfamilie (z. B. Kreinecker) wählen,
- * nicht die Musterfamilie Huber.
+ * APf (Plattform-Host oder localhost): „Meine Familie“ soll die echte Stammfamilie (z. B. Kreinecker)
+ * vorgezogen wählen können; Musterfamilie Huber bleibt in der Mandantenliste wählbar.
  * **Gleiche Mandanten-Priorität wie Präsentation/Stammbaum-Links:** zuerst Build-Env
  * (`k2FamilieKreineckerStammbaumQuelle`), sonst Suche per Anzeigename (kreinecker + stamm|alkoven).
  */
 
 import { resolveKreineckerPresentationTenantIdFromEnv } from '../data/k2FamilieKreineckerStammbaumQuelle'
 import { FAMILIE_HUBER_TENANT_ID } from '../data/k2FamilieMusterHuberQuelle'
+import { isPlatformInstance } from './tenantConfig'
 import { loadEinstellungen, K2_FAMILIE_DEFAULT_TENANT } from '../utils/familieStorage'
 
 const STORAGE_LIST = 'k2-familie-tenant-list'
@@ -26,6 +27,12 @@ export function isK2FamilieApfLocalhost(): boolean {
   if (typeof window === 'undefined') return false
   const h = window.location.hostname
   return h === 'localhost' || h === '127.0.0.1'
+}
+
+/** APf: lokale Entwicklung oder kgm-Plattform (nicht Lizenznehmer-Clone). */
+export function isK2FamilieApfArbeitsplattform(): boolean {
+  if (typeof window === 'undefined') return false
+  return isK2FamilieApfLocalhost() || isPlatformInstance()
 }
 
 /**

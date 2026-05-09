@@ -39,6 +39,29 @@ export function readFamilieTenantCookieBackup(): string | null {
 }
 
 /**
+ * APf / Plattform: Huber fehlt oft in der gespeicherten Liste → Dropdown nur „default“.
+ * Einmalig ergänzen, ohne bestehende Einträge zu entfernen.
+ */
+export function ensureFamilieHuberInTenantListForPicker(): void {
+  if (typeof localStorage === 'undefined') return
+  try {
+    const raw = localStorage.getItem(STORAGE_LIST)
+    let list: string[]
+    if (!raw) {
+      list = [K2_FAMILIE_DEFAULT_TENANT]
+    } else {
+      const parsed = JSON.parse(raw)
+      list = Array.isArray(parsed) && parsed.length > 0 ? parsed : [K2_FAMILIE_DEFAULT_TENANT]
+    }
+    if (list.includes(FAMILIE_HUBER_TENANT_ID)) return
+    list = [...list, FAMILIE_HUBER_TENANT_ID]
+    localStorage.setItem(STORAGE_LIST, JSON.stringify(list))
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
  * Gleiche Liste wie FamilieTenantContext (localStorage + Cookie-Ergänzung).
  * Export für APf-Deep-Links ohne React-Provider.
  */

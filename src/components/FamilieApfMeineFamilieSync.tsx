@@ -2,7 +2,8 @@
  * Route „Meine Familie“ ohne Einladungs-/Demo-Query: **Muster-Sitzung beenden** (überall),
  * damit wieder alle Mandanten wählbar sind – nicht nur „Musterfamilie Huber“.
  *
- * Zusätzlich nur auf **localhost (APf)**: Stammfamilie Kreinecker aus VITE/Anzeigename wählen.
+ * Zusätzlich auf **APf (Plattform oder localhost)**: Musterfamilie in die Mandantenliste ergänzen;
+ * Stammfamilie Kreinecker aus VITE/Anzeigename wählen, wenn erkennbar.
  *
  * Nicht eingreifen, solange Einladungs-Query (?t= / ?z= / ?m= / ?fn=) in der URL steht – sonst Race
  * mit FamilieEinladungQuerySync. Bei ?t=huber bleibt die Demo-Sitzung aktiv.
@@ -11,9 +12,10 @@
 import { useLayoutEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
-import { isK2FamilieApfLocalhost, resolveApfMeineFamilieTenantId } from '../config/k2FamilieApfDefaults'
+import { isK2FamilieApfArbeitsplattform, resolveApfMeineFamilieTenantId } from '../config/k2FamilieApfDefaults'
 import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
 import { clearFamilieNurMusterSession, setFamilieNurMusterSession } from '../utils/familieMusterSession'
+import { ensureFamilieHuberInTenantListForPicker } from '../utils/familieTenantCookieBackup'
 import { isK2FamilieMeineFamilieHomePath } from '../utils/k2FamiliePwaBranding'
 
 function hasFamilieEinladungOrMusterQuery(search: string): boolean {
@@ -43,9 +45,12 @@ export function FamilieApfMeineFamilieSync() {
     }
     /** Ohne Query: Demo-Modus verlassen (war zuvor nur auf localhost + mit Kreinecker-ID – Nutzer sahen nur Huber). */
     clearFamilieNurMusterSession()
+    if (isK2FamilieApfArbeitsplattform()) {
+      ensureFamilieHuberInTenantListForPicker()
+    }
     refreshFromStorage()
     bumpFamilieStorageRevision()
-    if (!isK2FamilieApfLocalhost()) return
+    if (!isK2FamilieApfArbeitsplattform()) return
     const preferred = resolveApfMeineFamilieTenantId()
     if (!preferred) return
     /** Nach Einladungs-QR: anderer Mandant als Stamm aktiv – nicht auf Kreinecker zurücksetzen. */
