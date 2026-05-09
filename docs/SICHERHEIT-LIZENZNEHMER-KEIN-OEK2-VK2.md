@@ -66,6 +66,38 @@ Wenn die Plattform unter einem weiteren Hostnamen betrieben wird, diesen in `PLA
 
 ---
 
+## 4b. Lizenz-Domains – bombensicher (gleiches Deployment, keine Demo)
+
+**Problem:** Lizenzen können unter **`https://k2-galerie.vercel.app/g/<mandant>`** laufen. Der Host ist dann **dieselbe Plattform-Instanz** wie die Demo – wer URLs kennt, könnte **`/galerie-oeffentlich`** oder VK2-Routen aufrufen (technisch erreichbar).
+
+**Stärkste Absicherung:** Pro Kund:in (oder pro Pilot-Phase) eine **eigene Domain** am **gleichen Vercel-Projekt** hängen und diese Domain als **reine Lizenz-Domain** eintragen – dort gilt **`isPlatformHostname` = false** → **`PlatformOnlyRoute`** leitet ök2/VK2 weg, **`TenantContext`** erzwingt keinen Demo-Kontext.
+
+### Schritte (Vercel + Build)
+
+1. **Domain zuweisen** (Vercel → Project → Settings → Domains): z. B. `galerie-kunde.at` oder eine Subdomain `kunde.k2-galerie.vercel.app` – **nur** wenn diese Subdomain **nicht** durch die automatische Regel `k2-galerie.*` bereits als Plattform-Preview gilt, sonst lieber eine **eindeutig andere** Subdomain wie `kunde-galerie.example.com` auf DNS-Ebene.
+2. In **Vercel → Environment Variables** (Production, ggf. Preview):
+   - **`VITE_LICENSEE_PUBLIC_HOSTNAMES`** = kommagetrennte Liste **exakter** Hostnamen, Kleinbuchstaben, z. B.  
+     `galerie-kunde.at,www.galerie-kunde.at`
+3. **Neu deployen** (Build pickt `import.meta.env` auf).
+4. **Stripe / Erfolgsseite / QR:** Öffentliche Galerie-URL des Mandanten auf diese Domain legen, z. B. `https://galerie-kunde.at/g/<tenantId>` – nicht zwingend nötig für den Schutz, aber **einheitliche Marke** für den Kunden.
+
+### Was die Variable bewirkt (technisch)
+
+- **`src/config/tenantConfig.ts`**: `isLicenseePublicHostname(host)` prüft die Liste aus **`VITE_LICENSEE_PUBLIC_HOSTNAMES`**.
+- **`isPlatformHostname`**: wenn Lizenz-Host → **sofort false** (vor `PLATFORM_HOSTNAMES` und Vercel-Prefix-Regel).
+- **`PlatformOnlyRoute`**, **`TenantContext`**, **`isPlatformInstance()`** nutzen dieselbe Kette → ök2/VK2 und Demo-Kontext entfallen auf dieser Domain.
+
+### Was du nicht tun solltest
+
+- **`k2-galerie.vercel.app`**, **`kgm.at`**, **`localhost`** nicht in `VITE_LICENSEE_PUBLIC_HOSTNAMES` eintragen – sonst wäre die Plattform-Demo dort abgeschaltet.
+- Die Liste ist **exakter Match**, keine Wildcards (`*.at` geht so nicht – bei Bedarf jeden Host einzeln eintragen, z. B. mit und ohne `www.`).
+
+### Wenn nur `/g/…` auf der Hauptdomain bleibt
+
+Ohne eigene Domain bleibt ein **Rest-Risiko** (andere Browser-Tabs, manuelle URL-Eingabe auf dem Plattform-Host). Für **maximale** Trennung: **eigene Domain** + Variable wie oben.
+
+---
+
 ## 5. Verknüpfung
 
 - **Eiserne Regel:** .cursor/rules/eiserne-regel-lizenznehmer-kein-oek2-vk2.mdc  

@@ -1,8 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Lizenz-Mandant: einmal **An Server senden** / automatischer Sync (nach Fix), dann **„Zum Event-Flyer“** – links soll **Master-/Server-`flyerMaster`** bleiben, nicht Willkommensbild.
+**Was wir JETZT tun:** Bei neuem **Lizenz-Kunden mit eigener Domain:** Vercel **`VITE_LICENSEE_PUBLIC_HOSTNAMES`** setzen (kommagetrennt), redeployen – dann ök2/VK2 auf dieser Domain gesperrt. Ohne Variable: nur **`k2-galerie.vercel.app/g/…`** = weiterhin technisch dieselbe „Plattform“ wie kgM.
 
-**Einordnung:** Dynamischer Mandant schrieb **`flyerMaster` nie** in den Blob → jeder **`saveDynamicTenantStateToServer`**-POST ließ **`flyerMaster`** weg → öffentlicher Flyer fiel auf Galerie-Fallback. Jetzt: **`readFlyerMasterForPublishByTenantId`** + bei Bedarf **GET gallery-data** zum Erhalten des bestehenden Server-Masters.
+**Einordnung:** **`isPlatformHostname`** prüft **zuerst** Lizenz-Hosts aus Env → **`isPlatformInstance()`** false → **`PlatformOnlyRoute`** / **`TenantContext`** wie bei Fremd-Domain. Tests **`licenseePublicHostname.test.ts`**. Doku **`docs/SICHERHEIT-LIZENZNEHMER-KEIN-OEK2-VK2.md`** §4b; Regel **`eiserne-regel-lizenznehmer-kein-oek2-vk2.mdc`**.
+
+**Letzter Stand:** 09.05.26 – **Bombenschutz Lizenz-Domains:** **`VITE_LICENSEE_PUBLIC_HOSTNAMES`** + **`parseLicenseePublicHostnamesFromEnv`**, **`isLicenseePublicHostname`**, **`isPlatformHostname`** (Lizenz vor Plattform-Regel). **`.env.example`**, Doku, Tests **`licenseePublicHostname.test.ts`**. **`qs:local`** grün. **Commit:** _(nach Push)_ ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **Lizenz-Blob: flyerMaster mitschicken:** **`publishGalleryData.ts`** export **`readFlyerMasterForPublishByTenantId`**; **`ScreenshotExportAdmin`** **`resolveFlyerMasterForDynamicTenantSave`** + **`saveDynamicTenantStateToServer`** hängt **`flyerMaster`** an die Payload (lokal URL wie Veröffentlichen, sonst Server mergen). **`qs:local`** grün. **Commit:** `443012d4` ✅ **main**
 

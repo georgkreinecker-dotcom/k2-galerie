@@ -22,7 +22,7 @@ alwaysApply: true
 
 ## Technische Absicherung
 
-1. **Plattform-Instanz-Erkennung:** Nur auf Hostnamen aus `PLATFORM_HOSTNAMES` (tenantConfig.ts) laufen ök2 und VK2. Alle anderen Hostnamen = Lizenznehmer-Instanz.
+1. **Plattform-Instanz-Erkennung:** Nur auf Hostnamen aus `PLATFORM_HOSTNAMES` (tenantConfig.ts) und der Vercel-Prefix-Regel für dieses Projekt laufen ök2 und VK2. **Bombenschutz bei gleichem Deployment:** `VITE_LICENSEE_PUBLIC_HOSTNAMES` (kommagetrennt, exakte Hosts) → diese Hosts sind **nie** Plattform (`isLicenseePublicHostname` schlägt vor der Plattform-Prüfung zu). Doku: **docs/SICHERHEIT-LIZENZNEHMER-KEIN-OEK2-VK2.md** Abschnitt Lizenz-Domains.
 2. **TenantContext:** Auf Nicht-Plattform wird `?context=oeffentlich` und `?context=vk2` ignoriert – immer K2. sessionStorage wird nie mit oeffentlich/vk2 beschrieben.
 3. **Routen:** `galerie-oeffentlich`, `galerie-oeffentlich-vorschau`, alle `/projects/vk2/*` und VK2-Login sind mit `PlatformOnlyRoute` gewrappt – auf Nicht-Plattform Redirect auf Start.
 4. **URL-Parameter:** Kein Vertrauen in User-Input für Kontext. `tenantId` aus URL: nur a-z0-9-, 1–64 Zeichen, niemals k2/oeffentlich/vk2.

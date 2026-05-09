@@ -135,15 +135,51 @@ export const PLATFORM_HOSTNAMES = [
 ]
 
 /**
+ * Bombensicher **auf derselben Vercel-App**: Zusätzliche Domains, unter denen nur die Lizenz-Galerie läuft – **nie** ök2/VK2,
+ * auch wenn der Host technisch wie eine Preview (`*.vercel.app`) aussehen könnte.
+ *
+ * Vercel / Build: `VITE_LICENSEE_PUBLIC_HOSTNAMES` = kommagetrennte Liste **exakter** Hostnamen (nur Kleinbuchstaben empfohlen).
+ * Beispiel: `galerie-kunde.vercel.app,customer.example.com`
+ *
+ * **Nicht** die Plattform-Hosts (`k2-galerie.vercel.app`, `kgm.at`, …) eintragen – sonst wäre die Demo dort abgeschaltet.
+ *
+ * Doku: docs/SICHERHEIT-LIZENZNEHMER-KEIN-OEK2-VK2.md (Abschnitt Lizenz-Domains)
+ */
+export function parseLicenseePublicHostnamesFromEnv(): string[] {
+  try {
+    const raw = import.meta.env.VITE_LICENSEE_PUBLIC_HOSTNAMES
+    if (raw == null || typeof raw !== 'string') return []
+    return raw
+      .split(',')
+      .map((s) => s.trim().toLowerCase())
+      .filter((s) => s.length > 0)
+  } catch {
+    return []
+  }
+}
+
+/** True, wenn der Host explizit als **reine Lizenz-/Besucher-Domain** konfiguriert ist → `isPlatformHostname` wird false → kein ök2/VK2. */
+export function isLicenseePublicHostname(host: string): boolean {
+  const h = String(host || '')
+    .trim()
+    .toLowerCase()
+  if (!h) return false
+  return parseLicenseePublicHostnamesFromEnv().includes(h)
+}
+
+/**
  * Reine Hostname-Prüfung (ohne window) – für Tests und zentrale Logik.
  * Vercel Preview/Team: k2-galerie-git-*.vercel.app – nicht in PLATFORM_HOSTNAMES, sonst /p → PlatformOnlyRoute → / → Entdecken.
  * Nur Hosts, die eindeutig dieses Vercel-Projekt sind (Prefix k2-galerie. oder k2-galerie-); keine generische *.vercel.app-Freigabe.
+ *
+ * **Zuerst:** `VITE_LICENSEE_PUBLIC_HOSTNAMES` – konfigurierte Lizenz-Hosts schlagen alle Plattform-Regeln (Bombenschutz).
  */
 export function isPlatformHostname(host: string): boolean {
   const h = String(host || '')
     .trim()
     .toLowerCase()
   if (!h) return false
+  if (isLicenseePublicHostname(h)) return false
   if (PLATFORM_HOSTNAMES.some((x) => x.toLowerCase() === h)) return true
   if (h.endsWith('.vercel.app') && (h.startsWith('k2-galerie.') || h.startsWith('k2-galerie-'))) return true
   return false
