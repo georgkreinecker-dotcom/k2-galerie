@@ -4,7 +4,7 @@
 
 **Einordnung:** **`FlyerEventBogenNeuPage`** lud Design nur aus **K2/ök2/VK2**-Keys – nicht aus **`k2-<mandant>-design-settings`** / Server-**`designSettings`**.
 
-**Letzter Stand:** 09.05.26 – **Master-Flyer übernimmt Homepage-Farben (Lizenz):** **`FlyerEventBogenNeuPage`** – `loadHomepageDesignForFlyer(..., dynamicTenantId)` liest **`k2-<tenant>-design-settings`**; Merge **`gallery-data.designSettings`** + localStorage (wie **`GalerieTenantPage`**); **`storage`**-Listener ergänzt **`…-design-settings`**. **qs:local** grün. **Commit:** _(nach Push)_ ✅ **main**
+**Letzter Stand:** 09.05.26 – **Master-Flyer übernimmt Homepage-Farben (Lizenz):** **`FlyerEventBogenNeuPage`** – `loadHomepageDesignForFlyer(..., dynamicTenantId)` liest **`k2-<tenant>-design-settings`**; Merge **`gallery-data.designSettings`** + localStorage (wie **`GalerieTenantPage`**); **`storage`**-Listener ergänzt **`…-design-settings`**. **qs:local** grün. **Commit:** `b9d55a1c` ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **Lizenz „Werke verwalten“ leer trotz Galerie:** **`tenantConfig.getEffectiveDirectionFromWork(work, tenantPrimaryFocus?)`** bei mehrdeutigen Produkt-Kategorien; **`ScreenshotExportAdmin`** + **`WerkkatalogTab`** übergeben **`galleryData.focusDirections[0]`** / **`oek2SparteId`**; Bearbeiten setzt **`artworkDirection`** für Lizenz-Mandant. **qs:local** grün. **Commit:** `f733dcb0` ✅ **main**
 
