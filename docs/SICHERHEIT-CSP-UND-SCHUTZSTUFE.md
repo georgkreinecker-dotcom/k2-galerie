@@ -49,6 +49,7 @@ Wenn ein Feature **neue** Skript-, Frame- oder Fetch-Ziele einführt: **`vercel.
 
 ## Querverweise
 
+- Verantwortung & Formulierungen nach außen: **`docs/SICHERHEIT-VERANTWORTUNG-AUSSENKOMMUNIKATION.md`**
 - Regeln: **`stand-qr-niemals-zurueck.mdc`**, **`vercel-stand-funktioniert.mdc`**
 - Stand & QR (Georg): **`docs/STAND-QR-SO-BLEIBT-ES.md`**, **`docs/VERCEL-STAND-HANDY.md`**
 - Link-Härtung & Phishing: **`src/utils/safeExternalUrl.ts`**, Tests **`src/tests/safeExternalUrl.test.ts`**

@@ -2,6 +2,8 @@
 
 **Zweck:** Eine zentrale Übersicht aller Absicherungen für Datensicherheit (Kontext-Trennung K2/ök2/VK2, kein stilles Löschen, keine Vermischung) und dokumentierte Lücken bzw. Prüfpunkte.
 
+**Verantwortlicher Marktgang (Außenkommunikation & Nachweis):** Damit klar ist, dass wir **bewusst und dokumentiert** handeln und **nicht** „techniklos blind live gehen“, siehe **[SICHERHEIT-VERANTWORTUNG-AUSSENKOMMUNIKATION.md](./SICHERHEIT-VERANTWORTUNG-AUSSENKOMMUNIKATION.md)** – dort Kurztext für Partner/Zahlungsdienstleister und Tabelle „Was wir getan haben“.
+
 ---
 
 ## 1. Bereits abgesichert (Referenzen)
