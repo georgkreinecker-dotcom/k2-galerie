@@ -28,7 +28,7 @@ Kurzfassung – ausführliches Handbuch für Vereine separat (VK2-Handbuch).
 
 6. [Demo und Lizenz](06-OEK2-DEMO-LIZENZ.md)
 
-Demo nutzen, von der Demo zur eigenen Galerie, Lizenz kaufen.
+Demo nutzen, Lizenzstufen, Kauf mit Schwerpunkt/Sparte und AGB, VK2-Verweis, Daten sichern.
 
 7. [Statistik und Werkkatalog](11-STATISTIK-WERKKATALOG.md)
 
@@ -70,7 +70,11 @@ Für **Inhaber:innen**: Verantwortung, nur-Inhaber-Bereiche, Arbeitsansicht, Sic
 
 **Persönlicher Testzugang**, Name der App, Paket mit Handbuch und Testprotokoll, **erster Einstieg am PC/Laptop**, Verweis auf Konditionen und Bewerbung.
 
-16. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
+16. [Produkt-Sicherheitsdatenblatt IT](19-PRODUKT-SICHERHEITS-DATENBLATT.md)
+
+**Informationssicherheit** der Plattform in Kurzfassung: Mandantentrennung, Transport und Schutzheader, CSP, Backup, **ehrliche Grenzen** – **kein** chemisches Sicherheitsdatenblatt.
+
+17. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
 
 **Gleiche URL auf PC und Handy**, Stand aktualisieren, Drucken, QR-Code, Passwort vergessen, Hilfe.
 

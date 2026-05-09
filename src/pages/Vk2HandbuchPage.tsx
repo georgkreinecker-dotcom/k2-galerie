@@ -22,6 +22,11 @@ const DOCUMENTS = [
   { id: '07-demo-lizenz', name: 'Demo und Lizenz', file: '07-DEMO-LIZENZ.md' },
   { id: '12-testpiloten', name: 'Testpiloten', file: '12-TESTPILOTEN.md' },
   { id: '08-einstellungen', name: 'Einstellungen', file: '08-EINSTELLUNGEN.md' },
+  {
+    id: '13-sicherheitsdatenblatt',
+    name: 'Produkt-Sicherheitsdatenblatt IT',
+    file: '13-PRODUKT-SICHERHEITS-DATENBLATT.md',
+  },
   { id: '09-faq', name: 'Häufige Fragen', file: '09-HAEUFIGE-FRAGEN.md' },
   { id: '05-kurz', name: 'Kurz zusammengefasst', file: '05-KURZ-ZUSAMMENGEFASST.md' },
   { id: '10-impressum', name: 'Impressum', file: '10-IMPRESSUM.md' },

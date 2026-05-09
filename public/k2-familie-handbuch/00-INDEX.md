@@ -46,6 +46,10 @@ Was **Bearbeiter:innen** und **Leser:innen** sehen und ändern dürfen; persönl
 
 **Für alle:** Warum der Raum **privat** ist und **Zugang nur mit persönlicher ID** möglich ist – **Vertrauenssache**, einheitlich in App und Doku.
 
+10. [Produkt-Sicherheitsdatenblatt IT](10-PRODUKT-SICHERHEITS-DATENBLATT.md)
+
+**Informationssicherheit** der Plattform in Kurzfassung für Familien-Nutzer: gleiche dokumentierte Schutzstellung wie Galerie und Vereinsplattform – **kein** chemisches Sicherheitsdatenblatt.
+
 ---
 
 **Drucken:** In der App den Button **Drucken** – ein Kapitel oder das ganze Handbuch als PDF.

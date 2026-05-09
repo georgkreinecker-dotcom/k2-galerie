@@ -25,6 +25,11 @@ export default function K2TeamHandbuchPage() {
     { id: '11-backup', name: 'Backup-Zusammenfassung', file: '11-BACKUP-ZUSAMMENFASSUNG.md' },
     { id: '12-arbeitsplattform', name: 'Arbeitsplattform Verbesserungen', file: '12-ARBEITSPLATTFORM-VERBESSERUNGEN.md' },
     { id: '13-backup-vollbackup', name: 'Backup & Vollbackup K2 Galerie', file: '13-BACKUP-VOLLBACKUP-K2-GALERIE.md' },
+    {
+      id: '33-sicherheitsdatenblatt',
+      name: 'Produkt-Sicherheitsdatenblatt IT',
+      file: '33-PRODUKT-SICHERHEITS-DATENBLATT.md',
+    },
     { id: '16-zentrale-themen', name: 'Zentrale Themen für Nutzer', file: '16-ZENTRALE-THEMEN-FUER-NUTZER.md', stand: '20.02.2026' },
     { id: '19-martina-muna', name: 'Martina & Muna (Archiv)', file: '19-MARTINA-MUNA-BESUCH-OEK2-VK2.md' },
     { id: '20-pilot-zettel', name: 'Pilot-Zettel – Drucken', file: '20-PILOT-ZETTEL-OEK2-VK2.md' },

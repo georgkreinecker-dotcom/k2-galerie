@@ -26,7 +26,7 @@ const LicenseManager = () => {
       features: [
         'Bis 30 Werke',
         '1 Galerie-Website',
-        'Eventplanung, Kasse, Etiketten',
+        'Eventplanung, Etiketten (ohne Kassa)',
         'Standard-URL'
       ]
     },

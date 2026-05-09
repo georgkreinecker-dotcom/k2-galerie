@@ -15,6 +15,11 @@ const GALERIE_DOCUMENTS = [
   { id: '12-arbeitsplattform', name: 'Arbeitsplattform Verbesserungen', file: '12-ARBEITSPLATTFORM-VERBESSERUNGEN.md' },
   { id: '13-backup-vollbackup', name: 'Backup & Vollbackup K2 Galerie', file: '13-BACKUP-VOLLBACKUP-K2-GALERIE.md' },
   { id: '14-sicherheit', name: 'Sicherheit & Vor Veröffentlichung', file: '14-SICHERHEIT-PRODUKT-LABEL.md' },
+  {
+    id: '33-sicherheitsdatenblatt',
+    name: 'Produkt-Sicherheitsdatenblatt IT',
+    file: '33-PRODUKT-SICHERHEITS-DATENBLATT.md',
+  },
   { id: '15-skalierung', name: 'Skalierungsprinzip', file: '15-SKALIERUNGSPRINZIP.md' },
   { id: '16-zentrale-themen', name: 'Zentrale Themen für Nutzer', file: '16-ZENTRALE-THEMEN-FUER-NUTZER.md' },
   { id: '21-links-qr', name: 'Links & QR-Codes – Register', file: '21-LINKS-QR-CODES-REGISTER.md' },

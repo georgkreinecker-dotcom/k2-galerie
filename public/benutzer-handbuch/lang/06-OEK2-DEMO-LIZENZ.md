@@ -1,9 +1,7 @@
-# Demo und Lizenz (ausführliche Version)
+# Demo und Lizenz
 
-Mehr Details zu Demo-Nutzung und Lizenzkauf.
+Die **verbindliche, aktuelle Fassung** dieses Kapitels ist auf Deutsch hier:
 
----
+→ **[Demo nutzen und Lizenz (Kapitel 6)](../06-OEK2-DEMO-LIZENZ.md)**
 
-*Inhalt folgt.*
-
-**Zurück zur Kurzversion:** [Kapitel 6 – Kurzversion](06-OEK2-DEMO-LIZENZ.md)
+Dort stehen: Demo-Nutzung, Lizenzstufen Basic–Pro++, **Schwerpunkt beim Kauf**, Empfehler-ID, AGB, Stripe, Links nach dem Kauf, VK2-Verweis und Hinweis zum Produkt-Sicherheitsdatenblatt IT.

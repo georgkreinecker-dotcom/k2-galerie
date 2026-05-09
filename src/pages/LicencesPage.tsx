@@ -65,7 +65,7 @@ export interface LicenceGrant {
 }
 
 const LICENCE_TYPES: { id: 'basic' | 'pro' | 'proplus' | 'propplus' | 'vk2'; name: string; price: string; priceEur: number | null; summary: string; icon: string; highlight?: boolean }[] = [
-  { id: 'basic',   name: LIZENZPREISE.basic.name,   price: LIZENZPREISE.basic.price,   priceEur: LIZENZPREISE.basic.priceEur,   icon: '🎨',  summary: 'Bis 30 Werke, 1 Galerie, Events, Kasse, Etiketten, Standard-URL' },
+  { id: 'basic',   name: LIZENZPREISE.basic.name,   price: LIZENZPREISE.basic.price,   priceEur: LIZENZPREISE.basic.priceEur,   icon: '🎨',  summary: 'Bis 30 Werke, 1 Galerie, Events, Etiketten, Standard-URL – ohne Kassa' },
   { id: 'pro',     name: LIZENZPREISE.pro.name,    price: LIZENZPREISE.pro.price,     priceEur: LIZENZPREISE.pro.priceEur,     icon: '⭐',  summary: 'Alles aus Basic + unbegrenzte Werke, Custom Domain – ohne vollen Marketingbereich' },
   { id: 'proplus', name: LIZENZPREISE.proplus.name, price: LIZENZPREISE.proplus.price, priceEur: LIZENZPREISE.proplus.priceEur, icon: '💎',  summary: 'Alles aus Pro + gesamter Marketingbereich (Events, Galeriepräsentation, Flyer, Presse, Social Media)' },
   { id: 'propplus', name: LIZENZPREISE.propplus.name, price: LIZENZPREISE.propplus.price, priceEur: LIZENZPREISE.propplus.priceEur, icon: '📄',  summary: 'Alles aus Pro+ + Rechnung (§ 11 UStG): fortlaufende Nummerierung, Pflichtangaben, USt-Aufschlüsselung', highlight: true },
@@ -477,7 +477,7 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
         }}>
           <h2 style={{ fontSize: '1rem', margin: '0 0 0.75rem', color: 'var(--k2-muted)' }}>Details im Überblick</h2>
           <div style={{ fontSize: '0.88rem', color: 'var(--k2-muted)', lineHeight: 1.7 }}>
-            <p style={{ margin: '0 0 0.5rem' }}><strong style={{ color: 'var(--k2-text)' }}>🎨 Basic</strong> – Bis 30 Werke, 1 Galerie, Events, Kasse, Etiketten, Marketing (Basis), <TermWithExplanation term="Standard-URL" />. <strong>15 €/Monat.</strong></p>
+            <p style={{ margin: '0 0 0.5rem' }}><strong style={{ color: 'var(--k2-text)' }}>🎨 Basic</strong> – Bis 30 Werke, 1 Galerie, Events, Etiketten, Marketing (Basis), <TermWithExplanation term="Standard-URL" /> – <strong>ohne Kassa.</strong> <strong>15 €/Monat.</strong></p>
             <p style={{ margin: '0 0 0.5rem' }}><strong style={{ color: 'var(--k2-text)' }}>⭐ Pro</strong> – Alles aus Basic + unbegrenzte Werke, <TermWithExplanation term="Custom Domain" /> – ohne vollen Marketingbereich. <strong>35 €/Monat.</strong></p>
             <p style={{ margin: '0 0 0.5rem' }}><strong style={{ color: 'var(--k2-text)' }}>💎 Pro+</strong> – Alles aus Pro + <strong style={{ color: 'var(--k2-text)' }}>gesamter Marketingbereich</strong>: Events, Galeriepräsentation, Flyer, Presse, Social Media, Plakat, PR-Dokumente. <strong>45 €/Monat.</strong></p>
             <p style={{ margin: '0 0 0.5rem', padding: '0.6rem 0.85rem', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 8 }}>

@@ -54,6 +54,10 @@ Plattform-Betreiber (kgm solution), Copyright, Lizenzanfrage; Vereinsdaten aus S
 
 Zettel und Einladung: keine eigene Mandanten-Instanz pro Name; eine Demo-URL; Pilot-Session und Name in Stammdaten; Verweis Demo und Lizenz.
 
+13. [Produkt-Sicherheitsdatenblatt IT](13-PRODUKT-SICHERHEITS-DATENBLATT.md)
+
+Informationssicherheit, Mandantentrennung, Hosting-Schutzmaßnahmen und dokumentierte Grenzen – **kein** chemisches Sicherheitsdatenblatt.
+
 ---
 
 **Drucken:** Button „Drucken“ – einzelnes Kapitel oder ganzes Handbuch als PDF.

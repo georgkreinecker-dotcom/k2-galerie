@@ -19,7 +19,7 @@ Ohne diesen zweiten Code ist leicht Verwechslung: Der Galerie-QR öffnet nie den
 
 ### 1. Direkt nach dem Kauf – Lizenz-Erfolgsseite
 
-Nach erfolgreicher Zahlung zeigt die Seite **Lizenz erworben** deinen Admin-Link. Wenn die Adresse ein **`/admin`** enthält – in der Regel mit deiner **tenantId** in der URL – erscheint darunter derselbe Bereich mit **QR-Bild speichern** und **Admin-Link kopieren**. So kannst du den QR sofort aufs Handy legen.
+Nach erfolgreicher Zahlung zeigt die Seite **Lizenz erworben** deinen Admin-Link. Wenn die Adresse ein **`/admin`** enthält – in der Regel mit deiner **tenantId** und bei Galerie-Lizenzen zusätzlich **`focusDirection`** (gewählter Schwerpunkt beim Kauf) – erscheint darunter derselbe Bereich mit **QR-Bild speichern** und **Admin-Link kopieren**. Diese Parameter nicht „zurechtstutzen“; der QR wird passend zum Server-Stand gebaut. So kannst du den QR sofort aufs Handy legen.
 
 ### 2. Später – Einstellungen, Stammdaten
 
@@ -48,4 +48,6 @@ Technisch nutzt der QR dieselbe Logik wie die übrigen Produkt-QR-Codes: Server-
 
 ---
 
-**Quelle im Code:** `src/components/LicenseeAdminQrPanel.tsx`, Einstellungen in `ScreenshotExportAdmin`, Erfolgsseite `LizenzErfolgPage`, Hilfsfunktionen `src/utils/publicLinks.ts`.
+**Quelle im Code:** `src/components/LicenseeAdminQrPanel.tsx`, Einstellungen in `ScreenshotExportAdmin`, Erfolgsseite `LizenzErfolgPage`, Hilfsfunktionen `src/utils/publicLinks.ts`, API `api/get-licence-by-session.js` (baut `admin_url` inkl. `focusDirection` für Galerie-Mandanten).
+
+**Nutzerhandbuch (Lizenznehmer):** `public/benutzer-handbuch/06-OEK2-DEMO-LIZENZ.md`.

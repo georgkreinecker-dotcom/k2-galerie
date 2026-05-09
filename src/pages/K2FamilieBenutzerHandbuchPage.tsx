@@ -23,6 +23,11 @@ const DOCUMENTS = [
     name: 'Vertrauen, privater Familienraum',
     file: '09-VERTRAUEN-PRIVATER-FAMILIENRAUM.md',
   },
+  {
+    id: '10-sicherheitsdatenblatt',
+    name: 'Produkt-Sicherheitsdatenblatt IT',
+    file: '10-PRODUKT-SICHERHEITS-DATENBLATT.md',
+  },
 ] as const
 
 export default function K2FamilieBenutzerHandbuchPage() {

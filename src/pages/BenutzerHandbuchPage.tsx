@@ -33,6 +33,11 @@ const DOCUMENTS = [
   },
   { id: '15-k2-familie-lizenz', name: 'K2 Familie – Lizenz und Kündigung', file: '15-K2-FAMILIE-LIZENZ.md' },
   { id: '17-testuser', name: 'Testuser: Zugang und Konditionen', file: '17-TESTUSER-ZUGANG.md' },
+  {
+    id: '19-sicherheitsdatenblatt',
+    name: 'Produkt-Sicherheitsdatenblatt IT',
+    file: '19-PRODUKT-SICHERHEITS-DATENBLATT.md',
+  },
   { id: '04-faq', name: 'Häufige Fragen', file: '04-HAEUFIGE-FRAGEN.md' },
 ] as const
 
