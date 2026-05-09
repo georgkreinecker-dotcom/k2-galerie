@@ -15,7 +15,6 @@ import { getPageTexts } from '../config/pageTexts'
 import { loadEvents } from '../utils/eventsStorage'
 import { getPageContentGalerie, getVk2SafeDisplayImageUrl } from '../config/pageContentGalerie'
 import { GalerieSocialLinks } from '../components/GalerieSocialLinks'
-import { AppVerlassenFooterLink } from '../components/AppVerlassenFooterLink'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { isAdminUnlocked } from '../utils/adminUnlockStorage'
 import { formatEventTerminKomplett } from '../utils/eventTerminFormat'
@@ -915,7 +914,6 @@ const Vk2GaleriePage: React.FC = () => {
           </div>
           <p style={{ marginTop: '1.5rem', marginBottom: 0, paddingTop: '1rem', borderTop: `1px solid ${C.border}`, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: C.textMid, letterSpacing: '0.01em' }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
           <p style={{ marginTop: '0.35rem', marginBottom: 0, fontSize: 'clamp(0.72rem, 1.6vw, 0.82rem)', color: C.textMid, opacity: 0.95 }}>{PRODUCT_URHEBER_ANWENDUNG}</p>
-          <AppVerlassenFooterLink accentColor={C.accent} mutedColor={C.textMid} />
           <p style={{ marginTop: '0.75rem', marginBottom: 0, fontSize: '0.78rem', color: C.textLight }}>
             {PRODUCT_BRAND_NAME} ©
           </p>

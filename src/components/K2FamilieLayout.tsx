@@ -54,7 +54,6 @@ import {
   musterHintForFamilieNavLink,
 } from '../config/familieMusterDemoHints'
 import { PublicTeilenFixed } from './PublicTeilenFixed'
-import { AppVerlassenFooterLink } from './AppVerlassenFooterLink'
 import { getPublicK2FamilieMusterEntryUrl } from '../utils/publicLinks'
 import { reportK2FamilieMusterHuberVisit, VISIT_TENANT_K2_FAMILIE_MUSTER } from '../utils/k2FamilieMusterVisit'
 import {
@@ -1283,7 +1282,6 @@ function FamilieLayoutInner() {
           <footer className="k2-familie-app-footer k2-familie-no-print" role="contentinfo">
             <p className="k2-familie-app-footer__line">{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
             <p className="k2-familie-app-footer__line k2-familie-app-footer__line--muted">{PRODUCT_URHEBER_ANWENDUNG}</p>
-            <AppVerlassenFooterLink accentColor={t.accent} mutedColor={t.muted} />
           </footer>
         ) : null}
       </main>

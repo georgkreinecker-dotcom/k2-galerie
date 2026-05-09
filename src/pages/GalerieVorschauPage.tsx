@@ -27,7 +27,6 @@ import {
 import { getShopOrdersKey, getShopSoldArtworksKey } from '../utils/shopContextKeys'
 import { getArtworkLagerInfo } from '../utils/artworkLagerStatus'
 import { readKuenstlerFallbackGalerieKarten, resolveArtistLabelForGalerieStatistik } from '../utils/artworkArtistDisplay'
-import { AppVerlassenFooterLink } from '../components/AppVerlassenFooterLink'
 // Fotos für neue Werke nur im Admin (Neues Werk hinzufügen) – dort Option Freistellen/Original
 import '../App.css'
 
@@ -3058,10 +3057,6 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
         <footer style={{ padding: '1rem clamp(1rem, 3vw, 2rem)', borderTop: '1px solid color-mix(in srgb, var(--k2-muted, #c49a88) 25%, transparent)', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: 'var(--k2-muted, #c49a88)', letterSpacing: '0.01em', textAlign: 'center' }}>
           <div>{PRODUCT_COPYRIGHT_BRAND_ONLY}</div>
           <div style={{ marginTop: '0.35rem', fontSize: 'clamp(0.72rem, 1.6vw, 0.82rem)', opacity: 0.95 }}>{PRODUCT_URHEBER_ANWENDUNG}</div>
-          <AppVerlassenFooterLink
-            accentColor={galerieTheme.accent || '#5ffbf1'}
-            mutedColor={galerieTheme.muted}
-          />
         </footer>
       </div>
 

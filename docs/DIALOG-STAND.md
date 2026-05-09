@@ -1,8 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Kurz im **Browser** (localhost oder Vercel, APf): **„Meine Familie“ / Familie Kreinecker** im Link **`t=familie-1773759510983`** – entspricht Einstellungen auf dem Handy.
+**Was wir JETZT tun:** _(frei – letzte Änderung unten)._
 
-**Einordnung:** **Eine Auflösungskette:** zuerst **VITE** (`KREINECKER_STAMMBAUM` / `APF_MEINE_FAMILIE`), sonst auf **Plattform-Hosts** (`isPlatformInstance`) fest **`familie-1773759510983`** (`k2FamilieKreineckerStammbaumQuelle` → Links, APf, Board). **Kein** Fallback auf Lizenznehmer-Domains.
+**Einordnung:** Produkt-Footer bleibt mit **Copyright** (tenantConfig); ohne „App verlassen“.
+
+**Letzter Stand:** 09.05.26 – **Footer „App verlassen“ entfernt:** Komponente **`AppVerlassenFooterLink`** gelöscht; Aufrufe aus **`GaleriePage`**, **`GalerieVorschauPage`**, **`Vk2GaleriePage`**, **`Vk2GalerieVorschauPage`**, **`K2FamilieLayout`** entfernt. **`qs:local`** grün. **Commit:** `b500e505` ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **K2 Familie Mandant = Einstellungen (familie-1773759510983):** **`resolveKreineckerPresentationTenantIdFromEnv`** – nach Env **Plattform-Fallback** **`K2_PLATTFORM_STAMM_FAMILIE_KREINECKER_TENANT_ID`** + **`tenantIdErlaubtFuerKreineckerStammKette`**; **`.env.example`** dokumentiert. Gleiche ID wie auf dem Gerät unter „Technische ID“. **`qs:local`** grün. **Commit:** `80b2cf01` ✅ **main**
 
