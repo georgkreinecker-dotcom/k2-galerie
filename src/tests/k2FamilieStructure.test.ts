@@ -73,4 +73,11 @@ describe('isFamilieNavSectionActive', () => {
       isFamilieNavSectionActive(R.meineFamilie, K2_FAMILIE_APP_SHORT_PATH, `?t=${FAMILIE_HUBER_TENANT_ID}`),
     ).toBe(false)
   })
+
+  it('Meine Familie mit festem ?t=: aktiv auch wenn Suchstring nach Sync leer ist', () => {
+    const toStamm = `${K2_FAMILIE_APP_SHORT_PATH}?t=kreinecker-stamm`
+    expect(isFamilieNavSectionActive('/familie', toStamm, '')).toBe(true)
+    expect(isFamilieNavSectionActive(R.meineFamilie, toStamm, '?t=kreinecker-stamm')).toBe(true)
+    expect(isFamilieNavSectionActive('/familie', toStamm, `?t=${FAMILIE_HUBER_TENANT_ID}`)).toBe(false)
+  })
 })

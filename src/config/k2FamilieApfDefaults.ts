@@ -53,3 +53,16 @@ export function resolveApfMeineFamilieTenantId(): string | null {
   }
   return null
 }
+
+/**
+ * Wie resolveApfMeineFamilieTenantId, aber wenn nichts passt: erster Mandant in der Liste,
+ * der weder Demo (huber) noch Platzhalter (default) ist – damit „Meine Familie“ auf der APf
+ * nicht auf Huber hängen bleibt, wenn Env leer ist aber die Stammfamilie schon angelegt wurde.
+ */
+export function resolveApfMeineFamilieTenantIdPreferNonDemo(): string | null {
+  const direct = resolveApfMeineFamilieTenantId()
+  if (direct) return direct
+  const ids = loadTenantIdsFromStorage()
+  const pick = ids.find((id) => id !== FAMILIE_HUBER_TENANT_ID && id !== K2_FAMILIE_DEFAULT_TENANT)
+  return pick ?? null
+}

@@ -6,6 +6,7 @@
 import { PROJECT_ROUTES } from './navigation'
 import { isK2FamilieMeineFamilieHomePath, K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
 import { FAMILIE_HUBER_TENANT_ID, getMusterfamilieHuberMeineFamiliePathWithQuery } from '../data/k2FamilieMusterHuberQuelle'
+import { resolveKreineckerPresentationTenantIdFromEnv } from '../data/k2FamilieKreineckerStammbaumQuelle'
 import { K2_FAMILIE_NAV_LABEL_GESCHICHTE } from './k2FamilieNavLabels'
 
 const R = PROJECT_ROUTES['k2-familie']
@@ -17,38 +18,48 @@ export type FamilieLeitGroup = {
   sections: FamilieLeitSection[]
 }
 
-/** Vorderteil der Leitstruktur (bis inkl. Benutzerhandbuch) */
-const k2FamilieLeitGroupsHead: FamilieLeitGroup[] = [
-  {
-    chapterTitle: 'Start & Orientierung',
-    sections: [
-      { id: 'fam-willkommen', label: 'Einstiegsseite (Flyer/QR)', to: R.willkommen },
-      { id: 'fam-einstieg', label: 'Musterfamilie (Umschauen)', to: getMusterfamilieHuberMeineFamiliePathWithQuery() },
-      { id: 'fam-home', label: 'Meine Familie', to: K2_FAMILIE_APP_SHORT_PATH },
-      { id: 'fam-uebersicht', label: 'Projekt & Leitbild', to: `${R.uebersicht}#k2-familie-lizenz-bruecke` },
-    ],
-  },
-  {
-    chapterTitle: 'Stammbaum & Struktur',
-    sections: [
-      { id: 'fam-stammbaum', label: 'Stammbaum', to: R.stammbaum },
-      { id: 'fam-grund', label: 'Grundstruktur', to: R.grundstruktur },
-    ],
-  },
-  {
-    chapterTitle: 'Momente & Zeit',
-    sections: [
-      { id: 'fam-events', label: 'Events', to: R.events },
-      { id: 'fam-kal', label: 'Kalender', to: R.kalender },
-      { id: 'fam-gesch', label: K2_FAMILIE_NAV_LABEL_GESCHICHTE, to: R.geschichte },
-      { id: 'fam-gedenk', label: 'Gedenkort', to: R.gedenkort },
-    ],
-  },
-  {
-    chapterTitle: 'Lesen & Außenauftritt',
-    sections: [{ id: 'fam-handbuch', label: 'Benutzerhandbuch', to: R.benutzerHandbuch }],
-  },
-]
+/** „Meine Familie“ in Leitstruktur + Top-Nav: mit `?t=…` wenn der Build die Stammfamilie kennt (VITE), sonst kurze `/familie`. */
+export function getMeineFamilieLeitstrukturPath(): string {
+  const tid = resolveKreineckerPresentationTenantIdFromEnv()
+  if (tid) return `${K2_FAMILIE_APP_SHORT_PATH}?t=${encodeURIComponent(tid)}`
+  return K2_FAMILIE_APP_SHORT_PATH
+}
+
+/** Vorderteil der Leitstruktur (bis inkl. Benutzerhandbuch) – zur Laufzeit gebaut (t= aus Env). */
+function buildK2FamilieLeitGroupsHead(): FamilieLeitGroup[] {
+  const meineFamilieTo = getMeineFamilieLeitstrukturPath()
+  return [
+    {
+      chapterTitle: 'Start & Orientierung',
+      sections: [
+        { id: 'fam-willkommen', label: 'Einstiegsseite (Flyer/QR)', to: R.willkommen },
+        { id: 'fam-einstieg', label: 'Musterfamilie (Umschauen)', to: getMusterfamilieHuberMeineFamiliePathWithQuery() },
+        { id: 'fam-home', label: 'Meine Familie', to: meineFamilieTo },
+        { id: 'fam-uebersicht', label: 'Projekt & Leitbild', to: `${R.uebersicht}#k2-familie-lizenz-bruecke` },
+      ],
+    },
+    {
+      chapterTitle: 'Stammbaum & Struktur',
+      sections: [
+        { id: 'fam-stammbaum', label: 'Stammbaum', to: R.stammbaum },
+        { id: 'fam-grund', label: 'Grundstruktur', to: R.grundstruktur },
+      ],
+    },
+    {
+      chapterTitle: 'Momente & Zeit',
+      sections: [
+        { id: 'fam-events', label: 'Events', to: R.events },
+        { id: 'fam-kal', label: 'Kalender', to: R.kalender },
+        { id: 'fam-gesch', label: K2_FAMILIE_NAV_LABEL_GESCHICHTE, to: R.geschichte },
+        { id: 'fam-gedenk', label: 'Gedenkort', to: R.gedenkort },
+      ],
+    },
+    {
+      chapterTitle: 'Lesen & Außenauftritt',
+      sections: [{ id: 'fam-handbuch', label: 'Benutzerhandbuch', to: R.benutzerHandbuch }],
+    },
+  ]
+}
 
 /** Eigenständiger Bereich wie bei mök2 (ein Ordner, eine Lesefassung) – nur K2-Familie-Inhalt, keine Galerie-Vertriebslinks. */
 const k2FamilieProspekteGruppe: FamilieLeitGroup = {
@@ -85,7 +96,7 @@ const k2FamilieLeitGroupsTail: FamilieLeitGroup[] = [
 
 /** Leitstruktur-Sidebar inkl. eigener Gruppe „Prospekte & Präsentationsmappen“ (nur K2 Familie). */
 export function getK2FamilieLeitGroups(): FamilieLeitGroup[] {
-  return [...k2FamilieLeitGroupsHead, k2FamilieProspekteGruppe, ...k2FamilieLeitGroupsTail]
+  return [...buildK2FamilieLeitGroupsHead(), k2FamilieProspekteGruppe, ...k2FamilieLeitGroupsTail]
 }
 
 /** Snapshot beim Modulstart – für Tests/Imports; UI: getK2FamilieLeitGroups() */
@@ -133,9 +144,13 @@ export function isFamilieNavSectionActive(
     return isK2FamilieMeineFamilieHomePath(pathname) && tCurrent === FAMILIE_HUBER_TENANT_ID
   }
 
-  // Meine Familie (Kurz-URL) – /familie ODER lange meine-familie, aber nicht die Huber-Demo
+  // Meine Familie – /familie (optional ?t= Stamm-Mandant); nicht die Huber-Demo
   if (pathTo === K2_FAMILIE_APP_SHORT_PATH) {
     if (!isK2FamilieMeineFamilieHomePath(pathname)) return false
+    if (tInLink && tInLink !== FAMILIE_HUBER_TENANT_ID) {
+      // Nach Einladungs-Sync kann `t` aus der URL entfernt sein – trotzdem „Meine Familie“ aktiv
+      return tCurrent === tInLink || tCurrent === ''
+    }
     return tCurrent !== FAMILIE_HUBER_TENANT_ID
   }
 

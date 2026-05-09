@@ -12,7 +12,10 @@
 import { useLayoutEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
-import { isK2FamilieApfArbeitsplattform, resolveApfMeineFamilieTenantId } from '../config/k2FamilieApfDefaults'
+import {
+  isK2FamilieApfArbeitsplattform,
+  resolveApfMeineFamilieTenantIdPreferNonDemo,
+} from '../config/k2FamilieApfDefaults'
 import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
 import { clearFamilieNurMusterSession, setFamilieNurMusterSession } from '../utils/familieMusterSession'
 import { ensureFamilieHuberInTenantListForPicker } from '../utils/familieTenantCookieBackup'
@@ -51,7 +54,7 @@ export function FamilieApfMeineFamilieSync() {
     refreshFromStorage()
     bumpFamilieStorageRevision()
     if (!isK2FamilieApfArbeitsplattform()) return
-    const preferred = resolveApfMeineFamilieTenantId()
+    const preferred = resolveApfMeineFamilieTenantIdPreferNonDemo()
     if (!preferred) return
     /** Nach Einladungs-QR: anderer Mandant als Stamm aktiv – nicht auf Kreinecker zurücksetzen. */
     if (currentTenantId !== FAMILIE_HUBER_TENANT_ID && currentTenantId !== preferred) {

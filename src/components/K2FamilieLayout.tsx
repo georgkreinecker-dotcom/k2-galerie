@@ -39,6 +39,7 @@ import { isFamilieEinladungNurZugangAnsicht } from '../utils/familieEinladungPen
 import { loadEinstellungen, loadPersonen } from '../utils/familieStorage'
 import { loadIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
 import { isK2FamilieMeineFamilieHomePath, K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
+import { getMeineFamilieLeitstrukturPath, isFamilieNavSectionActive } from '../config/k2FamilieStructure'
 import { K2_FAMILIE_NAV_LABEL_GESCHICHTE } from '../config/k2FamilieNavLabels'
 import { resolveFamiliePwaResumeTarget, writeFamiliePwaLastPath } from '../utils/familiePwaLastPath'
 import { useK2FamiliePresentationMode } from '../hooks/useK2FamiliePresentationMode'
@@ -855,6 +856,9 @@ const familieRoutes = PROJECT_ROUTES['k2-familie']
 /** Muster-Demo: Start in der Leiste = Huber mit ?t=huber (nicht nur /familie → „meine“ echte Familie). */
 const FAMILIE_MUSTER_HOME_NAV_TO = `${familieRoutes.meineFamilie}?t=${FAMILIE_HUBER_TENANT_ID}`
 
+/** Stammbaum/Leitstruktur und Top-Nav: gleiches Ziel wie Sidebar „Meine Familie“ (`?t=` wenn Env gesetzt). */
+const MEINE_FAMILIE_TOP_NAV_TO = getMeineFamilieLeitstrukturPath()
+
 type FamilieNavItem = {
   to: string
   label: string
@@ -864,7 +868,7 @@ type FamilieNavItem = {
 
 /** Volle Leiste auf allen Unterseiten. Auf „Meine Familie“-Start: oben Meine Familie, Handbuch, Einstellungen – Stammbaum/Events usw. bleiben als Kacheln. */
 const FAMILIE_NAV: FamilieNavItem[] = [
-  { to: K2_FAMILIE_APP_SHORT_PATH, label: 'Meine Familie' },
+  { to: MEINE_FAMILIE_TOP_NAV_TO, label: 'Meine Familie' },
   { to: familieRoutes.stammbaum, label: 'Stammbaum' },
   { to: familieRoutes.events, label: 'Events' },
   { to: familieRoutes.kalender, label: 'Kalender' },
@@ -876,7 +880,7 @@ const FAMILIE_NAV: FamilieNavItem[] = [
 
 /** Interaktiver Muster-Leitfaden: Fokus-Highlight (`data-leitfaden-focus` auf html). */
 function familieNavLeitfadenFocusForTo(to: string): string | undefined {
-  if (to === K2_FAMILIE_APP_SHORT_PATH) return 'home'
+  if (to === K2_FAMILIE_APP_SHORT_PATH || to === MEINE_FAMILIE_TOP_NAV_TO) return 'home'
   if (to === familieRoutes.stammbaum) return 'stammbaum'
   if (to === familieRoutes.events) return 'events'
   if (to === familieRoutes.kalender) return 'kalender'
@@ -887,22 +891,12 @@ function familieNavLeitfadenFocusForTo(to: string): string | undefined {
   return undefined
 }
 
-function isFamilieNavItemActive(item: FamilieNavItem, path: string): boolean {
-  const { to, activePrefixes } = item
-  const isFamilieHomeNavLink =
-    to === K2_FAMILIE_APP_SHORT_PATH || to === FAMILIE_MUSTER_HOME_NAV_TO
-  const isExactMatchNav =
-    to === familieRoutes.benutzerHandbuch || to === familieRoutes.einstellungen
-  const toPathOnly = to.split('?')[0] ?? to
+function isFamilieNavItemActive(item: FamilieNavItem, pathname: string, search: string): boolean {
+  const { activePrefixes } = item
   if (activePrefixes?.length) {
-    return activePrefixes.some((p) => path.startsWith(p))
+    return activePrefixes.some((p) => pathname.startsWith(p))
   }
-  if (isFamilieHomeNavLink || isExactMatchNav) {
-    return isFamilieHomeNavLink
-      ? isK2FamilieMeineFamilieHomePath(path)
-      : path === toPathOnly || path === toPathOnly + '/'
-  }
-  return path.startsWith(toPathOnly)
+  return isFamilieNavSectionActive(pathname, item.to, search)
 }
 
 function FamilieNav() {
@@ -930,7 +924,7 @@ function FamilieNav() {
         ]
       }
       return [
-        { to: K2_FAMILIE_APP_SHORT_PATH, label: 'Meine Familie' },
+        { to: MEINE_FAMILIE_TOP_NAV_TO, label: 'Meine Familie' },
         { to: familieRoutes.benutzerHandbuch, label: 'Handbuch' },
         {
           to: familieRoutes.einstellungen,
@@ -947,10 +941,10 @@ function FamilieNav() {
   const { menuOpen, setMenuOpen, closeMenu } = useK2WorldMobileNavSheet(path, loc.search)
 
   const activeNavItem = useMemo(() => {
-    const matches = navItems.filter((i) => isFamilieNavItemActive(i, path))
+    const matches = navItems.filter((i) => isFamilieNavItemActive(i, path, loc.search))
     if (matches.length) return matches[matches.length - 1]
     return navItems[0]
-  }, [navItems, path])
+  }, [navItems, path, loc.search])
 
   /** Unterseiten Musterfamilie: minimal Zurück + Link zur Musterfamilie. */
   if (nurMusterBesuch && !isMeineFamilieHome) {
@@ -995,7 +989,7 @@ function FamilieNav() {
 
   const renderNavLink = (item: FamilieNavItem, variant: 'bar' | 'sheet') => {
     const { to, label } = item
-    const isActive = isFamilieNavItemActive(item, path)
+    const isActive = isFamilieNavItemActive(item, path, loc.search)
     const navMuster = isFamilieNurMusterSession()
     const musterHint = navMuster ? musterHintForFamilieNavLink(to) : undefined
     const leitfadenFocus = familieNavLeitfadenFocusForTo(to)

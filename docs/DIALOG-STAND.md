@@ -1,8 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Georg arbeitet weiter bei **Lizenz / ök2** (Flyer, Mandanten, Handbuch) – **keine** unaufgeforderten Smart-Panel-/APf-Zusätze mit Huber-Schnellwahl. K2 Familie im Panel wieder wie vorher: **Zur Startseite**, Handbuch, Doku.
+**Was wir JETZT tun:** **K2 Familie APf:** Link **„Meine Familie“** (Leitstruktur + Top-Nav) zeigt **Familie Kreinecker** (`?t=` aus Env), nicht Huber; Georg kann kurz im Browser gegenprüfen.
 
-**Einordnung:** Die Schnelllinks **Musterfamilie Huber** im Smart Panel waren für Georg falsch priorisiert (**Kreinecker** sollte nicht durch Huber verdrängt werden). Ursache: wir hatten **SmartPanel + DevView** ergänzt, obwohl der Fokus nur Lizenz/ök2 war → **Revert**.
+**Einordnung:** Sidebar und horizontale Nav nutzen jetzt **dieselbe Quelle** wie die Leitstruktur (`getMeineFamilieLeitstrukturPath`); Aktiv-Highlight berücksichtigt **`t=`** und **gestrippte URL** nach Einladungs-Sync (`isFamilieNavSectionActive`).
+
+**Letzter Stand:** 09.05.26 – **K2 Familie „Meine Familie“ = Kreinecker (Nav + Aktiv-Logik):** **`K2FamilieLayout`** – Top-Nav und Vollpfad-Leiste mit **`MEINE_FAMILIE_TOP_NAV_TO`**; **`isFamilieNavItemActive`** delegiert zu **`isFamilieNavSectionActive`** (mit **`loc.search`**); **`k2FamilieStructure`** – explizites **`?t=`** (nicht Huber): aktiv auch bei **leerem** `search`; **`familieMusterDemoHints`** – Tooltip für **`/familie?t=…`**; Tests ergänzt. Zuvor: **`FamilieApfMeineFamilieSync`** / **`k2FamilieApfDefaults`** (ohne Env: Mandant ≠ Huber/Default). **`qs:local`** grün. **Commit:** _(nach Push)_ ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **Revert Smart Panel / DevView (Huber-Schnelllinks):** **`SmartPanel.tsx`** und **`DevViewPage.tsx`** wieder ohne **`k2-familie-muster-huber`** / **`k2-familie-stamm-kreinecker`**. Georg: falsche Familie = Folge der Huber-Vordergrund-Taste, nicht der Lizenz-Arbeit. **`qs:local`** grün. **Commit:** `1cdd0ebd` ✅ **main**
 
@@ -2890,13 +2892,13 @@ Datei: `src/pages/TexteSchreibtischPage.tsx`. Build ✅.
 
 ---
 
-**Letzter Stand:** 27.03.26 – **Präsentationsmappe Event ergänzt:** In `08-EVENTS-OEFFENTLICHKEITSARBEIT.md` neuer Praxisblock **„Beispiel: Event-Eroeffnung in 1 Tag“** (Zeitablauf von Event anlegen bis Verteiler). Index `00-INDEX.md` dazu ergänzt. **Commit:** _nach Push_
+**Letzter Stand:** 27.03.26 – **Präsentationsmappe Event ergänzt:** In `08-EVENTS-OEFFENTLICHKEITSARBEIT.md` neuer Praxisblock **„Beispiel: Event-Eroeffnung in 1 Tag“** (Zeitablauf von Event anlegen bis Verteiler). Index `00-INDEX.md` dazu ergänzt. **Commit:** `2f05283f`
 
 **Was wir JETZT tun:** Georg kann die Vollversion prüfen; bei Bedarf als Nächstes analog ein VK2-Beispiel ergänzen.
 
 ---
 
-**Letzter Stand:** 27.03.26 – **Präsentationsmappe: Event- und Medienplanung ausgebaut:** Vollversion-Kapitel `08-EVENTS-OEFFENTLICHKEITSARBEIT.md` deutlich erweitert (Nutzen, Praxisablauf, Ergebnis), Index-Text in `public/praesentationsmappe-vollversion/00-INDEX.md` geschärft, Kurzform `PraesentationsmappePage.tsx` um eigenen Abschnitt „Event- und Medienplanung“ ergänzt. **Commit:** _nach Push_
+**Letzter Stand:** 27.03.26 – **Präsentationsmappe: Event- und Medienplanung ausgebaut:** Vollversion-Kapitel `08-EVENTS-OEFFENTLICHKEITSARBEIT.md` deutlich erweitert (Nutzen, Praxisablauf, Ergebnis), Index-Text in `public/praesentationsmappe-vollversion/00-INDEX.md` geschärft, Kurzform `PraesentationsmappePage.tsx` um eigenen Abschnitt „Event- und Medienplanung“ ergänzt. **Commit:** `2f05283f`
 
 **Was wir JETZT tun:** Georg prüft die Präsentationsmappe; bei Bedarf noch mehr Fokus auf Verteiler/Mediengenerator.
 
@@ -2912,7 +2914,7 @@ Datei: `src/pages/TexteSchreibtischPage.tsx`. Build ✅.
 
 ---
 
-**Letzter Stand:** 27.03.26 – **ök2 Muster: SM-Links auch bei altem localStorage:** `k2-oeffentlich-stammdaten-galerie` mit **leeren** `social*` wurde unverändert geladen → keine Demo-URLs. **`loadStammdaten('oeffentlich','gallery')`** ergänzt jetzt die drei Social-Felder aus **`MUSTER_TEXTE.gallery`**, **nur wenn alle drei leer** sind (kein Überschreiben bei teilweise gesetzten URLs). **`stammdatenStorage.ts`**. **Commit:** _nach Push_
+**Letzter Stand:** 27.03.26 – **ök2 Muster: SM-Links auch bei altem localStorage:** `k2-oeffentlich-stammdaten-galerie` mit **leeren** `social*` wurde unverändert geladen → keine Demo-URLs. **`loadStammdaten('oeffentlich','gallery')`** ergänzt jetzt die drei Social-Felder aus **`MUSTER_TEXTE.gallery`**, **nur wenn alle drei leer** sind (kein Überschreiben bei teilweise gesetzten URLs). **`stammdatenStorage.ts`**. **Commit:** `2f05283f`
 
 **Was wir JETZT tun:** Georg: ök2-Galerie (`/galerie-oeffentlich`) neu laden → unter Willkommen YouTube / Instagram / Highlight-Video sichtbar.
 
@@ -2948,7 +2950,7 @@ Datei: `src/pages/TexteSchreibtischPage.tsx`. Build ✅.
 
 ---
 
-**Letzter Stand:** 26.03.26 – **Regression gründlich gefixt (Live-Vorschau-Zeit):** Zusätzlich zur Datei-Aktivierung war ein zweiter „sticky“-Pfad aktiv: `imgOverride.tor` aus `k2-flyer-vierer-image-overrides` (localStorage) übersteuerte das Eingangstor dauerhaft. **Fix jetzt richtig:** `tor` wird aus Storage **nicht mehr geladen** und **nicht mehr persistent gespeichert**; `flyerTor/ft` aus URL bleibt nur **einmalig in dieser Sitzung**. Standardquelle ist wieder Eingangstor wie `/entdecken`. **`FlyerK2Oek2TorViererPage.tsx`**. **Commit:** _nach Push_
+**Letzter Stand:** 26.03.26 – **Regression gründlich gefixt (Live-Vorschau-Zeit):** Zusätzlich zur Datei-Aktivierung war ein zweiter „sticky“-Pfad aktiv: `imgOverride.tor` aus `k2-flyer-vierer-image-overrides` (localStorage) übersteuerte das Eingangstor dauerhaft. **Fix jetzt richtig:** `tor` wird aus Storage **nicht mehr geladen** und **nicht mehr persistent gespeichert**; `flyerTor/ft` aus URL bleibt nur **einmalig in dieser Sitzung**. Standardquelle ist wieder Eingangstor wie `/entdecken`. **`FlyerK2Oek2TorViererPage.tsx`**. **Commit:** `2f05283f`
 
 **Was wir JETZT tun:** Georg: Flyer neu öffnen (ohne manuelle Rückseiten-Aktion) → Rückseite muss das aktuelle Eingangstor zeigen; manuelle Tor-URL/Foto nur noch bewusst pro Sitzung aktiv.
 

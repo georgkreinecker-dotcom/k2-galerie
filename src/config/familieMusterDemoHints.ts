@@ -64,6 +64,7 @@ export const MUSTER_HINT_TOOLBAR_EIGENE_FAMILIE =
 /** Nav-Link `to` → Kurztext für data-muster-hint (exakte Pfade wie in FamilieNav). */
 export function musterHintForFamilieNavLink(to: string): string | undefined {
   const path = to.replace(/\/$/, '') || '/'
+  const pathOnly = path.split('?')[0] ?? path
   const map: Record<string, string> = {
     [K2_FAMILIE_APP_SHORT_PATH]: MUSTER_HINT_NAV_MEINE_FAMILIE,
     [getMusterfamilieHuberMeineFamiliePathWithQuery()]: MUSTER_HINT_NAV_MUSTERFAMILIE_HOME,
@@ -75,5 +76,8 @@ export function musterHintForFamilieNavLink(to: string): string | undefined {
     [R.einstellungen]: MUSTER_HINT_NAV_EINSTELLUNGEN,
     [R.benutzerHandbuch]: MUSTER_HINT_NAV_HANDBUCH,
   }
-  return map[path]
+  return (
+    map[path] ??
+    (pathOnly === K2_FAMILIE_APP_SHORT_PATH ? MUSTER_HINT_NAV_MEINE_FAMILIE : undefined)
+  )
 }
