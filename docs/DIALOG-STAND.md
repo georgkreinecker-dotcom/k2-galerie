@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** K2-Familie-Lizenz: Stripe-Name → erster Anzeigename + Gestalten; fertig mit Commit (unten).
+**Was wir JETZT tun:** _(frei – letzte Änderung unten)._
 
-**Einordnung:** End-to-End Lizenznehmer: Checkout-**Name** = **customerName** in Metadaten; Zugangs-URL mit **?fn=** triggert gespeicherten **familyDisplayName** und Homepage-**welcomeTitle** (ohne eigene Seitentexte).
+**Einordnung:** Produkt-Footer bleibt mit **Copyright** (tenantConfig); ohne „App verlassen“.
 
-**Letzter Stand:** 09.05.26 – **K2 Familie Lizenz: Stripe-Anmeldename = erster Familien-Anzeigename** – **`appendFamilieFnQueryParam`** in **`stripeWebhookLicenceShared`** (Galerie-URL in DB), **`get-licence-by-session`** (Admin- + Galerie-Link + alte DB-Zeilen mit **name**), **`LizenzErfolgPage`** (Fallback **appendFamilieDisplayNameParamIfMissing**), **`familieEinladungsUrls`**, **`FamilieEinladungQuerySync`** (**bump** nach **fn**-Speichern), **`pageTextsFamilie`** (keine Seitentexte: **welcomeTitle** = **familyDisplayName**). **customerName** optional aus **session.customer_details.name**. Tests angepasst. **qs:local** grün. **Commit:** _(folgt)_ ✅ **main**
+**Letzter Stand:** 09.05.26 – **K2 Familie Lizenz: Stripe-Anmeldename = erster Familien-Anzeigename** – **`appendFamilieFnQueryParam`** in **`stripeWebhookLicenceShared`** (Galerie-URL in DB), **`get-licence-by-session`** (Admin- + Galerie-Link + alte DB-Zeilen mit **name**), **`LizenzErfolgPage`** (Fallback **appendFamilieDisplayNameParamIfMissing**), **`familieEinladungsUrls`**, **`FamilieEinladungQuerySync`** (**bump** nach **fn**-Speichern), **`pageTextsFamilie`** (keine Seitentexte: **welcomeTitle** = **familyDisplayName**). **customerName** optional aus **session.customer_details.name**. Tests angepasst. **qs:local** grün. **Commit:** `ed97805c` ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **K2 Familie Top-Nav: erste Pille war fest „Familie Kreinecker“** auf Start + Unterseiten (nicht aus `familyDisplayName`). Jetzt **`FamilieNav`** → **`getFamilieTenantDisplayName`** + **`familieStorageRevision`** (wie nach Speichern erwartet). **Commit:** `3393e539` ✅ **main**
 
