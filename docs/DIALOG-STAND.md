@@ -1,8 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Auf **Vercel** bei Lizenz-Mandant prüfen: **Event-Flyer** links = **Willkommensbild** (wie Startseite/Medien „Willkommen“); wenn nur **Galerie-Karte** gesetzt ist, weiterhin Karte.
+**Was wir JETZT tun:** Lizenz-Mandant: einmal **An Server senden** / automatischer Sync (nach Fix), dann **„Zum Event-Flyer“** – links soll **Master-/Server-`flyerMaster`** bleiben, nicht Willkommensbild.
 
-**Einordnung:** Flyer hatte **Karte vor Willkommen** genommen, die öffentliche Homepage den **Hero aus Willkommen** → falsches Bild. **Nur `effectiveDynamicTenantId`:** Reihenfolge **Willkommen → Karte**; **K2 echte Galerie** unverändert **Karte → Willkommen**.
+**Einordnung:** Dynamischer Mandant schrieb **`flyerMaster` nie** in den Blob → jeder **`saveDynamicTenantStateToServer`**-POST ließ **`flyerMaster`** weg → öffentlicher Flyer fiel auf Galerie-Fallback. Jetzt: **`readFlyerMasterForPublishByTenantId`** + bei Bedarf **GET gallery-data** zum Erhalten des bestehenden Server-Masters.
+
+**Letzter Stand:** 09.05.26 – **Lizenz-Blob: flyerMaster mitschicken:** **`publishGalleryData.ts`** export **`readFlyerMasterForPublishByTenantId`**; **`ScreenshotExportAdmin`** **`resolveFlyerMasterForDynamicTenantSave`** + **`saveDynamicTenantStateToServer`** hängt **`flyerMaster`** an die Payload (lokal URL wie Veröffentlichen, sonst Server mergen). **`qs:local`** grün. **Commit:** _(nach Push)_ ✅ **main**
+
+**Letzter Stand:** 09.05.26 – **Flyer: öffentlicher Master links = wie Ableitungen:** **`FlyerEventBogenNeuPage`** – Effect **`fromPublicGalerie` + `publicMasterViewOnly`**: **`applyFromServer` / `applyFromLocal`** setzen **`leftSrc`** über **`resolveFlyerDerivationLeftFromMasterPersistGallery`** + **`flyerStorageKey`**; Dependency ergänzt. **`build:vercel`** + **`test:changed`** grün. **Commit:** _(vorheriger Push)_ ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **Event-Flyer Lizenz: Bild wie Medienbereich:** **`FlyerEventBogenNeuPage`** – Hilfsfunktionen **`flyerLeftSrcDefaultFromGalleryFields` / `flyerLeftSrcDefaultFromGi`**; bei **`effectiveDynamicTenantId`** Standard links **Willkommen vor Galerie-Karte** (`defaultLeft`, Initial **`leftSrc`, Server/Fallback-Laden, `galleryFallbackImagePath`). **K2** weiter **Karte vor Willkommen**. **qs:local** grün. **Commit:** `3aee603b` ✅ **main**
 

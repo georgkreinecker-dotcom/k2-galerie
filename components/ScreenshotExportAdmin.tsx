@@ -92,6 +92,28 @@ const CENTRAL_GALLERY_DATA_URL = `${VERCEL_APP_BASE}/api/gallery-data`
 /** Fallback wenn Blob noch leer (z. B. erste Deploy): statische Datei aus Build */
 const CENTRAL_GALLERY_DATA_FALLBACK_URL = `${VERCEL_APP_BASE}/gallery-data.json`
 
+/** Dynamischer Mandant: Flyer-Master mitschicken wie beim zentralen Veröffentlichen – sonst überschreibt jeder Sync den Blob ohne flyerMaster → öffentlicher Flyer fällt auf Willkommensbild zurück. */
+async function resolveFlyerMasterForDynamicTenantSave(tenantId: string): Promise<{ leftSrc?: string; leftWerkLabel?: string } | null> {
+  const local = readFlyerMasterForPublishByTenantId(tenantId)
+  if (local) return local
+  try {
+    const res = await fetch(`${CENTRAL_GALLERY_DATA_URL}?tenantId=${encodeURIComponent(tenantId)}&_=${Date.now()}`, {
+      cache: 'no-store',
+    })
+    if (!res.ok) return null
+    const j = (await res.json().catch(() => null)) as {
+      flyerMaster?: { leftSrc?: unknown; leftWerkLabel?: unknown }
+    } | null
+    const fm = j?.flyerMaster && typeof j.flyerMaster === 'object' ? j.flyerMaster : null
+    const leftSrc = typeof fm?.leftSrc === 'string' ? fm.leftSrc.trim() : ''
+    const leftWerkLabel = typeof fm?.leftWerkLabel === 'string' ? fm.leftWerkLabel.trim() : ''
+    if (!leftSrc || leftSrc.startsWith('data:') || leftSrc.startsWith('blob:')) return null
+    return { leftSrc, leftWerkLabel: leftWerkLabel || undefined }
+  } catch {
+    return null
+  }
+}
+
 /** Live-Template / Design-Panel: Farben plus optionale Text- und Bildmaße (tsc: ein Typ für ganzes File). */
 export type LiveDesignSettings = {
   accentColor: string
@@ -138,7 +160,11 @@ import { loadEvents as loadEventsFromStorage, saveEvents as saveEventsToStorage,
 import { pickOpeningEventForWerbemittel } from '../src/utils/oek2MusterEventLinie'
 import { loadDocuments as loadDocumentsFromStorage, saveDocuments as saveDocumentsToStorage, loadK2DocumentsBackup } from '../src/utils/documentsStorage'
 import { applyServerPayloadK2 } from '../src/utils/applyServerDataToLocal'
-import { publishGalleryDataToServer, publishK2MetaToServerPreserveArtworks } from '../src/utils/publishGalleryData'
+import {
+  publishGalleryDataToServer,
+  publishK2MetaToServerPreserveArtworks,
+  readFlyerMasterForPublishByTenantId,
+} from '../src/utils/publishGalleryData'
 import { stripBase64FromArtworks } from '../src/utils/artworkExport'
 import { parseEkFromForm } from '../src/utils/artworkEkVk'
 import { apiPost, apiGet } from '../src/utils/apiClient'
@@ -5078,13 +5104,15 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       tenantId: targetTenantId,
     })
     if (data.tenantId !== targetTenantId) return { success: false, error: 'Mandanten-Ziel stimmt nicht. Speichern abgebrochen.' }
-    const json = JSON.stringify(data)
+    const flyerMaster = await resolveFlyerMasterForDynamicTenantSave(targetTenantId)
+    const dataForSend = flyerMaster ? { ...data, flyerMaster } : data
+    const json = JSON.stringify(dataForSend)
     if (json.length > 5000000) return { success: false, error: 'Daten zu groß. Bitte reduzieren.' }
     const result = await apiPost(WRITE_GALLERY_DATA_API_URL, json, { timeoutMs: 30000 })
     if (result.success && result.data) {
       if (silent) console.log('✅ Galerie-Daten gespeichert (Mandant)', tenant.dynamicTenantId)
       try {
-        const written = Array.isArray(data.artworks) ? data.artworks : []
+        const written = Array.isArray(dataForSend.artworks) ? dataForSend.artworks : []
         setAllArtworksSafe(written)
       } catch (_) {}
       return { success: true, size: json.length }

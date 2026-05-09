@@ -194,50 +194,6 @@ function relativeLuminanceHex(hex: string): number {
   return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
 }
 
-function looksLikePlaceholderImageUrl(v: string): boolean {
-  const s = (v || '').trim().toLowerCase()
-  if (!s) return true
-  if (s.endsWith('.svg')) return true
-  if (s.includes('/img/muster/')) return true
-  if (s.includes('placeholder')) return true
-  return false
-}
-
-function pickEventImageUrl(ev: unknown): string {
-  if (!ev || typeof ev !== 'object') return ''
-  const obj = ev as Record<string, unknown>
-  // Bevorzugung: offensichtliche Bild-Felder zuerst
-  const preferred = [
-    'imageUrl',
-    'photoUrl',
-    'fotoUrl',
-    'bannerUrl',
-    'coverUrl',
-    'coverImage',
-    'heroImage',
-    'plakatImage',
-    'plakatUrl',
-    'overlayUrl',
-    'backgroundUrl',
-  ]
-  for (const k of preferred) {
-    const v = typeof obj[k] === 'string' ? String(obj[k]) : ''
-    if (!v.trim()) continue
-    if (looksLikePlaceholderImageUrl(v)) continue
-    return v.trim()
-  }
-  // Fallback: irgendein string-Feld, das nach Bild/URL aussieht
-  const keys = Object.keys(obj)
-  for (const k of keys) {
-    if (!/(image|photo|foto|plakat|banner|cover|hero|background|overlay|url)$/i.test(k)) continue
-    const v = typeof obj[k] === 'string' ? String(obj[k]) : ''
-    if (!v.trim()) continue
-    if (looksLikePlaceholderImageUrl(v)) continue
-    return v.trim()
-  }
-  return ''
-}
-
 /** Text auf Akzentfläche (Hero, Invite-Panel): hell oder dunkel je nach Akzenthelligkeit. */
 function onAccentCaptionColor(accentHex: string): string {
   return relativeLuminanceHex(accentHex) > 0.55 ? '#1a120c' : '#fdfbf8'
@@ -348,6 +304,31 @@ function flyerLeftSrcDefaultFromGi(
   welcomeFirst: boolean,
 ): string {
   return flyerLeftSrcDefaultFromGalleryFields(gi.welcomeImage || '', gi.galerieCardImage || '', fb, welcomeFirst)
+}
+
+/** A3/A6/Karte: links = Flyer-Master vom Server, sonst Browser-Persistenz, sonst Galerie – wie vom Nutzer im Master gesetzt. */
+function resolveFlyerDerivationLeftFromMasterPersistGallery(
+  flyerMaster: { leftSrc?: unknown; leftWerkLabel?: unknown } | null,
+  persisted: { leftSrc?: unknown; leftWerkLabel?: unknown } | null,
+  welcome: string,
+  card: string,
+  fb: string,
+  welcomeFirst: boolean,
+): { left: string; label: string } {
+  const masterLeft = String(flyerMaster?.leftSrc || '').trim()
+  const masterLabel = String(flyerMaster?.leftWerkLabel || '').trim()
+  if (masterLeft && !masterLeft.startsWith('data:') && !masterLeft.startsWith('blob:')) {
+    return { left: masterLeft, label: masterLabel || 'Masterflyer' }
+  }
+  const pLeft = String(persisted?.leftSrc || '').trim()
+  const pLabel = String(persisted?.leftWerkLabel || '').trim()
+  if (pLeft.startsWith('data:image') || (pLeft && !pLeft.startsWith('blob:'))) {
+    return { left: pLeft, label: pLabel || 'Bild aus Datei' }
+  }
+  return {
+    left: flyerLeftSrcDefaultFromGalleryFields(welcome, card, fb, welcomeFirst),
+    label: 'Galeriebild',
+  }
 }
 
 function galleryFallbackImagePath(isOeffentlich: boolean, isVk2: boolean, dynamicTenantId?: string): string {
@@ -774,6 +755,11 @@ export default function FlyerEventBogenNeuPage() {
       if (typeof s === 'string' && s.length > 0 && (s.startsWith('data:image') || s.startsWith('blob:'))) {
         return s
       }
+      // Lizenz-Mandant: gespeicherte Master-URL (nach Speichern) wie bei K2 übernehmen – nicht nur Platzhalter
+      if (effectiveDynamicTenantId && typeof s === 'string') {
+        const t = s.trim()
+        if (t && !t.startsWith('blob:')) return t
+      }
       return fb
     }
     if (typeof s === 'string' && s.length > 0 && !s.startsWith('blob:')) {
@@ -849,17 +835,20 @@ export default function FlyerEventBogenNeuPage() {
   }, [isOeffentlich, isVk2, flyerImgFallback])
 
   /**
-   * Galerie „Aktuelles“ oder Admin-Ableitung (`derivationOnlyViewer`): Mittel-/rechtes Motiv an aktuelle
-   * Seitengestaltung koppeln. **Linkes Motiv nicht** überschreiben – kommt aus Flyer-Master (Persistenz /
-   * gewähltes Werk); sonst kurz richtiges Bild, dann Wechsel auf Galerie-Karte.
+   * Ableitungen A3/A6/Karte (Galerie oder Admin): Mittel-/rechts wie Seitengestaltung.
+   * Links **dieselbe Quelle wie Master A5**: `flyerMaster` vom Server, sonst Flyer-Persistenz, sonst Galerie.
+   * Immer Server-Anfrage (wie öffentlicher Master), damit Master nach Veröffentlichen überall gleich ist.
    */
   useEffect(() => {
     if (!derivationOnlyViewer || isOeffentlich || isVk2) return
     let active = true
     const fb = flyerImgFallback
+    const welcomeFirst = !!effectiveDynamicTenantId
+    const storageKey = flyerStorageKey
 
     const applyFromServerPayload = (payload: any) => {
-      const galleryFromServer = (payload?.gallery && typeof payload.gallery === 'object') ? payload.gallery : {}
+      const flyerMaster = payload?.flyerMaster && typeof payload.flyerMaster === 'object' ? payload.flyerMaster : null
+      const galleryFromServer = payload?.gallery && typeof payload.gallery === 'object' ? payload.gallery : {}
       let page: any = null
       try {
         if (typeof payload?.pageContentGalerie === 'string' && payload.pageContentGalerie.trim()) {
@@ -869,9 +858,13 @@ export default function FlyerEventBogenNeuPage() {
         page = null
       }
       const welcome = String(page?.welcomeImage || galleryFromServer?.welcomeImage || '/img/k2/willkommen.jpg').trim()
+      const card = String(page?.galerieCardImage || galleryFromServer?.galerieCardImage || '').trim()
       const virtualTour = String(page?.virtualTourImage || galleryFromServer?.virtualTourImage || '').trim()
-
+      const p = loadFlyerEventBogenPersisted(storageKey)
       if (!active) return
+      const { left, label } = resolveFlyerDerivationLeftFromMasterPersistGallery(flyerMaster, p, welcome, card, fb, welcomeFirst)
+      setLeftSrc(left)
+      setLeftWerkLabel(label)
       setMiddleSrc(welcome || fb)
       setRightSrc(virtualTour || welcome || fb)
     }
@@ -879,42 +872,38 @@ export default function FlyerEventBogenNeuPage() {
     const applyFromLocal = () => {
       const g = effectiveDynamicTenantId ? loadDynamicTenantGallery(effectiveDynamicTenantId) : loadStammdaten('k2', 'gallery')
       const gi = getGalerieImages(g)
+      const p = loadFlyerEventBogenPersisted(storageKey)
+      const welcome = String(gi.welcomeImage || '').trim() || '/img/k2/willkommen.jpg'
+      const card = String(gi.galerieCardImage || '').trim()
       if (!active) return
+      const { left, label } = resolveFlyerDerivationLeftFromMasterPersistGallery(null, p, welcome, card, fb, welcomeFirst)
+      setLeftSrc(left)
+      setLeftWerkLabel(label)
       setMiddleSrc(gi.welcomeImage || fb)
       setRightSrc(gi.virtualTourImage || gi.welcomeImage || fb)
     }
 
-    // Public-Derivations (aus „Aktuelles“) müssen deterministisch Server-Stand verwenden.
-    // Sonst kann am Empfänger-Gerät ein alter localStorage-Stand das Bild „zurückdrehen“.
-    if (fromPublicGalerie || publicMasterViewOnly) {
-      const controller = new AbortController()
-      const t = setTimeout(() => controller.abort(), 8000)
-      fetch(`${BASE_APP_URL}/api/gallery-data?tenantId=${encodeURIComponent(effectiveDynamicTenantId || 'k2')}&_=${Date.now()}`, { cache: 'no-store', signal: controller.signal })
-        .then((r) => (r.ok ? r.json() : null))
-        .then((payload) => {
-          clearTimeout(t)
-          if (!payload) return applyFromLocal()
-          applyFromServerPayload(payload)
-        })
-        .catch(() => {
-          clearTimeout(t)
-          applyFromLocal()
-        })
-      return () => {
-        active = false
+    const controller = new AbortController()
+    const t = setTimeout(() => controller.abort(), 8000)
+    fetch(`${BASE_APP_URL}/api/gallery-data?tenantId=${encodeURIComponent(effectiveDynamicTenantId || 'k2')}&_=${Date.now()}`, { cache: 'no-store', signal: controller.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((payload) => {
         clearTimeout(t)
-        controller.abort()
-      }
-    }
-
-    applyFromLocal()
+        if (!payload) return applyFromLocal()
+        applyFromServerPayload(payload)
+      })
+      .catch(() => {
+        clearTimeout(t)
+        applyFromLocal()
+      })
     return () => {
       active = false
+      clearTimeout(t)
+      controller.abort()
     }
   }, [
     derivationOnlyViewer,
-    fromPublicGalerie,
-    publicMasterViewOnly,
+    flyerStorageKey,
     isOeffentlich,
     isVk2,
     flyerDataTick,
@@ -924,9 +913,8 @@ export default function FlyerEventBogenNeuPage() {
   ])
 
   /**
-   * Master A5 (A4 mit 2×A5) aus Galerie („Aktuelles“):
-   * Der Empfänger soll deterministisch den Server-Stand sehen – nicht alte lokale Flyer-Persistenz.
-   * Daher: bei fromPublicGalerie auch im Master-Modus die Bildquellen vom Server holen.
+   * Master A5 (A4 mit 2×A5) aus Galerie („Aktuelles“) / publicMaster:
+   * Server-`flyerMaster` zuerst; sonst Browser-Persistenz; sonst Galerie – wie bei Ableitungen.
    */
   useEffect(() => {
     if (!fromPublicGalerie && !publicMasterViewOnly) return
@@ -951,19 +939,19 @@ export default function FlyerEventBogenNeuPage() {
       const welcome = String(page?.welcomeImage || galleryFromServer?.welcomeImage || '/img/k2/willkommen.jpg').trim()
       const card = String(page?.galerieCardImage || galleryFromServer?.galerieCardImage || '').trim()
       const virtualTour = String(page?.virtualTourImage || galleryFromServer?.virtualTourImage || '').trim()
-      const masterLeft = String(flyerMaster?.leftSrc || '').trim()
-      const masterLabel = String(flyerMaster?.leftWerkLabel || '').trim()
+      const p = loadFlyerEventBogenPersisted(flyerStorageKey)
 
       if (!active) return
-      // Links (Hauptbild): K2 = Karte > Willkommen; Lizenz-Mandant = Willkommen > Karte (wie Startseiten-Hero). Ohne Master-URL – nicht aus lokaler Persistenz.
-      if (masterLeft && !masterLeft.startsWith('data:') && !masterLeft.startsWith('blob:')) {
-        setLeftSrc(masterLeft)
-        setLeftWerkLabel(masterLabel || 'Masterflyer')
-      } else {
-        setLeftSrc(flyerLeftSrcDefaultFromGalleryFields(welcome, card, fb, !!effectiveDynamicTenantId))
-        setLeftWerkLabel('Galeriebild')
-      }
-      // Mitte/Rechts: Willkommen / Virtueller Rundgang
+      const { left, label } = resolveFlyerDerivationLeftFromMasterPersistGallery(
+        flyerMaster,
+        p,
+        welcome,
+        card,
+        fb,
+        !!effectiveDynamicTenantId,
+      )
+      setLeftSrc(left)
+      setLeftWerkLabel(label)
       setMiddleSrc(welcome || fb)
       setRightSrc(virtualTour || welcome || fb)
     }
@@ -971,9 +959,13 @@ export default function FlyerEventBogenNeuPage() {
     const applyFromLocal = () => {
       const g = effectiveDynamicTenantId ? loadDynamicTenantGallery(effectiveDynamicTenantId) : loadStammdaten('k2', 'gallery')
       const gi = getGalerieImages(g)
+      const p = loadFlyerEventBogenPersisted(flyerStorageKey)
+      const welcome = String(gi.welcomeImage || '').trim() || '/img/k2/willkommen.jpg'
+      const card = String(gi.galerieCardImage || '').trim()
       if (!active) return
-      setLeftSrc(flyerLeftSrcDefaultFromGi(gi, fb, !!effectiveDynamicTenantId))
-      setLeftWerkLabel('Galeriebild')
+      const { left, label } = resolveFlyerDerivationLeftFromMasterPersistGallery(null, p, welcome, card, fb, !!effectiveDynamicTenantId)
+      setLeftSrc(left)
+      setLeftWerkLabel(label)
       setMiddleSrc(gi.welcomeImage || fb)
       setRightSrc(gi.virtualTourImage || gi.welcomeImage || fb)
     }
@@ -1006,6 +998,7 @@ export default function FlyerEventBogenNeuPage() {
     isA6Mode,
     isCardMode,
     flyerImgFallback,
+    flyerStorageKey,
     effectiveDynamicTenantId,
   ])
 
@@ -1487,28 +1480,6 @@ export default function FlyerEventBogenNeuPage() {
       setEventDateLine('Termin folgt')
     }
   }, [flyerDataTick, isOeffentlich, isVk2, eventIdFromUrl, effectiveDynamicTenantId, dynamicServerPayload])
-
-  /**
-   * Event-Ableitungen (A3/A6/Karte): Wenn ein Event per eventId gewählt wurde und ein sinnvolles
-   * Eventfoto existiert, soll es **das** Bild für das Plakat sein – nicht ein alter Flyer-Master-Stand.
-   * Das verhindert genau die Klasse „A3 wird mit falschem Bild verschickt“.
-   */
-  useEffect(() => {
-    if (!derivationOnlyViewer) return
-    if (!(isA3Mode || isA6Mode || isCardMode)) return
-    if (!eventIdFromUrl) return
-    const picked = pickEventImageUrl(eroeffnungEvent)
-    if (!picked) return
-    setLeftSrc((prev) => {
-      // nicht zurück auf placeholder wechseln
-      if (looksLikePlaceholderImageUrl(picked)) return prev
-      if (prev && prev.trim() === picked) return prev
-      // blob:-URLs sind nur in der Session gültig; für öffentliches Plakat vermeiden
-      if (picked.startsWith('blob:')) return prev
-      return picked
-    })
-    setLeftWerkLabel('Eventfoto')
-  }, [derivationOnlyViewer, isA3Mode, isA6Mode, isCardMode, eventIdFromUrl, eroeffnungEvent])
 
   /** Nach „Paket übernehmen“ im ök2-Admin: Browser-Speicher des Flyer-Masters ist leer – offene Seite sofort auf Muster/Defaults. */
   useEffect(() => {

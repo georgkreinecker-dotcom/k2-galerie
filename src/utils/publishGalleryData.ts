@@ -70,6 +70,13 @@ function readFlyerMasterForPublish(tenantId: PublishTenantId): { leftSrc?: strin
   }
 }
 
+/** Lizenz-/Mandanten-IDs – gleiche Speicher-Key-Logik wie Veröffentlichen (`getFlyerMasterKeyForTenant`). */
+export function readFlyerMasterForPublishByTenantId(tenantId: string): { leftSrc?: string; leftWerkLabel?: string } | null {
+  const t = String(tenantId || '').trim().toLowerCase()
+  if (!t) return null
+  return readFlyerMasterForPublish(t as PublishTenantId)
+}
+
 export interface PublishGalleryDataResult {
   success: boolean
   result?: { path?: string; size?: number; [k: string]: unknown }
