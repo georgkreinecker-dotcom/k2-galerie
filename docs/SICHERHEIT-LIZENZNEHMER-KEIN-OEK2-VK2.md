@@ -96,10 +96,15 @@ Wenn die Plattform unter einem weiteren Hostnamen betrieben wird, diesen in `PLA
 
 Ohne eigene Domain bleibt ein **Rest-Risiko** (andere Browser-Tabs, manuelle URL-Eingabe auf dem Plattform-Host). Für **maximale** Trennung: **eigene Domain** + Variable wie oben.
 
+### Konkreter Kundeneintrag (Karteikarte)
+
+Schritt-für-Schritt mit **Pilot-Beispiel Galerie Eferding**, Copy-Paste für Vercel/Supabase und **leerer zweiter Karteikarte:** **`docs/LIZENZ-KUNDE-DOMAIN-KARTEIKARTE.md`**.
+
 ---
 
 ## 5. Verknüpfung
 
+- **Karteikarte pro Kunde:** docs/LIZENZ-KUNDE-DOMAIN-KARTEIKARTE.md  
 - **Eiserne Regel:** .cursor/rules/eiserne-regel-lizenznehmer-kein-oek2-vk2.mdc  
 - **Besucher-Sperre (Eingaben):** .cursor/rules/eiserne-regel-besucher-keine-eingaben.mdc, docs/SICHERHEIT-BESUCHER-KEINE-EINGABEN.md  
 - **K2/ök2 Datentrennung:** .cursor/rules/k2-oek2-eisernes-gesetz-keine-daten.mdc  

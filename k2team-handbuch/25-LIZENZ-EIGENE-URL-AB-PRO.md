@@ -25,6 +25,8 @@ Merksatz:
 
 ## Wie wird die Lizenz-Galerie im Netz sichtbar? (Ablauf)
 
+### Variante A – Eigene Instanz (Clone, separates Vercel-Projekt)
+
 ### 1) Instanz/Deployment anlegen
 
 - Für den Lizenznehmer gibt es eine **eigene Instanz** (Clone/Projekt) – getrennt von der Plattform.
@@ -41,6 +43,12 @@ Damit QR-Codes, gedruckte Links und Werbemittel automatisch auf die richtige Dom
 
 - In der Instanz (Vercel Environment) `VITE_APP_BASE_URL` auf die eigene Domain setzen, z. B.:
   - `https://galerie-mueller.at`
+
+### Variante B – Gleiches Vercel-Projekt wie die Plattform (Multi-Mandant)
+
+Wenn die öffentliche Galerie unter einer **eigenen Domain** auf **demselben** k2-galerie-Deployment läuft (z. B. `https://www.kunden-domain.at/g/<tenantId>`), muss diese Domain in **`VITE_LICENSEE_PUBLIC_HOSTNAMES`** stehen – sonst gilt der Host noch als Plattform und ök2/VK2 wären theoretisch per URL erreichbar.
+
+**Konkreter Ablauf pro Kunde:** eine **Karteikarte** ausfüllen – **`docs/LIZENZ-KUNDE-DOMAIN-KARTEIKARTE.md`** (mit Beispiel Pilot Galerie Eferding, Copy-Paste für Vercel und optional Supabase). Technische Einordnung: **`docs/SICHERHEIT-LIZENZNEHMER-KEIN-OEK2-VK2.md`** Abschnitt **4b**.
 
 ---
 

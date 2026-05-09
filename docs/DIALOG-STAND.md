@@ -1,8 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Bei neuem **Lizenz-Kunden mit eigener Domain:** Vercel **`VITE_LICENSEE_PUBLIC_HOSTNAMES`** setzen (kommagetrennt), redeployen – dann ök2/VK2 auf dieser Domain gesperrt. Ohne Variable: nur **`k2-galerie.vercel.app/g/…`** = weiterhin technisch dieselbe „Plattform“ wie kgM.
+**Was wir JETZT tun:** Neuen Lizenz-Kunden mit eigener Domain: **`docs/LIZENZ-KUNDE-DOMAIN-KARTEIKARTE.md`** (Karteikarte 2) ausfüllen; Vercel Env **anhängen**, Deploy; Smoke-Test **`/galerie-oeffentlich`** auf Kunden-Host.
 
-**Einordnung:** **`isPlatformHostname`** prüft **zuerst** Lizenz-Hosts aus Env → **`isPlatformInstance()`** false → **`PlatformOnlyRoute`** / **`TenantContext`** wie bei Fremd-Domain. Tests **`licenseePublicHostname.test.ts`**. Doku **`docs/SICHERHEIT-LIZENZNEHMER-KEIN-OEK2-VK2.md`** §4b; Regel **`eiserne-regel-lizenznehmer-kein-oek2-vk2.mdc`**.
+**Einordnung:** Konkreter Pilot-Eintrag **Galerie Eferding** (`galerie-eferding`) als Muster in der Karteikarte; Handbuch **§25 Variante B** + **`docs/00-INDEX`**.
+
+**Letzter Stand:** 09.05.26 – **Lizenz-Kunde Domain-Karteikarte:** **`docs/LIZENZ-KUNDE-DOMAIN-KARTEIKARTE.md`** (Pilot Eferding-Muster, leere Vorlage, Vercel/Supabase Copy-Paste); Verweise in **`SICHERHEIT-LIZENZNEHMER-KEIN-OEK2-VK2.md`**, **`k2team-handbuch/25`**, **`00-INDEX`** (docs + Handbuch). **`test:changed`** grün. **Commit:** _(nach Push)_ ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **Bombenschutz Lizenz-Domains:** **`VITE_LICENSEE_PUBLIC_HOSTNAMES`** + **`parseLicenseePublicHostnamesFromEnv`**, **`isLicenseePublicHostname`**, **`isPlatformHostname`** (Lizenz vor Plattform-Regel). **`.env.example`**, Doku, Tests **`licenseePublicHostname.test.ts`**. **`qs:local`** grün. **Commit:** `4fff8791` ✅ **main**
 

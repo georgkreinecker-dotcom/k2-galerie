@@ -21,7 +21,7 @@ Kurzreferenz für Zusammenarbeit und Betrieb der K2 Galerie. Stand: Februar 2026
 | 11 | [Medienplanung – Flyer & Werbung (mök2)](22-MEDIENPLANUNG-FLYER-WERBUNG-MOK2.md) | Wo was liegt, Checkliste Flyer/Werbung, Kontext mök2 – gut arbeiten bei Medienplanung |
 | 12 | [Notfall-Checkliste](23-NOTFALL-CHECKLISTE.md) | Cursor aus? Dialog tot? Parallelstrukturen: DIALOG-STAND, Briefing, Backup – zentral im Smart Panel |
 | 13 | [Texte & Briefe Kompass](24-TEXTE-BRIEFE-KOMPASS.md) | Schnellwahl: welcher Text/Brief wofür; ein Zweck = ein Hauptdokument |
-| 14 | [Lizenz: Eigene URL ab Pro](25-LIZENZ-EIGENE-URL-AB-PRO.md) | Custom Domain/URL pro Lizenznehmer: was es ist, wie es online wird, wie Veröffentlichen dazu passt |
+| 14 | [Lizenz: Eigene URL ab Pro](25-LIZENZ-EIGENE-URL-AB-PRO.md) | Custom Domain/URL pro Lizenznehmer; Variante A eigene Instanz, Variante B gleiches Vercel-Projekt → **`docs/LIZENZ-KUNDE-DOMAIN-KARTEIKARTE.md`** |
 | 15 | [Testpilot-Einladung einrichten](26-TESTPILOT-EINLADUNG-EINRICHTUNG.md) | PILOT_INVITE_SECRET, Resend, Vercel – einmal einrichten, dann Link und optional E-Mail vom Server |
 | 16 | [Lizenznehmer: Admin-QR fürs Handy](27-LIZENZNEHMER-ADMIN-QR-MOBIL.md) | Admin vs. Galerie-QR, Stammdaten nach Registrierung, Lizenz-Erfolgsseite, QR speichern |
 | 17 | [Infos (Testuser) – drei Produktlinien](28-TESTUSER-ZETTEL-PRODUKTLINIEN.md) | ök2, VK2, K2 Familie; Schwerpunkt bis zu fünf Jahre Gratislizenz; ergänzend Gutschein 100 € pro Linie; [Testuser-Anmeldung](/testuser-anmeldung) zum Eintragen; Testprotokolle: Kapitel 29–31 und Ansicht `/testprotokoll-testuser` |

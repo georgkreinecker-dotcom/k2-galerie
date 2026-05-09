@@ -21,6 +21,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **BACKUP-ZUGANG-NOTFALL.md** – **Vollbackup prominent, Zugriff bei Notfall:** Wo das Vollbackup liegt (backupmicro, Ordner K2-Galerie-Backups), wie Vertrauensperson/Familie bei Notfall Zugriff haben (Ort festhalten, Doku zugänglich, Wiederherstellung). Handbuch-Kapitel 13 ergänzt um „Backup prominent – Zugriff bei Notfall“. Druckbare Kurzfassung empfohlen.
 - **EVENTPLANUNG-24-26-04-WIEDERHERSTELLUNG.md** – **Eventplanung / Eröffnung 24.04.–26.04. wiederherstellen:** Wo Events und Dokumente (Öffentlichkeitsarbeit) stecken; Wiederherstellung nur aus Vollbackup-Datei oder backupmicro; was die K2-Reparatur (VK2 aus k2-events entfernen) macht. (16.03.26)
 - **ADMIN-QR-LIZENZ-OEK2-ABLAUF.md** – **Admin-QR (K2 Plattform, Lizenznehmer, ök2-Demo, Lizenz-Erfolg):** Stammdaten unter Vita: K2 `/admin`, ök2 `?context=oeffentlich`; eine technische Quelle (`LicenseeAdminQrPanel`, `publicLinks`, Server-Stand + Cache-Bust), Prüfliste vor Commit.
+- **LIZENZ-KUNDE-DOMAIN-KARTEIKARTE.md** – **Konkreter Kundeneintrag Custom Domain:** eine Karteikarte pro Mandant (tenantId, Hosts, `VITE_LICENSEE_PUBLIC_HOSTNAMES` erweitern ohne Überschreiben, Vercel-DNS, Smoke-Test, optional Supabase `galerie_url`); Beispiel Pilot Galerie Eferding.
 
 ---
 
