@@ -4,6 +4,8 @@
 
 **Einordnung:** Produkt-Footer bleibt mit **Copyright** (tenantConfig); ohne „App verlassen“.
 
+**Letzter Stand:** 09.05.26 – **K2 Familie: Huber-Demo nur bei Huber-Tenant + korrekter Familienname:** **`isFamilieHuberNurMusterBesuch`** – Toolbar/Rundgang/Leitfaden, **`FamilieNav`** (volle Muster-Leiste, erste Pille **`getFamilieTenantDisplayName(currentTenantId)`**), **`FamilieLayoutInner`** (Shell **`--nur-muster`**, Leitstruktur, Demo-Hints), **`FamilieRolleLeisteHaupt/Kompakt`** – alles an **`currentTenantId === huber`** + Nur-Muster-Session gekoppelt (nicht mehr nur Session-Flag). Mit **`getFamilieTenantDisplayName`** (Plattform Kreinecker), **`pageTextsFamilie`** (Huber-Intro unter fremder tenantId zurücksetzen), **`K2FamilieEinstiegPage`** (Lesetext auf hellem Grund dunkel). **`qs:local`** grün. **Commit:** `0e4250f9` ✅ **main**
+
 **Letzter Stand:** 09.05.26 – **Footer „App verlassen“ entfernt:** Komponente **`AppVerlassenFooterLink`** gelöscht; Aufrufe aus **`GaleriePage`**, **`GalerieVorschauPage`**, **`Vk2GaleriePage`**, **`Vk2GalerieVorschauPage`**, **`K2FamilieLayout`** entfernt. **`qs:local`** grün. **Commit:** `b500e505` ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **K2 Familie Mandant = Einstellungen (familie-1773759510983):** **`resolveKreineckerPresentationTenantIdFromEnv`** – nach Env **Plattform-Fallback** **`K2_PLATTFORM_STAMM_FAMILIE_KREINECKER_TENANT_ID`** + **`tenantIdErlaubtFuerKreineckerStammKette`**; **`.env.example`** dokumentiert. Gleiche ID wie auf dem Gerät unter „Technische ID“. **`qs:local`** grün. **Commit:** `80b2cf01` ✅ **main**

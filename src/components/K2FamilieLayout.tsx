@@ -29,7 +29,11 @@ import { FamilieEinladungQuerySync } from './FamilieEinladungQuerySync'
 import { FamilieApfMeineFamilieSync } from './FamilieApfMeineFamilieSync'
 import { FamilieMusterSessionEnforcer } from './FamilieMusterSessionEnforcer'
 import { FamilieCloudAutoSync } from './K2Familie/FamilieCloudAutoSync'
-import { isFamilieNurMusterSession, K2_FAMILIE_OPEN_MUSTER_LEITFADEN_EVENT } from '../utils/familieMusterSession'
+import {
+  isFamilieHuberNurMusterBesuch,
+  isFamilieNurMusterSession,
+  K2_FAMILIE_OPEN_MUSTER_LEITFADEN_EVENT,
+} from '../utils/familieMusterSession'
 import {
   FamilieMusterHuberLeitfadenModal,
   readMusterLeitfadenAbgeschlossen,
@@ -128,24 +132,24 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
   } = useFamilieTenant()
   const { capabilities } = useFamilieRolle()
   const kannInstanz = capabilities.canManageFamilienInstanz
-  const nurMuster = isFamilieNurMusterSession()
+  const huberNurMuster = isFamilieHuberNurMusterBesuch(currentTenantId)
   const [musterLeitfadenOpen, setMusterLeitfadenOpen] = useState(false)
   useEffect(() => {
     if (hideMusterLeitfadenForPm) setMusterLeitfadenOpen(false)
   }, [hideMusterLeitfadenForPm])
   useEffect(() => {
-    if (!nurMuster) return
+    if (!huberNurMuster) return
     if (hideMusterLeitfadenForPm) return
     if (!readMusterLeitfadenAbgeschlossen()) setMusterLeitfadenOpen(true)
-  }, [nurMuster, hideMusterLeitfadenForPm])
+  }, [huberNurMuster, hideMusterLeitfadenForPm])
   useEffect(() => {
-    if (!nurMuster) return
+    if (!huberNurMuster) return
     const onOpen = () => {
       if (!hideMusterLeitfadenForPm) setMusterLeitfadenOpen(true)
     }
     window.addEventListener(K2_FAMILIE_OPEN_MUSTER_LEITFADEN_EVENT, onOpen)
     return () => window.removeEventListener(K2_FAMILIE_OPEN_MUSTER_LEITFADEN_EVENT, onOpen)
-  }, [nurMuster, hideMusterLeitfadenForPm])
+  }, [huberNurMuster, hideMusterLeitfadenForPm])
   const displayIds: string[] = [FAMILIE_HUBER_TENANT_ID]
   /** Dropdown-Labels lesen Anzeigenamen aus dem Speicher — ohne Re-Render bleibt alter Text nach Speichern. */
   const [, setEinstellungenTick] = useState(0)
@@ -156,7 +160,7 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
   }, [])
 
   /** Demo beendet, aber auf dem Gerät nur Huber eingetragen – ohne Banner wäre die Toolbar leer (length ≤ 1). */
-  if (!nurMuster && tenantList.length === 1 && tenantList[0] === FAMILIE_HUBER_TENANT_ID) {
+  if (!huberNurMuster && tenantList.length === 1 && tenantList[0] === FAMILIE_HUBER_TENANT_ID) {
     return (
       <div
         key={familieStorageRevision}
@@ -192,11 +196,11 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
   }
 
   /** Volle Liste: bei nur einer Familie Toolbar ausblenden. Muster-Sitzung zeigt immer eine Zeile. */
-  if (!nurMuster && tenantList.length <= 1) return null
+  if (!huberNurMuster && tenantList.length <= 1) return null
 
   if (collapsed) return null
 
-  const selectValue = nurMuster
+  const selectValue = huberNurMuster
     ? displayIds.includes(currentTenantId)
       ? currentTenantId
       : displayIds[0]!
@@ -213,7 +217,7 @@ function FamilieTenantToolbar({ collapsed }: { collapsed?: boolean }) {
     minWidth: 160,
   } as const
 
-  if (nurMuster) {
+  if (huberNurMuster) {
       if (deckblattMinimal) {
         return (
           <>
@@ -473,7 +477,7 @@ function FamilieRolleLeisteHaupt({ onEinklappen }: { onEinklappen?: () => void }
   const showInhaberAnsichtSteuerung = rolle === 'inhaber' && ia != null
   const inhaberAnsichtHash = `${PROJECT_ROUTES['k2-familie'].einstellungen}#k2-familie-inhaber-ansicht`
 
-  if (isFamilieNurMusterSession()) {
+  if (isFamilieHuberNurMusterBesuch(currentTenantId)) {
     if (deckblattMinimal) return null
     return (
       <div
@@ -718,7 +722,7 @@ function FamilieRolleLeisteKompakt({ onOeffnen }: { onOeffnen: () => void }) {
     const name = loadPersonen(currentTenantId).find((p) => p.id === ichId)?.name?.trim()
     return name || ''
   }, [currentTenantId, familieStorageRevision])
-  if (isFamilieNurMusterSession() && deckblattMinimal) {
+  if (isFamilieHuberNurMusterBesuch(currentTenantId) && deckblattMinimal) {
     return (
       <div
         key={familieStorageRevision}
@@ -750,7 +754,7 @@ function FamilieRolleLeisteKompakt({ onOeffnen }: { onOeffnen: () => void }) {
       }}
     >
       <p style={{ margin: 0, fontSize: '0.84rem', color: t.text, lineHeight: 1.35, flex: '1 1 200px' }}>
-        {isFamilieNurMusterSession() ? (
+        {isFamilieHuberNurMusterBesuch(currentTenantId) ? (
           <>
             <strong style={{ fontWeight: 700 }}>{famName}</strong>
             <span style={{ color: t.muted }}> · </span>
@@ -904,21 +908,22 @@ function isFamilieNavItemActive(item: FamilieNavItem, pathname: string, search: 
 function FamilieNav() {
   const loc = useLocation()
   const path = loc.pathname
+  const { currentTenantId } = useFamilieTenant()
   const { deckblattMinimal } = useK2FamiliePresentationMode()
   const { capabilities } = useFamilieRolle()
   const isMeineFamilieHome = isK2FamilieMeineFamilieHomePath(path)
-  const nurMusterBesuch = isFamilieNurMusterSession()
+  const huberNurMusterBesuch = isFamilieHuberNurMusterBesuch(currentTenantId)
   const isLeser = capabilities.rolle === 'leser'
   const navItems = useMemo((): FamilieNavItem[] => {
     if (isMeineFamilieHome) {
       /** Musterfamilie-Start: volle Orientierungsleiste wie auf Unterseiten (sonst kein Nav oben). Handbuch wie bisher vor Einstellungen. */
-      if (nurMusterBesuch) {
+      if (huberNurMusterBesuch) {
         const ohneErsteUndEinst = FAMILIE_NAV.slice(1).filter((i) => i.to !== familieRoutes.einstellungen)
         const einst = FAMILIE_NAV.find((i) => i.to === familieRoutes.einstellungen)!
         return [
           {
             to: FAMILIE_MUSTER_HOME_NAV_TO,
-            label: deckblattMinimal ? '\u200B' : getFamilieTenantDisplayName(FAMILIE_HUBER_TENANT_ID),
+            label: deckblattMinimal ? '\u200B' : getFamilieTenantDisplayName(currentTenantId, 'Standard'),
           },
           ...ohneErsteUndEinst,
           { to: familieRoutes.benutzerHandbuch, label: 'Handbuch' },
@@ -935,7 +940,7 @@ function FamilieNav() {
       ]
     }
     return FAMILIE_NAV
-  }, [isMeineFamilieHome, isLeser, nurMusterBesuch, deckblattMinimal])
+  }, [isMeineFamilieHome, isLeser, huberNurMusterBesuch, deckblattMinimal, currentTenantId])
 
   const compactMedia = useK2WorldMobileCompact()
   /** Schmale Viewports: immer „Menü“+Sheet – weniger Pillen nebeneinander unter der Statusleiste. */
@@ -949,7 +954,7 @@ function FamilieNav() {
   }, [navItems, path, loc.search])
 
   /** Unterseiten Musterfamilie: minimal Zurück + Link zur Musterfamilie. */
-  if (nurMusterBesuch && !isMeineFamilieHome) {
+  if (huberNurMusterBesuch && !isMeineFamilieHome) {
     return (
       <nav
         className="k2-familie-nav k2-familie-no-print"
@@ -992,7 +997,7 @@ function FamilieNav() {
   const renderNavLink = (item: FamilieNavItem, variant: 'bar' | 'sheet') => {
     const { to, label } = item
     const isActive = isFamilieNavItemActive(item, path, loc.search)
-    const navMuster = isFamilieNurMusterSession()
+    const navMuster = huberNurMusterBesuch
     const musterHint = navMuster ? musterHintForFamilieNavLink(to) : undefined
     const leitfadenFocus = familieNavLeitfadenFocusForTo(to)
     const base = {
@@ -1162,9 +1167,9 @@ function FamilieLayoutInner() {
       delete document.documentElement.dataset.k2FamiliePm
     }
   }, [hideAppFooterImpressum])
-  const nurMuster = isFamilieNurMusterSession()
   const [musterHintRoot, setMusterHintRoot] = useState<HTMLDivElement | null>(null)
   const { currentTenantId, familieStorageRevision } = useFamilieTenant()
+  const huberNurMusterBesuch = isFamilieHuberNurMusterBesuch(currentTenantId)
   const { rolle } = useFamilieRolle()
   const einst = useMemo(() => loadEinstellungen(currentTenantId), [currentTenantId, familieStorageRevision])
   const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId, familieStorageRevision])
@@ -1266,7 +1271,7 @@ function FamilieLayoutInner() {
       ) : (
         <>
           <FamilieNav />
-          {!nurMuster ? (
+          {!huberNurMusterBesuch ? (
             <FamilieTenantRolleCollapsibleSection />
           ) : (
             <>
@@ -1294,9 +1299,9 @@ function FamilieLayoutInner() {
       <FamilieApfMeineFamilieSync />
       <FamilieMusterSessionEnforcer />
       <FamilieCloudAutoSync />
-      <div className={`k2-familie-layout-shell${nurMuster ? ' k2-familie-layout-shell--nur-muster' : ''}`}>
-        {!nurMitgliedEinstieg && !nurMuster ? <FamilieLeitstrukturPanel /> : null}
-        <FamilieMusterDemoHintProvider active={nurMuster} root={musterHintRoot}>
+      <div className={`k2-familie-layout-shell${huberNurMusterBesuch ? ' k2-familie-layout-shell--nur-muster' : ''}`}>
+        {!nurMitgliedEinstieg && !huberNurMusterBesuch ? <FamilieLeitstrukturPanel /> : null}
+        <FamilieMusterDemoHintProvider active={huberNurMusterBesuch} root={musterHintRoot}>
           <div ref={setMusterHintRoot} className="k2-familie-layout-column">
             {columnInner}
           </div>

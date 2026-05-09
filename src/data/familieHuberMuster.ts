@@ -20,6 +20,9 @@ import {
   FAMILIE_HUBER_TENANT_ID,
   FAMILIE_HUBER_DEFAULT_PAGE_CONTENT,
 } from './k2FamilieMusterHuberQuelle'
+import { K2_PLATTFORM_STAMM_FAMILIE_KREINECKER_TENANT_ID } from './k2FamilieKreineckerStammbaumQuelle'
+import { isPlatformInstance } from '../config/tenantConfig'
+import { K2_FAMILIE_NAV_LABEL_FAMILIE_KREINECKER } from '../config/k2FamilieNavLabels'
 
 export { FAMILIE_HUBER_TENANT_ID } from './k2FamilieMusterHuberQuelle'
 
@@ -35,6 +38,18 @@ export function getFamilieTenantDisplayName(tenantId: string, defaultLabel: stri
   const stored = loadEinstellungen(tenantId).familyDisplayName?.trim()
   if (stored) return stored
   if (tenantId === FAMILIE_HUBER_TENANT_ID) return 'Musterfamilie Huber'
+  /** Plattform-Stammfamilie Kreinecker: vor „Neue Familie …“, solange kein Name in den Stammdaten steht. */
+  try {
+    if (
+      tenantId === K2_PLATTFORM_STAMM_FAMILIE_KREINECKER_TENANT_ID &&
+      typeof window !== 'undefined' &&
+      isPlatformInstance()
+    ) {
+      return K2_FAMILIE_NAV_LABEL_FAMILIE_KREINECKER
+    }
+  } catch {
+    /* ignore */
+  }
   /** Testpilot K2 Familie (?t=familie-pilot-…): bis Namen gespeichert sind */
   if (tenantId.startsWith('familie-pilot-')) return 'Test-Familie (Pilot)'
   if (tenantId === 'default') return defaultLabel

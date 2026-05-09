@@ -13,11 +13,18 @@ import { getMusterfamilieHuberMeineFamiliePathWithQuery } from '../data/k2Famili
 import { isFamilieNurMusterSession, setFamilieNurMusterSession } from '../utils/familieMusterSession'
 import '../App.css'
 import { K2_FAMILIE_UI } from '../config/k2FamilieUiColors'
+import { adminTheme } from '../config/theme'
 
 const C = {
   ...K2_FAMILIE_UI,
   accentHover: '#2dd4bf',
   heroOverlay: 'linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(15,20,25,0.75) 55%, rgba(15,20,25,0.96) 100%)',
+}
+
+/** Unter dem Hero: heller Bereich – dunkle Schrift (K2_FAMILIE_UI ist für dunkle Flächen). */
+const LIGHT = {
+  text: adminTheme.textOnLight,
+  muted: adminTheme.textMutedOnLight,
 }
 
 export default function K2FamilieEinstiegPage() {
@@ -72,10 +79,10 @@ export default function K2FamilieEinstiegPage() {
       </div>
 
       <div style={{ padding: '1.25rem 1.25rem 2rem', maxWidth: 720, margin: '0 auto' }}>
-        <p style={{ color: C.textSoft, lineHeight: 1.65, marginBottom: '1.5rem', fontSize: '1.02rem' }}>{texts.body}</p>
+        <p style={{ color: LIGHT.muted, lineHeight: 1.65, marginBottom: '1.5rem', fontSize: '1.02rem' }}>{texts.body}</p>
         {zeigeKompaktenZurUebersicht ? (
-          <p style={{ margin: 0, fontSize: '1rem', lineHeight: 1.6, color: C.text }}>
-            <span style={{ color: C.textSoft }}>Du bist in der Musterfamilie-Umschau. </span>
+          <p style={{ margin: 0, fontSize: '1rem', lineHeight: 1.6, color: LIGHT.text }}>
+            <span style={{ color: LIGHT.muted }}>Du bist in der Musterfamilie-Umschau. </span>
             <Link
               to={`${R.meineFamilie}?t=huber`}
               style={{

@@ -51,6 +51,9 @@ const DEFAULT_TEXTS: PageTextsFamilie = {
   buttonKalender: 'Kalender & Übersicht',
 }
 
+/** Kennzeichnet den langen Muster-Einstiegstext – darf nicht als Homepage-intro unter echtem Mandanten hängen bleiben. */
+const EINSTIEG_MUSTER_BODY_FINGERPRINT = 'Umschauen-Sitzung'
+
 function getStorageKey(tenantId: string): string {
   return `k2-familie-${tenantId}-page-texts`
 }
@@ -81,10 +84,14 @@ export function getFamilyPageTexts(tenantId: string): PageTextsFamilie {
           welcomeSubtitle = DEFAULT_TEXTS.welcomeSubtitle
         }
       }
+      let introText = parsed.introText?.trim() || DEFAULT_TEXTS.introText
+      if (tenantId !== FAMILIE_HUBER_TENANT_ID && introText.includes(EINSTIEG_MUSTER_BODY_FINGERPRINT)) {
+        introText = DEFAULT_TEXTS.introText
+      }
       return {
         welcomeTitle,
         welcomeSubtitle,
-        introText: parsed.introText?.trim() || DEFAULT_TEXTS.introText,
+        introText,
         buttonStammbaum: parsed.buttonStammbaum?.trim() || DEFAULT_TEXTS.buttonStammbaum,
         buttonEvents: parsed.buttonEvents?.trim() || DEFAULT_TEXTS.buttonEvents,
         buttonKalender: parsed.buttonKalender?.trim() || DEFAULT_TEXTS.buttonKalender,

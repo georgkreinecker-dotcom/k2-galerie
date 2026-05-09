@@ -3,7 +3,14 @@
  * bleibt die Sitzung auf „nur Musterfamilie (huber)“ – bis eine Einladung mit anderem ?t= kommt.
  */
 
+import { FAMILIE_HUBER_TENANT_ID } from '../data/k2FamilieMusterHuberQuelle'
+
 export const K2_FAMILIE_NUR_MUSTER_SESSION_KEY = 'k2-familie-nur-muster-session'
+
+/** Huber-Demo-Oberfläche nur wenn Sitzung **und** Mandant „huber“ – nie Huber-Text bei anderem aktiven Mandanten. */
+export function isFamilieHuberNurMusterBesuch(currentTenantId: string): boolean {
+  return isFamilieNurMusterSession() && currentTenantId === FAMILIE_HUBER_TENANT_ID
+}
 
 export function setFamilieNurMusterSession(active: boolean): void {
   try {
