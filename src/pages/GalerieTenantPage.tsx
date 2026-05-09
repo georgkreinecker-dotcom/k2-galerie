@@ -236,7 +236,7 @@ export default function GalerieTenantPage() {
   const galleryStamm = (liveTemplateOverlay?.gallery && typeof liveTemplateOverlay.gallery === 'object')
     ? liveTemplateOverlay.gallery
     : ((data?.gallery && typeof data.gallery === 'object') ? data.gallery as Record<string, unknown> : {})
-  /** Server-Texte + Live-Overlay-Zweig: Overlay-Felder überschreiben (kein „entweder Server oder Preview“). */
+  /** Server-Texte + Live-Overlay: nur nicht-leere Overlay-Zeilen gewinnen (verhindert alte/halbe Snapshots über frische Server-Daten). */
   const effectiveGalerieTexts = (() => {
     const serverGalerie =
       data?.pageTexts?.galerie && typeof data.pageTexts.galerie === 'object'
@@ -244,8 +244,15 @@ export default function GalerieTenantPage() {
         : {}
     if (!liveTemplateOverlay) return serverGalerie
     const og = liveTemplateOverlay.pageTexts?.galerie
-    if (og && typeof og === 'object') return { ...serverGalerie, ...og }
-    return serverGalerie
+    if (!og || typeof og !== 'object') return serverGalerie
+    const merged = { ...serverGalerie } as Record<string, unknown>
+    for (const key of Object.keys(og)) {
+      const v = (og as Record<string, unknown>)[key]
+      if (v !== undefined && v !== null && String(v).trim() !== '') {
+        merged[key] = v
+      }
+    }
+    return merged as typeof serverGalerie
   })()
   const rawTitle = effectiveGalerieTexts?.heroTitle?.trim() || ''
   const rawSubtext = effectiveGalerieTexts?.welcomeSubtext?.trim() || ''

@@ -4140,7 +4140,16 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [videoUploadStatus, setVideoUploadStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle')
   const [videoUploadMsg, setVideoUploadMsg] = useState('')
   /** Dynamischer Mandant (?tenantId=): true bis Daten von API geladen (oder 404). */
-  const [dynamicTenantLoading, setDynamicTenantLoading] = useState(!!tenant.dynamicTenantId)
+  const [dynamicTenantLoading, setDynamicTenantLoading] = useState(() => {
+    if (tenant.dynamicTenantId) return true
+    try {
+      if (typeof window === 'undefined') return false
+      const id = getSafeDynamicTenantIdFromSearch(window.location.search)
+      return !!id
+    } catch {
+      return false
+    }
+  })
   useEffect(() => {
     if (tenant.dynamicTenantId) return
     const pc = getPageContentGalerie(tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)
@@ -4290,10 +4299,18 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   // Dynamischer Mandant (?tenantId=): Daten von API laden, in State übernehmen – kein localStorage
   useEffect(() => {
     const dynId = effectiveDynamicTenantId
-    if (!dynId) return
+    if (!dynId) {
+      setDynamicTenantLoading(false)
+      return
+    }
     let isMounted = true
     const initialFocusDirection = dynamicFocusDirectionFromUrl
     setDynamicTenantLoading(true)
+    try {
+      localStorage.removeItem(`k2-live-template-preview-${dynId}`)
+    } catch (_) {
+      /* ignore */
+    }
     setAllArtworksSafe([])
     setEvents([])
     setDocuments([])
@@ -4856,6 +4873,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const syncLiveTemplatePreviewLocal = React.useCallback(() => {
     const tid = effectiveDynamicTenantId
     if (!tid || !isSafeDynamicTenantSaveId(tid)) return
+    /** Kein Snapshot während API-Laden: sonst landen K2-Defaults oder leere Zwischenstände im Overlay (Vorschau ≠ Formular). */
+    if (dynamicTenantLoading) return
     try {
       localStorage.setItem(
         `k2-live-template-preview-${tid}`,
@@ -4871,7 +4890,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     } catch (_) {
       /* Quota u. ä. – Vorschau bleibt ggf. einen Tick alt */
     }
-  }, [effectiveDynamicTenantId, pageTexts, pageContent, designSettings, galleryData])
+  }, [effectiveDynamicTenantId, dynamicTenantLoading, pageTexts, pageContent, designSettings, galleryData])
 
   /** Speichert alle aktuellen Admin-Daten in localStorage (K2/ök2/VK2-Key), damit „Seiten prüfen“ die neuesten Änderungen anzeigt. Design wird hier nicht mitgeschrieben – nur über „Speichern“ im Design-Tab. Sportwagenmodus: ImageStore. */
   const saveAllForVorschau = () => {

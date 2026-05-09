@@ -1,8 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nach Push kurz **Live-Template** im Lizenz-Admin testen (Textfelder ↔ iframe); bei Bedarf **Vercel** gegenprüfen.
+**Was wir JETZT tun:** Nach Deploy **Live-Template** erneut testen (Zurück von Flyer/Willkommen → iframe = Formular); kurz **Vercel** gegenprüfen.
 
-**Einordnung:** **Live-Vorschau** = gemeinsames **localStorage** + iframe **`/g/…?liveTemplate=1`** – sofortiger Snapshot + Merge mit Server-**pageTexts**, damit Titel/Zeilen wie die Eingaben wirken (nicht nur Verzögerung).
+**Einordnung:** **`/g/…`** ohne Overlay nutzt nur **Server** → nach Veröffentlichen „richtig“. **iframe-Vorschau** nutzt **`localStorage`** – bei **`?tenantId=`** wurde vor API-Laden fälschlich gesnapshottet / alter Overlay überschrieb Server-Zeilen → jetzt **Ladezustand**, **Cache-Key löschen beim Laden**, **Merge nur nicht-leere Overlay-Felder**.
+
+**Letzter Stand:** 09.05.26 – **Live-Template nach Zurücknavigation /gal vs. iframe:** **`dynamicTenantLoading`** initial auch bei **`?tenantId=`** (nicht nur **`tenant.dynamicTenantId`**); **`syncLiveTemplatePreviewLocal`** blockiert während Laden; Start Fetch **`removeItem k2-live-template-preview-*`**; **`effectiveDynamicTenantId`** weg → **`setDynamicTenantLoading(false)`**. **`GalerieTenantPage`:** Overlay-**galerie**-Felder nur wenn **trim nicht leer**. **homepageTemplateContract** + **qs:local** grün. **Commit:** _(nach Push)_ ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **Live-Template: Texte/Zeilen wie Eingaben:** **`ScreenshotExportAdmin`** – Mandanten-Design: **`syncLiveTemplatePreviewLocal`** per **`useLayoutEffect`** (ohne 220 ms Verzögerung); Server-POST nur noch **debounced**; K2/ök2/VK2 weiter **saveAllForVorschau**. **`GalerieTenantPage`** – **`effectiveGalerieTexts`** = Server-**galerie** + Overlay **gemerged**; Polling **200 ms** bei **`liveTemplate`**. **homepageTemplateContract** + **qs:local** grün. **Commit:** edff7ad3 ✅ **main**
 
