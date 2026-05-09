@@ -862,7 +862,7 @@ const familieRoutes = PROJECT_ROUTES['k2-familie']
 /** Muster-Demo: Start in der Leiste = Huber mit ?t=huber (nicht nur /familie → „meine“ echte Familie). */
 const FAMILIE_MUSTER_HOME_NAV_TO = `${familieRoutes.meineFamilie}?t=${FAMILIE_HUBER_TENANT_ID}`
 
-/** Stammbaum/Leitstruktur und Top-Nav: gleiches Ziel wie Sidebar „Familie Kreinecker“ (`?t=` wenn Env gesetzt). */
+/** Stammbaum/Leitstruktur und Top-Nav: Ziel „Meine Familie“ (`?t=` wenn Env gesetzt). Erste Pillen-Beschriftung = `getFamilieTenantDisplayName`, nicht fest „Familie Kreinecker“. */
 const MEINE_FAMILIE_TOP_NAV_TO = getMeineFamilieLeitstrukturPath()
 
 type FamilieNavItem = {
@@ -872,7 +872,7 @@ type FamilieNavItem = {
   activePrefixes?: readonly string[]
 }
 
-/** Volle Leiste auf allen Unterseiten. Auf Familie-Kreinecker-Start: oben dieselbe Pillenzeile wie in der Leitstruktur, Handbuch, Einstellungen – Stammbaum/Events usw. bleiben als Kacheln. */
+/** Volle Leiste auf allen Unterseiten. Erste Position: `label` wird in `FamilieNav` durch den gespeicherten Familien-Anzeigenamen ersetzt. */
 const FAMILIE_NAV: FamilieNavItem[] = [
   { to: MEINE_FAMILIE_TOP_NAV_TO, label: K2_FAMILIE_NAV_LABEL_FAMILIE_KREINECKER },
   { to: familieRoutes.stammbaum, label: 'Stammbaum' },
@@ -908,13 +908,18 @@ function isFamilieNavItemActive(item: FamilieNavItem, pathname: string, search: 
 function FamilieNav() {
   const loc = useLocation()
   const path = loc.pathname
-  const { currentTenantId } = useFamilieTenant()
+  const { currentTenantId, familieStorageRevision } = useFamilieTenant()
   const { deckblattMinimal } = useK2FamiliePresentationMode()
   const { capabilities } = useFamilieRolle()
   const isMeineFamilieHome = isK2FamilieMeineFamilieHomePath(path)
   const huberNurMusterBesuch = isFamilieHuberNurMusterBesuch(currentTenantId)
   const isLeser = capabilities.rolle === 'leser'
   const navItems = useMemo((): FamilieNavItem[] => {
+    const erstePilleLabel = getFamilieTenantDisplayName(currentTenantId, 'Standard')
+    const mitAnzeigename = (items: FamilieNavItem[]): FamilieNavItem[] =>
+      items.length && items[0]!.to === MEINE_FAMILIE_TOP_NAV_TO
+        ? [{ ...items[0]!, label: erstePilleLabel }, ...items.slice(1)]
+        : items
     if (isMeineFamilieHome) {
       /** Musterfamilie-Start: volle Orientierungsleiste wie auf Unterseiten (sonst kein Nav oben). Handbuch wie bisher vor Einstellungen. */
       if (huberNurMusterBesuch) {
@@ -923,7 +928,7 @@ function FamilieNav() {
         return [
           {
             to: FAMILIE_MUSTER_HOME_NAV_TO,
-            label: deckblattMinimal ? '\u200B' : getFamilieTenantDisplayName(currentTenantId, 'Standard'),
+            label: deckblattMinimal ? '\u200B' : erstePilleLabel,
           },
           ...ohneErsteUndEinst,
           { to: familieRoutes.benutzerHandbuch, label: 'Handbuch' },
@@ -931,7 +936,7 @@ function FamilieNav() {
         ]
       }
       return [
-        { to: MEINE_FAMILIE_TOP_NAV_TO, label: K2_FAMILIE_NAV_LABEL_FAMILIE_KREINECKER },
+        { to: MEINE_FAMILIE_TOP_NAV_TO, label: erstePilleLabel },
         { to: familieRoutes.benutzerHandbuch, label: 'Handbuch' },
         {
           to: familieRoutes.einstellungen,
@@ -939,8 +944,15 @@ function FamilieNav() {
         },
       ]
     }
-    return FAMILIE_NAV
-  }, [isMeineFamilieHome, isLeser, huberNurMusterBesuch, deckblattMinimal, currentTenantId])
+    return mitAnzeigename(FAMILIE_NAV)
+  }, [
+    isMeineFamilieHome,
+    isLeser,
+    huberNurMusterBesuch,
+    deckblattMinimal,
+    currentTenantId,
+    familieStorageRevision,
+  ])
 
   const compactMedia = useK2WorldMobileCompact()
   /** Schmale Viewports: immer „Menü“+Sheet – weniger Pillen nebeneinander unter der Statusleiste. */
