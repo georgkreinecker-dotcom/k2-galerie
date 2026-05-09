@@ -1,8 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nach Deploy **Live-Template** erneut testen (Zurück von Flyer/Willkommen → iframe = Formular); kurz **Vercel** gegenprüfen.
+**Was wir JETZT tun:** Auf **Vercel** bei Lizenz-Mandant prüfen: **Event-Flyer** links = **Willkommensbild** (wie Startseite/Medien „Willkommen“); wenn nur **Galerie-Karte** gesetzt ist, weiterhin Karte.
 
-**Einordnung:** **`/g/…`** ohne Overlay nutzt nur **Server** → nach Veröffentlichen „richtig“. **iframe-Vorschau** nutzt **`localStorage`** – bei **`?tenantId=`** wurde vor API-Laden fälschlich gesnapshottet / alter Overlay überschrieb Server-Zeilen → jetzt **Ladezustand**, **Cache-Key löschen beim Laden**, **Merge nur nicht-leere Overlay-Felder**.
+**Einordnung:** Flyer hatte **Karte vor Willkommen** genommen, die öffentliche Homepage den **Hero aus Willkommen** → falsches Bild. **Nur `effectiveDynamicTenantId`:** Reihenfolge **Willkommen → Karte**; **K2 echte Galerie** unverändert **Karte → Willkommen**.
+
+**Letzter Stand:** 09.05.26 – **Event-Flyer Lizenz: Bild wie Medienbereich:** **`FlyerEventBogenNeuPage`** – Hilfsfunktionen **`flyerLeftSrcDefaultFromGalleryFields` / `flyerLeftSrcDefaultFromGi`**; bei **`effectiveDynamicTenantId`** Standard links **Willkommen vor Galerie-Karte** (`defaultLeft`, Initial **`leftSrc`, Server/Fallback-Laden, `galleryFallbackImagePath`). **K2** weiter **Karte vor Willkommen**. **qs:local** grün. **Commit:** `3aee603b` ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **Live-Template nach Zurücknavigation /gal vs. iframe:** **`dynamicTenantLoading`** initial auch bei **`?tenantId=`** (nicht nur **`tenant.dynamicTenantId`**); **`syncLiveTemplatePreviewLocal`** blockiert während Laden; Start Fetch **`removeItem k2-live-template-preview-*`**; **`effectiveDynamicTenantId`** weg → **`setDynamicTenantLoading(false)`**. **`GalerieTenantPage`:** Overlay-**galerie**-Felder nur wenn **trim nicht leer**. **homepageTemplateContract** + **qs:local** grün. **Commit:** 7da7a09d ✅ **main**
 
