@@ -1,8 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Stand sichern nach **Master-Flyer-Farben** (Lizenz-Mandant = gleiche Quelle wie Homepage-Vorschau).
+**Was wir JETZT tun:** Lizenz-Homepage **„Nächste Termine“** → **Event-Flyer** ist umgesetzt; bei Bedarf **Vercel** kurz gegenprüfen.
 
-**Einordnung:** **`FlyerEventBogenNeuPage`** lud Design nur aus **K2/ök2/VK2**-Keys – nicht aus **`k2-<mandant>-design-settings`** / Server-**`designSettings`**.
+**Einordnung:** **`flyerEventBogenUrl`** (ein Standard) + Server-**`events[].id`** aus **`gallery-data`**; Muster-Termine (**`muster-*`**) ohne Flyer-Link.
+
+**Letzter Stand:** 09.05.26 – **Lizenz-Homepage: Termine → Event-Flyer (Button + Hover):** **`GalerieTenantPage`** mappt **`events[].id`**; **`TenantHomepageTemplate`** zeigt bei echter **`id`** den Link **„Zum Event-Flyer“** (`flyerEventBogenUrl` mit **`context=k2`**, **`tenantId`**, **`eventId`**); Hover/Fokus per State; keine Links bei Platzhalter-**`muster-*`**. **`build:vercel`** + Vertrags-Tests grün. **Commit:** `f2a10927` ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **Master-Flyer übernimmt Homepage-Farben (Lizenz):** **`FlyerEventBogenNeuPage`** – `loadHomepageDesignForFlyer(..., dynamicTenantId)` liest **`k2-<tenant>-design-settings`**; Merge **`gallery-data.designSettings`** + localStorage (wie **`GalerieTenantPage`**); **`storage`**-Listener ergänzt **`…-design-settings`**. **qs:local** grün. **Commit:** `b9d55a1c` ✅ **main**
 
@@ -38,15 +40,15 @@
 
 **Vorher 07.05.26:** **Lizenznehmer-Admin Datentrennung repariert:** `/admin?tenantId=galerie-*` darf nie lokale K2-Daten laden. `ScreenshotExportAdmin` sperrt bei `tenant.dynamicTenantId` jetzt lokale K2-Werke/K2-Fallbacks/Auto-Save und lädt nur API-Daten des konkreten Mandanten. **Test:** `dynamicTenantAdminIsolation.test.ts` + Lizenztests grün. **Commit:** noch nicht gepusht.
 
-**Vorher 07.05.26:** **VK2 Lizenz-Erfolg repariert:** VK2-Checkout sendet jetzt **`productLine: 'vk2'`**; Webhook/API erkennen VK2 und liefern **`/projects/vk2/galerie`** + **`/admin?context=vk2`** statt Galerie/ök2-Fallback. Erfolgsseite zeigt VK2-Texte/QR-Dateiname. Doku/Regeln/Fehlerprotokoll ergänzt. **Tests:** `stripeLicenceContract.test.ts`, `publicLinks.test.ts`, **`npm run qs:local` grün**. **Commit:** _(nach Push)_ ✅ **main**
+**Vorher 07.05.26:** **VK2 Lizenz-Erfolg repariert:** VK2-Checkout sendet jetzt **`productLine: 'vk2'`**; Webhook/API erkennen VK2 und liefern **`/projects/vk2/galerie`** + **`/admin?context=vk2`** statt Galerie/ök2-Fallback. Erfolgsseite zeigt VK2-Texte/QR-Dateiname. Doku/Regeln/Fehlerprotokoll ergänzt. **Tests:** `stripeLicenceContract.test.ts`, `publicLinks.test.ts`, **`npm run qs:local` grün**. **Commit:** `f2a10927` ✅ **main**
 
 **Session-Ende 06.05.26:** Offener Arbeitsstand (Marketing-Attribution, mök2-Assets, VK2-Leitfaden, Galerie-Pages, Regeln/Doku, Build-Info) mit **qs:local** grün committed und auf **main** gepusht. **Commit:** `916c8956` ✅ **main**
 
 **Letzter Stand:** 06.05.26 – **K2 Familie: kein Empfehlungsprogramm:** **K2FamilieLizenzErwerbenPage** ohne Empfehler-Feld; **createCheckoutShared.js** – bei **familie_monat/jahr** keine **empfehlerId** in Session-/Abo-Metadaten; **stripeWebhookLicenceShared.js** – **rowsFromCheckoutSession** setzt **empfehler_id** und Gutschrift bei Familie-Lizenz immer **null** (auch wenn Metadaten manipuliert); **stripeInvoiceRenewalShared.js** – Verlängerung: **empfehler_id** in Zahlung **null**, keine Gutschrift für **familie_***. Tests **stripeLicenceContract.test.ts** grün. **Commit:** `e308d83e` ✅ **main**
 
-**Letzter Stand:** 06.05.26 – **Regelwerk Lizenzanmeldung / Stripe-Erfolg:** Neue Regel **`.cursor/rules/lizenz-anmeldung-stripe-erfolg.mdc`** (Pfad: API + `publicLinks` + Erfolgsseite + Tests; kein `/projects/k2-familie/…` → `/admin`). **`ein-standard-problem.mdc`** Zeile „Lizenzanmeldung …“. **`FEHLERANALYSEPROTOKOLL.md`:** Quelle, Fehlerklasse, Protokoll-Eintrag 06.05.26, Laufende Absicherungen. **`K2-FAMILIE-LEHREN`** §0b → Verweis auf die Regel. **`publicLinks.test.ts`** geprüft (grün). **Commit:** _(nach Push)_ ✅ **main**
+**Letzter Stand:** 06.05.26 – **Regelwerk Lizenzanmeldung / Stripe-Erfolg:** Neue Regel **`.cursor/rules/lizenz-anmeldung-stripe-erfolg.mdc`** (Pfad: API + `publicLinks` + Erfolgsseite + Tests; kein `/projects/k2-familie/…` → `/admin`). **`ein-standard-problem.mdc`** Zeile „Lizenzanmeldung …“. **`FEHLERANALYSEPROTOKOLL.md`:** Quelle, Fehlerklasse, Protokoll-Eintrag 06.05.26, Laufende Absicherungen. **`K2-FAMILIE-LEHREN`** §0b → Verweis auf die Regel. **`publicLinks.test.ts`** geprüft (grün). **Commit:** `f2a10927` ✅ **main**
 
-**Letzter Stand:** 06.05.26 – **K2 Familie Lizenz-QR abgesichert (Raumschiff):** Regressionstests **`getLicenseeAdminQrTargetUrl`** + **`k2-familie`-Unterpfad** in **`publicLinks.test.ts`**; Doku **0b** in **`K2-FAMILIE-LEHREN-AUS-K2-GALERIE.md`**, Tabelle + Hinweis **`ADMIN-QR-LIZENZ-OEK2-ABLAUF.md`**. **Commit:** _(nach Push)_ ✅ **main**
+**Letzter Stand:** 06.05.26 – **K2 Familie Lizenz-QR abgesichert (Raumschiff):** Regressionstests **`getLicenseeAdminQrTargetUrl`** + **`k2-familie`-Unterpfad** in **`publicLinks.test.ts`**; Doku **0b** in **`K2-FAMILIE-LEHREN-AUS-K2-GALERIE.md`**, Tabelle + Hinweis **`ADMIN-QR-LIZENZ-OEK2-ABLAUF.md`**. **Commit:** `f2a10927` ✅ **main**
 
 **Letzter Stand:** 06.05.26 – **K2 Familie Admin-QR falsch (Galerie statt Familie):** API liefert **`/projects/k2-familie/meine-familie?t=…`**, aber **`normalizeLicenseeAdminUrl`** hat alles Nicht-`/admin` zu **`/admin?t=…`** gemacht – **`tenantId`** wird nur aus **`tenantId=`** gelesen, nicht aus **`t=`** → Galerie-Admin. **Fix:** Pfade unter **`PROJECT_ROUTES['k2-familie'].home`** unverändert lassen. **Tests:** `publicLinks.test.ts`. **Commit:** 55014ae9 ✅ **main**
 
@@ -224,7 +226,7 @@
 
 ---
 
-**Letzter Stand:** 26.04.26 – **K2 Familie: Einladungs-URLs eisern eine Quelle (Nachzug):** `K2FamilieVerwaltungZugangUndAnsicht` baut QR/Links nur noch über **`familieEinladungsUrls.ts`** (kein `new URL` dupliziert). Persönliche Links: **`fn`** optional wie zuvor (fünfter Parameter). `buildPersoenlicheEinladungsUrlKurz/Scan` erweitert. `familieMitgliedInfoBriefText`: fehlendes **`R`** = `PROJECT_ROUTES['k2-familie']` (Tests grün). Tabelle **ein-standard-problem.mdc**, Lehre **K2-FAMILIE-LEHREN**, Tests **`familieEinladungsUrls`**. **qs:local** grün – **Commit:** _(nach Push)_ ✅ **main**
+**Letzter Stand:** 26.04.26 – **K2 Familie: Einladungs-URLs eisern eine Quelle (Nachzug):** `K2FamilieVerwaltungZugangUndAnsicht` baut QR/Links nur noch über **`familieEinladungsUrls.ts`** (kein `new URL` dupliziert). Persönliche Links: **`fn`** optional wie zuvor (fünfter Parameter). `buildPersoenlicheEinladungsUrlKurz/Scan` erweitert. `familieMitgliedInfoBriefText`: fehlendes **`R`** = `PROJECT_ROUTES['k2-familie']` (Tests grün). Tabelle **ein-standard-problem.mdc**, Lehre **K2-FAMILIE-LEHREN**, Tests **`familieEinladungsUrls`**. **qs:local** grün – **Commit:** `f2a10927` ✅ **main**
 
 ---
 
@@ -333,7 +335,7 @@
 
 ---
 
-**Letzter Stand:** 23.04.26 – **Lizenznehmer: Admin-Kontext bei /admin /mein-bereich setzen (Galerie: Admin-Button nach Admin-QR)** – `src/context/TenantContext.tsx` (`syncStorageFromUrl` für `!isPlatformInstance()`). **Commit:** _(nach Push)_
+**Letzter Stand:** 23.04.26 – **Lizenznehmer: Admin-Kontext bei /admin /mein-bereich setzen (Galerie: Admin-Button nach Admin-QR)** – `src/context/TenantContext.tsx` (`syncStorageFromUrl` für `!isPlatformInstance()`). **Commit:** `f2a10927`
 
 ---
 

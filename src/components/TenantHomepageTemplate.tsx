@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { flyerEventBogenUrl } from '../config/navigation'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { parseArtworkPriceEurFromWork } from '../utils/parseArtworkPriceEur'
 import { getShopSoldArtworksKey } from '../utils/shopContextKeys'
@@ -30,6 +31,14 @@ type TenantGalleryArtwork = {
   ceramicSubcategory?: string
 }
 type TenantEvent = { id?: string; title?: string; date?: string; endDate?: string; description?: string }
+
+/** Echte Eventmanager-Termine haben eine id; Muster-Zeilen (muster-*) keinen Flyer-Link. */
+function tenantEventHasFlyerLink(event: TenantEvent): boolean {
+  const id = String(event.id || '').trim()
+  if (!id) return false
+  if (id.startsWith('muster-')) return false
+  return true
+}
 
 /** Online-Erwerb: Alt-Daten hatten teils inShop:false bei weiterhin ausgestellten Werken – dann trotzdem erlauben, solange nicht explizit ohne Online-Galerie. */
 function isTenantArtworkShopPurchasable(artwork: TenantGalleryArtwork, priceEur: number): boolean {
@@ -88,6 +97,7 @@ type TenantHomepageTemplateProps = {
 
 export function TenantHomepageTemplate(props: TenantHomepageTemplateProps) {
   const navigate = useNavigate()
+  const [flyerLinkHoverKey, setFlyerLinkHoverKey] = useState<string | null>(null)
   const entranceImage = props.galerieCardImage
   const virtualTourFallbackImage = props.virtualTourImage || props.galerieCardImage
   const welcomeImageHeightPx = Math.min(520, Math.max(170, Number(props.welcomeImageHeightPx || 260)))
@@ -694,16 +704,55 @@ export function TenantHomepageTemplate(props: TenantHomepageTemplateProps) {
               <span style={{ fontWeight: 700, color: props.liveText, fontSize: '0.9rem' }}>Naechste Termine</span>
             </div>
             <div style={{ display: 'grid', gap: '0.55rem' }}>
-              {displayEvents.map((event, idx) => (
-                <article key={event.id || `${event.title || 'event'}-${idx}`} style={{ border: TEMPLATE.sectionBorder, borderRadius: 10, padding: '0.55rem 0.65rem', background: 'rgba(255,255,255,0.02)', borderLeft: `3px solid ${props.liveAccent}66` }}>
-                  <div style={{ fontWeight: 700, color: props.liveText, fontSize: '0.9rem' }}>{event.title || 'Event'}</div>
-                  {(event.date || event.endDate) ? (
-                    <div style={{ marginTop: '0.2rem', color: props.liveMuted, fontSize: '0.82rem' }}>
-                      {event.date || ''}{event.endDate ? ` bis ${event.endDate}` : ''}
-                    </div>
-                  ) : null}
-                </article>
-              ))}
+              {displayEvents.map((event, idx) => {
+                const rowKey = `${idx}-${event.id || event.title || 'event'}`
+                const showFlyer = tenantEventHasFlyerLink(event)
+                const flyerTo = showFlyer
+                  ? flyerEventBogenUrl({
+                    tenant: 'k2',
+                    tenantId: props.tenantId,
+                    eventId: event.id,
+                  })
+                  : ''
+                const isFlyerHover = flyerLinkHoverKey === rowKey
+                return (
+                  <article key={event.id || `${event.title || 'event'}-${idx}`} style={{ border: TEMPLATE.sectionBorder, borderRadius: 10, padding: '0.55rem 0.65rem', background: 'rgba(255,255,255,0.02)', borderLeft: `3px solid ${props.liveAccent}66` }}>
+                    <div style={{ fontWeight: 700, color: props.liveText, fontSize: '0.9rem' }}>{event.title || 'Event'}</div>
+                    {(event.date || event.endDate) ? (
+                      <div style={{ marginTop: '0.2rem', color: props.liveMuted, fontSize: '0.82rem' }}>
+                        {event.date || ''}{event.endDate ? ` bis ${event.endDate}` : ''}
+                      </div>
+                    ) : null}
+                    {showFlyer ? (
+                      <Link
+                        to={flyerTo}
+                        onMouseEnter={() => setFlyerLinkHoverKey(rowKey)}
+                        onMouseLeave={() => setFlyerLinkHoverKey(null)}
+                        onFocus={() => setFlyerLinkHoverKey(rowKey)}
+                        onBlur={() => setFlyerLinkHoverKey(null)}
+                        style={{
+                          marginTop: '0.42rem',
+                          display: 'inline-block',
+                          padding: '0.32rem 0.75rem',
+                          borderRadius: 999,
+                          fontSize: '0.78rem',
+                          fontWeight: 700,
+                          textDecoration: 'none',
+                          cursor: 'pointer',
+                          border: `1px solid ${props.liveAccent}99`,
+                          background: isFlyerHover ? `${props.liveAccent}40` : `${props.liveAccent}1f`,
+                          color: props.liveText,
+                          boxShadow: isFlyerHover ? '0 5px 16px rgba(0,0,0,0.28)' : 'none',
+                          transform: isFlyerHover ? 'translateY(-1px)' : 'translateY(0)',
+                          transition: 'background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease',
+                        }}
+                      >
+                        Zum Event-Flyer
+                      </Link>
+                    ) : null}
+                  </article>
+                )
+              })}
             </div>
           </div>
         </div>

@@ -45,7 +45,7 @@ type TenantGalleryArtwork = {
   ceramicSubcategory?: string
 }
 type PageContentGalTenant = { welcomeImage?: string; virtualTourImage?: string; virtualTourVideo?: string; galerieCardImage?: string }
-type TenantEvent = { title?: string; date?: string; endDate?: string }
+type TenantEvent = { id?: string; title?: string; date?: string; endDate?: string }
 
 function normalizeFocusDirection(raw: string | null): FocusDirectionId {
   const value = String(raw || '').trim().toLowerCase()
@@ -328,11 +328,16 @@ export default function GalerieTenantPage() {
   const instagramUrl = normalizeExternalUrl(galleryStamm.instagram)
   const facebookUrl = normalizeExternalUrl(galleryStamm.facebook)
   const websiteUrl = normalizeExternalUrl(galleryStamm.website || galleryStamm.internetadresse)
-  const events = Array.isArray(data?.events) ? data.events.slice(0, 10).map((e) => ({
-    title: String(e?.title || '').trim(),
-    date: String(e?.date || '').trim(),
-    endDate: String(e?.endDate || '').trim(),
-  })).filter((e) => e.title || e.date || e.endDate) : []
+  const events = Array.isArray(data?.events) ? data.events.slice(0, 10).map((e) => {
+    const rawId = e?.id
+    const idStr = rawId != null && String(rawId).trim() !== '' ? String(rawId).trim() : undefined
+    return {
+      id: idStr,
+      title: String(e?.title || '').trim(),
+      date: String(e?.date || '').trim(),
+      endDate: String(e?.endDate || '').trim(),
+    }
+  }).filter((e) => e.title || e.date || e.endDate) : []
   const galleryEntered = searchParams.get('enter') === 'gallery' || String(location.hash || '').toLowerCase() === '#werke'
   const galleryEnterParams = new URLSearchParams(searchParams)
   galleryEnterParams.set('enter', 'gallery')
