@@ -712,6 +712,7 @@ export function TenantHomepageTemplate(props: TenantHomepageTemplateProps) {
                     tenant: 'k2',
                     tenantId: props.tenantId,
                     eventId: event.id,
+                    publicMasterView: true,
                   })
                   : ''
                 const isFlyerHover = flyerLinkHoverKey === rowKey

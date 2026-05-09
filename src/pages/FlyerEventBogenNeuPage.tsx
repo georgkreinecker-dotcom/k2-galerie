@@ -622,6 +622,13 @@ export default function FlyerEventBogenNeuPage() {
     () => (searchParams.get('from') || '') === 'adminFlyerDerivation',
     [searchParams],
   )
+  /** Öffentlicher Link (z. B. Lizenz-Homepage): nur Master A5 ohne Bearbeiten-UI (`flyerEventBogenUrl` … publicMasterView). */
+  const publicMasterViewOnly = useMemo(
+    () => (searchParams.get('view') || '').trim() === 'publicMaster',
+    [searchParams],
+  )
+  const publicMasterReadonlyView =
+    publicMasterViewOnly && !isA3Mode && !isA6Mode && !isCardMode
   /** URL-Flag für Galerie-Overlay (main.tsx lädt App im iframe). */
   const plakatEmbedOnly = useMemo(() => searchParams.get('k2PlakatEmbed') === '1', [searchParams])
   /** Nur im iframe: kein Rand, keine Toolbar – im eigenen Tab bleibt Zurück/Drucken. */
@@ -632,6 +639,8 @@ export default function FlyerEventBogenNeuPage() {
   /** Nur Plakat/Karte zeigen – keine Flyer-Werkzeug-Leiste (Speichern, mök2, Master-Links …). */
   const derivationOnlyViewer =
     (fromPublicGalerie || fromAdminFlyerDerivation) && (isA3Mode || isA6Mode || isCardMode)
+  const useSlimPublicFlyerToolbar = derivationOnlyViewer || publicMasterReadonlyView
+  const usePublicPlakatViewerShell = derivationOnlyViewer || publicMasterReadonlyView
   /** Master ist fix: Variante 2 (vorne ein Bild, hinten nur Text). */
   const layoutFromUrl: 'standard' | 'variant2' = 'variant2'
   const { versionTimestamp } = useQrVersionTimestamp()
@@ -857,7 +866,7 @@ export default function FlyerEventBogenNeuPage() {
 
     // Public-Derivations (aus „Aktuelles“) müssen deterministisch Server-Stand verwenden.
     // Sonst kann am Empfänger-Gerät ein alter localStorage-Stand das Bild „zurückdrehen“.
-    if (fromPublicGalerie) {
+    if (fromPublicGalerie || publicMasterViewOnly) {
       const controller = new AbortController()
       const t = setTimeout(() => controller.abort(), 8000)
       fetch(`${BASE_APP_URL}/api/gallery-data?tenantId=${encodeURIComponent(effectiveDynamicTenantId || 'k2')}&_=${Date.now()}`, { cache: 'no-store', signal: controller.signal })
@@ -882,7 +891,17 @@ export default function FlyerEventBogenNeuPage() {
     return () => {
       active = false
     }
-  }, [derivationOnlyViewer, fromPublicGalerie, isOeffentlich, isVk2, flyerDataTick, flyerImgFallback, versionTimestamp, effectiveDynamicTenantId])
+  }, [
+    derivationOnlyViewer,
+    fromPublicGalerie,
+    publicMasterViewOnly,
+    isOeffentlich,
+    isVk2,
+    flyerDataTick,
+    flyerImgFallback,
+    versionTimestamp,
+    effectiveDynamicTenantId,
+  ])
 
   /**
    * Master A5 (A4 mit 2×A5) aus Galerie („Aktuelles“):
@@ -890,7 +909,7 @@ export default function FlyerEventBogenNeuPage() {
    * Daher: bei fromPublicGalerie auch im Master-Modus die Bildquellen vom Server holen.
    */
   useEffect(() => {
-    if (!fromPublicGalerie) return
+    if (!fromPublicGalerie && !publicMasterViewOnly) return
     if (isOeffentlich || isVk2) return
     if (isA3Mode || isA6Mode || isCardMode) return // Ableitungen werden oben behandelt
 
@@ -958,7 +977,17 @@ export default function FlyerEventBogenNeuPage() {
       clearTimeout(t)
       controller.abort()
     }
-  }, [fromPublicGalerie, isOeffentlich, isVk2, isA3Mode, isA6Mode, isCardMode, flyerImgFallback, effectiveDynamicTenantId])
+  }, [
+    fromPublicGalerie,
+    publicMasterViewOnly,
+    isOeffentlich,
+    isVk2,
+    isA3Mode,
+    isA6Mode,
+    isCardMode,
+    flyerImgFallback,
+    effectiveDynamicTenantId,
+  ])
 
   useEffect(() => {
     if (derivationOnlyViewer) setShowDerivationFullscreen(true)
@@ -1003,6 +1032,16 @@ export default function FlyerEventBogenNeuPage() {
   }, [effectiveDynamicTenantId, isOeffentlich, isVk2])
 
   const handleToolbarBack = useCallback(() => {
+    if (publicMasterViewOnly) {
+      if (typeof window !== 'undefined' && window.self !== window.top) {
+        try {
+          window.parent.postMessage({ type: 'k2-close-public-plakat-overlay' }, window.location.origin)
+        } catch (_) {}
+        return
+      }
+      navigate(frontQrPathExplain)
+      return
+    }
     if (fromPublicGalerie) {
       if (typeof window !== 'undefined' && window.self !== window.top) {
         try {
@@ -1036,6 +1075,7 @@ export default function FlyerEventBogenNeuPage() {
   }, [
     navigate,
     werbeunterlagenHref,
+    publicMasterViewOnly,
     fromPublicGalerie,
     fromAdminFlyerDerivation,
     frontQrPathExplain,
@@ -1055,6 +1095,7 @@ export default function FlyerEventBogenNeuPage() {
       if (eventIdFromUrl) sp.set('eventId', eventIdFromUrl)
       /** Öffentlich (aus Galerie): muss auch im Master A5 sichtbar bleiben, sonst lädt der Master wieder alte Persistenz. */
       const derivation = extra.mode === 'a3' || extra.mode === 'a6' || extra.mode === 'card'
+      if (publicMasterViewOnly) sp.set('view', 'publicMaster')
       if (fromPublicGalerie) sp.set('from', 'publicGalerie')
       if (fromPublicGalerie && derivation) sp.set('k2PlakatEmbed', '1')
       if (!fromPublicGalerie && fromAdminFlyerDerivation && derivation) sp.set('from', 'adminFlyerDerivation')
@@ -1064,7 +1105,15 @@ export default function FlyerEventBogenNeuPage() {
       const q = sp.toString()
       return q ? `${base}?${q}` : base
     },
-    [effectiveDynamicTenantId, isOeffentlich, isVk2, eventIdFromUrl, fromPublicGalerie, fromAdminFlyerDerivation],
+    [
+      effectiveDynamicTenantId,
+      isOeffentlich,
+      isVk2,
+      eventIdFromUrl,
+      fromPublicGalerie,
+      fromAdminFlyerDerivation,
+      publicMasterViewOnly,
+    ],
   )
 
   /** Werk aus Raster: Vorderseite setzen; data:/blob: sofort für Flyer verkleinern (Speichern & Vorschau). */
@@ -2074,7 +2123,7 @@ export default function FlyerEventBogenNeuPage() {
 
   return (
     <div
-      className={`${ROOT}${isA3Mode ? ' a3-mode' : ''}${isA6Mode ? ' a6-mode' : ''}${isCardMode ? ' card-mode' : ''}${bwPrintPreview ? ' bw-print' : ''}${derivationOnlyViewer ? ' public-plakat-viewer' : ''}${derivationOnlyViewer && plakatChromeHiddenInEmbed ? ' public-plakat-embed-only' : ''}`}
+      className={`${ROOT}${isA3Mode ? ' a3-mode' : ''}${isA6Mode ? ' a6-mode' : ''}${isCardMode ? ' card-mode' : ''}${bwPrintPreview ? ' bw-print' : ''}${usePublicPlakatViewerShell ? ' public-plakat-viewer' : ''}${publicMasterReadonlyView ? ' public-master-readonly' : ''}${derivationOnlyViewer && plakatChromeHiddenInEmbed ? ' public-plakat-embed-only' : ''}`}
     >
       <style>{`
         .${ROOT}{
@@ -2132,6 +2181,29 @@ export default function FlyerEventBogenNeuPage() {
           cursor:pointer;
         }
         .${ROOT}.public-plakat-viewer .toolbar.public-plakat-viewer-toolbar .ppv-print:hover{background:#d4622a}
+        .${ROOT}.public-plakat-viewer.public-master-readonly .master-workspace{
+          flex:1;
+          min-height:0;
+          display:flex;
+          flex-direction:column;
+          align-items:center;
+          justify-content:flex-start;
+          max-width:none;
+          margin:0;
+          padding:12px 10px 28px;
+          box-sizing:border-box;
+        }
+        .${ROOT}.public-plakat-viewer.public-master-readonly .master-preview-col{
+          position:static;
+          background:rgba(255,254,251,0.06);
+          border:1px solid rgba(255,255,255,0.1);
+          box-shadow:0 14px 42px rgba(0,0,0,0.35);
+          max-width:min(1180px,100%);
+        }
+        .${ROOT}.public-plakat-viewer.public-master-readonly .master-preview-inner{
+          max-height:none;
+          overflow:visible;
+        }
         .${ROOT}.public-plakat-viewer .derivation-shell{
           flex:1;
           min-height:0;
@@ -3676,7 +3748,7 @@ export default function FlyerEventBogenNeuPage() {
         }
       `}</style>
 
-      {derivationOnlyViewer ? (
+      {useSlimPublicFlyerToolbar ? (
         plakatChromeHiddenInEmbed ? null : (
           <div className="toolbar public-plakat-viewer-toolbar" role="toolbar" aria-label="Plakat">
             <button type="button" className="ppv-back" onClick={handleToolbarBack}>
@@ -3776,16 +3848,18 @@ export default function FlyerEventBogenNeuPage() {
       {!isA3Mode && !isA6Mode && !isCardMode && (
         <div className="master-workspace">
           <div className="master-preview-col">
-            <div className="master-preview-header">
-              <h2 className="master-preview-title">Master A5 – Live-Vorschau</h2>
-              <p className="master-focus-pill">
-                {masterEditField
-                  ? `Bearbeiten: ${MASTER_EDIT_LABELS[masterEditField]}`
-                  : 'Große Fläche = Bearbeiten · Kleines i = Kurzinfo über der Vorschau'}
-              </p>
-            </div>
+            {!publicMasterReadonlyView ? (
+              <div className="master-preview-header">
+                <h2 className="master-preview-title">Master A5 – Live-Vorschau</h2>
+                <p className="master-focus-pill">
+                  {masterEditField
+                    ? `Bearbeiten: ${MASTER_EDIT_LABELS[masterEditField]}`
+                    : 'Große Fläche = Bearbeiten · Kleines i = Kurzinfo über der Vorschau'}
+                </p>
+              </div>
+            ) : null}
             <div className="master-preview-inner">
-              {masterLiveInfo ? (
+              {masterLiveInfo && !publicMasterReadonlyView ? (
                 <>
                   <div
                     className="master-live-info-backdrop"
@@ -3812,8 +3886,8 @@ export default function FlyerEventBogenNeuPage() {
               ) : null}
               <div className="master-preview-scale-wrap">
                 <section className="sheet" aria-label="Masteransicht A4 – oben Vorderseite, unten Rückseite">
-                  <div>{renderFrontCardV2(true)}</div>
-                  <div>{renderBackCard(true)}</div>
+                  <div>{renderFrontCardV2(!publicMasterReadonlyView)}</div>
+                  <div>{renderBackCard(!publicMasterReadonlyView)}</div>
                 </section>
               </div>
             </div>
@@ -3821,7 +3895,7 @@ export default function FlyerEventBogenNeuPage() {
         </div>
       )}
 
-      {masterEditField ? (
+      {masterEditField && !publicMasterReadonlyView ? (
         <>
           <div
             className="master-edit-backdrop"

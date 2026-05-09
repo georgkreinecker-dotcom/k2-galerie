@@ -373,6 +373,11 @@ export function flyerEventBogenUrl(params: {
    * wie von der Galerie (ohne Flyer-Master-Werkzeugleiste). Kein k2PlakatEmbed (nur Galerie-iframe).
    */
   fromAdminDerivation?: boolean
+  /**
+   * Lizenz-Homepage / öffentlicher Link: nur Master A5 (Vorder- und Rückseite), keine Bearbeiten-Leiste
+   * und keine Hotspots (read-only). Nicht mit k2PlakatEmbed koppeln – eigener Tab.
+   */
+  publicMasterView?: boolean
 }): string {
   const base = PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu
   const q = new URLSearchParams()
@@ -386,6 +391,9 @@ export function flyerEventBogenUrl(params: {
   if (params.mode) q.set('mode', params.mode)
   const eid = params.eventId != null ? String(params.eventId).trim() : ''
   if (eid) q.set('eventId', eid)
+  if (params.publicMasterView) {
+    q.set('view', 'publicMaster')
+  }
   if (params.fromPublicGalerie) {
     q.set('from', 'publicGalerie')
     /** Gleiche Origin im iframe (Galerie-Overlay): main.tsx lädt sonst nur den Vorschau-Hinweis. */

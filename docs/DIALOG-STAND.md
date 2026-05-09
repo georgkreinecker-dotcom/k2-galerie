@@ -1,8 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Lizenz-Homepage **„Nächste Termine“** → **Event-Flyer** ist umgesetzt; bei Bedarf **Vercel** kurz gegenprüfen.
+**Was wir JETZT tun:** Öffentlicher **Event-Flyer** aus der Lizenz-Homepage zeigt nur noch **Master A5** (read-only); bei Bedarf **Vercel** kurz gegenprüfen.
 
-**Einordnung:** **`flyerEventBogenUrl`** (ein Standard) + Server-**`events[].id`** aus **`gallery-data`**; Muster-Termine (**`muster-*`**) ohne Flyer-Link.
+**Einordnung:** **`view=publicMaster`** + **`flyerEventBogenUrl({ publicMasterView })`** – schmale Leiste (Zurück / Drucken), gleiche **Server-Bilder** wie bei Galerie-Link; Bearbeiten-UI aus.
+
+**Letzter Stand:** 09.05.26 – **Event-Flyer nur Master (öffentlich):** **`flyerEventBogenUrl`** optional **`publicMasterView`** → Query **`view=publicMaster`**; **`FlyerEventBogenNeuPage`**: schlanke Toolbar wie Ableitungen, **Vorder-/Rückseite** ohne Hotspots, Header-Hinweis aus; **`gallery-data`**-Fetch für Mandanten wie bei **`fromPublicGalerie`**-Master; **`TenantHomepageTemplate`** setzt **`publicMasterView: true`**. **qs:local** grün. **Commit:** `8c3c44cb` ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **Lizenz-Homepage: Termine → Event-Flyer (Button + Hover):** **`GalerieTenantPage`** mappt **`events[].id`**; **`TenantHomepageTemplate`** zeigt bei echter **`id`** den Link **„Zum Event-Flyer“** (`flyerEventBogenUrl` mit **`context=k2`**, **`tenantId`**, **`eventId`**); Hover/Fokus per State; keine Links bei Platzhalter-**`muster-*`**. **`build:vercel`** + Vertrags-Tests grün. **Commit:** `6f311e94` ✅ **main**
 
