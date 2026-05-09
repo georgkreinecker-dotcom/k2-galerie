@@ -10,7 +10,7 @@
 - **vercel.json:** Gültiges JSON, **keine** überzählige `}` am Ende (sonst Vercel: „Invalid vercel.json“ → Build Failed).
 - **Push:** `git push origin main` → Vercel baut. In Vercel Deployments prüfen: neues Deployment **Ready** und **Current**.
 - **QR scannen** erst, wenn Vercel **Ready** ist (oder auf dem Mac „Bereit für Mobile“ angezeigt wird). Siehst du am Handy noch alte Zeit → **unten links auf „Stand“ tippen** (lädt neu).
-- **Build:** `package.json` → Script `build` mit `write-build-info.js --inject-html`. Repo: index.html mit `<!-- BUILD_TS_INJECT -->`, keine doppelten Exports in buildInfo.generated.ts, nur ein `<div id="root">` in index.html.
+- **Build:** `package.json` → `build:vercel` ruft `write-build-info.js` auf (schreibt u. a. **`public/boot/boot-build-info.js`** mit aktuellem Stand-Timestamp). Repo: **`index.html`** lädt Stand-Logik über **`/boot/boot-build-info.js`** (kein Inline-Script dafür). Details: **`docs/SICHERHEIT-CSP-UND-SCHUTZSTUFE.md`**, **`docs/STAND-QR-SO-BLEIBT-ES.md`**.
 
 ---
 

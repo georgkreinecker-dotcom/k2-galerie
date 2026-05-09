@@ -11,11 +11,11 @@ alwaysApply: true
 
 - Push auf **main** → Vercel baut Production. Wenn Deployment **Ready** + **Current** ist, stimmt der Stand. QR **muss** Server-Stand + Cache-Bust nutzen (buildQrUrlWithBust + useQrVersionTimestamp), **nicht** nur urlWithBuildVersion.
 - **vercel.json:** Gültiges JSON, **keine** überzählige `}`. No-cache für index.html und build-info.json.
-- **Build:** `npm run build` = `write-build-info.js --inject-html` + … + vite build. index.html: Placeholder `<!-- BUILD_TS_INJECT -->`; Inject-Script **nicht** entfernen. buildInfo.generated.ts: einmal BUILD_LABEL, BUILD_TIMESTAMP.
+- **Build:** `npm run build` ruft `write-build-info.js` auf und danach Vite. **`public/boot/boot-build-info.js`** enthält die Stand-/Reload-Logik; **`index.html`** lädt sie per **`/boot/boot-build-info.js`** – **nicht** entfernen. buildInfo.generated.ts: einmal BUILD_LABEL, BUILD_TIMESTAMP.
 - Bei Merge/Refactors: Keine doppelten Exports, keine doppelten root-divs.
 
 ## Bei Änderungen an vercel.json oder Build/Stand
 
-- Regel **stand-qr-niemals-zurueck.mdc** einhalten (QR = Server-Stand + Bust; Inject-Script; no-cache).
+- Regel **stand-qr-niemals-zurueck.mdc** einhalten (QR = Server-Stand + Bust; **`boot-build-info.js`**; no-cache; Rewrite **`/boot/`**).
 - vercel.json mit `node -e "JSON.parse(require('fs').readFileSync('vercel.json','utf8')); console.log('OK')"` prüfen.
 - Lokal `npm run build` vor Push.

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <script>(function(){var p=location.pathname;if(window.self===window.top&&(p==='/admin/login'||p==='/admin/login/'||p.indexOf('/admin/login')===0)){location.replace(location.origin+'/projects/k2-galerie/galerie');}})();</script>
+    <script src="/boot/boot-admin-redirect.js"></script>
     <meta charset="UTF-8" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
@@ -13,44 +13,7 @@
     <meta name="apple-mobile-web-app-title" content="K2 Galerie" />
     <link rel="apple-touch-icon" href="/vite.svg" />
     <!-- Kein statisches link rel=manifest: Safari würde sonst zuerst manifest.json (start_url /galerie) für „Zum Home-Bildschirm“ cachen, bevor JS auf K2-Familie-Manifest umschaltet. -->
-    <script>
-      (function () {
-        try {
-          var p = location.pathname || ''
-          var familie =
-            p.indexOf('/projects/k2-familie') === 0 ||
-            p.indexOf('/k2-familie-handbuch') === 0 ||
-            p === '/familie' ||
-            p === '/familie/'
-          var m = document.createElement('link')
-          m.rel = 'manifest'
-          m.href = familie ? '/manifest-k2-familie.json' : '/manifest.json'
-          document.head.appendChild(m)
-          if (!familie) return
-          var ap = document.querySelector('link[rel="apple-touch-icon"]')
-          if (ap) ap.setAttribute('href', '/k2-familie-icon-192.png')
-          var t = document.querySelector('meta[name="apple-mobile-web-app-title"]')
-          if (t) t.setAttribute('content', 'K2 Familie')
-          var tc = document.querySelector('meta[name="theme-color"]')
-          if (!tc) {
-            tc = document.createElement('meta')
-            tc.setAttribute('name', 'theme-color')
-            document.head.appendChild(tc)
-          }
-          tc.setAttribute('content', '#b54a1e')
-          var fi = document.querySelector('link[rel="icon"]')
-          if (fi) fi.setAttribute('href', '/k2-familie-icon-192.png')
-          var tit = document.querySelector('title')
-          if (tit) tit.textContent = 'K2 Familie'
-          var md = document.querySelector('meta[name="description"]')
-          if (md)
-            md.setAttribute(
-              'content',
-              'K2 Familie – Stammbaum, Momente und Erinnerungen gemeinsam pflegen.'
-            )
-        } catch (e) {}
-      })()
-    </script>
+    <script src="/boot/boot-manifest.js"></script>
     <link rel="preconnect" href="https://k2-galerie.vercel.app" />
     <link rel="dns-prefetch" href="https://k2-galerie.vercel.app" />
     <title>K2 Galerie</title>
@@ -58,46 +21,16 @@
   </head>
   <body style="margin: 0; padding: 0; background: #1a0f0a;">
     <!-- K2 Theme: Orange sofort setzen (auch für Mobil), bevor React/localStorage laufen -->
-    <script>
-      (function(){
-        try {
-          var r = document.documentElement.style;
-          r.setProperty('background', '#1a0f0a');
-          r.setProperty('color', '#fff5f0');
-          r.setProperty('--k2-bg-1', '#1a0f0a');
-          r.setProperty('--k2-bg-2', '#2d1a14');
-          r.setProperty('--k2-bg-3', '#3d2419');
-          r.setProperty('--k2-text', '#fff5f0');
-          r.setProperty('--k2-muted', '#d4a574');
-          r.setProperty('--k2-accent', '#ff8c42');
-          r.setProperty('--k2-card-bg-1', 'rgba(45, 26, 20, 0.95)');
-          r.setProperty('--k2-card-bg-2', 'rgba(26, 15, 10, 0.92)');
-          document.body.style.setProperty('background', '#1a0f0a');
-          document.body.style.setProperty('color', '#fff5f0');
-        } catch (e) {}
-      })();
-    </script>
-    <script>(function(){if(window.self!==window.top)return;var o=location.origin;if(o.indexOf("localhost")!==-1)return;var b=1778343794686;var p=location.pathname;var bust=function(){var q=location.search?location.search.slice(1):"";var params=new URLSearchParams(q);params.set("v",Date.now());params.set("_",Date.now());location.replace(o+p+"?"+params.toString());};var mark=function(k){try{sessionStorage.setItem(k,String(b));}catch(e){}};var can=function(k){try{return sessionStorage.getItem(k)!==String(b);}catch(e){return true;}};if(Date.now()-b>120000){if(can("k2_stale_reload_ts")){mark("k2_stale_reload_ts");bust();}return;}var url=o+"/api/build-info?t="+Date.now()+"&r="+Math.random();fetch(url,{cache:"no-store",headers:{"Pragma":"no-cache","Cache-Control":"no-cache"}}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.timestamp>b){if(can("k2_updated_ts")){mark("k2_updated_ts");bust();}}}).catch(function(){if(can("k2_updated_ts")){mark("k2_updated_ts");bust();}});})();</script>
-    <div id="root" style="min-height: 100vh; background: #1a0f0a; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="setTimeout(function(){ if(window.self!==window.top)return; var r=document.getElementById('root'); if(r&&r.querySelector('#root-loading')) (window.safeReload||function(){if(window.self!==window.top)return;var q=location.search?location.search.slice(1):'';var p=new URLSearchParams(q);p.set('v',Date.now());location.replace(location.origin+location.pathname+'?'+p.toString());})(); }, 100)">
+    <script src="/boot/boot-theme.js"></script>
+    <!-- Stand / QR / Cache-Bust: Timestamp wird beim Build in diese Datei geschrieben (scripts/write-build-info.js). -->
+    <script src="/boot/boot-build-info.js"></script>
+    <div id="root" style="min-height: 100vh; background: #1a0f0a; display: flex; align-items: center; justify-content: center; cursor: pointer;">
       <div id="root-loading" style="text-align:center;color:rgba(255,255,255,0.9);font-family:system-ui;padding:2rem;">
         <p style="margin:0 0 0.5rem;font-size:1.1rem;">Laden …</p>
         <p style="margin:0;font-size:0.85rem;color:rgba(255,255,255,0.6);">Nach QR-Scan: Warte kurz.<br>Lädt nicht? Tippe hier zum Neuladen.</p>
       </div>
     </div>
-    <script>
-      (function() {
-        var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768;
-        var timeoutMs = isMobile ? 8000 : 15000;
-        var t = setTimeout(function() {
-          var root = document.getElementById('root');
-          var loading = document.getElementById('root-loading');
-          if (root && loading && root.contains(loading)) {
-            root.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.9);font-family:system-ui;padding:2rem;max-width:90vw;"><p style="margin-bottom:1rem;font-size:1.1rem;">Galerie lädt nicht.</p><p style="font-size:0.9rem;margin-bottom:1rem;">Bitte prüfe die Verbindung (WLAN/Mobilfunk).</p><p style="font-size:0.85rem;margin-bottom:1.5rem;color:rgba(255,255,255,0.7);">Tippe unten um neu zu laden.</p><button onclick="(window.safeReload||function(){if(window.self!==window.top)return;var q=location.search?location.search.slice(1):&quot;&quot;;var p=new URLSearchParams(q);p.set(&quot;v&quot;,Date.now());location.replace(location.origin+location.pathname+&quot;?&quot;+p.toString());})()" style="padding:0.75rem 1.5rem;background:#667eea;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:1rem;touch-action:manipulation;">Seite neu laden</button></div>';
-          }
-        }, timeoutMs);
-        document.documentElement.addEventListener('click', function() { clearTimeout(t); }, { once: true });
-      })();
-    </script>
+    <script src="/boot/boot-root-interaction.js"></script>
     <!-- Stand-Badge wird von der App (React) gerendert – sichtbar auf Mac, iPad und Handy -->
     <script type="module" src="/src/main.tsx"></script>
     <noscript>

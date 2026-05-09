@@ -66,41 +66,32 @@ try {
   apiChanged = true
 }
 
-// index.html: nur schreiben wenn sich die Build-MINUTE geändert hat (nicht jede Millisekunde) → Reopen nur 1× pro Minute
-let indexChanged = false
+// public/boot/boot-build-info.js: gleiche Logik wie früher Inline-Script in index.html (Stand / QR / Cache-Bust).
+// Nur schreiben wenn sich die Build-MINUTE geändert hat → weniger Reopen / weniger Git-Churn.
+let bootBuildInfoChanged = false
 {
   const ts = now.getTime()
-  const injectScript = '<script>(function(){if(window.self!==window.top)return;var o=location.origin;if(o.indexOf("localhost")!==-1)return;var b=' + ts + ';var p=location.pathname;var bust=function(){var q=location.search?location.search.slice(1):"";var params=new URLSearchParams(q);params.set("v",Date.now());params.set("_",Date.now());location.replace(o+p+"?"+params.toString());};var mark=function(k){try{sessionStorage.setItem(k,String(b));}catch(e){}};var can=function(k){try{return sessionStorage.getItem(k)!==String(b);}catch(e){return true;}};if(Date.now()-b>120000){if(can("k2_stale_reload_ts")){mark("k2_stale_reload_ts");bust();}return;}var url=o+"/api/build-info?t="+Date.now()+"&r="+Math.random();fetch(url,{cache:"no-store",headers:{"Pragma":"no-cache","Cache-Control":"no-cache"}}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.timestamp>b){if(can("k2_updated_ts")){mark("k2_updated_ts");bust();}}}).catch(function(){if(can("k2_updated_ts")){mark("k2_updated_ts");bust();}});})();</script>'
-  const indexPath = path.join(__dirname, '..', 'index.html')
-  let indexHtml = fs.readFileSync(indexPath, 'utf8')
-  // Gleiche Minute = nicht schreiben (Cursor-Reopen vermeiden). Altes var b= auslesen, Minute vergleichen.
-  const oldB = indexHtml.match(/var b=(\d+)/)
+  const bootBody =
+    '(function(){if(window.self!==window.top)return;var o=location.origin;if(o.indexOf("localhost")!==-1)return;var b=' +
+    ts +
+    ';var p=location.pathname;var bust=function(){var q=location.search?location.search.slice(1):"";var params=new URLSearchParams(q);params.set("v",Date.now());params.set("_",Date.now());location.replace(o+p+"?"+params.toString());};var mark=function(k){try{sessionStorage.setItem(k,String(b));}catch(e){}};var can=function(k){try{return sessionStorage.getItem(k)!==String(b);}catch(e){return true;}};if(Date.now()-b>120000){if(can("k2_stale_reload_ts")){mark("k2_stale_reload_ts");bust();}return;}var url=o+"/api/build-info?t="+Date.now()+"&r="+Math.random();fetch(url,{cache:"no-store",headers:{"Pragma":"no-cache","Cache-Control":"no-cache"}}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.timestamp>b){if(can("k2_updated_ts")){mark("k2_updated_ts");bust();}}}).catch(function(){if(can("k2_updated_ts")){mark("k2_updated_ts");bust();}});})();\n'
+  const bootDir = path.join(__dirname, '..', 'public', 'boot')
+  const bootPath = path.join(bootDir, 'boot-build-info.js')
   let sameMinute = false
-  if (oldB && oldB[1]) {
-    const oldDate = new Date(parseInt(oldB[1], 10))
-    const oldParts = Object.fromEntries(fmt.formatToParts(oldDate).filter(p => p.type !== 'literal').map(p => [p.type, p.value]))
-    const oldLabel = `${oldParts.day}.${oldParts.month}.${String(oldParts.year).slice(-2)} ${oldParts.hour}:${oldParts.minute}`
-    if (oldLabel === label) sameMinute = true
-  }
+  try {
+    const prev = fs.readFileSync(bootPath, 'utf8')
+    const oldB = prev.match(/var b=(\d+)/)
+    if (oldB && oldB[1]) {
+      const oldDate = new Date(parseInt(oldB[1], 10))
+      const oldParts = Object.fromEntries(fmt.formatToParts(oldDate).filter(p => p.type !== 'literal').map(p => [p.type, p.value]))
+      const oldLabel = `${oldParts.day}.${oldParts.month}.${String(oldParts.year).slice(-2)} ${oldParts.hour}:${oldParts.minute}`
+      if (oldLabel === label) sameMinute = true
+    }
+  } catch (_) {}
   if (!sameMinute) {
-    let newIndexHtml
-    if (indexHtml.includes('<!-- BUILD_TS_INJECT -->')) {
-      newIndexHtml = indexHtml.replace('<!-- BUILD_TS_INJECT -->', injectScript)
-    } else {
-      const oldScriptRe = /<script>\(function\(\)\{[^<]*var b=\d+;[^<]*\}\);?<\/script>/
-      const broadRe = /<script>\(function[^<]*var b=\d+[^<]*<\/script>/
-      if (oldScriptRe.test(indexHtml)) {
-        newIndexHtml = indexHtml.replace(oldScriptRe, injectScript)
-      } else if (broadRe.test(indexHtml)) {
-        newIndexHtml = indexHtml.replace(broadRe, injectScript)
-      } else {
-        newIndexHtml = indexHtml
-      }
-    }
-    if (indexHtml !== newIndexHtml) {
-      fs.writeFileSync(indexPath, newIndexHtml, 'utf8')
-      indexChanged = true
-    }
+    fs.mkdirSync(bootDir, { recursive: true })
+    fs.writeFileSync(bootPath, bootBody, 'utf8')
+    bootBuildInfoChanged = true
   }
 }
 
@@ -178,7 +169,7 @@ function getK2FamiliePresentationTenantIdForHtmlPatch() {
   }
 })()
 
-if (tsChanged || jsonChanged || apiChanged || indexChanged) {
+if (tsChanged || jsonChanged || apiChanged || bootBuildInfoChanged) {
   console.log('✅ Build-Info geschrieben:', label)
 } else {
   console.log('✅ Build-Info unverändert (kein Schreiben → weniger Reopen):', label)

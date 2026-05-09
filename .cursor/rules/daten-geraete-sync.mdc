@@ -39,7 +39,7 @@ alwaysApply: true
 3. Nach Upload: localStorage mit Vercel-Pfad (`/img/k2/...`) **überschreiben**
 4. Beim Lesen: Base64/blob automatisch durch Vercel-Pfad ersetzen (Migration)
 
-## index.html Timestamp:
+## Stand-Timestamp (Boot-Script):
 
-`node scripts/write-build-info.js` aktualisiert **IMMER** index.html (nicht nur bei `--inject-html`).
-Ohne aktuellen Timestamp lädt der Mac/das Handy nie automatisch neu.
+`node scripts/write-build-info.js` aktualisiert **`public/boot/boot-build-info.js`** (wenn sich die Build-Minute ändert – weniger unnötige Schreibzugriffe).
+Ohne aktuelles **`b=<timestamp>`** in dieser Datei lädt der Mac/das Handy beim nächsten Deploy nicht zuverlässig neu.

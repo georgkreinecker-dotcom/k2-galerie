@@ -45,6 +45,25 @@ describe('Vercel-Konfigurations-Schranken', () => {
     ).toBe(true)
   })
 
+  it('Catch-all-Headers enthalten Content-Security-Policy (Phishing/Schutzstandard)', () => {
+    const raw = readFileSync(join(process.cwd(), 'vercel.json'), 'utf8')
+    const cfg = JSON.parse(raw) as {
+      headers?: Array<{ source?: string; headers?: Array<{ key?: string; value?: string }> }>
+    }
+    const catchAll = cfg.headers?.find((h) => h.source === '/(.*)')
+    const csp = catchAll?.headers?.find((x) => x.key === 'Content-Security-Policy')?.value ?? ''
+    expect(csp.length).toBeGreaterThan(40)
+    expect(csp).toContain("default-src 'self'")
+    expect(csp).toContain('frame-ancestors')
+  })
+
+  it('SPA-Rewrite schließt /boot/ aus (Boot-Skripte sind echte Dateien)', () => {
+    const raw = readFileSync(join(process.cwd(), 'vercel.json'), 'utf8')
+    const cfg = JSON.parse(raw) as { rewrites?: Array<{ source?: string; destination?: string }> }
+    const spa = cfg.rewrites?.find((r) => r.destination === '/index.html' && r.source?.includes('(?!boot/)'))
+    expect(spa?.source).toContain('(?!boot/)')
+  })
+
   it('functions.*.includeFiles bleibt ein String (Schema-Schranke)', () => {
     const raw = readFileSync(join(process.cwd(), 'vercel.json'), 'utf8')
     const cfg = JSON.parse(raw) as { functions?: Record<string, { includeFiles?: unknown }> }

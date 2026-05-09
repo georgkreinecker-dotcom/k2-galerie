@@ -63,7 +63,7 @@
 |-----|--------|
 | **Primäre Aktion** | QR-Scan / Stand-Badge / Seitenöffnung → **immer aktuelle Version** vom Server (kein gecachter alter Build). QR = Server-Timestamp + Cache-Bust; index.html enthält Inject-Script (Stale-Check, build-info-Fetch). |
 | **Doku** | .cursor/rules/stand-qr-niemals-zurueck.mdc, docs/VERCEL-STAND-HANDY.md. |
-| **Code** | `src/hooks/useServerBuildTimestamp.ts` (buildQrUrlWithBust, useQrVersionTimestamp), GaleriePage/PlatformStartPage/MobileConnectPage (QR-URLs), scripts/write-build-info.js (--inject-html), vercel.json (no-cache). |
+| **Code** | `src/hooks/useServerBuildTimestamp.ts` (buildQrUrlWithBust, useQrVersionTimestamp), GaleriePage/PlatformStartPage/MobileConnectPage (QR-URLs), scripts/write-build-info.js → **`public/boot/boot-build-info.js`**, vercel.json (no-cache, Rewrite **`/boot/`** ausnehmen). |
 
 **NIEMALS:** Nur `urlWithBuildVersion` (lokaler Build) für QR verwenden; Inject-Script entfernen oder no-cache abschwächen; Fallback-Regex in write-build-info.js entfernen.
 

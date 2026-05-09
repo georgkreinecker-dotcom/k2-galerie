@@ -27,7 +27,7 @@
     "qs:sportwagen": "npm run guard:all && npm run diagnose:stand && npm run build",
     "tsc:build": "tsc -b",
     "vite:build": "vite build",
-    "build:vercel": "node scripts/write-build-info.js --inject-html && npm run check-exports && npm run tsc:build && npm run vite:build",
+    "build:vercel": "node scripts/write-build-info.js && npm run check-exports && npm run tsc:build && npm run vite:build",
     "build": "npm run test && npm run build:vercel",
     "lint": "eslint .",
     "preview": "vite preview",

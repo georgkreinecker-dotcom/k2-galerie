@@ -18,7 +18,7 @@ Damit das **nicht wieder passiert**, gelten feste Regeln. Sie stehen in **.curso
 
 ### 2. Altes HTML lädt sich einmal neu
 
-- Beim Build wird ein kleines Script in die index.html eingefügt. Es prüft:
+- Beim Build wird dasselbe kleine Script in **`public/boot/boot-build-info.js`** geschrieben (von `scripts/write-build-info.js`). Es wird wie eine normale JS-Datei eingebunden (**`<script src="/boot/boot-build-info.js">`**). Es prüft:
   - Ist die geladene Seite älter als 2 Minuten? → einmal neu laden mit Cache-Bust.
   - Ist auf dem Server eine neuere Version? → einmal neu laden.
   - Schlägt der Abruf fehl (z.B. fremdes WLAN)? → einmal neu laden (max. einmal pro Session).
@@ -48,8 +48,8 @@ Damit das **nicht wieder passiert**, gelten feste Regeln. Sie stehen in **.curso
 |-----------------|----------------------------|
 | `src/hooks/useServerBuildTimestamp.ts` | Hook und `buildQrUrlWithBust`; Abfrage von build-info.json |
 | `GaleriePage.tsx`, `PlatformStartPage.tsx`, `MobileConnectPage.tsx` | QR mit `buildQrUrlWithBust(..., useQrVersionTimestamp())` |
-| `scripts/write-build-info.js` | Aufruf mit `--inject-html`; vollständiges Inject-Script (Stale + build-info + Fehler-Reload) |
-| `index.html` | Placeholder `<!-- BUILD_TS_INJECT -->` |
-| `vercel.json` | no-cache für `/`, index.html, build-info.json, projects |
+| `scripts/write-build-info.js` | Schreibt **`public/boot/boot-build-info.js`** mit vollständiger Logik (Stale + build-info + Fehler-Reload); gleiche Minute wie früher → weniger unnötige Schreibzugriffe |
+| `index.html` | Verweist auf **`/boot/boot-build-info.js`** (kein Inline-Script für Stand); siehe auch **`docs/SICHERHEIT-CSP-UND-SCHUTZSTUFE.md`** |
+| `vercel.json` | no-cache für `/`, index.html, build-info.json, projects; SPA-Rewrite schließt **`/boot/`** aus |
 
 Diese Liste ist auch in der Cursor-Regel **stand-qr-niemals-zurueck.mdc** festgehalten.
