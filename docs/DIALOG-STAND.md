@@ -1,8 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** In **Safari/Chrome** (normaler Tab, nicht Vercel-iframe): **`https://k2-galerie.vercel.app`** – nach **Deployment Ready** Lizenz-**`/g/…`**: Preise, Shop, **`?werk=`** / Reservieren, Kassa/Bon testen.
+**Was wir JETZT tun:** **Verifikation erledigt** (Georg: alles ok auf Vercel). Nächster inhaltlicher Schritt: **von Georg** (oder Ruhe – nichts Offenes aus dieser Baustelle).
 
-**Einordnung:** **Shop/Preis** für Lizenz-Mandanten nutzt **`parseArtworkPriceEurFromWork`** wie der gemeinsame Standard; **`TenantHomepageTemplate`** + **`ShopPage`**; Regel **vor-commit-umsetzung-pruefen** (lokal sichtbar → Build → Push → Vercel-Tab). K2 echte Galerie-Logik unverändert.
+**Einordnung:** Lizenz-**`/g/…`** Shop, Preise, Werk-Link – bestätigt live nach **`9748da1c`**. Sportwagenmodus: ein Preis-Parser, eine Shop-Seite.
+
+**Letzter Stand:** 09.05.26 – **Vercel bestätigt:** Georg meldet **funktioniert** (Lizenz-Galerie Shop/Preis/Werk-URL). **Commit-Stand Feature:** `9748da1c` ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **Lizenz-Galerie Shop/Preis wie Standard:** **`parseArtworkPriceEur.ts`** (Felder price/vk/preis/verkaufspreis); **`TenantHomepageTemplate`** (Anzeige, Warenkorb, Shop-Navigation, `?werk=`); **`ShopPage`** überall **`parseArtworkPriceEurFromWork`** + URL-**`werk=`** / Hash / Cleanup; Regeln **mac-lokal-zuerst-speedmodus**, **vor-commit-umsetzung-pruefen**; Build-Infos. **`npm run build`** grün. **Commit:** `9748da1c` ✅ **main**
 
