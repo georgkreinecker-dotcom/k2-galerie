@@ -214,7 +214,7 @@ export default function BuchhaltungPage() {
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>
       <style>body{font-family:system-ui,sans-serif;padding:1rem;max-width:800px;margin:0 auto;color:#1c1a17;} h1{font-size:1.25rem;} @media print{body{padding:0;}}</style>
     </head><body><h1>${title}</h1><p style="color:#7a6f66;font-size:0.9rem;">Zum Speichern als PDF: Drucken → „Als PDF speichern“ wählen.</p>${blocks}</body></html>`
-    const w = window.open('', '_blank', 'noopener')
+    const w = window.open('', '_blank', 'noopener,noreferrer')
     if (w) {
       w.document.write(html)
       w.document.close()

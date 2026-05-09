@@ -9,6 +9,7 @@ import { useMemo, useState, useRef, useCallback, useEffect } from 'react'
 import type { K2FamiliePerson } from '../types/k2Familie'
 import { normalizeFamilieDatum } from '../utils/familieDatumEingabe'
 import { getAktuellesPersonenFoto, isHttpUrlForExternalOpen } from '../utils/familiePersonFotos'
+import { openAppOrHttpUrlInNewTab } from '../utils/safeExternalUrl'
 const NODE_W = 72
 const NODE_H = 56
 const ROW_H = 176
@@ -1845,7 +1846,7 @@ export default function FamilyTreeGraph({
                               onClick={(e) => {
                                 e.preventDefault()
                                 e.stopPropagation()
-                                window.open(item.url, '_blank', 'noopener,noreferrer')
+                                openAppOrHttpUrlInNewTab(item.url)
                               }}
                               style={{
                                 fontSize: 10,

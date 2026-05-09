@@ -90,6 +90,11 @@ export default function LizenzKaufenPage() {
           )
           return
         }
+        if (how === 'blocked') {
+          setLoading(false)
+          setError('Die Zahlungs-Adresse ist ungültig. Bitte später erneut versuchen.')
+          return
+        }
         return
       }
       setError('Keine Zahlungs-URL erhalten.')

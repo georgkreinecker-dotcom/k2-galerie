@@ -87,7 +87,7 @@ export default function SecondMacPage() {
             <button
               type="button"
               className="btn"
-              onClick={() => window.open(serverURL, '_blank')}
+              onClick={() => window.open(serverURL, '_blank', 'noopener,noreferrer')}
               style={{ marginTop: '1rem' }}
             >
               Auf zweitem Mac öffnen →

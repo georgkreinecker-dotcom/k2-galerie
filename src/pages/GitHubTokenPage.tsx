@@ -38,11 +38,11 @@ export default function GitHubTokenPage() {
   }
 
   const openGitHubTokens = () => {
-    window.open('https://github.com/settings/tokens', '_blank')
+    window.open('https://github.com/settings/tokens', '_blank', 'noopener,noreferrer')
   }
 
   const openNewToken = () => {
-    window.open('https://github.com/settings/tokens/new', '_blank')
+    window.open('https://github.com/settings/tokens/new', '_blank', 'noopener,noreferrer')
   }
 
   return (

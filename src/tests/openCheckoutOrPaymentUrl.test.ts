@@ -31,4 +31,18 @@ describe('openCheckoutOrPaymentUrl', () => {
     const r = openCheckoutOrPaymentUrl('https://checkout.stripe.com/c/pay/cs_test_xxx')
     expect(r).toBe('popup_blocked')
   })
+
+  it('blockiert javascript:-URLs', async () => {
+    Object.defineProperty(window, 'top', { value: window, configurable: true })
+    const { openCheckoutOrPaymentUrl } = await import('../utils/openCheckoutOrPaymentUrl')
+    expect(openCheckoutOrPaymentUrl('javascript:void(0)')).toBe('blocked')
+  })
+
+  it('blockiert data:-URLs im iframe ohne window.open', async () => {
+    Object.defineProperty(window, 'top', { value: {}, configurable: true })
+    window.open = vi.fn(() => ({}) as Window)
+    const { openCheckoutOrPaymentUrl } = await import('../utils/openCheckoutOrPaymentUrl')
+    expect(openCheckoutOrPaymentUrl('data:text/html,x')).toBe('blocked')
+    expect(window.open).not.toHaveBeenCalled()
+  })
 })

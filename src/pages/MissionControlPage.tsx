@@ -1,6 +1,13 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { PROJECT_ROUTES, PLATFORM_ROUTES, getAllProjectIds, MOK2_ROUTE } from '../config/navigation'
+import {
+  PROJECT_ROUTES,
+  PLATFORM_ROUTES,
+  getAllProjectIds,
+  K2_GALERIE_APF_EINSTIEG,
+  MOK2_ROUTE,
+} from '../config/navigation'
+import { LICENSEE_DOMAIN_REGISTRY } from '../config/licenseeDomainRegistry'
 import { fetchVisitCount } from '../utils/visitCountApiOrigin'
 import {
   computeMissionVisitDailyDeltas,
@@ -59,6 +66,7 @@ export default function MissionControlPage() {
     days?: number
     error?: string
   } | null>(null)
+  const [licenseeVisitCounts, setLicenseeVisitCounts] = useState<Record<string, number> | null>(null)
 
   useEffect(() => {
     Promise.all([
@@ -90,6 +98,21 @@ export default function MissionControlPage() {
       .catch(() => {
         setAttrSummary({ configured: false, summary: [], error: 'Netzwerk' })
       })
+  }, [])
+
+  useEffect(() => {
+    const ids = LICENSEE_DOMAIN_REGISTRY.map((c) => c.tenantId)
+    if (ids.length === 0) {
+      setLicenseeVisitCounts({})
+      return
+    }
+    Promise.all(ids.map((id) => fetchVisitCount(id))).then((counts) => {
+      const next: Record<string, number> = {}
+      ids.forEach((id, i) => {
+        next[id] = counts[i]
+      })
+      setLicenseeVisitCounts(next)
+    })
   }, [])
 
   const projectQuickEntries = useMemo(
@@ -639,6 +662,65 @@ export default function MissionControlPage() {
               </p>
             </div>
           )}
+        </section>
+
+        {/* Lizenz-Domains: Register (eine Quelle: licenseeDomainRegistry.ts) */}
+        <section
+          className="panel mission-visit-no-print"
+          style={{
+            marginTop: '1.35rem',
+            background: 'linear-gradient(135deg, rgba(251,191,36,0.1), rgba(245,158,11,0.05))',
+            border: '1px solid rgba(251,191,36,0.35)',
+            padding: '1rem 1.1rem',
+          }}
+        >
+          <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.05rem', color: '#fcd34d' }}>
+            📇 Lizenz-Domains (Register)
+          </h2>
+          <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: '#8fa0c9', lineHeight: 1.5 }}>
+            Eintrag pro Mandant – Domains und Galerie-URL. Technische Vorlage zum Kopieren:{' '}
+            <strong style={{ color: '#fde68a' }}>docs/LIZENZ-KUNDE-DOMAIN-KARTEIKARTE.md</strong> im Repo.{' '}
+            <Link
+              to={`${K2_GALERIE_APF_EINSTIEG}&page=handbuch&doc=${encodeURIComponent('25-LIZENZ-EIGENE-URL-AB-PRO.md')}`}
+              style={{ color: '#a5b4fc', fontWeight: 600 }}
+            >
+              Handbuch Kapitel 25 (eigene URL, Variante B) →
+            </Link>
+          </p>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', color: '#e2e8f0' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid rgba(251,191,36,0.35)', textAlign: 'left' }}>
+                  <th style={{ padding: '0.4rem 0.5rem 0.5rem 0' }}>Kunde</th>
+                  <th style={{ padding: '0.4rem 0.5rem' }}>tenantId</th>
+                  <th style={{ padding: '0.4rem 0.5rem' }}>Hosts</th>
+                  <th style={{ padding: '0.4rem 0.5rem' }}>Galerie-URL</th>
+                  <th style={{ padding: '0.4rem 0', textAlign: 'right' }}>Besucher</th>
+                </tr>
+              </thead>
+              <tbody>
+                {LICENSEE_DOMAIN_REGISTRY.map((row) => (
+                  <tr key={row.tenantId} style={{ borderBottom: '1px solid rgba(148,163,184,0.15)' }}>
+                    <td style={{ padding: '0.35rem 0.5rem 0.35rem 0', color: '#fef3c7', fontWeight: 600 }}>{row.label}</td>
+                    <td style={{ padding: '0.35rem 0.5rem', fontFamily: 'ui-monospace, monospace', fontSize: '0.76rem' }}>
+                      {row.tenantId}
+                    </td>
+                    <td style={{ padding: '0.35rem 0.5rem', color: '#94a3b8' }}>{row.hosts.join(', ')}</td>
+                    <td style={{ padding: '0.35rem 0.5rem', wordBreak: 'break-all' }}>
+                      <span style={{ color: '#cbd5e1' }}>{row.canonicalGalerieUrl}</span>
+                    </td>
+                    <td style={{ padding: '0.35rem 0', textAlign: 'right', fontWeight: 700 }}>
+                      {licenseeVisitCounts == null ? '…' : licenseeVisitCounts[row.tenantId] ?? 0}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p style={{ margin: '0.65rem 0 0', fontSize: '0.72rem', color: '#64748b' }}>
+            Besucher: gleicher Zähler wie oben – GET /api/visit?tenant=… · Neue Kunden: Eintrag in{' '}
+            <code style={{ color: '#94a3b8' }}>src/config/licenseeDomainRegistry.ts</code> ergänzen.
+          </p>
         </section>
 
         {/* Nutzer & Vertrieb */}

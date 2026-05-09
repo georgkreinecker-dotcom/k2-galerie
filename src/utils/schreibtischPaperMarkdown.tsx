@@ -3,6 +3,7 @@
  * Gleiche Markdown-Grundlagen wie georgsNotizMarkdownView – andere Farben.
  */
 import { type ReactNode } from 'react'
+import { safeHttpHttpsHref } from './safeExternalUrl'
 
 const paper = {
   h1: { margin: '0 0 0.35rem' as const, fontSize: '1.05rem' as const, fontWeight: 800 as const, color: '#1c1a18' },
@@ -64,10 +65,17 @@ function renderInlineLinks(text: string): ReactNode {
       parts.push(...renderInline(before, key))
       key += 100
     }
+    const href = safeHttpHttpsHref(match[2])
     parts.push(
-      <a key={key++} href={match[2]} target="_blank" rel="noopener noreferrer" style={paper.a}>
-        {match[1]}
-      </a>
+      href ? (
+        <a key={key++} href={href} target="_blank" rel="noopener noreferrer" style={paper.a}>
+          {match[1]}
+        </a>
+      ) : (
+        <span key={key++} style={{ ...paper.a, textDecoration: 'none', cursor: 'default' }}>
+          {match[1]}
+        </span>
+      ),
     )
     lastIndex = match.index + match[0].length
   }

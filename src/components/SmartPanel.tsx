@@ -9,6 +9,7 @@ const HANDBUCH_DOC_NOTFALL = '23-NOTFALL-CHECKLISTE.md'
 import { PROJECT_ROUTES, PLATFORM_ROUTES, MOK2_ROUTE, ENTDECKEN_ROUTE } from '../config/navigation'
 import { K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
 import { prepareFreshOek2VisitorSession } from '../utils/oek2FreshStart'
+import { openAppOrHttpUrlInNewTab } from '../utils/safeExternalUrl'
 const GUIDE_KEY = 'k2-entdecken-guide-antworten'
 
 const WISHES_LAST_SEEN_KEY = 'k2-wishes-last-seen'
@@ -333,13 +334,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
   }
 
   const diversesOeffnen = (item: DiversesItem) => {
-    if (item.url.startsWith('http')) {
-      window.open(item.url, '_blank')
-    } else if (item.url.startsWith('/')) {
-      window.open(item.url, '_blank')
-    } else {
-      window.open('/' + item.url, '_blank')
-    }
+    openAppOrHttpUrlInNewTab(item.url)
   }
 
   // Wünsche von Nutzer:innen (API)

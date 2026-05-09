@@ -2703,7 +2703,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       })
       const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
       const url = URL.createObjectURL(blob)
-      const opened = window.open(url, '_blank')
+      const opened = window.open(url, '_blank', 'noopener,noreferrer')
       if (!opened) alert('Pop-up wurde blockiert. Bitte Fenster erlauben und erneut tippen.')
       setTimeout(() => URL.revokeObjectURL(url), 5000)
     } catch (e) {

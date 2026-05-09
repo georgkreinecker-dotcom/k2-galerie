@@ -1,4 +1,5 @@
 import { type CSSProperties, type ReactNode } from 'react'
+import { safeHttpHttpsHref } from './safeExternalUrl'
 
 /** Schreibtisch (warm) – kein dunkles Vollbild; Text liegt auf „Papier“ im Container. */
 export const georgsNotizPageStyle: CSSProperties = {
@@ -95,7 +96,18 @@ export function renderGeorgsNotizInline(text: string): ReactNode {
       parts.push(...renderBoldItalic(before, key))
       key += 100
     }
-    parts.push(<a key={key++} href={match[2]} target="_blank" rel="noopener noreferrer" style={baseStyles.a}>{match[1]}</a>)
+    const href = safeHttpHttpsHref(match[2])
+    parts.push(
+      href ? (
+        <a key={key++} href={href} target="_blank" rel="noopener noreferrer" style={baseStyles.a}>
+          {match[1]}
+        </a>
+      ) : (
+        <span key={key++} style={{ ...baseStyles.a, textDecoration: 'none', cursor: 'default' }}>
+          {match[1]}
+        </span>
+      ),
+    )
     lastIndex = match.index + match[0].length
   }
   if (lastIndex < rest.length) parts.push(...renderBoldItalic(rest.slice(lastIndex), key))

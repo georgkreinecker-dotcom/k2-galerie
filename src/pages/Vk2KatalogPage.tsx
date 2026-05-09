@@ -4,6 +4,7 @@ import { PROJECT_ROUTES } from '../config/navigation'
 import { BASE_APP_URL } from '../config/tenantConfig'
 import type { Vk2Stammdaten } from '../config/tenantConfig'
 import { isEchteK2Werknummer } from '../utils/artworksStorage'
+import { parseSafeHttpHttpsUrl } from '../utils/safeExternalUrl'
 
 /** Prüft ob URL unsere eigene App ist (K2 gallery-data) – dann dürfen wir sie im VK2-Katalog nicht fetchen (Datentrennung). */
 function isOwnAppUrl(url: string): boolean {
@@ -245,6 +246,9 @@ const KatalogKarte: React.FC<{ work: KatalogWork }> = ({ work }) => {
   const masse = (work.paintingWidth && work.paintingHeight)
     ? `${work.paintingWidth} × ${work.paintingHeight} cm`
     : null
+  const rawGal = work.lizenzGalerieUrl?.trim()
+  const galleryHref =
+    rawGal ? parseSafeHttpHttpsUrl(rawGal.startsWith('http') ? rawGal : `https://${rawGal}`)?.href : undefined
 
   return (
     <div style={{ background: s.card, border: `1px solid ${s.border}`, borderRadius: 12, overflow: 'hidden', display: 'flex', flexDirection: 'column', breakInside: 'avoid' }}>
@@ -262,9 +266,9 @@ const KatalogKarte: React.FC<{ work: KatalogWork }> = ({ work }) => {
         <div style={{ fontWeight: 700, fontSize: '1rem', color: s.text }}>{work.title}</div>
         <div style={{ fontSize: '0.8rem', color: s.accent, fontWeight: 600 }}>
           {work.artist || work.mitgliedName}
-          {work.lizenzGalerieUrl && (
+          {galleryHref && (
             <a
-              href={work.lizenzGalerieUrl.startsWith('http') ? work.lizenzGalerieUrl : `https://${work.lizenzGalerieUrl}`}
+              href={galleryHref}
               target="_blank"
               rel="noopener noreferrer"
               style={{ marginLeft: '0.5rem', fontSize: '0.75rem', color: s.accent, textDecoration: 'underline', fontWeight: 500 }}
