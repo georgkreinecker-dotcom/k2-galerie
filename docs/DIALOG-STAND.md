@@ -4,6 +4,8 @@
 
 **Einordnung:** **`TenantHomepageTemplate`:** Chips nicht mehr **`#fff` + `liveText`** (bei hellem Text auf dunklem Theme unleserlich); gleiche Logik wie **„Erwerben“** (**`liveSectionBg`**).
 
+**Letzter Stand:** 09.05.26 – **Lizenz-Homepage Kontrast (helle Buttons):** Galerie schließen, Gefällt, Bereichs-Filter, Social-Links – **`liveSectionBg`** + Akzent-Rand statt **`#fff`**. **Commit:** `0ff3c5cb` ✅ **main**
+
 **Letzter Stand:** 09.05.26 – **Vercel bestätigt:** Georg meldet **funktioniert** (Lizenz-Galerie Shop/Preis/Werk-URL). **Commit-Stand Feature:** `9748da1c` ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **Lizenz-Galerie Shop/Preis wie Standard:** **`parseArtworkPriceEur.ts`** (Felder price/vk/preis/verkaufspreis); **`TenantHomepageTemplate`** (Anzeige, Warenkorb, Shop-Navigation, `?werk=`); **`ShopPage`** überall **`parseArtworkPriceEurFromWork`** + URL-**`werk=`** / Hash / Cleanup; Regeln **mac-lokal-zuerst-speedmodus**, **vor-commit-umsetzung-pruefen**; Build-Infos. **`npm run build`** grün. **Commit:** `9748da1c` ✅ **main**
