@@ -17236,7 +17236,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 const fd0 = (galleryData?.focusDirections?.[0] as string) || DEFAULT_OEK2_FOCUS_DIRECTION_ID
                 const rawList = Array.isArray(allArtworks) ? allArtworks : []
                 // Nur Werke der gewählten Sparte (z. B. Kunst) – sonst zählt ein „Handwerk“-Testwerk die 4/4-Haken falsch hoch.
-                const list = rawList.filter((a: any) => getEffectiveDirectionFromWork(a) === fd0)
+                const list = rawList.filter((a: any) => getEffectiveDirectionFromWork(a, fd0) === fd0)
                 const hasArtImg = (a: any) => {
                   const u = (a?.imageUrl || a?.imageRef || a?.previewUrl || '').toString().trim()
                   return u.length > 0
@@ -18221,7 +18221,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   allArtworks.filter((artwork) => {
                     if (!artwork) return false
                     if (isFocusDirectionTenant && galleryData?.focusDirections?.[0]) {
-                      if (getEffectiveDirectionFromWork(artwork) !== galleryData.focusDirections[0]) return false
+                      const fdW = galleryData.focusDirections[0]
+                      if (getEffectiveDirectionFromWork(artwork, fdW) !== fdW) return false
                     }
                     if (categoryFilter !== 'alle' && artwork.category !== categoryFilter) return false
                     if (searchQuery && !artwork.title?.toLowerCase().includes(searchQuery.toLowerCase()) && 
@@ -18408,7 +18409,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           zIndex: 2,
                           boxShadow: '0 2px 6px rgba(0, 0, 0, 0.25)'
                         }}>
-                          {isFocusDirectionTenant ? (FOCUS_DIRECTIONS.find((d) => d.id === getEffectiveDirectionFromWork(artwork))?.label ?? getEntryTypeLabel(artwork.entryType)) : getEntryTypeLabel(artwork.entryType)}
+                          {isFocusDirectionTenant ? (FOCUS_DIRECTIONS.find((d) => d.id === getEffectiveDirectionFromWork(artwork, galleryData?.focusDirections?.[0]))?.label ?? getEntryTypeLabel(artwork.entryType)) : getEntryTypeLabel(artwork.entryType)}
                         </div>
                         {/* Nummer als Overlay auf dem Bild */}
                         {artwork.number && (
@@ -18447,7 +18448,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         fontSize: 'clamp(2rem, 5vw, 3rem)'
                       }}>
                         <span style={{ position: 'absolute', top: '0.5rem', left: '0.5rem', background: 'rgba(0,0,0,0.65)', color: '#fff', padding: '0.2rem 0.45rem', borderRadius: 6, fontSize: 'clamp(0.65rem, 1.8vw, 0.78rem)', fontWeight: 500, zIndex: 2 }}>
-                          {isFocusDirectionTenant ? (FOCUS_DIRECTIONS.find((d) => d.id === getEffectiveDirectionFromWork(artwork))?.label ?? getEntryTypeLabel(artwork.entryType)) : getEntryTypeLabel(artwork.entryType)}
+                          {isFocusDirectionTenant ? (FOCUS_DIRECTIONS.find((d) => d.id === getEffectiveDirectionFromWork(artwork, galleryData?.focusDirections?.[0]))?.label ?? getEntryTypeLabel(artwork.entryType)) : getEntryTypeLabel(artwork.entryType)}
                         </span>
                         🖼️
                       </div>
@@ -18473,7 +18474,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     </p>
                     {tenant.isOeffentlich && (
                       <p style={{ margin: '0.2rem 0', fontSize: 'clamp(0.8rem, 2.2vw, 0.9rem)', color: s.muted }}>
-                        <span style={{ fontWeight: 600, color: s.text }}>Typ:</span> {FOCUS_DIRECTIONS.find((d) => d.id === getEffectiveDirectionFromWork(artwork))?.label ?? getEntryTypeLabel(artwork.entryType)}
+                        <span style={{ fontWeight: 600, color: s.text }}>Typ:</span> {FOCUS_DIRECTIONS.find((d) => d.id === getEffectiveDirectionFromWork(artwork, galleryData?.focusDirections?.[0]))?.label ?? getEntryTypeLabel(artwork.entryType)}
                       </p>
                     )}
                     <p style={{
@@ -18594,7 +18595,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           
                           if (tenant.isOeffentlich) {
                             setArtworkTitle(artwork.title || '')
-                            const dir = getEffectiveDirectionFromWork(artwork)
+                            const dir = getEffectiveDirectionFromWork(artwork, galleryData?.focusDirections?.[0])
                             setArtworkDirection(dir)
                             setArtworkEntryType(getEntryTypeForDirection(dir))
                             const oek2Cats = getCategoriesForDirection(dir)
@@ -18622,7 +18623,11 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                             setShowAddModal(true)
                             return
                           }
-                          
+
+                          if (isFocusDirectionTenant && galleryData?.focusDirections?.length) {
+                            setArtworkDirection(getEffectiveDirectionFromWork(artwork, galleryData.focusDirections[0]))
+                          }
+
                           const editEntryType = ENTRY_TYPES.some((t) => t.id === artwork.entryType) ? (artwork.entryType as EntryTypeId) : 'artwork'
                           setArtworkEntryType(editEntryType)
                           const editCats = tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : (isFocusDirectionTenant && galleryData?.focusDirections?.length ? getCategoriesForEntryTypeAndDirection(editEntryType, galleryData.focusDirections) : getCategoriesForEntryType(editEntryType))

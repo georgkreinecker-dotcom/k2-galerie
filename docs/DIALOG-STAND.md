@@ -1,8 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nach Push: **`/g/:tenantId`** ohne Query = **kein Admin-Link** im Kopf (wie K2-Besucher); mit **`?vorschau=1` / `liveTemplate=1` / `embedded=1`**, **Router-State `fromAdmin`**, Session **`k2-galerie-from-admin`** oder **PWA-Standalone** = Admin sichtbar.
+**Was wir JETZT tun:** Lizenz-Admin **„Werke verwalten“** zeigt Produkt-Werke mit mehrdeutiger Kategorie (z. B. **Möbel**) wieder, wenn die **Stammdaten-Sparte** (z. B. **Design**) passt – **`getEffectiveDirectionFromWork`** + Aufrufer; Tests **`getEffectiveDirectionFromWork.test.ts`**.
 
-**Einordnung:** Gleiches Muster wie **`GaleriePage`** (**`showAdminEntryOnGalerie`**): öffentlicher Teilen-Link/QR bleibt „nur Galerie“; Eigentümer kommen über Admin-**„Galerie ansehen“** (Live-Template-URL), Vorschau, APf oder Stammdaten-QR/Admin wie bisher.
+**Einordnung:** Öffentliche **`/g/…`** listet alle Werke ohne Sparten-Filter; Admin filterte nach **`getEffectiveDirectionFromWork`** vs. **`focusDirections[0]`** – bei **moebel** / **accessoires** / **sonstiges_produkt** gewann fälschlich **Handwerk** statt **Design**.
+
+**Letzter Stand:** 09.05.26 – **Lizenz „Werke verwalten“ leer trotz Galerie:** **`tenantConfig.getEffectiveDirectionFromWork(work, tenantPrimaryFocus?)`** bei mehrdeutigen Produkt-Kategorien; **`ScreenshotExportAdmin`** + **`WerkkatalogTab`** übergeben **`galleryData.focusDirections[0]`** / **`oek2SparteId`**; Bearbeiten setzt **`artworkDirection`** für Lizenz-Mandant. **qs:local** grün. **Commit:** _(nach Push)_ ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **Lizenz `/g/…` ohne Admin für Besucher:** **`GalerieTenantPage`** – **`hideAdminEntry`** nur wenn **`showLicenseeAdminInHeader`** (Vorschau/Live-Overlay, embedded, `fromAdmin` + Session wie K2, PWA standalone); **`useLayoutEffect`** setzt **`k2-galerie-from-admin`**. Test in **`licensee-release-gate.test.ts`**. **Commit:** `9c36bd33` ✅ **main**
 

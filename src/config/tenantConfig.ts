@@ -1210,15 +1210,37 @@ export function getOek2GalleryFilterTabsForWorks(
   return allowed.filter((c) => present.has(c.id))
 }
 
-/** Ermittelt die Sparte (Richtung) eines Werks aus entryType + category – für Filter und Anzeige in ök2. */
-export function getEffectiveDirectionFromWork(work: { entryType?: string; category?: string } | null | undefined): FocusDirectionId {
+/**
+ * Ermittelt die Sparte (Richtung) eines Werks aus entryType + category – für Filter und Anzeige (ök2 / Lizenz).
+ * Bei Kategorien, die in mehreren Produkt-Sparten vorkommen (z. B. moebel, accessoires, sonstiges_produkt),
+ * entscheidet `tenantPrimaryFocus` (erste Sparte aus Stammdaten), wenn sie zu dieser Kategorie passt –
+ * sonst würde z. B. „Design & Möbel“-Mandantenwerke fälschlich als Handwerk gewertet und in „Werke verwalten“ ausgeblendet.
+ */
+export function getEffectiveDirectionFromWork(
+  work: { entryType?: string; category?: string } | null | undefined,
+  tenantPrimaryFocus?: string | null | undefined
+): FocusDirectionId {
   if (!work) return 'kunst'
   if (work.entryType === 'artwork') return 'kunst'
   if (work.entryType === 'idea') return 'dienstleister'
   if (work.entryType === 'product' && work.category) {
+    const cat = work.category
+    const matches: FocusDirectionId[] = []
     for (const [dirId, list] of Object.entries(FOCUS_DIRECTION_PRODUCT_CATEGORIES)) {
-      if (list.some((c) => c.id === work.category)) return dirId as FocusDirectionId
+      if (list.some((c) => c.id === cat)) matches.push(dirId as FocusDirectionId)
     }
+    if (matches.length === 0) return 'kunst'
+    const pref =
+      tenantPrimaryFocus &&
+      FOCUS_DIRECTIONS.some((d) => d.id === tenantPrimaryFocus) &&
+      matches.includes(tenantPrimaryFocus as FocusDirectionId)
+        ? (tenantPrimaryFocus as FocusDirectionId)
+        : null
+    if (pref) return pref
+    if (matches.length === 1) return matches[0]
+    const order = FOCUS_DIRECTIONS.map((d) => d.id)
+    const ranked = [...matches].sort((a, b) => order.indexOf(a) - order.indexOf(b))
+    return ranked[0]
   }
   return 'kunst'
 }

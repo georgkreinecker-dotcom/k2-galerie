@@ -29,9 +29,14 @@ function rowKeyArtwork(a: any): string {
 }
 
 /** Spalte „Typ“: ök2 = Sparte aus Werk (wie Werke verwalten), sonst entryType-Label. */
-function werkKatalogTypZelle(isOeffentlich: boolean, isVk2: boolean, a: { entryType?: string; category?: string }): string {
+function werkKatalogTypZelle(
+  isOeffentlich: boolean,
+  isVk2: boolean,
+  a: { entryType?: string; category?: string },
+  tenantPrimarySparte?: string
+): string {
   if (isOeffentlich && !isVk2) {
-    return FOCUS_DIRECTIONS.find((d) => d.id === getEffectiveDirectionFromWork(a))?.label ?? getEntryTypeLabel(a.entryType)
+    return FOCUS_DIRECTIONS.find((d) => d.id === getEffectiveDirectionFromWork(a, tenantPrimarySparte))?.label ?? getEntryTypeLabel(a.entryType)
   }
   return getEntryTypeLabel(a.entryType)
 }
@@ -43,6 +48,8 @@ type WerkkarteCardOpts = {
   showTypAndCategory: boolean
   showOek2TypRow?: boolean
   isOeffentlich?: boolean
+  /** ök2: erste Sparte aus Stammdaten – bei mehrdeutiger Produkt-Kategorie (z. B. moebel). */
+  oek2PrimarySparte?: string
   /** K2/ök2: aufgelöster Künstler:in-Name (wie Statistik). VK2: weglassen → nur `w.artist`. */
   artistDisplay?: string
 }
@@ -79,7 +86,7 @@ function buildWerkkarteCardHtml(w: any, opts: WerkkarteCardOpts): string {
       <div class="kuenstler">${escAttr(kuenstlerZeile)}</div>
       <div class="status-badge" style="background: ${w.sold ? '#fef2f2' : w.reserved ? '#fffbeb' : w.inExhibition ? '#f0fdf4' : '#f9fafb'}; color: ${statusColor}; border-color: ${statusColor}44;">${statusLabel}</div>
       <div class="meta">
-        ${opts.showOek2TypRow && opts.isOeffentlich ? `<div class="meta-item"><label>Typ</label><span>${escAttr(werkKatalogTypZelle(true, false, w))}</span></div>` : ''}
+        ${opts.showOek2TypRow && opts.isOeffentlich ? `<div class="meta-item"><label>Typ</label><span>${escAttr(werkKatalogTypZelle(true, false, w, opts.oek2PrimarySparte))}</span></div>` : ''}
         ${w.dimensions ? `<div class="meta-item"><label>Maße</label><span>${w.dimensions}</span></div>` : ''}
         ${w.technik ? `<div class="meta-item"><label>Technik / Material</label><span>${w.technik}</span></div>` : ''}
         ${w.category ? `<div class="meta-item"><label>Kategorie</label><span>${getCategoryLabel(w.category)}</span></div>` : ''}
@@ -337,7 +344,7 @@ export default function WerkkatalogTab({
   const filtered = useMemo(
     () =>
       enriched.filter((a: any) => {
-        if (showTypAndCategory && oek2SparteId && getEffectiveDirectionFromWork(a) !== oek2SparteId) return false
+        if (showTypAndCategory && oek2SparteId && getEffectiveDirectionFromWork(a, oek2SparteId) !== oek2SparteId) return false
         if (showTypAndCategory && setCategoryFilter && categoryFilter !== 'alle' && a.category !== categoryFilter) return false
         if (!isOeffentlich && !isVk2 && katalogFilter.kategorie && a.category !== katalogFilter.kategorie) return false
         if (!isVk2) {
@@ -489,7 +496,7 @@ export default function WerkkatalogTab({
                 case 'titel':
                   return `<td><strong>${a.title || '–'}</strong></td>`
                 case 'typ':
-                  return `<td>${werkKatalogTypZelle(!!isOeffentlich, !!isVk2, a)}</td>`
+                  return `<td>${werkKatalogTypZelle(!!isOeffentlich, !!isVk2, a, oek2SparteId)}</td>`
                 case 'kategorie':
                   return `<td>${getCategoryLabel(a.category)}</td>`
                 case 'kuenstler':
@@ -592,6 +599,7 @@ export default function WerkkatalogTab({
               showTypAndCategory,
               showOek2TypRow,
               isOeffentlich: !!isOeffentlich,
+              ...(oek2SparteId ? { oek2PrimarySparte: oek2SparteId } : {}),
               ...(!isVk2 ? { artistDisplay: artistFuerDruck(rw) } : {}),
             })}</div>`
         )
@@ -618,6 +626,7 @@ export default function WerkkatalogTab({
         showTypAndCategory,
         showOek2TypRow,
         isOeffentlich: !!isOeffentlich,
+        ...(oek2SparteId ? { oek2PrimarySparte: oek2SparteId } : {}),
         ...(!isVk2 ? { artistDisplay: artistFuerDruck(work) } : {}),
       })
       openWerkkartePrintWindow(`${work.title || work.number || 'Werk'} – ${galName}`, `<div class="werk-page">${inner}</div>`)
@@ -667,6 +676,7 @@ export default function WerkkatalogTab({
         showTypAndCategory,
         showOek2TypRow,
         isOeffentlich: !!isOeffentlich,
+        ...(oek2SparteId ? { oek2PrimarySparte: oek2SparteId } : {}),
         ...(!isVk2 ? { artistDisplay: artistFuerDruck(work) } : {}),
       })
       const certInner = buildEchtheitszertifikatHtml(work, {
@@ -924,7 +934,7 @@ export default function WerkkatalogTab({
                     </td>
                   )}
                   {effectiveSpalten.includes('titel') && <td style={{ padding: '7px 10px', color: s.text, fontWeight: 600, borderBottom: `1px solid ${s.accent}18` }}>{a.title || '–'}</td>}
-                  {effectiveSpalten.includes('typ') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{werkKatalogTypZelle(!!isOeffentlich, !!isVk2, a)}</td>}
+                  {effectiveSpalten.includes('typ') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{werkKatalogTypZelle(!!isOeffentlich, !!isVk2, a, oek2SparteId)}</td>}
                   {effectiveSpalten.includes('kategorie') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{getCategoryLabel(a.category)}</td>}
                   {effectiveSpalten.includes('kuenstler') && (
                     <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{artistFuerDruck(a)}</td>
