@@ -1,0 +1,33 @@
+---
+description: Vor jedem Commit Umsetzung sichtbar prüfen
+alwaysApply: true
+---
+
+# Umsetzung prüfen: lokal + Vercel
+
+## Regel (verbindlich)
+
+**Jede Umsetzung wird in zwei Stufen geprüft.**
+
+- Stufe 1 (vor Commit): Lokal im Browser am Mac prüfen.
+- Stufe 2 (nach Push): Auf Vercel prüfen.
+- „Fertig“ erst nach beiden Prüfungen.
+
+## Standard-Ablauf
+
+1. Änderung umsetzen.
+2. Lokal im Browser prüfen (`localhost`), ob UI/Flow wirklich funktioniert.
+3. `npm run build`.
+4. Nur wenn lokal + Build passen: commit + push.
+5. Nach Push auf Vercel dieselbe Funktion prüfen.
+6. Erst dann „fertig“ melden.
+
+## Verboten
+
+- Committen ohne lokale Sichtprüfung.
+- „Fertig“ melden ohne Vercel-Gegenprüfung.
+- „Code ist drin“ als Ersatz für Funktionsprüfung.
+
+## Kurzfassung
+
+**Erst lokal prüfen, dann build, dann pushen, dann Vercel prüfen, erst dann fertig.**

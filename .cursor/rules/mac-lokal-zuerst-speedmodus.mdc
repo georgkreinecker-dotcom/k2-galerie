@@ -1,0 +1,46 @@
+# 🔒 Speedmodus: Immer zuerst lokal am Mac (ab sofort verbindlich)
+
+## Regel (unveränderlich)
+
+**In allen Bereichen arbeiten wir ab sofort immer zuerst lokal am Mac.**  
+Vercel/Production kommt erst, wenn der Fix lokal passt.
+
+---
+
+## Ziel
+
+- Keine Zeitverluste durch ständiges Warten auf Deployments
+- Kleine Änderungen in Minuten statt in Stunden/Tagen prüfen
+- Ein klarer Standard für alle Aufgaben (Bugfix, UI, Datenfluss, Shop, Preise, Druck, Handbuch)
+
+---
+
+## Verbindlicher Ablauf
+
+1. **Lokal entwickeln und prüfen (Mac zuerst)**
+   - Start mit `npm run dev`
+   - Betroffene Seite/Route lokal testen
+   - Fehler direkt lokal nachziehen
+
+2. **Dann Qualitätssicherung**
+   - Passende Tests für den geänderten Bereich
+   - Build/TypeScript prüfen
+
+3. **Erst danach Deployment**
+   - Commit + Push
+   - Vercel nur als letzter Schritt
+
+---
+
+## Nicht mehr so arbeiten
+
+- ❌ Bei jeder kleinen Änderung sofort auf Vercel warten
+- ❌ Bugsuche primär auf Production statt lokal
+- ❌ Mehrfacher Deploy-Zyklus für Mini-Fixes
+
+---
+
+## Kurzfassung
+
+**Mac lokal zuerst, Vercel zuletzt.**  
+So arbeiten wir ab jetzt in allen Bereichen – schnell, direkt, ohne Zeitverlust.

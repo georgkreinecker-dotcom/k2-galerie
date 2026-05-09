@@ -29,19 +29,7 @@ import { uploadKassaSnapshotToServer, fetchKassaSnapshotAndMergeLocal } from '..
 import { PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import { useGamificationChecklistsUi } from '../hooks/useGamificationChecklistsUi'
 import '../App.css'
-
-/** VK-Preis aus Werkstamm: Zahl oder deutsche Schreibweise (z. B. „15,00“), € optional */
-function parseArtworkPriceEur(raw: unknown): number {
-  if (typeof raw === 'number') return Number.isFinite(raw) ? raw : 0
-  const n = parseFloat(
-    String(raw ?? '')
-      .trim()
-      .replace(/€/g, '')
-      .replace(/\s/g, '')
-      .replace(',', '.')
-  )
-  return Number.isFinite(n) ? n : 0
-}
+import { parseArtworkPriceEur, parseArtworkPriceEurFromWork } from '../utils/parseArtworkPriceEur'
 
 /**
  * Werknummer aus Kasse-QR/Handeingabe: reiner Text, Galerie-URL mit ?werk=, ?q= (Etikett) oder #werk=.
@@ -376,7 +364,7 @@ function getArtworkStockPieces(artwork: { quantity?: unknown } | null | undefine
 }
 
 function cartLineSubtotalEur(item: CartItem): number {
-  return parseArtworkPriceEur(item.price) * getCartLineQuantity(item)
+  return parseArtworkPriceEurFromWork(item) * getCartLineQuantity(item)
 }
 
 /** Nicht abgeschickte Einzelpreis-Eingaben in die Zeilen übernehmen (z. B. Eingabefokus noch im Feld). */
@@ -437,7 +425,7 @@ function buildK2Oek2ReceiptHtml(
   const itemsRows = items
     .map((item: CartItem, idx: number) => {
       const menge = getCartLineQuantity(item)
-      const ep = parseArtworkPriceEur(item.price)
+      const ep = parseArtworkPriceEurFromWork(item)
       const betrag = menge * ep
       const title = (item.title || item.number || '').replace(/</g, '&lt;')
       const sn = (item.number || '').replace(/</g, '&lt;')
@@ -565,7 +553,7 @@ function buildVk2BonHtml(order: any, opts?: { tabHint?: boolean; paperWidthMm?: 
   const itemsRows = (order.items || [])
     .map((item: any, idx: number) => {
       const title = (item.title || 'Einnahme').replace(/</g, '&lt;')
-      const ep = parseArtworkPriceEur(item.price)
+      const ep = parseArtworkPriceEurFromWork(item)
       return `<tr><td style="text-align:center;font-size:8px">${idx + 1}</td><td style="font-size:8px">${title}</td><td style="text-align:center;font-size:8px">1</td><td style="text-align:right;font-size:8px">€ ${ep.toFixed(2)}</td><td style="text-align:right;font-size:8px">€ ${ep.toFixed(2)}</td></tr>`
     })
     .join('')
@@ -1232,7 +1220,7 @@ const ShopPage = () => {
     }
     return sortArtworksCategoryBlocksThenNumberAsc(
       allArtworks.filter((a: any) => {
-        const priceVal = parseArtworkPriceEur(a?.price)
+        const priceVal = parseArtworkPriceEurFromWork(a)
         if (priceVal <= 0) return false
         if (!isAdminContext && a.inShop === false) return false
         const { isAusverkauft } = getArtworkLagerInfo(a, soldList, ordersFull)
@@ -1541,7 +1529,7 @@ const ShopPage = () => {
     // bei Mehrfachauflagen würde sonst schon ein Teilverkauf den Scan blockieren.
 
     // Preis (Komma-Notation sicher parsen)
-    const priceVal = parseArtworkPriceEur(artwork?.price)
+    const priceVal = parseArtworkPriceEurFromWork(artwork)
     // Besucher-Shop: nur Werke mit Online-Shop + Preis. Kassa (Admin): alle mit Preis > 0 (Werkkatalog/Laden, auch ohne inShop).
     if (isAdminContext) {
       if (priceVal <= 0) {
@@ -1615,6 +1603,38 @@ const ShopPage = () => {
       addedToastTimerRef.current = null
     }, 1500)
   }
+
+  const consumedInitialSerialRef = useRef(false)
+  useEffect(() => {
+    if (consumedInitialSerialRef.current) return
+    let serialFromLink = ''
+    try {
+      const params = new URLSearchParams(location.search || '')
+      const fromParam = String(params.get('werk') || params.get('q') || '').trim()
+      if (fromParam) {
+        serialFromLink = extractSerialFromKasseQr(fromParam)
+      } else if (location.hash) {
+        const hash = location.hash.replace(/^#/, '')
+        const m = hash.match(/(?:^|&)werk=([^&]+)/i) || hash.match(/^werk=(.+)$/i)
+        if (m && m[1]) {
+          serialFromLink = extractSerialFromKasseQr(m[1])
+        }
+      }
+      if (!serialFromLink) return
+      consumedInitialSerialRef.current = true
+      setSerialInput(serialFromLink)
+      addBySerialNumber(serialFromLink)
+
+      // URL aufräumen (kein doppeltes Hinzufügen bei erneutem Rendern)
+      params.delete('werk')
+      params.delete('q')
+      const nextQuery = params.toString()
+      const nextUrl = `${location.pathname}${nextQuery ? `?${nextQuery}` : ''}${location.hash || ''}`
+      navigate(nextUrl, { replace: true, state: location.state })
+    } catch {
+      /* ignore */
+    }
+  }, [location.search, location.hash, location.pathname, location.state, navigate])
 
   // QR-Code Scanner: Kamera starten wenn Modal öffnet
   useEffect(() => {
@@ -2390,7 +2410,7 @@ ${bankBlock}
       const rechnungDatum = date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
       const itemsRows = order.items.map((item: CartItem, idx: number) => {
         const menge = getCartLineQuantity(item)
-        const ep = parseArtworkPriceEur(item.price)
+        const ep = parseArtworkPriceEurFromWork(item)
         const betrag = menge * ep
         const r = resolveArtistLabelForGalerieStatistik(item, kuenstlerFbA4)
         const artEsc = r && r !== 'Ohne Künstler' ? ' · ' + String(r).replace(/</g, '&lt;') : ''
@@ -2641,7 +2661,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
               const rA4 = resolveArtistLabelForGalerieStatistik(item, kuenstlerFbA4)
               const artPart = rA4 && rA4 !== 'Ohne Künstler' ? ' • ' + String(rA4).replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''
               const mqA4 = getCartLineQuantity(item)
-              const epA4 = parseArtworkPriceEur(item.price)
+              const epA4 = parseArtworkPriceEurFromWork(item)
               const lineA4 = mqA4 * epA4
               const stueckInfo =
                 mqA4 > 1
@@ -2824,7 +2844,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
           soldAt: new Date().toISOString(),
           orderId: order.id,
           ...(stueck > 1 ? { soldQuantity: stueck } : {}),
-          soldPrice: parseArtworkPriceEur(item.price),
+          soldPrice: parseArtworkPriceEurFromWork(item),
           ...(customerId ? { customerId } : {}),
         })
       } else {
@@ -2835,7 +2855,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
           soldQuantity: prevQ + stueck,
           soldAt: new Date().toISOString(),
           orderId: order.id,
-          soldPrice: parseArtworkPriceEur(item.price),
+          soldPrice: parseArtworkPriceEurFromWork(item),
           ...(customerId ? { customerId } : {}),
         }
       }
@@ -4442,7 +4462,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
               <p style={{ fontSize: '0.85rem', color: s.muted, marginBottom: '0.5rem' }}>Werk antippen → wird zur Auswahl hinzugefügt (ohne Scanner)</p>
               <div style={{ maxHeight: '220px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                 {nummernListeArtworks.map((a: any) => {
-                    const priceVal = parseArtworkPriceEur(a?.price)
+                    const priceVal = parseArtworkPriceEurFromWork(a)
                     const num = a.number || a.id || '–'
                     const title = (a.title || num).length > 28 ? (a.title || num).slice(0, 25) + '…' : (a.title || num)
                     return (
@@ -5076,12 +5096,12 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                               value={
                                 cartLinePriceDraft[cartLineKey] !== undefined
                                   ? cartLinePriceDraft[cartLineKey]
-                                  : (Number.isFinite(item.price) ? String(item.price).replace('.', ',') : '0')
+                                  : parseArtworkPriceEurFromWork(item).toFixed(2).replace('.', ',')
                               }
                               onFocus={() => {
                                 setCartLinePriceDraft(p => {
                                   if (p[cartLineKey] !== undefined) return p
-                                  const n = parseArtworkPriceEur(item.price)
+                                  const n = parseArtworkPriceEurFromWork(item)
                                   return { ...p, [cartLineKey]: n.toFixed(2).replace('.', ',') }
                                 })
                               }}
@@ -5119,7 +5139,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                             />
                           </div>
                         ) : (
-                          <div style={{ fontSize: '0.75rem', color: s.muted }}>à € {item.price.toFixed(2)}</div>
+                          <div style={{ fontSize: '0.75rem', color: s.muted }}>à € {parseArtworkPriceEurFromWork(item).toFixed(2)}</div>
                         )}
                         <span style={{ fontWeight: '700', color: s.accent, fontSize: '1.1rem', whiteSpace: 'nowrap' }}>
                           € {lineSum.toFixed(2)}
@@ -5392,7 +5412,9 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                     return (
                     <li key={`${item.number}-${idx}`}>
                       {item.title || item.number}
-                      {mq > 1 ? ` · ${mq} Stk. à € ${item.price.toFixed(2)}` : ` · € ${item.price.toFixed(2)} / Stk.`}
+                      {mq > 1
+                        ? ` · ${mq} Stk. à € ${parseArtworkPriceEurFromWork(item).toFixed(2)}`
+                        : ` · € ${parseArtworkPriceEurFromWork(item).toFixed(2)} / Stk.`}
                       {' — '}
                       <strong>€ {cartLineSubtotalEur(item).toFixed(2)}</strong>
                     </li>

@@ -2,10 +2,44 @@
 # K2 Galerie – Programmcode auf backupmicro spiegeln (nicht Galeriedaten – die macht hard-backup-to-backupmicro.sh)
 # Der Code ist das wertvollste; diese Spiegelung sichert src/, public/, docs/, Skripte, Konfiguration, .cursor/rules usw.
 # Nutzung: backupmicro anstecken, dann im Terminal: bash scripts/backup-code-to-backupmicro.sh
+#
+# Automatisches Aufräumen: nur die jüngsten N Code-Spiegelungen (Ordnername mit Zeitstempel).
+#   KEEP_CODE_BACKUPS=20 (Standard), Minimum 3. Abschalten: PRUNE_CODE_BACKUPS=0
 
 set -e
 cd "$(dirname "$0")/.."
 PROJECT_ROOT="$(pwd)"
+
+# Alte k2-galerie-code--*- Ordner löschen (lexikographische Sortierung = chronologisch bei ISO-Datum im Namen)
+prune_old_code_backups() {
+  local base="$1"
+  local keep="${KEEP_CODE_BACKUPS:-20}"
+  case "${PRUNE_CODE_BACKUPS:-1}" in
+    0|false|FALSE|no|NO) return 0 ;;
+  esac
+  case "$keep" in ''|*[!0-9]*) keep=20 ;; esac
+  if [ "$keep" -lt 3 ] 2>/dev/null; then keep=3; fi
+  local tmp
+  tmp=$(mktemp)
+  find "$base" -maxdepth 1 -type d -name 'k2-galerie-code--*' 2>/dev/null | sort >"$tmp" || true
+  local total
+  total=$(wc -l <"$tmp" | tr -d ' ')
+  if [ "${total:-0}" -le "$keep" ] 2>/dev/null; then
+    rm -f "$tmp"
+    return 0
+  fi
+  local del=$((total - keep))
+  local i=0
+  while IFS= read -r d; do
+    [ "$i" -ge "$del" ] && break
+    if [ -n "$d" ] && [ -d "$d" ]; then
+      echo "🗑️  Entferne alte Code-Spiegelung (Rotation): $(basename "$d")"
+      rm -rf "$d"
+    fi
+    i=$((i + 1))
+  done <"$tmp"
+  rm -f "$tmp"
+}
 
 BACKUPMICRO="${BACKUPMICRO:-/Volumes/BACKUPMICRO}"
 
@@ -69,7 +103,12 @@ rsync -a --delete \
     -C "$PROJECT_ROOT" . 2>/dev/null | tar xf - -C "$TARGET"
 }
 
+prune_old_code_backups "$CODE_BASE"
+
 echo "✅ Code-Backup erstellt: $TARGET"
 echo "   Enthält: .git (Verlauf), src/, public/, docs/, scripts/, .cursor/rules, Konfiguration."
 echo "   Nicht enthalten: node_modules, dist (nach Restore: npm install, npm run build)."
+if [ "${PRUNE_CODE_BACKUPS:-1}" != "0" ] && [ "${PRUNE_CODE_BACKUPS:-1}" != "false" ]; then
+  echo "   (Rotation: es bleiben die letzten ${KEEP_CODE_BACKUPS:-20} Code-Ordner auf backupmicro.)"
+fi
 echo ""

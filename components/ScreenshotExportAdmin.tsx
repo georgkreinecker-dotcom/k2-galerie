@@ -3572,6 +3572,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     } catch (_) {}
     return { ...(tenant.isOeffentlich ? OEF_DESIGN_DEFAULT : K2_ORANGE_DESIGN) } as LiveDesignSettings
   })
+  const designSettingsRef = React.useRef(designSettings)
+  designSettingsRef.current = designSettings
   const [showAddModal, setShowAddModal] = useState(false)
   const [showVitaEditor, setShowVitaEditor] = useState(false)
   /** Einstellungen: Vita-Bereich Person 1/2 erst auf Klick aufklappen (Handy-freundlich). */
@@ -3875,9 +3877,38 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     return '#' + toHex(r) + toHex(g) + toHex(b)
   }
 
+  /** Lizenz-Mandant Live-iframe: localStorage sofort schreiben (nicht nur 220 ms Debounce) – sonst wirkt Farbe „tot“. */
+  const writeLiveTemplatePreviewDesign = React.useCallback(
+    (nextDesign: LiveDesignSettings) => {
+      const tid = effectiveDynamicTenantId
+      if (!tid || !isSafeDynamicTenantSaveId(tid)) return
+      try {
+        const k = `k2-live-template-preview-${tid}`
+        const raw = localStorage.getItem(k)
+        const base = raw ? (JSON.parse(raw) as Record<string, unknown>) : { tenantId: tid }
+        localStorage.setItem(
+          k,
+          JSON.stringify({
+            ...base,
+            tenantId: tid,
+            designSettings: nextDesign,
+            ts: Date.now(),
+          }),
+        )
+        setDesignLivePreviewVersion((v) => v + 1)
+      } catch (_) {
+        /* ignore */
+      }
+    },
+    [effectiveDynamicTenantId],
+  )
+
   // Design-Einstellungen speichern
   const handleDesignChange = (key: string, value: string) => {
-    setDesignSettings(prev => ({ ...prev, [key]: value }))
+    const next = { ...designSettingsRef.current, [key]: value } as LiveDesignSettings
+    designSettingsRef.current = next
+    setDesignSettings(next)
+    writeLiveTemplatePreviewDesign(next)
   }
 
   // Vier Vorlagen – zwei Erdtöne (Terrakotta, Granit), einer Blau, einer Orange
@@ -3930,10 +3961,12 @@ function ScreenshotExportAdmin(props?: AdminProps) {
 
   const applyTheme = (themeName: keyof typeof themes) => {
     const next = themes[themeName]
+    designSettingsRef.current = next
     setDesignSettings(next)
     try {
       localStorage.setItem(getDesignStorageKey(), JSON.stringify(next))
     } catch (_) {}
+    writeLiveTemplatePreviewDesign(next)
   }
 
   const [designSaveFeedback, setDesignSaveFeedback] = useState<'ok' | null>(null)
@@ -14706,6 +14739,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
         </div>
       </div>
       <iframe
+        key={`live-template-${designLivePreviewVersion}`}
         title="Live Template Vorschau"
         src={designLiveTemplateRoute}
         style={{
@@ -14782,15 +14816,23 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '0.55rem' }}>
                 <label style={{ display: 'grid', gap: '0.2rem', fontSize: '0.74rem', color: s.muted }}>
                   Akzent
-                  <input type="color" value={String(designSettings.accentColor || '#b54a1e')} onChange={(e) => handleDesignChange('accentColor', e.target.value)} style={{ width: '100%', height: 34, border: 'none', borderRadius: 8, background: 'transparent' }} />
+                  <input type="color" value={String(designSettings.accentColor || '#b54a1e')} onInput={(e) => handleDesignChange('accentColor', (e.target as HTMLInputElement).value)} onChange={(e) => handleDesignChange('accentColor', e.target.value)} style={{ width: '100%', height: 34, border: 'none', borderRadius: 8, background: 'transparent' }} />
                 </label>
                 <label style={{ display: 'grid', gap: '0.2rem', fontSize: '0.74rem', color: s.muted }}>
-                  Hintergrund
-                  <input type="color" value={String(designSettings.backgroundColor1 || '#f4efe8')} onChange={(e) => handleDesignChange('backgroundColor1', e.target.value)} style={{ width: '100%', height: 34, border: 'none', borderRadius: 8, background: 'transparent' }} />
+                  Hintergrund (Verlauf oben)
+                  <input type="color" value={String(designSettings.backgroundColor1 || '#f4efe8')} onInput={(e) => handleDesignChange('backgroundColor1', (e.target as HTMLInputElement).value)} onChange={(e) => handleDesignChange('backgroundColor1', e.target.value)} style={{ width: '100%', height: 34, border: 'none', borderRadius: 8, background: 'transparent' }} />
+                </label>
+                <label style={{ display: 'grid', gap: '0.2rem', fontSize: '0.74rem', color: s.muted }}>
+                  Hintergrund (Verlauf unten)
+                  <input type="color" value={String(designSettings.backgroundColor2 || '#ede4d8')} onInput={(e) => handleDesignChange('backgroundColor2', (e.target as HTMLInputElement).value)} onChange={(e) => handleDesignChange('backgroundColor2', e.target.value)} style={{ width: '100%', height: 34, border: 'none', borderRadius: 8, background: 'transparent' }} />
                 </label>
                 <label style={{ display: 'grid', gap: '0.2rem', fontSize: '0.74rem', color: s.muted }}>
                   Textfarbe
-                  <input type="color" value={String(designSettings.textColor || '#1f1a15')} onChange={(e) => handleDesignChange('textColor', e.target.value)} style={{ width: '100%', height: 34, border: 'none', borderRadius: 8, background: 'transparent' }} />
+                  <input type="color" value={String(designSettings.textColor || '#1f1a15')} onInput={(e) => handleDesignChange('textColor', (e.target as HTMLInputElement).value)} onChange={(e) => handleDesignChange('textColor', e.target.value)} style={{ width: '100%', height: 34, border: 'none', borderRadius: 8, background: 'transparent' }} />
+                </label>
+                <label style={{ display: 'grid', gap: '0.2rem', fontSize: '0.74rem', color: s.muted }}>
+                  Sekundärtext / UI
+                  <input type="color" value={String(designSettings.mutedColor || '#5f564d')} onInput={(e) => handleDesignChange('mutedColor', (e.target as HTMLInputElement).value)} onChange={(e) => handleDesignChange('mutedColor', e.target.value)} style={{ width: '100%', height: 34, border: 'none', borderRadius: 8, background: 'transparent' }} />
                 </label>
               </div>
             </div>
@@ -28080,6 +28122,7 @@ ${name}`
                   Live-Template – identisch zur Frontseite
                 </div>
                 <iframe
+                  key={`presse-live-template-${designLivePreviewVersion}`}
                   title="Presse Live-Template"
                   src={designLiveTemplateRoute}
                   style={{ width: '100%', height: 200, border: 'none', display: 'block', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}
@@ -28317,6 +28360,7 @@ ${name}`
                   Live-Template – identisch zur Frontseite
                 </div>
                 <iframe
+                  key={`social-live-template-${designLivePreviewVersion}`}
                   title="Social Live-Template"
                   src={designLiveTemplateRoute}
                   style={{ width: '100%', height: 200, border: 'none', display: 'block', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}
@@ -28954,6 +28998,7 @@ ${name}`
                   Live-Template – identisch zur Frontseite
                 </div>
                 <iframe
+                  key={`newsletter-live-template-${designLivePreviewVersion}`}
                   title="Newsletter Live-Template"
                   src={designLiveTemplateRoute}
                   style={{ width: '100%', height: 200, border: 'none', display: 'block', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}

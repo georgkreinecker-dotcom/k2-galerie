@@ -17,13 +17,52 @@ import '../App.css'
 
 const SAFE_TENANT_ID = /^[a-z0-9-]{1,64}$/
 const DEFAULT_FOCUS_DIRECTION: FocusDirectionId = 'kunst'
-type TenantGalleryArtwork = { number?: string; title?: string; imageRef?: string; image?: string; imageUrl?: string }
+type TenantGalleryArtwork = {
+  number?: string
+  title?: string
+  imageRef?: string
+  image?: string
+  imageUrl?: string
+  uid?: string
+  inShop?: boolean
+  inExhibition?: boolean
+  price?: number | string
+  vk?: number | string
+  preis?: number | string
+  verkaufspreis?: number | string
+  category?: string
+  artist?: string
+  previewUrl?: string
+  paintingWidth?: number | string
+  paintingHeight?: number | string
+  ceramicHeight?: number | string
+  ceramicDiameter?: number | string
+  ceramicType?: string
+  ceramicSurface?: string
+  ceramicDescription?: string
+  ceramicSubcategory?: string
+}
 type PageContentGalTenant = { welcomeImage?: string; virtualTourImage?: string; virtualTourVideo?: string; galerieCardImage?: string }
 type TenantEvent = { title?: string; date?: string; endDate?: string }
 
 function normalizeFocusDirection(raw: string | null): FocusDirectionId {
   const value = String(raw || '').trim().toLowerCase()
   return (FOCUS_DIRECTIONS.some((d) => d.id === value) ? value : DEFAULT_FOCUS_DIRECTION) as FocusDirectionId
+}
+
+/** Live-Template: Farben aus gallery-data + lokale Admin-Vorschau (localStorage). Nur nicht-leere Overlay-Werte überschreiben. */
+function mergeLiveDesignOverlay(
+  server: Record<string, string> | undefined,
+  overlay: Record<string, string> | undefined,
+): Record<string, string> {
+  const base = server && typeof server === 'object' ? { ...server } : {}
+  if (!overlay || typeof overlay !== 'object') return base
+  for (const [k, v] of Object.entries(overlay)) {
+    if (v !== undefined && v !== null && String(v).trim() !== '') {
+      base[k] = v
+    }
+  }
+  return base
 }
 
 export default function GalerieTenantPage() {
@@ -34,7 +73,6 @@ export default function GalerieTenantPage() {
   const liveTemplateMode = searchParams.get('liveTemplate') === '1'
   const adminPreviewMode = searchParams.get('vorschau') === '1' || searchParams.get('k2DocViewer') === '1'
   const useLiveOverlay = liveTemplateMode || adminPreviewMode
-  const allowAdminEntryOnPublicPage = searchParams.get('adminEntry') === '1' || useLiveOverlay
   const [data, setData] = useState<{
     artworks?: TenantGalleryArtwork[]
     events?: TenantEvent[]
@@ -49,6 +87,8 @@ export default function GalerieTenantPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [qrDataUrl, setQrDataUrl] = useState('')
+  /** Nur Live-Vorschau: localStorage wird ohne Reload weiter geschrieben → kurzes Nachladen. */
+  const [livePreviewStorageEpoch, setLivePreviewStorageEpoch] = useState(0)
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
 
   useEffect(() => {
@@ -102,6 +142,27 @@ export default function GalerieTenantPage() {
     if (typeof window === 'undefined') return
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
   }, [useLiveOverlay, tenantId])
+
+  useEffect(() => {
+    if (!useLiveOverlay || !tenantId || typeof window === 'undefined') return
+    const key = `k2-live-template-preview-${tenantId}`
+    let last = ''
+    const tick = () => {
+      try {
+        const raw = localStorage.getItem(key) || ''
+        if (raw !== last) {
+          last = raw
+          setLivePreviewStorageEpoch((n) => n + 1)
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+    tick()
+    const id = window.setInterval(tick, 450)
+    return () => window.clearInterval(id)
+  }, [useLiveOverlay, tenantId])
+
   const liveTemplateOverlay = useMemo(() => {
     if (!useLiveOverlay || !tenantId || typeof window === 'undefined') return null
     try {
@@ -119,7 +180,7 @@ export default function GalerieTenantPage() {
     } catch {
       return null
     }
-  }, [useLiveOverlay, tenantId, searchParams])
+  }, [useLiveOverlay, tenantId, location.search, livePreviewStorageEpoch])
 
   const adminUrl = `/admin?tenantId=${encodeURIComponent(tenantId || '')}&focusDirection=${encodeURIComponent(focusDirection)}`
   const shareBaseUrl = APP_BASE_URL_SHAREABLE.replace(/\/$/, '')
@@ -272,11 +333,15 @@ export default function GalerieTenantPage() {
   if (focusDirection) shopParams.set('focusDirection', focusDirection)
   shopParams.set('from', 'gallery')
   const shopUrl = `/projects/k2-galerie/shop?${shopParams.toString()}`
-  const liveDesign = (liveTemplateOverlay?.designSettings && typeof liveTemplateOverlay.designSettings === 'object')
-    ? liveTemplateOverlay.designSettings as Record<string, string>
-    : ((data?.designSettings && typeof data.designSettings === 'object')
-      ? data.designSettings as Record<string, string>
-      : {})
+  const serverDesign =
+    data?.designSettings && typeof data.designSettings === 'object'
+      ? (data.designSettings as Record<string, string>)
+      : {}
+  const overlayDesign =
+    liveTemplateOverlay?.designSettings && typeof liveTemplateOverlay.designSettings === 'object'
+      ? (liveTemplateOverlay.designSettings as Record<string, string>)
+      : {}
+  const liveDesign = useLiveOverlay ? mergeLiveDesignOverlay(serverDesign, overlayDesign) : serverDesign
   const liveAccent = String(liveDesign.accentColor || '#b54a1e')
   const liveBg1 = String(liveDesign.backgroundColor1 || '#f4efe8')
   const liveBg2 = String(liveDesign.backgroundColor2 || '#ede4d8')
@@ -318,7 +383,7 @@ export default function GalerieTenantPage() {
       contactPhone2={contactPhone2}
       qrDataUrl={qrDataUrl}
       impressumName={impressumName}
-      hideAdminEntry={!allowAdminEntryOnPublicPage}
+      hideAdminEntry={false}
       liveAccent={liveAccent}
       liveBg1={liveBg1}
       liveBg2={liveBg2}

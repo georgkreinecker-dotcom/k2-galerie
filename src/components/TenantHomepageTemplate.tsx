@@ -1,9 +1,42 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
+import { parseArtworkPriceEurFromWork } from '../utils/parseArtworkPriceEur'
+import { getShopSoldArtworksKey } from '../utils/shopContextKeys'
 
-type TenantGalleryArtwork = { number?: string; title?: string; imageRef?: string; image?: string; imageUrl?: string }
+type TenantGalleryArtwork = {
+  number?: string
+  title?: string
+  imageRef?: string
+  image?: string
+  imageUrl?: string
+  uid?: string
+  inShop?: boolean
+  inExhibition?: boolean
+  price?: number | string
+  vk?: number | string
+  preis?: number | string
+  verkaufspreis?: number | string
+  category?: string
+  artist?: string
+  previewUrl?: string
+  paintingWidth?: number | string
+  paintingHeight?: number | string
+  ceramicHeight?: number | string
+  ceramicDiameter?: number | string
+  ceramicType?: string
+  ceramicSurface?: string
+  ceramicDescription?: string
+  ceramicSubcategory?: string
+}
 type TenantEvent = { id?: string; title?: string; date?: string; endDate?: string; description?: string }
+
+/** Online-Erwerb: Alt-Daten hatten teils inShop:false bei weiterhin ausgestellten Werken – dann trotzdem erlauben, solange nicht explizit ohne Online-Galerie. */
+function isTenantArtworkShopPurchasable(artwork: TenantGalleryArtwork, priceEur: number): boolean {
+  if (priceEur <= 0) return false
+  if (artwork.inShop === false && artwork.inExhibition === false) return false
+  return true
+}
 
 type TenantHomepageTemplateProps = {
   tenantId: string
@@ -54,6 +87,7 @@ type TenantHomepageTemplateProps = {
 }
 
 export function TenantHomepageTemplate(props: TenantHomepageTemplateProps) {
+  const navigate = useNavigate()
   const entranceImage = props.galerieCardImage
   const virtualTourFallbackImage = props.virtualTourImage || props.galerieCardImage
   const welcomeImageHeightPx = Math.min(520, Math.max(170, Number(props.welcomeImageHeightPx || 260)))
@@ -137,6 +171,94 @@ export function TenantHomepageTemplate(props: TenantHomepageTemplateProps) {
     : ''
   const selectedIsLiked = !!selectedArtworkKey && likedArtworkKeys.includes(selectedArtworkKey)
   const selectedWorkParam = String(selectedArtwork?.number || selectedArtwork?.title || '').trim()
+  const selectedPrice = selectedArtwork ? parseArtworkPriceEurFromWork(selectedArtwork) : 0
+  const canAddToShopCart =
+    !!selectedArtwork &&
+    isTenantArtworkShopPurchasable(selectedArtwork, selectedPrice)
+  const isSelectedSold = useMemo(() => {
+    const num = String(selectedArtwork?.number || '').trim()
+    if (!num) return false
+    try {
+      const soldKey = getShopSoldArtworksKey(false, false, props.tenantId)
+      const soldRaw = localStorage.getItem(soldKey)
+      const sold = soldRaw ? JSON.parse(soldRaw) : []
+      if (!Array.isArray(sold)) return false
+      return sold.some((a: { number?: string }) => a && String(a.number || '').trim() === num)
+    } catch {
+      return false
+    }
+  }, [selectedArtwork, props.tenantId])
+
+  const handleAddToShopCart = () => {
+    const artwork = selectedArtwork
+    if (!artwork) return
+    const price = parseArtworkPriceEurFromWork(artwork)
+    if (price <= 0) {
+      alert('Dieses Werk hat keinen Verkaufspreis.')
+      return
+    }
+    if (!isTenantArtworkShopPurchasable(artwork, price)) {
+      alert('Dieses Werk ist nur für die Ausstellung (nicht online erwerbbar).')
+      return
+    }
+    try {
+      const soldKey = getShopSoldArtworksKey(false, false, props.tenantId)
+      const soldData = localStorage.getItem(soldKey)
+      if (soldData) {
+        const soldArtworks = JSON.parse(soldData)
+        if (Array.isArray(soldArtworks)) {
+          const isSold = soldArtworks.some((a: { number?: string }) => a && a.number === artwork.number)
+          if (isSold) {
+            alert('Dieses Werk ist bereits verkauft.')
+            return
+          }
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+    const imageUrl = String(artwork.imageUrl || artwork.imageRef || artwork.image || '').trim()
+    const cartItem = {
+      number: artwork.number,
+      title: artwork.title || artwork.number,
+      price,
+      category: artwork.category,
+      artist: artwork.artist,
+      imageUrl: imageUrl || undefined,
+      previewUrl: artwork.previewUrl,
+      paintingWidth: artwork.paintingWidth,
+      paintingHeight: artwork.paintingHeight,
+      ceramicHeight: artwork.ceramicHeight,
+      ceramicDiameter: artwork.ceramicDiameter,
+      ceramicType: artwork.ceramicType,
+      ceramicSurface: artwork.ceramicSurface,
+      ceramicDescription: artwork.ceramicDescription,
+      ceramicSubcategory: artwork.ceramicSubcategory,
+    }
+    try {
+      const cartData = localStorage.getItem('k2-cart')
+      const cart = cartData ? JSON.parse(cartData) : []
+      if (!Array.isArray(cart)) {
+        alert('Fehler beim Hinzufügen zur Auswahl.')
+        return
+      }
+      if (cart.some((item: { number?: string }) => item && item.number === artwork.number)) {
+        alert('Dieses Werk ist bereits in deiner Auswahl.')
+        return
+      }
+      cart.push(cartItem)
+      localStorage.setItem('k2-cart', JSON.stringify(cart))
+      try {
+        window.dispatchEvent(new CustomEvent('cart-updated'))
+      } catch {
+        /* ignore */
+      }
+      const target = props.shopUrl || '/projects/k2-galerie/shop'
+      navigate(target, { state: { fromGalerieView: true, dynamicTenantId: props.tenantId } })
+    } catch {
+      alert('Fehler beim Hinzufügen zur Auswahl.')
+    }
+  }
   const reserveUrl = useMemo(() => {
     const base = props.shopUrl || '/projects/k2-galerie/shop'
     if (!selectedWorkParam) return base
@@ -350,6 +472,20 @@ export function TenantHomepageTemplate(props: TenantHomepageTemplateProps) {
                 <div style={{ padding: '0.65rem 0.8rem' }}>
                   <div style={{ fontSize: '0.78rem', color: props.liveMuted }}>{selectedArtwork?.number || ''}</div>
                   <div style={{ fontSize: '0.95rem', fontWeight: 700, color: props.liveText }}>{selectedArtwork?.title || 'Ohne Titel'}</div>
+                  {selectedPrice > 0 ? (
+                    <div style={{ fontSize: '0.92rem', fontWeight: 700, color: props.liveAccent, marginTop: '0.35rem' }}>
+                      {selectedPrice.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: '0.78rem', color: props.liveMuted, marginTop: '0.35rem', lineHeight: 1.4 }}>
+                      Kein Verkaufspreis hinterlegt. Im Mandanten-Admin VK (€) eintragen und erneut veröffentlichen.
+                    </div>
+                  )}
+                  {selectedPrice > 0 && !isSelectedSold && !canAddToShopCart ? (
+                    <div style={{ fontSize: '0.76rem', color: props.liveMuted, marginTop: '0.35rem', lineHeight: 1.4 }}>
+                      Nur Reservierung: Das Werk ist nicht als online erwerbbar markiert (oder weder Galerie noch Shop). Bitte im Admin „in Online-Galerie sichtbar und online erwerbbar“ setzen.
+                    </div>
+                  ) : null}
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.6rem' }}>
                     <button
                       type="button"
@@ -372,6 +508,24 @@ export function TenantHomepageTemplate(props: TenantHomepageTemplateProps) {
                     >
                       {selectedIsLiked ? '💙 Gefällt' : '🤍 Gefällt'}
                     </button>
+                    {!isSelectedSold && canAddToShopCart ? (
+                      <button
+                        type="button"
+                        onClick={() => { handleAddToShopCart() }}
+                        style={{
+                          border: `1px solid ${props.liveAccent}66`,
+                          borderRadius: 999,
+                          padding: '0.34rem 0.8rem',
+                          color: props.liveText,
+                          background: `${props.liveSectionBg}`,
+                          fontSize: '0.8rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Gefällt mir – möchte ich erwerben
+                      </button>
+                    ) : null}
                     <Link
                       to={reserveUrl}
                       style={{
@@ -442,9 +596,27 @@ export function TenantHomepageTemplate(props: TenantHomepageTemplateProps) {
               </div>
               <div id="shop-bereich" style={{ marginTop: '0.95rem', border: TEMPLATE.sectionBorder, borderRadius: 10, padding: '0.7rem 0.8rem', background: 'rgba(255,255,255,0.03)' }}>
                 <div style={{ fontSize: '0.92rem', fontWeight: 700, color: props.liveText, marginBottom: '0.25rem' }}>Shop</div>
-                <div style={{ color: props.liveMuted, fontSize: '0.84rem', lineHeight: 1.45 }}>
-                  Ausgewählte Werke aus den Bereichen können hier wie bei ök2 für den Shop-Bereich geführt werden.
+                <div style={{ color: props.liveMuted, fontSize: '0.84rem', lineHeight: 1.45, marginBottom: '0.55rem' }}>
+                  Lege Werke mit dem Button „Gefällt mir – möchte ich erwerben“ in deine Auswahl; Preise siehst du am jeweiligen Werk. Anschließend im Shopbereich Bestellung und Kontaktdaten abschließen.
                 </div>
+                {props.shopUrl && props.shopUrl !== '#shop-bereich' ? (
+                  <Link
+                    to={props.shopUrl}
+                    style={{
+                      display: 'inline-block',
+                      border: `1px solid ${props.liveAccent}`,
+                      borderRadius: 999,
+                      padding: '0.4rem 0.95rem',
+                      textDecoration: 'none',
+                      color: '#fff',
+                      background: props.liveAccent,
+                      fontSize: '0.82rem',
+                      fontWeight: 700,
+                    }}
+                  >
+                    Zur Auswahl / Shop →
+                  </Link>
+                ) : null}
               </div>
             </>
           ) : (

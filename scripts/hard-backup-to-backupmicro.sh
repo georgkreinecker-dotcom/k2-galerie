@@ -2,10 +2,52 @@
 # K2 Galerie – Hard-Backup mit Versionsnummer auf backupmicro (externer Speicher)
 # Nur auf backupmicro ablegen, nicht auf dem Mac (Speicher schonen).
 # Nutzung: Im Terminal am Mac (im Projektordner): bash scripts/hard-backup-to-backupmicro.sh
+#
+# Automatisches Aufräumen (nach jedem erfolgreichen Backup):
+#   Es bleiben nur die jüngsten N Versionsordner (v001--…, v002--…). Ältere werden gelöscht.
+#   KEEP_BACKUP_VERSIONS=30 (Standard), Minimum 5. Abschalten: PRUNE_OLD_BACKUPS=0
+#   Beispiel: KEEP_BACKUP_VERSIONS=15 bash scripts/hard-backup-to-backupmicro.sh
 
 set -e
 cd "$(dirname "$0")/.."
 PROJECT_ROOT="$(pwd)"
+
+# Alte v###--*- Ordner löschen, nur die letzten N behalten (nach numerischer Version v001, v002, …)
+prune_old_hard_backups() {
+  local base="$1"
+  local keep="${KEEP_BACKUP_VERSIONS:-30}"
+  case "${PRUNE_OLD_BACKUPS:-1}" in
+    0|false|FALSE|no|NO) return 0 ;;
+  esac
+  case "$keep" in ''|*[!0-9]*) keep=30 ;; esac
+  if [ "$keep" -lt 5 ] 2>/dev/null; then keep=5; fi
+  local tmp
+  tmp=$(mktemp)
+  find "$base" -maxdepth 1 -type d -name 'v[0-9][0-9][0-9]*--*' 2>/dev/null | while read -r d; do
+    bn=$(basename "$d")
+    n=$(echo "$bn" | sed -E 's/^v0*([0-9]+).*/\1/')
+    case "$n" in ''|*[!0-9]*) continue ;; esac
+    printf '%s\t%s\n' "$n" "$d"
+  done | sort -n >"$tmp" || true
+  local total
+  total=$(wc -l <"$tmp" | tr -d ' ')
+  if [ "${total:-0}" -le "$keep" ] 2>/dev/null; then
+    rm -f "$tmp"
+    return 0
+  fi
+  local del=$((total - keep))
+  local i=0
+  while IFS= read -r line; do
+    [ "$i" -ge "$del" ] && break
+    d=$(printf '%s\n' "$line" | cut -f2-)
+    if [ -n "$d" ] && [ -d "$d" ]; then
+      echo "🗑️  Entferne alte Hard-Backup-Version (Rotation): $(basename "$d")"
+      rm -rf "$d"
+    fi
+    i=$((i + 1))
+  done <"$tmp"
+  rm -f "$tmp"
+}
 
 # Laufwerk wie auf dem Desktop: „BACKUPMICRO“ → /Volumes/BACKUPMICRO
 BACKUPMICRO="${BACKUPMICRO:-/Volumes/BACKUPMICRO}"
@@ -140,6 +182,9 @@ Wiederherstellung Galerie-Daten:
 EOF
 
 echo "$NEXT" > "$VERSION_FILE"
+
+prune_old_hard_backups "$BACKUP_BASE"
+
 echo "✅ Hard-Backup erstellt: ${VERSION_LABEL}"
 echo "   Speicherort: ${BACKUP_DIR}"
 echo "   gallery-data.json: ${GALLERY_BYTES} Bytes (veröffentlichter Stand – klein ist normal)"
@@ -152,3 +197,6 @@ if [ ! -f "$VOLLBACKUP_OPTIONAL" ]; then
 fi
 echo ""
 echo "Nächste Version wird: v$(printf '%03d' $((NEXT + 1)))"
+if [ "${PRUNE_OLD_BACKUPS:-1}" != "0" ] && [ "${PRUNE_OLD_BACKUPS:-1}" != "false" ]; then
+  echo "   (Rotation: es bleiben die letzten ${KEEP_BACKUP_VERSIONS:-30} Versionen auf backupmicro – ältere Ordner wurden ggf. entfernt.)"
+fi

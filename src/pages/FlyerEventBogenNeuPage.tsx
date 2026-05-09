@@ -1240,9 +1240,9 @@ export default function FlyerEventBogenNeuPage() {
     }
     return 'Gescannt gelangen Besucher zur öffentlichen Online-Galerie – dort sind Ihre Werke sichtbar.'
   }, [isOeffentlich, isVk2])
-  /** ök2/VK2: Überschrift aus Event (z. B. Vernissage, Gemeinschaftsausstellung); K2: „Galerieeröffnung“. */
+  /** ök2/VK2/Lizenz-Mandant: zweite Kopfzeile aus Event-Titel; K2-Produktion: „Galerieeröffnung“. */
   const heroOpeningWord = useMemo(() => {
-    if ((isOeffentlich || isVk2) && eroeffnungEvent) {
+    if ((isOeffentlich || isVk2 || effectiveDynamicTenantId) && eroeffnungEvent) {
       const t = String(
         (eroeffnungEvent as { title?: string; name?: string }).title ||
           (eroeffnungEvent as { title?: string; name?: string }).name ||
@@ -1252,7 +1252,7 @@ export default function FlyerEventBogenNeuPage() {
     }
     if (isVk2) return 'Gemeinschaftsausstellung'
     return 'Galerieeröffnung'
-  }, [isOeffentlich, isVk2, eroeffnungEvent])
+  }, [isOeffentlich, isVk2, effectiveDynamicTenantId, eroeffnungEvent])
   const openingHoursBlock = useMemo(() => formatGalleryOpeningHoursBlock(gallery), [gallery])
 
   const masterClickInfoTexts = useMemo(() => {
