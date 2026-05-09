@@ -1,8 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nach Push: Lizenz-**`/g/…`** – **Galerie schließen** und **Gefällt** kurz prüfen (Kontrast gegen dunkles Design).
+**Was wir JETZT tun:** Nach Push: **`/g/:tenantId`** ohne Query = **kein Admin-Link** im Kopf (wie K2-Besucher); mit **`?vorschau=1` / `liveTemplate=1` / `embedded=1`**, **Router-State `fromAdmin`**, Session **`k2-galerie-from-admin`** oder **PWA-Standalone** = Admin sichtbar.
 
-**Einordnung:** **`TenantHomepageTemplate`:** Chips nicht mehr **`#fff` + `liveText`** (bei hellem Text auf dunklem Theme unleserlich); gleiche Logik wie **„Erwerben“** (**`liveSectionBg`**).
+**Einordnung:** Gleiches Muster wie **`GaleriePage`** (**`showAdminEntryOnGalerie`**): öffentlicher Teilen-Link/QR bleibt „nur Galerie“; Eigentümer kommen über Admin-**„Galerie ansehen“** (Live-Template-URL), Vorschau, APf oder Stammdaten-QR/Admin wie bisher.
+
+**Letzter Stand:** 09.05.26 – **Lizenz `/g/…` ohne Admin für Besucher:** **`GalerieTenantPage`** – **`hideAdminEntry`** nur wenn **`showLicenseeAdminInHeader`** (Vorschau/Live-Overlay, embedded, `fromAdmin` + Session wie K2, PWA standalone); **`useLayoutEffect`** setzt **`k2-galerie-from-admin`**. Test in **`licensee-release-gate.test.ts`**. **Commit:** _(nach Push)_ ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **Lizenz-Homepage Kontrast (helle Buttons):** Galerie schließen, Gefällt, Bereichs-Filter, Social-Links – **`liveSectionBg`** + Akzent-Rand statt **`#fff`**. **Commit:** `0ff3c5cb` ✅ **main**
 

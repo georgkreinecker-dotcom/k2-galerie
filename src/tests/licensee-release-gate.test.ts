@@ -46,4 +46,11 @@ describe('Lizenznehmer Release Gate', () => {
     expect(src).toContain('!isPlatformInstance() && !tenant.isOeffentlich && !effectiveDynamicTenantId')
     expect(src).toContain('!tenant.isOeffentlich && !tenant.isVk2 && isPlatformInstance() && !effectiveDynamicTenantId')
   })
+
+  it('blendet den Admin-Link auf öffentlicher /g/-Homepage wie K2 (nur Eigentümer-Einstieg)', () => {
+    const src = read('src/pages/GalerieTenantPage.tsx')
+    expect(src).toContain("const KEY_FROM_ADMIN = 'k2-galerie-from-admin'")
+    expect(src).toContain('showLicenseeAdminInHeader')
+    expect(src).toContain('hideAdminEntry={!showLicenseeAdminInHeader}')
+  })
 })

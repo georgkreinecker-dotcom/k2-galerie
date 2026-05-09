@@ -5,7 +5,7 @@
  *
  * Besucherzähler: Smoke-Test für Lizenz-Mandanten → docs/SMOKE-BESUCHERZAEHLER-LIZENZ.md
  */
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { useParams, Link, useSearchParams, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { reportPublicGalleryVisit } from '../utils/reportPublicGalleryVisit'
@@ -16,6 +16,8 @@ import { APP_BASE_URL_SHAREABLE } from '../config/externalUrls'
 import '../App.css'
 
 const SAFE_TENANT_ID = /^[a-z0-9-]{1,64}$/
+/** Wie GaleriePage: nach Aufruf von Admin mit state.fromAdmin bleibt der Einstieg in derselben Session erhalten. */
+const KEY_FROM_ADMIN = 'k2-galerie-from-admin'
 const DEFAULT_FOCUS_DIRECTION: FocusDirectionId = 'kunst'
 type TenantGalleryArtwork = {
   number?: string
@@ -142,6 +144,17 @@ export default function GalerieTenantPage() {
     if (typeof window === 'undefined') return
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
   }, [useLiveOverlay, tenantId])
+
+  useLayoutEffect(() => {
+    if (!tenantId || !SAFE_TENANT_ID.test(tenantId)) return
+    try {
+      if ((location.state as { fromAdmin?: boolean } | null)?.fromAdmin === true) {
+        sessionStorage.setItem(KEY_FROM_ADMIN, '1')
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [tenantId, location.state])
 
   useEffect(() => {
     if (!useLiveOverlay || !tenantId || typeof window === 'undefined') return
@@ -354,6 +367,26 @@ export default function GalerieTenantPage() {
   const welcomeImageHeightPx = Number(liveDesign.welcomeImageHeightPx || 260)
   const tourImageHeightPx = Number(liveDesign.tourImageHeightPx || 260)
 
+  /** Wie K2-Galerie (showAdminEntryOnGalerie): Besucher ohne APf/Admin-Kontext sehen keinen Admin-Link; Eigentümer über Vorschau, Live-Template, embedded, Admin-Navigation oder PWA-Standalone. */
+  const embeddedInApfPreview = searchParams.get('embedded') === '1'
+  const fromAdminNavigation = (location.state as { fromAdmin?: boolean } | null)?.fromAdmin === true
+  let fromAdminSessionFlag = false
+  try {
+    fromAdminSessionFlag = typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_FROM_ADMIN) === '1'
+  } catch {
+    /* ignore */
+  }
+  const isGaleriePwaStandalone =
+    typeof window !== 'undefined' &&
+    ((typeof navigator !== 'undefined' && (navigator as { standalone?: boolean }).standalone === true) ||
+      (typeof window.matchMedia === 'function' && window.matchMedia('(display-mode: standalone)').matches))
+  const showLicenseeAdminInHeader =
+    useLiveOverlay ||
+    embeddedInApfPreview ||
+    fromAdminNavigation ||
+    fromAdminSessionFlag ||
+    isGaleriePwaStandalone
+
   return (
     <TenantHomepageTemplate
       tenantId={tenantId}
@@ -383,7 +416,7 @@ export default function GalerieTenantPage() {
       contactPhone2={contactPhone2}
       qrDataUrl={qrDataUrl}
       impressumName={impressumName}
-      hideAdminEntry={false}
+      hideAdminEntry={!showLicenseeAdminInHeader}
       liveAccent={liveAccent}
       liveBg1={liveBg1}
       liveBg2={liveBg2}
