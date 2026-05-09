@@ -138,13 +138,29 @@ export function computeEmpfehlerGutschrift(amountTotal, empfehlerId) {
  * @param {object} session Stripe checkout.session (completed)
  * @param {string} baseUrl z. B. https://k2-galerie.vercel.app
  */
+/** Meine-Familie-Zugang nach Lizenz: ?fn= setzt den ersten Familien-Anzeigenamen (FamilieEinladungQuerySync). */
+export function appendFamilieFnQueryParam(url, displayName) {
+  const fn = String(displayName ?? '').trim()
+  if (!fn || !url) return url
+  const u = String(url)
+  if (!u.includes('meine-familie')) return u
+  if (/[?&]fn=/.test(u)) return u
+  const sep = u.includes('?') ? '&' : '?'
+  return `${u}${sep}fn=${encodeURIComponent(fn.slice(0, 240))}`
+}
+
 export function rowsFromCheckoutSession(session, baseUrl) {
   const metadata = checkoutSessionEffectiveMetadata(session)
   const licenceType = resolveCheckoutLicenceType(session)
   const productLineMeta = String(metadata.productLine || '').trim()
   const focusDirection = normalizeFocusDirection(metadata.focusDirection)
   const empfehlerFromMeta = (metadata.empfehlerId || '').trim() || null
-  const customerName = (metadata.customerName || '').trim() || 'Kunde'
+  const metaName = (metadata.customerName || '').trim()
+  const detailsName =
+    session?.customer_details && typeof session.customer_details === 'object'
+      ? String(session.customer_details.name || '').trim()
+      : ''
+  const customerName = metaName || detailsName || 'Kunde'
   const tenantId = normalizeWebhookTenantId(metadata.tenantId)
   const amountTotal = session.amount_total ?? 0
   const customerEmail =
@@ -166,7 +182,7 @@ export function rowsFromCheckoutSession(session, baseUrl) {
     amountTotal,
     empfehlerId,
   )
-  const galerieUrl = isFamilieLicence
+  let galerieUrl = isFamilieLicence
     ? b
       ? tenantId
         ? `${b}/projects/k2-familie/meine-familie?t=${encodeURIComponent(tenantId)}`
@@ -175,6 +191,9 @@ export function rowsFromCheckoutSession(session, baseUrl) {
     : isVk2Licence && b
       ? `${b}/projects/vk2/galerie`
       : buildGalerieUrl(baseUrl, tenantId, focusDirection)
+  if (isFamilieLicence && galerieUrl) {
+    galerieUrl = appendFamilieFnQueryParam(galerieUrl, customerName)
+  }
 
   const licenceInsert = {
     email: customerEmail,

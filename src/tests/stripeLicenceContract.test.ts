@@ -428,7 +428,7 @@ describe('Webhook-Zeilen aus Session', () => {
     )
     expect(pack.licenceInsert.tenant_id).toBe('familie-test-abc12')
     expect(pack.licenceInsert.galerie_url).toBe(
-      'https://k2-galerie.vercel.app/projects/k2-familie/meine-familie?t=familie-test-abc12',
+      'https://k2-galerie.vercel.app/projects/k2-familie/meine-familie?t=familie-test-abc12&fn=K',
     )
   })
 
@@ -449,7 +449,7 @@ describe('Webhook-Zeilen aus Session', () => {
     )
     expect(pack.licenceInsert.licence_type).toMatch(/^familie_/)
     expect(pack.licenceInsert.galerie_url).toBe(
-      'https://k2-galerie.vercel.app/projects/k2-familie/meine-familie?t=familie-test-abc12',
+      'https://k2-galerie.vercel.app/projects/k2-familie/meine-familie?t=familie-test-abc12&fn=K',
     )
   })
 

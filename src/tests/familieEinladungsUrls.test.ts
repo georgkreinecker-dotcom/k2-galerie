@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  appendFamilieDisplayNameParamIfMissing,
   buildFamilieEinladungsUrlKurz,
   buildFamilieEinladungsUrlScan,
   buildPersoenlicheEinladungsUrlKurz,
@@ -47,5 +48,14 @@ describe('familieEinladungsUrls (eine Quelle: t/z/m wie FamilieEinladungQuerySyn
     const u = buildFamilieEinladungsUrlScan('fam-b', 'KF-9', 'Name', 42)
     expect(u).toContain('t=fam-b')
     expect(u).toContain('v=42')
+  })
+
+  it('appendFamilieDisplayNameParamIfMissing: fn nur wenn noch nicht gesetzt', () => {
+    const base = 'https://k2-galerie.vercel.app/projects/k2-familie/meine-familie?t=familie-x'
+    const out = appendFamilieDisplayNameParamIfMissing(base, 'Maria Muster')
+    expect(out).toBeTruthy()
+    expect(out).toContain('fn=')
+    expect(decodeURIComponent(new URL(out as string).searchParams.get('fn') || '')).toBe('Maria Muster')
+    expect(appendFamilieDisplayNameParamIfMissing(`${base}&fn=Alt`, 'Neu')).toContain('fn=Alt')
   })
 })

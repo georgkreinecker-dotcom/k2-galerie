@@ -90,3 +90,28 @@ export function buildFamilieEinladungsUrlScan(
   if (!canonical) return ''
   return buildQrUrlWithVersionOnly(canonical, versionTimestamp)
 }
+
+/**
+ * Lizenz-Erfolgsseite / ältere API: Link nur mit ?t= → Anzeigename aus Stripe nachtragen (einmalig),
+ * ohne bestehendes fn zu überschreiben.
+ */
+export function appendFamilieDisplayNameParamIfMissing(
+  meineFamilieUrl: string | null | undefined,
+  familyDisplayName: string | null | undefined,
+): string | null {
+  const raw = (meineFamilieUrl ?? '').trim()
+  const fn = (familyDisplayName ?? '').trim()
+  if (!raw || !fn) return meineFamilieUrl ?? null
+  try {
+    const baseRaw = APP_BASE_URL_SHAREABLE.replace(/\/$/, '')
+    const base = baseRaw || (typeof window !== 'undefined' ? window.location.origin : 'https://k2-galerie.vercel.app')
+    const u = new URL(raw, `${base}/`)
+    const path = (u.pathname || '').toLowerCase()
+    if (!path.includes('meine-familie')) return raw
+    if (u.searchParams.has('fn')) return raw
+    u.searchParams.set('fn', fn.slice(0, 240))
+    return u.toString()
+  } catch {
+    return raw
+  }
+}

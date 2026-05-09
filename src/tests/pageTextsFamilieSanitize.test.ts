@@ -51,6 +51,14 @@ describe('getFamilyPageTexts – Huber-Muster nicht unter fremder tenantId', () 
     expect(getFamilyPageTexts(TID).welcomeTitle).toBe('Familie Kreinecker')
   })
 
+  it('ohne gespeicherte Seitentexte: welcomeTitle = familyDisplayName bei familie-*', () => {
+    localStorage.setItem(
+      `k2-familie-${TID}-einstellungen`,
+      JSON.stringify({ familyDisplayName: 'Familie Aus Stripe' }),
+    )
+    expect(getFamilyPageTexts(TID).welcomeTitle).toBe('Familie Aus Stripe')
+  })
+
   it('Tenant huber behält gespeicherten Familie-Huber-Titel', () => {
     localStorage.setItem(
       'k2-familie-huber-page-texts',

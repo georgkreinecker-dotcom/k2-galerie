@@ -13,6 +13,7 @@ import {
   checkoutSessionEffectiveMetadata,
   normalizeFocusDirection,
   appendFocusDirection,
+  appendFamilieFnQueryParam,
 } from './stripeWebhookLicenceShared.js'
 import { productLineFromLicenceType, productLineFromStripeSession } from './lizenzProductLineShared.js'
 
@@ -101,11 +102,17 @@ function jsonFromDbLicence(licence, baseUrl) {
   }
   const focusDirection = focusDirectionFromUrl(licence.galerie_url)
   const galerieOutRaw = normalizeFamilieGalerieResponseUrl(licence.galerie_url, licence.tenant_id, baseUrl)
-  const galerieOut = productLine === 'k2_galerie' ? appendFocusDirection(galerieOutRaw, focusDirection) : galerieOutRaw
+  let galerieOut = productLine === 'k2_galerie' ? appendFocusDirection(galerieOutRaw, focusDirection) : galerieOutRaw
+  let adminOut = buildAdminUrlForLicence(baseUrl, licence.tenant_id, licenceType, productLine, focusDirection)
+  const stripeDisplayName = String(licence.name || '').trim()
+  if (productLine === 'k2_familie' && stripeDisplayName) {
+    galerieOut = appendFamilieFnQueryParam(galerieOut, stripeDisplayName)
+    adminOut = appendFamilieFnQueryParam(adminOut, stripeDisplayName)
+  }
   return {
     galerie_url: galerieOut,
     tenant_id: licence.tenant_id || null,
-    admin_url: buildAdminUrlForLicence(baseUrl, licence.tenant_id, licenceType, productLine, focusDirection),
+    admin_url: adminOut,
     name: licence.name || '',
     email: licence.email || '',
     licence_type: licenceType,
@@ -189,10 +196,19 @@ export default async function handler(req, res) {
         const productLine = rowPack.productLine || productLineFromStripeSession(session, licenceType, tenantId)
         const focusDirection = rowPack.focusDirection || normalizeFocusDirection(checkoutSessionEffectiveMetadata(session).focusDirection)
 
+        let galerieStripeOut =
+          productLine === 'k2_galerie' ? appendFocusDirection(ins.galerie_url || null, focusDirection) : ins.galerie_url || null
+        let adminStripeOut = buildAdminUrlForLicence(baseUrl, tenantId, licenceType, productLine, focusDirection)
+        const nm = String(ins.name || '').trim()
+        if (productLine === 'k2_familie' && nm) {
+          galerieStripeOut = appendFamilieFnQueryParam(galerieStripeOut, nm)
+          adminStripeOut = appendFamilieFnQueryParam(adminStripeOut, nm)
+        }
+
         return res.status(200).json({
-          galerie_url: productLine === 'k2_galerie' ? appendFocusDirection(ins.galerie_url || null, focusDirection) : (ins.galerie_url || null),
+          galerie_url: galerieStripeOut,
           tenant_id: tenantId,
-          admin_url: buildAdminUrlForLicence(baseUrl, tenantId, licenceType, productLine, focusDirection),
+          admin_url: adminStripeOut,
           name: ins.name || '',
           email: ins.email || '',
           licence_type: licenceType,

@@ -98,6 +98,13 @@ export function getFamilyPageTexts(tenantId: string): PageTextsFamilie {
       }
     }
   } catch (_) {}
+  const ersteUeberschriftAusAnzeigename =
+    tenantId !== FAMILIE_HUBER_TENANT_ID && /^familie-/i.test(String(tenantId || ''))
+      ? loadEinstellungen(tenantId).familyDisplayName?.trim()
+      : ''
+  if (ersteUeberschriftAusAnzeigename) {
+    return { ...DEFAULT_TEXTS, welcomeTitle: ersteUeberschriftAusAnzeigename }
+  }
   return { ...DEFAULT_TEXTS }
 }
 

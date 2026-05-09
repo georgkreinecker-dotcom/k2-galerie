@@ -200,7 +200,9 @@ export function FamilieEinladungQuerySync() {
         if (fn) {
           const einst = loadEinstellungen(t)
           if (!einst.familyDisplayName?.trim()) {
-            saveEinstellungen(t, { ...einst, familyDisplayName: fn })
+            if (saveEinstellungen(t, { ...einst, familyDisplayName: fn })) {
+              bumpFamilieStorageRevision()
+            }
           }
         }
         if (cancelled) return
@@ -232,7 +234,9 @@ export function FamilieEinladungQuerySync() {
         if (fn) {
           const e2 = loadEinstellungen(currentTenantId)
           if (!e2.familyDisplayName?.trim()) {
-            saveEinstellungen(currentTenantId, { ...e2, familyDisplayName: fn })
+            if (saveEinstellungen(currentTenantId, { ...e2, familyDisplayName: fn })) {
+              bumpFamilieStorageRevision()
+            }
           }
         }
         if (cancelled) return
@@ -268,7 +272,9 @@ export function FamilieEinladungQuerySync() {
       if (!t && !z && !m && fn) {
         const einst = loadEinstellungen(currentTenantId)
         if (!einst.familyDisplayName?.trim()) {
-          saveEinstellungen(currentTenantId, { ...einst, familyDisplayName: fn })
+          if (saveEinstellungen(currentTenantId, { ...einst, familyDisplayName: fn })) {
+            bumpFamilieStorageRevision()
+          }
         }
         strip()
       }

@@ -12,6 +12,7 @@ import { APP_BASE_URL_SHAREABLE } from '../config/externalUrls'
 import { LicenseeAdminQrPanel } from '../components/LicenseeAdminQrPanel'
 import { buildLizenzMusterErfolgLinks } from '../utils/lizenzMusterDemo'
 import { rewriteLicenceUrlForCustomerDisplay } from '../utils/publicLinks'
+import { appendFamilieDisplayNameParamIfMissing } from '../utils/familieEinladungsUrls'
 import {
   LIZENZ_ERFOLG_LOADING_NEUTRAL,
   type LizenzProductLine,
@@ -176,9 +177,15 @@ export default function LizenzErfolgPage() {
             }
             const name = (data.name && String(data.name).trim()) ? String(data.name) : prev?.name || ''
             const email = (data.email && String(data.email).trim()) ? String(data.email) : prev?.email || ''
+            let galerieOut = galerie_url
+            let adminOut = admin_url
+            if (product_line === 'k2_familie' && name.trim()) {
+              galerieOut = appendFamilieDisplayNameParamIfMissing(galerieOut, name) ?? galerieOut
+              adminOut = appendFamilieDisplayNameParamIfMissing(adminOut, name) ?? adminOut
+            }
             return {
-              galerie_url,
-              admin_url,
+              galerie_url: galerieOut,
+              admin_url: adminOut,
               name,
               email,
               tenant_id,
