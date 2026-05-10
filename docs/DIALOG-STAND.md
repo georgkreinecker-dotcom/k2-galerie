@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Kurz prüfen: APf **`?page=platform`** / Lizenz-Fallback zeigt **Plattform-Start** (Kacheln), iframe lädt **`/plattform-hub`** – nicht mehr **`mobile-connect`** („Handy mit Mac“).
+**Was wir JETZT tun:** Nach Vercel-**Deployment „Ready“**: APf **`?page=platform`** – großer Bereich **Plattform-Start** (Kacheln), iframe **`/plattform-hub`**; Lizenz-Erfolg ohne Mandant landet auf **`?apf=1&page=platform`**.
 
 **Einordnung:** **`platformStart`** war fälschlich = **`mobile-connect`**; **`getPathForPage('platform')`** speiste nur diesen Pfad in die iframes → falsches Fenster trotz richtigem Tab.
 
-**Letzter Stand:** 10.05.26 – **APf Tab „Plattform Start“ = echte PlatformStartPage im iframe:** Route **`/projects/k2-galerie/plattform-hub`**, **`platformStart`**, **`DevViewPage`** (defaultPage vor Resume, **`isBareK2GalerieApfHubSearch`**), **`navigationApfEntry.test`**. Lizenz ohne Mandant: **`K2_GALERIE_APF_OHNE_MANDANT`** (**`?apf=1&page=platform`**) in **`LizenzErfolgPage`**, **`stripeWebhookLicenceShared`**, Vertrags-Tests. **`npm run test`** + **`npm run build`** grün. **Commit:** ✅ **main** (Hash: `git log -1 --oneline`)
+**Letzter Stand:** 10.05.26 – **APf Tab „Plattform Start“ = echte PlatformStartPage im iframe:** Route **`/projects/k2-galerie/plattform-hub`**, **`platformStart`**, **`DevViewPage`** (defaultPage vor Resume, **`isBareK2GalerieApfHubSearch`**), **`navigationApfEntry.test`**. Lizenz ohne Mandant: **`K2_GALERIE_APF_OHNE_MANDANT`** (**`?apf=1&page=platform`**) in **`LizenzErfolgPage`**, **`stripeWebhookLicenceShared`**, Vertrags-Tests. **`npm run test`** + **`npm run build`** grün. **Commit:** `2c034dfd` ✅ **main**
 
 **Letzter Stand:** 10.05.26 – **LK2 Lizenz-Homepage: Sektion „Künstler:in“ + Vita-Link:** **`TenantHomepageTemplate`** (**`id="kunstschaffende"`**, Karte, **`MUSTER_TEXTE`** bei Muster-Start); **`GalerieTenantPage`** baut **`artistSpotlight`** aus **`pageTexts.galerie.martinaBio`** + **`martina`**-Stamm; **`VitaPage`** lädt bei **`?tenantId=`** veröffentlichte Vita per **`/api/gallery-data`** (nur Lesen, Zurück nach **`/g/…`**). Test **`homepageTemplateContract`**. **qs:local** grün. **Commit:** `7bf35edb` ✅ **main**
 
