@@ -18,10 +18,12 @@ import {
   isSubscriptionRenewalInvoice,
 } from '../../api/stripeInvoiceRenewalShared.js'
 import {
+  buildAdminUrlForLicence,
   buildGalerieUrl,
   checkoutSessionEffectiveMetadata,
   computeEmpfehlerGutschrift,
   normalizeWebhookTenantId,
+  parseFamilieTenantIdFromGalerieUrl,
   resolveCheckoutLicenceType,
   rowsFromCheckoutSession,
 } from '../../api/stripeWebhookLicenceShared.js'
@@ -39,6 +41,7 @@ import {
   createStripeCheckoutSession,
   generateFamilieTenantId,
   generateTenantId,
+  resolveGalleryOrVk2ProductLineForCheckout,
 } from '../../api/createCheckoutShared.js'
 
 describe('Stripe Lizenz – Kette: Konstanten = eine Quelle (bombensicher)', () => {
@@ -73,6 +76,17 @@ describe('Stripe Lizenz – Preise = eine Quelle mit licencePricing', () => {
         (euro as number) * 100,
       )
     }
+  })
+})
+
+describe('resolveGalleryOrVk2ProductLineForCheckout (Manipulationsschutz)', () => {
+  it('VK2 nur bei licenceType pro + productLine vk2', () => {
+    expect(resolveGalleryOrVk2ProductLineForCheckout('pro', 'vk2')).toBe('vk2')
+    expect(resolveGalleryOrVk2ProductLineForCheckout('pro', undefined)).toBe('k2_galerie')
+  })
+  it('basic/proplus + productLine vk2 → Galerie (kein günstiger VK2-Zugang)', () => {
+    expect(resolveGalleryOrVk2ProductLineForCheckout('basic', 'vk2')).toBe('k2_galerie')
+    expect(resolveGalleryOrVk2ProductLineForCheckout('proplus', 'vk2')).toBe('k2_galerie')
   })
 })
 
@@ -208,6 +222,43 @@ describe('parseTenantIdFromAdminUrl', () => {
     expect(parseTenantIdFromAdminUrl('https://x.app/meine-familie?t=familie-georg-8d5lu8')).toBe(
       'familie-georg-8d5lu8',
     )
+  })
+})
+
+describe('parseFamilieTenantIdFromGalerieUrl', () => {
+  const base = 'https://k2-galerie.vercel.app'
+  it('liest ?t=familie-* aus meine-familie-URL', () => {
+    expect(
+      parseFamilieTenantIdFromGalerieUrl(
+        `${base}/projects/k2-familie/meine-familie?t=familie-anna-abc123`,
+        base,
+      ),
+    ).toBe('familie-anna-abc123')
+  })
+  it('leer wenn kein t=', () => {
+    expect(parseFamilieTenantIdFromGalerieUrl(`${base}/projects/k2-familie/meine-familie`, base)).toBe('')
+  })
+})
+
+describe('buildAdminUrlForLicence', () => {
+  const base = 'https://k2-galerie.vercel.app'
+  it('K2 Familie ohne tenant_id → meine-familie, nicht k2-galerie-Hub', () => {
+    expect(buildAdminUrlForLicence(base, '', 'familie_monat', 'k2_familie', 'kunst')).toBe(
+      `${base}/projects/k2-familie/meine-familie`,
+    )
+  })
+  it('K2 Familie mit Mandant → ?t=', () => {
+    expect(
+      buildAdminUrlForLicence(base, 'familie-x-y1', 'familie_jahr', 'k2_familie', 'kunst'),
+    ).toBe(`${base}/projects/k2-familie/meine-familie?t=familie-x-y1`)
+  })
+  it('product_line k2_familie reicht (ohne licenceType)', () => {
+    expect(buildAdminUrlForLicence(base, '', 'basic', 'k2_familie', 'kunst')).toBe(
+      `${base}/projects/k2-familie/meine-familie`,
+    )
+  })
+  it('Galerie ohne Mandant → k2-galerie-Hub', () => {
+    expect(buildAdminUrlForLicence(base, '', 'basic', 'k2_galerie', 'kunst')).toBe(`${base}/projects/k2-galerie`)
   })
 })
 

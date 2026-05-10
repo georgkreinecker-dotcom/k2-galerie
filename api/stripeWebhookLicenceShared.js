@@ -149,6 +149,56 @@ export function appendFamilieFnQueryParam(url, displayName) {
   return `${u}${sep}fn=${encodeURIComponent(fn.slice(0, 240))}`
 }
 
+/**
+ * Lizenz-DB: tenant_id fehlt manchmal, ?t= steht in galerie_url – für Admin/Erfolgsseite nachziehen.
+ * @param {string} galerieUrl
+ * @param {string} baseUrl z. B. https://k2-galerie.vercel.app
+ * @returns {string} normalisierter Mandant familie-* oder ''
+ */
+export function parseFamilieTenantIdFromGalerieUrl(galerieUrl, baseUrl) {
+  const raw = String(galerieUrl || '').trim()
+  if (!raw) return ''
+  const b = String(baseUrl || '').replace(/\/$/, '')
+  try {
+    const u = new URL(raw, b ? `${b}/` : 'https://k2-galerie.vercel.app/')
+    const t = normalizeWebhookTenantId(u.searchParams.get('t'))
+    return t && t.startsWith('familie-') ? t : ''
+  } catch {
+    const m = raw.match(/[?&]t=([a-z0-9-]{1,64})(?:[&#]|$)/i)
+    const t = m ? normalizeWebhookTenantId(m[1]) : null
+    return t && t.startsWith('familie-') ? t : ''
+  }
+}
+
+/**
+ * Erfolgsseite / get-licence-by-session: Admin-Ziel je Produktlinie (eine Quelle, s. lizenz-anmeldung-stripe-erfolg).
+ * K2 Familie: niemals /projects/k2-galerie – ohne Mandant mindestens meine-familie (ohne ?t=).
+ */
+export function buildAdminUrlForLicence(baseUrl, tenantId, licenceType, productLine, focusDirection) {
+  const b = String(baseUrl || '').replace(/\/$/, '')
+  if (!b) return 'https://k2-galerie.vercel.app/projects/k2-galerie'
+  const tidNorm = tenantId ? String(tenantId).trim().toLowerCase() : ''
+  const lt = String(licenceType || '').trim()
+  const pl = String(productLine || '').trim()
+  const vk2 = pl === 'vk2' || tidNorm === 'vk2' || (tidNorm && tidNorm.startsWith('vk2-'))
+  if (vk2) return `${b}/admin?context=vk2`
+  const fam =
+    lt === 'familie_monat' ||
+    lt === 'familie_jahr' ||
+    pl === 'k2_familie' ||
+    (tidNorm && tidNorm.startsWith('familie-'))
+  if (fam) {
+    if (tidNorm && tidNorm.startsWith('familie-')) {
+      return `${b}/projects/k2-familie/meine-familie?t=${encodeURIComponent(tidNorm)}`
+    }
+    return `${b}/projects/k2-familie/meine-familie`
+  }
+  const fd = normalizeFocusDirection(focusDirection)
+  return tidNorm
+    ? `${b}/admin?tenantId=${encodeURIComponent(tidNorm)}&focusDirection=${encodeURIComponent(fd)}`
+    : `${b}/projects/k2-galerie`
+}
+
 export function rowsFromCheckoutSession(session, baseUrl) {
   const metadata = checkoutSessionEffectiveMetadata(session)
   const licenceType = resolveCheckoutLicenceType(session)

@@ -75,6 +75,19 @@ function tenantIdFromGalerieUrl(rawUrl: string | null | undefined): string {
   }
 }
 
+/** API liefert oft `/projects/k2-galerie` ohne ?apf=1 – dann muss der Client nachziehen (Familie / Mandant). */
+function isGenericK2GalerieHubAdminUrl(adminUrl: string): boolean {
+  const s = String(adminUrl || '').trim()
+  if (!s) return true
+  try {
+    const u = new URL(s, `${resolveBaseForLicenceLinks()}/`)
+    const p = (u.pathname || '/').replace(/\/+$/, '').toLowerCase()
+    return p === '/projects/k2-galerie'
+  } catch {
+    return /\/projects\/k2-galerie(?:[?#/]|$)/i.test(s)
+  }
+}
+
 function deriveAdminUrlFromLicenceData(args: { tenantId?: string | null; productLine?: LizenzProductLine | null; galerieUrl?: string | null }) {
   const base = resolveBaseForLicenceLinks()
   const tenantIdDirect = String(args.tenantId || '').trim().toLowerCase()
@@ -172,8 +185,18 @@ export default function LizenzErfolgPage() {
               admin_url,
               tenant_id,
             })
-            if (!admin_url || /\/projects\/k2-galerie\?apf=1/i.test(admin_url)) {
-              admin_url = deriveAdminUrlFromLicenceData({ tenantId: tenant_id, productLine: product_line, galerieUrl: galerie_url })
+            const ltNorm = String(licence_type || '').trim().toLowerCase()
+            const isFamilieLicenceType = ltNorm === 'familie_monat' || ltNorm === 'familie_jahr'
+            if (
+              isGenericK2GalerieHubAdminUrl(admin_url) ||
+              product_line === 'k2_familie' ||
+              isFamilieLicenceType
+            ) {
+              admin_url = deriveAdminUrlFromLicenceData({
+                tenantId: tenant_id,
+                productLine: product_line,
+                galerieUrl: galerie_url,
+              })
             }
             const name = (data.name && String(data.name).trim()) ? String(data.name) : prev?.name || ''
             const email = (data.email && String(data.email).trim()) ? String(data.email) : prev?.email || ''

@@ -13,6 +13,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 ## Konventionen (Kurz)
 
 - **KURZBEZEICHNUNGEN-L-LIZENZVERSION.md** – **L** = Lizenzversion in Kurztext: **LK2** = ök2, **LVK2** = VK2, **LFK2** = K2 Familie; **K2** = echte Galerie ohne L (intern / Briefing; UI-Keys unverändert).
+- **L-LIZENZ-EINFALLSTORE-PRUEFUNG.md** – **L-Produkte / Lizenz-Zugang:** Prüfung Einfallstore (Checkout, Erfolgsseite, VK2-Manipulationsschutz `pro`+`vk2`); Verweise auf bestehende Kette.
 
 ---
 

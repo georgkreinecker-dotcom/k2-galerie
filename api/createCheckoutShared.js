@@ -25,6 +25,17 @@ export function generateTenantId(email) {
   return `galerie-${slug}-${rand}`
 }
 
+/**
+ * Nach dem Familie-Zweig: nur Galerie oder VK2. VK2 nur bei Pro + explizitem productLine (Admin).
+ * @param {string} licenceType
+ * @param {string} [productLine]
+ * @returns {'vk2'|'k2_galerie'}
+ */
+export function resolveGalleryOrVk2ProductLineForCheckout(licenceType, productLine) {
+  const lt = typeof licenceType === 'string' ? licenceType.trim() : ''
+  return lt === 'pro' && String(productLine || '').trim() === 'vk2' ? 'vk2' : 'k2_galerie'
+}
+
 export function generateFamilieTenantId(email) {
   const slug = (email || '')
     .trim()
@@ -45,7 +56,6 @@ export function generateFamilieTenantId(email) {
 export async function createStripeCheckoutSession(opts) {
   const { licenceType, email, name, focusDirection, empfehlerId, productLine, secretKey, baseUrl } = opts
   const lt = typeof licenceType === 'string' ? licenceType.trim() : ''
-  const productLineNorm = productLine === 'vk2' ? 'vk2' : productLine === 'k2_familie' ? 'k2_familie' : 'k2_galerie'
   const focusDirectionNorm = normalizeFocusDirection(focusDirection)
   const b = baseUrl.replace(/\/$/, '')
 
@@ -135,6 +145,8 @@ export async function createStripeCheckoutSession(opts) {
       return { url: session.url }
     }
   }
+
+  const productLineNorm = resolveGalleryOrVk2ProductLineForCheckout(lt, productLine)
 
   const empMeta =
     empfehlerId && empfehlerId.trim() ? { empfehlerId: empfehlerId.trim().substring(0, 100) } : {}

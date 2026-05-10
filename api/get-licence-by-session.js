@@ -14,6 +14,8 @@ import {
   normalizeFocusDirection,
   appendFocusDirection,
   appendFamilieFnQueryParam,
+  buildAdminUrlForLicence,
+  parseFamilieTenantIdFromGalerieUrl,
 } from './stripeWebhookLicenceShared.js'
 import { productLineFromLicenceType, productLineFromStripeSession } from './lizenzProductLineShared.js'
 
@@ -21,33 +23,6 @@ function resolveBaseUrl() {
   return process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
     : process.env.VITE_APP_URL || 'https://k2-galerie.vercel.app'
-}
-
-function buildAdminUrl(baseUrl, tenantId) {
-  return buildAdminUrlForLicence(baseUrl, tenantId, null, null, null)
-}
-
-/** K2 Familie: Admin = Familie-Bereich mit Mandant, nicht nur Galerie-Admin. */
-function buildAdminUrlForLicence(baseUrl, tenantId, licenceType, productLine, focusDirection) {
-  const b = String(baseUrl || '').replace(/\/$/, '')
-  if (!b) return 'https://k2-galerie.vercel.app/projects/k2-galerie'
-  const tidNorm = tenantId ? String(tenantId).trim().toLowerCase() : ''
-  const vk2 =
-    productLine === 'vk2' ||
-    tidNorm === 'vk2' ||
-    (tidNorm && tidNorm.startsWith('vk2-'))
-  if (vk2) return `${b}/admin?context=vk2`
-  const fam =
-    licenceType === 'familie_monat' ||
-    licenceType === 'familie_jahr' ||
-    (tidNorm && tidNorm.startsWith('familie-'))
-  if (fam && tidNorm) {
-    return `${b}/projects/k2-familie/meine-familie?t=${encodeURIComponent(tidNorm)}`
-  }
-  const fd = normalizeFocusDirection(focusDirection)
-  return tidNorm
-    ? `${b}/admin?tenantId=${encodeURIComponent(tidNorm)}&focusDirection=${encodeURIComponent(fd)}`
-    : `${b}/projects/k2-galerie`
 }
 
 function focusDirectionFromUrl(url) {
@@ -84,7 +59,7 @@ function normalizeFamilieGalerieResponseUrl(galerieUrl, tenantId, baseUrl) {
 function jsonFromDbLicence(licence, baseUrl) {
   const licenceType = licence.licence_type || 'basic'
   let productLine = productLineFromLicenceType(licenceType)
-  const tid = String(licence.tenant_id || '').trim().toLowerCase()
+  let tid = String(licence.tenant_id || '').trim().toLowerCase()
   const gu = String(licence.galerie_url || '')
   if (
     tid === 'vk2' ||
@@ -100,10 +75,17 @@ function jsonFromDbLicence(licence, baseUrl) {
   ) {
     productLine = 'k2_familie'
   }
+  if (
+    !tid &&
+    (licenceType === 'familie_monat' || licenceType === 'familie_jahr' || productLine === 'k2_familie')
+  ) {
+    const fromGu = parseFamilieTenantIdFromGalerieUrl(gu, baseUrl)
+    if (fromGu) tid = fromGu
+  }
   const focusDirection = focusDirectionFromUrl(licence.galerie_url)
-  const galerieOutRaw = normalizeFamilieGalerieResponseUrl(licence.galerie_url, licence.tenant_id, baseUrl)
+  const galerieOutRaw = normalizeFamilieGalerieResponseUrl(licence.galerie_url, tid || licence.tenant_id, baseUrl)
   let galerieOut = productLine === 'k2_galerie' ? appendFocusDirection(galerieOutRaw, focusDirection) : galerieOutRaw
-  let adminOut = buildAdminUrlForLicence(baseUrl, licence.tenant_id, licenceType, productLine, focusDirection)
+  let adminOut = buildAdminUrlForLicence(baseUrl, tid || licence.tenant_id, licenceType, productLine, focusDirection)
   const stripeDisplayName = String(licence.name || '').trim()
   if (productLine === 'k2_familie' && stripeDisplayName) {
     galerieOut = appendFamilieFnQueryParam(galerieOut, stripeDisplayName)
@@ -111,7 +93,7 @@ function jsonFromDbLicence(licence, baseUrl) {
   }
   return {
     galerie_url: galerieOut,
-    tenant_id: licence.tenant_id || null,
+    tenant_id: tid || licence.tenant_id || null,
     admin_url: adminOut,
     name: licence.name || '',
     email: licence.email || '',

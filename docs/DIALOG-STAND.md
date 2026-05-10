@@ -4,6 +4,8 @@
 
 **Einordnung:** Produkt-Footer bleibt mit **Copyright** (tenantConfig); ohne „App verlassen“.
 
+**Letzter Stand:** 10.05.26 – **L-Lizenz (LK2/LVK2/LFK2) + Erfolg K2 Familie:** (1) **Einfallstore** – Bericht **`docs/L-LIZENZ-EINFALLSTORE-PRUEFUNG.md`**; **Checkout-Härtung** **`resolveGalleryOrVk2ProductLineForCheckout`** (VK2 nur **`licenceType pro`** + **`productLine vk2`**). (2) **Familie nicht auf K2-Hub:** **`buildAdminUrlForLicence`**, **`parseFamilieTenantIdFromGalerieUrl`** (**`stripeWebhookLicenceShared`**), **`get-licence-by-session`** (**`jsonFromDbLicence`**), **`LizenzErfolgPage`**. Tests **`stripeLicenceContract`**. **qs:local** grün. **Commit:** _(nach Push eintragen)_ ✅ **main**
+
 **Letzter Stand:** 10.05.26 – **Kurzbezeichnungen L (Lizenzversion):** **LK2** = ök2, **LVK2** = VK2, **LFK2** = K2 Familie; **K2** = echte Galerie ohne L. **docs/KURZBEZEICHNUNGEN-L-LIZENZVERSION.md**, Verweise in STRUKTUR, HAUS-INDEX, 00-INDEX, Regel **struktur-handeln-quellen**, **`npm run briefing`** ergänzt. **qs:local** grün. **Commit:** `f66a0486` ✅ **main**
 
 **Letzter Stand:** 09.05.26 – **Session beendet (Abend):** Arbeitsbaum leer; **main** enthält Stripe-fn (**`ed97805c`**) und Session-Abschluss-Doku (**`6cd7188c`**, **`0d300aef`**). Nächster Einstieg: Zeile **„K2 Familie Lizenz: Stripe-Anmeldename …“** darunter.
