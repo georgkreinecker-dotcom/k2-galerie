@@ -257,8 +257,10 @@ describe('buildAdminUrlForLicence', () => {
       `${base}/projects/k2-familie/meine-familie`,
     )
   })
-  it('Galerie ohne Mandant → k2-galerie-Hub', () => {
-    expect(buildAdminUrlForLicence(base, '', 'basic', 'k2_galerie', 'kunst')).toBe(`${base}/projects/k2-galerie`)
+  it('Galerie ohne Mandant → APf Plattform-Start (nicht /admin, nicht nacktes ?apf=1)', () => {
+    expect(buildAdminUrlForLicence(base, '', 'basic', 'k2_galerie', 'kunst')).toBe(
+      `${base}/projects/k2-galerie?apf=1&page=platform`,
+    )
   })
 })
 

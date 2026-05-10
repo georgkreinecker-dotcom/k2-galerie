@@ -73,7 +73,7 @@ export default function ProjectStartPage() {
 
   // Auf Mobile: nichts rendern (Redirect läuft); auf Desktop: Dev-View
   if (showDevView && !isMobileDevice()) {
-    return <DevViewPage defaultPage="galerie" />
+    return <DevViewPage defaultPage="platform" />
   }
   if (showDevView && isMobileDevice()) {
     return null

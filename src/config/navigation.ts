@@ -72,8 +72,27 @@ export function shouldShowK2GalerieApfProjectHub(search?: string): boolean {
   }
 }
 
+/**
+ * `/projects/k2-galerie?apf=1` ohne `page=` – generischer APf-Einstieg (Lizenz-Fallback, Lesezeichen).
+ * Dann kein Resume von `k2-apf-last-page` (sonst oft sofort Tab „Galerie“ = echte K2).
+ */
+export function isBareK2GalerieApfHubSearch(search: string): boolean {
+  try {
+    const sp = new URLSearchParams(search || '')
+    if (sp.get('apf') !== '1') return false
+    return !(sp.get('page') || '').trim()
+  } catch {
+    return false
+  }
+}
+
 /** Interne Links zur K2-Galerie-APf – immer mit ?apf=1 (sonst Besucher:innen landen auf Entdecken). */
 export const K2_GALERIE_APF_EINSTIEG = '/projects/k2-galerie?apf=1' as const
+/**
+ * Wenn noch keine Mandanten-ID da ist: **nicht** `/admin` (zeigt echte K2-Werke) und **nicht** nacktes `?apf=1` (Resume → Galerie).
+ * Fester Tab Plattform-Start – Lizenz-Webhook/Erfolgsseite und `buildAdminUrlForLicence` (JS) müssen dieselbe Zeichenkette nutzen.
+ */
+export const K2_GALERIE_APF_OHNE_MANDANT = '/projects/k2-galerie?apf=1&page=platform' as const
 
 /** SessionStorage-Keys von WillkommenPage: Name + Flag „Erster Entwurf“ (in GalerieVorschauPage musterOnly auslesen) */
 export const WILLKOMMEN_NAME_KEY = 'k2-willkommen-name'
@@ -134,8 +153,12 @@ export const PROJECT_ROUTES = {
     controlStudio: '/projects/k2-galerie/control-studio',
     kunden: '/projects/k2-galerie/kunden',
     plan: '/projects/k2-galerie/plan',
-    /** Einstieg Mission Control / APf-Start (QR, Mobil verbinden) */
-    platformStart: '/projects/k2-galerie/mobile-connect',
+    /**
+     * APf-Tab „Plattform Start“ = Kacheln / Einstiege (PlatformStartPage).
+     * Eigener Pfad – nicht mobile-connect: iframe würde sonst nur „Handy mit Mac verbinden“ laden.
+     */
+    plattformHub: '/projects/k2-galerie/plattform-hub',
+    platformStart: '/projects/k2-galerie/plattform-hub',
     mobileConnect: '/projects/k2-galerie/mobile-connect',
     platzanordnung: '/projects/k2-galerie/platzanordnung',
     produktVorschau: '/projects/k2-galerie/produkt-vorschau',

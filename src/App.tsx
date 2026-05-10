@@ -936,6 +936,7 @@ function App() {
       <Route path={PROJECT_ROUTES['k2-galerie'].notizenEinladungEroeffnung24} element={<EinladungFreundeEroeffnungNotizPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].notizenAugustSoftwarestand} element={<SchreibenAugustSoftwareNotizPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].notizen} element={<NotizenPage />} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].plattformHub} element={<PlatformStartPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].mobileConnect} element={<MobileConnectPage />} />
       <Route path="/projects/k2-galerie/vita/:artistId" element={<VitaPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].produktVorschau} element={<ProduktVorschauPage />} />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react'
 import { Link, useSearchParams, useNavigate, useLocation } from 'react-router-dom'
-import { PROJECT_ROUTES, PLATFORM_ROUTES, getAllProjectIds } from '../config/navigation'
+import { PROJECT_ROUTES, PLATFORM_ROUTES, getAllProjectIds, isBareK2GalerieApfHubSearch } from '../config/navigation'
 import { usePersistentBoolean } from '../hooks/usePersistentState'
 import { checkMobileUpdates } from '../utils/supabaseClient'
 import { filterK2ArtworksOnly, downloadAllDeveloperVollbackupsSequentially } from '../utils/autoSave'
@@ -375,9 +375,22 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   // Beim Öffnen der APf: zuletzt geöffnete Seite wiederherstellen, damit die Seite an der gearbeitet wird (nicht immer ök2).
   const [currentPage, setCurrentPage] = useState(() => {
     if (pageFromUrl) return normalizeApfPageId(pageFromUrl) ?? pageFromUrl
+    // ProjectStartPage übergibt defaultPage=platform – ohne ?page= sonst k2-apf-last-page (z. B. mobile-connect) = falsches Fenster
+    if (defaultPage && String(defaultPage).trim()) {
+      try {
+        const q = typeof window !== 'undefined' ? window.location.search || '' : ''
+        const sp = new URLSearchParams(q)
+        if (!(sp.get('page') || '').trim()) {
+          return normalizeApfPageId(defaultPage) ?? defaultPage
+        }
+      } catch (_) { /* ignore */ }
+    }
     try {
-      const last = typeof window !== 'undefined' ? localStorage.getItem(APF_LAST_PAGE_KEY) : null
-      if (last && last.trim() && last !== 'desktop-leer') return normalizeApfPageId(last) ?? last
+      const q = typeof window !== 'undefined' ? window.location.search || '' : ''
+      if (!isBareK2GalerieApfHubSearch(q)) {
+        const last = typeof window !== 'undefined' ? localStorage.getItem(APF_LAST_PAGE_KEY) : null
+        if (last && last.trim() && last !== 'desktop-leer') return normalizeApfPageId(last) ?? last
+      }
     } catch (_) { /* ignore */ }
     return defaultPage || 'desktop-leer'
   })

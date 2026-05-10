@@ -174,9 +174,12 @@ export function parseFamilieTenantIdFromGalerieUrl(galerieUrl, baseUrl) {
  * Erfolgsseite / get-licence-by-session: Admin-Ziel je Produktlinie (eine Quelle, s. lizenz-anmeldung-stripe-erfolg).
  * K2 Familie: niemals /projects/k2-galerie – ohne Mandant mindestens meine-familie (ohne ?t=).
  */
+/** Muss mit `K2_GALERIE_APF_OHNE_MANDANT` in src/config/navigation.ts übereinstimmen (Galerie-Lizenz ohne tenantId). */
+const K2_GALERIE_APF_OHNE_MANDANT = '/projects/k2-galerie?apf=1&page=platform'
+
 export function buildAdminUrlForLicence(baseUrl, tenantId, licenceType, productLine, focusDirection) {
   const b = String(baseUrl || '').replace(/\/$/, '')
-  if (!b) return 'https://k2-galerie.vercel.app/projects/k2-galerie'
+  if (!b) return `https://k2-galerie.vercel.app${K2_GALERIE_APF_OHNE_MANDANT}`
   const tidNorm = tenantId ? String(tenantId).trim().toLowerCase() : ''
   const lt = String(licenceType || '').trim()
   const pl = String(productLine || '').trim()
@@ -196,7 +199,7 @@ export function buildAdminUrlForLicence(baseUrl, tenantId, licenceType, productL
   const fd = normalizeFocusDirection(focusDirection)
   return tidNorm
     ? `${b}/admin?tenantId=${encodeURIComponent(tidNorm)}&focusDirection=${encodeURIComponent(fd)}`
-    : `${b}/projects/k2-galerie`
+    : `${b}${K2_GALERIE_APF_OHNE_MANDANT}`
 }
 
 export function rowsFromCheckoutSession(session, baseUrl) {

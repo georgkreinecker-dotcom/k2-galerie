@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import '../App.css'
-import { PROJECT_ROUTES, ENTDECKEN_ROUTE, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
+import { PROJECT_ROUTES, ENTDECKEN_ROUTE, K2_GALERIE_APF_OHNE_MANDANT } from '../config/navigation'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { APP_BASE_URL_SHAREABLE } from '../config/externalUrls'
 import { LicenseeAdminQrPanel } from '../components/LicenseeAdminQrPanel'
@@ -101,7 +101,8 @@ function deriveAdminUrlFromLicenceData(args: { tenantId?: string | null; product
       ? `${base}/projects/k2-familie/meine-familie?t=${encodeURIComponent(tenantId)}`
       : `${base}/projects/k2-familie/meine-familie`
   }
-  if (!tenantId) return K2_GALERIE_APF_EINSTIEG
+  /** Ohne Mandant: APf Plattform-Start – weder `/admin` (echte K2-Werke) noch nacktes `?apf=1` (Resume → Galerie). */
+  if (!tenantId) return `${base}${K2_GALERIE_APF_OHNE_MANDANT}`
   const focusDirection = focusDirectionFromLicenceUrl(args.galerieUrl)
   return `${base}/admin?tenantId=${encodeURIComponent(tenantId)}&focusDirection=${encodeURIComponent(focusDirection)}`
 }
