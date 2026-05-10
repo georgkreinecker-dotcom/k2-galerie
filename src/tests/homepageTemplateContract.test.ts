@@ -12,7 +12,7 @@ describe('Homepage Template Contract (oek2 <-> Lizenz)', () => {
     const pageSrc = read('src/pages/GalerieTenantPage.tsx')
     const templateSrc = read('src/components/TenantHomepageTemplate.tsx')
     const src = `${pageSrc}\n${templateSrc}`
-    const requiredIds = ['start', 'willkommen', 'rundgang', 'werke', 'admin', 'impressum']
+    const requiredIds = ['start', 'kunstschaffende', 'willkommen', 'rundgang', 'werke', 'admin', 'impressum']
     for (const id of requiredIds) {
       expect(src).toContain(`id="${id}"`)
     }
@@ -57,6 +57,7 @@ describe('Homepage Template Contract (oek2 <-> Lizenz)', () => {
       'Herzlich willkommen - Galerie betreten',
       'In der Galerie findest du auch unseren Shop.',
       'Galerie & Shop',
+      'Künstler:in',
     ]
     for (const token of requiredTokens) {
       expect(src).toContain(token)

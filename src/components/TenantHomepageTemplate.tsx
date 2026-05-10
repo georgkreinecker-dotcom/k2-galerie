@@ -32,6 +32,15 @@ type TenantGalleryArtwork = {
 }
 type TenantEvent = { id?: string; title?: string; date?: string; endDate?: string; description?: string }
 
+/** Künstler:in-Karte (ök2/LK2-Referenz): Kurzbio + Link zur Vita. */
+export type TenantArtistSpotlight = {
+  categoryLabel: string
+  displayName: string
+  bio: string
+  photoUrl?: string
+  vitaTo: string
+}
+
 /** Echte Eventmanager-Termine haben eine id; Muster-Zeilen (muster-*) keinen Flyer-Link. */
 function tenantEventHasFlyerLink(event: TenantEvent): boolean {
   const id = String(event.id || '').trim()
@@ -93,6 +102,8 @@ type TenantHomepageTemplateProps = {
   qrDataUrl?: string
   impressumName?: string
   hideAdminEntry?: boolean
+  /** Sektion „Künstler:in“ mit Vita-Link (Mandanten-Homepage / LK2-Parität). */
+  artistSpotlight?: TenantArtistSpotlight | null
 }
 
 export function TenantHomepageTemplate(props: TenantHomepageTemplateProps) {
@@ -369,6 +380,109 @@ export function TenantHomepageTemplate(props: TenantHomepageTemplateProps) {
           <p style={{ color: props.welcomeImage ? 'rgba(255,255,255,0.95)' : props.liveText, maxWidth: 700, margin: '0.8rem auto 0', lineHeight: 1.6, fontSize: `${props.bodyFontSizeRem || 1.0}rem` }}>{props.intro}</p>
         </div>
       </header>
+
+      {props.artistSpotlight && (props.artistSpotlight.displayName.trim() || props.artistSpotlight.bio.trim()) ? (
+        <section id="kunstschaffende" style={{ marginBottom: '1.5rem' }}>
+          <h2
+            style={{
+              textAlign: 'center',
+              fontSize: 'clamp(1.05rem, 2.8vw, 1.28rem)',
+              fontWeight: 800,
+              color: props.liveText,
+              margin: '0 0 1rem',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Künstler:in
+          </h2>
+          <div
+            style={{
+              position: 'relative',
+              background: TEMPLATE.sectionBg,
+              border: TEMPLATE.sectionBorder,
+              borderLeft: `4px solid ${props.liveAccent}`,
+              borderRadius: TEMPLATE.sectionRadius,
+              padding: 'clamp(1rem, 3vw, 1.35rem)',
+              boxShadow: '0 6px 22px rgba(0,0,0,0.07)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '0.75rem' }}>
+              {props.artistSpotlight.photoUrl ? (
+                <img
+                  src={props.artistSpotlight.photoUrl}
+                  alt=""
+                  width={80}
+                  height={80}
+                  style={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    flexShrink: 0,
+                    border: `1px solid ${props.liveAccent}44`,
+                    boxShadow: `0 4px 14px ${props.liveAccent}33`,
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: '50%',
+                    flexShrink: 0,
+                    display: 'grid',
+                    placeItems: 'center',
+                    fontSize: '1.65rem',
+                    fontWeight: 800,
+                    color: props.liveText,
+                    background: `${props.liveAccent}22`,
+                    border: `1px solid ${props.liveAccent}44`,
+                  }}
+                  aria-hidden
+                >
+                  {(props.artistSpotlight.displayName.trim() || '?').charAt(0).toUpperCase()}
+                </div>
+              )}
+              <div style={{ minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: '0.72rem',
+                    letterSpacing: '0.14em',
+                    textTransform: 'uppercase',
+                    color: props.liveMuted,
+                    fontWeight: 700,
+                  }}
+                >
+                  {props.artistSpotlight.categoryLabel}
+                </div>
+                <div style={{ fontSize: 'clamp(1.05rem, 2.8vw, 1.28rem)', fontWeight: 700, color: props.liveText, marginTop: '0.2rem', lineHeight: 1.25 }}>
+                  {props.artistSpotlight.displayName.trim() || 'Künstler:in'}
+                </div>
+              </div>
+            </div>
+            {props.artistSpotlight.bio.trim() ? (
+              <p style={{ margin: 0, color: props.liveText, lineHeight: 1.65, fontSize: `${props.bodyFontSizeRem || 1}rem` }}>
+                {props.artistSpotlight.bio.trim()}
+              </p>
+            ) : null}
+            <Link
+              to={props.artistSpotlight.vitaTo}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                marginTop: '0.85rem',
+                color: props.liveAccent,
+                fontWeight: 700,
+                textDecoration: 'none',
+                fontSize: '0.92rem',
+              }}
+            >
+              <span aria-hidden>📄</span> Vita
+            </Link>
+          </div>
+        </section>
+      ) : null}
 
       <section id="willkommen" style={{ marginBottom: '1.5rem' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem', alignItems: 'stretch' }}>

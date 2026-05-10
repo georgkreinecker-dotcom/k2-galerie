@@ -1,8 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** _(frei – letzte Änderung unten)._
+**Was wir JETZT tun:** Lizenz-Homepage **`/g/:tenantId`** – Künstler:in/Vita-Block wie ök2-Referenz; Vita-Lesen per **`?tenantId=`** auf **`VitaPage`**.
 
-**Einordnung:** Produkt-Footer bleibt mit **Copyright** (tenantConfig); ohne „App verlassen“.
+**Einordnung:** LK2 = Mandanten-Template (**`TenantHomepageTemplate`**); keine Änderung an K2-**`GaleriePage`** (eisernes Gesetz). Daten aus **`gallery-data`** (**`martinaBio`**, Stammdaten **Foto/Vita**).
+
+**Letzter Stand:** 10.05.26 – **LK2 Lizenz-Homepage: Sektion „Künstler:in“ + Vita-Link:** **`TenantHomepageTemplate`** (**`id="kunstschaffende"`**, Karte, **`MUSTER_TEXTE`** bei Muster-Start); **`GalerieTenantPage`** baut **`artistSpotlight`** aus **`pageTexts.galerie.martinaBio`** + **`martina`**-Stamm; **`VitaPage`** lädt bei **`?tenantId=`** veröffentlichte Vita per **`/api/gallery-data`** (nur Lesen, Zurück nach **`/g/…`**). Test **`homepageTemplateContract`**. **qs:local** grün. **Commit:** `3022d6b8` ✅ **main**
 
 **Letzter Stand:** 10.05.26 – **L-Lizenz (LK2/LVK2/LFK2) + Erfolg K2 Familie:** (1) **Einfallstore** – Bericht **`docs/L-LIZENZ-EINFALLSTORE-PRUEFUNG.md`**; **Checkout-Härtung** **`resolveGalleryOrVk2ProductLineForCheckout`** (VK2 nur **`licenceType pro`** + **`productLine vk2`**). (2) **Familie nicht auf K2-Hub:** **`buildAdminUrlForLicence`**, **`parseFamilieTenantIdFromGalerieUrl`** (**`stripeWebhookLicenceShared`**), **`get-licence-by-session`** (**`jsonFromDbLicence`**), **`LizenzErfolgPage`**. Tests **`stripeLicenceContract`**. **qs:local** grün. **Commit:** `530cfcb0` ✅ **main**
 

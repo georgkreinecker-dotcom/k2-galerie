@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Link, useParams, useLocation } from 'react-router-dom'
+import { Link, useParams, useLocation, useSearchParams } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
 import {
   MUSTER_TEXTE,
@@ -18,6 +18,8 @@ import {
   mergeHeadingBeforeListBlocks,
 } from '../utils/vitaTextStructured'
 import '../App.css'
+
+const SAFE_PUBLIC_TENANT_ID = /^[a-z0-9-]{1,64}$/
 
 // K2: Stammdaten nur über Schicht (Phase 5.3). ök2: Vita-eigene Keys (Inhalt nur hier).
 const OEFFENTLICH_VITA_KEYS = { martina: 'k2-oeffentlich-vita-martina', georg: 'k2-oeffentlich-vita-georg' } as const
@@ -166,16 +168,74 @@ function buildInitialVita(artistId: 'martina' | 'georg', data: { name?: string; 
 export default function VitaPage() {
   const { artistId } = useParams<{ artistId: string }>()
   const location = useLocation()
+  const [searchParams] = useSearchParams()
   const id = (artistId === 'martina' || artistId === 'georg' ? artistId : 'martina') as 'martina' | 'georg'
   // Phase 5.3: eine zentrale Quelle für „Anzeige als ök2“
   const isOeffentlich = isOeffentlichDisplayContext(location.state)
+  const tenantIdParam = String(searchParams.get('tenantId') || '').trim()
+  const focusDirectionParam = String(searchParams.get('focusDirection') || '').trim()
+  const isPublishedTenantVita =
+    !isOeffentlich && !!tenantIdParam && SAFE_PUBLIC_TENANT_ID.test(tenantIdParam)
   const oeffentlichStorageKey = OEFFENTLICH_VITA_KEYS[id]
   const [vita, setVita] = useState('')
   const [saved, setSaved] = useState(false)
   const [loaded, setLoaded] = useState(false)
+  const [tenantVitaHeading, setTenantVitaHeading] = useState<string | null>(null)
   const savedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
+    if (!isPublishedTenantVita) return
+    let cancelled = false
+    setLoaded(false)
+    fetch(`/api/gallery-data?tenantId=${encodeURIComponent(tenantIdParam)}&_=${Date.now()}`, { cache: 'no-store' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (cancelled) return
+        if (!json) {
+          setTenantVitaHeading(null)
+          setVita(buildInitialVita(id, {}))
+          setLoaded(true)
+          return
+        }
+        const m =
+          id === 'martina' && json.martina && typeof json.martina === 'object'
+            ? (json.martina as { name?: string; email?: string; phone?: string; bio?: string; vita?: string })
+            : id === 'georg' && json.georg && typeof json.georg === 'object'
+              ? (json.georg as { name?: string; email?: string; phone?: string; bio?: string; vita?: string })
+              : {}
+        const name = String(m.name || '').trim()
+        const rawVita = typeof m.vita === 'string' ? m.vita.trim() : ''
+        if (cancelled) return
+        setTenantVitaHeading(name ? `Vita – ${name}` : null)
+        if (rawVita) {
+          setVita(rawVita)
+        } else {
+          setVita(
+            buildInitialVita(id, {
+              name: name || undefined,
+              email: String(m.email || ''),
+              phone: String(m.phone || ''),
+              bio: String(m.bio || ''),
+            }),
+          )
+        }
+        setLoaded(true)
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setTenantVitaHeading(null)
+          setVita(buildInitialVita(id, {}))
+          setLoaded(true)
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [id, isPublishedTenantVita, tenantIdParam])
+
+  useEffect(() => {
+    if (isPublishedTenantVita) return
+    setTenantVitaHeading(null)
     try {
       if (isOeffentlich) {
         const raw = localStorage.getItem(oeffentlichStorageKey)
@@ -215,7 +275,7 @@ export default function VitaPage() {
       }
     }
     setLoaded(true)
-  }, [id, isOeffentlich])
+  }, [id, isOeffentlich, isPublishedTenantVita])
 
   useEffect(() => {
     return () => {
@@ -248,9 +308,14 @@ export default function VitaPage() {
     }
   }
 
-  const title = id === 'martina' ? 'Vita – Martina' : 'Vita – Georg'
-  const backTo = isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie
-  const canEdit = mayEditContent(location.state)
+  const defaultTitle = id === 'martina' ? 'Vita – Martina' : 'Vita – Georg'
+  const title = tenantVitaHeading || defaultTitle
+  const backTo = isPublishedTenantVita
+    ? `/g/${encodeURIComponent(tenantIdParam)}${focusDirectionParam ? `?focusDirection=${encodeURIComponent(focusDirectionParam)}` : ''}`
+    : isOeffentlich
+      ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+      : PROJECT_ROUTES['k2-galerie'].galerie
+  const canEdit = !isPublishedTenantVita && mayEditContent(location.state)
 
   if (!loaded) {
     return (

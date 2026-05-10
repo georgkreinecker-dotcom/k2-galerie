@@ -9,8 +9,14 @@ import { useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { useParams, Link, useSearchParams, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { reportPublicGalleryVisit } from '../utils/reportPublicGalleryVisit'
-import { FOCUS_DIRECTIONS, MUSTER_ARTWORKS, getWelcomeIntroForFocusDirections, type FocusDirectionId } from '../config/tenantConfig'
-import { TenantHomepageTemplate } from '../components/TenantHomepageTemplate'
+import {
+  FOCUS_DIRECTIONS,
+  MUSTER_ARTWORKS,
+  MUSTER_TEXTE,
+  getWelcomeIntroForFocusDirections,
+  type FocusDirectionId,
+} from '../config/tenantConfig'
+import { TenantHomepageTemplate, type TenantArtistSpotlight } from '../components/TenantHomepageTemplate'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { APP_BASE_URL_SHAREABLE } from '../config/externalUrls'
 import '../App.css'
@@ -52,6 +58,19 @@ function normalizeFocusDirection(raw: string | null): FocusDirectionId {
   return (FOCUS_DIRECTIONS.some((d) => d.id === value) ? value : DEFAULT_FOCUS_DIRECTION) as FocusDirectionId
 }
 
+/** Kurzes Kategorie-Label (Caps-Stil) für die Künstler:in-Karte – an ök2 „Bilder“ angelehnt. */
+function spotlightCategoryLabelForFocus(direction: FocusDirectionId): string {
+  const map: Record<FocusDirectionId, string> = {
+    kunst: 'Bilder',
+    handwerk: 'Handwerk',
+    design: 'Design',
+    mode: 'Mode',
+    food: 'Produkte',
+    dienstleister: 'Portfolio',
+  }
+  return map[direction] ?? 'Galerie'
+}
+
 /** Live-Template: Farben aus gallery-data + lokale Admin-Vorschau (localStorage). Nur nicht-leere Overlay-Werte überschreiben. */
 function mergeLiveDesignOverlay(
   server: Record<string, string> | undefined,
@@ -81,7 +100,7 @@ export default function GalerieTenantPage() {
     gallery?: Record<string, unknown>
     martina?: Record<string, unknown>
     georg?: Record<string, unknown>
-    pageTexts?: { galerie?: { heroTitle?: string; welcomeSubtext?: string; welcomeIntroText?: string } }
+    pageTexts?: { galerie?: { heroTitle?: string; welcomeSubtext?: string; welcomeIntroText?: string; martinaBio?: string } }
     designSettings?: Record<string, string>
     pageContentGalerie?: string | { welcomeImage?: string }
     pageContent?: string | { welcomeImage?: string }
@@ -183,7 +202,7 @@ export default function GalerieTenantPage() {
       if (!raw) return null
       const parsed = JSON.parse(raw) as {
         tenantId?: string
-        pageTexts?: { galerie?: { heroTitle?: string; welcomeSubtext?: string; welcomeIntroText?: string } }
+        pageTexts?: { galerie?: { heroTitle?: string; welcomeSubtext?: string; welcomeIntroText?: string; martinaBio?: string } }
         pageContentGalerie?: string | { welcomeImage?: string; virtualTourImage?: string; virtualTourVideo?: string }
         designSettings?: Record<string, string>
         gallery?: Record<string, unknown>
@@ -366,6 +385,25 @@ export default function GalerieTenantPage() {
   if (focusDirection) shopParams.set('focusDirection', focusDirection)
   shopParams.set('from', 'gallery')
   const shopUrl = `/projects/k2-galerie/shop?${shopParams.toString()}`
+  const galerieTextsRecord = effectiveGalerieTexts as Record<string, unknown>
+  const martinaBioFromTexts = String(galerieTextsRecord.martinaBio || '').trim()
+  const martinaBioFromStamm = String(martinaStamm.bio || '').trim()
+  const spotlightBio =
+    martinaBioFromTexts || martinaBioFromStamm || (isMusterStart ? MUSTER_TEXTE.artist1Bio : '')
+  const spotlightName = contactName1 || (isMusterStart ? MUSTER_TEXTE.martina.name : '')
+  const spotlightPhoto =
+    String((martinaStamm as { photoUrl?: string }).photoUrl || '').trim() ||
+    (isMusterStart ? String(MUSTER_TEXTE.martina.photoUrl || '').trim() : '')
+  const showArtistSpotlight = isMusterStart || Boolean(spotlightName || spotlightBio || spotlightPhoto)
+  const artistSpotlight: TenantArtistSpotlight | null = showArtistSpotlight
+    ? {
+        categoryLabel: spotlightCategoryLabelForFocus(focusDirection),
+        displayName: spotlightName || MUSTER_TEXTE.martina.name,
+        bio: spotlightBio || (isMusterStart ? MUSTER_TEXTE.artist1Bio : ''),
+        photoUrl: spotlightPhoto || undefined,
+        vitaTo: `/projects/k2-galerie/vita/martina?tenantId=${encodeURIComponent(tenantId)}&focusDirection=${encodeURIComponent(focusDirection)}`,
+      }
+    : null
   const serverDesign =
     data?.designSettings && typeof data.designSettings === 'object'
       ? (data.designSettings as Record<string, string>)
@@ -454,6 +492,7 @@ export default function GalerieTenantPage() {
       galleryPageTitle={galleryPageTitle}
       galleryCloseUrl={galleryCloseUrl}
       shopUrl={shopUrl}
+      artistSpotlight={artistSpotlight}
     />
   )
 }
