@@ -206,7 +206,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ received: true })
   }
 
-  const session = event.data.object
+  const sessionFromEvent = event.data.object
   const baseUrl = resolveBaseUrl()
 
   const supabaseUrl = process.env.SUPABASE_URL
@@ -217,7 +217,19 @@ export default async function handler(req, res) {
   }
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
-  const sessionId = session.id
+  const sessionId = sessionFromEvent.id
+
+  /** Event-Payload oft ohne expandierten payment_intent – einmal laden für Metadaten (tenantId auf PI). */
+  let session = sessionFromEvent
+  try {
+    const stripe = new Stripe(secret)
+    const expanded = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ['subscription', 'line_items', 'payment_intent'],
+    })
+    if (expanded?.id) session = expanded
+  } catch (e) {
+    console.warn('webhook-stripe: Session-Retrieve expand – nutze Event-Payload', e?.message || e)
+  }
 
   const rowPack = rowsFromCheckoutSession(session, baseUrl)
 

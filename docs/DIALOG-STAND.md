@@ -1,10 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nach Vercel-**Deployment „Ready“**: APf **`?page=platform`** – großer Bereich **Plattform-Start** (Kacheln), iframe **`/plattform-hub`**; Lizenz-Erfolg ohne Mandant landet auf **`?apf=1&page=platform`**.
+**Was wir JETZT tun:** Nach Deploy: Galerie-Lizenz **Admin-Link** = **`/admin?tenantId=galerie-…&focusDirection=…`** (Mandant); **Stripe** setzt zusätzlich **`client_reference_id`** = Mandant (Fallback wenn Metadaten leer); **`/g/slug/`** mit Slash wird für **`tenant_id`** erkannt; auf **Plattform** schlägt **`?tenantId=galerie-*`** das fälschlich mitlaufende **`context=oeffentlich`** (**`TenantContext`**). LK2 ohne Mandant bleibt **`/admin?context=oeffentlich`** (Demo).
 
-**Einordnung:** **`platformStart`** war fälschlich = **`mobile-connect`**; **`getPathForPage('platform')`** speiste nur diesen Pfad in die iframes → falsches Fenster trotz richtigem Tab.
+**Einordnung:** Georg landete in **ök2** statt Lizenzmandant → Datenkette Mandant fehlte oder URL hatte nur LK2-Fallback; Absicherung Server + Client + Kontext-Priorität.
 
-**Letzter Stand:** 10.05.26 – **APf Tab „Plattform Start“ = echte PlatformStartPage im iframe:** Route **`/projects/k2-galerie/plattform-hub`**, **`platformStart`**, **`DevViewPage`** (defaultPage vor Resume, **`isBareK2GalerieApfHubSearch`**), **`navigationApfEntry.test`**. Lizenz ohne Mandant: **`K2_GALERIE_APF_OHNE_MANDANT`** (**`?apf=1&page=platform`**) in **`LizenzErfolgPage`**, **`stripeWebhookLicenceShared`**, Vertrags-Tests. **`npm run test`** + **`npm run build`** grün. **Commit:** `2c034dfd` ✅ **main**
+**Letzter Stand:** 10.05.26 – **Lizenz: Mandant statt ök2 (Stripe + URL + TenantContext):** **`createCheckoutShared`** **`client_reference_id`**; **`checkoutSessionEffectiveMetadata`** füllt **`tenantId`** aus **`client_reference_id`**; **`parseK2GalerieTenantIdFromGalerieUrl`** trailing slash; **`LizenzErfolgPage`** **`tenantIdFromGalerieUrl`** gleich; **`deriveTenantId`** / **`syncStorageFromUrl`**: **`?tenantId=`** auf **`/admin`** vor **`context`**; Tests **`stripeLicenceContract`**, **`tenantContextPlatformAdminDynamic`**. **`npm run build`** grün. **Commit:** _(folgt Push)_ ✅ **main**
+
+**Letzter Stand:** 10.05.26 – **LK2 Lizenz ohne Mandant → ök2-Admin, nicht APf:** **`buildLk2GalerieLizenzAdminUrlOhneTenant`** / **`buildAdminUrlForLicence`** → **`/admin?context=oeffentlich&focusDirection=…`**; Korrektur nach **`2c034dfd`** (dort fälschlich APf). Zuvor: APf-iframe **`plattform-hub`**, **`DevViewPage`**, **`navigationApfEntry.test`**. **Commit:** `2c034dfd` u. a. ✅ **main**
 
 **Letzter Stand:** 10.05.26 – **LK2 Lizenz-Homepage: Sektion „Künstler:in“ + Vita-Link:** **`TenantHomepageTemplate`** (**`id="kunstschaffende"`**, Karte, **`MUSTER_TEXTE`** bei Muster-Start); **`GalerieTenantPage`** baut **`artistSpotlight`** aus **`pageTexts.galerie.martinaBio`** + **`martina`**-Stamm; **`VitaPage`** lädt bei **`?tenantId=`** veröffentlichte Vita per **`/api/gallery-data`** (nur Lesen, Zurück nach **`/g/…`**). Test **`homepageTemplateContract`**. **qs:local** grün. **Commit:** `7bf35edb` ✅ **main**
 

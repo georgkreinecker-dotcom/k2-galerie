@@ -38,4 +38,4 @@ alwaysApply: false
 
 ## Kurzfassung
 
-**Galerie nach Lizenz = `/g/<tenant>` + `/admin?tenantId=…`. VK2 nach Lizenz = `/projects/vk2/galerie` + `/admin?context=vk2`. K2 Familie nach Lizenz = `/projects/k2-familie/…` mit `t=`. Eine API-Wahrheit, Tests, Doku.**
+**Galerie nach Lizenz = `/g/<tenant>` + `/admin?tenantId=…`. Ohne Mandant (LK2 auf der Plattform) = `/admin?context=oeffentlich&focusDirection=…` – **nicht** die APf (`?apf=1&page=platform`). VK2 nach Lizenz = `/projects/vk2/galerie` + `/admin?context=vk2`. K2 Familie nach Lizenz = `/projects/k2-familie/…` mit `t=`. Eine API-Wahrheit, Tests, Doku.**

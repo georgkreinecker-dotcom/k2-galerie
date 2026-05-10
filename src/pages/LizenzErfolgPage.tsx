@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import '../App.css'
-import { PROJECT_ROUTES, ENTDECKEN_ROUTE, K2_GALERIE_APF_OHNE_MANDANT } from '../config/navigation'
+import { PROJECT_ROUTES, ENTDECKEN_ROUTE, buildLk2GalerieLizenzAdminUrlOhneTenant } from '../config/navigation'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { APP_BASE_URL_SHAREABLE } from '../config/externalUrls'
 import { LicenseeAdminQrPanel } from '../components/LicenseeAdminQrPanel'
@@ -60,31 +60,20 @@ function tenantIdFromGalerieUrl(rawUrl: string | null | undefined): string {
   if (!value) return ''
   try {
     const u = new URL(value, `${resolveBaseForLicenceLinks()}/`)
-    const path = String(u.pathname || '').trim()
+    const path = String(u.pathname || '')
+      .trim()
+      .replace(/\/+$/, '') || '/'
     const gMatch = path.match(/^\/g\/([a-z0-9-]{1,64})$/i)
     if (gMatch?.[1]) return String(gMatch[1]).toLowerCase()
     const familyT = String(u.searchParams.get('t') || '').trim().toLowerCase()
     if (/^[a-z0-9-]{1,64}$/.test(familyT)) return familyT
     return ''
   } catch {
-    const gMatch = value.match(/\/g\/([a-z0-9-]{1,64})(?:[/?#]|$)/i)
+    const gMatch = value.match(/\/g\/([a-z0-9-]{1,64})(?:\/+)?(?:[?#]|$)/i)
     if (gMatch?.[1]) return String(gMatch[1]).toLowerCase()
     const tMatch = value.match(/[?&]t=([a-z0-9-]{1,64})(?:[&#]|$)/i)
     if (tMatch?.[1]) return String(tMatch[1]).toLowerCase()
     return ''
-  }
-}
-
-/** API liefert oft `/projects/k2-galerie` ohne ?apf=1 – dann muss der Client nachziehen (Familie / Mandant). */
-function isGenericK2GalerieHubAdminUrl(adminUrl: string): boolean {
-  const s = String(adminUrl || '').trim()
-  if (!s) return true
-  try {
-    const u = new URL(s, `${resolveBaseForLicenceLinks()}/`)
-    const p = (u.pathname || '/').replace(/\/+$/, '').toLowerCase()
-    return p === '/projects/k2-galerie'
-  } catch {
-    return /\/projects\/k2-galerie(?:[?#/]|$)/i.test(s)
   }
 }
 
@@ -101,8 +90,11 @@ function deriveAdminUrlFromLicenceData(args: { tenantId?: string | null; product
       ? `${base}/projects/k2-familie/meine-familie?t=${encodeURIComponent(tenantId)}`
       : `${base}/projects/k2-familie/meine-familie`
   }
-  /** Ohne Mandant: APf Plattform-Start – weder `/admin` (echte K2-Werke) noch nacktes `?apf=1` (Resume → Galerie). */
-  if (!tenantId) return `${base}${K2_GALERIE_APF_OHNE_MANDANT}`
+  /** Ohne Mandant (LK2): ök2-Admin – nicht die APf, nicht nacktes `/admin` (K2 echte Werke). */
+  if (!tenantId) {
+    const fd = focusDirectionFromLicenceUrl(args.galerieUrl)
+    return `${base}${buildLk2GalerieLizenzAdminUrlOhneTenant(fd)}`
+  }
   const focusDirection = focusDirectionFromLicenceUrl(args.galerieUrl)
   return `${base}/admin?tenantId=${encodeURIComponent(tenantId)}&focusDirection=${encodeURIComponent(focusDirection)}`
 }
@@ -173,7 +165,7 @@ export default function LizenzErfolgPage() {
             const galerie_url =
               gIn != null && String(gIn).trim() !== '' ? String(gIn).trim() : prev?.galerie_url ?? null
             const tIn = data.tenant_id
-            const tenant_id =
+            let tenant_id =
               tIn != null && String(tIn).trim() !== '' ? String(tIn).trim() : prev?.tenant_id ?? null
             const aIn = data.admin_url
             let admin_url =
@@ -188,11 +180,12 @@ export default function LizenzErfolgPage() {
             })
             const ltNorm = String(licence_type || '').trim().toLowerCase()
             const isFamilieLicenceType = ltNorm === 'familie_monat' || ltNorm === 'familie_jahr'
-            if (
-              isGenericK2GalerieHubAdminUrl(admin_url) ||
-              product_line === 'k2_familie' ||
-              isFamilieLicenceType
-            ) {
+            if (!tenant_id && product_line === 'k2_galerie') {
+              const fromGal = tenantIdFromGalerieUrl(galerie_url)
+              if (fromGal.startsWith('galerie-')) tenant_id = fromGal
+            }
+            /** Eine Quelle: Admin-Link immer aus Mandant + Galerie-URL (nicht nur bei APf-Hub-URL). LK2/ök2 nur wenn wirklich kein Mandant. */
+            if (product_line === 'k2_familie' || isFamilieLicenceType || product_line === 'k2_galerie' || product_line === 'vk2') {
               admin_url = deriveAdminUrlFromLicenceData({
                 tenantId: tenant_id,
                 productLine: product_line,

@@ -89,10 +89,16 @@ export function isBareK2GalerieApfHubSearch(search: string): boolean {
 /** Interne Links zur K2-Galerie-APf – immer mit ?apf=1 (sonst Besucher:innen landen auf Entdecken). */
 export const K2_GALERIE_APF_EINSTIEG = '/projects/k2-galerie?apf=1' as const
 /**
- * Wenn noch keine Mandanten-ID da ist: **nicht** `/admin` (zeigt echte K2-Werke) und **nicht** nacktes `?apf=1` (Resume → Galerie).
- * Fester Tab Plattform-Start – Lizenz-Webhook/Erfolgsseite und `buildAdminUrlForLicence` (JS) müssen dieselbe Zeichenkette nutzen.
+ * APf-iframe: Tab „Plattform Start“ (DevView). **Kein** Lizenz-Ziel – Lizenz LK2 ohne `tenantId` →
+ * **`buildLk2GalerieLizenzAdminUrlOhneTenant`** (`/admin?context=oeffentlich`), nicht die APf.
  */
 export const K2_GALERIE_APF_OHNE_MANDANT = '/projects/k2-galerie?apf=1&page=platform' as const
+
+/** Galerie-Lizenz ohne Mandanten-ID (LK2 / ök2 auf der Plattform): Admin im Demo-Kontext – nie `/admin` ohne Query (K2), nie APf. */
+export function buildLk2GalerieLizenzAdminUrlOhneTenant(focusDirection?: string | null): string {
+  const fd = String(focusDirection ?? 'kunst').trim() || 'kunst'
+  return `/admin?context=oeffentlich&focusDirection=${encodeURIComponent(fd)}`
+}
 
 /** SessionStorage-Keys von WillkommenPage: Name + Flag „Erster Entwurf“ (in GalerieVorschauPage musterOnly auslesen) */
 export const WILLKOMMEN_NAME_KEY = 'k2-willkommen-name'

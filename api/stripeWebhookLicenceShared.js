@@ -56,6 +56,21 @@ export function checkoutSessionEffectiveMetadata(session) {
       }
     }
   }
+  /** mode payment: gleiche Keys oft auf PaymentIntent (Expand) – Session-Metadaten können leer ankommen. */
+  const pi = session?.payment_intent
+  if (pi && typeof pi === 'object' && pi.metadata) {
+    for (const [k, v] of Object.entries(pi.metadata)) {
+      const vk = String(v ?? '').trim()
+      if (vk && (!(k in base) || String(base[k] ?? '').trim() === '')) {
+        base[k] = v
+      }
+    }
+  }
+  /** Fallback: manche Pfade liefern tenantId nur in client_reference_id (Stripe-Checkout). */
+  const crNorm = normalizeWebhookTenantId(session?.client_reference_id)
+  if (crNorm && !String(base.tenantId ?? '').trim()) {
+    base.tenantId = crNorm
+  }
   return base
 }
 
@@ -170,16 +185,45 @@ export function parseFamilieTenantIdFromGalerieUrl(galerieUrl, baseUrl) {
   }
 }
 
+/** Lizenz-DB/Webhook: tenant_id-Spalte leer, galerie_url enthält /g/… → Mandant für Admin/Erfolgsseite (K2 Galerie-Lizenz). */
+export function parseK2GalerieTenantIdFromGalerieUrl(galerieUrl, baseUrl) {
+  const raw = String(galerieUrl || '').trim()
+  if (!raw) return ''
+  const b = String(baseUrl || '').replace(/\/$/, '')
+  try {
+    const u = new URL(raw, b ? `${b}/` : 'https://k2-galerie.vercel.app/')
+    const path = String(u.pathname || '')
+      .trim()
+      .replace(/\/+$/, '') || '/'
+    const seg = path.match(/^\/g\/([a-z0-9-]{1,64})$/i)
+    const norm = seg ? normalizeWebhookTenantId(seg[1]) : null
+    if (!norm) return ''
+    if (norm.startsWith('familie-')) return ''
+    if (norm === 'vk2' || norm.startsWith('vk2-')) return ''
+    return norm
+  } catch {
+    const seg = raw.match(/\/g\/([a-z0-9-]{1,64})(?:\/+)?(?:[?#]|$)/i)
+    const norm = seg ? normalizeWebhookTenantId(seg[1]) : null
+    if (!norm) return ''
+    if (norm.startsWith('familie-')) return ''
+    if (norm === 'vk2' || norm.startsWith('vk2-')) return ''
+    return norm
+  }
+}
+
 /**
  * Erfolgsseite / get-licence-by-session: Admin-Ziel je Produktlinie (eine Quelle, s. lizenz-anmeldung-stripe-erfolg).
  * K2 Familie: niemals /projects/k2-galerie – ohne Mandant mindestens meine-familie (ohne ?t=).
  */
-/** Muss mit `K2_GALERIE_APF_OHNE_MANDANT` in src/config/navigation.ts übereinstimmen (Galerie-Lizenz ohne tenantId). */
-const K2_GALERIE_APF_OHNE_MANDANT = '/projects/k2-galerie?apf=1&page=platform'
+/** Galerie-Lizenz ohne tenantId (LK2): ök2-Admin – gleiche Logik wie `buildLk2GalerieLizenzAdminUrlOhneTenant` in navigation.ts */
+function lk2GalerieAdminPathOhneTenant(focusDirection) {
+  const fd = encodeURIComponent(normalizeFocusDirection(focusDirection))
+  return `/admin?context=oeffentlich&focusDirection=${fd}`
+}
 
 export function buildAdminUrlForLicence(baseUrl, tenantId, licenceType, productLine, focusDirection) {
   const b = String(baseUrl || '').replace(/\/$/, '')
-  if (!b) return `https://k2-galerie.vercel.app${K2_GALERIE_APF_OHNE_MANDANT}`
+  if (!b) return `https://k2-galerie.vercel.app${lk2GalerieAdminPathOhneTenant(focusDirection)}`
   const tidNorm = tenantId ? String(tenantId).trim().toLowerCase() : ''
   const lt = String(licenceType || '').trim()
   const pl = String(productLine || '').trim()
@@ -199,7 +243,7 @@ export function buildAdminUrlForLicence(baseUrl, tenantId, licenceType, productL
   const fd = normalizeFocusDirection(focusDirection)
   return tidNorm
     ? `${b}/admin?tenantId=${encodeURIComponent(tidNorm)}&focusDirection=${encodeURIComponent(fd)}`
-    : `${b}${K2_GALERIE_APF_OHNE_MANDANT}`
+    : `${b}${lk2GalerieAdminPathOhneTenant(focusDirection)}`
 }
 
 export function rowsFromCheckoutSession(session, baseUrl) {

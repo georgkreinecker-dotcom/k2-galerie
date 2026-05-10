@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isBareK2GalerieApfHubSearch } from '../config/navigation'
+import { buildLk2GalerieLizenzAdminUrlOhneTenant, isBareK2GalerieApfHubSearch } from '../config/navigation'
 
 describe('isBareK2GalerieApfHubSearch', () => {
   it('apf=1 ohne page → true', () => {
@@ -12,5 +12,16 @@ describe('isBareK2GalerieApfHubSearch', () => {
   it('ohne apf=1 → false', () => {
     expect(isBareK2GalerieApfHubSearch('?page=galerie')).toBe(false)
     expect(isBareK2GalerieApfHubSearch('')).toBe(false)
+  })
+})
+
+describe('buildLk2GalerieLizenzAdminUrlOhneTenant', () => {
+  it('LK2-Fallback = ök2-Admin mit focusDirection', () => {
+    expect(buildLk2GalerieLizenzAdminUrlOhneTenant('keramik')).toBe(
+      '/admin?context=oeffentlich&focusDirection=keramik',
+    )
+    expect(buildLk2GalerieLizenzAdminUrlOhneTenant(null)).toBe(
+      '/admin?context=oeffentlich&focusDirection=kunst',
+    )
   })
 })

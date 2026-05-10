@@ -98,6 +98,7 @@ export async function createStripeCheckoutSession(opts) {
           },
         ],
         customer_email: email.trim(),
+        client_reference_id: tenantId,
         metadata: metaBase,
         subscription_data: {
           metadata: {
@@ -131,6 +132,7 @@ export async function createStripeCheckoutSession(opts) {
           },
         ],
         customer_email: email.trim(),
+        client_reference_id: tenantId,
         metadata: metaBase,
         subscription_data: {
           metadata: {
@@ -180,6 +182,19 @@ export async function createStripeCheckoutSession(opts) {
         : lt === 'proplus'
           ? '45 €/Monat'
           : '55 €/Monat'
+  const sessionMeta = {
+    licenceType: lt,
+    customerName: (name || '').trim().substring(0, 200),
+    tenantId,
+    productLine: productLineNorm,
+    focusDirection: focusDirectionNorm,
+    ...empMeta,
+  }
+  /** Doppelte Quelle: bei mode payment kann der PaymentIntent zuverlässiger sein als Session.metadata (Webhook/Abruf). */
+  const paymentIntentMeta = Object.fromEntries(
+    Object.entries(sessionMeta).map(([k, v]) => [k, String(v ?? '')]),
+  )
+
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
     payment_method_types: ['card'],
@@ -197,14 +212,9 @@ export async function createStripeCheckoutSession(opts) {
       },
     ],
     customer_email: email.trim(),
-    metadata: {
-      licenceType: lt,
-      customerName: (name || '').trim().substring(0, 200),
-      tenantId,
-      productLine: productLineNorm,
-      focusDirection: focusDirectionNorm,
-      ...empMeta,
-    },
+    client_reference_id: tenantId,
+    metadata: sessionMeta,
+    payment_intent_data: { metadata: paymentIntentMeta },
     success_url: successUrl,
     cancel_url: cancelUrl,
   })

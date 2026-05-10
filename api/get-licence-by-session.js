@@ -12,10 +12,12 @@ import {
   rowsFromCheckoutSession,
   checkoutSessionEffectiveMetadata,
   normalizeFocusDirection,
+  normalizeWebhookTenantId,
   appendFocusDirection,
   appendFamilieFnQueryParam,
   buildAdminUrlForLicence,
   parseFamilieTenantIdFromGalerieUrl,
+  parseK2GalerieTenantIdFromGalerieUrl,
 } from './stripeWebhookLicenceShared.js'
 import { productLineFromLicenceType, productLineFromStripeSession } from './lizenzProductLineShared.js'
 
@@ -82,6 +84,10 @@ function jsonFromDbLicence(licence, baseUrl) {
     const fromGu = parseFamilieTenantIdFromGalerieUrl(gu, baseUrl)
     if (fromGu) tid = fromGu
   }
+  if (!tid && productLine === 'k2_galerie') {
+    const fromGal = parseK2GalerieTenantIdFromGalerieUrl(gu, baseUrl)
+    if (fromGal) tid = fromGal
+  }
   const focusDirection = focusDirectionFromUrl(licence.galerie_url)
   const galerieOutRaw = normalizeFamilieGalerieResponseUrl(licence.galerie_url, tid || licence.tenant_id, baseUrl)
   let galerieOut = productLine === 'k2_galerie' ? appendFocusDirection(galerieOutRaw, focusDirection) : galerieOutRaw
@@ -136,17 +142,65 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Fehler beim Laden' })
     }
 
+    const stripeSecret = process.env.STRIPE_SECRET_KEY
+
     if (licence) {
-      return res.status(200).json(jsonFromDbLicence(licence, baseUrl))
+      const fromDb = jsonFromDbLicence(licence, baseUrl)
+      const tidOk = Boolean(String(fromDb.tenant_id || '').trim())
+      const needsGalleryHeal =
+        stripeSecret &&
+        fromDb.product_line === 'k2_galerie' &&
+        !tidOk
+
+      if (needsGalleryHeal) {
+        try {
+          const stripe = new Stripe(stripeSecret)
+          const session = await stripe.checkout.sessions.retrieve(sessionId, {
+            expand: ['subscription', 'line_items', 'payment_intent'],
+          })
+          const ps = session.payment_status
+          const paidOk = ps === 'paid' || ps === 'no_payment_required'
+          if (session.status === 'complete' && paidOk) {
+            const rowPack = rowsFromCheckoutSession(session, baseUrl)
+            const ins = rowPack.licenceInsert
+            let healTid = normalizeWebhookTenantId(ins.tenant_id)
+            if (!healTid && ins.galerie_url) {
+              healTid = normalizeWebhookTenantId(parseK2GalerieTenantIdFromGalerieUrl(ins.galerie_url, baseUrl))
+            }
+            if (healTid) {
+              const healGu = ins.galerie_url || licence.galerie_url || null
+              const merged = {
+                ...licence,
+                tenant_id: healTid,
+                ...(healGu ? { galerie_url: healGu } : {}),
+              }
+              const { error: upErr } = await supabase
+                .from('licences')
+                .update({
+                  tenant_id: healTid,
+                  ...(healGu ? { galerie_url: healGu } : {}),
+                })
+                .eq('stripe_session_id', sessionId)
+              if (upErr) {
+                console.warn('get-licence-by-session: Heil-Update licences fehlgeschlagen', upErr?.message || upErr)
+              }
+              return res.status(200).json(jsonFromDbLicence(merged, baseUrl))
+            }
+          }
+        } catch (healErr) {
+          console.warn('get-licence-by-session: Galerie-Heal aus Stripe', healErr?.message || healErr)
+        }
+      }
+
+      return res.status(200).json(fromDb)
     }
 
     /** DB leer: Webhook verzögert oder fehlgeschlagen – Session bei Stripe lesen (nur bei erfolgreicher Zahlung) */
-    const stripeSecret = process.env.STRIPE_SECRET_KEY
     if (stripeSecret) {
       try {
         const stripe = new Stripe(stripeSecret)
         const session = await stripe.checkout.sessions.retrieve(sessionId, {
-          expand: ['subscription', 'line_items'],
+          expand: ['subscription', 'line_items', 'payment_intent'],
         })
 
         if (session.status === 'open') {
@@ -173,7 +227,11 @@ export default async function handler(req, res) {
 
         const rowPack = rowsFromCheckoutSession(session, baseUrl)
         const ins = rowPack.licenceInsert
-        const tenantId = ins.tenant_id || null
+        let tenantId = ins.tenant_id || null
+        if (!tenantId && ins.galerie_url) {
+          const parsed = parseK2GalerieTenantIdFromGalerieUrl(ins.galerie_url, baseUrl)
+          if (parsed) tenantId = parsed
+        }
         const licenceType = ins.licence_type || 'basic'
         const productLine = rowPack.productLine || productLineFromStripeSession(session, licenceType, tenantId)
         const focusDirection = rowPack.focusDirection || normalizeFocusDirection(checkoutSessionEffectiveMetadata(session).focusDirection)

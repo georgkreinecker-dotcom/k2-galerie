@@ -103,6 +103,9 @@ export function deriveTenantId(pathname: string, search: string): AdminTenantId 
   }
 
   if (pathname === '/admin' || pathname === '/mein-bereich') {
+    /** Lizenz-Mandant (?tenantId=galerie-…): nie ök2-Keys, auch wenn fälschlich ?context=oeffentlich mitläuft. */
+    const dynAdmin = getDynamicTenantIdFromUrl(search)
+    if (dynAdmin) return 'k2'
     const u = fromUrlContext()
     if (u !== null) return u
     return 'k2'
@@ -143,6 +146,11 @@ function syncStorageFromUrl(pathname: string, search: string): void {
     const raw = params.get('context')
     const ctx = raw != null ? raw.toLowerCase().trim() : null
     if (pathname === '/admin' || pathname === '/mein-bereich') {
+      const dynSync = getDynamicTenantIdFromUrl(search)
+      if (dynSync) {
+        sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'k2')
+        return
+      }
       if (ctx === 'oeffentlich') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'oeffentlich')
       else if (ctx === 'vk2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'vk2')
       else if (ctx === 'k2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'k2')

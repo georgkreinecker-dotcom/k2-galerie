@@ -24,6 +24,7 @@ import {
   computeEmpfehlerGutschrift,
   normalizeWebhookTenantId,
   parseFamilieTenantIdFromGalerieUrl,
+  parseK2GalerieTenantIdFromGalerieUrl,
   resolveCheckoutLicenceType,
   rowsFromCheckoutSession,
 } from '../../api/stripeWebhookLicenceShared.js'
@@ -225,6 +226,24 @@ describe('parseTenantIdFromAdminUrl', () => {
   })
 })
 
+describe('parseK2GalerieTenantIdFromGalerieUrl', () => {
+  const base = 'https://k2-galerie.vercel.app'
+  it('liest Mandant aus /g/galerie-* (DB tenant_id leer)', () => {
+    expect(parseK2GalerieTenantIdFromGalerieUrl(`${base}/g/galerie-max-m-abc12?focusDirection=kunst`, base)).toBe(
+      'galerie-max-m-abc12',
+    )
+  })
+  it('leer bei /g/familie-* (Familie nicht hier)', () => {
+    expect(parseK2GalerieTenantIdFromGalerieUrl(`${base}/g/familie-x-y1`, base)).toBe('')
+  })
+  it('leer ohne /g/-Pfad', () => {
+    expect(parseK2GalerieTenantIdFromGalerieUrl(`${base}/projects/k2-galerie/lizenz-kaufen`, base)).toBe('')
+  })
+  it('Mandant auch mit trailing slash am Pfad', () => {
+    expect(parseK2GalerieTenantIdFromGalerieUrl(`${base}/g/galerie-max-m-abc12/`, base)).toBe('galerie-max-m-abc12')
+  })
+})
+
 describe('parseFamilieTenantIdFromGalerieUrl', () => {
   const base = 'https://k2-galerie.vercel.app'
   it('liest ?t=familie-* aus meine-familie-URL', () => {
@@ -257,9 +276,16 @@ describe('buildAdminUrlForLicence', () => {
       `${base}/projects/k2-familie/meine-familie`,
     )
   })
-  it('Galerie ohne Mandant → APf Plattform-Start (nicht /admin, nicht nacktes ?apf=1)', () => {
+  it('Galerie ohne Mandant (LK2) → ök2-Admin context=oeffentlich (nicht APf, nicht nacktes /admin)', () => {
     expect(buildAdminUrlForLicence(base, '', 'basic', 'k2_galerie', 'kunst')).toBe(
-      `${base}/projects/k2-galerie?apf=1&page=platform`,
+      `${base}/admin?context=oeffentlich&focusDirection=kunst`,
+    )
+  })
+  it('Galerie mit Mandant nur in galerie_url (/g/…) → Admin mit tenantId', () => {
+    const tid = parseK2GalerieTenantIdFromGalerieUrl(`${base}/g/galerie-test-xy42`, base)
+    expect(tid).toBe('galerie-test-xy42')
+    expect(buildAdminUrlForLicence(base, tid, 'basic', 'k2_galerie', 'handwerk')).toBe(
+      `${base}/admin?tenantId=galerie-test-xy42&focusDirection=handwerk`,
     )
   })
 })
@@ -399,6 +425,32 @@ describe('checkoutSessionEffectiveMetadata', () => {
       tenantId: 'familie-x-y',
     })
   })
+
+  it('setzt tenantId aus client_reference_id wenn metadata.tenantId leer', () => {
+    expect(
+      checkoutSessionEffectiveMetadata({
+        metadata: { licenceType: 'basic', productLine: 'k2_galerie', customerName: 'X' },
+        client_reference_id: 'galerie-from-cr-99',
+      }),
+    ).toMatchObject({
+      licenceType: 'basic',
+      tenantId: 'galerie-from-cr-99',
+    })
+  })
+
+  it('übernimmt fehlende tenantId von payment_intent.metadata (mode payment)', () => {
+    expect(
+      checkoutSessionEffectiveMetadata({
+        metadata: { licenceType: 'pro', productLine: 'k2_galerie', customerName: 'Y' },
+        payment_intent: {
+          metadata: { tenantId: 'galerie-pi-meta-1', focusDirection: 'handwerk' },
+        },
+      }),
+    ).toMatchObject({
+      tenantId: 'galerie-pi-meta-1',
+      focusDirection: 'handwerk',
+    })
+  })
 })
 
 describe('Webhook-Zeilen aus Session', () => {
@@ -440,6 +492,28 @@ describe('Webhook-Zeilen aus Session', () => {
     expect(pack.licenceInsert.tenant_id).toBe('galerie-test-abc12')
     expect(pack.licenceInsert.galerie_url).toBe(
       'https://k2-galerie.vercel.app/g/galerie-test-abc12?focusDirection=kunst',
+    )
+  })
+
+  it('tenantId nur in client_reference_id → gleiche galerie_url wie bei metadata.tenantId', () => {
+    const base = 'https://k2-galerie.vercel.app'
+    const pack = rowsFromCheckoutSession(
+      {
+        id: 'cs_cr',
+        amount_total: 1500,
+        customer_email: 'x@y.z',
+        client_reference_id: 'galerie-only-cr-88',
+        metadata: {
+          licenceType: 'basic',
+          customerName: 'B',
+          productLine: 'k2_galerie',
+        },
+      },
+      base,
+    )
+    expect(pack.licenceInsert.tenant_id).toBe('galerie-only-cr-88')
+    expect(pack.licenceInsert.galerie_url).toBe(
+      `${base}/g/galerie-only-cr-88?focusDirection=kunst`,
     )
   })
 
