@@ -17,6 +17,7 @@ Georg und das Team haben eine **klare Struktur** entwickelt. Diese Quellen sind 
 | **Handbuch (alle wichtigen Sachen)** | **k2team-handbuch** | `k2team-handbuch/00-INDEX.md` = Inhaltsverzeichnis. Für alle Kontexte dieselbe Ablage. Spiegel in `public/k2team-handbuch/` für die App. |
 | **Projekt-Doku (technisch)** | **docs/** | `docs/00-INDEX.md` = Liste aller Docs. K2/ök2, Vercel, Supabase, Crash, Deployment. |
 | **Projekt-Übersicht (wo liegt was)** | **HAUS-INDEX** | `HAUS-INDEX.md` (Root). Enthält den Abschnitt „Struktur für unser Handeln“ mit dieser Tabelle. |
+| **Kurzbezeichnungen Lizenzlinien (L)** | **docs/KURZBEZEICHNUNGEN-L-LIZENZVERSION.md** | **LK2** = ök2, **LVK2** = VK2, **LFK2** = K2 Familie; **K2** = echte Galerie ohne L. Intern/Briefing; Routen und Keys nicht umbenennen. |
 
 ## Regel für AI / Cursor
 

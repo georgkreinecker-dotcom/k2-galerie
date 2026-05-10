@@ -127,6 +127,7 @@ Alle anderen Dateien bleiben; bei Unsicherheit wurde nichts gelöscht.
 - **Admin-Auth einrichten:** `docs/ADMIN-AUTH-SETUP.md`
 - **Crash-Fixes:** `docs/CRASH-FIXES-STAND-17-02-26.md`
 - **K2 vs. ök2:** `docs/K2-OEK2-DATENTRENNUNG.md`
+- **Kurzbezeichnungen L (Lizenzversion):** `docs/KURZBEZEICHNUNGEN-L-LIZENZVERSION.md` – **LK2** = ök2, **LVK2** = VK2, **LFK2** = K2 Familie; **K2** = echte Galerie ohne L
 - **K2 Familie (Raumschiff):** `docs/K2-FAMILIE-GRUNDBOTSCHAFT.md` (Fundament), `docs/K2-FAMILIE-ROADMAP.md` (Vision & Phasen), `docs/K2-FAMILIE-EIGENBEREICH-MODULE-OEK2-VK2.md` (Eigenbereich, kein Mix mit ök2/VK2)
 - **Symbolwesen – gesamte Kommunikation (eiserne Regel):** Zuerst sichtbare Zeichen und Handlung, nicht Textwände; gilt für App, E-Mails, Nutzertexte und Dialog. Regel: `.cursor/rules/eiserne-regel-symbolwesen-kommunikation.mdc` (alwaysApply).
 - **Ein Standard pro Problemstellung:** Gleiche Aufgabe = eine Lösung (verschiedene Standards = Fehlerquellen). Regel: `.cursor/rules/ein-standard-problem.mdc`; Doku: `docs/STRUKTUR-HANDELN-QUELLEN.md`, `docs/00-INDEX.md`.

@@ -119,6 +119,11 @@ function georgRef() {
 - Bei „ro“ / Session-Start: DIALOG-STAND + dieses Briefing lesen, dann weitermachen.`;
 }
 
+/** Kurzbezeichnungen L = Lizenzversion (Georg 10.05.26) – eine Zeile + Doku */
+function kurzbezeichnungenL() {
+  return `**L** = Lizenzversion in Kurztext: **LK2** = ök2, **LVK2** = VK2, **LFK2** = K2 Familie; **K2** = echte Galerie ohne L. Vollständig: **docs/KURZBEZEICHNUNGEN-L-LIZENZVERSION.md**.`;
+}
+
 function main() {
   let dialog = read(DIALOG);
   if (!dialog.trim() || !dialog.includes('Letzter Stand')) {
@@ -145,6 +150,12 @@ function main() {
   const md = `# Anke – Briefing – ${datum}
 
 > Ankes Briefing für Session-Start. Generiert von \`npm run briefing\`. Stand, Offen, Proaktiv.
+
+---
+
+## Kurzbezeichnungen L (Lizenzversion)
+
+${kurzbezeichnungenL()}
 
 ---
 

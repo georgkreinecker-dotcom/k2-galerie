@@ -1,6 +1,12 @@
-# Anke – Briefing – 09.05.26
+# Anke – Briefing – 10.05.26
 
 > Ankes Briefing für Session-Start. Generiert von `npm run briefing`. Stand, Offen, Proaktiv.
+
+---
+
+## Kurzbezeichnungen L (Lizenzversion)
+
+**L** = Lizenzversion in Kurztext: **LK2** = ök2, **LVK2** = VK2, **LFK2** = K2 Familie; **K2** = echte Galerie ohne L. Vollständig: **docs/KURZBEZEICHNUNGEN-L-LIZENZVERSION.md**.
 
 ---
 

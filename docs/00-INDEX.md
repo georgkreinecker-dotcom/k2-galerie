@@ -10,6 +10,12 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 
 ---
 
+## Konventionen (Kurz)
+
+- **KURZBEZEICHNUNGEN-L-LIZENZVERSION.md** – **L** = Lizenzversion in Kurztext: **LK2** = ök2, **LVK2** = VK2, **LFK2** = K2 Familie; **K2** = echte Galerie ohne L (intern / Briefing; UI-Keys unverändert).
+
+---
+
 ## Einstieg für Informatiker (System überblicken und warten)
 
 - **EINSTIEG-INFORMATIKER-SYSTEM-WARTUNG.md** – **Zentraler Einstieg für jeden Informatiker:** Systemüberblick (Tech-Stack, Mandanten, Datenfluss), zentrale Einstiege (HAUS-INDEX, 00-INDEX, KOMMANDOZENTRALE, STRUKTUR), **alle Prozesse in einer Tabelle** (Lebenszyklus Klient, Veröffentlichen, Stand/QR, Lizenzen, Kündigung, Datentrennung, Sync, Build/Deploy, Tests, Backup, Wartung) mit Verweisen auf Code und Doku. Entwicklung (Setup, Build, Test, Deploy), Wartungsintervalle, wichtige Regeln. Damit jeder einsteigen, überblicken und warten kann.
