@@ -51,6 +51,14 @@ export default async function handler(req, res) {
     })
     return res.status(200).json({ url })
   } catch (err) {
+    if (err?.code === 'VK2_CHECKOUT_DISABLED') {
+      return res.status(503).json({
+        error: 'Derzeit nicht möglich',
+        hint:
+          err?.message ||
+          'Die Online-Anmeldung zur Vereinslizenz VK2 über Stripe ist derzeit nicht möglich.',
+      })
+    }
     if (err?.code === 'VALIDATION') {
       return res.status(400).json({
         error: 'Fehlende Angaben',

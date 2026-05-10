@@ -22622,7 +22622,7 @@ ${name}`
               const lizenzTitel = tenant.isOeffentlich ? '📄 Lizenz abschließen' : '✨ Neue Lizenz anmelden'
               const lizenzIntro =
                 tenant.isVk2
-                  ? 'Vereinslizenz: 35 €/Monat (gleicher Leistungsstand wie Pro). Zahlung nur per Karte über Stripe – das ist der vorgesehene Weg; lokal ohne Stripe-Key siehst du eine Mustervorschau. Wenn in den Vereinsstammdaten schon Vereinsname und E-Mail stehen, können wir diese übernehmen.'
+                  ? 'Vereinslizenz VK2: Zahlung per Karte über Stripe ist derzeit nicht möglich. (Galerie-Lizenz per Chrome/Web bleibt unverändert.) Wenn in den Vereinsstammdaten schon Vereinsname und E-Mail stehen, kannst du sie trotzdem für später vorbereiten.'
                   : 'Lizenz wählen, Zahlung per Karte (Stripe). Wenn du in „Meine Daten“ schon Name und E-Mail eingetragen hast, können wir diese übernehmen.'
               const stammdatenFrageQuelle =
                 tenant.isVk2
@@ -22650,6 +22650,10 @@ ${name}`
                 const email = lizenzEmail.trim()
                 setLizenzError(null)
                 setLizenzCheckoutInfo(null)
+                if (tenant.isVk2) {
+                  setLizenzError('Online-Zahlung für die Vereinslizenz VK2 (Stripe) ist derzeit nicht möglich.')
+                  return
+                }
                 if (!name || !email) {
                   setLizenzError('Bitte Name und E-Mail angeben.')
                   return
@@ -22705,8 +22709,29 @@ ${name}`
                   </h3>
                   <p style={{ margin: '0 0 1.25rem', fontSize: '0.9rem', color: s.muted, lineHeight: 1.6 }}>
                     {lizenzIntro}{' '}
-                    <strong style={{ color: s.text }}>Die Lizenznummer wird nach erfolgreicher Zahlung vom System vergeben.</strong>
+                    <strong style={{ color: s.text }}>
+                      {tenant.isVk2
+                        ? 'Sobald Stripe für VK2 wieder freigegeben ist, erscheint hier der Zahlungsbutton.'
+                        : 'Die Lizenznummer wird nach erfolgreicher Zahlung vom System vergeben.'}
+                    </strong>
                   </p>
+                  {tenant.isVk2 && (
+                    <div
+                      style={{
+                        margin: '0 0 1.25rem',
+                        padding: '0.85rem 1rem',
+                        background: 'rgba(180, 83, 9, 0.12)',
+                        border: '1px solid rgba(180, 83, 9, 0.35)',
+                        borderRadius: 10,
+                        fontSize: '0.9rem',
+                        color: s.text,
+                        lineHeight: 1.55,
+                        fontWeight: 600,
+                      }}
+                    >
+                      Stripe-Anmeldung VK2: <strong>derzeit nicht möglich</strong> – kein Checkout, kein Abbuchungsversuch.
+                    </div>
+                  )}
                   <div style={{ margin: '0 0 1.25rem', padding: '0.85rem 1rem', background: s.bgElevated, border: `1px dashed ${s.accent}55`, borderRadius: 10, fontSize: '0.85rem', color: s.text, lineHeight: 1.55 }}>
                     <strong style={{ color: s.accent }}>Test / Muster:</strong> Auf <strong>Vercel</strong> oder mit <strong>Stripe-Key</strong> in der lokalen <code style={{ fontSize: '0.78rem' }}>.env</code> führt der Button zu <strong>Stripe</strong> (Testkarte 4242…). Lokal <strong>ohne</strong> Key: Mustervorschau der Erfolgsseite (Dev-Server). In <strong>Cursor-Vorschau</strong> oder iframe öffnet sich Zahlung/Vorschau in einem <strong>neuen Tab</strong>.{' '}
                     <strong>Mustervorschau</strong> direkt:{' '}
@@ -22776,8 +22801,25 @@ ${name}`
                           </p>
                         )}
                         {lizenzError && <p style={{ color: '#c53030', fontSize: '0.9rem', margin: '0 0 0.75rem' }}>{lizenzError}</p>}
-                        <button type="submit" disabled={lizenzLoading} style={{ padding: '0.7rem 1.25rem', background: lizenzLoading ? s.muted : s.accent, color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: lizenzLoading ? 'not-allowed' : 'pointer', fontSize: '0.95rem' }}>
-                          {lizenzLoading ? 'Wird weitergeleitet …' : 'Jetzt bezahlen (Karte/Stripe) →'}
+                        <button
+                          type="submit"
+                          disabled={lizenzLoading || tenant.isVk2}
+                          style={{
+                            padding: '0.7rem 1.25rem',
+                            background: lizenzLoading || tenant.isVk2 ? s.muted : s.accent,
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: 8,
+                            fontWeight: 600,
+                            cursor: lizenzLoading || tenant.isVk2 ? 'not-allowed' : 'pointer',
+                            fontSize: '0.95rem',
+                          }}
+                        >
+                          {tenant.isVk2
+                            ? 'Derzeit nicht möglich'
+                            : lizenzLoading
+                              ? 'Wird weitergeleitet …'
+                              : 'Jetzt bezahlen (Karte/Stripe) →'}
                         </button>
                       </form>
                     </>

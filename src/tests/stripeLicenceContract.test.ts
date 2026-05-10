@@ -103,6 +103,19 @@ describe('createStripeCheckoutSession – Validierung', () => {
       }),
     ).rejects.toMatchObject({ code: 'VALIDATION' })
   })
+
+  it('VK2 Stripe-Checkout ist derzeit gesperrt (VK2_CHECKOUT_DISABLED)', async () => {
+    await expect(
+      createStripeCheckoutSession({
+        licenceType: 'pro',
+        email: 'verein@vk2.at',
+        name: 'Verein',
+        productLine: 'vk2',
+        secretKey: 'sk_test_würde_sonst_api_rufen',
+        baseUrl: 'https://k2-galerie.vercel.app',
+      }),
+    ).rejects.toMatchObject({ code: 'VK2_CHECKOUT_DISABLED' })
+  })
 })
 
 describe('generateTenantId', () => {

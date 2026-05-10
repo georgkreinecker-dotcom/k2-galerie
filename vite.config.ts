@@ -935,6 +935,18 @@ const devCreateCheckoutMiddleware = () => {
           res.writeHead(200, { 'Content-Type': 'application/json' })
           res.end(JSON.stringify({ url }))
         } catch (err: any) {
+          if (err?.code === 'VK2_CHECKOUT_DISABLED') {
+            res.writeHead(503, { 'Content-Type': 'application/json' })
+            res.end(
+              JSON.stringify({
+                error: 'Derzeit nicht möglich',
+                hint:
+                  err?.message ||
+                  'Die Online-Anmeldung zur Vereinslizenz VK2 über Stripe ist derzeit nicht möglich.',
+              }),
+            )
+            return
+          }
           if (err?.code === 'VALIDATION') {
             res.writeHead(400, { 'Content-Type': 'application/json' })
             res.end(

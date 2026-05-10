@@ -1,8 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nach **Vercel Ready**: neuen **Galerie-Testkauf** (oder Erfolgsseite mit **session_id** neu laden) – Admin-Link muss **`/admin?tenantId=galerie-…`** sein. Alte Zahlungen **ohne** PI-Metadaten können weiter LK2 zeigen; Kette ist für **neue** Checkouts gehärtet.
+**Was wir JETZT tun:** **VK2-Lizenz:** Stripe-Checkout bleibt **gesperrt**, bis LVK2 getestet ist – Freigabe = Block **`VK2_CHECKOUT_DISABLED`** in **`api/createCheckoutShared.js`** entfernen. Galerie-Lizenz (Chrome/Web) unverändert.
 
-**Einordnung:** Georg landete in **ök2** → Mandant fehlte in DB/Session-Auswertung; jetzt: **PaymentIntent-Metadaten**, **Webhook-Retrieve mit expand**, **get-licence Heal** aus Stripe bei leerer DB-**tenant_id**.
+**Einordnung:** Georg: Chrome-Anmeldung Galerie ok; LVK2 nicht testbar → **kein** VK2-Stripe bis auf Weiteres; UI + API gleichermaßen abgesichert.
+
+**Letzter Stand:** 10.05.26 – **VK2 Stripe-Anmeldung gesperrt:** **`createCheckoutShared`** wirft **`VK2_CHECKOUT_DISABLED`** bei **`productLineNorm === 'vk2'`**; **`create-checkout.js`** + **Vite**-Middleware **503** mit **`error`/`hint`**; **Admin** VK2: Hinweisbox, Button **„Derzeit nicht möglich“**, **`handleLizenzSubmit`**-Guard; Test **`stripeLicenceContract`**. **qs:local** grün. **Commit:** `f0af55d2` ✅ **main**
 
 **Letzter Stand:** 10.05.26 – **Lizenz Admin-Link: Stripe doppelt + Webhook + Heal:** **`createCheckoutShared`** **`payment_intent_data.metadata`** (gleiche Keys wie Session); **`checkoutSessionEffectiveMetadata`** liest **`payment_intent`**; **`webhook-stripe`** holt Session mit **`expand`** PI/Sub/line_items; **`get-licence-by-session`** Heal + Retrieve mit **`payment_intent`**; Tests **`stripeLicenceContract`**. **Commit:** `1181ee75` ✅ **main**
 

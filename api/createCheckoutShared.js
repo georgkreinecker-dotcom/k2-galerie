@@ -150,6 +150,15 @@ export async function createStripeCheckoutSession(opts) {
 
   const productLineNorm = resolveGalleryOrVk2ProductLineForCheckout(lt, productLine)
 
+  /** VK2: Stripe-Checkout bis auf Weiteres gesperrt (nicht getestet / kein Go-Live). */
+  if (productLineNorm === 'vk2') {
+    const err = new Error(
+      'Die Online-Anmeldung zur Vereinslizenz VK2 über Stripe ist derzeit nicht möglich.',
+    )
+    err.code = 'VK2_CHECKOUT_DISABLED'
+    throw err
+  }
+
   const empMeta =
     empfehlerId && empfehlerId.trim() ? { empfehlerId: empfehlerId.trim().substring(0, 100) } : {}
 
