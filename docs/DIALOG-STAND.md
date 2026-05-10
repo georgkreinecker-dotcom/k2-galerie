@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Nach Deploy: Galerie-Lizenz **Admin-Link** = **`/admin?tenantId=galerie-…&focusDirection=…`** (Mandant); **Stripe** setzt zusätzlich **`client_reference_id`** = Mandant (Fallback wenn Metadaten leer); **`/g/slug/`** mit Slash wird für **`tenant_id`** erkannt; auf **Plattform** schlägt **`?tenantId=galerie-*`** das fälschlich mitlaufende **`context=oeffentlich`** (**`TenantContext`**). LK2 ohne Mandant bleibt **`/admin?context=oeffentlich`** (Demo).
+**Was wir JETZT tun:** Nach **Vercel Ready**: neuen **Galerie-Testkauf** (oder Erfolgsseite mit **session_id** neu laden) – Admin-Link muss **`/admin?tenantId=galerie-…`** sein. Alte Zahlungen **ohne** PI-Metadaten können weiter LK2 zeigen; Kette ist für **neue** Checkouts gehärtet.
 
-**Einordnung:** Georg landete in **ök2** statt Lizenzmandant → Datenkette Mandant fehlte oder URL hatte nur LK2-Fallback; Absicherung Server + Client + Kontext-Priorität.
+**Einordnung:** Georg landete in **ök2** → Mandant fehlte in DB/Session-Auswertung; jetzt: **PaymentIntent-Metadaten**, **Webhook-Retrieve mit expand**, **get-licence Heal** aus Stripe bei leerer DB-**tenant_id**.
 
-**Letzter Stand:** 10.05.26 – **Lizenz: Mandant statt ök2 (Stripe + URL + TenantContext):** **`createCheckoutShared`** **`client_reference_id`**; **`checkoutSessionEffectiveMetadata`** füllt **`tenantId`** aus **`client_reference_id`**; **`parseK2GalerieTenantIdFromGalerieUrl`** trailing slash; **`LizenzErfolgPage`** **`tenantIdFromGalerieUrl`** gleich; **`deriveTenantId`** / **`syncStorageFromUrl`**: **`?tenantId=`** auf **`/admin`** vor **`context`**; Tests **`stripeLicenceContract`**, **`tenantContextPlatformAdminDynamic`**. **`npm run build`** grün. **Commit:** _(folgt Push)_ ✅ **main**
+**Letzter Stand:** 10.05.26 – **Lizenz Admin-Link: Stripe doppelt + Webhook + Heal:** **`createCheckoutShared`** **`payment_intent_data.metadata`** (gleiche Keys wie Session); **`checkoutSessionEffectiveMetadata`** liest **`payment_intent`**; **`webhook-stripe`** holt Session mit **`expand`** PI/Sub/line_items; **`get-licence-by-session`** Heal + Retrieve mit **`payment_intent`**; Tests **`stripeLicenceContract`**. **Commit:** `1181ee75` ✅ **main**
 
 **Letzter Stand:** 10.05.26 – **LK2 Lizenz ohne Mandant → ök2-Admin, nicht APf:** **`buildLk2GalerieLizenzAdminUrlOhneTenant`** / **`buildAdminUrlForLicence`** → **`/admin?context=oeffentlich&focusDirection=…`**; Korrektur nach **`2c034dfd`** (dort fälschlich APf). Zuvor: APf-iframe **`plattform-hub`**, **`DevViewPage`**, **`navigationApfEntry.test`**. **Commit:** `2c034dfd` u. a. ✅ **main**
 
