@@ -280,6 +280,8 @@ Wenn nein: wir lassen es.
 
 ---
 
+**Session-Reflexion (10.05.26, Abend):** Georg: **Schluss für heute** – Chrome/Galerie-Lizenz bleibt; **VK2-Stripe** bewusst **gesperrt** (Server + Admin + Tests), bis LVK2 verlässlich getestet ist. Freigabe später = Flag **`VK2_CHECKOUT_DISABLED`** in **`createCheckoutShared.js`** wieder entfernen.
+
 **Session-Reflexion (10.05.26):** L-Lizenz-Produkte: **Bericht** `docs/L-LIZENZ-EINFALLSTORE-PRUEFUNG.md`; **Einfallstor** „günstiges Produkt + `vk2` in Metadaten“ im **Checkout** geschlossen (**`resolveGalleryOrVk2ProductLineForCheckout`**); Familie/Erfolg weiter über dieselbe Stripe-Kette abgesichert.
 
 **Session-Reflexion (09.05.26, Abend):** K2-Familie-Lizenz: Name aus Stripe (**`customerName`** / **`customer_details.name`**) kommt als **`fn`** in Galerie- und Session-Links → **`familyDisplayName`** und ohne eigene Seitentexte sofort **`welcomeTitle`** beim Gestalten; Webhook + **`get-licence-by-session`** + Erfolgsseite abgesichert.

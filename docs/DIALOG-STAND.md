@@ -4,6 +4,8 @@
 
 **Einordnung:** Georg: Chrome-Anmeldung Galerie ok; LVK2 nicht testbar → **kein** VK2-Stripe bis auf Weiteres; UI + API gleichermaßen abgesichert.
 
+**Letzter Stand:** 10.05.26 (Abend) – **Schluss für heute:** Georg beendet die Session; **Referenz** **main** **`8aca5260`** (VK2-Intro-Text nach **`ce6bc0b1`** Sperre). **`git`** sauber.
+
 **Letzter Stand:** 10.05.26 – **VK2 Stripe-Anmeldung gesperrt:** **`createCheckoutShared`** wirft **`VK2_CHECKOUT_DISABLED`** bei **`productLineNorm === 'vk2'`**; **`create-checkout.js`** + **Vite**-Middleware **503** mit **`error`/`hint`**; **Admin** VK2: Hinweisbox, Button **„Derzeit nicht möglich“**, **`handleLizenzSubmit`**-Guard; Test **`stripeLicenceContract`**. **qs:local** grün. **Commit:** `ce6bc0b1` ✅ **main**
 
 **Letzter Stand:** 10.05.26 – **Lizenz Admin-Link: Stripe doppelt + Webhook + Heal:** **`createCheckoutShared`** **`payment_intent_data.metadata`** (gleiche Keys wie Session); **`checkoutSessionEffectiveMetadata`** liest **`payment_intent`**; **`webhook-stripe`** holt Session mit **`expand`** PI/Sub/line_items; **`get-licence-by-session`** Heal + Retrieve mit **`payment_intent`**; Tests **`stripeLicenceContract`**. **Commit:** `1181ee75` ✅ **main**
