@@ -4,7 +4,7 @@
 
 **Einordnung:** Georg: Chrome-Anmeldung Galerie ok; LVK2 nicht testbar → **kein** VK2-Stripe bis auf Weiteres; UI + API gleichermaßen abgesichert.
 
-**Letzter Stand:** 10.05.26 (Abend) – **Schluss für heute:** Georg beendet die Session; **Referenz** **main** **`8aca5260`** (VK2-Intro-Text nach **`ce6bc0b1`** Sperre). **`git`** sauber.
+**Letzter Stand:** 10.05.26 (Abend) – **Schluss für heute:** Georg beendet die Session; **DIALOG-STAND** + **WIR-PROZESS** (**`da73cbd3`**); VK2-Stripe-Sperre **`ce6bc0b1`**, Intro-Text **`8aca5260`**. **`git`** sauber.
 
 **Letzter Stand:** 10.05.26 – **VK2 Stripe-Anmeldung gesperrt:** **`createCheckoutShared`** wirft **`VK2_CHECKOUT_DISABLED`** bei **`productLineNorm === 'vk2'`**; **`create-checkout.js`** + **Vite**-Middleware **503** mit **`error`/`hint`**; **Admin** VK2: Hinweisbox, Button **„Derzeit nicht möglich“**, **`handleLizenzSubmit`**-Guard; Test **`stripeLicenceContract`**. **qs:local** grün. **Commit:** `ce6bc0b1` ✅ **main**
 
