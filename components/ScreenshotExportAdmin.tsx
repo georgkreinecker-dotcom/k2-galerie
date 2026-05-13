@@ -22622,7 +22622,7 @@ ${name}`
               const lizenzTitel = tenant.isOeffentlich ? '📄 Lizenz abschließen' : '✨ Neue Lizenz anmelden'
               const lizenzIntro =
                 tenant.isVk2
-                  ? 'Vereinslizenz VK2: Zahlung per Karte über Stripe ist derzeit nicht möglich. (Galerie-Lizenz per Chrome/Web bleibt unverändert.) Wenn in den Vereinsstammdaten schon Vereinsname und E-Mail stehen, kannst du sie trotzdem für später vorbereiten.'
+                  ? 'Vereinslizenz VK2: Zahlung per Karte über Stripe ist derzeit nicht möglich. (Galerie-Lizenz per Chrome/Web bleibt unverändert.) Wenn in den Vereinsstammdaten schon Vereinsname und E-Mail stehen, kannst du sie hier vorbereiten – der Zahlungsbutton kommt, sobald Stripe für VK2 wieder freigegeben ist.'
                   : 'Lizenz wählen, Zahlung per Karte (Stripe). Wenn du in „Meine Daten“ schon Name und E-Mail eingetragen hast, können wir diese übernehmen.'
               const stammdatenFrageQuelle =
                 tenant.isVk2
