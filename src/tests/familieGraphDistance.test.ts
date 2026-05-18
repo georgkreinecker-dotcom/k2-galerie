@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import type { K2FamiliePerson } from '../types/k2Familie'
-import { getGraphDistanceFromIch, portraitSizeFromGraphDistance } from '../utils/familieGraphDistance'
+import {
+  canBearbeiterPflegeBeziehungenOnCard,
+  getGraphDistanceFromIch,
+  isStrictAncestorOf,
+  portraitSizeFromGraphDistance,
+} from '../utils/familieGraphDistance'
 
 function p(
   id: string,
@@ -42,5 +47,26 @@ describe('familieGraphDistance', () => {
     expect(portraitSizeFromGraphDistance(0)).toBe(140)
     expect(portraitSizeFromGraphDistance(1)).toBeGreaterThan(140)
     expect(portraitSizeFromGraphDistance(10)).toBe(portraitSizeFromGraphDistance(100))
+  })
+
+  it('isStrictAncestorOf: Elternteil ist Vorfahre des Kindes', () => {
+    const personen = [
+      p('eltern', { name: 'E', childIds: ['kind'] }),
+      p('kind', { name: 'K', parentIds: ['eltern'] }),
+    ]
+    expect(isStrictAncestorOf(personen, 'eltern', 'kind')).toBe(true)
+    expect(isStrictAncestorOf(personen, 'kind', 'eltern')).toBe(false)
+  })
+
+  it('canBearbeiterPflegeBeziehungenOnCard: Kind ja, Elternteil von Du nein', () => {
+    const personen = [
+      p('eltern', { name: 'E', childIds: ['du'] }),
+      p('du', { name: 'Du', parentIds: ['eltern'], childIds: ['kind'] }),
+      p('kind', { name: 'Kind', parentIds: ['du'] }),
+    ]
+    const base = { kannStruktur: false, kannPersonenAnlegen: true, ichBinPersonId: 'du' }
+    expect(canBearbeiterPflegeBeziehungenOnCard(personen, { ...base, cardPersonId: 'du' })).toBe(true)
+    expect(canBearbeiterPflegeBeziehungenOnCard(personen, { ...base, cardPersonId: 'kind' })).toBe(true)
+    expect(canBearbeiterPflegeBeziehungenOnCard(personen, { ...base, cardPersonId: 'eltern' })).toBe(false)
   })
 })

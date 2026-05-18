@@ -21,7 +21,22 @@ export const GESCHICHTE_LEITPLANKEN: ReadonlyArray<{ titel: string; text: string
     titel: 'Menschen',
     text: 'Namen nennen, wo es passt. Niemand bloßstellen; Verstorbene würdigen, Lebende nicht ohne Absprache bloßstellen.',
   },
+  {
+    titel: 'Zweige & Partner-Herkunft',
+    text: 'Seitenzweige (z. B. Herkunft einer Partner:in) legt ihr als eigene Geschichte an – klarer Titel und im Rahmen-Text ein Vermerk, wen der Text betrifft. Vollständig getrennte Familie mit eigenen Rechten und Daten: eigene K2-Familie-Lizenz (eigener Mandant).',
+  },
 ]
+
+/** Kurzinfo für die Geschichten-Seite (organisatorische Trennung, keine Zweig-Rechte in der App). */
+export const GESCHICHTE_ZWEIG_ORIENTIERUNG = {
+  summary: 'Zweige & Partner-Herkunft – eigenständig ordnen',
+  absaetze: [
+    'In einer Familie könnt ihr mehrere Geschichten führen: z. B. Grundfamilie und Herkunft des Partners – jeweils eigener Titel, eigener Rahmen-Text, eigene Stimmen.',
+    'Im Einleitungstext kurz festhalten, wen die Geschichte betrifft (z. B. „Nur Familienzweig …, nicht der Stammbaum-Kern …“). So bleibt alles übersichtlich, ohne technische Sperren.',
+    'Wer komplett eigenständig arbeiten will – eigene Verwaltung, eigene Einladungen, keine gemeinsame Datenbank – braucht eine eigene K2-Familie-Lizenz mit eigenem Mandanten. Das ist die sauberste Grenze.',
+  ],
+  titelPlatzhalter: 'z. B. Unsere Geschichte ab 1990 oder: Herkunft Müller – nicht Stammbaum …',
+} as const
 
 /** Ideen zum Ausfüllen – keine Pflicht, nur Anregung. */
 export const GESCHICHTE_IDEENBRINGER: ReadonlyArray<{ kategorie: string; stichworte: string[] }> = [
@@ -33,6 +48,15 @@ export const GESCHICHTE_IDEENBRINGER: ReadonlyArray<{ kategorie: string; stichwo
       'Unsere gemeinsame Zeit ab …',
       'Die Jahre mit den Kindern',
       'Nach dem Umzug',
+    ],
+  },
+  {
+    kategorie: 'Eigener Ast / Partner-Herkunft',
+    stichworte: [
+      'Herkunft … – nicht Stammbaum …',
+      'Familienzweig … – nur dieser Ast',
+      'Partner-Seite – eigenständige Erinnerungen',
+      'Grundfamilie ab …',
     ],
   },
   {
@@ -74,6 +98,12 @@ export const GESCHICHTE_MARKDOWN_GERUEST = `## Titel & Anker
 **Titel dieser Geschichte:** {{TITEL}}
 
 *(Ein Satz: Warum beginnt die Erzählung genau hier?)*
+
+
+
+## Geltungsbereich (optional)
+
+*(Wen betrifft diese Geschichte? z. B. „Nur Grundfamilie …“ oder „Herkunft Partner … – nicht der Stammbaum-Kern …“)*
 
 
 

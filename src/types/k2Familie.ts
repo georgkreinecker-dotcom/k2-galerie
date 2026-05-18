@@ -233,9 +233,33 @@ export interface K2FamilieGeschichte {
   status?: 'fertig' | 'entwurf'
   createdAt?: string
   updatedAt?: string
+  /** Person, die die Geschichte angelegt hat („Du“ zum Zeitpunkt). */
+  createdByPersonId?: string
+  /** Person, die den Rahmen-Text zuletzt gespeichert hat. */
+  updatedByPersonId?: string
 }
 
 /** Storage-Key für Geschichten pro Tenant. */
 export function getK2FamilieGeschichtenKey(tenantId: string): string {
   return `k2-familie-${tenantId}-geschichten`
+}
+
+/**
+ * Familienstimme zu einer Geschichte – jede Person schreibt einen eigenen Eintrag;
+ * nur Autor:in (und Inhaber:in) dürfen den Eintrag ändern.
+ */
+export interface K2FamilieGeschichteEintrag {
+  id: string
+  geschichteId: string
+  authorPersonId: string
+  inhalt: string
+  /** Optional: Bezug zu Personen im Stammbaum */
+  bezugPersonIds?: string[]
+  createdAt: string
+  updatedAt?: string
+}
+
+/** Storage-Key für Familien-Einträge zu Geschichten pro Tenant. */
+export function getK2FamilieGeschichteEintraegeKey(tenantId: string): string {
+  return `k2-familie-${tenantId}-geschichte-eintraege`
 }

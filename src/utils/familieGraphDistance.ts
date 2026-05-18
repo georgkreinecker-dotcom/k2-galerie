@@ -40,6 +40,52 @@ export function getGraphDistanceFromIch(
   return null
 }
 
+/** Liegt ancestorId auf einem reinen Eltern-Pfad über descendantId? */
+export function isStrictAncestorOf(
+  personen: K2FamiliePerson[],
+  ancestorId: string,
+  descendantId: string,
+): boolean {
+  if (ancestorId === descendantId) return false
+  const byId = new Map(personen.map((x) => [x.id, x]))
+  const visited = new Set<string>()
+  const queue = [descendantId]
+  while (queue.length > 0) {
+    const cur = queue.shift()!
+    const person = byId.get(cur)
+    if (!person) continue
+    for (const pid of person.parentIds) {
+      if (pid === ancestorId) return true
+      if (visited.has(pid)) continue
+      visited.add(pid)
+      queue.push(pid)
+    }
+  }
+  return false
+}
+
+/**
+ * Bearbeiter:in: Beziehungen pflegen auf eigener Karte und im erreichbaren Netz
+ * nach unten/seitwärts – nicht auf Vorfahren von „Du“ (die bleiben Inhaber:in).
+ */
+export function canBearbeiterPflegeBeziehungenOnCard(
+  personen: K2FamiliePerson[],
+  opts: {
+    ichBinPersonId?: string
+    cardPersonId: string
+    kannStruktur: boolean
+    kannPersonenAnlegen: boolean
+  },
+): boolean {
+  if (opts.kannStruktur) return true
+  if (!opts.kannPersonenAnlegen) return false
+  const ich = opts.ichBinPersonId?.trim()
+  if (!ich) return false
+  if (opts.cardPersonId === ich) return true
+  if (isStrictAncestorOf(personen, opts.cardPersonId, ich)) return false
+  return getGraphDistanceFromIch(personen, ich, opts.cardPersonId) != null
+}
+
 /** Portrait-Breite/Höhe (px): Basis 140, wächst mit Abstand von „Du“ (gedeckelt). */
 export function portraitSizeFromGraphDistance(distance: number | null): number {
   const d = distance == null ? 0 : Math.max(0, distance)

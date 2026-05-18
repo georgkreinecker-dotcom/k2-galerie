@@ -1,5 +1,5 @@
 /**
- * Vercel Serverless: Token für Client-Upload des Virtueller-Rundgang-Videos (bis 100 MB).
+ * Vercel Serverless: Token für Client-Upload des Virtueller-Rundgang-Videos (Vercel Blob, multipart).
  * Ohne GitHub-Token im Browser – nutzt BLOB_READ_WRITE_TOKEN nur hier.
  * Pfad fest: k2/site-virtual-tour.mp4 | oeffentlich/site-virtual-tour.mp4
  * Hinweis: Diese Datei wird als frischer Deploy-Trigger mitgeführt.
@@ -35,7 +35,6 @@ export default async function handler(req, res) {
         }
         return {
           allowedContentTypes: ['video/mp4', 'video/quicktime', 'application/octet-stream'],
-          maximumSizeInBytes: 100 * 1024 * 1024,
           allowOverwrite: true,
           addRandomSuffix: false,
         }

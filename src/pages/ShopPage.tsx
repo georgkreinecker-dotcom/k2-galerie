@@ -25,7 +25,11 @@ import { readKuenstlerFallbackShop, resolveArtistLabelForGalerieStatistik } from
 import { sortArtworksCategoryBlocksThenNumberAsc } from '../utils/artworkSort'
 import { getArtworkLagerInfo } from '../utils/artworkLagerStatus'
 import { hasKassa, hasKassabuchVoll, isKassabuchAktiv, addKassabuchEintrag, loadKassabuch, saveKassabuch, type KassabuchEintrag } from '../utils/kassabuchStorage'
-import { uploadKassaSnapshotToServer, fetchKassaSnapshotAndMergeLocal } from '../utils/kassaServerSync'
+import {
+  uploadKassaSnapshotToServer,
+  fetchKassaSnapshotAndMergeLocal,
+  scheduleKassaUploadToServer,
+} from '../utils/kassaServerSync'
 import { PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import { useGamificationChecklistsUi } from '../hooks/useGamificationChecklistsUi'
 import '../App.css'
@@ -2906,6 +2910,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
 
     // Event für andere Komponenten
     window.dispatchEvent(new CustomEvent('artworks-updated'))
+    scheduleKassaUploadToServer(effectiveFromOeffentlich, effectiveFromVk2)
 
     setCart([])
     setShowCheckout(false)

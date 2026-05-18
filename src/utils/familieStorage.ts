@@ -6,8 +6,28 @@
  * Siehe docs/K2-FAMILIE-DATENMODELL.md, Regel niemals-kundendaten-loeschen.
  */
 
-import type { K2FamiliePerson, K2FamilieMoment, K2FamilieEvent, K2FamilieGabe, K2FamilieBeitrag, K2FamilieEinstellungen, K2FamilieZweig, K2FamilieGeschichte } from '../types/k2Familie'
-import { getK2FamiliePersonenKey, getK2FamilieMomenteKey, getK2FamilieEventsKey, getK2FamilieGabenKey, getK2FamilieBeitraegeKey, getK2FamilieEinstellungenKey, getK2FamilieZweigeKey, getK2FamilieGeschichtenKey } from '../types/k2Familie'
+import type {
+  K2FamiliePerson,
+  K2FamilieMoment,
+  K2FamilieEvent,
+  K2FamilieGabe,
+  K2FamilieBeitrag,
+  K2FamilieEinstellungen,
+  K2FamilieZweig,
+  K2FamilieGeschichte,
+  K2FamilieGeschichteEintrag,
+} from '../types/k2Familie'
+import {
+  getK2FamiliePersonenKey,
+  getK2FamilieMomenteKey,
+  getK2FamilieEventsKey,
+  getK2FamilieGabenKey,
+  getK2FamilieBeitraegeKey,
+  getK2FamilieEinstellungenKey,
+  getK2FamilieZweigeKey,
+  getK2FamilieGeschichtenKey,
+  getK2FamilieGeschichteEintraegeKey,
+} from '../types/k2Familie'
 import { clearIdentitaetBestaetigt, clearGerateVertrauen } from './familieIdentitaetStorage'
 import { isFamilieMusterHuberDemoReadOnly } from './familieMusterWriteGuard'
 import { isSupabaseConfigured } from './supabaseClient'
@@ -527,6 +547,44 @@ export function saveGeschichten(
   }
 }
 
+export function loadGeschichteEintraege(tenantId: string): K2FamilieGeschichteEintrag[] {
+  const key = getK2FamilieGeschichteEintraegeKey(tenantId)
+  try {
+    const stored = localStorage.getItem(key)
+    if (!stored) return []
+    const parsed = JSON.parse(stored)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+export function saveGeschichteEintraege(
+  tenantId: string,
+  list: K2FamilieGeschichteEintrag[],
+  options: { skipMusterDemoGuard?: boolean } = {},
+): boolean {
+  if (!canWriteFamilieTenantId(tenantId, 'Geschichte-Einträge speichern')) return false
+  if (!options.skipMusterDemoGuard && isFamilieMusterHuberDemoReadOnly(tenantId)) {
+    console.warn('⚠️ familieStorage: Musterfamilie (Demo-Sitzung) ist nur lesend – Geschichten-Einträge speichern abgelehnt')
+    return false
+  }
+  const key = getK2FamilieGeschichteEintraegeKey(tenantId)
+  const arr = Array.isArray(list) ? list : []
+  try {
+    const json = JSON.stringify(arr)
+    if (json.length > MAX_JSON_SIZE) {
+      console.error('❌ familieStorage: Geschichten-Einträge zu groß')
+      return false
+    }
+    localStorage.setItem(key, json)
+    return true
+  } catch (e) {
+    console.error('❌ familieStorage: Fehler beim Schreiben (Geschichten-Einträge)', e)
+    return false
+  }
+}
+
 /**
  * Person endgültig löschen (nur nach expliziter User-Aktion).
  * Entfernt die Person und alle Referenzen in anderen Personen, Momenten, Beiträgen, Events;
@@ -562,6 +620,9 @@ export function deletePersonWithCleanup(tenantId: string, personId: string): boo
 
   const beitraege = loadBeitraege(tenantId).filter((b) => b.personId !== personId)
   if (!saveBeitraege(tenantId, beitraege)) return false
+
+  const geschichteEintraege = loadGeschichteEintraege(tenantId).filter((e) => e.authorPersonId !== personId)
+  if (!saveGeschichteEintraege(tenantId, geschichteEintraege)) return false
 
   const events = loadEvents(tenantId).map((ev) => ({
     ...ev,

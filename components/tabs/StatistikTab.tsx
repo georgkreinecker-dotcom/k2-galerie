@@ -1,7 +1,8 @@
 import React from 'react'
 import { WERBEUNTERLAGEN_STIL } from '../../src/config/marketingWerbelinie'
 import { getCategoryLabel } from '../../src/config/tenantConfig'
-import { getReservedArtworksStorageKey, getShopSoldArtworksKey } from '../../src/utils/shopContextKeys'
+import { getReservedArtworksStorageKey, getShopOrdersKey, getShopSoldArtworksKey } from '../../src/utils/shopContextKeys'
+import { getArtworkLagerInfo, getArtworkNumberKey } from '../../src/utils/artworkLagerStatus'
 import {
   resolveArtistLabelForGalerieStatistik,
   type KuenstlerFallbackNamen,
@@ -43,27 +44,33 @@ export default function StatistikTab({
   dynamicTenantId = null,
 }: StatistikTabProps) {
   const soldStorageKey = getShopSoldArtworksKey(!!isOeffentlich, !!isVk2, dynamicTenantId || undefined)
+  const ordersStorageKey = getShopOrdersKey(!!isOeffentlich, !!isVk2, dynamicTenantId || undefined)
   const reservedStorageKey = getReservedArtworksStorageKey(!!isOeffentlich, !!isVk2, dynamicTenantId || undefined)
   let soldEntries: any[] = []
   try { soldEntries = JSON.parse(localStorage.getItem(soldStorageKey) || '[]') } catch (_) {}
+  if (!Array.isArray(soldEntries)) soldEntries = []
+  let ordersList: any[] = []
+  try { ordersList = JSON.parse(localStorage.getItem(ordersStorageKey) || '[]') } catch (_) {}
+  if (!Array.isArray(ordersList)) ordersList = []
   let reservedEntries: any[] = []
   try { reservedEntries = JSON.parse(localStorage.getItem(reservedStorageKey) || '[]') } catch (_) {}
 
-  const soldNumbers = new Set(soldEntries.map((e: any) => e.number))
-  const soldWerke = allArtworks.filter((a: any) => soldNumbers.has(a.number || a.id))
+  const soldWerke = allArtworks.filter((a: any) => getArtworkLagerInfo(a, soldEntries, ordersList).soldSumFromList > 0)
+  const soldNumbers = new Set(soldWerke.map((a: any) => getArtworkNumberKey(a)).filter(Boolean))
   const gesamtWerke = allArtworks.length
   const inGalerie = allArtworks.filter((a: any) => a.inExhibition).length
   const reserviert = reservedEntries.length
 
   const umsatzGesamt = soldEntries.reduce((sum: number, e: any) => {
-    const werk = allArtworks.find((a: any) => (a.number || a.id) === e.number)
+    const werk = allArtworks.find((a: any) => getArtworkNumberKey(a) === getArtworkNumberKey(e))
     return sum + (e.soldPrice || werk?.price || 0)
   }, 0)
 
   const katMap: Record<string, { count: number; umsatz: number }> = {}
   soldWerke.forEach((a: any) => {
     const kat = getCategoryLabel(a.category)
-    const soldEntry = soldEntries.find((e: any) => e.number === (a.number || a.id))
+    const numKey = getArtworkNumberKey(a)
+    const soldEntry = soldEntries.find((e: any) => getArtworkNumberKey(e) === numKey)
     const preis = soldEntry?.soldPrice || a.price || 0
     if (!katMap[kat]) katMap[kat] = { count: 0, umsatz: 0 }
     katMap[kat].count++
@@ -74,12 +81,12 @@ export default function StatistikTab({
   const letzteFuenf = [...soldEntries]
     .sort((a, b) => (b.soldAt || '').localeCompare(a.soldAt || ''))
     .slice(0, 5)
-    .map((e: any) => ({ ...e, werk: allArtworks.find((a: any) => (a.number || a.id) === e.number) }))
+    .map((e: any) => ({ ...e, werk: allArtworks.find((a: any) => getArtworkNumberKey(a) === getArtworkNumberKey(e)) }))
 
   const alleVerkaufe = [...soldEntries]
     .sort((a, b) => (b.soldAt || '').localeCompare(a.soldAt || ''))
     .map((e: any) => {
-      const werk = allArtworks.find((a: any) => (a.number || a.id) === e.number)
+      const werk = allArtworks.find((a: any) => getArtworkNumberKey(a) === getArtworkNumberKey(e))
       const preis = e.soldPrice ?? werk?.price ?? 0
       return { ...e, werk, preis }
     })

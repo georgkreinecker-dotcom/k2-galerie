@@ -21,13 +21,13 @@ import { getBeziehungenFromKarten, getFamilienzweigPersonen, getGeschwisterAnzei
 import { getCousinenCousinsListe } from '../utils/familieEventVerwandtschaftKategorie'
 import {
   buildStammbaumKartenState,
-  buildGrossfamilieStammbaumSektionen,
-  buildStammbaumPartnerUnterSektionen,
-  buildStammbaumSektionenOhneGrossfamilieElternpaar,
+  buildStammbaumSektionenForAnsicht,
+  defaultStammbaumSekOpenForUser,
   getStammbaumBranchCardStyle,
   type StammbaumKartenSektion,
 } from '../utils/familieStammbaumKarten'
 import { addPartnersForSiblingsExceptMaria } from '../utils/familieAddPartners'
+import { assignMissingMitgliedsNummern } from '../utils/familieMitgliedsNummer'
 import { ensureErsteEheVierGeschwister } from '../utils/familieErsteEheGeschwister'
 import { getFamilieTenantDisplayName } from '../data/familieHuberMuster'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
@@ -228,9 +228,6 @@ function stammbaumKachelRaender(p: K2FamiliePerson, st: { border: string; bg: st
  */
 const STAMMBAUM_VIELE_SEKTIONEN_AB = 2
 
-/** Ab dieser Personenzahl: Hinweis, wenn „Das bin ich“ fehlt (sonst nur flache Kachelgitter-Ansicht). */
-const STAMMBAUM_HINT_FLACHE_LISTE_AB = 3
-
 function stammbaumSektionDomId(key: string): string {
   return `stammbaum-sek-${key.replace(/[^a-zA-Z0-9_-]/g, '-')}`
 }
@@ -258,21 +255,6 @@ function effectiveNurMeinFamilienzweig(einst: K2FamilieEinstellungen): boolean {
   return false
 }
 
-function defaultStammbaumSekOpen(
-  sek: StammbaumKartenSektion,
-  viele: boolean,
-  ichBinPersonId: string | undefined
-): boolean {
-  if (!viele) return true
-  if (sek.key === 'eltern') return true
-  if (sek.key === 'weitere') return false
-  if (sek.key.startsWith('kleinfamilie-')) {
-    const rootId = sek.key.slice('kleinfamilie-'.length)
-    return rootId === ichBinPersonId
-  }
-  return true
-}
-
 export default function K2FamilieStammbaumPage() {
   const navigate = useNavigate()
   const { hash } = useLocation()
@@ -295,6 +277,7 @@ export default function K2FamilieStammbaumPage() {
   const { currentTenantId, familieStorageRevision } = useFamilieTenant()
   const { capabilities } = useFamilieRolle()
   const kannStruktur = capabilities.canEditStrukturUndStammdaten
+  const kannPersonenAnlegen = capabilities.canPersonenAnlegen
   const kannOrganisch = capabilities.canEditOrganisches
   /** Druck / PDF: wie Schreibrecht – Inhaber:in + Bearbeiter:in (nicht Leser:in; Inhaber in Leser-Ansicht ebenfalls nicht). */
   const kannDrucken = capabilities.canEditFamiliendaten
@@ -458,35 +441,26 @@ export default function K2FamilieStammbaumPage() {
     () => buildStammbaumKartenState(personenForGraph, einstellungen.ichBinPersonId),
     [personenForGraph, einstellungen.ichBinPersonId]
   )
-  /** Wenn „Ich bin“ + Datenlage passt: Blöcke untereinander statt einem Gemisch. */
-  const stammbaumSektionen = useMemo(() => {
-    const ichId = einstellungen.ichBinPersonId
-    if (!ichId || personenForGraph.length === 0) return null
-    if (nurMeinFamilienzweig) {
-      const sortedKlein = buildStammbaumKartenState(personenForGraph, ichId).sortedPersonen
-      const unterSektionen = buildStammbaumPartnerUnterSektionen(personen, ichId, sortedKlein)
-      return [
-        {
-          key: 'dein-familienzweig',
-          titel: 'Dein Familienzweig',
-          untertitel:
-            sortedKlein.length > 0
-              ? `${sortedKlein.length} Person${sortedKlein.length === 1 ? '' : 'en'}${
-                  unterSektionen.length > 1
-                    ? ` · ${unterSektionen.length} Teil-Zweige (Kern & Partner je Familienast)`
-                    : ''
-                }`
-              : undefined,
-          personen: sortedKlein,
-          branchIndex: 0,
-          unterSektionen: unterSektionen.length > 0 ? unterSektionen : undefined,
-        },
-      ]
-    }
-    const gross = buildGrossfamilieStammbaumSektionen(personenForGraph, ichId)
-    if (gross !== null) return gross
-    return buildStammbaumSektionenOhneGrossfamilieElternpaar(personen, personenForGraph, ichId)
-  }, [personen, personenForGraph, einstellungen.ichBinPersonId, nurMeinFamilienzweig])
+  const stammbaumSektionenAnsicht = useMemo(
+    () =>
+      buildStammbaumSektionenForAnsicht(
+        personen,
+        einstellungen.ichBinPersonId,
+        nurMeinFamilienzweig,
+      ),
+    [personen, einstellungen.ichBinPersonId, nurMeinFamilienzweig],
+  )
+  const stammbaumSektionen = stammbaumSektionenAnsicht.sektionen
+  const grossfamilieAnkerId = stammbaumSektionenAnsicht.grossfamilieAnkerId
+  const grossfamilieAnkerName = useMemo(() => {
+    if (!grossfamilieAnkerId) return ''
+    return personen.find((p) => p.id === grossfamilieAnkerId)?.name?.trim() ?? ''
+  }, [personen, grossfamilieAnkerId])
+  const zeigtGrossfamilieUeberPartnerAnker = Boolean(
+    grossfamilieAnkerId &&
+      !nurMeinFamilienzweig &&
+      (!einstellungen.ichBinPersonId || grossfamilieAnkerId !== einstellungen.ichBinPersonId),
+  )
 
   const vieleStammbaumSektionen = Boolean(
     stammbaumSektionen &&
@@ -780,7 +754,7 @@ export default function K2FamilieStammbaumPage() {
   }
 
   const addPerson = () => {
-    if (!kannStruktur) return
+    if (!kannPersonenAnlegen) return
     const neu: K2FamiliePerson = {
       id: generateId(),
       name: 'Neue Person',
@@ -791,8 +765,11 @@ export default function K2FamilieStammbaumPage() {
       wahlfamilieIds: [],
     }
     const next = [...personen, neu]
-    if (!savePersonen(currentTenantId, next, { allowReduce: false })) return
-    navigate(`${PROJECT_ROUTES['k2-familie'].personen}/${neu.id}`)
+    const einst = loadEinstellungen(currentTenantId)
+    const withCodes = assignMissingMitgliedsNummern(next, einst.ichBinPersonId)
+    if (!savePersonen(currentTenantId, withCodes, { allowReduce: false })) return
+    const saved = withCodes.find((p) => p.id === neu.id) ?? neu
+    navigate(`${PROJECT_ROUTES['k2-familie'].personen}/${saved.id}`)
   }
 
   return (
@@ -1008,10 +985,10 @@ export default function K2FamilieStammbaumPage() {
                 <Link to={PROJECT_ROUTES['k2-familie'].grundstruktur} className="btn" style={{ marginRight: '0.75rem' }}>Grundstruktur anlegen</Link>
               ) : (
                 <p className="meta" style={{ margin: '0 0 0.75rem', maxWidth: '40rem' }}>
-                  Grundstruktur und erste Personen anlegen ist nur für Inhaber:in möglich.
+                  Grundstruktur anlegen ist nur für Inhaber:in möglich. Einzelne Personen können Bearbeiter:innen hinzufügen.
                 </p>
               )}
-              {!einstellungen.stammbaumSchlusspunkt && kannStruktur && (
+              {!einstellungen.stammbaumSchlusspunkt && kannPersonenAnlegen && (
                 <button type="button" className="btn-outline" onClick={addPerson}>＋ Einzelne Person hinzufügen</button>
               )}
             </div>
@@ -1327,6 +1304,42 @@ export default function K2FamilieStammbaumPage() {
             </p>
           </details>
         )}
+        {zeigtGrossfamilieUeberPartnerAnker && grossfamilieAnkerName ? (
+          <section
+            className="no-print"
+            role="status"
+            style={{
+              marginBottom: '1rem',
+              padding: '0.75rem 0.9rem',
+              borderRadius: 10,
+              border: '1px solid rgba(45, 212, 191, 0.4)',
+              background: 'rgba(13, 148, 136, 0.12)',
+              maxWidth: '48rem',
+            }}
+          >
+            <p className="meta" style={{ margin: 0, fontSize: '0.88rem', lineHeight: 1.5 }}>
+              {!einstellungen.ichBinPersonId ? (
+                <>
+                  Die Übersicht mit <strong style={{ color: 'rgba(255,255,255,0.95)' }}>Eltern</strong> und{' '}
+                  <strong style={{ color: 'rgba(255,255,255,0.95)' }}>Familienzweigen</strong> folgt dem Stammbaum-Kern von{' '}
+                  <strong style={{ color: 'rgba(255,255,255,0.95)' }}>{grossfamilieAnkerName}</strong>. Legen Sie in den{' '}
+                  <Link to={PROJECT_ROUTES['k2-familie'].einstellungen} style={{ color: 'rgba(45, 212, 191, 0.98)', fontWeight: 600 }}>
+                    Einstellungen
+                  </Link>{' '}
+                  fest, <strong style={{ color: 'rgba(255,255,255,0.95)' }}>wer Sie sind</strong>, damit Ihr Ast hervorgehoben wird.
+                </>
+              ) : (
+                <>
+                  Die Übersicht mit <strong style={{ color: 'rgba(255,255,255,0.95)' }}>Eltern</strong> und{' '}
+                  <strong style={{ color: 'rgba(255,255,255,0.95)' }}>Familienzweigen</strong> folgt dem Stammbaum-Kern von{' '}
+                  <strong style={{ color: 'rgba(255,255,255,0.95)' }}>{grossfamilieAnkerName}</strong> (Partner:in im
+                  Geschwisterkreis). Deine Karte findest du im passenden Familienzweig – er ist beim Öffnen hervorgehoben, wenn
+                  du dort vorkommst.
+                </>
+              )}
+            </p>
+          </section>
+        ) : null}
         {stammbaumSektionen && stammbaumSektionen.length > 1 && !nurMeinFamilienzweig && (
           <details className="meta" style={{ marginBottom: '0.75rem', maxWidth: '48rem' }}>
             <summary style={{ cursor: 'pointer', color: 'rgba(20,184,166,0.95)', fontWeight: 600 }}>Mehr bei einer großen Familie</summary>
@@ -1471,14 +1484,14 @@ export default function K2FamilieStammbaumPage() {
               !vieleStammbaumSektionen ||
               (sekExpanded[sek.key] !== undefined
                 ? sekExpanded[sek.key]!
-                : defaultStammbaumSekOpen(sek, true, einstellungen.ichBinPersonId))
+                : defaultStammbaumSekOpenForUser(sek, true, einstellungen.ichBinPersonId))
 
             const toggleSek = () => {
               if (!vieleStammbaumSektionen) return
               const cur =
                 sekExpanded[sek.key] !== undefined
                   ? sekExpanded[sek.key]!
-                  : defaultStammbaumSekOpen(sek, true, einstellungen.ichBinPersonId)
+                  : defaultStammbaumSekOpenForUser(sek, true, einstellungen.ichBinPersonId)
               setSekExpanded((prev) => ({ ...prev, [sek.key]: !cur }))
             }
 
@@ -1817,106 +1830,21 @@ export default function K2FamilieStammbaumPage() {
               </section>
             )
           })
-        ) : !einstellungen.ichBinPersonId ? (
-          <>
-            {personen.length >= STAMMBAUM_HINT_FLACHE_LISTE_AB && (
-              <section
-                className="no-print"
-                role="status"
-                aria-live="polite"
-                style={{
-                  marginBottom: '1rem',
-                  padding: '0.9rem 1rem',
-                  borderRadius: 10,
-                  border: '1px solid rgba(45, 212, 191, 0.45)',
-                  background: 'linear-gradient(115deg, rgba(13, 148, 136, 0.22) 0%, rgba(15, 23, 42, 0.55) 100%)',
-                  maxWidth: '48rem',
-                }}
-              >
-                <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(45, 212, 191, 0.98)', marginBottom: '0.35rem' }}>
-                  Übersicht nach Familienzweigen
-                </div>
-                <p style={{ margin: 0, lineHeight: 1.5, color: 'rgba(248, 250, 252, 0.94)', fontSize: '0.94rem' }}>
-                  Solange <strong style={{ color: 'rgba(255,255,255,0.98)' }}>„Das bin ich“</strong> nicht gewählt ist, zeigt die App hier nur <strong style={{ color: 'rgba(255,255,255,0.98)' }}>alle Karten nebeneinander</strong> – ohne die Struktur mit Eltern, eingeklappten Familienzweigen und Sprungleiste. Legen Sie in den <Link to={PROJECT_ROUTES['k2-familie'].einstellungen} style={{ color: 'rgba(45, 212, 191, 0.98)', fontWeight: 600 }}>Einstellungen</Link> fest, <strong style={{ color: 'rgba(255,255,255,0.98)' }}>wer Sie sind</strong> (oder Rechtsklick auf Ihre Kachel → Zuordnen), sobald Ihre Karte existiert.
-                </p>
-              </section>
-            )}
-          <div className="k2-familie-stammbaum-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.25rem' }}>
-            {stammbaumKarten.sortedPersonen.map((p, i) => {
-              const bi = stammbaumKarten.branchIndexByKey.get(stammbaumKarten.getBranchKey(p)) ?? 0
-              const st = getStammbaumBranchCardStyle(bi)
-              const r = stammbaumKachelRaender(p, st)
-              return (
-                <Link
-                  key={p.id}
-                  to={`${PROJECT_ROUTES['k2-familie'].personen}/${p.id}`}
-                  className="familie-card-enter"
-                  style={{ textDecoration: 'none', color: 'inherit', animationDelay: `${i * 0.06}s` }}
-                  title={
-                    p.verstorben
-                      ? 'Verstorben · Klick: öffnen · Rechtsklick: Zuordnen'
-                      : 'Klick: öffnen · Rechtsklick: Zuordnen'
-                  }
-                  onContextMenu={(e) => onStammbaumKachelContextMenu(e, p.id)}
-                >
-                  <div
-                    className="card"
-                    style={{
-                      padding: '1.25rem',
-                      textAlign: 'center',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: '0.75rem',
-                      border: r.cardBorder,
-                      background: st.bg,
-                      boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
-                    }}
-                  >
-                    {(() => {
-                      const fotoAktuell = getAktuellesPersonenFoto(p)
-                      return fotoAktuell ? (
-                      <img
-                        src={fotoAktuell}
-                        alt=""
-                        className="person-photo"
-                        style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover', border: r.avatarBorder }}
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          width: 96,
-                          height: 96,
-                          borderRadius: '50%',
-                          background: 'rgba(13,148,136,0.25)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '2.5rem',
-                          border: r.avatarBorder,
-                        }}
-                      >
-                        👤
-                      </div>
-                    )})()}
-                    <div style={{ width: '100%' }}>
-                      <h2 style={{ margin: 0, fontSize: '1.05rem', lineHeight: 1.2 }}>{p.name}</h2>
-                      {p.shortText && <p className="meta" style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', lineHeight: 1.4 }}>{p.shortText.slice(0, 70)}{p.shortText.length > 70 ? '…' : ''}</p>}
-                    </div>
-                    <span className="meta" style={{ fontSize: '0.9rem', opacity: 0.8 }}>→ ansehen</span>
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
-          </>
+        ) : personen.length > 0 && !stammbaumSektionen ? (
+          <p className="meta" style={{ margin: '1rem 0', maxWidth: '48rem', lineHeight: 1.5 }}>
+            Die Familienzweige konnten hier nicht aufgebaut werden – bitte Eltern-Beziehungen auf den Karten prüfen oder „Das bin ich“ in den{' '}
+            <Link to={PROJECT_ROUTES['k2-familie'].einstellungen} style={{ color: 'rgba(45, 212, 191, 0.98)', fontWeight: 600 }}>
+              Einstellungen
+            </Link>{' '}
+            festlegen.
+          </p>
         ) : null}
 
         {personen.length > 0 && (
           <div style={{ marginTop: '1.5rem', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem' }}>
             {!einstellungen.stammbaumSchlusspunkt && (
               <>
-                {kannStruktur && (
+                {kannPersonenAnlegen && (
                 <button type="button" className="btn" onClick={addPerson}>＋ Person hinzufügen</button>
                 )}
                 {einstellungen.ichBinPersonId && kannStruktur && (

@@ -7,11 +7,13 @@ describe('k2FamilieGeschichteStruktur', () => {
     expect(s).toContain('1990-06-15')
     expect(s).toContain('Unsere Zeit')
     expect(s).toContain('## Titel & Anker')
+    expect(s).toContain('## Geltungsbereich')
     expect(s).toContain('## Verlauf')
   })
 
   it('Leitplanken sind kurz und vorhanden', () => {
-    expect(GESCHICHTE_LEITPLANKEN.length).toBeGreaterThanOrEqual(3)
+    expect(GESCHICHTE_LEITPLANKEN.length).toBeGreaterThanOrEqual(4)
     expect(GESCHICHTE_LEITPLANKEN.some((l) => /Ton/i.test(l.titel))).toBe(true)
+    expect(GESCHICHTE_LEITPLANKEN.some((l) => /Zweige/i.test(l.titel))).toBe(true)
   })
 })

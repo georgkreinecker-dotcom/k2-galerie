@@ -14,6 +14,7 @@ import { getFamilyPageContent } from '../config/pageContentFamilie'
 import { getFamilyPageTexts } from '../config/pageTextsFamilie'
 import { loadEinstellungen, saveEinstellungen, loadPersonen, K2_FAMILIE_SESSION_UPDATED } from '../utils/familieStorage'
 import { getFamilieLoadHinweisFuerNutzer, loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
+import { setFamilieMitgliederAppUiSession } from '../utils/familieMitgliederAppUi'
 import {
   clearFamilieEinladungPending,
   clearFamilieFamilienQrKompaktSession,
@@ -453,6 +454,7 @@ export default function K2FamilieHomePage() {
         clearFamilieFamilienQrKompaktSession()
         bumpFamilieStorageRevision()
         setIdentitaetBestaetigt(currentTenantId, pid)
+        setFamilieMitgliederAppUiSession(currentTenantId)
         if (loadIdentitaetBestaetigt(currentTenantId) !== pid) {
           setRegistrierungHinweis(
             'Die Bestätigung konnte nicht gespeichert werden (z. B. strenger Privatmodus). Bitte normalen Tab nutzen oder Speicher prüfen.',

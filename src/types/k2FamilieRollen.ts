@@ -31,14 +31,14 @@ export const K2_FAMILIE_ROLLEN_LABELS: Record<K2FamilieRolle, string> = {
 /** Kurzbeschreibung für UI / Handbuch */
 export const K2_FAMILIE_ROLLEN_KURZ: Record<K2FamilieRolle, string> = {
   inhaber: 'Volle Kontrolle inkl. Sicherung wiederherstellen und Familien-Verwaltung',
-  bearbeiter: 'Organisches bearbeiten (Momente, Events, Geschichte, Gedenkort) – kein Stammbaum/Kern',
+  bearbeiter: 'Organisches bearbeiten; neue Personen anlegen und Codes vergeben – kein Stammbaum-Kern ändern',
   leser: 'Alles lesen; auf der eigenen Karte Fotos, Links, Momente und Gedenkort-Einträge speichern',
 }
 
 /** Eine Zeile unter der Rollenwahl – Alltagssprache, keine Fachliste (Sportwagenmodus: sofort klar). */
 export const K2_FAMILIE_ROLLEN_EINZEILER: Record<K2FamilieRolle, string> = {
   inhaber: 'Du kannst alles bearbeiten – Stammbaum, Daten und Sicherung.',
-  bearbeiter: 'Du bearbeitest Texte und Termine; den Stammbaum siehst du, änderst du nicht.',
+  bearbeiter: 'Du bearbeitest Texte und Termine und kannst neue Personen anlegen; Beziehungen anderer Karten änderst du nicht.',
   leser: 'Du liest alles; auf deiner eigenen Karte kannst du persönliche Angaben, Momente und Gedenkort hinterlegen.',
 }
 
@@ -65,7 +65,7 @@ export const FAMILIE_DRUCK_RECHTE_ZEILEN: readonly {
     rolle: 'Bearbeiter:in',
     lesen: 'Wie Inhaber:in – alles ansehen.',
     schreiben:
-      'Geschichte, Events, Gedenkort und persönliche Texte auf Karten; kein Stammbaum/Beziehungen ändern, kein Backup einspielen oder neue Familie. Fertige Geschichten nur die Inhaber:in löscht – wichtige Texte bei sich sichern (z. B. drucken/PDF).',
+      'Geschichte, Events, Gedenkort; neue Personen anlegen und persönlichen Code vergeben (Anmeldung). Keine Beziehungen fremder Karten ändern, kein Backup einspielen oder neue Familie. Fertige Geschichten nur die Inhaber:in löscht.',
   },
   {
     rolle: 'Leser:in',
@@ -95,6 +95,8 @@ export interface FamilieRollenCapabilities {
   canEditEigenesProfil: boolean
   /** Personenkarten-Stammdaten, Beziehungen, strukturelle Einstellungen, Grundstruktur – nur Inhaber:in */
   canEditStrukturUndStammdaten: boolean
+  /** Neue Person im Stammbaum anlegen (inkl. Code für Anmeldung) – Inhaber:in + Bearbeiter:in */
+  canPersonenAnlegen: boolean
   /** Momente, Beiträge, Events, Geschichten, Gaben, Druck-Spalten/Anzeige – Inhaber + Bearbeiter */
   canEditOrganisches: boolean
   /**
@@ -121,6 +123,7 @@ export function getFamilieRollenCapabilities(rolle: K2FamilieRolle): FamilieRoll
     canEditFamiliendaten: canEdit,
     canEditEigenesProfil: isLeser,
     canEditStrukturUndStammdaten: isInhaber,
+    canPersonenAnlegen: canEdit,
     canEditOrganisches: canEdit,
     canDeleteFertigeGeschichte: isInhaber,
     canExportSicherung: canEdit,

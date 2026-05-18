@@ -7,7 +7,10 @@ import {
   sortPersonenStammbaumKarten,
   buildGrossfamilieStammbaumSektionen,
   buildStammbaumPartnerUnterSektionen,
+  buildStammbaumSektionenForAnsicht,
   buildStammbaumSektionenOhneGrossfamilieElternpaar,
+  findStrukturAnkerPersonId,
+  resolveGrossfamilieAnkerPersonId,
 } from '../utils/familieStammbaumKarten'
 import { normalizeAndDedupePersonen } from '../utils/familiePersonenNormalize'
 import { reconcileParentChildRelations } from '../utils/familieBeziehungen'
@@ -478,5 +481,42 @@ describe('familieStammbaumKarten', () => {
     expect(weitereIdsA.includes('agnes')).toBe(false)
     const rupertZweig = sek!.find((s) => s.key === 'kleinfamilie-rupert')
     expect(rupertZweig?.personen.map((x) => x.id)).toContain('agnes')
+  })
+
+  it('resolveGrossfamilieAnkerPersonId: Schwager nutzt Partner:in mit zwei Eltern', () => {
+    const m = p('m', 'Mutter', ['gm', 'gv'])
+    const f = p('f', 'Vater', ['gm', 'gv'])
+    const schwester = p('sis', 'Schwester', ['m', 'f'], { pos: 2 })
+    const schwager = p('schw', 'Schwager', [], {
+      partners: [{ personId: 'sis', from: null, to: null }],
+    })
+    schwester.partners = [{ personId: 'schw', from: null, to: null }]
+    const personen = [m, f, schwester, schwager]
+
+    expect(resolveGrossfamilieAnkerPersonId(personen, 'schw')).toBe('sis')
+    const ansicht = buildStammbaumSektionenForAnsicht(personen, 'schw', false)
+    expect(ansicht.grossfamilieAnkerId).toBe('sis')
+    expect(ansicht.sektionen?.some((s) => s.key === 'eltern')).toBe(true)
+    expect(ansicht.sektionen?.filter((s) => s.key.startsWith('kleinfamilie-')).length).toBeGreaterThanOrEqual(1)
+    const schwesterZweig = ansicht.sektionen?.find((s) => s.key === 'kleinfamilie-sis')
+    expect(schwesterZweig?.personen.map((x) => x.id)).toContain('schw')
+  })
+
+  it('ohne „Du“: trotzdem Eltern und Familienzweige (Struktur-Anker)', () => {
+    const m = p('m', 'Mutter', ['gm', 'gv'])
+    const f = p('f', 'Vater', ['gm', 'gv'])
+    const schwester = p('sis', 'Schwester', ['m', 'f'], { pos: 2 })
+    const schwager = p('schw', 'Schwager', [], {
+      partners: [{ personId: 'sis', from: null, to: null }],
+    })
+    schwester.partners = [{ personId: 'schw', from: null, to: null }]
+    const personen = [m, f, schwester, schwager]
+
+    expect(findStrukturAnkerPersonId(personen)).toBe('sis')
+    expect(resolveGrossfamilieAnkerPersonId(personen, undefined)).toBe('sis')
+    const ansicht = buildStammbaumSektionenForAnsicht(personen, undefined, false)
+    expect(ansicht.sektionen).not.toBeNull()
+    expect(ansicht.sektionen?.some((s) => s.key === 'eltern')).toBe(true)
+    expect(ansicht.sektionen?.filter((s) => s.key.startsWith('kleinfamilie-')).length).toBeGreaterThanOrEqual(1)
   })
 })

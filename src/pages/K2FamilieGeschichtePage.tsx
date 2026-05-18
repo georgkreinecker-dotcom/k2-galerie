@@ -4,18 +4,36 @@
  */
 
 import { useState, useEffect, useCallback, useMemo, type ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import '../App.css'
+import { PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
-import { loadGeschichten, saveGeschichten, loadEvents, loadMomente, loadPersonen } from '../utils/familieStorage'
+import {
+  loadGeschichten,
+  saveGeschichten,
+  loadGeschichteEintraege,
+  saveGeschichteEintraege,
+  loadEvents,
+  loadMomente,
+  loadPersonen,
+  loadEinstellungen,
+} from '../utils/familieStorage'
+import FamilieGeschichteFamilienEintraege from '../components/FamilieGeschichteFamilienEintraege'
 import {
   GESCHICHTE_IDEENBRINGER,
   GESCHICHTE_LEITPLANKEN,
+  GESCHICHTE_ZWEIG_ORIENTIERUNG,
   fuelleGeschichteGeruest,
 } from '../config/k2FamilieGeschichteStruktur'
 import { buildGeschichteVorschlag, isGeschichteInArbeit } from '../utils/familieGeschichte'
+import {
+  formatGeschichteZeitpunkt,
+  geschichteEintraegeFuerGeschichte,
+  personNameById,
+} from '../utils/familieGeschichteEintrag'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
-import type { K2FamilieGeschichte } from '../types/k2Familie'
+import type { K2FamilieGeschichte, K2FamilieGeschichteEintrag, K2FamiliePerson } from '../types/k2Familie'
 import { K2_FAMILIE_UI as C } from '../config/k2FamilieUiColors'
 
 function generateGeschichteId(): string {
@@ -77,6 +95,53 @@ function renderGeschichteDruckInhalt(text: string): ReactNode {
   return <>{out}</>
 }
 
+/** Familien-Stimmen unter dem Rahmen-Text im Druck. */
+function renderGeschichteFamilienEintraegeDruck(
+  eintraege: K2FamilieGeschichteEintrag[],
+  personen: K2FamiliePerson[],
+): ReactNode {
+  if (eintraege.length === 0) return null
+  return (
+    <section style={{ marginTop: '1rem', pageBreakBefore: 'auto' }}>
+      <h2
+        style={{
+          fontSize: '12pt',
+          margin: '0 0 0.5rem',
+          color: '#0d9488',
+          pageBreakAfter: 'avoid',
+        }}
+      >
+        Stimmen aus der Familie
+      </h2>
+      {eintraege.map((e) => (
+        <article
+          key={e.id}
+          style={{
+            marginBottom: '0.85rem',
+            paddingBottom: '0.65rem',
+            borderBottom: '1px solid #e8e4df',
+            pageBreakInside: 'avoid',
+          }}
+        >
+          <p style={{ margin: '0 0 0.35rem', fontSize: '10.5pt', color: '#1c1a18' }}>
+            <strong>{personNameById(personen, e.authorPersonId)}</strong>
+            <span style={{ fontWeight: 400, color: '#5c5650', fontSize: '9pt' }}>
+              {' '}
+              · Eingetragen {formatGeschichteZeitpunkt(e.createdAt)}
+              {e.updatedAt && e.updatedAt !== e.createdAt ? (
+                <> · Geändert {formatGeschichteZeitpunkt(e.updatedAt)}</>
+              ) : null}
+            </span>
+          </p>
+          <p style={{ margin: 0, whiteSpace: 'pre-wrap', lineHeight: 1.45, fontSize: '10.5pt', color: '#1c1a18' }}>
+            {e.inhalt}
+          </p>
+        </article>
+      ))}
+    </section>
+  )
+}
+
 /** Einzelblatt oder Sammeldruck aller gespeicherten Geschichten (Register). */
 type GeschichtenDruckSnapshot =
   | {
@@ -85,15 +150,23 @@ type GeschichtenDruckSnapshot =
       abDatum: string
       statusLabel: string
       content: string
+      familienEintraege: K2FamilieGeschichteEintrag[]
     }
   | { mode: 'alle'; items: K2FamilieGeschichte[] }
 
 export default function K2FamilieGeschichtePage() {
-  const { currentTenantId } = useFamilieTenant()
+  const { currentTenantId, familieStorageRevision } = useFamilieTenant()
   const { capabilities } = useFamilieRolle()
   const kannOrganisch = capabilities.canEditOrganisches
+  const kannInstanz = capabilities.canManageFamilienInstanz
   const kannFertigeLoeschen = capabilities.canDeleteFertigeGeschichte
+  const einstellungen = useMemo(() => loadEinstellungen(currentTenantId), [currentTenantId, familieStorageRevision])
+  const ichBinPersonId = einstellungen.ichBinPersonId
   const [geschichten, setGeschichten] = useState<K2FamilieGeschichte[]>(() => loadGeschichten(currentTenantId))
+  const [geschichteEintraege, setGeschichteEintraege] = useState<K2FamilieGeschichteEintrag[]>(() =>
+    loadGeschichteEintraege(currentTenantId),
+  )
+  const [personen, setPersonen] = useState<K2FamiliePerson[]>(() => loadPersonen(currentTenantId))
   const [editingId, setEditingId] = useState<string | 'new' | null>(null)
   const [abDatum, setAbDatum] = useState('')
   const [title, setTitle] = useState('')
@@ -105,6 +178,8 @@ export default function K2FamilieGeschichtePage() {
 
   const refresh = useCallback(() => {
     setGeschichten(loadGeschichten(currentTenantId))
+    setGeschichteEintraege(loadGeschichteEintraege(currentTenantId))
+    setPersonen(loadPersonen(currentTenantId))
   }, [currentTenantId])
 
   useEffect(() => {
@@ -117,16 +192,20 @@ export default function K2FamilieGeschichtePage() {
     return () => window.removeEventListener('afterprint', clear)
   }, [])
 
-  const druckGeschichte = useCallback((g: K2FamilieGeschichte) => {
-    setDruckSnapshot({
-      mode: 'einzel',
-      title: g.title?.trim() || `Geschichte ab ${g.abDatum}`,
-      abDatum: g.abDatum,
-      statusLabel: isGeschichteInArbeit(g) ? 'In Arbeit' : 'Fertig',
-      content: g.content,
-    })
-    requestAnimationFrame(() => requestAnimationFrame(() => window.print()))
-  }, [])
+  const druckGeschichte = useCallback(
+    (g: K2FamilieGeschichte) => {
+      setDruckSnapshot({
+        mode: 'einzel',
+        title: g.title?.trim() || `Geschichte ab ${g.abDatum}`,
+        abDatum: g.abDatum,
+        statusLabel: isGeschichteInArbeit(g) ? 'In Arbeit' : 'Fertig',
+        content: g.content,
+        familienEintraege: geschichteEintraegeFuerGeschichte(geschichteEintraege, g.id),
+      })
+      requestAnimationFrame(() => requestAnimationFrame(() => window.print()))
+    },
+    [geschichteEintraege],
+  )
 
   /** Alle gespeicherten Geschichten (älteste zuerst) – für Archiv / alte Einträge ohne Status mit dabei. */
   const druckAlleAusRegister = useCallback(() => {
@@ -137,15 +216,20 @@ export default function K2FamilieGeschichtePage() {
   }, [geschichten])
 
   const druckAktuellerEditor = useCallback(() => {
+    const familienEintraege =
+      editingId && editingId !== 'new'
+        ? geschichteEintraegeFuerGeschichte(geschichteEintraege, editingId)
+        : []
     setDruckSnapshot({
       mode: 'einzel',
       title: title.trim() || (abDatum ? `Geschichte ab ${abDatum}` : 'Neue Geschichte'),
       abDatum: abDatum || '—',
       statusLabel: saveStatus === 'entwurf' ? 'In Arbeit' : 'Fertig',
       content,
+      familienEintraege,
     })
     requestAnimationFrame(() => requestAnimationFrame(() => window.print()))
-  }, [title, abDatum, saveStatus, content])
+  }, [title, abDatum, saveStatus, content, editingId, geschichteEintraege])
 
   const openNew = () => {
     setEditingId('new')
@@ -204,6 +288,7 @@ export default function K2FamilieGeschichtePage() {
   const save = () => {
     if (!kannOrganisch) return
     const now = new Date().toISOString()
+    const ichId = ichBinPersonId?.trim() || undefined
     if (editingId === 'new') {
       const neu: K2FamilieGeschichte = {
         id: generateGeschichteId(),
@@ -213,6 +298,8 @@ export default function K2FamilieGeschichtePage() {
         status: saveStatus,
         createdAt: now,
         updatedAt: now,
+        createdByPersonId: ichId,
+        updatedByPersonId: ichId,
       }
       const next = [...geschichten, neu]
       if (saveGeschichten(currentTenantId, next)) {
@@ -229,6 +316,7 @@ export default function K2FamilieGeschichtePage() {
               content: content.trim() || g.content,
               status: saveStatus,
               updatedAt: now,
+              updatedByPersonId: ichId ?? g.updatedByPersonId,
             }
           : g
       )
@@ -245,8 +333,10 @@ export default function K2FamilieGeschichtePage() {
     if (!g) return
     if (!isGeschichteInArbeit(g) && !kannFertigeLoeschen) return
     const next = geschichten.filter((x) => x.id !== id)
-    if (saveGeschichten(currentTenantId, next)) {
+    const nextEintraege = geschichteEintraege.filter((e) => e.geschichteId !== id)
+    if (saveGeschichten(currentTenantId, next) && saveGeschichteEintraege(currentTenantId, nextEintraege)) {
       setGeschichten(next)
+      setGeschichteEintraege(nextEintraege)
       if (editingId === id) setEditingId(null)
     }
   }
@@ -259,6 +349,11 @@ export default function K2FamilieGeschichtePage() {
       setGeschichten(next)
     }
   }
+
+  const editingGeschichte = useMemo(
+    () => (editingId && editingId !== 'new' ? geschichten.find((g) => g.id === editingId) : undefined),
+    [editingId, geschichten],
+  )
 
   const sorted = useMemo(() => [...geschichten].sort((a, b) => b.abDatum.localeCompare(a.abDatum)), [geschichten])
   const fertigListe = useMemo(() => sorted.filter((g) => !isGeschichteInArbeit(g)), [sorted])
@@ -328,8 +423,49 @@ export default function K2FamilieGeschichtePage() {
       <div className="viewport k2-familie-page" style={{ padding: '1rem 1.25rem', maxWidth: 900, margin: '0 auto' }}>
         <h1 style={{ marginTop: '0.5rem', color: C.text }}>Zusammenfassende Geschichte</h1>
         <p className="meta" style={{ color: C.textSoft, marginBottom: '1rem' }}>
-          Ab einem gewählten Zeitpunkt können Events und Momente als redigierbare Geschichte zusammengefasst werden. Struktur und Leitplanken helfen beim Schreiben – das Gerüst ist nur eine Idee, du bestimmst den Text.
+          Ab einem gewählten Zeitpunkt können Events und Momente als redigierbare Geschichte zusammengefasst werden. Der Rahmen-Text (Einleitung) bearbeitest du hier;{' '}
+          <strong style={{ color: C.text }}>jede Person schreibt unter „Stimmen aus der Familie“ einen eigenen Eintrag</strong> mit Namen – nur die Autor:in ändert ihren Text.
+          Momente bleiben auf den Personenkarten.
         </p>
+
+        <details
+          className="card"
+          style={{
+            marginBottom: '1.25rem',
+            padding: '0.85rem 1rem',
+            borderRadius: 12,
+            border: `1px solid ${C.border}`,
+            background: 'rgba(13, 148, 136, 0.08)',
+          }}
+        >
+          <summary
+            style={{
+              cursor: 'pointer',
+              fontSize: '0.92rem',
+              fontWeight: 600,
+              color: C.accent,
+              listStyle: 'none',
+            }}
+          >
+            {GESCHICHTE_ZWEIG_ORIENTIERUNG.summary}
+          </summary>
+          <div style={{ marginTop: '0.65rem' }}>
+            {GESCHICHTE_ZWEIG_ORIENTIERUNG.absaetze.map((text) => (
+              <p key={text.slice(0, 24)} className="meta" style={{ fontSize: '0.85rem', lineHeight: 1.5, margin: '0 0 0.5rem' }}>
+                {text}
+              </p>
+            ))}
+            <p className="meta" style={{ fontSize: '0.82rem', margin: '0.5rem 0 0', lineHeight: 1.45 }}>
+              <Link
+                to={`${PROJECT_ROUTES['k2-familie'].familienMarketing}#fam-mkt-preis`}
+                style={{ color: 'rgba(20,184,166,0.95)', fontWeight: 600 }}
+              >
+                Eigene K2-Familie-Lizenz
+              </Link>{' '}
+              – eigener Mandant, wenn ein Zweig vollständig getrennt arbeiten möchte.
+            </p>
+          </div>
+        </details>
 
         <section
           className="card"
@@ -538,14 +674,53 @@ export default function K2FamilieGeschichtePage() {
 
         {editingId ? (
           <div className="card" style={{ padding: '1.25rem', borderRadius: 16, border: `1px solid ${C.border}` }}>
-            <h2 style={{ fontSize: '1rem', color: C.accent, marginBottom: '1rem' }}>{editingId === 'new' ? 'Neue Geschichte' : 'Geschichte bearbeiten'}</h2>
+            <h2 style={{ fontSize: '1rem', color: C.accent, marginBottom: '0.5rem' }}>{editingId === 'new' ? 'Neue Geschichte' : 'Geschichte bearbeiten'}</h2>
+            {editingGeschichte ? (
+              <p
+                className="meta"
+                style={{
+                  fontSize: '0.82rem',
+                  lineHeight: 1.45,
+                  margin: '0 0 1rem',
+                  padding: '0.55rem 0.65rem',
+                  borderRadius: 8,
+                  border: `1px solid ${C.border}`,
+                  background: 'rgba(0,0,0,0.18)',
+                }}
+              >
+                <strong style={{ color: C.text }}>Angelegt</strong> von{' '}
+                {personNameById(personen, editingGeschichte.createdByPersonId)}
+                {editingGeschichte.createdAt ? (
+                  <> am {formatGeschichteZeitpunkt(editingGeschichte.createdAt)}</>
+                ) : null}
+                {editingGeschichte.updatedAt &&
+                editingGeschichte.updatedAt !== editingGeschichte.createdAt ? (
+                  <>
+                    {' '}
+                    · <strong style={{ color: C.text }}>Rahmen zuletzt</strong> von{' '}
+                    {personNameById(personen, editingGeschichte.updatedByPersonId)} am{' '}
+                    {formatGeschichteZeitpunkt(editingGeschichte.updatedAt)}
+                  </>
+                ) : null}
+              </p>
+            ) : editingId === 'new' && ichBinPersonId?.trim() ? (
+              <p className="meta" style={{ fontSize: '0.82rem', margin: '0 0 1rem', lineHeight: 1.45 }}>
+                Wird unter deinem Namen angelegt: <strong style={{ color: C.text }}>{personNameById(personen, ichBinPersonId)}</strong>
+              </p>
+            ) : null}
             <div className="field" style={{ marginBottom: '0.75rem' }}>
               <label className="meta" style={{ display: 'block', marginBottom: '0.25rem' }}>Ab Datum (Events/Momente ab diesem Tag)</label>
               <input type="date" value={abDatum} onChange={(e) => setAbDatum(e.target.value)} disabled={!kannOrganisch} style={{ background: 'rgba(0,0,0,0.25)', border: `1px solid ${C.border}`, borderRadius: 8, color: C.text, padding: '0.4rem 0.6rem' }} />
             </div>
             <div className="field" style={{ marginBottom: '0.75rem' }}>
               <label className="meta" style={{ display: 'block', marginBottom: '0.25rem' }}>Titel (optional)</label>
-              <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="z. B. Unsere Geschichte ab 1990" disabled={!kannOrganisch} style={{ width: '100%', maxWidth: 400, background: 'rgba(0,0,0,0.25)', border: `1px solid ${C.border}`, borderRadius: 8, color: C.text, padding: '0.4rem 0.6rem' }} />
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={GESCHICHTE_ZWEIG_ORIENTIERUNG.titelPlatzhalter}
+                disabled={!kannOrganisch}
+                style={{ width: '100%', maxWidth: 400, background: 'rgba(0,0,0,0.25)', border: `1px solid ${C.border}`, borderRadius: 8, color: C.text, padding: '0.4rem 0.6rem' }}
+              />
             </div>
             <div className="field" style={{ marginBottom: '0.75rem' }}>
               <label className="meta" style={{ display: 'block', marginBottom: '0.25rem' }}>Status</label>
@@ -577,7 +752,7 @@ export default function K2FamilieGeschichtePage() {
             </div>
             <div className="field" style={{ marginBottom: '0.75rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                <label className="meta">Inhalt (redigierbar)</label>
+                <label className="meta">Einleitung / Rahmen-Text (redigierbar)</label>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                   <button type="button" className="btn-outline" disabled={!kannOrganisch} onClick={geruestEinfuegen} style={{ fontSize: '0.85rem' }}>
                     Struktur-Gerüst einfügen
@@ -609,6 +784,22 @@ export default function K2FamilieGeschichtePage() {
                 style={{ width: '100%', background: 'rgba(0,0,0,0.25)', border: `1px solid ${C.border}`, borderRadius: 8, color: C.text, padding: '0.6rem', fontFamily: 'inherit', fontSize: '0.95rem', lineHeight: 1.5 }}
               />
             </div>
+            {editingId !== 'new' ? (
+              <FamilieGeschichteFamilienEintraege
+                tenantId={currentTenantId}
+                geschichteId={editingId}
+                personen={personen}
+                ichBinPersonId={ichBinPersonId}
+                kannOrganisch={kannOrganisch}
+                kannInstanz={kannInstanz}
+                eintraege={geschichteEintraege}
+                onEintraegeChange={setGeschichteEintraege}
+              />
+            ) : (
+              <p className="meta" style={{ fontSize: '0.82rem', marginTop: '0.75rem', marginBottom: 0 }}>
+                Nach dem ersten Speichern können Familienmitglieder unter „Stimmen aus der Familie“ jeweils einen eigenen Eintrag schreiben.
+              </p>
+            )}
             <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', flexWrap: 'wrap' }}>
               <button type="button" className="btn" disabled={!kannOrganisch} onClick={save} style={{ background: C.accent }}>Speichern</button>
               <button type="button" className="btn-outline" onClick={druckAktuellerEditor} title="Aktuellen Text drucken (auch ohne Speichern)">
@@ -636,8 +827,9 @@ export default function K2FamilieGeschichtePage() {
               </p>
               <hr style={{ border: 'none', borderTop: '1px solid #e0ddd8', margin: '0.5rem 0 0.75rem' }} />
               <div style={{ fontSize: '10.5pt' }}>
-                {druckSnapshot.content.trim() ? renderGeschichteDruckInhalt(druckSnapshot.content) : <p style={{ color: '#5c5650', margin: 0 }}>(Kein Text)</p>}
+                {druckSnapshot.content.trim() ? renderGeschichteDruckInhalt(druckSnapshot.content) : <p style={{ color: '#5c5650', margin: 0 }}>(Kein Rahmen-Text)</p>}
               </div>
+              {renderGeschichteFamilienEintraegeDruck(druckSnapshot.familienEintraege, personen)}
               <div className="geschichte-druck-fuss">
                 <p style={{ margin: '0 0 0.2rem' }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
                 <p style={{ margin: 0, color: '#666' }}>{PRODUCT_URHEBER_ANWENDUNG}</p>
@@ -667,8 +859,9 @@ export default function K2FamilieGeschichtePage() {
                     Ab Datum: {g.abDatum} · Status: {isGeschichteInArbeit(g) ? 'In Arbeit' : 'Fertig'}
                   </p>
                   <div style={{ fontSize: '10.5pt' }}>
-                    {g.content.trim() ? renderGeschichteDruckInhalt(g.content) : <p style={{ color: '#5c5650', margin: 0 }}>(Kein Text)</p>}
+                    {g.content.trim() ? renderGeschichteDruckInhalt(g.content) : <p style={{ color: '#5c5650', margin: 0 }}>(Kein Rahmen-Text)</p>}
                   </div>
+                  {renderGeschichteFamilienEintraegeDruck(geschichteEintraegeFuerGeschichte(geschichteEintraege, g.id), personen)}
                 </section>
               ))}
               <div className="geschichte-druck-fuss">

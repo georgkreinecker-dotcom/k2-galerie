@@ -60,6 +60,13 @@ describe('artworkLagerStatus', () => {
     expect(s).toBe(1)
   })
 
+  it('Verkauf zählt bei gleicher Werknummer auch wenn artworkUid nach Sync abweicht', () => {
+    const sold = [{ number: 'K2-M-0008', artworkUid: 'alt-uid', soldQuantity: 1 }]
+    const info = getArtworkLagerInfo({ number: 'K2-M-0008', uid: 'neu-uid', quantity: 1 }, sold)
+    expect(info.soldSumFromList).toBe(1)
+    expect(info.isAusverkauft).toBe(true)
+  })
+
   it('revertOneSoldUnitInList entfernt Zeile mit soldQuantity 1', () => {
     const list = [{ number: 'N1', soldAt: '2025-01-02T00:00:00Z' }]
     const { newList, didChange } = revertOneSoldUnitInList(list, 'N1', undefined)

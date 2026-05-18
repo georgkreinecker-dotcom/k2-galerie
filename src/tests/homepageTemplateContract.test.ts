@@ -71,10 +71,12 @@ describe('Homepage Template Contract (oek2 <-> Lizenz)', () => {
     expect(src).not.toContain('vorschau=1&liveTemplate=1')
   })
 
-  it('erzwingt Dynamic-Mode-Only-Live-Editor im Farben-Subtab', () => {
+  it('erzwingt einen Gestalten-Flow für K2, LK2, VK2 und Lizenz (kein VK2-Sonderpanel)', () => {
     const src = read('components/ScreenshotExportAdmin.tsx')
-    expect(src).toContain('const isDynamicTenantDesignMode = !!effectiveDynamicTenantId || hasTenantIdQuery')
-    expect(src).toContain("if (isDynamicTenantDesignMode || isVk2DesignMode) {")
+    expect(src).toContain('Workflow Schritte 1–4 + Zoom (K2 / LK2 / VK2 / Lizenz – ein Flow)')
+    expect(src).not.toContain('isDynamicTenantDesignMode')
+    expect(src).not.toContain('isVk2DesignMode')
+    expect(src).not.toContain('{(isDynamicTenantDesignMode || isVk2DesignMode) ? (')
   })
 })
 

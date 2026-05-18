@@ -48,16 +48,10 @@ export function sumSoldFromListForArtwork(
 ): number {
   const num = getArtworkNumberKey(artwork)
   if (!num) return 0
-  const uid = String(artwork?.uid ?? '').trim()
   const arr = Array.isArray(soldList) ? soldList : []
   let sum = 0
   for (const e of arr) {
     if (!e || String((e as any).number ?? '').trim() !== num) continue
-    const euid = String((e as any).artworkUid ?? '').trim()
-    if (uid && euid && euid !== uid) continue
-    if (uid && !euid) {
-      /* Nummer passt, Eintrag ohne UID – mitzählen */
-    }
     const sq = (e as any).soldQuantity
     if (sq != null && Number(sq) > 0) sum += Number(sq)
     else sum += 1
@@ -82,7 +76,6 @@ export function sumSoldFromOrdersForArtwork(
 ): number {
   const num = getArtworkNumberKey(artwork)
   if (!num) return 0
-  const uid = String(artwork?.uid ?? '').trim()
   const ords = Array.isArray(orders) ? orders : []
   let sum = 0
   for (const order of ords) {
@@ -92,8 +85,6 @@ export function sumSoldFromOrdersForArtwork(
       if (!it) continue
       const inum = String((it as any).number ?? '').trim()
       if (inum !== num) continue
-      const iuid = String((it as any).artworkUid ?? '').trim()
-      if (uid && iuid && iuid !== uid) continue
       sum += orderLineQuantity(it as { quantity?: unknown })
     }
   }
@@ -134,15 +125,9 @@ export function getArtworkLagerInfo(
 function entryMatchesNumber(
   e: { number?: string; artworkUid?: string },
   artworkNumber: string,
-  artworkUid?: string
+  _artworkUid?: string
 ): boolean {
-  if (String(e?.number ?? '').trim() !== artworkNumber) return false
-  const uid = (artworkUid ?? '').trim()
-  const euid = String(e?.artworkUid ?? '').trim()
-  if (uid) {
-    if (euid && euid !== uid) return false
-  }
-  return true
+  return String(e?.number ?? '').trim() === artworkNumber.trim()
 }
 
 /**
@@ -198,14 +183,9 @@ function orderLineSubtotalEurForRecalc(item: { price?: unknown; quantity?: unkno
 function orderItemMatchesForRevert(
   it: { number?: unknown; artworkUid?: unknown; quantity?: unknown },
   artworkNumber: string,
-  artworkUid?: string
+  _artworkUid?: string
 ): boolean {
-  const inum = String((it as any)?.number ?? '').trim()
-  if (inum !== artworkNumber) return false
-  const uid = (artworkUid ?? '').trim()
-  const iuid = String((it as any)?.artworkUid ?? '').trim()
-  if (uid && iuid && iuid !== uid) return false
-  return true
+  return String((it as any)?.number ?? '').trim() === artworkNumber.trim()
 }
 
 /**

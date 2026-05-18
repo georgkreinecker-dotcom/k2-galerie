@@ -11,7 +11,8 @@ import {
 } from '../../src/config/tenantConfig'
 import { isEchteK2Werknummer, resolveArtworkImages } from '../../src/utils/artworksStorage'
 import { formatEkAnzeige } from '../../src/utils/artworkEkVk'
-import { getReservedArtworksStorageKey, getShopSoldArtworksKey } from '../../src/utils/shopContextKeys'
+import { getReservedArtworksStorageKey, getShopOrdersKey, getShopSoldArtworksKey } from '../../src/utils/shopContextKeys'
+import { getArtworkLagerInfo, getArtworkNumberKey } from '../../src/utils/artworkLagerStatus'
 import {
   resolveArtistLabelForGalerieStatistik,
   type KuenstlerFallbackNamen,
@@ -305,22 +306,38 @@ export default function WerkkatalogTab({
 
   // Sold-Status + Reservierung aus separaten Keys holen (K2 / ök2 / VK2 – wie Shop & Werke)
   const enriched = useMemo(() => {
-    const soldMap = new Map<string, any>()
+    let soldList: any[] = []
+    let ordersList: any[] = []
     try {
-      const soldRaw = localStorage.getItem(getShopSoldArtworksKey(!!isOeffentlich, !!isVk2, dynamicTenantId || undefined))
-      if (soldRaw) JSON.parse(soldRaw).forEach((s: any) => soldMap.set(s.number, s))
-    } catch (_) {}
+      soldList = JSON.parse(localStorage.getItem(getShopSoldArtworksKey(!!isOeffentlich, !!isVk2, dynamicTenantId || undefined)) || '[]')
+      if (!Array.isArray(soldList)) soldList = []
+    } catch (_) {
+      soldList = []
+    }
+    try {
+      ordersList = JSON.parse(localStorage.getItem(getShopOrdersKey(!!isOeffentlich, !!isVk2, dynamicTenantId || undefined)) || '[]')
+      if (!Array.isArray(ordersList)) ordersList = []
+    } catch (_) {
+      ordersList = []
+    }
     const reservedMap = new Map<string, any>()
     try {
       const resRaw = localStorage.getItem(getReservedArtworksStorageKey(!!isOeffentlich, !!isVk2, dynamicTenantId || undefined))
-      if (resRaw) JSON.parse(resRaw).forEach((r: any) => reservedMap.set(r.number, r))
+      if (resRaw) {
+        JSON.parse(resRaw).forEach((r: any) => {
+          const key = getArtworkNumberKey(r)
+          if (key) reservedMap.set(key, r)
+        })
+      }
     } catch (_) {}
     return allArtworks.map((a: any) => {
-      const soldEntry = soldMap.get(a.number || a.id)
-      const resEntry = reservedMap.get(a.number || a.id)
+      const numKey = getArtworkNumberKey(a)
+      const lager = getArtworkLagerInfo(a, soldList, ordersList)
+      const soldEntry = soldList.find((s: any) => getArtworkNumberKey(s) === numKey)
+      const resEntry = reservedMap.get(numKey)
       return {
         ...a,
-        sold: !!soldEntry,
+        sold: lager.soldSumFromList > 0,
         soldAt: soldEntry?.soldAt || '',
         soldPrice: soldEntry?.soldPrice || a.price,
         buyer: soldEntry?.buyer || '',

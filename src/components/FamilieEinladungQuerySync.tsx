@@ -19,6 +19,7 @@ import {
   setFamilieEinladungPending,
   setFamilieFamilienQrKompaktSession,
 } from '../utils/familieEinladungPending'
+import { setFamilieMitgliederAppUiSession } from '../utils/familieMitgliederAppUi'
 import { clearFamilieNurMusterSession } from '../utils/familieMusterSession'
 import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
 import { isFamiliePilotTenantId, seedFamiliePilotIfNeeded } from '../utils/familiePilotSeed'
@@ -210,6 +211,7 @@ export function FamilieEinladungQuerySync() {
         if (m) pidFromM = await applyPersoenlicheMitgliedsNummerWithRetries(t, m)
         strip()
         if (pidFromM) {
+          setFamilieMitgliederAppUiSession(t)
           clearFamilieEinladungPending()
           navigate(`${R_PERSONEN}/${pidFromM}`, { replace: true })
         } else if (m) {
@@ -223,6 +225,7 @@ export function FamilieEinladungQuerySync() {
         } else if (z) {
           /** Allgemeine Familien-QR (t+z, kein m): kompakte Nur-Zugangs-Ansicht, nicht volle Homepage. */
           setFamilieFamilienQrKompaktSession(t)
+          setFamilieMitgliederAppUiSession(t)
           bumpFamilieStorageRevision()
           goMeineFamilieIfNeeded()
         }
@@ -244,6 +247,7 @@ export function FamilieEinladungQuerySync() {
         if (m) pidFromM = await applyPersoenlicheMitgliedsNummerWithRetries(currentTenantId, m)
         strip()
         if (pidFromM) {
+          setFamilieMitgliederAppUiSession(currentTenantId)
           clearFamilieEinladungPending()
           navigate(`${R_PERSONEN}/${pidFromM}`, { replace: true })
         } else if (m) {
@@ -251,6 +255,7 @@ export function FamilieEinladungQuerySync() {
           goMeineFamilieIfNeeded()
         } else {
           setFamilieFamilienQrKompaktSession(currentTenantId)
+          setFamilieMitgliederAppUiSession(currentTenantId)
           bumpFamilieStorageRevision()
           goMeineFamilieIfNeeded()
         }
@@ -261,6 +266,7 @@ export function FamilieEinladungQuerySync() {
         const pidFromM = await applyPersoenlicheMitgliedsNummerWithRetries(currentTenantId, m)
         strip()
         if (pidFromM) {
+          setFamilieMitgliederAppUiSession(currentTenantId)
           clearFamilieEinladungPending()
           navigate(`${R_PERSONEN}/${pidFromM}`, { replace: true })
         } else {

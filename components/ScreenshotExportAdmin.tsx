@@ -174,6 +174,7 @@ import { safeReload } from '../src/utils/env'
 import { shareBlobAsFile } from '../src/utils/sharePrintFile'
 import { compressImageForStorage } from '../src/utils/compressImageForStorage'
 import { setKassabuchLizenzStufe } from '../src/utils/kassabuchStorage'
+import { uploadKassaSnapshotToServer, fetchKassaSnapshotAndMergeLocal } from '../src/utils/kassaServerSync'
 import { processImageForSave } from '../src/utils/imageProcessingTool'
 import { applyServerDataToLocal, preserveLocalImageData, preserveStorageImageRefs } from '../src/utils/syncMerge'
 import { clearAdminUnlock } from '../src/utils/adminUnlockStorage'
@@ -2556,6 +2557,21 @@ function normalizeAdminFocusDirection(raw: unknown): FocusDirectionId {
   return (FOCUS_DIRECTIONS.some((d) => d.id === value) ? value : DEFAULT_OEK2_FOCUS_DIRECTION_ID) as FocusDirectionId
 }
 
+/** Verkaufsliste/Bestellungen mit Galerie-Veröffentlichen an Vercel mitsenden (iPad ↔ Mac). */
+function pushKassaSnapshotAfterPublish(isOeffentlich: boolean, isVk2: boolean, silent: boolean): void {
+  void uploadKassaSnapshotToServer(isOeffentlich, isVk2).then((kr) => {
+    if (kr.success) {
+      try {
+        window.dispatchEvent(new CustomEvent('customers-updated'))
+      } catch {
+        /* ignore */
+      }
+    } else if (!silent) {
+      console.warn('[Kassa] Verkaufsdaten nicht mitgesendet:', kr.error)
+    }
+  })
+}
+
 function buildDynamicTenantGalleryPath(tenantId: string, focusDirection?: string | null): string {
   const fd = normalizeAdminFocusDirection(focusDirection)
   return `/g/${encodeURIComponent(tenantId)}?focusDirection=${encodeURIComponent(fd)}`
@@ -2743,8 +2759,6 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const effectiveDynamicTenantId = tenant.dynamicTenantId ?? dynamicTenantIdFromSearch
   /** Präsentationsmappen-Tab und PM-Karte in Öffentlichkeitsarbeit nur K2 – nicht ök2/VK2/Lizenznehmer. */
   const showPraesentationsmappenAdmin = !tenant.isOeffentlich && !tenant.isVk2 && !effectiveDynamicTenantId
-  const isDynamicTenantDesignMode = !!effectiveDynamicTenantId || hasTenantIdQuery
-  const isVk2DesignMode = tenant.isVk2 || (typeof window !== 'undefined' && String(window.location.search || '').includes('context=vk2'))
   useEffect(() => {
     try {
       if (effectiveDynamicTenantId) sessionStorage.setItem('k2-active-dynamic-tenant', effectiveDynamicTenantId)
@@ -4201,11 +4215,6 @@ function ScreenshotExportAdmin(props?: AdminProps) {
 
   /** Ein Standard: Video für Virtuellen Rundgang wählen – Design Seite 1 und Seite 2 nutzen dieselbe Logik. */
   const handleVirtualTourVideoFile = useCallback(async (f: File) => {
-    if (f.size > 100 * 1024 * 1024) {
-      setVideoUploadMsg('Video ist zu groß (max. 100 MB).')
-      setVideoUploadStatus('error')
-      return
-    }
     setVideoUploadStatus('uploading')
     setVideoUploadMsg('Video wird vorbereitet…')
     try {
@@ -4434,6 +4443,28 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     }
     return () => { isMounted = false }
   }, [tenant.isOeffentlich, tenant.isVk2, tenant.dynamicTenantId])
+
+  // K2/ök2/VK2: Kassa-Stand vom Server beim Admin-Start zusammenführen (Verkäufe vom iPad → Mac)
+  useEffect(() => {
+    if (effectiveDynamicTenantId) return
+    let cancelled = false
+    const fromOeff = !!tenant.isOeffentlich
+    const fromVk2 = !!tenant.isVk2
+    void fetchKassaSnapshotAndMergeLocal(fromOeff, fromVk2).then((r) => {
+      if (cancelled || !r.success) return
+      try {
+        window.dispatchEvent(new CustomEvent('customers-updated'))
+      } catch {
+        /* ignore */
+      }
+      loadArtworksWithResolvedImages(tenant).then((arts) => {
+        if (!cancelled) setAllArtworksSafe(arts)
+      })
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [tenant.isOeffentlich, tenant.isVk2, effectiveDynamicTenantId])
 
   // ök2: Verkaufte-Werke-Anzeige (Tage) aus k2-oeffentlich-galerie-settings laden
   useEffect(() => {
@@ -5445,6 +5476,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
           apiPost(WRITE_GALLERY_DATA_API_URL, json, { timeoutMs: 30000 }).then(result => {
             if (!silent && isMountedRef.current) setIsDeploying(false)
             if (result.success && result.data) {
+              pushKassaSnapshotAfterPublish(false, true, silent)
               if (silent) console.log('✅ VK2-Daten an Server gesendet')
               else {
                 setSyncStatusBar({ phase: 'success', message: 'Gesendet.' })
@@ -5599,6 +5631,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
               if (!isMountedRef.current) return
               if (!silent) setIsDeploying(false)
               if (result.success) {
+                pushKassaSnapshotAfterPublish(false, false, silent)
                 const sentAt = new Date().toISOString()
                 try { localStorage.setItem('k2-last-sent-timestamp', sentAt) } catch (_) {}
                 setLastSyncSentAt(sentAt)
@@ -5687,6 +5720,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
             apiPost(WRITE_GALLERY_DATA_API_URL, json, { timeoutMs: 30000 }).then(result => {
               if (!silent && isMountedRef.current) setIsDeploying(false)
               if (result.success && result.data) {
+                pushKassaSnapshotAfterPublish(!!tenant.isOeffentlich, false, silent)
                 const sentAt = new Date().toISOString()
                 try { localStorage.setItem('k2-last-sent-timestamp', sentAt) } catch (_) {}
                 setLastSyncSentAt(sentAt)
@@ -12626,8 +12660,8 @@ ${'='.repeat(60)}
 
   // Verkauf stornieren (Kasse/Statistik): eine Verkaufszeile zurücknehmen, Bestand +1
   const handleStornoVerkauf = (artworkNumber: string) => {
-    const soldKey = getShopSoldArtworksKey(tenant.isOeffentlich, tenant.isVk2)
-    const { ordersKey } = getShopStorageKeys(tenant.isOeffentlich, tenant.isVk2)
+    const soldKey = getShopSoldArtworksKey(tenant.isOeffentlich, tenant.isVk2, effectiveDynamicTenantId || undefined)
+    const { ordersKey } = getShopStorageKeys(tenant.isOeffentlich, tenant.isVk2, effectiveDynamicTenantId || undefined)
     let list: any[] = []
     try {
       list = JSON.parse(localStorage.getItem(soldKey) || '[]')
@@ -12673,8 +12707,8 @@ ${'='.repeat(60)}
   const handleEinStueckWiederVorlage = (art: { number?: string; id?: string; uid?: string }) => {
     const num = getArtworkNumberKey(art)
     if (!num) return
-    const soldKey = getShopSoldArtworksKey(tenant.isOeffentlich, tenant.isVk2)
-    const { ordersKey } = getShopStorageKeys(tenant.isOeffentlich, tenant.isVk2)
+    const soldKey = getShopSoldArtworksKey(tenant.isOeffentlich, tenant.isVk2, effectiveDynamicTenantId || undefined)
+    const { ordersKey } = getShopStorageKeys(tenant.isOeffentlich, tenant.isVk2, effectiveDynamicTenantId || undefined)
     const artUid = String(art?.uid ?? '').trim() || undefined
     let list: any[] = []
     try {
@@ -12752,7 +12786,7 @@ ${'='.repeat(60)}
 
   // Werk als verkauft markieren – Stückzahl automatisch um 1 verringern
   const handleMarkAsSold = (artworkNumber: string) => {
-    const soldKey = getShopSoldArtworksKey(tenant.isOeffentlich, tenant.isVk2)
+    const soldKey = getShopSoldArtworksKey(tenant.isOeffentlich, tenant.isVk2, effectiveDynamicTenantId || undefined)
     const soldArtworks = JSON.parse(localStorage.getItem(soldKey) || '[]')
     if (!soldArtworks.find((a: any) => a.number === artworkNumber)) {
       soldArtworks.push({
@@ -14327,7 +14361,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
     } else if (type === 'verkauft') {
       // Nur verkaufte Werke
       try {
-        const soldKey = getShopSoldArtworksKey(tenant.isOeffentlich, tenant.isVk2)
+        const soldKey = getShopSoldArtworksKey(tenant.isOeffentlich, tenant.isVk2, effectiveDynamicTenantId || undefined)
         const soldData = localStorage.getItem(soldKey)
         if (soldData) {
           const soldArtworks = JSON.parse(soldData)
@@ -14829,195 +14863,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
           background: '#fff',
         }}
       />
-      {(isDynamicTenantDesignMode || isVk2DesignMode) ? (
-        <div style={{ marginTop: '0.65rem', display: 'grid', gap: '0.55rem', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
-          <label style={{ display: 'grid', gap: '0.2rem' }}>
-            <span style={{ color: s.text, fontSize: '0.8rem', fontWeight: 700 }}>Titel</span>
-            <input
-              value={pageTexts.galerie?.heroTitle ?? ''}
-              onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, heroTitle: e.target.value } }))}
-              style={{ width: '100%', padding: '0.45rem 0.55rem', borderRadius: 8, border: `1px solid ${s.accent}44`, background: 'rgba(255,255,255,0.06)', color: s.text }}
-            />
-          </label>
-          <label style={{ display: 'grid', gap: '0.2rem' }}>
-            <span style={{ color: s.text, fontSize: '0.8rem', fontWeight: 700 }}>Untertitel</span>
-            <input
-              value={pageTexts.galerie?.welcomeSubtext ?? ''}
-              onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, welcomeSubtext: e.target.value } }))}
-              style={{ width: '100%', padding: '0.45rem 0.55rem', borderRadius: 8, border: `1px solid ${s.accent}44`, background: 'rgba(255,255,255,0.06)', color: s.text }}
-            />
-          </label>
-          <label style={{ display: 'grid', gap: '0.2rem', gridColumn: '1 / -1' }}>
-            <span style={{ color: s.text, fontSize: '0.8rem', fontWeight: 700 }}>Einleitung</span>
-            <textarea
-              rows={2}
-              value={pageTexts.galerie?.welcomeIntroText ?? ''}
-              onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, welcomeIntroText: e.target.value } }))}
-              style={{ width: '100%', padding: '0.45rem 0.55rem', borderRadius: 8, border: `1px solid ${s.accent}44`, background: 'rgba(255,255,255,0.06)', color: s.text, resize: 'vertical' }}
-            />
-          </label>
-          <div style={{ gridColumn: '1 / -1', border: `1px solid ${s.accent}33`, borderRadius: 10, padding: '0.6rem', background: 'rgba(255,255,255,0.04)' }}>
-            <div style={{ fontSize: '0.78rem', color: s.text, fontWeight: 700, marginBottom: '0.4rem' }}>Text-Feinabstimmung</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.6rem' }}>
-              <label style={{ display: 'grid', gap: '0.2rem', fontSize: '0.74rem', color: s.muted }}>
-                Titelgröße ({Number(designSettings.titleFontSize || 1.85).toFixed(2)}rem)
-                <input type="range" min={1.2} max={2.6} step={0.05} value={Number(designSettings.titleFontSize || 1.85)} onChange={(e) => handleDesignChange('titleFontSize', String(e.target.value))} />
-              </label>
-              <label style={{ display: 'grid', gap: '0.2rem', fontSize: '0.74rem', color: s.muted }}>
-                Untertitelgröße ({Number(designSettings.subtextFontSize || 1.0).toFixed(2)}rem)
-                <input type="range" min={0.8} max={1.4} step={0.05} value={Number(designSettings.subtextFontSize || 1.0)} onChange={(e) => handleDesignChange('subtextFontSize', String(e.target.value))} />
-              </label>
-              <label style={{ display: 'grid', gap: '0.2rem', fontSize: '0.74rem', color: s.muted }}>
-                Fließtextgröße ({Number(designSettings.bodyFontSize || 1.0).toFixed(2)}rem)
-                <input type="range" min={0.85} max={1.3} step={0.05} value={Number(designSettings.bodyFontSize || 1.0)} onChange={(e) => handleDesignChange('bodyFontSize', String(e.target.value))} />
-              </label>
-              <label style={{ display: 'grid', gap: '0.2rem', fontSize: '0.74rem', color: s.muted }}>
-                Willkommen-Bildhöhe ({Math.round(Number(designSettings.welcomeImageHeightPx || 260))}px)
-                <input type="range" min={170} max={520} step={5} value={Number(designSettings.welcomeImageHeightPx || 260)} onChange={(e) => handleDesignChange('welcomeImageHeightPx', String(e.target.value))} />
-              </label>
-              <label style={{ display: 'grid', gap: '0.2rem', fontSize: '0.74rem', color: s.muted }}>
-                Rundgang-Bildhöhe ({Math.round(Number(designSettings.tourImageHeightPx || 260))}px)
-                <input type="range" min={170} max={520} step={5} value={Number(designSettings.tourImageHeightPx || 260)} onChange={(e) => handleDesignChange('tourImageHeightPx', String(e.target.value))} />
-              </label>
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap', gridColumn: '1 / -1' }}>
-            <button type="button" onClick={() => { applyTheme('default'); setShowLiveFineTuning(true) }} style={{ padding: '0.36rem 0.7rem', borderRadius: 8, border: `1px solid ${s.accent}44`, background: '#7a4a2b', color: '#fff', cursor: 'pointer' }}>Terrakotta</button>
-            <button type="button" onClick={() => { applyTheme('elegant'); setShowLiveFineTuning(true) }} style={{ padding: '0.36rem 0.7rem', borderRadius: 8, border: `1px solid ${s.accent}44`, background: '#205a8e', color: '#fff', cursor: 'pointer' }}>Blau</button>
-            <button type="button" onClick={() => { applyTheme('modern'); setShowLiveFineTuning(true) }} style={{ padding: '0.36rem 0.7rem', borderRadius: 8, border: `1px solid ${s.accent}44`, background: '#b54a1e', color: '#fff', cursor: 'pointer' }}>Orange</button>
-            <button type="button" onClick={() => setShowLiveFineTuning((v) => !v)} style={{ padding: '0.36rem 0.7rem', borderRadius: 8, border: `1px solid ${s.accent}44`, background: showLiveFineTuning ? `${s.accent}22` : 'rgba(255,255,255,0.08)', color: s.text, cursor: 'pointer' }}>
-              {showLiveFineTuning ? 'Feinabstimmung schließen' : 'Feinabstimmung öffnen'}
-            </button>
-          </div>
-          {showLiveFineTuning ? (
-            <div style={{ gridColumn: '1 / -1', border: `1px solid ${s.accent}33`, borderRadius: 10, padding: '0.65rem', background: 'rgba(255,255,255,0.04)' }}>
-              <div style={{ fontSize: '0.78rem', color: s.text, fontWeight: 700, marginBottom: '0.45rem' }}>Feinabstimmung (Schrift & Hintergrund)</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '0.55rem' }}>
-                <label style={{ display: 'grid', gap: '0.2rem', fontSize: '0.74rem', color: s.muted }}>
-                  Akzent
-                  <input type="color" value={String(designSettings.accentColor || '#b54a1e')} onInput={(e) => handleDesignChange('accentColor', (e.target as HTMLInputElement).value)} onChange={(e) => handleDesignChange('accentColor', e.target.value)} style={{ width: '100%', height: 34, border: 'none', borderRadius: 8, background: 'transparent' }} />
-                </label>
-                <label style={{ display: 'grid', gap: '0.2rem', fontSize: '0.74rem', color: s.muted }}>
-                  Hintergrund (Verlauf oben)
-                  <input type="color" value={String(designSettings.backgroundColor1 || '#f4efe8')} onInput={(e) => handleDesignChange('backgroundColor1', (e.target as HTMLInputElement).value)} onChange={(e) => handleDesignChange('backgroundColor1', e.target.value)} style={{ width: '100%', height: 34, border: 'none', borderRadius: 8, background: 'transparent' }} />
-                </label>
-                <label style={{ display: 'grid', gap: '0.2rem', fontSize: '0.74rem', color: s.muted }}>
-                  Hintergrund (Verlauf unten)
-                  <input type="color" value={String(designSettings.backgroundColor2 || '#ede4d8')} onInput={(e) => handleDesignChange('backgroundColor2', (e.target as HTMLInputElement).value)} onChange={(e) => handleDesignChange('backgroundColor2', e.target.value)} style={{ width: '100%', height: 34, border: 'none', borderRadius: 8, background: 'transparent' }} />
-                </label>
-                <label style={{ display: 'grid', gap: '0.2rem', fontSize: '0.74rem', color: s.muted }}>
-                  Textfarbe
-                  <input type="color" value={String(designSettings.textColor || '#1f1a15')} onInput={(e) => handleDesignChange('textColor', (e.target as HTMLInputElement).value)} onChange={(e) => handleDesignChange('textColor', e.target.value)} style={{ width: '100%', height: 34, border: 'none', borderRadius: 8, background: 'transparent' }} />
-                </label>
-                <label style={{ display: 'grid', gap: '0.2rem', fontSize: '0.74rem', color: s.muted }}>
-                  Sekundärtext / UI
-                  <input type="color" value={String(designSettings.mutedColor || '#5f564d')} onInput={(e) => handleDesignChange('mutedColor', (e.target as HTMLInputElement).value)} onChange={(e) => handleDesignChange('mutedColor', e.target.value)} style={{ width: '100%', height: 34, border: 'none', borderRadius: 8, background: 'transparent' }} />
-                </label>
-              </div>
-            </div>
-          ) : null}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.5rem', gridColumn: '1 / -1' }}>
-            <label
-              style={{ border: `1px dashed ${s.accent}66`, borderRadius: 10, padding: '0.5rem', background: 'rgba(255,255,255,0.04)', cursor: 'pointer', minHeight: 110 }}
-              onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLLabelElement).style.borderColor = s.accent }}
-              onDragLeave={(e) => { (e.currentTarget as HTMLLabelElement).style.borderColor = `${s.accent}66` }}
-              onDrop={async (e) => {
-                e.preventDefault()
-                ;(e.currentTarget as HTMLLabelElement).style.borderColor = `${s.accent}66`
-                const f = e.dataTransfer.files?.[0]
-                if (!f || !f.type.startsWith('image/')) return
-                await handleQuickPageImageFile('welcomeImage', f, 'Willkommen-Bild')
-              }}
-            >
-              <input
-                type="file"
-                accept="image/*"
-                style={{ display: 'none' }}
-                onChange={async (e) => {
-                  const f = e.target.files?.[0]
-                  if (f) await handleQuickPageImageFile('welcomeImage', f, 'Willkommen-Bild')
-                  e.target.value = ''
-                }}
-              />
-              <div style={{ fontSize: '0.74rem', color: s.muted, marginBottom: '0.35rem', fontWeight: 700 }}>Willkommen-Bild (ziehen oder klicken)</div>
-              {(pendingPageImage?.field === 'welcomeImage' ? pendingPageImage.dataUrl : pageContent.welcomeImage) ? (
-                <img src={pendingPageImage?.field === 'welcomeImage' ? pendingPageImage.dataUrl : pageContent.welcomeImage} alt="Willkommen Vorschau" style={{ width: '100%', height: 72, objectFit: 'cover', borderRadius: 8, display: 'block' }} />
-              ) : (
-                <div style={{ height: 72, borderRadius: 8, display: 'grid', placeItems: 'center', border: `1px solid ${s.accent}22`, color: s.muted, fontSize: '0.75rem' }}>Keine Vorschau</div>
-              )}
-            </label>
-
-            <label
-              style={{ border: `1px dashed ${s.accent}66`, borderRadius: 10, padding: '0.5rem', background: 'rgba(255,255,255,0.04)', cursor: 'pointer', minHeight: 110 }}
-              onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLLabelElement).style.borderColor = s.accent }}
-              onDragLeave={(e) => { (e.currentTarget as HTMLLabelElement).style.borderColor = `${s.accent}66` }}
-              onDrop={async (e) => {
-                e.preventDefault()
-                ;(e.currentTarget as HTMLLabelElement).style.borderColor = `${s.accent}66`
-                const f = e.dataTransfer.files?.[0]
-                if (!f || !f.type.startsWith('image/')) return
-                await handleQuickPageImageFile('galerieCardImage', f, 'Galerie-Bild')
-              }}
-            >
-              <input
-                type="file"
-                accept="image/*"
-                style={{ display: 'none' }}
-                onChange={async (e) => {
-                  const f = e.target.files?.[0]
-                  if (f) await handleQuickPageImageFile('galerieCardImage', f, 'Galerie-Bild')
-                  e.target.value = ''
-                }}
-              />
-              <div style={{ fontSize: '0.74rem', color: s.muted, marginBottom: '0.35rem', fontWeight: 700 }}>Galerie-Bild (ziehen oder klicken)</div>
-              {(pendingPageImage?.field === 'galerieCardImage' ? pendingPageImage.dataUrl : pageContent.galerieCardImage) ? (
-                <img src={pendingPageImage?.field === 'galerieCardImage' ? pendingPageImage.dataUrl : pageContent.galerieCardImage} alt="Galerie Vorschau" style={{ width: '100%', height: 72, objectFit: 'cover', borderRadius: 8, display: 'block' }} />
-              ) : (
-                <div style={{ height: 72, borderRadius: 8, display: 'grid', placeItems: 'center', border: `1px solid ${s.accent}22`, color: s.muted, fontSize: '0.75rem' }}>Keine Vorschau</div>
-              )}
-            </label>
-
-            <label
-              style={{ border: `1px dashed ${s.accent}66`, borderRadius: 10, padding: '0.5rem', background: 'rgba(255,255,255,0.04)', cursor: 'pointer', minHeight: 110 }}
-              onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLLabelElement).style.borderColor = s.accent }}
-              onDragLeave={(e) => { (e.currentTarget as HTMLLabelElement).style.borderColor = `${s.accent}66` }}
-              onDrop={async (e) => {
-                e.preventDefault()
-                ;(e.currentTarget as HTMLLabelElement).style.borderColor = `${s.accent}66`
-                const f = e.dataTransfer.files?.[0]
-                if (!f || !f.type.startsWith('video/')) return
-                await handleVirtualTourVideoFile(f)
-              }}
-            >
-              <input
-                ref={virtualTourVideoInputRef}
-                type="file"
-                accept="video/*"
-                style={{ display: 'none' }}
-                onChange={async (e) => {
-                  const f = e.target.files?.[0]
-                  if (f) await handleVirtualTourVideoFile(f)
-                  e.target.value = ''
-                }}
-              />
-              <div style={{ fontSize: '0.74rem', color: s.muted, marginBottom: '0.35rem', fontWeight: 700 }}>Rundgang-Video (ziehen oder klicken, max. 2 Min / 100 MB)</div>
-              {pageContent.virtualTourVideo ? (
-                <video src={pageContent.virtualTourVideo} muted controls style={{ width: '100%', height: 72, objectFit: 'cover', borderRadius: 8, display: 'block' }} />
-              ) : (
-                <div style={{ height: 72, borderRadius: 8, display: 'grid', placeItems: 'center', border: `1px solid ${s.accent}22`, color: s.muted, fontSize: '0.75rem' }}>Keine Vorschau</div>
-              )}
-            </label>
-          </div>
-          {videoUploadMsg ? (
-            <div style={{ gridColumn: '1 / -1', fontSize: '0.76rem', color: videoUploadStatus === 'error' ? '#ffb3b3' : s.muted }}>
-              {videoUploadMsg}
-            </div>
-          ) : null}
-        </div>
-      ) : null}
     </div>
   )
-
   const renderDesignVorschau = () => {
     const dtCompact = designToolbarCompact
     return (
@@ -15337,8 +15184,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               </div>
               )
             })()}
-            {/* Workflow Schritte 1–4 + Zoom (nur klassischer K2/ök2-Flow) */}
-            {!(isDynamicTenantDesignMode || isVk2DesignMode) && (
+            {/* Workflow Schritte 1–4 + Zoom (K2 / LK2 / VK2 / Lizenz – ein Flow) */}
             <div style={{ display: 'flex', alignItems: 'center', gap: dtCompact ? '0.25rem' : '0.5rem', flexWrap: 'wrap' }}>
               {/* Schritt 1 */}
               <div style={{ display: 'flex', alignItems: 'center', gap: dtCompact ? '0.25rem' : '0.5rem', background: 'rgba(0,0,0,0.06)', border: `1px solid ${s.accent}33`, borderRadius: dtCompact ? 8 : 10, padding: dtCompact ? '0.22rem 0.45rem' : '0.45rem 1rem' }}>
@@ -15495,14 +15341,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 ))}
               </div>
             </div>
-            )}
           </div>
           <input type="file" accept="image/*" ref={galerieImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'pageHero' }); setPendingPageImage({ field: 'galerieCardImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Galerie-Karte – im Fenster „Bild übernehmen“ klicken'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
           <input type="file" accept="image/*" ref={virtualTourImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'pageHero' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – im Fenster „Bild übernehmen“ klicken'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
           {(() => {
-            if (effectiveDynamicTenantId) {
-              return null
-            }
             const tc = tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich : tenant.isVk2 ? TENANT_CONFIGS.vk2 : TENANT_CONFIGS.k2
             const dynamicFocusLabel = FOCUS_DIRECTIONS.find((d) => d.id === (galleryData?.focusDirections?.[0] ?? dynamicFocusDirectionFromUrl))?.label ?? 'Kunst & Galerie'
             const galleryName = tenant.dynamicTenantId
@@ -15939,7 +15781,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       )}
                       {/* Eine weiße Kachel: darin entweder „Video gespeichert (X MB)“ + Neues Video einfügen, oder Video-Platzhalter + Button */}
                       <div style={{ background: '#fff', border: '1px solid var(--k2-muted)', borderRadius: 12, padding: 12, minHeight: 56, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                        <input id="virtual-tour-video-input-p1" title="Max. 2 Min. Länge · max. 100 MB" type="file" accept="video/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { await handleVirtualTourVideoFile(f) }; e.target.value = '' }} />
+                        <input id="virtual-tour-video-input-p1" title="Max. 2 Min. Länge" type="file" accept="video/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { await handleVirtualTourVideoFile(f) }; e.target.value = '' }} />
                         {pageContent.virtualTourVideo ? (
                           <>
                             <span style={{ fontSize: '1.75rem', color: '#4caf50' }}>✓</span>
@@ -15961,7 +15803,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           </label>
                         )}
                       </div>
-                      <p style={{ margin: '6px 0 0', fontSize: '0.75rem', color: 'var(--k2-muted)' }}>Max. 2 Min. Länge · max. 100 MB</p>
+                      <p style={{ margin: '6px 0 0', fontSize: '0.75rem', color: 'var(--k2-muted)' }}>Max. 2 Min. Länge</p>
                       {(videoUploadStatus === 'uploading' || videoUploadStatus === 'error') && videoUploadMsg && (
                         <div style={{ margin: '8px 0 0', padding: '8px 12px', borderRadius: 8, background: videoUploadStatus === 'error' ? 'rgba(224,92,92,0.12)' : 'rgba(95,251,241,0.12)', border: `1px solid ${videoUploadStatus === 'error' ? '#e05c5c' : 'var(--k2-accent)'}`, textAlign: 'center' }}>
                           <span style={{ fontSize: '0.9rem', fontWeight: 600, color: videoUploadStatus === 'error' ? '#e05c5c' : 'var(--k2-accent)' }}>
@@ -16037,7 +15879,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     <p style={{ fontSize: '0.85rem', color: 'var(--k2-text)', margin: '0 0 8px' }}>Virtueller Rundgang</p>
                     {/* Eine weiße Kachel: darin „Video gespeichert (X MB)“ + Neues Video einfügen, oder Video-Platzhalter + Button */}
                     <div style={{ background: '#fff', border: '1px solid var(--k2-muted)', borderRadius: 10, padding: 10, minHeight: 48, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                      <input id="virtual-tour-video-input" type="file" accept="video/*" title="Max. 2 Min. Länge · max. 100 MB" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { await handleVirtualTourVideoFile(f) }; e.target.value = '' }} />
+                      <input id="virtual-tour-video-input" type="file" accept="video/*" title="Max. 2 Min. Länge" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { await handleVirtualTourVideoFile(f) }; e.target.value = '' }} />
                       {pageContent.virtualTourVideo ? (
                         <>
                           <span style={{ fontSize: '1.5rem', color: '#4caf50' }}>✓</span>
@@ -16068,7 +15910,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         </div>
                       )}
                     </div>
-                    <p style={{ margin: '6px 0 0', fontSize: '0.75rem', color: 'var(--k2-muted)' }}>Max. 2 Min. Länge · max. 100 MB</p>
+                    <p style={{ margin: '6px 0 0', fontSize: '0.75rem', color: 'var(--k2-muted)' }}>Max. 2 Min. Länge</p>
                     {videoUploadStatus !== 'idle' && videoUploadMsg && (
                       <div style={{ margin: '8px 0 0', padding: '8px 12px', borderRadius: 8, background: videoUploadStatus === 'error' ? 'rgba(224,92,92,0.12)' : videoUploadStatus === 'uploading' ? 'rgba(95,251,241,0.12)' : 'rgba(76,175,80,0.12)', border: `1px solid ${videoUploadStatus === 'error' ? '#e05c5c' : videoUploadStatus === 'uploading' ? 'var(--k2-accent)' : '#4caf50'}`, textAlign: 'center' }}>
                         <span style={{ fontSize: '0.9rem', fontWeight: 600, color: videoUploadStatus === 'error' ? '#e05c5c' : videoUploadStatus === 'uploading' ? 'var(--k2-accent)' : '#4caf50' }}>
@@ -18374,7 +18216,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   const id = String(a?.id ?? '').trim()
                   return id.startsWith('muster-') || ['M1', 'P1', 'G1', 'S1', 'I1', 'M2', 'M3', 'M4', 'M5', 'K1', 'O1'].includes(num)
                 }
-                const { ordersKey: ordersKeyKarten, soldArtworksKey: soldKeyKarten } = getShopStorageKeys(tenant.isOeffentlich, tenant.isVk2)
+                const { ordersKey: ordersKeyKarten, soldArtworksKey: soldKeyKarten } = getShopStorageKeys(tenant.isOeffentlich, tenant.isVk2, effectiveDynamicTenantId || undefined)
                 let soldListForKarten: any[] = []
                 let ordersForKarten: any[] = []
                 try {
@@ -19238,17 +19080,6 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             })()}
 
             {designSubTab === 'farben' && (() => {
-              if (isDynamicTenantDesignMode || isVk2DesignMode) {
-                return (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
-                    {renderLiveTemplatePanel(320)}
-                    <div style={{ padding: '0.7rem 0.9rem', borderRadius: 10, border: `1px solid ${s.accent}33`, background: 'rgba(255,255,255,0.04)', color: s.muted, fontSize: '0.83rem', lineHeight: 1.45 }}>
-                      Für {isVk2DesignMode ? 'VK2' : 'Lizenznehmer'} läuft die Bearbeitung hier nur noch über die Live-Template-Vorschau oben (Texte, Farben, Bilder).
-                      Der alte Doppelbereich darunter ist bewusst ausgeblendet.
-                    </div>
-                  </div>
-                )
-              }
               const simpleKeys = ['accentColor', 'backgroundColor1', 'textColor'] as const
               const labels: Record<string, string> = { accentColor: 'Akzentfarbe', backgroundColor1: 'Hintergrund', textColor: 'Textfarbe' }
               const fText = '#1c1a18'
@@ -29755,7 +29586,7 @@ ${name}`
               gap: '1rem'
             }}>
               {editingArtwork && editingMemberIndex == null && (() => {
-                const { ordersKey: okeyEdit, soldArtworksKey: sk } = getShopStorageKeys(tenant.isOeffentlich, tenant.isVk2)
+                const { ordersKey: okeyEdit, soldArtworksKey: sk } = getShopStorageKeys(tenant.isOeffentlich, tenant.isVk2, effectiveDynamicTenantId || undefined)
                 let sl: any[] = []
                 let ol: any[] = []
                 try {

@@ -39,6 +39,7 @@ import {
   readMusterLeitfadenAbgeschlossen,
 } from './FamilieMusterHuberLeitfaden'
 import { isK2FamilieNurMitgliedEinstiegModus } from '../utils/familieIdentitaet'
+import { shouldShowFamilieLeitstrukturPanel } from '../utils/familieMitgliederAppUi'
 import { isFamilieEinladungNurZugangAnsicht } from '../utils/familieEinladungPending'
 import { loadEinstellungen, loadPersonen } from '../utils/familieStorage'
 import { loadIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
@@ -1182,7 +1183,7 @@ function FamilieLayoutInner() {
   const [musterHintRoot, setMusterHintRoot] = useState<HTMLDivElement | null>(null)
   const { currentTenantId, familieStorageRevision } = useFamilieTenant()
   const huberNurMusterBesuch = isFamilieHuberNurMusterBesuch(currentTenantId)
-  const { rolle } = useFamilieRolle()
+  const { rolle, capabilities } = useFamilieRolle()
   const einst = useMemo(() => loadEinstellungen(currentTenantId), [currentTenantId, familieStorageRevision])
   const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId, familieStorageRevision])
   const einladungNurZugangAnsicht = useMemo(
@@ -1193,6 +1194,16 @@ function FamilieLayoutInner() {
     () =>
       isK2FamilieNurMitgliedEinstiegModus(rolle, currentTenantId, einst, personen, einladungNurZugangAnsicht),
     [rolle, currentTenantId, einst, personen, einladungNurZugangAnsicht],
+  )
+  const zeigeLeitstrukturPanel = useMemo(
+    () =>
+      shouldShowFamilieLeitstrukturPanel({
+        capabilities,
+        tenantId: currentTenantId,
+        nurMitgliedEinstieg,
+        huberNurMusterBesuch,
+      }),
+    [capabilities, currentTenantId, nurMitgliedEinstieg, huberNurMusterBesuch],
   )
 
   /** PWA: einmal pro Mount – letzte Unterroute wiederherstellen, aber nicht weg von Meine Familie solange Zugang noch nicht voll (Code-Formular steht nur dort). */
@@ -1312,7 +1323,7 @@ function FamilieLayoutInner() {
       <FamilieMusterSessionEnforcer />
       <FamilieCloudAutoSync />
       <div className={`k2-familie-layout-shell${huberNurMusterBesuch ? ' k2-familie-layout-shell--nur-muster' : ''}`}>
-        {!nurMitgliedEinstieg && !huberNurMusterBesuch ? <FamilieLeitstrukturPanel /> : null}
+        {zeigeLeitstrukturPanel ? <FamilieLeitstrukturPanel /> : null}
         <FamilieMusterDemoHintProvider active={huberNurMusterBesuch} root={musterHintRoot}>
           <div ref={setMusterHintRoot} className="k2-familie-layout-column">
             {columnInner}

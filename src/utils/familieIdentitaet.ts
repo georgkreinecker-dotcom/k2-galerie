@@ -46,6 +46,7 @@ function capabilitiesNurLesen(rolle: K2FamilieRolle): FamilieRollenCapabilities 
     canEditFamiliendaten: false,
     canEditEigenesProfil: false,
     canEditStrukturUndStammdaten: false,
+    canPersonenAnlegen: false,
     canEditOrganisches: false,
     canDeleteFertigeGeschichte: false,
     canExportSicherung: false,

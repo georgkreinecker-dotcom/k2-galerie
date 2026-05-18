@@ -621,6 +621,170 @@ export interface StammbaumKartenSektion {
   unterSektionen?: StammbaumKartenUnterSektion[]
 }
 
+/** Stärkster Geschwister-Kern der Familie (zwei Eltern auf der Karte) – unabhängig von „Du“. */
+export function findStrukturAnkerPersonId(personen: K2FamiliePerson[]): string | null {
+  const byId = byIdMap(personen)
+  let bestId: string | null = null
+  let bestScore = -1
+
+  for (const p of personen) {
+    if (p.parentIds.length < 2) continue
+    const elternImBestand = p.parentIds.every((pid) => byId.has(pid)) ? 1 : 0
+    const geschwister = getGeschwisterAnzeigeListe(personen, p.id).length
+    const score = elternImBestand * 10_000 + geschwister
+    if (score > bestScore) {
+      bestScore = score
+      bestId = p.id
+    }
+  }
+  return bestId
+}
+
+/**
+ * Wurzel für Eltern + Familienzweig 1…n: zuerst „Du“, sonst Partner:in im Kern, sonst Familien-Anker.
+ * Gibt nie null zurück, solange es einen Geschwister-Kern gibt.
+ */
+export function resolveGrossfamilieAnkerPersonId(
+  personen: K2FamiliePerson[],
+  ichBinPersonId: string | undefined,
+): string | null {
+  const ichId = ichBinPersonId?.trim()
+  const byId = byIdMap(personen)
+  if (ichId) {
+    const ich = byId.get(ichId)
+    if (ich) {
+      if (ich.parentIds.length >= 2) return ichId
+      for (const pr of ich.partners ?? []) {
+        const partner = byId.get(pr.personId)
+        if (partner && partner.parentIds.length >= 2) return partner.id
+      }
+    }
+  }
+  return findStrukturAnkerPersonId(personen)
+}
+
+export type StammbaumSektionenAnsicht = {
+  sektionen: StammbaumKartenSektion[] | null
+  /** Für Hinweis / Sprungleiste: Anker der Großfamilie (kann ≠ „Du“ sein). */
+  grossfamilieAnkerId: string | null
+}
+
+/**
+ * Letzter Ausweg: mehrere Familienzweige aus Zweig-Schlüsseln (nie ein einziges Karten-Wirrwarr).
+ */
+export function buildFamilienzweigeAusZweigGruppen(personen: K2FamiliePerson[]): StammbaumKartenSektion[] {
+  const kernId = findStrukturAnkerPersonId(personen)
+  if (kernId) {
+    const gross = buildGrossfamilieStammbaumSektionen(personen, kernId)
+    if (gross != null && gross.length > 0) return gross
+  }
+
+  const state = buildStammbaumKartenState(personen, kernId ?? undefined)
+  const groups = new Map<string, K2FamiliePerson[]>()
+  for (const p of state.sortedPersonen) {
+    const k = state.getBranchKey(p)
+    const list = groups.get(k) ?? []
+    list.push(p)
+    groups.set(k, list)
+  }
+
+  const sections: StammbaumKartenSektion[] = []
+  let bi = 0
+  let nr = 1
+  for (const [, list] of groups) {
+    const name = list[0]?.name?.trim() || 'Personen'
+    sections.push({
+      key: `zweig-gruppe-${nr}`,
+      titel: list.length === 1 ? `Familienzweig ${nr} – ${name}` : `Familienzweig ${nr}`,
+      untertitel: `${list.length} Person${list.length === 1 ? '' : 'en'}`,
+      personen: list,
+      branchIndex: bi++,
+    })
+    nr++
+  }
+  return sections
+}
+
+/** Karten-Ansicht: immer Familienzweig-Blöcke (Eltern + 1…n), unabhängig vom Eintritt / „Du“. */
+export function buildStammbaumSektionenForAnsicht(
+  personen: K2FamiliePerson[],
+  ichBinPersonId: string | undefined,
+  nurMeinFamilienzweig: boolean,
+): StammbaumSektionenAnsicht {
+  if (personen.length === 0) {
+    return { sektionen: null, grossfamilieAnkerId: null }
+  }
+
+  const ichId = ichBinPersonId?.trim()
+
+  if (nurMeinFamilienzweig) {
+    if (!ichId) {
+      return { sektionen: null, grossfamilieAnkerId: null }
+    }
+    const personenForGraph = getFamilienzweigPersonen(personen, ichId, {
+      includeSiblingCircle: false,
+      includeParentsOfCore: false,
+    })
+    if (personenForGraph.length === 0) {
+      return { sektionen: null, grossfamilieAnkerId: ichId }
+    }
+    const sortedKlein = buildStammbaumKartenState(personenForGraph, ichId).sortedPersonen
+    const unterSektionen = buildStammbaumPartnerUnterSektionen(personen, ichId, sortedKlein)
+    return {
+      grossfamilieAnkerId: ichId,
+      sektionen: [
+        {
+          key: 'dein-familienzweig',
+          titel: 'Dein Familienzweig',
+          untertitel:
+            sortedKlein.length > 0
+              ? `${sortedKlein.length} Person${sortedKlein.length === 1 ? '' : 'en'}${
+                  unterSektionen.length > 1
+                    ? ` · ${unterSektionen.length} Teil-Zweige (Kern & Partner je Familienast)`
+                    : ''
+                }`
+              : undefined,
+          personen: sortedKlein,
+          branchIndex: 0,
+          unterSektionen: unterSektionen.length > 0 ? unterSektionen : undefined,
+        },
+      ],
+    }
+  }
+
+  const grossfamilieAnkerId = resolveGrossfamilieAnkerPersonId(personen, ichId)
+  if (grossfamilieAnkerId) {
+    const gross = buildGrossfamilieStammbaumSektionen(personen, grossfamilieAnkerId)
+    if (gross != null && gross.length > 0) {
+      return { sektionen: gross, grossfamilieAnkerId }
+    }
+  }
+
+  const gruppen = buildFamilienzweigeAusZweigGruppen(personen)
+  return {
+    sektionen: gruppen.length > 0 ? gruppen : null,
+    grossfamilieAnkerId: grossfamilieAnkerId ?? findStrukturAnkerPersonId(personen),
+  }
+}
+
+/** Sektion beim ersten Besuch aufklappen: Ast, in dem „Du“ vorkommt. */
+export function defaultStammbaumSekOpenForUser(
+  sek: StammbaumKartenSektion,
+  viele: boolean,
+  ichBinPersonId: string | undefined,
+): boolean {
+  if (!viele) return true
+  if (sek.key === 'eltern') return true
+  if (sek.key === 'weitere') return false
+  if (sek.key.startsWith('kleinfamilie-')) {
+    const ich = ichBinPersonId?.trim()
+    if (ich && sek.personen.some((p) => p.id === ich)) return true
+    const rootId = sek.key.slice('kleinfamilie-'.length)
+    return rootId === ich
+  }
+  return true
+}
+
 /**
  * Großfamilie: Eltern, dann **je Geschwister ein eigener** Familienzweig-Block (Ast mit Kern, Partner, Kindern …),
  * nummeriert in Geschwister-Reihenfolge. Schlüssel pro Ast: `kleinfamilie-${geschwisterId}` (Sprungleiste / „Nur mein

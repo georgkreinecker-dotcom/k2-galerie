@@ -198,3 +198,22 @@ export async function fetchKassaSnapshotAndMergeLocal(fromOeffentlich: boolean, 
     return { success: false, error: /failed to fetch|network/i.test(msg) ? 'Netzwerkfehler.' : msg }
   }
 }
+
+let debouncedUploadTimer: ReturnType<typeof setTimeout> | null = null
+
+/** Nach Verkauf/Kassa: Snapshot verzögert an Server (iPad → Mac ohne manuelles „Kassa schließen“). */
+export function scheduleKassaUploadToServer(fromOeffentlich: boolean, fromVk2: boolean, delayMs = 2500): void {
+  if (debouncedUploadTimer) clearTimeout(debouncedUploadTimer)
+  debouncedUploadTimer = setTimeout(() => {
+    debouncedUploadTimer = null
+    void uploadKassaSnapshotToServer(fromOeffentlich, fromVk2).then((r) => {
+      if (r.success) {
+        try {
+          window.dispatchEvent(new CustomEvent('customers-updated'))
+        } catch {
+          /* ignore */
+        }
+      }
+    })
+  }, delayMs)
+}

@@ -12,8 +12,6 @@ import {
   savePersonen,
   loadMomente,
   saveMomente,
-  loadBeitraege,
-  saveBeitraege,
   deletePersonWithCleanup,
   loadEinstellungen,
   saveEinstellungen,
@@ -21,15 +19,19 @@ import {
 import { setIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
-import type { K2FamiliePerson, K2FamilieMoment, K2FamilieBeitrag } from '../types/k2Familie'
+import type { K2FamiliePerson, K2FamilieMoment } from '../types/k2Familie'
 import { normalizeFamilieDatum, istFamilieDatumUngueltig } from '../utils/familieDatumEingabe'
 import {
   getBeziehungenFromKarten,
   getGeschwisterAnzeigeListe,
   getGeschwisterIdsAusEltern,
 } from '../utils/familieBeziehungen'
-import { getGraphDistanceFromIch, portraitSizeFromGraphDistance } from '../utils/familieGraphDistance'
-import { trimMitgliedsNummerEingabe } from '../utils/familieMitgliedsNummer'
+import {
+  canBearbeiterPflegeBeziehungenOnCard,
+  getGraphDistanceFromIch,
+  portraitSizeFromGraphDistance,
+} from '../utils/familieGraphDistance'
+import { assignMissingMitgliedsNummern, trimMitgliedsNummerEingabe } from '../utils/familieMitgliedsNummer'
 import FamilieDatumDreiSelect from '../components/FamilieDatumDreiSelect'
 import FamiliePersoenlicherCodeFelder from '../components/FamiliePersoenlicherCodeFelder'
 import { compressImageForStorage } from '../utils/compressImageForStorage'
@@ -230,19 +232,26 @@ export default function K2FamiliePersonPage() {
   const { capabilities } = useFamilieRolle()
   const kannBearbeiten = capabilities.canEditFamiliendaten || capabilities.canEditEigenesProfil
   const kannStruktur = capabilities.canEditStrukturUndStammdaten
+  const kannPersonenAnlegen = capabilities.canPersonenAnlegen
   const kannInstanz = capabilities.canManageFamilienInstanz
   const kannOrganisch = capabilities.canEditOrganisches
   const [edit, setEdit] = useState(false)
   const einstellungen = useMemo(() => loadEinstellungen(currentTenantId), [currentTenantId, location.key, familieStorageRevision])
+  const [personen, setPersonen] = useState<K2FamiliePerson[]>(() => loadPersonen(currentTenantId))
   const istEigeneKarte = Boolean(id && einstellungen.ichBinPersonId === id)
   const rolle = capabilities.rolle
   const effectiveEditPersoenlich = Boolean(edit && istEigeneKarte && (rolle === 'bearbeiter' || rolle === 'leser'))
-  const effectiveEditStammdaten = Boolean((edit && kannStruktur) || effectiveEditPersoenlich)
-  /** Code: Administrator stellt ihn bereit; das Mitglied trägt ihn auf der eigenen Karte ein. Inhaber:in kann zusätzlich auf anderen Karten pflegen. */
-  const canEditPersoenlicherCode = Boolean(effectiveEditStammdaten && (kannInstanz || istEigeneKarte))
+  const istNeuePersonAnlage = Boolean(
+    personen.find((p) => p.id === id)?.name === 'Neue Person' && kannPersonenAnlegen && !kannStruktur,
+  )
+  const kannNeuePersonStammdaten = Boolean(edit && kannPersonenAnlegen && personen.find((p) => p.id === id)?.name === 'Neue Person')
+  const effectiveEditStammdaten = Boolean((edit && kannStruktur) || effectiveEditPersoenlich || kannNeuePersonStammdaten)
+  /** Code: Inhaber:in überall; Bearbeiter:in bei neu angelegter Person; Mitglied auf eigener Karte. */
+  const canEditPersoenlicherCode = Boolean(
+    effectiveEditStammdaten && (kannInstanz || istEigeneKarte || istNeuePersonAnlage),
+  )
   const kannOrganischHier = kannOrganisch || (istEigeneKarte && capabilities.canEditEigenesProfil)
   const feldStrukturNurLesen = Boolean(effectiveEditPersoenlich && !kannStruktur)
-  const [personen, setPersonen] = useState<K2FamiliePerson[]>(() => loadPersonen(currentTenantId))
   const [momente, setMomente] = useState<K2FamilieMoment[]>(() => loadMomente(currentTenantId))
   const [name, setName] = useState('')
   const [geburtsdatum, setGeburtsdatum] = useState('')
@@ -255,11 +264,6 @@ export default function K2FamiliePersonPage() {
   const [momentDate, setMomentDate] = useState('')
   const [momentImage, setMomentImage] = useState('')
   const [momentText, setMomentText] = useState('')
-  const [beitraege, setBeitraege] = useState<K2FamilieBeitrag[]>(() => loadBeitraege(currentTenantId))
-  const [beitragModal, setBeitragModal] = useState(false)
-  const [beitragArt, setBeitragArt] = useState<K2FamilieBeitrag['art']>('erinnerung')
-  const [beitragInhalt, setBeitragInhalt] = useState('')
-  const [beitragVonWem, setBeitragVonWem] = useState('')
   const [positionAmongSiblingsInput, setPositionAmongSiblingsInput] = useState<string>('')
   const [photoKind, setPhotoKind] = useState('')
   const [photoJugend, setPhotoJugend] = useState('')
@@ -290,7 +294,6 @@ export default function K2FamiliePersonPage() {
   const [stammdatenHauptOpen, setStammdatenHauptOpen] = useState(true)
   const [beziehungenOpen, setBeziehungenOpen] = useState(false)
   const [momenteOpen, setMomenteOpen] = useState(false)
-  const [erinnerungenOpen, setErinnerungenOpen] = useState(false)
 
   const person = personen.find((p) => p.id === id)
   const rawSavedPersCode = trimMitgliedsNummerEingabe(person?.mitgliedsNummer ?? '')
@@ -302,6 +305,20 @@ export default function K2FamiliePersonPage() {
     if (!id) return null
     return getGraphDistanceFromIch(personen, einstellungen.ichBinPersonId, id)
   }, [personen, einstellungen.ichBinPersonId, id])
+  /** Inhaber:in überall; Bearbeiter:in eigenes Netz (unten/seitwärts), nicht Vorfahren von „Du“. */
+  const kannBeziehungenHier = useMemo(
+    () =>
+      Boolean(
+        id &&
+          canBearbeiterPflegeBeziehungenOnCard(personen, {
+            ichBinPersonId: einstellungen.ichBinPersonId,
+            cardPersonId: id,
+            kannStruktur,
+            kannPersonenAnlegen,
+          }),
+      ),
+    [id, personen, einstellungen.ichBinPersonId, kannStruktur, kannPersonenAnlegen],
+  )
   const portraitGroessePx = useMemo(
     () => portraitSizeFromGraphDistance(graphDistanceFromDu),
     [graphDistanceFromDu]
@@ -369,7 +386,6 @@ export default function K2FamiliePersonPage() {
     if (kannBearbeiten) return
     setEdit(false)
     setEditingMomentId(null)
-    setBeitragModal(false)
     setShowDeleteConfirm(false)
   }, [kannBearbeiten])
 
@@ -382,13 +398,11 @@ export default function K2FamiliePersonPage() {
   useEffect(() => {
     if (kannOrganischHier) return
     setEditingMomentId(null)
-    setBeitragModal(false)
   }, [kannOrganischHier])
 
   useEffect(() => {
     setPersonen(loadPersonen(currentTenantId))
     setMomente(loadMomente(currentTenantId))
-    setBeitraege(loadBeitraege(currentTenantId))
   }, [id, currentTenantId, familieStorageRevision])
 
   useEffect(() => {
@@ -419,9 +433,9 @@ export default function K2FamiliePersonPage() {
       setMitgliedsNummer(person.mitgliedsNummer ?? '')
       setPhotoLegacyCleared(false)
       // Neue Person (gerade angelegt): sofort Bearbeiten öffnen, damit Name getippt werden kann – keine Kontakt-Vorschläge
-      if (person.name === 'Neue Person' && kannStruktur) setEdit(true)
+      if (person.name === 'Neue Person' && (kannStruktur || kannPersonenAnlegen)) setEdit(true)
     }
-  }, [person, kannStruktur])
+  }, [person, kannStruktur, kannPersonenAnlegen])
 
   const stammdatenDirty = useMemo(
     () => {
@@ -721,7 +735,7 @@ export default function K2FamiliePersonPage() {
   }
 
   const updateAndSave = (next: K2FamiliePerson[]) => {
-    if (!kannStruktur) return
+    if (!kannBeziehungenHier) return
     if (savePersonen(currentTenantId, next, { allowReduce: false })) setPersonen(next)
   }
 
@@ -801,7 +815,7 @@ export default function K2FamiliePersonPage() {
    * Neue Person anlegen, symmetrisch verknüpfen wie addParent/addChild/…, speichern, zur neuen Person navigieren.
    */
   const createNewPersonAndLink = (relationType: 'parent' | 'child' | 'partner' | 'wahlfamilie') => {
-    if (!id || !person || !kannStruktur) return
+    if (!id || !person || !kannPersonenAnlegen) return
     if (einstellungen.stammbaumSchlusspunkt) return
     const newId = generatePersonId()
     const now = new Date().toISOString()
@@ -851,8 +865,10 @@ export default function K2FamiliePersonPage() {
         neu,
       ]
     }
-    if (savePersonen(currentTenantId, withNew, { allowReduce: false })) {
-      setPersonen(withNew)
+    const einst = loadEinstellungen(currentTenantId)
+    const withCodes = assignMissingMitgliedsNummern(withNew, einst.ichBinPersonId)
+    if (savePersonen(currentTenantId, withCodes, { allowReduce: false })) {
+      setPersonen(withCodes)
       navigate(`${PROJECT_ROUTES['k2-familie'].personen}/${newId}`, {
         state: { familieZurueckZu: { id, name: person.name } },
       })
@@ -962,44 +978,6 @@ export default function K2FamiliePersonPage() {
     if (editingMomentId === momentId) setEditingMomentId(null)
   }
 
-  const personBeitraege = id ? beitraege.filter((b) => b.personId === id) : []
-  const openBeitragModal = () => {
-    setStammdatenHauptOpen(true)
-    setErinnerungenOpen(true)
-    setBeitragArt('erinnerung')
-    setBeitragInhalt('')
-    setBeitragVonWem('')
-    setBeitragModal(true)
-  }
-  const saveBeitrag = () => {
-    if (!id || !beitragInhalt.trim() || !kannOrganischHier) return
-    const newB: K2FamilieBeitrag = {
-      id: 'beitrag-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9),
-      personId: id,
-      art: beitragArt,
-      inhalt: beitragInhalt.trim(),
-      vonWem: beitragVonWem.trim() || undefined,
-      createdAt: new Date().toISOString(),
-    }
-    const next = [...beitraege, newB]
-    if (saveBeitraege(currentTenantId, next)) {
-      setBeitraege(next)
-      setBeitragModal(false)
-    }
-  }
-  const deleteBeitrag = (beitragId: string) => {
-    if (!kannOrganischHier) return
-    const next = beitraege.filter((b) => b.id !== beitragId)
-    if (saveBeitraege(currentTenantId, next)) setBeitraege(next)
-  }
-  const artLabel: Record<K2FamilieBeitrag['art'], string> = {
-    erinnerung: 'Erinnerung',
-    korrektur: 'Korrektur',
-    foto: 'Foto',
-    geschichte: 'Geschichte',
-    datum: 'Datum',
-  }
-
   if (!id) {
     return (
       <div className="mission-wrapper">
@@ -1099,13 +1077,13 @@ export default function K2FamiliePersonPage() {
           {ids.map((pid) => (
             <span key={pid} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(13,148,136,0.15)', padding: '0.25rem 0.5rem', borderRadius: 6 }}>
               <Link to={`${PROJECT_ROUTES['k2-familie'].personen}/${pid}`} className="btn" style={{ padding: '0.2rem 0.5rem', fontSize: '0.9rem' }}>{getPersonName(pid)}</Link>
-              {kannStruktur && (
+              {kannBeziehungenHier && (
               <button type="button" onClick={() => removeFn(pid)} style={smallBtn} title="Entfernen">✕</button>
               )}
             </span>
           ))}
-          {kannStruktur && select}
-          {!einstellungen.stammbaumSchlusspunkt && kannStruktur && (
+          {kannBeziehungenHier && select}
+          {!einstellungen.stammbaumSchlusspunkt && kannPersonenAnlegen && (
             <button type="button" className="btn-outline" onClick={() => createNewPersonAndLink(relationType)} style={newPersonBtnStyle}>
               {newPersonButtonLabels[relationType]}
             </button>
@@ -1964,9 +1942,9 @@ export default function K2FamiliePersonPage() {
                 <p className="meta" style={{ margin: '0 0 0.75rem', color: 'rgba(226,232,240,0.9)' }}>
                   Name und Daten erst mit <strong>Speichern</strong> sicher. Beziehungen in diesem Block (aufklappen) speichern sich beim Verknüpfen sofort.
                 </p>
-                {kannStruktur ? (
+                {kannStruktur || (kannPersonenAnlegen && person.name === 'Neue Person') ? (
                   <button type="button" className="btn" onClick={() => setEdit(true)}>
-                    Stammdaten bearbeiten
+                    {person.name === 'Neue Person' && !kannStruktur ? 'Name & Code eintragen' : 'Stammdaten bearbeiten'}
                   </button>
                 ) : istEigeneKarte && (rolle === 'bearbeiter' || rolle === 'leser') ? (
                   <button type="button" className="btn" onClick={() => setEdit(true)}>
@@ -1974,7 +1952,11 @@ export default function K2FamiliePersonPage() {
                   </button>
                 ) : kannOrganisch ? (
                   <p className="meta" style={{ margin: 0, color: 'rgba(226,232,240,0.92)', lineHeight: 1.5 }}>
-                    <strong>Bearbeiter:in:</strong> Stammdaten und Beziehungen nur für Inhaber:in änderbar. Momente und Erinnerungen kannst du unten bearbeiten.
+                    <strong>Bearbeiter:in:</strong> Dein Beziehungsnetz nach unten und zur Seite (Kinder, Partner, Geschwister-Zweig) pflegst du unter Beziehungen – bestehende Karten verknüpfen oder ＋ Neu. Vorfahren von „Du“ nur Inhaber:in. Momente auf der Karte; gemeinsame Texte unter{' '}
+                    <Link to={PROJECT_ROUTES['k2-familie'].geschichte} style={{ color: 'rgba(20,184,166,0.95)', fontWeight: 600 }}>
+                      Geschichten
+                    </Link>
+                    .
                   </p>
                 ) : (
                   <p className="meta" style={{ margin: 0, color: 'rgba(251,191,36,0.95)' }}>
@@ -2150,13 +2132,13 @@ export default function K2FamiliePersonPage() {
                 <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(13,148,136,0.15)', padding: '0.25rem 0.5rem', borderRadius: 6 }}>
                   <Link to={`${PROJECT_ROUTES['k2-familie'].personen}/${pr.personId}`} className="btn" style={{ padding: '0.2rem 0.5rem', fontSize: '0.9rem' }}>{getPersonName(pr.personId)}</Link>
                   {(pr.from || pr.to) && <span className="meta" style={{ fontSize: '0.8rem' }}>({pr.from ?? '?'} – {pr.to ?? 'heute'})</span>}
-                  {kannStruktur && (
+                  {kannBeziehungenHier && (
                   <button type="button" onClick={() => removePartner(pr.personId)} style={smallBtn} title="Entfernen">✕</button>
                   )}
                 </span>
               ))}
-              {kannStruktur && partnerAddSelect}
-              {!einstellungen.stammbaumSchlusspunkt && kannStruktur && (
+              {kannBeziehungenHier && partnerAddSelect}
+              {!einstellungen.stammbaumSchlusspunkt && kannPersonenAnlegen && (
                 <button type="button" className="btn-outline" onClick={() => createNewPersonAndLink('partner')} style={newPersonBtnStyle}>
                   {newPersonButtonLabels.partner}
                 </button>
@@ -2187,7 +2169,7 @@ export default function K2FamiliePersonPage() {
                     <Link to={`${PROJECT_ROUTES['k2-familie'].personen}/${p.id}`} className="btn" style={{ padding: '0.2rem 0.5rem', fontSize: '0.9rem' }}>
                       {p.name}
                     </Link>
-                    {kannStruktur && person.siblingIds.includes(p.id) && !geschwisterAusElternIds.has(p.id) && (
+                    {kannBeziehungenHier && person.siblingIds.includes(p.id) && !geschwisterAusElternIds.has(p.id) && (
                       <button
                         type="button"
                         onClick={() => removeSibling(p.id)}
@@ -2264,63 +2246,19 @@ export default function K2FamiliePersonPage() {
           )}
         </details>
 
-        <details
-          className="k2-familie-details-inner"
-          open={erinnerungenOpen}
-          onToggle={(e) => setErinnerungenOpen((e.target as HTMLDetailsElement).open)}
-        >
-          <summary className="k2-familie-details-summary k2-familie-details-summary-nested">
-            Erinnerungen
-          </summary>
-          <p className="meta" style={{ margin: '0 0 0.75rem' }}>Was unsere Familie dazu weiß – Korrekturen, Geschichten, Fotos oder Daten, von dir oder anderen.</p>
-          {personBeitraege.length > 0 && (
-            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 1rem' }}>
-              {personBeitraege.map((b) => (
-                <li key={b.id} className="card" style={{ marginBottom: '0.75rem', padding: '0.9rem', borderRadius: 12 }}>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'flex-start' }}>
-                    <span className="meta" style={{ fontSize: '0.8rem', background: 'rgba(13,148,136,0.2)', padding: '0.2rem 0.5rem', borderRadius: 6 }}>{artLabel[b.art]}</span>
-                    {b.vonWem && <span className="meta" style={{ fontSize: '0.85rem' }}>von {b.vonWem}</span>}
-                    <span className="meta" style={{ fontSize: '0.8rem' }}>{new Date(b.createdAt).toLocaleDateString('de-AT')}</span>
-                  </div>
-                  <p style={{ margin: '0.5rem 0 0', whiteSpace: 'pre-wrap' }}>{b.inhalt}</p>
-                  {kannOrganischHier && (
-                  <div style={{ marginTop: '0.5rem' }}>
-                    <button type="button" className="btn-outline danger" style={{ fontSize: '0.85rem' }} onClick={() => deleteBeitrag(b.id)}>Löschen</button>
-                  </div>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-          {beitragModal ? (
-            <div className="card" style={{ padding: '1rem', marginTop: '0.5rem' }}>
-              <div className="field">
-                <label className="meta">Art</label>
-                <select value={beitragArt} onChange={(e) => setBeitragArt(e.target.value as K2FamilieBeitrag['art'])} style={{ padding: '0.35rem 0.5rem' }}>
-                  {(['erinnerung', 'korrektur', 'foto', 'geschichte', 'datum'] as const).map((a) => (
-                    <option key={a} value={a}>{artLabel[a]}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="field" style={{ marginTop: '0.5rem' }}>
-                <label className="meta">Inhalt</label>
-                <textarea value={beitragInhalt} onChange={(e) => setBeitragInhalt(e.target.value)} style={{ minHeight: 80 }} placeholder="Was weißt du dazu?" />
-              </div>
-              <div className="field" style={{ marginTop: '0.5rem' }}>
-                <label className="meta">Von wem (optional)</label>
-                <input value={beitragVonWem} onChange={(e) => setBeitragVonWem(e.target.value)} placeholder="z. B. dein Name oder anonym" autoComplete="off" />
-              </div>
-              <div className="card-actions" style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem' }}>
-                <button type="button" className="btn" onClick={saveBeitrag}>Speichern</button>
-                <button type="button" className="btn-outline" onClick={() => setBeitragModal(false)}>Abbrechen</button>
-              </div>
-            </div>
-          ) : (
-            kannOrganischHier && (
-            <button type="button" className="btn" onClick={openBeitragModal} style={{ marginTop: '0.5rem' }}>Was ich dazu weiß, hinzufügen</button>
-            )
-          )}
-        </details>
+        <div className="card" style={{ marginTop: '0.75rem', padding: '0.9rem 1rem', borderRadius: 12 }}>
+          <h3 style={{ fontSize: '0.95rem', color: 'rgba(20,184,166,0.95)', margin: '0 0 0.35rem' }}>Geschichten &amp; Erinnerungen</h3>
+          <p className="meta" style={{ margin: '0 0 0.65rem', fontSize: '0.85rem', lineHeight: 1.45 }}>
+            Gemeinsame Familien-Texte gehören zu den{' '}
+            <Link to={PROJECT_ROUTES['k2-familie'].geschichte} style={{ color: 'rgba(20,184,166,0.95)', fontWeight: 600 }}>
+              Geschichten
+            </Link>
+            : dort schreibt jede Person <strong style={{ color: 'inherit' }}>einen eigenen Eintrag</strong> mit Namen. Persönliche Bilder und kurze Momente bleiben hier oben unter „Momente“.
+          </p>
+          <Link to={PROJECT_ROUTES['k2-familie'].geschichte} className="btn-outline" style={{ display: 'inline-block', fontSize: '0.88rem' }}>
+            Zu den Geschichten
+          </Link>
+        </div>
         </div>
         </details>
 
@@ -2358,7 +2296,7 @@ export default function K2FamiliePersonPage() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', maxWidth: '36rem' }}>
                 <p className="meta" style={{ margin: 0, fontSize: '0.85rem', lineHeight: 1.45 }}>
-                  Verknüpfungen (Eltern, Kinder, Partner, Geschwister) werden entfernt, Momente und Beiträge gehen verloren. „Du“ / „Herkunft Partner“ werden zurückgesetzt, falls sie hierher zeigten.
+                  Verknüpfungen (Eltern, Kinder, Partner, Geschwister) werden entfernt, Momente und eigene Geschichten-Einträge gehen verloren. „Du“ / „Herkunft Partner“ werden zurückgesetzt, falls sie hierher zeigten.
                 </p>
                 <p style={{ margin: 0, fontWeight: 600, fontSize: '0.95rem' }}>Wirklich endgültig löschen?</p>
                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
