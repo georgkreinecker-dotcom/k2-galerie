@@ -2385,6 +2385,78 @@ ${PRODUCT_INSERAT_VIERTEL_IMPRESSUM}`}
         </ol>
       </section>
 
+      {/* Internet-Agentur – Anforderungskatalog DACH (erfolgsabhängig) */}
+      <section id="mok2-agentur-internetvertrieb" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2
+          style={{
+            fontSize: '1.25rem',
+            color: '#5ffbf1',
+            marginBottom: '0.75rem',
+            borderBottom: '1px solid rgba(95,251,241,0.3)',
+            paddingBottom: '0.35rem',
+          }}
+        >
+          Internet-Agentur – Anforderungskatalog (DACH)
+        </h2>
+        <p style={{ marginBottom: '0.75rem', lineHeight: 1.6, fontSize: '0.95rem' }}>
+          <strong>Markteinführung DACH:</strong> Die drei Produkte sind <strong>neu am Markt</strong> – die Agentur-Kampagne soll Launch-Logik tragen (erklären, Vertrauen, Demo → Lizenz), nicht „Brand Maintenance“.
+          <strong> Drei Produkte gleichwertig:</strong> K2 Galerie (Lizenz, sechs Sparten „Mein Weg“), VK2 (Vereine), K2 Familie (eigenständig).
+          Vergütung <strong>erfolgsabhängig</strong> – nur bezahlte Lizenzen über unsere Stripe-Kette; USPs für Creatives: Sektion{' '}
+          <a href="#mok2-1" style={{ color: '#5ffbf1', textDecoration: 'none' }}>
+            1. USPs
+          </a>{' '}
+          In der Druckvorlage steht <strong>Teil A als ein Gesamtbild</strong> (Anfrage inkl. Markt, USPs und drei Produkte zum Kopieren); Detailtabellen und Vertrag im Anhang.
+          Galerie:{' '}
+          <a href="#mok2-maerkte-kunst-fokus" style={{ color: '#5ffbf1', textDecoration: 'none' }}>
+            MARKTGROESSE-DACH-SCHAETZUNG
+          </a>
+          . K2 Familie (eigen): Druckvorlage Abschnitt P3 ·{' '}
+          <code style={{ color: '#5ffbf1' }}>docs/K2-FAMILIE-MARKTGROESSE-DACH-SCHAETZUNG.md</code>
+          .
+        </p>
+        <p style={{ marginBottom: '0.75rem', lineHeight: 1.6, fontSize: '0.95rem' }}>
+          <strong>Drucken / PDF an Agentur:</strong>{' '}
+          <a
+            href="/texte-schreibtisch/agentur-anforderungskatalog-internetvertrieb.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: '#5ffbf1', fontWeight: 600 }}
+          >
+            Agentur-PDF: Anfrage (Gesamtbild) + Katalog + Beilage
+          </a>
+          {' · auch auf dem '}
+          <Link
+            to={PROJECT_ROUTES['k2-galerie'].texteSchreibtisch}
+            style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}
+          >
+            Texte-Schreibtisch → Agenturen
+          </Link>
+          .
+        </p>
+        <ul style={{ lineHeight: 1.65, paddingLeft: '1.35em', margin: '0 0 0.75rem', fontSize: '0.92rem' }}>
+          <li>
+            <strong>Einstiege (vorgeben):</strong>{' '}
+            <a href={urlMusterEingangstorLive} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1' }}>
+              {BASE_APP_URL}{OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE}
+            </a>
+            ,{' '}
+            <Link to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} style={{ color: '#5ffbf1', textDecoration: 'none' }}>
+              Lizenz kaufen
+            </Link>
+            , VK2-Galerie, K2 Familie Lizenz – Details in der Druckvorlage.
+          </li>
+          <li>
+            <strong>Vor Versand ausfüllen:</strong> CPA-Sätze in der Vorlage; Agentur-ID (<code>ag=</code>) technisch klären; VK2-Checkout-Freigabe prüfen.
+          </li>
+          <li>
+            <strong>Beilage-Check:</strong> in der Druckvorlage Teil C – was ✅ mitgeschickt werden kann, was ⚠️ noch fehlt (Referenzen, AV-Vertrag).
+          </li>
+        </ul>
+        <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.5, margin: 0 }}>
+          Button „Als PDF drucken“ oben druckt die Marketing-Mappe; die Agentur-Vorlage ist die separate HTML-Datei: zuerst <strong>Teil A</strong> (eine durchgängige Anfrage), danach Anhang, Teil B und C.
+        </p>
+      </section>
+
       {/* 4b. Was wir gemeinsam verbessern können – Vorschlag (Vermarktung & Strategie) */}
       <section id="mok2-verbesserungen" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
         <h2 style={{ fontSize: '1.25rem', color: '#22c55e', marginBottom: '0.75rem', borderBottom: '1px solid rgba(34,197,94,0.4)', paddingBottom: '0.35rem' }}>

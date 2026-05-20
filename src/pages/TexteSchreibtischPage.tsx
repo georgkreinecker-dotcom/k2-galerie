@@ -317,6 +317,31 @@ const BEREICHE: Bereich[] = [
     ],
   },
   {
+    id: 'agenturen',
+    titel: 'Agenturen',
+    untertitel:
+      'Internet-Vertrieb DACH: eine Anfrage als Gesamtbild (Markt + USPs + drei Produkte), Katalog und Beilage-Check – drucken und an Agenturen senden.',
+    akzent: '#0f766e',
+    zoneBg: 'linear-gradient(145deg, rgba(15,118,110,0.09), rgba(240,253,250,0.98))',
+    zettel: [
+      {
+        id: 'agentur-anforderungskatalog',
+        titel: 'Agentur-Anfrage (Gesamtbild) + Katalog',
+        zweck: 'Drei Produkte · DACH · PDF (Browser → Drucken)',
+        to: '/texte-schreibtisch/agentur-anforderungskatalog-internetvertrieb.html',
+        rotateDeg: 0.2,
+        showDruckWeiterleiten: true,
+      },
+      {
+        id: 'mok2-agentur-sektion',
+        titel: 'mök2 – Kurzfassung Agentur',
+        zweck: 'Marketing ök2, gleicher Inhalt kompakt',
+        to: `${R.marketingOek2}#mok2-agentur-internetvertrieb`,
+        rotateDeg: -0.15,
+      },
+    ],
+  },
+  {
     id: 'oeffentlich',
     titel: 'Öffentlichkeit & Mappe',
     untertitel: 'Kampagne, Werbeunterlagen, Presse-Arbeit – Materialien wie auf der anderen Tischhälfte.',

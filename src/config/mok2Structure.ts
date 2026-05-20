@@ -59,6 +59,10 @@ export const mok2Groups: Mok2Group[] = [
       { id: 'mok2-presse-nachbericht-eroeffnung', label: 'Presse-Nachbericht Galerieeröffnung (Redaktion)' },
       { id: 'mok2-entwuerfe-oeffentlichkeitsarbeit', label: 'Entwürfe Öffentlichkeitsarbeit (Feinschliff)' },
       { id: 'mok2-kanale-2026', label: 'Kanäle 2026' },
+      {
+        id: 'mok2-agentur-internetvertrieb',
+        label: 'Internet-Agentur – Anforderungskatalog (DACH)',
+      },
       { id: 'mok2-verbesserungen', label: 'Was wir gemeinsam verbessern' },
       { id: 'mok2-5', label: '5. Weitere Ideen & Konzepte' },
       { id: 'mok2-6', label: '6. Empfehlungs-Programm' },
