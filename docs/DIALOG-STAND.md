@@ -4,7 +4,7 @@
 
 **Einordnung:** Markteinführung drei Produkte – Anfrage an Performance-Agenturen ohne Fixhonorar; technisch offen bleibt **`ag=`**-Tracking bis Implementierung. VK2-Checkout-Sperre bleibt separates Thema.
 
-**Letzter Stand:** 20.05.26 – **Schluss für heute:** Agentur-PDF ergänzt (Gesamtbild-Anfrage, Shortlist 6, Vergütung nur Erfolg Modell A/B). Commit folgt in dieser Session. Zuvor auf **main:** Agentur-PDF Basis **`2d2a3fbe`**.
+**Letzter Stand:** 20.05.26 – **Schluss für heute:** Agentur-PDF ergänzt (Gesamtbild-Anfrage, Shortlist 6, Vergütung nur Erfolg Modell A/B). **Commit:** `13f8035c` ✅ **main**. Zuvor: Basis **`2d2a3fbe`**.
 
 **Letzter Stand:** 10.05.26 (Abend) – **Schluss für heute:** Georg beendet die Session; **DIALOG-STAND** + **WIR-PROZESS** (**`da73cbd3`**); VK2-Stripe-Sperre **`ce6bc0b1`**, Intro-Text **`8aca5260`**. **`git`** sauber.
 
