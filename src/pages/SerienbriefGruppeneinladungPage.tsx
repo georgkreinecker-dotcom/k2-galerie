@@ -12,6 +12,7 @@ import {
   buildAlleBriefeHtml,
   downloadTextFile,
   printHtmlDocument,
+  BRIEF_DRUCK_HINWEIS,
   empfaengerListToCsv,
   safeFilenamePart,
 } from '../utils/serienbriefGruppeneinladung'
@@ -159,9 +160,12 @@ export default function SerienbriefGruppeneinladungPage() {
         <h1 style={{ margin: '0 0 0.5rem', fontSize: '1.45rem', color: '#2c2419' }}>
           Serienbrief – Gruppeneinladung
         </h1>
-        <p style={{ margin: '0 0 1rem', color: '#5c5650', lineHeight: 1.5, maxWidth: 640 }}>
+        <p style={{ margin: '0 0 0.5rem', color: '#5c5650', lineHeight: 1.5, maxWidth: 640 }}>
           Statt Word/Excel manuell: Liste bearbeiten, jeden Brief prüfen, als HTML für Word öffnen oder alle
           drucken. Speicherung bleibt auf diesem Mac.
+        </p>
+        <p style={{ margin: '0 0 1rem', fontSize: '0.88rem', color: '#b54a1e', maxWidth: 640 }}>
+          {BRIEF_DRUCK_HINWEIS}
         </p>
 
         <div style={{ ...cardStyle, display: 'flex', flexWrap: 'wrap', gap: '0.65rem', alignItems: 'center' }}>

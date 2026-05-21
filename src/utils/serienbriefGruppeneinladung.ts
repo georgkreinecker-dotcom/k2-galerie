@@ -179,67 +179,160 @@ export function empfaengerListToCsv(rows: SerienbriefEmpfaenger[]): string {
   return [header, ...lines].join('\n')
 }
 
-/** QR klein halten – Brief soll auf eine A4-Seite passen */
-const BRIEF_QR_PX = 56
+/** QR kompakt – Brief füllt eine gestaltete A4-Seite */
+const BRIEF_QR_PX = 52
+
+/** Hinweis für Georg im Druckdialog (Browser-Kopf/Fuß lassen sich nicht per CSS abschalten) */
+export const BRIEF_DRUCK_HINWEIS =
+  'Im Druckdialog: „Kopf- und Fußzeile“ ausschalten (Safari/Chrome: Einstellungen unten). Dann nur Ihr Brief auf dem Blatt.'
 
 const BRIEF_STYLES = `
-@page { size: A4; margin: 14mm 16mm 14mm 16mm; }
+@page { size: A4; margin: 0; }
 * { box-sizing: border-box; }
-html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-body {
+html, body {
   margin: 0;
   padding: 0;
+  width: 210mm;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+body {
   font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
-  font-size: 10.5pt;
-  line-height: 1.48;
+  font-size: 11pt;
+  line-height: 1.55;
   color: #1a1816;
-  background: #fff;
-}
-.briefkopf {
-  text-align: right;
-  font-size: 9pt;
-  color: #5c5650;
-  margin-bottom: 0.9rem;
-  line-height: 1.4;
-}
-.briefkopf strong { color: #1a1816; font-size: 10pt; }
-.empfaenger { margin-bottom: 0.9rem; font-size: 10pt; line-height: 1.45; }
-h1 { font-size: 1.05rem; color: #2c2419; margin: 0 0 0.65rem; font-weight: 700; line-height: 1.3; }
-p { margin: 0 0 0.6rem; }
-.fakten {
   background: #fffefb;
-  border: 1px solid #c4b8a8;
-  border-left: 3px solid #b54a1e;
-  padding: 0.45rem 0.65rem;
-  margin: 0.55rem 0 0.6rem;
-  font-size: 10pt;
-  line-height: 1.4;
 }
-.fakten > p { margin: 0 0 0.35rem; }
+.brief-a4 {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0;
+  padding: 24mm 22mm 26mm 26mm;
+  background: #fffefb;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.brief-leiste {
+  height: 4px;
+  width: 100%;
+  background: linear-gradient(90deg, #b54a1e 0%, #c9a227 55%, #e8e0d4 100%);
+  border-radius: 2px;
+  margin: 0 0 1.35rem;
+  flex-shrink: 0;
+}
+.brief-kopfzeile {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2.5rem;
+  margin-bottom: 1.85rem;
+  flex-shrink: 0;
+}
+.empfaenger-block {
+  font-size: 10.5pt;
+  line-height: 1.5;
+  max-width: 52%;
+}
+.empfaenger-block strong { font-size: 11pt; color: #2c2419; }
+.absender-block {
+  text-align: right;
+  font-size: 9.5pt;
+  line-height: 1.45;
+  color: #5c5650;
+  flex-shrink: 0;
+}
+.absender-block strong {
+  display: block;
+  font-size: 10.5pt;
+  color: #1a1816;
+  margin-bottom: 0.2rem;
+}
+.brief-hauptteil {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+h1 {
+  font-size: 13.5pt;
+  font-weight: 700;
+  color: #2c2419;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+  margin: 0 0 1.15rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid #d4c4b0;
+}
+.brief-text p {
+  margin: 0 0 0.95rem;
+  text-align: left;
+  hyphens: auto;
+}
+.fakten {
+  margin-top: auto;
+  padding: 0.85rem 1rem;
+  background: linear-gradient(135deg, #fffefb 0%, #f6f0e6 100%);
+  border: 1px solid #d4c4b0;
+  border-radius: 6px;
+  font-size: 10.5pt;
+  line-height: 1.45;
+}
+.fakten-adresse {
+  margin: 0 0 0.55rem;
+  font-weight: 600;
+  color: #2c2419;
+}
 .galerie-vorschau {
   display: flex;
-  align-items: flex-start;
-  gap: 0.55rem;
-  margin-top: 0.25rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }
 .galerie-vorschau-text { flex: 1; min-width: 0; }
+.galerie-vorschau-label {
+  margin: 0 0 0.2rem;
+  font-size: 9.5pt;
+  color: #5c5650;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.galerie-vorschau-link { margin: 0; font-size: 10pt; }
+.galerie-vorschau-link a { color: #0d6b62; text-decoration: none; border-bottom: 1px solid #9fd4cf; }
 .galerie-vorschau img.qr-klein {
   width: ${BRIEF_QR_PX}px;
   height: ${BRIEF_QR_PX}px;
   flex-shrink: 0;
-  border: 1px solid #c4b8a8;
-  border-radius: 3px;
-  display: block;
+  border: 1px solid #d4c4b0;
+  border-radius: 4px;
+  padding: 3px;
+  background: #fff;
 }
-.galerie-vorschau-label { font-size: 9pt; margin: 0 0 0.15rem; color: #5c5650; }
-.galerie-vorschau-link { margin: 0; font-size: 9.5pt; word-break: break-all; }
-.abschluss { margin: 0.5rem 0 0; }
-.unterschrift { margin-top: 0.85rem; }
-.brief-seite { page-break-after: always; page-break-inside: avoid; }
-.brief-seite:last-child { page-break-after: auto; }
-a { color: #0f766e; }
+.abschluss {
+  margin: 1rem 0 0;
+  font-size: 10.5pt;
+}
+.brief-gruss {
+  margin-top: 1.35rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e8e0d4;
+  flex-shrink: 0;
+}
+.unterschrift {
+  margin: 0;
+  line-height: 1.5;
+}
+.unterschrift strong { font-size: 11pt; }
+.brief-a4.brief-seite { page-break-after: always; page-break-inside: avoid; }
+.brief-a4.brief-seite:last-child { page-break-after: auto; }
+a { color: #0d6b62; }
 @media print {
-  body { padding: 0; }
+  html, body { width: 210mm; height: auto; background: #fffefb; }
+  .brief-a4 {
+    min-height: 297mm;
+    padding: 24mm 22mm 26mm 26mm;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 }
 `
 
@@ -263,58 +356,67 @@ export function buildBriefHtml(e: SerienbriefEmpfaenger, options?: { pageBreakAf
   const empfaengerExtra = [funktion, name].filter(Boolean).map((line) => `${line}<br />`).join('')
 
   const body = `
-<div class="brief-seite${options?.pageBreakAfter ? '' : ''}">
-  <div class="briefkopf">
-    <strong>K2 Galerie Kunst &amp; Keramik</strong><br />
-    Martina &amp; Georg Kreinecker<br />
-    Schlossergasse 4 · 4070 Eferding<br />
-    georg.kreinecker@kgm.at · 0664 1046337
-  </div>
-  <div class="empfaenger">
-    ${empfaengerExtra}
-    <strong>${verein}</strong><br />
-    ${adr || '—'}
-  </div>
-  <h1>Ein Nachmittag mit Kunst – für den ${verein}</h1>
-  <p>${anrede}</p>
-  <p>
-    Wer für den <strong>${verein}</strong> Verantwortung trägt, möchte den Mitgliedern
-    gern etwas <strong>Besonderes</strong> schenken – nicht immer dasselbe Programm, sondern ein Erlebnis, das hängen bleibt.
-    Dafür schreibe ich Ihnen: Martina malt, ich arbeite mit Keramik. In der Schlossergasse haben wir unsere
-    <strong>K2 Galerie Kunst &amp; Keramik</strong> – eine <strong>kleine, feine, persönliche Galerie</strong> in Eferding,
-    die wir uns lange gewünscht haben und die wir gern mit Gruppen teilen.
-  </p>
-  <p>
-    Sie können Ihrem Verein so einen Nachmittag anbieten: Wir zeigen unsere Werke, Ihre Leute schauen in Ruhe,
-    wir sprechen über die Kunst – was bewegt, wie etwas entstanden ist. Am Eröffnungswochenende war viel Leben drin;
-    jetzt ist es oft stiller, und genau dann entstehen die schönsten Gespräche vor einem Bild.
-    Kein großer Betrieb, kein Lärm – nur Begegnung mit Malerei und Keramik, in Ihrem Tempo.
-  </p>
-  <p>
-    Manch einer bleibt danach – oder kommt vorher – zum <strong>Mittag- oder Abendessen im Ristorante Antonio</strong>,
-    gleich nebenan, ein Schritt von der Tür. Wenn das für Sie und Ihre Leute passt, sprechen wir das gern mit.
-  </p>
-  <div class="fakten">
-    <p><strong>Schlossergasse 4, 4070 Eferding</strong> · Termin nach Absprache</p>
-    <div class="galerie-vorschau">
-      <div class="galerie-vorschau-text">
-        <p class="galerie-vorschau-label">Vorab online – Link oder QR:</p>
-        <p class="galerie-vorschau-link"><a href="https://k2-galerie.vercel.app/galerie">k2-galerie.vercel.app/galerie</a></p>
-      </div>
-      <img class="qr-klein" src="${GALERIE_QR}" width="${BRIEF_QR_PX}" height="${BRIEF_QR_PX}" alt="QR Galerie" />
+<article class="brief-a4 brief-seite">
+  <div class="brief-leiste" aria-hidden="true"></div>
+  <header class="brief-kopfzeile">
+    <div class="empfaenger-block">
+      ${empfaengerExtra}
+      <strong>${verein}</strong><br />
+      ${adr || '—'}
     </div>
-  </div>
-  <p class="abschluss">
-    Ich würde mich freuen, vom <strong>${verein}</strong> zu hören –
-    <a href="mailto:georg.kreinecker@kgm.at">georg.kreinecker@kgm.at</a> · <strong>0664 1046337</strong>.
-  </p>
-  <p class="unterschrift">
-    Herzliche Grüße<br /><br />
-    <strong>Martina &amp; Georg Kreinecker</strong><br />
-    K2 Galerie Kunst &amp; Keramik<br />
-    Schlossergasse 4 · 4070 Eferding
-  </p>
-</div>`
+    <div class="absender-block">
+      <strong>K2 Galerie Kunst &amp; Keramik</strong>
+      Martina &amp; Georg Kreinecker<br />
+      Schlossergasse 4 · 4070 Eferding<br />
+      georg.kreinecker@kgm.at<br />
+      0664 1046337
+    </div>
+  </header>
+  <main class="brief-hauptteil">
+    <h1>Ein Nachmittag mit Kunst – für den ${verein}</h1>
+    <div class="brief-text">
+      <p>${anrede}</p>
+      <p>
+        Wer für den <strong>${verein}</strong> Verantwortung trägt, möchte den Mitgliedern
+        gern etwas <strong>Besonderes</strong> schenken – nicht immer dasselbe Programm, sondern ein Erlebnis, das hängen bleibt.
+        Dafür schreibe ich Ihnen: Martina malt, ich arbeite mit Keramik. In der Schlossergasse haben wir unsere
+        <strong>K2 Galerie Kunst &amp; Keramik</strong> – eine <strong>kleine, feine, persönliche Galerie</strong> in Eferding,
+        die wir uns lange gewünscht haben und die wir gern mit Gruppen teilen.
+      </p>
+      <p>
+        Sie können Ihrem Verein so einen Nachmittag anbieten: Wir zeigen unsere Werke, Ihre Leute schauen in Ruhe,
+        wir sprechen über die Kunst – was bewegt, wie etwas entstanden ist. Am Eröffnungswochenende war viel Leben drin;
+        jetzt ist es oft stiller, und genau dann entstehen die schönsten Gespräche vor einem Bild.
+        Kein großer Betrieb, kein Lärm – nur Begegnung mit Malerei und Keramik, in Ihrem Tempo.
+      </p>
+      <p>
+        Manch einer bleibt danach – oder kommt vorher – zum <strong>Mittag- oder Abendessen im Ristorante Antonio</strong>,
+        gleich nebenan, ein Schritt von der Tür. Wenn das für Sie und Ihre Leute passt, sprechen wir das gern mit.
+      </p>
+    </div>
+    <div class="fakten">
+      <p class="fakten-adresse">Schlossergasse 4, 4070 Eferding · Termin nach Absprache</p>
+      <div class="galerie-vorschau">
+        <div class="galerie-vorschau-text">
+          <p class="galerie-vorschau-label">Galerie vorab ansehen</p>
+          <p class="galerie-vorschau-link"><a href="https://k2-galerie.vercel.app/galerie">k2-galerie.vercel.app/galerie</a></p>
+        </div>
+        <img class="qr-klein" src="${GALERIE_QR}" width="${BRIEF_QR_PX}" height="${BRIEF_QR_PX}" alt="QR-Code Galerie" />
+      </div>
+    </div>
+    <p class="abschluss">
+      Ich würde mich freuen, vom <strong>${verein}</strong> zu hören –
+      <a href="mailto:georg.kreinecker@kgm.at">georg.kreinecker@kgm.at</a> · <strong>0664 1046337</strong>.
+    </p>
+  </main>
+  <footer class="brief-gruss">
+    <p class="unterschrift">
+      Herzliche Grüße<br /><br />
+      <strong>Martina &amp; Georg Kreinecker</strong><br />
+      K2 Galerie Kunst &amp; Keramik · Schlossergasse 4 · 4070 Eferding
+    </p>
+  </footer>
+</article>`
 
   return `<!DOCTYPE html>
 <html lang="de">
@@ -333,7 +435,7 @@ export function buildAlleBriefeHtml(empfaenger: SerienbriefEmpfaenger[]): string
     .map((e, i) => {
       const inner = buildBriefHtml(e, { pageBreakAfter: i < aktiv.length - 1 })
       const m = inner.match(/<body[^>]*>([\s\S]*)<\/body>/i)
-      return m ? `<div class="brief-seite">${m[1]}</div>` : ''
+      return m ? m[1] : ''
     })
     .join('\n')
   return `<!DOCTYPE html>
@@ -408,7 +510,7 @@ export function printHtmlDocument(
   if (doc.readyState === 'complete') runPrint()
   else serienbriefPrintFrame!.onload = () => runPrint()
 
-  return { ok: true, message: 'Druckdialog öffnet sich …' }
+  return { ok: true, message: `Druckdialog öffnet sich. ${BRIEF_DRUCK_HINWEIS}` }
 }
 
 /** @deprecated Nutze printHtmlDocument – kein Pop-up mehr nötig */
