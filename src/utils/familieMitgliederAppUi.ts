@@ -58,7 +58,8 @@ export function isK2FamilieOeffentlicherEinstiegPath(pathname: string): boolean 
   return (
     p.endsWith('/lizenz-erwerben') ||
     p.endsWith('/lizenz-kuendigen') ||
-    p.endsWith('/willkommen')
+    p.endsWith('/willkommen') ||
+    p.endsWith('/praesentationsmappe-kunde')
   )
 }
 

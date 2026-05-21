@@ -6,7 +6,7 @@
 
 ## 1. Die Erkenntnis
 
-**Für die Großen ist der Markt zu klein.** Ein Gesamtmarkt von grob 10–35 Mio. €/Jahr und 300.000–500.000 potenziellen Einheiten (DACH) lohnt für Konzerne und große SaaS-Anbieter keinen eigenen Fokus. Sie brauchen Märkte in hunderten Millionen oder Milliarden – dafür bauen sie keine spezielle Lösung „Galerie + Kassa + Events + Vereine“.
+**Für die Großen ist der Markt zu klein.** Ein Software-Segment von grob 5–15 Mio. €/Jahr (DACH) und theoretisch 60.000–120.000 zahlenden Lizenzen (TAM; adressierbar grob 250.000–350.000) lohnt für Konzerne und große SaaS-Anbieter keinen eigenen Fokus. Sie brauchen Märkte in hunderten Millionen oder Milliarden – dafür bauen sie keine spezielle Lösung „Galerie + Kassa + Events + Vereine“.
 
 **Für die Kleinen ist der Entwicklungsaufwand zu groß.** Eine vollständige Plattform (Multi-Tenant, PWA, Kassa, Events, Presse, Etiketten, VK2, Sync, Stand/QR, Datentrennung) ist für Einzelentwickler oder Mini-Agenturen kaum realisierbar. Der Aufwand ist hoch, die Domäne (Galerie, Verkauf vor Ort, Vereine) fehlt meist.
 

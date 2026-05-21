@@ -44,12 +44,19 @@ describe('familieMitgliederAppUi', () => {
     expect(shouldShowFamilieLeitstrukturPanel(panelOpts(inhaber))).toBe(false)
   })
 
-  it('öffentliche Lizenz-/Willkommen-Pfade: kein Leitstruktur-Panel (auch auf APf)', () => {
+  it('öffentliche Lizenz-/Willkommen-/Kundenmappe-Pfade: kein Leitstruktur-Panel (auch auf APf)', () => {
     vi.mocked(isK2FamilieApfArbeitsplattform).mockReturnValue(true)
     const inhaber = getFamilieRollenCapabilities('inhaber')
     const opts = { ...panelOpts(inhaber), pathname: '/projects/k2-familie/lizenz-erwerben' }
     expect(isK2FamilieOeffentlicherEinstiegPath('/projects/k2-familie/lizenz-erwerben')).toBe(true)
+    expect(isK2FamilieOeffentlicherEinstiegPath('/projects/k2-familie/praesentationsmappe-kunde')).toBe(true)
     expect(shouldShowFamilieLeitstrukturPanel(opts)).toBe(false)
+    expect(
+      shouldShowFamilieLeitstrukturPanel({
+        ...panelOpts(inhaber),
+        pathname: '/projects/k2-familie/praesentationsmappe-kunde',
+      }),
+    ).toBe(false)
   })
 
   it('APf: nur Inhaber:in; nicht nach QR-Mitglieder-Session', () => {

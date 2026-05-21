@@ -88,7 +88,7 @@
 
 ## 6a. Sweet-Spot am Markt (verbindliche Erkenntnis)
 
-**Für die Großen ist der Markt zu klein** (DACH grob 10–35 Mio. €/Jahr, 300–500k Einheiten) – kein Fokus für Konzerne. **Für die Kleinen ist der Entwicklungsaufwand zu groß** – eine vollständige Plattform (Galerie, Kassa, Events, Presse, VK2, PWA, Sync) können Einzelne nicht stemmen. **Folge: Eine Lücke – genau unser Platz.** Wir haben das Produkt und die Domäne; Kunst zuerst, VK2 für alle Vereine. Quelle für alle Öffentlichkeitsarbeit: **docs/POSITIONIERUNG-SWEET-SPOT-MARKT.md**.
+**Für die Großen ist der Markt zu klein** (DACH grob 5–15 Mio. €/Jahr Software-Segment, TAM zahlend grob 60–120k Lizenzen) – kein Fokus für Konzerne. **Für die Kleinen ist der Entwicklungsaufwand zu groß** – eine vollständige Plattform (Galerie, Kassa, Events, Presse, VK2, PWA, Sync) können Einzelne nicht stemmen. **Folge: Eine Lücke – genau unser Platz.** Wir haben das Produkt und die Domäne; Kunst zuerst, VK2 für alle Vereine. Quelle für alle Öffentlichkeitsarbeit: **docs/POSITIONIERUNG-SWEET-SPOT-MARKT.md**.
 
 ---
 

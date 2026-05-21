@@ -42,23 +42,37 @@ Quelle Wettbewerb/Standards: **docs/K2-FAMILIE-MARKT-STANDARDS.md**
 
 ## 4. Größenordnung TAM / SAM / Umsatz
 
-Annahmen: In DACH gibt es grob **20–25 Mio. Haushalte** (DE dominant). Ein relevanter Teil hat Interesse an **Familiengeschichte digital** – aber nur ein **kleinerer Teil** zahlt für einen **dedizierten Familienraum** (neben kostenlosen Tools).
+### Wichtig: Was TAM hier **nicht** ist
 
-| Kennzahl | Niedrig | Mittel | Hoch |
-|----------|---------|--------|------|
-| **Haushalte / Familien mit Interesse** (breit) | 2 Mio. | 5 Mio. | 10 Mio. |
-| **TAM – Familien als zahlender Mandant** (theoretisch) | 200.000 | 600.000 | 1,2 Mio. |
-| **SAM – zahlungsbereit** (10–20 % von TAM) | 20.000 | 80.000 | 240.000 |
+| Begriff | Größenordnung DACH | Bedeutung |
+|---------|-------------------|-----------|
+| **Alle Haushalte** | ca. **48–50 Mio.** | Destatis/Statistik DE ~42 Mio. private Haushalte + AT/CH – **nicht** unser TAM |
+| **Familien / Mehrpersonen-Haushalte** | grob **25–35 Mio.** | Paare, Kinder, Verwandtschaft im Haushalt – immer noch **nicht** TAM |
+| **Interesse** an Familiengeschichte digital (breit) | grob **1–3 Mio.** | WhatsApp-Gruppen, Ahnenforschung light – meist **ohne** Zahlung für Extra-SaaS |
 
-**Pragmatische Arbeitszahl TAM:** ca. **400.000 – 800.000** Familien-Mandanten in DACH.
+**TAM (Total Addressable Market) für K2 Familie** = nur **eine** Größe:  
+**Wie viele Familien-Mandanten** (eine Lizenz = **eine** Familie als abgeschlossener Raum) könnten **theoretisch** für **dieses** Produkt (privater Familienraum, ~80–120 €/Jahr) zahlen – **neben** kostenloser Genealogie, Legacy, Chats.
+
+Die frühere Zahl **400.000–800.000** war **zu hoch** und auf falschen Haushaltsannahmen (20–25 Mio.) aufgebaut. **Korrigiert (Mai 2026).**
+
+### Stufenmodell (nachvollziehbar)
+
+| Stufe | Niedrig | Mittel | Hoch |
+|-------|---------|--------|------|
+| **Haushalte DACH** | 48 Mio. | 50 Mio. | 52 Mio. |
+| **Relevant: „wir als Familie digital festhalten“** (breit) | 800.000 | 1,5 Mio. | 3 Mio. |
+| **TAM – zahlender Familien-Mandant** (theoretisch) | 50.000 | 150.000 | 300.000 |
+| **SAM – zahlungsbereit** (ca. 10–20 % von TAM) | 5.000 | 25.000 | 60.000 |
+
+**Pragmatische Arbeitszahl TAM:** ca. **80.000 – 250.000** Familien-Mandanten in DACH (nicht 400.000–800.000).
 
 **Marktgröße Umsatz (Software-Segment „privater Familienraum“):**  
-Bei Ø **80–120 €/Jahr** (10 €/Monat bzw. 100 €/Jahr) und 10–20 % zahlend aus TAM:
+Bei Ø **80–120 €/Jahr** und SAM (nicht vollem TAM):
 
-- **Gesamtsegment DACH:** grob **3 – 15 Mio. €/Jahr** (gesamter Kuchen, nicht unser Anteil).
+- **Gesamtsegment DACH:** grob **0,4 – 7 Mio. €/Jahr** (gesamter Kuchen aller Anbieter, nicht unser Anteil).
 
 **Realistisch erreichbar (neues Produkt, 5–10 Jahre):**  
-**0,1–1 %** des TAM ≈ **400 – 8.000** zahlende Familien → grob **0,04 – 1 Mio. €/Jahr** Umsatz, stark abhängig von Vertrauen, Bekanntheit und Vertrieb.
+**0,2–2 %** des TAM ≈ **200 – 5.000** zahlende Familien → grob **0,02 – 0,6 Mio. €/Jahr** Umsatz, stark abhängig von Vertrauen, Bekanntheit und Vertrieb.
 
 ---
 
@@ -91,9 +105,9 @@ K2 Familie ist **neu am Markt** (Launch-Phase). Wettbewerb deckt **Genealogie** 
 | Frage | Schätzung |
 |-------|-----------|
 | Zielgruppe | Familien (alle Formen des Zusammenlebens), Fokus Nicht-Genealogen + gemeinsames Festhalten |
-| TAM (Familien-Mandanten) DACH | ca. **400.000 – 800.000** |
-| SAM (zahlungsbereit) | ca. **40.000 – 240.000** |
-| Segment-Umsatz DACH | grob **3 – 15 Mio. €/Jahr** |
+| TAM (zahlende Familien-Mandanten, nicht „alle Familien“) DACH | ca. **80.000 – 250.000** |
+| SAM (zahlungsbereit) | ca. **8.000 – 50.000** |
+| Segment-Umsatz DACH | grob **0,4 – 7 Mio. €/Jahr** |
 | USP-Kern | Privater Raum, Genom, Stammbaum+Leben, inklusiv, getrennt von Galerie |
 
 Verknüpfung: **docs/K2-FAMILIE-MARKT-STANDARDS.md**, **docs/K2-FAMILIE-GRUNDBOTSCHAFT.md**, **docs/MARKTGROESSE-DACH-SCHAETZUNG.md** (nur P1 Galerie).

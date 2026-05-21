@@ -1,9 +1,12 @@
 /**
  * K2 Familie – Kurzprospekt / Vertrieb (Lesefassung).
  * Inhalt: public/k2-familie-praesentation/ – eigenständig zur Galerie-Präsentationsmappe.
+ * Nur APf: öffentliche Links führen zur Kundenmappe (keine internen Vertriebs-PDFs).
  */
 
+import { Navigate } from 'react-router-dom'
 import BenutzerHandbuchViewer from '../components/BenutzerHandbuchViewer'
+import { isK2FamilieApfArbeitsplattform } from '../config/k2FamilieApfDefaults'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_K2_FAMILIE_WERBELINIE_DECKBLATT } from '../config/tenantConfig'
 
@@ -54,6 +57,11 @@ const DOCUMENTS = [
 const ROUTE_BACK = '/projects/k2-familie/praesentationsmappe'
 
 export default function K2FamiliePraesentationsmappePage() {
+  if (!isK2FamilieApfArbeitsplattform()) {
+    return (
+      <Navigate to={PROJECT_ROUTES['k2-familie'].familiePraesentationsmappeKunde} replace />
+    )
+  }
   return (
     <BenutzerHandbuchViewer
       handbuchBase="/k2-familie-praesentation"

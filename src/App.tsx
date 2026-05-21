@@ -894,6 +894,10 @@ function App() {
       <Route path={PROJECT_ROUTES['k2-familie'].willkommen} element={<PlatformOnlyRoute><K2FamilieWillkommenPage /></PlatformOnlyRoute>} />
       <Route path={PROJECT_ROUTES['k2-familie'].lizenzErwerben} element={<PlatformOnlyRoute><K2FamilieLizenzErwerbenPage /></PlatformOnlyRoute>} />
       <Route path={PROJECT_ROUTES['k2-familie'].lizenzKuendigen} element={<PlatformOnlyRoute><K2FamilieLizenzKuendigenPage /></PlatformOnlyRoute>} />
+      <Route
+        path={PROJECT_ROUTES['k2-familie'].familiePraesentationsmappeKunde}
+        element={<PlatformOnlyRoute><K2FamiliePraesentationsmappeKundePage /></PlatformOnlyRoute>}
+      />
       <Route path={PROJECT_ROUTES['k2-familie'].home} element={<PlatformOnlyRoute><K2FamilieLayout /></PlatformOnlyRoute>}>
         <Route index element={<K2FamilieRootIndexRedirect />} />
         <Route path="einstieg" element={<K2FamilieEinstiegPage />} />
@@ -907,7 +911,6 @@ function App() {
         <Route path="gedenkort" element={<K2FamilieGedenkortPage />} />
         <Route path="handbuch" element={<K2FamilieHandbuchPage />} />
         <Route path="doku" element={<K2FamilieEntwicklungDokuPage />} />
-        <Route path="praesentationsmappe-kunde" element={<K2FamiliePraesentationsmappeKundePage />} />
         <Route path="praesentationsmappe" element={<K2FamiliePraesentationsmappePage />} />
         <Route path="einstellungen" element={<K2FamilieEinstellungenPage />} />
         <Route path="mitglieder-codes" element={<K2FamilieMitgliederCodesPage />} />
