@@ -228,19 +228,24 @@ body {
 .brief-adressfeld strong { font-size: 10.5pt; color: #2c2419; font-weight: 700; }
 .brief-absender-zurueck {
   position: absolute;
-  top: 17mm;
+  top: 20mm;
   right: 20mm;
-  width: 75mm;
+  width: 82mm;
+  max-width: 82mm;
   text-align: right;
-  font-size: 8pt;
-  line-height: 1.35;
+  font-size: 7.5pt;
+  line-height: 1.22;
+  letter-spacing: 0;
   color: #5c5650;
+  white-space: normal;
 }
 .brief-absender-zurueck strong {
   display: block;
-  font-size: 8.5pt;
+  font-size: 7.5pt;
+  font-weight: 600;
   color: #1a1816;
-  margin-bottom: 0.15rem;
+  margin: 0 0 0.08rem;
+  line-height: 1.2;
 }
 .brief-leiste {
   height: 3px;
@@ -252,28 +257,28 @@ body {
 }
 .brief-hauptteil {
   margin-top: 90mm;
-  padding: 0 18mm 16mm 22mm;
+  padding: 0 18mm 22mm 22mm;
   font-size: 10.5pt;
-  line-height: 1.45;
+  line-height: 1.5;
 }
 h1 {
   font-size: 12.5pt;
   font-weight: 700;
   color: #2c2419;
   letter-spacing: 0.02em;
-  line-height: 1.3;
-  margin: 0 0 0.5rem;
-  padding-bottom: 0.35rem;
+  line-height: 1.32;
+  margin: 0 0 0.7rem;
+  padding-bottom: 0.4rem;
   border-bottom: 1px solid #d4c4b0;
 }
 .brief-text p {
-  margin: 0 0 0.65rem;
+  margin: 0 0 0.78rem;
   text-align: left;
   hyphens: auto;
 }
 .fakten {
-  margin-top: 0.35rem;
-  padding: 0.45rem 0.65rem;
+  margin-top: 0.5rem;
+  padding: 0.55rem 0.75rem;
   background: linear-gradient(135deg, #fffefb 0%, #f6f0e6 100%);
   border: 1px solid #d4c4b0;
   border-radius: 5px;
@@ -311,12 +316,13 @@ h1 {
   background: #fff;
 }
 .abschluss {
-  margin: 0.5rem 0 0;
+  margin: 0.65rem 0 0;
   font-size: 10pt;
+  line-height: 1.45;
 }
 .brief-gruss {
-  margin-top: 0.75rem;
-  padding-top: 0.55rem;
+  margin-top: 1rem;
+  padding-top: 0.65rem;
   border-top: 1px solid #e8e0d4;
 }
 .unterschrift {
@@ -344,7 +350,7 @@ a { color: #0d6b62; }
     left: 20mm;
   }
   .brief-absender-zurueck {
-    top: 17mm;
+    top: 20mm;
     right: 20mm;
   }
 }
@@ -373,7 +379,8 @@ export function buildBriefHtml(e: SerienbriefEmpfaenger, options?: { pageBreakAf
 <article class="brief-a4 brief-seite">
   <div class="brief-absender-zurueck" aria-hidden="true">
     <strong>K2 Galerie Kunst &amp; Keramik</strong>
-    Martina &amp; Georg Kreinecker · Schlossergasse 4 · 4070 Eferding
+    Martina &amp; Georg Kreinecker<br />
+    Schlossergasse 4 · 4070 Eferding
   </div>
   <div class="brief-adressfeld">
     ${empfaengerExtra}
