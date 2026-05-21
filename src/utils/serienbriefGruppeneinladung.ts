@@ -205,15 +205,11 @@ body {
 }
 .brief-a4 {
   width: 210mm;
-  height: 297mm;
-  max-height: 297mm;
+  min-height: 297mm;
   margin: 0;
   padding: 0;
   background: #fffefb;
-  display: flex;
-  flex-direction: column;
   position: relative;
-  overflow: hidden;
 }
 /* DIN 5008 Form B – Adressfeld für Fenstercouvert (20 mm links, 45 mm oben, 85×45 mm) */
 .brief-adressfeld {
@@ -255,16 +251,10 @@ body {
   flex-shrink: 0;
 }
 .brief-hauptteil {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
   margin-top: 90mm;
-  height: calc(297mm - 90mm);
-  max-height: calc(297mm - 90mm);
-  padding: 0 18mm 14mm 22mm;
+  padding: 0 18mm 16mm 22mm;
   font-size: 10.5pt;
-  line-height: 1.42;
+  line-height: 1.45;
 }
 h1 {
   font-size: 12.5pt;
@@ -275,14 +265,9 @@ h1 {
   margin: 0 0 0.5rem;
   padding-bottom: 0.35rem;
   border-bottom: 1px solid #d4c4b0;
-  flex-shrink: 0;
-}
-.brief-text {
-  flex: 0 1 auto;
-  min-height: 0;
 }
 .brief-text p {
-  margin: 0 0 0.55rem;
+  margin: 0 0 0.65rem;
   text-align: left;
   hyphens: auto;
 }
@@ -294,7 +279,6 @@ h1 {
   border-radius: 5px;
   font-size: 10pt;
   line-height: 1.38;
-  flex-shrink: 0;
 }
 .fakten-adresse {
   margin: 0 0 0.55rem;
@@ -327,15 +311,13 @@ h1 {
   background: #fff;
 }
 .abschluss {
-  margin: 0.4rem 0 0;
+  margin: 0.5rem 0 0;
   font-size: 10pt;
-  flex-shrink: 0;
 }
 .brief-gruss {
-  margin-top: auto;
-  padding-top: 0.45rem;
+  margin-top: 0.75rem;
+  padding-top: 0.55rem;
   border-top: 1px solid #e8e0d4;
-  flex-shrink: 0;
 }
 .unterschrift {
   margin: 0;
@@ -349,16 +331,13 @@ a { color: #0d6b62; }
 @media print {
   html, body { width: 210mm; height: auto; background: #fffefb; }
   .brief-a4 {
-    height: 297mm;
+    min-height: 297mm;
+    height: auto;
     max-height: 297mm;
     padding: 0;
     overflow: hidden;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
-  }
-  .brief-hauptteil {
-    height: calc(297mm - 90mm);
-    max-height: calc(297mm - 90mm);
   }
   .brief-adressfeld {
     top: 45mm;

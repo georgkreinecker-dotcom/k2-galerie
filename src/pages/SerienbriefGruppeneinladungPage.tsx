@@ -342,7 +342,7 @@ export default function SerienbriefGruppeneinladungPage() {
                   <iframe
                     title="Briefvorschau"
                     srcDoc={previewHtml}
-                    style={{ width: '100%', height: 520, border: 'none', background: '#fff' }}
+                    style={{ width: '100%', height: 1120, border: 'none', background: '#fff' }}
                   />
                 </div>
               </>
