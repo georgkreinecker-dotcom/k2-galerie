@@ -179,8 +179,8 @@ export function empfaengerListToCsv(rows: SerienbriefEmpfaenger[]): string {
   return [header, ...lines].join('\n')
 }
 
-/** QR kompakt – Brief füllt eine gestaltete A4-Seite */
-const BRIEF_QR_PX = 52
+/** QR: gut scannbar, passt noch auf eine A4 mit Textkörper */
+const BRIEF_QR_PX = 68
 
 /** Hinweis für Georg im Druckdialog (Browser-Kopf/Fuß lassen sich nicht per CSS abschalten) */
 export const BRIEF_DRUCK_HINWEIS =
@@ -257,36 +257,43 @@ body {
 }
 .brief-hauptteil {
   margin-top: 90mm;
-  padding: 0 18mm 22mm 22mm;
-  font-size: 10.5pt;
-  line-height: 1.5;
+  min-height: calc(297mm - 90mm - 14mm);
+  padding: 0 18mm 14mm 22mm;
+  font-size: 11pt;
+  line-height: 1.52;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
+.brief-block-oben { flex: 0 1 auto; }
+.brief-block-unten { flex: 0 1 auto; margin-top: 0.35rem; }
 h1 {
-  font-size: 12.5pt;
+  font-size: 13pt;
   font-weight: 700;
   color: #2c2419;
   letter-spacing: 0.02em;
-  line-height: 1.32;
-  margin: 0 0 0.7rem;
-  padding-bottom: 0.4rem;
+  line-height: 1.34;
+  margin: 0 0 0.85rem;
+  padding-bottom: 0.45rem;
   border-bottom: 1px solid #d4c4b0;
 }
 .brief-text p {
-  margin: 0 0 0.78rem;
+  margin: 0 0 0.92rem;
   text-align: left;
   hyphens: auto;
 }
+.brief-text p:last-child { margin-bottom: 0; }
 .fakten {
-  margin-top: 0.5rem;
-  padding: 0.55rem 0.75rem;
+  margin-top: 0;
+  padding: 0.7rem 0.85rem;
   background: linear-gradient(135deg, #fffefb 0%, #f6f0e6 100%);
   border: 1px solid #d4c4b0;
-  border-radius: 5px;
-  font-size: 10pt;
-  line-height: 1.38;
+  border-radius: 6px;
+  font-size: 10.5pt;
+  line-height: 1.42;
 }
 .fakten-adresse {
-  margin: 0 0 0.55rem;
+  margin: 0 0 0.65rem;
   font-weight: 600;
   color: #2c2419;
 }
@@ -294,43 +301,44 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 1.15rem;
 }
 .galerie-vorschau-text { flex: 1; min-width: 0; }
 .galerie-vorschau-label {
-  margin: 0 0 0.2rem;
-  font-size: 9.5pt;
+  margin: 0 0 0.28rem;
+  font-size: 10pt;
   color: #5c5650;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
-.galerie-vorschau-link { margin: 0; font-size: 10pt; }
+.galerie-vorschau-link { margin: 0; font-size: 10.5pt; line-height: 1.35; }
 .galerie-vorschau-link a { color: #0d6b62; text-decoration: none; border-bottom: 1px solid #9fd4cf; }
 .galerie-vorschau img.qr-klein {
   width: ${BRIEF_QR_PX}px;
   height: ${BRIEF_QR_PX}px;
   flex-shrink: 0;
-  border: 1px solid #d4c4b0;
-  border-radius: 4px;
-  padding: 3px;
+  border: 1px solid #b8a88e;
+  border-radius: 5px;
+  padding: 4px;
   background: #fff;
+  display: block;
 }
 .abschluss {
-  margin: 0.65rem 0 0;
-  font-size: 10pt;
-  line-height: 1.45;
+  margin: 0.85rem 0 0;
+  font-size: 10.5pt;
+  line-height: 1.48;
 }
 .brief-gruss {
-  margin-top: 1rem;
-  padding-top: 0.65rem;
+  margin-top: 1.1rem;
+  padding-top: 0.75rem;
   border-top: 1px solid #e8e0d4;
 }
 .unterschrift {
   margin: 0;
-  line-height: 1.4;
-  font-size: 10pt;
+  line-height: 1.48;
+  font-size: 10.5pt;
 }
-.unterschrift strong { font-size: 10.5pt; }
+.unterschrift strong { font-size: 11pt; }
 .brief-a4.brief-seite { page-break-after: always; page-break-inside: avoid; break-inside: avoid; }
 .brief-a4.brief-seite:last-child { page-break-after: auto; }
 a { color: #0d6b62; }
@@ -344,6 +352,9 @@ a { color: #0d6b62; }
     overflow: hidden;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+  .brief-hauptteil {
+    min-height: calc(297mm - 90mm - 14mm);
   }
   .brief-adressfeld {
     top: 45mm;
@@ -388,6 +399,7 @@ export function buildBriefHtml(e: SerienbriefEmpfaenger, options?: { pageBreakAf
     ${adr || '—'}
   </div>
   <main class="brief-hauptteil">
+    <div class="brief-block-oben">
     <div class="brief-leiste" aria-hidden="true"></div>
     <h1>Kunst erleben – für den ${verein}</h1>
     <div class="brief-text">
@@ -432,6 +444,7 @@ export function buildBriefHtml(e: SerienbriefEmpfaenger, options?: { pageBreakAf
         K2 Galerie Kunst &amp; Keramik · Schlossergasse 4 · 4070 Eferding
       </p>
     </footer>
+    </div>
   </main>
 </article>`
 
