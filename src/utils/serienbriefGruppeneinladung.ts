@@ -179,49 +179,71 @@ export function empfaengerListToCsv(rows: SerienbriefEmpfaenger[]): string {
   return [header, ...lines].join('\n')
 }
 
+/** QR klein halten – Brief soll auf eine A4-Seite passen */
+const BRIEF_QR_PX = 56
+
 const BRIEF_STYLES = `
-@page { size: A4; margin: 16mm 18mm 22mm 16mm; }
+@page { size: A4; margin: 14mm 16mm 14mm 16mm; }
 * { box-sizing: border-box; }
 html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 body {
   margin: 0;
-  padding: 1.75rem 1.25rem 2rem;
+  padding: 0;
   font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
-  font-size: 11pt;
-  line-height: 1.55;
+  font-size: 10.5pt;
+  line-height: 1.48;
   color: #1a1816;
   background: #fff;
 }
 .briefkopf {
   text-align: right;
-  font-size: 9.5pt;
+  font-size: 9pt;
   color: #5c5650;
-  margin-bottom: 1.5rem;
-  line-height: 1.45;
+  margin-bottom: 0.9rem;
+  line-height: 1.4;
 }
-.briefkopf strong { color: #1a1816; font-size: 10.5pt; }
-.empfaenger { margin-bottom: 1.35rem; font-size: 10.5pt; line-height: 1.5; }
-h1 { font-size: 1.1rem; color: #2c2419; margin: 0 0 1.15rem; font-weight: 700; }
-p { margin: 0 0 0.85rem; }
+.briefkopf strong { color: #1a1816; font-size: 10pt; }
+.empfaenger { margin-bottom: 0.9rem; font-size: 10pt; line-height: 1.45; }
+h1 { font-size: 1.05rem; color: #2c2419; margin: 0 0 0.65rem; font-weight: 700; line-height: 1.3; }
+p { margin: 0 0 0.6rem; }
 .fakten {
   background: #fffefb;
   border: 1px solid #c4b8a8;
-  border-left: 4px solid #b54a1e;
-  padding: 0.75rem 1rem;
-  margin: 1rem 0 1.15rem;
-  font-size: 10.5pt;
+  border-left: 3px solid #b54a1e;
+  padding: 0.45rem 0.65rem;
+  margin: 0.55rem 0 0.6rem;
+  font-size: 10pt;
+  line-height: 1.4;
 }
-.galerie-vorschau { display: flex; align-items: center; gap: 1rem; margin-top: 0.5rem; flex-wrap: wrap; }
-.galerie-vorschau img { border: 1px solid #c4b8a8; border-radius: 4px; }
-.galerie-vorschau-label { font-size: 10pt; margin: 0 0 0.25rem; color: #5c5650; }
-.unterschrift { margin-top: 1.75rem; }
-.brief-seite { page-break-after: always; }
+.fakten > p { margin: 0 0 0.35rem; }
+.galerie-vorschau {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin-top: 0.25rem;
+}
+.galerie-vorschau-text { flex: 1; min-width: 0; }
+.galerie-vorschau img.qr-klein {
+  width: ${BRIEF_QR_PX}px;
+  height: ${BRIEF_QR_PX}px;
+  flex-shrink: 0;
+  border: 1px solid #c4b8a8;
+  border-radius: 3px;
+  display: block;
+}
+.galerie-vorschau-label { font-size: 9pt; margin: 0 0 0.15rem; color: #5c5650; }
+.galerie-vorschau-link { margin: 0; font-size: 9.5pt; word-break: break-all; }
+.abschluss { margin: 0.5rem 0 0; }
+.unterschrift { margin-top: 0.85rem; }
+.brief-seite { page-break-after: always; page-break-inside: avoid; }
 .brief-seite:last-child { page-break-after: auto; }
 a { color: #0f766e; }
+@media print {
+  body { padding: 0; }
+}
 `
 
-const GALERIE_QR =
-  'https://api.qrserver.com/v1/create-qr-code/?size=120x120&margin=6&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fgalerie'
+const GALERIE_QR = `https://api.qrserver.com/v1/create-qr-code/?size=${BRIEF_QR_PX}x${BRIEF_QR_PX}&margin=2&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fgalerie`
 
 function escapeHtml(s: string): string {
   return s
@@ -273,18 +295,18 @@ export function buildBriefHtml(e: SerienbriefEmpfaenger, options?: { pageBreakAf
     gleich nebenan, ein Schritt von der Tür. Wenn das für Sie und Ihre Leute passt, sprechen wir das gern mit.
   </p>
   <div class="fakten">
-    <p><strong>Schlossergasse 4, 4070 Eferding</strong> · wann es Ihnen passt, finden wir gemeinsam</p>
+    <p><strong>Schlossergasse 4, 4070 Eferding</strong> · Termin nach Absprache</p>
     <div class="galerie-vorschau">
-      <div>
-        <p class="galerie-vorschau-label">Wer vorher neugierig ist – Link oder QR-Code:</p>
-        <p style="margin:0;"><a href="https://k2-galerie.vercel.app/galerie">k2-galerie.vercel.app/galerie</a></p>
+      <div class="galerie-vorschau-text">
+        <p class="galerie-vorschau-label">Vorab online – Link oder QR:</p>
+        <p class="galerie-vorschau-link"><a href="https://k2-galerie.vercel.app/galerie">k2-galerie.vercel.app/galerie</a></p>
       </div>
-      <img src="${GALERIE_QR}" width="120" height="120" alt="QR-Code Galerie" />
+      <img class="qr-klein" src="${GALERIE_QR}" width="${BRIEF_QR_PX}" height="${BRIEF_QR_PX}" alt="QR Galerie" />
     </div>
   </div>
-  <p>
+  <p class="abschluss">
     Ich würde mich freuen, vom <strong>${verein}</strong> zu hören –
-    eine Mail an <a href="mailto:georg.kreinecker@kgm.at">georg.kreinecker@kgm.at</a> oder ein Anruf unter <strong>0664 1046337</strong> reicht.
+    <a href="mailto:georg.kreinecker@kgm.at">georg.kreinecker@kgm.at</a> · <strong>0664 1046337</strong>.
   </p>
   <p class="unterschrift">
     Herzliche Grüße<br /><br />

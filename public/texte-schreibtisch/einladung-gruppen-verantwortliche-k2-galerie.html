@@ -6,7 +6,7 @@
   <meta name="description" content="Persönliche Einladung an Verantwortliche eines Vereins – Gruppenbesuch K2 Galerie Kunst & Keramik" />
   <title>Gruppeneinladung (persönlich) – K2 Galerie Kunst & Keramik</title>
   <style>
-    @page { size: A4; margin: 16mm 18mm 22mm 18mm; }
+    @page { size: A4; margin: 14mm 16mm 14mm 16mm; }
     * { box-sizing: border-box; }
     html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     body {
@@ -75,26 +75,27 @@
     .fakten {
       background: #fffefb;
       border: 1px solid #c4b8a8;
-      border-left: 4px solid #b54a1e;
-      padding: 0.75rem 1rem;
-      margin: 1rem 0 1.15rem;
-      font-size: 10.5pt;
-      line-height: 1.5;
+      border-left: 3px solid #b54a1e;
+      padding: 0.45rem 0.65rem;
+      margin: 0.55rem 0 0.6rem;
+      font-size: 10pt;
+      line-height: 1.4;
     }
     .fakten p { margin: 0 0 0.35rem; }
     .fakten p:last-child { margin-bottom: 0; }
     .galerie-vorschau {
       display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-top: 0.5rem;
-      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 0.55rem;
+      margin-top: 0.25rem;
     }
-    .galerie-vorschau img {
+    .galerie-vorschau img.qr-klein {
+      width: 56px;
+      height: 56px;
       flex-shrink: 0;
       display: block;
       border: 1px solid #c4b8a8;
-      border-radius: 4px;
+      border-radius: 3px;
     }
     .galerie-vorschau-label {
       font-size: 10pt;
@@ -204,16 +205,17 @@
   </p>
 
   <div class="fakten">
-    <p><strong>Schlossergasse 4, 4070 Eferding</strong> · wann es Ihnen passt, finden wir gemeinsam</p>
+    <p><strong>Schlossergasse 4, 4070 Eferding</strong> · Termin nach Absprache</p>
     <div class="galerie-vorschau">
       <div>
-        <p class="galerie-vorschau-label">Wer vorher neugierig ist – Link oder QR-Code:</p>
-        <p style="margin: 0;"><a href="https://k2-galerie.vercel.app/galerie">k2-galerie.vercel.app/galerie</a></p>
+        <p class="galerie-vorschau-label">Vorab online – Link oder QR:</p>
+        <p style="margin: 0; font-size: 9.5pt;"><a href="https://k2-galerie.vercel.app/galerie">k2-galerie.vercel.app/galerie</a></p>
       </div>
       <img
-        src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&amp;margin=6&amp;data=https%3A%2F%2Fk2-galerie.vercel.app%2Fgalerie"
-        width="120"
-        height="120"
+        class="qr-klein"
+        src="https://api.qrserver.com/v1/create-qr-code/?size=56x56&amp;margin=2&amp;data=https%3A%2F%2Fk2-galerie.vercel.app%2Fgalerie"
+        width="56"
+        height="56"
         alt="QR-Code: K2 Galerie online"
       />
     </div>
