@@ -48,7 +48,7 @@
     .empfaenger {
       margin-bottom: 1.35rem;
       font-size: 10.5pt;
-      line-height: 1.5;
+      line-height: 1.35;
     }
     .platzhalter {
       background: #fef3c7;
@@ -141,7 +141,37 @@
       padding: 0.35rem 0;
     }
     @media print {
-      body { background: #fff; padding-bottom: 2rem; }
+      @page { size: A4; margin: 0; }
+      body {
+        background: #fff;
+        padding: 0;
+        margin: 0;
+        max-width: none;
+        width: 210mm;
+        min-height: 297mm;
+        position: relative;
+      }
+      .briefkopf {
+        position: absolute;
+        top: 17mm;
+        right: 20mm;
+        left: auto;
+        width: 75mm;
+        margin: 0;
+        font-size: 8pt;
+      }
+      .empfaenger {
+        position: absolute;
+        top: 45mm;
+        left: 20mm;
+        width: 85mm;
+        min-height: 45mm;
+        margin: 0;
+      }
+      .brief-druck-inhalt {
+        margin-top: 98mm;
+        padding: 0 20mm 20mm 25mm;
+      }
       .seitenfuss::after { content: "Seite " counter(page); }
       .platzhalter { background: transparent; font-weight: inherit; }
     }
@@ -168,12 +198,13 @@
   </div>
 
   <div class="empfaenger">
-    <span class="platzhalter">[Anrede] [Vorname Nachname]</span><br />
     <span class="platzhalter">[Funktion im Verein]</span><br />
+    <span class="platzhalter">[Anrede] [Vorname Nachname]</span><br />
     <strong><span class="platzhalter">[Name des Vereins]</span></strong><br />
     <span class="platzhalter">[Straße, PLZ Ort]</span>
   </div>
 
+  <div class="brief-druck-inhalt">
   <p class="betreff">
     <strong>Betreff (E-Mail):</strong> Für den <span class="platzhalter">[Name des Vereins]</span> – Kunst erleben in Eferding (Termin nach Absprache)
   </p>
@@ -233,6 +264,7 @@
     K2 Galerie Kunst &amp; Keramik<br />
     Schlossergasse 4 · 4070 Eferding
   </p>
+  </div>
 
   <div class="kopierblock" role="region" aria-label="E-Mail-Text zum Kopieren">
     <p class="kopierblock-titel">E-Mail – Text zum Kopieren (Platzhalter ersetzen)</p>[Anrede] [Nachname],

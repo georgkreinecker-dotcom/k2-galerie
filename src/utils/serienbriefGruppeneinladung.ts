@@ -184,7 +184,7 @@ const BRIEF_QR_PX = 52
 
 /** Hinweis für Georg im Druckdialog (Browser-Kopf/Fuß lassen sich nicht per CSS abschalten) */
 export const BRIEF_DRUCK_HINWEIS =
-  'Im Druckdialog: „Kopf- und Fußzeile“ ausschalten (Safari/Chrome: Einstellungen unten). Dann nur Ihr Brief auf dem Blatt.'
+  'Im Druckdialog: „Kopf- und Fußzeile“ ausschalten (Safari/Chrome: Einstellungen unten). Adresse sitzt für Fenstercouvert (DIN 5008). Brief falten: unten ⅓ hoch, oben ⅓ runter.'
 
 const BRIEF_STYLES = `
 @page { size: A4; margin: 0; }
@@ -205,77 +205,96 @@ body {
 }
 .brief-a4 {
   width: 210mm;
-  min-height: 297mm;
+  height: 297mm;
+  max-height: 297mm;
   margin: 0;
-  padding: 24mm 22mm 26mm 26mm;
+  padding: 0;
   background: #fffefb;
   display: flex;
   flex-direction: column;
   position: relative;
+  overflow: hidden;
+}
+/* DIN 5008 Form B – Adressfeld für Fenstercouvert (20 mm links, 45 mm oben, 85×45 mm) */
+.brief-adressfeld {
+  position: absolute;
+  top: 45mm;
+  left: 20mm;
+  width: 85mm;
+  min-height: 45mm;
+  max-height: 45mm;
+  overflow: hidden;
+  font-size: 10.5pt;
+  line-height: 1.35;
+  margin: 0;
+  padding: 0;
+}
+.brief-adressfeld strong { font-size: 10.5pt; color: #2c2419; font-weight: 700; }
+.brief-absender-zurueck {
+  position: absolute;
+  top: 17mm;
+  right: 20mm;
+  width: 75mm;
+  text-align: right;
+  font-size: 8pt;
+  line-height: 1.35;
+  color: #5c5650;
+}
+.brief-absender-zurueck strong {
+  display: block;
+  font-size: 8.5pt;
+  color: #1a1816;
+  margin-bottom: 0.15rem;
 }
 .brief-leiste {
-  height: 4px;
+  height: 3px;
   width: 100%;
   background: linear-gradient(90deg, #b54a1e 0%, #c9a227 55%, #e8e0d4 100%);
   border-radius: 2px;
-  margin: 0 0 1.35rem;
+  margin: 0 0 0.5rem;
   flex-shrink: 0;
-}
-.brief-kopfzeile {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 2.5rem;
-  margin-bottom: 1.85rem;
-  flex-shrink: 0;
-}
-.empfaenger-block {
-  font-size: 10.5pt;
-  line-height: 1.5;
-  max-width: 52%;
-}
-.empfaenger-block strong { font-size: 11pt; color: #2c2419; }
-.absender-block {
-  text-align: right;
-  font-size: 9.5pt;
-  line-height: 1.45;
-  color: #5c5650;
-  flex-shrink: 0;
-}
-.absender-block strong {
-  display: block;
-  font-size: 10.5pt;
-  color: #1a1816;
-  margin-bottom: 0.2rem;
 }
 .brief-hauptteil {
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  margin-top: 90mm;
+  height: calc(297mm - 90mm);
+  max-height: calc(297mm - 90mm);
+  padding: 0 18mm 14mm 22mm;
+  font-size: 10.5pt;
+  line-height: 1.42;
 }
 h1 {
-  font-size: 13.5pt;
+  font-size: 12.5pt;
   font-weight: 700;
   color: #2c2419;
   letter-spacing: 0.02em;
-  line-height: 1.35;
-  margin: 0 0 1.15rem;
-  padding-bottom: 0.55rem;
+  line-height: 1.3;
+  margin: 0 0 0.5rem;
+  padding-bottom: 0.35rem;
   border-bottom: 1px solid #d4c4b0;
+  flex-shrink: 0;
+}
+.brief-text {
+  flex: 0 1 auto;
+  min-height: 0;
 }
 .brief-text p {
-  margin: 0 0 0.95rem;
+  margin: 0 0 0.55rem;
   text-align: left;
   hyphens: auto;
 }
 .fakten {
-  margin-top: auto;
-  padding: 0.85rem 1rem;
+  margin-top: 0.35rem;
+  padding: 0.45rem 0.65rem;
   background: linear-gradient(135deg, #fffefb 0%, #f6f0e6 100%);
   border: 1px solid #d4c4b0;
-  border-radius: 6px;
-  font-size: 10.5pt;
-  line-height: 1.45;
+  border-radius: 5px;
+  font-size: 10pt;
+  line-height: 1.38;
+  flex-shrink: 0;
 }
 .fakten-adresse {
   margin: 0 0 0.55rem;
@@ -308,30 +327,46 @@ h1 {
   background: #fff;
 }
 .abschluss {
-  margin: 1rem 0 0;
-  font-size: 10.5pt;
+  margin: 0.4rem 0 0;
+  font-size: 10pt;
+  flex-shrink: 0;
 }
 .brief-gruss {
-  margin-top: 1.35rem;
-  padding-top: 1rem;
+  margin-top: auto;
+  padding-top: 0.45rem;
   border-top: 1px solid #e8e0d4;
   flex-shrink: 0;
 }
 .unterschrift {
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.4;
+  font-size: 10pt;
 }
-.unterschrift strong { font-size: 11pt; }
-.brief-a4.brief-seite { page-break-after: always; page-break-inside: avoid; }
+.unterschrift strong { font-size: 10.5pt; }
+.brief-a4.brief-seite { page-break-after: always; page-break-inside: avoid; break-inside: avoid; }
 .brief-a4.brief-seite:last-child { page-break-after: auto; }
 a { color: #0d6b62; }
 @media print {
   html, body { width: 210mm; height: auto; background: #fffefb; }
   .brief-a4 {
-    min-height: 297mm;
-    padding: 24mm 22mm 26mm 26mm;
+    height: 297mm;
+    max-height: 297mm;
+    padding: 0;
+    overflow: hidden;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+  .brief-hauptteil {
+    height: calc(297mm - 90mm);
+    max-height: calc(297mm - 90mm);
+  }
+  .brief-adressfeld {
+    top: 45mm;
+    left: 20mm;
+  }
+  .brief-absender-zurueck {
+    top: 17mm;
+    right: 20mm;
   }
 }
 `
@@ -357,22 +392,17 @@ export function buildBriefHtml(e: SerienbriefEmpfaenger, options?: { pageBreakAf
 
   const body = `
 <article class="brief-a4 brief-seite">
-  <div class="brief-leiste" aria-hidden="true"></div>
-  <header class="brief-kopfzeile">
-    <div class="empfaenger-block">
-      ${empfaengerExtra}
-      <strong>${verein}</strong><br />
-      ${adr || '—'}
-    </div>
-    <div class="absender-block">
-      <strong>K2 Galerie Kunst &amp; Keramik</strong>
-      Martina &amp; Georg Kreinecker<br />
-      Schlossergasse 4 · 4070 Eferding<br />
-      georg.kreinecker@kgm.at<br />
-      0664 1046337
-    </div>
-  </header>
+  <div class="brief-absender-zurueck" aria-hidden="true">
+    <strong>K2 Galerie Kunst &amp; Keramik</strong>
+    Martina &amp; Georg Kreinecker · Schlossergasse 4 · 4070 Eferding
+  </div>
+  <div class="brief-adressfeld">
+    ${empfaengerExtra}
+    <strong>${verein}</strong><br />
+    ${adr || '—'}
+  </div>
   <main class="brief-hauptteil">
+    <div class="brief-leiste" aria-hidden="true"></div>
     <h1>Kunst erleben – für den ${verein}</h1>
     <div class="brief-text">
       <p>${anrede}</p>
@@ -409,14 +439,14 @@ export function buildBriefHtml(e: SerienbriefEmpfaenger, options?: { pageBreakAf
       Ich würde mich freuen, vom <strong>${verein}</strong> zu hören –
       <a href="mailto:georg.kreinecker@kgm.at">georg.kreinecker@kgm.at</a> · <strong>0664 1046337</strong>.
     </p>
+    <footer class="brief-gruss">
+      <p class="unterschrift">
+        Herzliche Grüße<br />
+        <strong>Martina &amp; Georg Kreinecker</strong><br />
+        K2 Galerie Kunst &amp; Keramik · Schlossergasse 4 · 4070 Eferding
+      </p>
+    </footer>
   </main>
-  <footer class="brief-gruss">
-    <p class="unterschrift">
-      Herzliche Grüße<br /><br />
-      <strong>Martina &amp; Georg Kreinecker</strong><br />
-      K2 Galerie Kunst &amp; Keramik · Schlossergasse 4 · 4070 Eferding
-    </p>
-  </footer>
 </article>`
 
   return `<!DOCTYPE html>
