@@ -11,7 +11,7 @@ import {
   buildBriefHtml,
   buildAlleBriefeHtml,
   downloadTextFile,
-  openHtmlInPrintWindow,
+  printHtmlDocument,
   empfaengerListToCsv,
   safeFilenamePart,
 } from '../utils/serienbriefGruppeneinladung'
@@ -201,7 +201,10 @@ export default function SerienbriefGruppeneinladungPage() {
             type="button"
             style={btnPrimary}
             disabled={aktivCount === 0}
-            onClick={() => openHtmlInPrintWindow(buildAlleBriefeHtml(rows), 'Alle Briefe')}
+            onClick={() => {
+              const r = printHtmlDocument(buildAlleBriefeHtml(rows), 'Alle Briefe')
+              setStatus(r.message)
+            }}
           >
             Alle aktiven drucken ({aktivCount})
           </button>
@@ -318,7 +321,10 @@ export default function SerienbriefGruppeneinladungPage() {
                     <button
                       type="button"
                       style={btnSecondary}
-                      onClick={() => openHtmlInPrintWindow(buildBriefHtml(selected), selected.organisation)}
+                      onClick={() => {
+                        const r = printHtmlDocument(buildBriefHtml(selected), selected.organisation)
+                        setStatus(r.message)
+                      }}
                     >
                       Diesen Brief drucken
                     </button>

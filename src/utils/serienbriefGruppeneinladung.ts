@@ -335,19 +335,63 @@ export function downloadTextFile(content: string, filename: string, mime = 'text
   URL.revokeObjectURL(url)
 }
 
+let serienbriefPrintFrame: HTMLIFrameElement | null = null
+
+/**
+ * Druckdialog ohne Pop-up (versteckter iframe – funktioniert auch bei blockierten Pop-ups).
+ */
+export function printHtmlDocument(
+  html: string,
+  title = 'Serienbrief',
+): { ok: boolean; message: string } {
+  if (typeof document === 'undefined') {
+    return { ok: false, message: 'Druck nur im Browser möglich.' }
+  }
+
+  if (!serienbriefPrintFrame) {
+    serienbriefPrintFrame = document.createElement('iframe')
+    serienbriefPrintFrame.setAttribute('title', 'Druckvorschau Serienbrief')
+    serienbriefPrintFrame.setAttribute('aria-hidden', 'true')
+    serienbriefPrintFrame.style.cssText =
+      'position:fixed;right:0;bottom:0;width:0;height:0;border:0;opacity:0;pointer-events:none'
+    document.body.appendChild(serienbriefPrintFrame)
+  }
+
+  const win = serienbriefPrintFrame.contentWindow
+  const doc = win?.document
+  if (!win || !doc) {
+    downloadTextFile(html, `Druck-${safeFilenamePart(title)}.html`, 'text/html;charset=utf-8')
+    return {
+      ok: false,
+      message: 'Druck nicht möglich – HTML wurde heruntergeladen (in Word öffnen und drucken).',
+    }
+  }
+
+  doc.open()
+  doc.write(html)
+  doc.close()
+  doc.title = title
+
+  const runPrint = () => {
+    setTimeout(() => {
+      try {
+        win.focus()
+        win.print()
+      } catch {
+        downloadTextFile(html, `Druck-${safeFilenamePart(title)}.html`, 'text/html;charset=utf-8')
+      }
+    }, 600)
+  }
+
+  if (doc.readyState === 'complete') runPrint()
+  else serienbriefPrintFrame!.onload = () => runPrint()
+
+  return { ok: true, message: 'Druckdialog öffnet sich …' }
+}
+
+/** @deprecated Nutze printHtmlDocument – kein Pop-up mehr nötig */
 export function openHtmlInPrintWindow(html: string, title = 'Serienbrief') {
-  const w = window.open('', '_blank', 'noopener,noreferrer')
-  if (!w) {
-    alert('Pop-up blockiert – bitte Pop-ups für diese Seite erlauben, dann erneut drucken.')
-    return
-  }
-  w.document.open()
-  w.document.write(html)
-  w.document.close()
-  w.document.title = title
-  w.onload = () => {
-    setTimeout(() => w.print(), 400)
-  }
+  printHtmlDocument(html, title)
 }
 
 export function safeFilenamePart(s: string): string {
