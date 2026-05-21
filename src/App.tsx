@@ -890,8 +890,10 @@ function App() {
       <Route path="/familie" element={<PlatformOnlyRoute><K2FamilieLayout /></PlatformOnlyRoute>}>
         <Route index element={<K2FamilieHomePage />} />
       </Route>
-      {/* K2 Familie: Marketing-Einstieg (ohne Layout – nur Lesen / CTA, vergleichbar /willkommen bei der Galerie) */}
+      {/* K2 Familie: Öffentliche Einstiege ohne Layout (kein Leitstruktur-Panel / keine APf-Nav) */}
       <Route path={PROJECT_ROUTES['k2-familie'].willkommen} element={<PlatformOnlyRoute><K2FamilieWillkommenPage /></PlatformOnlyRoute>} />
+      <Route path={PROJECT_ROUTES['k2-familie'].lizenzErwerben} element={<PlatformOnlyRoute><K2FamilieLizenzErwerbenPage /></PlatformOnlyRoute>} />
+      <Route path={PROJECT_ROUTES['k2-familie'].lizenzKuendigen} element={<PlatformOnlyRoute><K2FamilieLizenzKuendigenPage /></PlatformOnlyRoute>} />
       <Route path={PROJECT_ROUTES['k2-familie'].home} element={<PlatformOnlyRoute><K2FamilieLayout /></PlatformOnlyRoute>}>
         <Route index element={<K2FamilieRootIndexRedirect />} />
         <Route path="einstieg" element={<K2FamilieEinstiegPage />} />
@@ -912,8 +914,6 @@ function App() {
         <Route path="einladung-geschwister-briefe" element={<K2FamilieEinladungGeschwisterBriefePage />} />
         <Route path="sicherung" element={<K2FamilieSicherungPage />} />
         <Route path="marketing" element={<K2FamilieMarketingPage />} />
-        <Route path="lizenz-erwerben" element={<K2FamilieLizenzErwerbenPage />} />
-        <Route path="lizenz-kuendigen" element={<K2FamilieLizenzKuendigenPage />} />
         <Route path="personen/:id" element={<K2FamiliePersonPage />} />
       </Route>
       <Route path="/projects/:projectId" element={<ProjectStartPage />} />

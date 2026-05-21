@@ -1202,8 +1202,9 @@ function FamilieLayoutInner() {
         tenantId: currentTenantId,
         nurMitgliedEinstieg,
         huberNurMusterBesuch,
+        pathname: location.pathname,
       }),
-    [capabilities, currentTenantId, nurMitgliedEinstieg, huberNurMusterBesuch],
+    [capabilities, currentTenantId, nurMitgliedEinstieg, huberNurMusterBesuch, location.pathname],
   )
 
   /** PWA: einmal pro Mount – letzte Unterroute wiederherstellen, aber nicht weg von Meine Familie solange Zugang noch nicht voll (Code-Formular steht nur dort). */

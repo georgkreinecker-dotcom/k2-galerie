@@ -1,6 +1,6 @@
 /**
  * K2 Familie – Lizenz beenden / Abo verwalten (Stripe, eigener Einstieg ohne Galerie-Verweis).
- * Route: /projects/k2-familie/lizenz-kuendigen
+ * Route: /projects/k2-familie/lizenz-kuendigen (ohne K2FamilieLayout – öffentlicher Einstieg)
  */
 import { Link } from 'react-router-dom'
 import '../App.css'

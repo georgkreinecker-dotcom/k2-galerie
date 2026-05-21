@@ -52,12 +52,24 @@ export function isFamilieMitgliederAppUiSession(tenantId: string): boolean {
   }
 }
 
+/** Öffentliche Einstiege: nie Leitstruktur / interne APf-Navigation (auch wenn Route versehentlich im Layout hängt). */
+export function isK2FamilieOeffentlicherEinstiegPath(pathname: string): boolean {
+  const p = pathname.replace(/\/+$/, '') || '/'
+  return (
+    p.endsWith('/lizenz-erwerben') ||
+    p.endsWith('/lizenz-kuendigen') ||
+    p.endsWith('/willkommen')
+  )
+}
+
 export function shouldShowFamilieLeitstrukturPanel(opts: {
   capabilities: FamilieRollenCapabilities
   tenantId: string
   nurMitgliedEinstieg: boolean
   huberNurMusterBesuch: boolean
+  pathname?: string
 }): boolean {
+  if (opts.pathname && isK2FamilieOeffentlicherEinstiegPath(opts.pathname)) return false
   if (!isK2FamilieApfArbeitsplattform()) return false
   if (opts.nurMitgliedEinstieg || opts.huberNurMusterBesuch) return false
   if (!opts.capabilities.canManageFamilienInstanz) return false

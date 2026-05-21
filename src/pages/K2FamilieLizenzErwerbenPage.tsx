@@ -1,6 +1,6 @@
 /**
  * K2 Familie – Lizenz erwerben (Stripe Checkout).
- * Route: /projects/k2-familie/lizenz-erwerben
+ * Route: /projects/k2-familie/lizenz-erwerben (ohne K2FamilieLayout – öffentlicher Stripe-Einstieg)
  */
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -418,12 +418,12 @@ export default function K2FamilieLizenzErwerbenPage() {
         </form>
 
         <p style={{ fontSize: '0.85rem', color: muted, marginTop: '1.25rem', lineHeight: 1.55 }}>
-          <Link to={R.meineFamilie} style={{ color: accent, fontWeight: 600 }}>
-            ← Zurück zu Meine Familie
+          <Link to={R.willkommen} style={{ color: accent, fontWeight: 600 }}>
+            ← Zurück zur Übersicht K2 Familie
           </Link>
           {' · '}
-          <Link to={R.einstellungen} style={{ color: accent, fontWeight: 600 }}>
-            Einstellungen
+          <Link to={R.familiePraesentationsmappeKunde} style={{ color: accent, fontWeight: 600 }}>
+            Präsentationsmappe
           </Link>
         </p>
 
