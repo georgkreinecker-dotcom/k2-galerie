@@ -963,7 +963,7 @@ function App() {
           </PlatformOnlyRoute>
         }
       />
-      <Route path={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} element={<Mok2Layout><LizenzKaufenPage /></Mok2Layout>} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} element={<LizenzKaufenPage />} />
       <Route path="/lizenz-erfolg" element={<LizenzErfolgPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].empfehlungstool} element={<Mok2Layout><EmpfehlungstoolPage /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].verguetung} element={<Mok2Layout><VerguetungPage /></Mok2Layout>} />

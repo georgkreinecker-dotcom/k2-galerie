@@ -3,13 +3,18 @@
  * Design wie ök2/Willkommensseite: klare Kartenauswahl, danach Formular → Stripe Checkout.
  */
 import { useState, useEffect } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import '../App.css'
 import { LIZENZPREISE } from '../config/licencePricing'
-import { AGB_ROUTE, BASE_APP_URL, PROJECT_ROUTES } from '../config/navigation'
+import {
+  AGB_ROUTE,
+  BASE_APP_URL,
+  OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE,
+  PROJECT_ROUTES,
+} from '../config/navigation'
+import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { isValidEmpfehlerIdFormat } from '../utils/empfehlerId'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
-import LizenzZeitplanPilotStripeInfo from '../components/LizenzZeitplanPilotStripeInfo'
 import { LIZENZ_MUSTER_EMAIL, LIZENZ_MUSTER_NAME } from '../utils/lizenzMusterDemo'
 import { openCheckoutOrPaymentUrl } from '../utils/openCheckoutOrPaymentUrl'
 import { DEFAULT_OEK2_FOCUS_DIRECTION_ID, FOCUS_DIRECTIONS, type FocusDirectionId } from '../config/tenantConfig'
@@ -22,7 +27,6 @@ const LICENCE_OPTIONS = [
 ]
 
 export default function LizenzKaufenPage() {
-  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const empfehlerFromUrl = searchParams.get('empfehler')?.trim() || ''
 
@@ -123,102 +127,69 @@ export default function LizenzKaufenPage() {
         <p style={{ color: muted, fontSize: '0.9rem', marginBottom: '1.75rem' }}>
           Produkt anklicken – Name und E-Mail eintragen – Zahlung per Karte (Stripe). Nach dem Kauf ist deine Lizenz aktiv.
         </p>
-        <div
-          style={{
-            marginBottom: '1.25rem',
-            padding: '0.75rem 1rem',
-            background: 'rgba(251,191,36,0.12)',
-            border: '1px solid rgba(180,83,9,0.28)',
-            borderRadius: 12,
-            fontSize: '0.88rem',
-            color: text,
-          }}
-        >
-          <div style={{ fontWeight: 700, marginBottom: '0.45rem', color: accentDeep }}>
-            {import.meta.env.DEV ? 'Funktionstest Stripe (Sportwagen: ein Klick)' : 'Stripe Live-Zahlung'}
-          </div>
-          {import.meta.env.DEV ? (
-            <>
-              <p style={{ margin: '0 0 0.65rem', lineHeight: 1.45, fontSize: '0.88rem' }}>
-                <strong>APf = localhost:</strong> Ohne <code style={{ fontSize: '0.82rem' }}>STRIPE_SECRET_KEY</code> in der <code style={{ fontSize: '0.82rem' }}>.env</code> kann <strong>Jetzt bezahlen</strong> hier nicht starten – Webhook erreicht localhost ohnehin nicht.{' '}
-                <strong>Ein Standard:</strong> einen Klick unten → echte Lizenz-Seite auf Vercel → dort Formular → Jetzt bezahlen → Testkarte.
-              </p>
-              <a
-                href={stripeTestLiveUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  boxSizing: 'border-box',
-                  marginBottom: '0.65rem',
-                  padding: '0.9rem 1rem',
-                  background: accentDeep,
-                  color: '#fff',
-                  borderRadius: 12,
-                  fontWeight: 800,
-                  fontSize: '1.02rem',
-                  textDecoration: 'none',
-                  textAlign: 'center',
-                }}
-              >
-                Funktionstest Stripe – ein Klick (öffnet Vercel)
-              </a>
-              <p style={{ margin: '0 0 0.5rem', fontSize: '0.84rem', color: muted, lineHeight: 1.45 }}>
-                Auf der Vercel-Seite: <strong>4242 4242 4242 4242</strong>, beliebiges Datum, CVC z. B. 123 → dann Erfolgsseite mit Session.
-              </p>
-              <details style={{ marginBottom: '0.5rem', fontSize: '0.82rem', color: muted, lineHeight: 1.45 }}>
-                <summary style={{ cursor: 'pointer', fontWeight: 600, color: accentDeep }}>
-                  Optional: stattdessen lokal (braucht Key + Dev neu starten)
-                </summary>
-                <p style={{ margin: '0.45rem 0 0' }}>
-                  <code>STRIPE_SECRET_KEY=sk_test_…</code> in <code>.env</code> – dann funktioniert <strong>Jetzt bezahlen</strong> auf dieser localhost-Seite. Webhook-Test bleibt sinnvoller auf Vercel.
-                </p>
-              </details>
-              <p style={{ margin: 0, fontSize: '0.82rem', color: muted, lineHeight: 1.45 }}>
-                <strong>Mustervorschau</strong> (nur Layout):{' '}
-                <Link to="/lizenz-erfolg?muster=1" style={{ color: accent, fontWeight: 600 }}>
-                  öffnen
-                </Link>
-              </p>
-            </>
-          ) : (
-            <p style={{ margin: '0 0 0.6rem', lineHeight: 1.45 }}>
-              <strong>Live-Betrieb:</strong> Zahlung läuft direkt über Stripe. Optional kannst du die Erfolgsseite als Vorschau ansehen:{' '}
-              <Link to="/lizenz-erfolg?muster=1" style={{ color: accent, fontWeight: 600 }}>
-                Lizenzbestätigung als Vorschau öffnen
-              </Link>
-              {' (nur Vorschau, ohne Stripe-Zahlung).'}
-            </p>
-          )}
-          <button
-            type="button"
-            onClick={() => {
-              setName(LIZENZ_MUSTER_NAME)
-              setEmail(LIZENZ_MUSTER_EMAIL)
-              setLicenceType('pro')
-            }}
+        {import.meta.env.DEV && (
+          <div
             style={{
-              padding: '0.5rem 0.85rem',
-              background: bgCard,
-              border: `1px solid ${accent}55`,
-              borderRadius: 10,
-              fontFamily: fontBody,
+              marginBottom: '1.25rem',
+              padding: '0.75rem 1rem',
+              background: 'rgba(251,191,36,0.12)',
+              border: '1px solid rgba(180,83,9,0.28)',
+              borderRadius: 12,
               fontSize: '0.88rem',
-              fontWeight: 600,
-              color: accentDeep,
-              cursor: 'pointer',
+              color: text,
             }}
           >
-            Formular mit Musterdaten füllen
-          </button>
-          {!import.meta.env.DEV && (
-            <p style={{ margin: '0.55rem 0 0', fontSize: '0.8rem', color: muted, lineHeight: 1.4 }}>
-              Zum Durchklicken ohne Zahlung: Link <strong>Mustervorschau</strong> oben nutzen.
+            <div style={{ fontWeight: 700, marginBottom: '0.45rem', color: accentDeep }}>
+              Funktionstest Stripe (nur Entwicklung)
+            </div>
+            <p style={{ margin: '0 0 0.65rem', lineHeight: 1.45, fontSize: '0.88rem' }}>
+              Lokal ohne <code style={{ fontSize: '0.82rem' }}>STRIPE_SECRET_KEY</code> schlägt <strong>Jetzt bezahlen</strong> fehl.{' '}
+              <strong>Standard:</strong> Vercel-Seite öffnen → Formular → Testkarte.
             </p>
-          )}
-        </div>
-        <LizenzZeitplanPilotStripeInfo variant="kaufen" />
+            <a
+              href={stripeTestLiveUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'block',
+                width: '100%',
+                boxSizing: 'border-box',
+                marginBottom: '0.65rem',
+                padding: '0.9rem 1rem',
+                background: accentDeep,
+                color: '#fff',
+                borderRadius: 12,
+                fontWeight: 800,
+                fontSize: '1.02rem',
+                textDecoration: 'none',
+                textAlign: 'center',
+              }}
+            >
+              Funktionstest auf Vercel (ein Klick)
+            </a>
+            <button
+              type="button"
+              onClick={() => {
+                setName(LIZENZ_MUSTER_NAME)
+                setEmail(LIZENZ_MUSTER_EMAIL)
+                setLicenceType('pro')
+              }}
+              style={{
+                padding: '0.5rem 0.85rem',
+                background: bgCard,
+                border: `1px solid ${accent}55`,
+                borderRadius: 10,
+                fontFamily: fontBody,
+                fontSize: '0.88rem',
+                fontWeight: 600,
+                color: accentDeep,
+                cursor: 'pointer',
+              }}
+            >
+              Formular mit Musterdaten füllen
+            </button>
+          </div>
+        )}
 
         {/* 1. Produkt per Klick auswählen */}
         <div style={{ marginBottom: '1.75rem' }}>
@@ -394,23 +365,33 @@ export default function LizenzKaufenPage() {
           </button>
         </form>
 
-        <p style={{ fontSize: '0.85rem', color: muted, margin: 0 }}>
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            style={{
-              background: 'none',
-              border: 'none',
-              padding: 0,
-              color: accent,
-              textDecoration: 'underline',
-              cursor: 'pointer',
-              font: 'inherit',
-            }}
-          >
-            ← Zurück
-          </button>
+        <p style={{ fontSize: '0.85rem', color: muted, marginTop: '1.25rem', lineHeight: 1.55 }}>
+          <Link to={OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE} style={{ color: accent, fontWeight: 600 }}>
+            ← Entdecken
+          </Link>
+          {' · '}
+          <Link to={PROJECT_ROUTES['k2-galerie'].galerieOeffentlich} style={{ color: accent, fontWeight: 600 }}>
+            Demo-Galerie
+          </Link>
+          {' · '}
+          <Link to={AGB_ROUTE} style={{ color: accent, fontWeight: 600 }}>
+            AGB
+          </Link>
         </p>
+
+        <footer
+          style={{
+            marginTop: '2rem',
+            paddingTop: '1rem',
+            borderTop: '1px solid rgba(181,74,30,0.2)',
+            fontSize: '0.72rem',
+            color: muted,
+            lineHeight: 1.5,
+          }}
+        >
+          <div>{PRODUCT_COPYRIGHT_BRAND_ONLY}</div>
+          <div style={{ marginTop: '0.35rem' }}>{PRODUCT_URHEBER_ANWENDUNG}</div>
+        </footer>
       </main>
     </div>
   )

@@ -41,7 +41,6 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
   const isVerguetung = location.pathname === PROJECT_ROUTES['k2-galerie'].verguetung
   const isEingangstor = location.pathname === OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE || location.pathname === WILLKOMMEN_ROUTE
   const isAgb = location.pathname === AGB_ROUTE
-  const isLizenzKaufen = location.pathname === PROJECT_ROUTES['k2-galerie'].lizenzKaufen
   const isMoreMenuRoute =
     isSoftwareentwicklung ||
     isWerbeunterlagen ||
@@ -50,8 +49,7 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
     isEmpfehlungstool ||
     isVerguetung ||
     isEingangstor ||
-    isAgb ||
-    isLizenzKaufen
+    isAgb
 
   const scrollToSection = (id: string) => {
     if (!isMarketingPage) return
@@ -213,9 +211,11 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
             </Link>
             <Link
               to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen}
+              target="_blank"
+              rel="noopener noreferrer"
               style={{
                 padding: '0.45rem 0.65rem',
-                background: isLizenzKaufen ? 'rgba(95,251,241,0.25)' : 'transparent',
+                background: 'transparent',
                 color: '#e8f4ff',
                 textDecoration: 'none',
                 borderRadius: '6px',
