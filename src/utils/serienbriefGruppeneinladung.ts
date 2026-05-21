@@ -373,7 +373,7 @@ export function buildBriefHtml(e: SerienbriefEmpfaenger, options?: { pageBreakAf
     </div>
   </header>
   <main class="brief-hauptteil">
-    <h1>Ein Nachmittag mit Kunst – für den ${verein}</h1>
+    <h1>Kunst erleben – für den ${verein}</h1>
     <div class="brief-text">
       <p>${anrede}</p>
       <p>
@@ -384,7 +384,8 @@ export function buildBriefHtml(e: SerienbriefEmpfaenger, options?: { pageBreakAf
         die wir uns lange gewünscht haben und die wir gern mit Gruppen teilen.
       </p>
       <p>
-        Sie können Ihrem Verein so einen Nachmittag anbieten: Wir zeigen unsere Werke, Ihre Leute schauen in Ruhe,
+        Sie können Ihrem Verein einen Besuch mit Kunst schenken – <strong>wann es passt, finden wir gemeinsam</strong>
+        (Vormittag, Nachmittag, was Ihrer Gruppe gut tut): Wir zeigen unsere Werke, Ihre Leute schauen in Ruhe,
         wir sprechen über die Kunst – was bewegt, wie etwas entstanden ist. Am Eröffnungswochenende war viel Leben drin;
         jetzt ist es oft stiller, und genau dann entstehen die schönsten Gespräche vor einem Bild.
         Kein großer Betrieb, kein Lärm – nur Begegnung mit Malerei und Keramik, in Ihrem Tempo.
