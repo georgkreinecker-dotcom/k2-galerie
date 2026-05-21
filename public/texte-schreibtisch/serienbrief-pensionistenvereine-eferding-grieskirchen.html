@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Serienbrief – Pensionistenvereine Eferding &amp; Grieskirchen</title>
+  <style>
+    @page { size: A4; margin: 14mm 16mm 20mm 16mm; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0 auto;
+      max-width: 52rem;
+      padding: 1.5rem 1.25rem 3rem;
+      font-family: "Palatino Linotype", Palatino, Georgia, serif;
+      font-size: 11pt;
+      line-height: 1.5;
+      color: #1a1816;
+      background: #f6f2eb;
+    }
+    .hinweis-screen {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 8.5pt;
+      color: #64748b;
+      text-align: center;
+      margin-bottom: 1rem;
+      padding: 0.5rem 0.65rem;
+      background: #e8e4dc;
+      border-radius: 4px;
+    }
+    @media print { .hinweis-screen, .no-print { display: none; } }
+    h1 { font-size: 1.2rem; margin: 0 0 0.75rem; color: #2c2419; }
+    h2 {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 10pt;
+      font-weight: 700;
+      color: #b54a1e;
+      margin: 1.35rem 0 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    p { margin: 0 0 0.75rem; }
+    .kasten {
+      background: #fffefb;
+      border: 1px solid #c4b8a8;
+      border-left: 4px solid #b54a1e;
+      padding: 0.75rem 1rem;
+      margin: 1rem 0;
+      font-size: 10.5pt;
+    }
+    .kasten-wichtig {
+      border-left-color: #dc2626;
+      background: #fff5f5;
+    }
+    a { color: #0f766e; }
+    .btn {
+      display: inline-block;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 10pt;
+      font-weight: 600;
+      color: #fff;
+      background: #b54a1e;
+      padding: 0.45rem 0.85rem;
+      border-radius: 6px;
+      text-decoration: none;
+      margin: 0.25rem 0.5rem 0.25rem 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8.5pt;
+      line-height: 1.35;
+      margin: 0.75rem 0 1rem;
+      background: #fffefb;
+    }
+    th, td {
+      border: 1px solid #c4b8a8;
+      padding: 0.35rem 0.45rem;
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      background: #ebe8e2;
+      font-weight: 700;
+    }
+    tr:nth-child(even) td { background: #faf8f5; }
+    .fehlt { color: #b45309; font-style: italic; }
+    ol { margin: 0.5rem 0 0.75rem; padding-left: 1.35em; }
+    li { margin-bottom: 0.35rem; }
+    code {
+      font-family: ui-monospace, monospace;
+      font-size: 9pt;
+      background: #ebe8e2;
+      padding: 0.1em 0.35em;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <p class="hinweis-screen">Serienbrief-Liste · Stand Mai 2026 · Vor Versand Adressen prüfen</p>
+
+  <h1>Pensionistenvereine – Bezirk Eferding &amp; Grieskirchen</h1>
+  <p>Für den <strong>Serienbrief</strong> zur Gruppeneinladung (K2 Galerie). Quelle: PVÖ Bezirk Grieskirchen-Eferding, Gemeinde Fraham, Stadtbranchenbuch, OÖ Seniorenbund.</p>
+
+  <p class="no-print">
+    <a class="btn" href="serienbrief-pensionistenvereine-eferding-grieskirchen.csv" download>CSV herunterladen</a>
+    <a class="btn" href="einladung-gruppen-verantwortliche-k2-galerie.html" style="background:#0f766e">Einladungstext (Brief)</a>
+  </p>
+
+  <div class="kasten kasten-wichtig">
+    <strong>Wichtig vor dem Druck:</strong> Nicht jede Zeile hat eine vollständige Postadresse.
+    Viele PVÖ-Ortsgruppen nennen online nur Obmann/Obfrau und E-Mail – Straße und PLZ-Ort sind oft nur der <strong>Gemeindesitz</strong> (für die Zuordnung).
+    Vor dem Versand: fehlende Felder ergänzen (Telefon, Gemeindeamt, <a href="https://pvoe.at/oberoesterreich/grieskirchen/">pvoe.at/grieskirchen</a>) oder Brief an Vereinssitz <strong>Schiferplatz 3a, 4070 Eferding</strong> mit Zusatz „z. H. Obfrau …“.
+  </div>
+
+  <h2>Serienbrief – so geht’s (Mac)</h2>
+  <ol>
+    <li><strong>CSV öffnen</strong> in Numbers oder Excel (Trennzeichen: <strong>Semikolon</strong>).</li>
+    <li>Spalten <code>Anrede</code>, <code>Vorname_Nachname</code>, <code>Funktion</code>, <code>Organisation</code> ( = Name des Vereins), <code>Strasse</code>, <code>PLZ</code>, <code>Ort</code> prüfen und ergänzen.</li>
+    <li>In <strong>Pages</strong> oder Word: Einladung aus <a href="einladung-gruppen-verantwortliche-k2-galerie.html">einladung-gruppen-verantwortliche-k2-galerie.html</a> als Vorlage → Seriendruck / Brief-Merge mit der CSV verknüpfen.</li>
+    <li>Platzhalter im Brief: <code>[Anrede] [Vorname Nachname]</code>, <code>[Funktion im Verein]</code>, <code>[Name des Vereins]</code>, <code>[Straße, PLZ Ort]</code>.</li>
+  </ol>
+
+  <h2>Übersicht (27 Einträge)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Organisation</th>
+        <th>Typ</th>
+        <th>Bez.</th>
+        <th>Ansprechperson</th>
+        <th>Straße</th>
+        <th>PLZ Ort</th>
+        <th>Kontakt</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Pensionistenverband OG Eferding-Pupping</td><td>PVÖ</td><td>EF</td><td>Obfrau Gabriele Pamminger</td><td>Schiferplatz 3a</td><td>4070 Eferding</td><td>40423@pvoe.at</td></tr>
+      <tr><td>Pensionistenverband OG Fraham</td><td>PVÖ</td><td>EF</td><td>Obfrau Christine Gredler</td><td class="fehlt">—</td><td>4070 Fraham</td><td>40425@pvoe.at</td></tr>
+      <tr><td>Pensionistenverband OG Aschach-Hartkirchen-Haibach</td><td>PVÖ</td><td>EF</td><td>Obfrau Christine Gredler</td><td class="fehlt">—</td><td>4082 Aschach</td><td>40422@pvoe.at</td></tr>
+      <tr><td>Pensionistenverband OG Hinzenbach</td><td>PVÖ</td><td>EF</td><td>Obmann Hermann Mayr</td><td class="fehlt">—</td><td>4076 Hinzenbach</td><td>40424@pvoe.at</td></tr>
+      <tr><td>Pensionistenverband OG Wallern</td><td>PVÖ</td><td>GR</td><td>Obmann Franz Zacherl</td><td class="fehlt">—</td><td>4702 Wallern</td><td>40419@pvoe.at</td></tr>
+      <tr><td>Pensionistenverband OG Prambachkirchen</td><td>PVÖ</td><td>GR</td><td>Obmann Gottfried Tröbinger</td><td class="fehlt">—</td><td>4731 Prambachkirchen</td><td>40415@pvoe.at</td></tr>
+      <tr><td>Pensionistenverband OG Aistersheim</td><td>PVÖ</td><td>GR</td><td>Obfrau Anna Röbl</td><td class="fehlt">—</td><td>4676 Aistersheim</td><td>40401@pvoe.at</td></tr>
+      <tr><td>Pensionistenverband OG Neumarkt-Kallham</td><td>PVÖ</td><td>GR</td><td>Obmann Erwin Fürst</td><td class="fehlt">—</td><td>4720 Neumarkt</td><td>40412@pvoe.at</td></tr>
+      <tr><td>Pensionistenverband OG Haag am Hausruck</td><td>PVÖ</td><td>GR</td><td>Obfrau Pauline Schiffelhumer</td><td class="fehlt">—</td><td>4680 Haag</td><td>40408@pvoe.at</td></tr>
+      <tr><td>Pensionistenverband OG Gaspoltshofen</td><td>PVÖ</td><td>GR</td><td>Obfrau Ilse Haslinger</td><td class="fehlt">—</td><td>4673 Gaspoltshofen</td><td>40405@pvoe.at</td></tr>
+      <tr><td>Pensionistenverband OG Weibern</td><td>PVÖ</td><td>GR</td><td>Obfrau Maria Pointner</td><td class="fehlt">—</td><td>4675 Weibern</td><td>40420@pvoe.at</td></tr>
+      <tr><td>Pensionistenverband OG Taufkirchen-Hofkirchen</td><td>PVÖ</td><td>GR</td><td>Obfrau Renate Listberger</td><td class="fehlt">—</td><td>4792 Taufkirchen</td><td>40417@pvoe.at</td></tr>
+      <tr><td>Pensionistenverband OG Peuerbach</td><td>PVÖ</td><td>GR</td><td>Obmann Alfred Freilinger</td><td class="fehlt">—</td><td>4722 Peuerbach</td><td>40413@pvoe.at</td></tr>
+      <tr><td>Pensionistenverband OG Natternbach</td><td>PVÖ</td><td>GR</td><td>Obmann Franz Till</td><td class="fehlt">—</td><td>4723 Natternbach</td><td>40410@pvoe.at</td></tr>
+      <tr><td>Pensionistenverband OG Geboltskirchen</td><td>PVÖ</td><td>GR</td><td>Obfrau Karoline Huemer</td><td class="fehlt">—</td><td>4723 Geboltskirchen</td><td>40406@pvoe.at</td></tr>
+      <tr><td>Pensionistenverband OG Bad Schallerbach</td><td>PVÖ</td><td>GR</td><td>Obfrau Helene Lintner</td><td class="fehlt">—</td><td>4701 Bad Schallerbach</td><td>40403@pvoe.at</td></tr>
+      <tr><td>Pensionistenverband OG Pram</td><td>PVÖ</td><td>GR</td><td>Obfrau Birgit Holzinger</td><td class="fehlt">—</td><td>4724 Pram</td><td>40414@pvoe.at</td></tr>
+      <tr><td>Pensionistenverband OG Schlüßlberg</td><td>PVÖ</td><td>GR</td><td>Obmann Franz Wieshofer</td><td class="fehlt">—</td><td>4651 Schlüßlberg</td><td>40421@pvoe.at</td></tr>
+      <tr><td>Pensionistenverband OG Waizenkirchen</td><td>PVÖ</td><td>GR</td><td>Obmann Franz Schauer</td><td class="fehlt">—</td><td>4730 Waizenkirchen</td><td>40418@pvoe.at</td></tr>
+      <tr><td>Pensionistenverband OG Neukirchen-Eschenau-St. Ägidi</td><td>PVÖ</td><td>GR</td><td>Obmann Herbert Kolmhofer</td><td class="fehlt">—</td><td>4726 Neukirchen</td><td>40411@pvoe.at</td></tr>
+      <tr><td>Pensionistenverband OG Grieskirchen</td><td>PVÖ</td><td>GR</td><td>Obmann Günter Irkuf</td><td class="fehlt">—</td><td>4710 Grieskirchen</td><td>40407@pvoe.at</td></tr>
+      <tr><td>Pensionistenverband OG Gallspach</td><td>PVÖ</td><td>GR</td><td>Obmann Karl-Heinz Groißhammer</td><td class="fehlt">—</td><td>4732 Gallspach</td><td>40404@pvoe.at</td></tr>
+      <tr><td>PVÖ Bezirk Grieskirchen-Eferding</td><td>PVÖ</td><td>EF+GR</td><td>Bezirksvors. Gottfried Tröbinger</td><td class="fehlt">—</td><td>4710 Grieskirchen</td><td>grieskirchen-eferding@pvoe.at</td></tr>
+      <tr><td>OÖ Seniorenbund Bezirk Grieskirchen</td><td>Seniorenbund</td><td>GR</td><td>Bezirksobmann Johann Feizlmayr</td><td>Kickendorf 38</td><td>4710 Grieskirchen</td><td>h.feizlmayr@aon.at</td></tr>
+      <tr><td>OÖ Seniorenbund OG Eferding</td><td>Seniorenbund</td><td>EF</td><td class="fehlt">Ortsgruppe</td><td class="fehlt">—</td><td>4070 Eferding</td><td>karl.hemmelmayr@liwest.at</td></tr>
+      <tr><td>OÖ Seniorenbund (Welser Str.)</td><td>Seniorenbund</td><td>EF</td><td class="fehlt">Vorstand klären</td><td>Welser Straße 45</td><td>4070 Eferding</td><td class="fehlt">—</td></tr>
+      <tr><td>OÖ Seniorenbund (Brandstätter Str.)</td><td>Seniorenbund</td><td>EF</td><td class="fehlt">Vorstand klären</td><td>Brandstätter Straße 11</td><td>4070 Eferding</td><td class="fehlt">—</td></tr>
+    </tbody>
+  </table>
+
+  <div class="kasten">
+    <strong>Quellen:</strong>
+    <a href="https://pvoe.at/oberoesterreich/grieskirchen/">PVÖ Grieskirchen-Eferding</a> (22 Ortsgruppen),
+    <a href="https://www.fraham.at/Pensionistenverband_Ortsgruppe_Eferding-Pupping">Gemeinde Fraham</a>,
+    <a href="https://www.grieskirchen.at/OOe_Seniorenbund_-_Bezirksgruppe_Grieskirchen">Seniorenbund Grieskirchen</a>,
+    <a href="https://eferding-stadt.ooesb.at/start">Seniorenbund Eferding</a>.
+    Kein amtliches Gesamtverzeichnis – Liste ist Arbeitshilfe, keine Garantie auf Vollständigkeit.
+  </div>
+
+  <p class="hinweis-screen">Texte-Schreibtisch · Serienbrief Pensionistenvereine</p>
+</body>
+</html>

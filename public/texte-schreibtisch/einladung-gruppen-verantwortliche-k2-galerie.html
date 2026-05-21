@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Persönliche Einladung an Verantwortliche eines Vereins – Gruppenbesuch K2 Galerie Kunst & Keramik" />
+  <title>Gruppeneinladung (persönlich) – K2 Galerie Kunst & Keramik</title>
+  <style>
+    @page { size: A4; margin: 16mm 18mm 22mm 18mm; }
+    * { box-sizing: border-box; }
+    html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body {
+      margin: 0;
+      padding: 1.75rem 1.25rem 2.75rem;
+      font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+      font-size: 11pt;
+      line-height: 1.55;
+      color: #1a1816;
+      background: #f6f2eb;
+      max-width: 42rem;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .hinweis-screen {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 8.5pt;
+      color: #64748b;
+      text-align: center;
+      margin-bottom: 1.25rem;
+      padding: 0.45rem 0.65rem;
+      background: #e8e4dc;
+      border-radius: 4px;
+      line-height: 1.45;
+    }
+    @media print { .hinweis-screen { display: none; } }
+    .vorlage {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 9pt;
+      background: #fff8f0;
+      border: 1px dashed #b54a1e;
+      border-radius: 8px;
+      padding: 0.65rem 0.85rem;
+      margin-bottom: 1.25rem;
+      line-height: 1.5;
+      color: #5c5650;
+    }
+    .vorlage strong { color: #1a1816; }
+    .empfaenger {
+      margin-bottom: 1.35rem;
+      font-size: 10.5pt;
+      line-height: 1.5;
+    }
+    .platzhalter {
+      background: #fef3c7;
+      padding: 0 0.2em;
+      border-radius: 2px;
+      font-weight: 600;
+    }
+    .briefkopf {
+      text-align: right;
+      font-size: 9.5pt;
+      color: #5c5650;
+      margin-bottom: 1.5rem;
+      line-height: 1.45;
+    }
+    .briefkopf strong { color: #1a1816; font-size: 10.5pt; }
+    h1 {
+      font-size: 1.1rem;
+      color: #2c2419;
+      margin: 0 0 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    p { margin: 0 0 0.85rem; }
+    .fakten {
+      background: #fffefb;
+      border: 1px solid #c4b8a8;
+      border-left: 4px solid #b54a1e;
+      padding: 0.75rem 1rem;
+      margin: 1rem 0 1.15rem;
+      font-size: 10.5pt;
+      line-height: 1.5;
+    }
+    .fakten p { margin: 0 0 0.35rem; }
+    .fakten p:last-child { margin-bottom: 0; }
+    .galerie-vorschau {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .galerie-vorschau img {
+      flex-shrink: 0;
+      display: block;
+      border: 1px solid #c4b8a8;
+      border-radius: 4px;
+    }
+    .galerie-vorschau-label {
+      font-size: 10pt;
+      margin: 0 0 0.25rem;
+      color: #5c5650;
+    }
+    .unterschrift { margin-top: 1.75rem; }
+    .betreff {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 9pt;
+      color: #5c5650;
+      margin-bottom: 1rem;
+    }
+    .betreff strong { color: #1a1816; }
+    .kopierblock {
+      background: #fffefb;
+      border: 1px solid #b8a88e;
+      border-left: 4px solid #0d9488;
+      padding: 0.85rem 1rem;
+      margin: 1.5rem 0 0;
+      font-size: 9.5pt;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+    .kopierblock-titel {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 8.5pt;
+      font-weight: 700;
+      color: #0f766e;
+      margin: 0 0 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    a { color: #0f766e; }
+    .seitenfuss {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 8pt;
+      color: #6b5d4d;
+      padding: 0.35rem 0;
+    }
+    @media print {
+      body { background: #fff; padding-bottom: 2rem; }
+      .seitenfuss::after { content: "Seite " counter(page); }
+      .platzhalter { background: transparent; font-weight: inherit; }
+    }
+  </style>
+</head>
+<body>
+  <p class="hinweis-screen">
+    <strong>Vor dem Versand:</strong> Gelbe Platzhalter <span class="platzhalter">[…]</span> durch echte Namen ersetzen.
+    Dann <strong>Drucken</strong> (⌘P) oder E-Mail-Text unten kopieren.
+  </p>
+
+  <p class="vorlage">
+    <strong>Vorlage – pro Verein anpassen:</strong><br />
+    Anrede: <span class="platzhalter">[Frau / Herr]</span> · Name: <span class="platzhalter">[Vorname Nachname]</span> ·
+    Verein: <span class="platzhalter">[Name des Vereins]</span> ·
+    Funktion (optional): <span class="platzhalter">[z. B. Obfrau, Obmann, Leitung]</span>
+  </p>
+
+  <div class="briefkopf">
+    <strong>K2 Galerie Kunst &amp; Keramik</strong><br />
+    Martina &amp; Georg Kreinecker<br />
+    Schlossergasse 4 · 4070 Eferding<br />
+    georg.kreinecker@kgm.at · 0664 1046337
+  </div>
+
+  <div class="empfaenger">
+    <span class="platzhalter">[Anrede] [Vorname Nachname]</span><br />
+    <span class="platzhalter">[Funktion im Verein]</span><br />
+    <strong><span class="platzhalter">[Name des Vereins]</span></strong><br />
+    <span class="platzhalter">[Straße, PLZ Ort]</span>
+  </div>
+
+  <p class="betreff">
+    <strong>Betreff (E-Mail):</strong> Für den <span class="platzhalter">[Name des Vereins]</span> – ein Nachmittag mit Kunst in Eferding
+  </p>
+
+  <h1>Ein Nachmittag mit Kunst – für den <span class="platzhalter">[Name des Vereins]</span></h1>
+
+  <p>
+    <span class="platzhalter">[Sehr geehrte Frau Müller / Sehr geehrter Herr Huber / Liebe Maria,]</span>
+  </p>
+
+  <p>
+    Wer für den <strong><span class="platzhalter">[Name des Vereins]</span></strong> Verantwortung trägt, möchte den Mitgliedern
+    gern etwas <strong>Besonderes</strong> schenken – nicht immer dasselbe Programm, sondern ein Erlebnis, das hängen bleibt.
+    Dafür schreibe ich Ihnen: Martina malt, ich arbeite mit Keramik. In der Schlossergasse haben wir unsere
+    <strong>K2 Galerie Kunst &amp; Keramik</strong> – eine <strong>kleine, feine, persönliche Galerie</strong> in Eferding,
+    die wir uns lange gewünscht haben und die wir gern mit Gruppen teilen.
+  </p>
+
+  <p>
+    Sie können Ihrem Verein so einen Nachmittag anbieten: Wir zeigen unsere Werke, Ihre Leute schauen in Ruhe,
+    wir sprechen über die Kunst – was bewegt, wie etwas entstanden ist. Am Eröffnungswochenende war viel Leben drin;
+    jetzt ist es oft stiller, und genau dann entstehen die schönsten Gespräche vor einem Bild.
+    Kein großer Betrieb, kein Lärm – nur Begegnung mit Malerei und Keramik, in Ihrem Tempo.
+  </p>
+
+  <p>
+    Manch einer bleibt danach – oder kommt vorher – zum <strong>Mittag- oder Abendessen im Ristorante Antonio</strong>,
+    gleich nebenan, ein Schritt von der Tür. Wenn das für Sie und Ihre Leute passt, sprechen wir das gern mit.
+  </p>
+
+  <div class="fakten">
+    <p><strong>Schlossergasse 4, 4070 Eferding</strong> · wann es Ihnen passt, finden wir gemeinsam</p>
+    <div class="galerie-vorschau">
+      <div>
+        <p class="galerie-vorschau-label">Wer vorher neugierig ist – Link oder QR-Code:</p>
+        <p style="margin: 0;"><a href="https://k2-galerie.vercel.app/galerie">k2-galerie.vercel.app/galerie</a></p>
+      </div>
+      <img
+        src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&amp;margin=6&amp;data=https%3A%2F%2Fk2-galerie.vercel.app%2Fgalerie"
+        width="120"
+        height="120"
+        alt="QR-Code: K2 Galerie online"
+      />
+    </div>
+  </div>
+
+  <p>
+    Ich würde mich freuen, vom <strong><span class="platzhalter">[Name des Vereins]</span></strong> zu hören –
+    eine Mail an <a href="mailto:georg.kreinecker@kgm.at">georg.kreinecker@kgm.at</a> oder ein Anruf unter <strong>0664 1046337</strong> reicht.
+  </p>
+
+  <p class="unterschrift">
+    Herzliche Grüße<br /><br />
+    <strong>Martina &amp; Georg Kreinecker</strong><br />
+    K2 Galerie Kunst &amp; Keramik<br />
+    Schlossergasse 4 · 4070 Eferding
+  </p>
+
+  <div class="kopierblock" role="region" aria-label="E-Mail-Text zum Kopieren">
+    <p class="kopierblock-titel">E-Mail – Text zum Kopieren (Platzhalter ersetzen)</p>[Anrede] [Nachname],
+
+als Verantwortliche/r für den [Name des Vereins] möchten Sie Ihren Mitgliedern gern etwas Besonderes bieten – dafür schreibe ich Ihnen.
+
+Martina und ich haben in der Schlossergasse eine kleine, feine, persönliche Galerie (K2 Galerie Kunst & Keramik) in Eferding. Sie können Ihrem Verein einen Nachmittag damit schenken: Wir zeigen unsere Werke, Ihre Leute schauen, wir sprechen über die Kunst – ruhig, persönlich, in Ihrem Tempo.
+
+Manch einer isst danach oder davor im Ristorante Antonio, gleich nebenan – ein Schritt von der Galerie. Gern richten wir das mit ein.
+
+Schlossergasse 4, Eferding · Termin nach Absprache · Vorab: https://k2-galerie.vercel.app/galerie
+
+Ich freue mich auf Ihre Rückmeldung: georg.kreinecker@kgm.at · 0664 1046337
+
+Herzliche Grüße
+Martina & Georg Kreinecker</div>
+
+  <p class="hinweis-screen" style="margin-top: 1.5rem;">Texte-Schreibtisch · Gruppenbesuche · persönliche Vorlage · Mai 2026</p>
+
+  <div class="seitenfuss" aria-hidden="true"></div>
+</body>
+</html>

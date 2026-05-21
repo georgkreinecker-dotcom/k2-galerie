@@ -10,6 +10,7 @@ import ProjectPlanPage from './pages/ProjectPlanPage'
 import NotizenPage from './pages/NotizenPage'
 import TexteSchreibtischPage from './pages/TexteSchreibtischPage'
 import TexteSchreibtischBoardPage from './pages/TexteSchreibtischBoardPage'
+import SerienbriefGruppeneinladungPage from './pages/SerienbriefGruppeneinladungPage'
 import TextsA4Page from './pages/TextsA4Page'
 import BriefAnAugustPage from './pages/BriefAnAugustPage'
 import BriefAnAndreasPage from './pages/BriefAnAndreasPage'
@@ -934,6 +935,10 @@ function App() {
       <Route path={PROJECT_ROUTES['k2-galerie'].texteSchreibtisch} element={<TexteSchreibtischPage />} />
       <Route path="/projects/k2-galerie/texts-a4" element={<TextsA4Page />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].texteSchreibtischBoard} element={<TexteSchreibtischBoardPage />} />
+      <Route
+        path={PROJECT_ROUTES['k2-galerie'].serienbriefGruppeneinladung}
+        element={<SerienbriefGruppeneinladungPage />}
+      />
       <Route path={PROJECT_ROUTES['k2-galerie'].notizenBriefAugust} element={<BriefAnAugustPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].notizenBriefAndreas} element={<BriefAnAndreasPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].notizenEinladungEroeffnung24} element={<EinladungFreundeEroeffnungNotizPage />} />

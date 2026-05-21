@@ -216,6 +216,8 @@ export const PROJECT_ROUTES = {
     texteSchreibtisch: '/projects/k2-galerie/texte-schreibtisch',
     /** Nur Board-Mitte – eigenes Fenster für 2. Monitor */
     texteSchreibtischBoard: '/projects/k2-galerie/texte-schreibtisch-board',
+    /** Serienbrief Gruppeneinladung – Liste + Word/Druck ohne Excel-Seriendruck */
+    serienbriefGruppeneinladung: '/projects/k2-galerie/serienbrief-gruppeneinladung',
     /** Georgs persönliche Notizen (Diverses, Briefe, Vermächtnis) – One-Click aus Smart Panel */
     notizen: '/projects/k2-galerie/notizen',
     /** Schreiben an August (technischer Softwarestand, Profi-Blick) */
