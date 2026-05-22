@@ -14,11 +14,20 @@ Dort: interner **Katalog**, Anmeldetext, Links zu Zetteln/Testprotokoll – **ni
 
 ---
 
-## 2. Der kurze Ablauf (drei Schritte)
+## 2. Der kurze Ablauf
+
+### A) Bewerbung mit mehreren Linien (empfohlen – ein Mal statt dreimal)
+
+1. **Testuser-Mappe** → `/testuser-anmeldung?mappe=1`
+2. Block **„Aus Anmelde-E-Mail“:** E-Mail aus Posteingang einfügen → **Daten übernehmen** → Linien ankreuzen → **Zugänge anlegen**
+3. **E-Mail an Testuser (alle Links)** – öffnet dein Mail-Programm mit allen Zugangsblatt-URLs (kein PDF-Zwischenspeichern nötig). Optional: **Zugangsblätter öffnen** zum Drucken.
+4. Für **ök2/VK2** zusätzlich optional: **Lizenzen → Testpilot einladen** (gestaltete Resend-Mail, nur diese zwei Linien).
+
+### B) Einzelner Zettel (wie bisher)
 
 1. **Neuer Pilot:** `/zettel-pilot-form` → Name, App-Name, Linie → **Laufzettel generieren** → `/zettel-pilot?…`
-2. **Zettel** ausdrucken / mitgeben; nach **Öffnen** des Zettels in der App erscheint der Eintrag **mit Zugangsblatt-Link** in der Testuser-Mappe (**automatisch** – kein separates „Dokument ablegen“ nötig). Optional: **PDF speichern** über den Druckdialog für deine Unterlagen; eine zweite „Ablage zur Weiterleitung“ gibt es nicht – die Mappe ist die Ablage.
-3. **Testen:** Protokoll-Vorlagen in der Mappe verlinkt; Handbuch „Testuser“ bei Bedarf.
+2. **Zettel** ausdrucken / mitgeben; nach **Öffnen** des Zettels erscheint der Eintrag **mit Zugangsblatt-Link** in der Mappe (**automatisch**). Optional: Drucken – **keine** Pflicht-PDF-Ablage; die Mappe ist die Ablage.
+3. **Testen:** Protokoll-Vorlagen in der Mappe verlinkt.
 
 **Zähler:** Nächste Zettel-Nr. startet bei **10** (siehe unten). Ältere kleine Nummern im Browser-Speicher werden beim nächsten Zettel auf mindestens 10 angehoben.
 

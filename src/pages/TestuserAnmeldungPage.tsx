@@ -22,6 +22,16 @@ import {
 import { isPilotKatalogSyncConfigured, pullAndMergePilotKatalog } from '../utils/pilotKatalogApi'
 import { clearOek2ZettelPilotVornameSessionMarker } from '../utils/zettelPilotOeffentlichPrefill'
 import { getSendTestuserAnmeldungApiUrl } from '../utils/testuserAnmeldungClient'
+import {
+  parseTestuserAnmeldungText,
+  selectedPilotLinien,
+  type ParsedTestuserAnmeldung,
+} from '../utils/testuserAnmeldungParse'
+import {
+  buildZugangMailtoForTestuser,
+  createPilotZettelsForBewerbung,
+  type CreatedPilotZettel,
+} from '../utils/pilotZettelBatch'
 
 const R = PROJECT_ROUTES['k2-galerie']
 
@@ -422,6 +432,13 @@ function KatalogSection() {
   const [phone, setPhone] = useState('')
   const [notiz, setNotiz] = useState('')
   const [status, setStatus] = useState<TestuserKatalogStatus>('bewerbung')
+  const [emailPaste, setEmailPaste] = useState('')
+  const [parsedBewerbung, setParsedBewerbung] = useState<ParsedTestuserAnmeldung | null>(null)
+  const [parseError, setParseError] = useState<string | null>(null)
+  const [createdZettels, setCreatedZettels] = useState<CreatedPilotZettel[] | null>(null)
+  const [linienOek2, setLinienOek2] = useState(true)
+  const [linienVk2, setLinienVk2] = useState(true)
+  const [linienFamilie, setLinienFamilie] = useState(true)
 
   const refresh = () => {
     ensureTestuserKatalogSeedOnce()
@@ -462,6 +479,74 @@ function KatalogSection() {
       else setSyncStatus('error')
       refresh()
     })
+  }
+
+  const applyParsedToForm = (p: ParsedTestuserAnmeldung) => {
+    setName(p.name)
+    setAppName(p.appName)
+    setEmail(p.email)
+    setPhone(p.phone)
+    setNotiz(p.anmerkung || '')
+    setLinienOek2(p.oek2)
+    setLinienVk2(p.vk2)
+    setLinienFamilie(p.familie)
+    setStatus('bewerbung')
+  }
+
+  const handleParseEmail = () => {
+    const p = parseTestuserAnmeldungText(emailPaste)
+    if (!p) {
+      setParsedBewerbung(null)
+      setParseError('Text nicht erkannt – bitte die komplette Anmelde-E-Mail einfügen (ab „Name:“).')
+      return
+    }
+    setParseError(null)
+    setParsedBewerbung(p)
+    setCreatedZettels(null)
+    applyParsedToForm(p)
+  }
+
+  const selectedLinienFromUi = (): Array<'oek2' | 'vk2' | 'familie'> => {
+    const out: Array<'oek2' | 'vk2' | 'familie'> = []
+    if (linienOek2) out.push('oek2')
+    if (linienVk2) out.push('vk2')
+    if (linienFamilie) out.push('familie')
+    return out
+  }
+
+  const handleCreateZettelsBatch = () => {
+    const n = name.trim()
+    const a = appName.trim()
+    const em = email.trim()
+    const linien = selectedLinienFromUi()
+    if (!n || !a || !em || linien.length === 0) return
+    const created = createPilotZettelsForBewerbung({
+      name: n,
+      appName: a,
+      email: em,
+      phone: phone.trim(),
+      linien,
+    })
+    setCreatedZettels(created)
+    setStatus('zugang_gesendet')
+    refresh()
+  }
+
+  const handleOpenAllZettels = () => {
+    if (!createdZettels?.length) return
+    for (const z of createdZettels) {
+      window.open(z.zugangsblattUrl, '_blank', 'noopener,noreferrer')
+    }
+  }
+
+  const handleMailtoZugang = () => {
+    if (!createdZettels?.length || !email.trim()) return
+    const href = buildZugangMailtoForTestuser({
+      email: email.trim(),
+      name: name.trim(),
+      zettels: createdZettels,
+    })
+    window.location.href = href
   }
 
   const handleAdd = (e: React.FormEvent) => {
@@ -506,7 +591,10 @@ function KatalogSection() {
         }}
       >
         <p style={{ margin: '0 0 0.45rem' }}>
-          <strong>Pilot-Zettel:</strong> Neuer Zettel erscheint hier mit Link zum <strong>Zugangsblatt</strong>.
+          <strong>Schnellweg:</strong> Anmelde-E-Mail einfügen → <strong>alle gewünschten Linien</strong> auf einmal anlegen → Zugang per E-Mail mit Links (ohne PDF speichern).
+        </p>
+        <p style={{ margin: 0 }}>
+          <strong>Pilot-Zettel:</strong> Jede Linie bekommt eine Zettel-Nr. und einen Link zum <strong>Zugangsblatt</strong> in der Tabelle.
         </p>
         <p style={{ margin: 0, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem' }}>
           <span>
@@ -538,6 +626,161 @@ function KatalogSection() {
           )}
         </p>
       </div>
+
+      <div
+        style={{
+          marginBottom: '1rem',
+          padding: '0.85rem',
+          border: '2px solid #0d9488',
+          borderRadius: 8,
+          background: '#f0fdfa',
+        }}
+      >
+        <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#1c1a18', marginBottom: '0.5rem' }}>
+          ① Aus Anmelde-E-Mail (ein Schritt statt dreimal)
+        </div>
+        <p style={{ fontSize: '0.84rem', color: '#5c5650', margin: '0 0 0.6rem', lineHeight: 1.5 }}>
+          E-Mail aus dem Posteingang kopieren und hier einfügen. Danach Zugänge für ök2, VK2 und/oder K2 Familie <strong>gemeinsam</strong> anlegen.
+          Für ök2/VK2 zusätzlich möglich:{' '}
+          <Link to={`${R.licences}#testpilot-einladen`} style={{ color: '#0d9488', fontWeight: 600 }}>
+            Lizenzen → Testpilot per E-Mail
+          </Link>{' '}
+          (gestaltete Einladung, nur ök2 + VK2).
+        </p>
+        <textarea
+          value={emailPaste}
+          onChange={(e) => setEmailPaste(e.target.value)}
+          placeholder="Komplette Testuser-Anmeldung aus der E-Mail hier einfügen …"
+          rows={6}
+          style={{
+            width: '100%',
+            boxSizing: 'border-box',
+            padding: '0.5rem',
+            border: '1px solid #99d6cf',
+            borderRadius: 6,
+            fontSize: '0.82rem',
+            fontFamily: 'inherit',
+            color: '#1c1a18',
+            marginBottom: '0.5rem',
+          }}
+        />
+        {parseError && (
+          <p style={{ fontSize: '0.82rem', color: '#991b1b', margin: '0 0 0.5rem' }}>{parseError}</p>
+        )}
+        {parsedBewerbung && (
+          <p style={{ fontSize: '0.82rem', color: '#0f766e', margin: '0 0 0.5rem', fontWeight: 600 }}>
+            ✅ Erkannt: {parsedBewerbung.name} · {parsedBewerbung.appName} ·{' '}
+            {selectedPilotLinien(parsedBewerbung).map(pilotLinieKurz).join(', ')}
+          </p>
+        )}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.65rem' }}>
+          <button
+            type="button"
+            onClick={handleParseEmail}
+            style={{
+              padding: '0.45rem 0.85rem',
+              background: '#0d9488',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 6,
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontSize: '0.88rem',
+            }}
+          >
+            Daten übernehmen
+          </button>
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.65rem', fontSize: '0.88rem' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer' }}>
+            <input type="checkbox" checked={linienOek2} onChange={(e) => setLinienOek2(e.target.checked)} />
+            ök2
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer' }}>
+            <input type="checkbox" checked={linienVk2} onChange={(e) => setLinienVk2(e.target.checked)} />
+            VK2
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer' }}>
+            <input type="checkbox" checked={linienFamilie} onChange={(e) => setLinienFamilie(e.target.checked)} />
+            K2 Familie
+          </label>
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+          <button
+            type="button"
+            onClick={handleCreateZettelsBatch}
+            disabled={!name.trim() || !appName.trim() || !email.trim() || selectedLinienFromUi().length === 0}
+            style={{
+              padding: '0.5rem 1rem',
+              background:
+                name.trim() && appName.trim() && email.trim() && selectedLinienFromUi().length > 0
+                  ? '#b54a1e'
+                  : '#ccc',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 6,
+              fontWeight: 700,
+              cursor:
+                name.trim() && appName.trim() && email.trim() && selectedLinienFromUi().length > 0
+                  ? 'pointer'
+                  : 'not-allowed',
+              fontSize: '0.9rem',
+            }}
+          >
+            Zugänge anlegen ({selectedLinienFromUi().length} Linie
+            {selectedLinienFromUi().length === 1 ? '' : 'n'})
+          </button>
+          {createdZettels && createdZettels.length > 0 && (
+            <>
+              <button
+                type="button"
+                onClick={handleMailtoZugang}
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: '#1c1a18',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 6,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontSize: '0.88rem',
+                }}
+              >
+                E-Mail an Testuser (alle Links)
+              </button>
+              <button
+                type="button"
+                onClick={handleOpenAllZettels}
+                style={{
+                  padding: '0.5rem 0.85rem',
+                  background: '#fffefb',
+                  color: '#1c1a18',
+                  border: '1px solid #b54a1e',
+                  borderRadius: 6,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontSize: '0.88rem',
+                }}
+              >
+                Zugangsblätter öffnen
+              </button>
+            </>
+          )}
+        </div>
+        {createdZettels && createdZettels.length > 0 && (
+          <ul style={{ margin: '0.65rem 0 0', paddingLeft: '1.1rem', fontSize: '0.82rem', color: '#1c1a18', lineHeight: 1.55 }}>
+            {createdZettels.map((z) => (
+              <li key={`${z.linie}-${z.zettelNr}`}>
+                {pilotLinieKurz(z.linie)} · Zettel {z.zettelNr} –{' '}
+                <Link to={z.zugangsblattUrl} style={{ color: '#0d9488', fontWeight: 600 }}>
+                  Zugangsblatt
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       <form
         onSubmit={handleAdd}
         style={{
@@ -551,7 +794,9 @@ function KatalogSection() {
           background: '#faf8f5',
         }}
       >
-        <div style={{ gridColumn: '1 / -1', fontWeight: 700, fontSize: '0.88rem', color: '#1c1a18' }}>Neuen Eintrag</div>
+        <div style={{ gridColumn: '1 / -1', fontWeight: 700, fontSize: '0.88rem', color: '#1c1a18' }}>
+          ② Manuell (ein Katalog-Eintrag ohne Zettel)
+        </div>
         <input
           placeholder="Name *"
           value={name}
