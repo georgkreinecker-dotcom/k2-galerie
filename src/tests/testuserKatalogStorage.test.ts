@@ -39,7 +39,7 @@ describe('testuserKatalogStorage', () => {
     expect(anna).toBeDefined()
     expect(anna?.zugangsblattUrl).toBe('/zettel-pilot?x=1')
     expect(anna?.pilotRegKey).toBe('P-001|Anna Test|Meine Galerie')
-    expect(anna?.status).toBe('zugang_gesendet')
+    expect(anna?.status).toBe('bewerbung')
     expect(list).toHaveLength(4)
   })
 

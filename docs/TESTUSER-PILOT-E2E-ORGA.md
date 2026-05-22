@@ -21,6 +21,7 @@ Dort: interner **Katalog**, Anmeldetext, Links zu Zetteln/Testprotokoll – **ni
 1. **Testuser-Mappe** → `/testuser-anmeldung?mappe=1`
 2. Block **„Aus Anmelde-E-Mail“:** E-Mail aus Posteingang einfügen → **Daten übernehmen** → Linien ankreuzen → **Zugänge anlegen**
 3. **E-Mail an Testuser (alle Links)** – öffnet dein Mail-Programm mit allen Zugangsblatt-URLs (kein PDF-Zwischenspeichern nötig). Optional: **Zugangsblätter öffnen** zum Drucken.
+4. **Nachträglich aus der Tabelle:** Gelber Kasten **„E-Mail aus der Liste“** oder pro Zeile **📧 Senden** – unabhängig vom Stand-Dropdown. **„Zugang gesendet“** wird erst beim Klick auf Senden gesetzt (nicht schon beim Anlegen).
 4. Für **ök2/VK2** zusätzlich optional: **Lizenzen → Testpilot einladen** (gestaltete Resend-Mail, nur diese zwei Linien).
 
 ### B) Einzelner Zettel (wie bisher)

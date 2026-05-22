@@ -28,8 +28,11 @@ import {
   type ParsedTestuserAnmeldung,
 } from '../utils/testuserAnmeldungParse'
 import {
+  buildZugangMailtoForKatalogRows,
   buildZugangMailtoForTestuser,
   createPilotZettelsForBewerbung,
+  groupKatalogRowsByEmail,
+  markKatalogRowsZugangGesendet,
   type CreatedPilotZettel,
 } from '../utils/pilotZettelBatch'
 
@@ -528,8 +531,17 @@ function KatalogSection() {
       linien,
     })
     setCreatedZettels(created)
-    setStatus('zugang_gesendet')
     refresh()
+  }
+
+  const handleSendMailForRows = (targetRows: TestuserKatalogEintrag[], markSent: boolean) => {
+    const href = buildZugangMailtoForKatalogRows(targetRows)
+    if (!href) return
+    window.location.href = href
+    if (markSent) {
+      markKatalogRowsZugangGesendet(targetRows.map((r) => r.id))
+      refresh()
+    }
   }
 
   const handleOpenAllZettels = () => {
@@ -547,7 +559,19 @@ function KatalogSection() {
       zettels: createdZettels,
     })
     window.location.href = href
+    const list = loadTestuserKatalog()
+    const ids = list
+      .filter((r) => createdZettels.some((z) => z.zettelNr === r.zettelNr))
+      .map((r) => r.id)
+    if (ids.length) {
+      markKatalogRowsZugangGesendet(ids)
+      refresh()
+    }
   }
+
+  const emailGroups = groupKatalogRowsByEmail(rows).filter((g) =>
+    g.some((r) => r.zugangsblattUrl?.trim() && r.email?.includes('@')),
+  )
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault()
@@ -593,8 +617,12 @@ function KatalogSection() {
         <p style={{ margin: '0 0 0.45rem' }}>
           <strong>Schnellweg:</strong> Anmelde-E-Mail einfügen → <strong>alle gewünschten Linien</strong> auf einmal anlegen → Zugang per E-Mail mit Links (ohne PDF speichern).
         </p>
-        <p style={{ margin: 0 }}>
+        <p style={{ margin: '0 0 0.45rem' }}>
           <strong>Pilot-Zettel:</strong> Jede Linie bekommt eine Zettel-Nr. und einen Link zum <strong>Zugangsblatt</strong> in der Tabelle.
+        </p>
+        <p style={{ margin: 0, fontSize: '0.84rem', color: '#5c5650' }}>
+          <strong>Stand „Zugang gesendet“</strong> = nur Merkzettel für dich – <strong>nicht</strong> automatisch verschickt. Versand immer über{' '}
+          <strong>„E-Mail senden“</strong> in der Tabelle. Fälschlich auf „gesendet“? Stand auf <strong>Bewerbung</strong> stellen, dann senden.
         </p>
         <p style={{ margin: 0, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem' }}>
           <span>
@@ -858,6 +886,60 @@ function KatalogSection() {
         </button>
       </form>
 
+      {emailGroups.length > 0 && (
+        <div
+          style={{
+            marginBottom: '0.75rem',
+            padding: '0.65rem 0.75rem',
+            borderRadius: 8,
+            border: '1px solid #fcd34d',
+            background: '#fffbeb',
+          }}
+        >
+          <div style={{ fontWeight: 700, fontSize: '0.88rem', color: '#1c1a18', marginBottom: '0.5rem' }}>
+            E-Mail aus der Liste (auch nachträglich)
+          </div>
+          {emailGroups.map((group) => {
+            const sendable = group.filter((r) => r.zugangsblattUrl?.trim() && r.email?.includes('@'))
+            if (sendable.length === 0) return null
+            const zettelList = sendable.map((r) => r.zettelNr).filter(Boolean).join(', ')
+            return (
+              <div
+                key={sendable[0].email}
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  marginBottom: '0.35rem',
+                  fontSize: '0.84rem',
+                }}
+              >
+                <span style={{ color: '#1c1a18' }}>
+                  <strong>{sendable[0].name}</strong> · Zettel {zettelList}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleSendMailForRows(sendable, true)}
+                  style={{
+                    padding: '0.35rem 0.75rem',
+                    background: '#1c1a18',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 6,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    fontSize: '0.82rem',
+                  }}
+                >
+                  E-Mail senden ({sendable.length} Link{sendable.length === 1 ? '' : 's'})
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
       {rows.length === 0 ? (
         <p style={{ fontSize: '0.86rem', color: '#666' }}>Noch keine Einträge.</p>
       ) : (
@@ -870,58 +952,89 @@ function KatalogSection() {
                 <th style={{ textAlign: 'left', padding: '0.35rem 0.5rem', border: '1px solid #ddd' }}>Linie</th>
                 <th style={{ textAlign: 'left', padding: '0.35rem 0.5rem', border: '1px solid #ddd' }}>Zettel</th>
                 <th style={{ textAlign: 'left', padding: '0.35rem 0.5rem', border: '1px solid #ddd' }}>Zugangsblatt</th>
-                <th style={{ textAlign: 'left', padding: '0.35rem 0.5rem', border: '1px solid #ddd' }}>E-Mail</th>
+                <th style={{ textAlign: 'left', padding: '0.35rem 0.5rem', border: '1px solid #ddd' }}>E-Mail-Adresse</th>
                 <th style={{ textAlign: 'left', padding: '0.35rem 0.5rem', border: '1px solid #ddd' }}>Stand</th>
                 <th style={{ textAlign: 'left', padding: '0.35rem 0.5rem', border: '1px solid #ddd' }}>Notiz</th>
+                <th style={{ border: '1px solid #ddd', minWidth: 88 }}>Senden</th>
                 <th style={{ border: '1px solid #ddd', width: 72 }} />
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => (
-                <tr key={row.id}>
-                  <td style={{ padding: '0.3rem 0.5rem', border: '1px solid #eee', color: '#1c1a18' }}>{row.name}</td>
-                  <td style={{ padding: '0.3rem 0.5rem', border: '1px solid #eee', color: '#1c1a18' }}>{row.appName}</td>
-                  <td style={{ padding: '0.3rem 0.5rem', border: '1px solid #eee', color: '#1c1a18' }}>{pilotLinieKurz(row.pilotLinie)}</td>
-                  <td style={{ padding: '0.3rem 0.5rem', border: '1px solid #eee', color: '#444' }}>{row.zettelNr || '–'}</td>
-                  <td style={{ padding: '0.3rem 0.5rem', border: '1px solid #eee' }}>
-                    <ZugangsblattLink url={row.zugangsblattUrl} />
-                  </td>
-                  <td style={{ padding: '0.3rem 0.5rem', border: '1px solid #eee', color: '#1c1a18', wordBreak: 'break-all' }}>{row.email}</td>
-                  <td style={{ padding: '0.3rem 0.5rem', border: '1px solid #eee' }}>
-                    <select
-                      value={row.status}
-                      onChange={(e) => {
-                        updateTestuserKatalogEintrag(row.id, { status: e.target.value as TestuserKatalogStatus })
-                        refresh()
-                      }}
-                      style={{ maxWidth: '100%', fontSize: '0.8rem', padding: '0.2rem', color: '#1c1a18' }}
-                    >
-                      {STATUS_OPTIONS.map((s) => (
-                        <option key={s} value={s}>
-                          {getTestuserKatalogStatusLabel(s)}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td style={{ padding: '0.3rem 0.5rem', border: '1px solid #eee', color: '#444' }}>{row.notiz || '–'}</td>
-                  <td style={{ padding: '0.3rem 0.5rem', border: '1px solid #eee', textAlign: 'center' }}>
-                    <button
-                      type="button"
-                      onClick={() => handleRemove(row.id)}
-                      style={{
-                        background: 'transparent',
-                        border: '1px solid #ccc',
-                        borderRadius: 4,
-                        cursor: 'pointer',
-                        fontSize: '0.75rem',
-                        color: '#991b1b',
-                      }}
-                    >
-                      Löschen
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {rows.map((row) => {
+                const canSend = Boolean(row.zugangsblattUrl?.trim() && row.email?.includes('@'))
+                return (
+                  <tr key={row.id}>
+                    <td style={{ padding: '0.3rem 0.5rem', border: '1px solid #eee', color: '#1c1a18' }}>{row.name}</td>
+                    <td style={{ padding: '0.3rem 0.5rem', border: '1px solid #eee', color: '#1c1a18' }}>{row.appName}</td>
+                    <td style={{ padding: '0.3rem 0.5rem', border: '1px solid #eee', color: '#1c1a18' }}>
+                      {pilotLinieKurz(row.pilotLinie)}
+                    </td>
+                    <td style={{ padding: '0.3rem 0.5rem', border: '1px solid #eee', color: '#444' }}>{row.zettelNr || '–'}</td>
+                    <td style={{ padding: '0.3rem 0.5rem', border: '1px solid #eee' }}>
+                      <ZugangsblattLink url={row.zugangsblattUrl} />
+                    </td>
+                    <td style={{ padding: '0.3rem 0.5rem', border: '1px solid #eee', color: '#1c1a18', wordBreak: 'break-all' }}>
+                      {row.email || '–'}
+                    </td>
+                    <td style={{ padding: '0.3rem 0.5rem', border: '1px solid #eee' }}>
+                      <select
+                        value={row.status}
+                        onChange={(e) => {
+                          updateTestuserKatalogEintrag(row.id, { status: e.target.value as TestuserKatalogStatus })
+                          refresh()
+                        }}
+                        style={{ maxWidth: '100%', fontSize: '0.8rem', padding: '0.2rem', color: '#1c1a18' }}
+                      >
+                        {STATUS_OPTIONS.map((s) => (
+                          <option key={s} value={s}>
+                            {getTestuserKatalogStatusLabel(s)}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td style={{ padding: '0.3rem 0.5rem', border: '1px solid #eee', color: '#444' }}>{row.notiz || '–'}</td>
+                    <td style={{ padding: '0.3rem 0.5rem', border: '1px solid #eee', textAlign: 'center' }}>
+                      {canSend ? (
+                        <button
+                          type="button"
+                          onClick={() => handleSendMailForRows([row], true)}
+                          style={{
+                            padding: '0.25rem 0.5rem',
+                            background: '#b54a1e',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: 4,
+                            cursor: 'pointer',
+                            fontSize: '0.72rem',
+                            fontWeight: 600,
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          📧 Senden
+                        </button>
+                      ) : (
+                        <span style={{ color: '#888', fontSize: '0.75rem' }}>–</span>
+                      )}
+                    </td>
+                    <td style={{ padding: '0.3rem 0.5rem', border: '1px solid #eee', textAlign: 'center' }}>
+                      <button
+                        type="button"
+                        onClick={() => handleRemove(row.id)}
+                        style={{
+                          background: 'transparent',
+                          border: '1px solid #ccc',
+                          borderRadius: 4,
+                          cursor: 'pointer',
+                          fontSize: '0.75rem',
+                          color: '#991b1b',
+                        }}
+                      >
+                        Löschen
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>

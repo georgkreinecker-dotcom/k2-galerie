@@ -6,7 +6,12 @@ import { BASE_APP_URL, K2_FAMILIE_WILLKOMMEN_ROUTE } from '../config/navigation'
 import { buildFamiliePilotWillkommenUrl } from './familiePilotSeed'
 import { buildOek2PilotGalerieUrl } from './pilotOek2GalerieUrl'
 import { getNextPilotZettelNr, setLastPilotZettelNr } from './pilotZettelNr'
-import { registerPilotZettelInKatalog, updateTestuserKatalogEintrag, loadTestuserKatalog } from './testuserKatalogStorage'
+import {
+  registerPilotZettelInKatalog,
+  updateTestuserKatalogEintrag,
+  loadTestuserKatalog,
+  type TestuserKatalogEintrag,
+} from './testuserKatalogStorage'
 import { buildVk2PilotGalerieUrl } from './vk2PilotUrls'
 
 const FAMILIE_URL = BASE_APP_URL + K2_FAMILIE_WILLKOMMEN_ROUTE
@@ -83,7 +88,7 @@ export function createPilotZettelsForBewerbung(input: {
           email: input.email.trim(),
           phone: input.phone?.trim() || row.phone,
           notiz: 'Pilot-Zettel (aus Anmeldung)',
-          status: 'zugang_gesendet',
+          status: 'bewerbung',
         })
       }
     }
@@ -102,6 +107,54 @@ const LINIE_LABEL: Record<PilotLinie, string> = {
   oek2: 'ök2 (Demo)',
   vk2: 'VK2 (Verein)',
   familie: 'K2 Familie',
+}
+
+/** Katalog-Zeile → Zugangsblatt für mailto (nur wenn Link + Linie vorhanden) */
+export function katalogEintragToCreatedZettel(row: TestuserKatalogEintrag): CreatedPilotZettel | null {
+  const url = row.zugangsblattUrl?.trim()
+  const linie = row.pilotLinie
+  if (!url || !linie || !row.zettelNr?.trim()) return null
+  const origin = originForAbsoluteUrl()
+  return {
+    linie,
+    zettelNr: row.zettelNr.trim(),
+    zugangsblattUrl: url,
+    absoluteUrl: url.startsWith('http') ? url : `${origin}${url}`,
+  }
+}
+
+export function buildZugangMailtoForKatalogRows(rows: TestuserKatalogEintrag[]): string | null {
+  const name = rows[0]?.name?.trim()
+  const email = rows[0]?.email?.trim()
+  if (!name || !email?.includes('@')) return null
+  const zettels = rows
+    .map(katalogEintragToCreatedZettel)
+    .filter((z): z is CreatedPilotZettel => z !== null)
+    .sort((a, b) => parseInt(a.zettelNr, 10) - parseInt(b.zettelNr, 10))
+  if (zettels.length === 0) return null
+  return buildZugangMailtoForTestuser({ email, name, zettels })
+}
+
+/** Nach tatsächlichem Versand: Stand in der Mappe setzen */
+export function markKatalogRowsZugangGesendet(rowIds: string[]): void {
+  for (const id of rowIds) {
+    updateTestuserKatalogEintrag(id, { status: 'zugang_gesendet' })
+  }
+}
+
+/** Personen mit gleicher E-Mail (für Sammel-E-Mail aus der Tabelle) */
+export function groupKatalogRowsByEmail(rows: TestuserKatalogEintrag[]): TestuserKatalogEintrag[][] {
+  const map = new Map<string, TestuserKatalogEintrag[]>()
+  for (const row of rows) {
+    const em = row.email?.trim().toLowerCase()
+    if (!em || !em.includes('@')) continue
+    const cur = map.get(em) ?? []
+    cur.push(row)
+    map.set(em, cur)
+  }
+  return [...map.values()].map((g) =>
+    g.sort((a, b) => parseInt(a.zettelNr || '0', 10) - parseInt(b.zettelNr || '0', 10)),
+  )
 }
 
 /** mailto an Testuser mit allen Zugangsblatt-Links – kein PDF nötig */

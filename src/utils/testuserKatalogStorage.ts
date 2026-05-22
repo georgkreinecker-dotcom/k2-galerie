@@ -199,7 +199,7 @@ export function registerPilotZettelInKatalog(input: {
         pilotLinie: input.pilotLinie,
         zettelNr: input.zettelNr.trim(),
         pilotRegKey,
-        status: 'zugang_gesendet',
+        status: 'bewerbung',
       })
       return
     }
@@ -210,7 +210,7 @@ export function registerPilotZettelInKatalog(input: {
       email: '',
       phone: '',
       notiz: 'Pilot-Zettel (automatisch)',
-      status: 'zugang_gesendet',
+      status: 'bewerbung',
       zugangsblattUrl: input.zugangsblattRelPath,
       pilotLinie: input.pilotLinie,
       zettelNr: input.zettelNr.trim(),
