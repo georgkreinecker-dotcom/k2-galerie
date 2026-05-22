@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **Agentur Internet-Vertrieb (DACH):** PDF ist fertig zum Versand – **Teil A** Gesamtbild, **C.2** Shortlist, **B.6** nur Erfolg (keine Agentur-Fixkosten). **Nächster Schritt:** CPA/% in B.6 eintragen, dann erste Agentur-Mail (z. B. PerformX). Parallel unverändert: **VK2-Stripe gesperrt** bis LVK2 getestet.
+**Was wir JETZT tun:** **Pause** – Georg Session beendet (22.05.26). Zuletzt: **Testuser-Pilot** (alle Zettel versendet, Stand stimmt). **Nächster Schritt (wenn wieder dran):** Agentur-PDF CPA/% in B.6 oder neuer Testuser über `/testuser-anmeldung?mappe=1`. Outlook-Desktop-App optional (Web-Outlook reicht zum Lesen; **📧 Senden** nutzt Mac-Mail/mailto).
 
-**Einordnung:** Markteinführung drei Produkte – Anfrage an Performance-Agenturen ohne Fixhonorar; technisch offen bleibt **`ag=`**-Tracking bis Implementierung. VK2-Checkout-Sperre bleibt separates Thema.
+**Einordnung:** Testuser-Mappe = ein Schnellweg aus Anmelde-E-Mail; Status „Zugang gesendet“ nur nach echtem **📧 Senden**. Mail vs. Outlook-Web = kein K2-Thema. Agentur-Vertrieb + VK2-Stripe offen wie zuvor.
 
-**Letzter Stand:** 20.05.26 – **Schluss für heute:** Agentur-PDF ergänzt (Gesamtbild-Anfrage, Shortlist 6, Vergütung nur Erfolg Modell A/B). **Commit:** `13f8035c` ✅ **main**. Zuvor: Basis **`2d2a3fbe`**.
+**Letzter Stand:** 22.05.26 – **Schluss für heute:** Testuser 12–14 nachgeholt (E-Mail aus Liste); alle auf „Zugang gesendet“. Fix Status≠Versand + **📧 Senden** – **Commit:** `9bfa14f7` ✅ **main**. Kurz: Outlook nur Web (kein Standard-Mail nötig).
 
 **Letzter Stand:** 10.05.26 (Abend) – **Schluss für heute:** Georg beendet die Session; **DIALOG-STAND** + **WIR-PROZESS** (**`da73cbd3`**); VK2-Stripe-Sperre **`ce6bc0b1`**, Intro-Text **`8aca5260`**. **`git`** sauber.
 

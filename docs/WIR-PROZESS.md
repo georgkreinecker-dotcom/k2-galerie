@@ -280,6 +280,8 @@ Wenn nein: wir lassen es.
 
 ---
 
+**Session-Reflexion (22.05.26):** Testuser-Pilot: Status „gesendet“ erst nach **📧 Senden** (12–14 nachgeholt, alle erledigt); Georg nutzt Outlook-Web + Mail für mailto – Desktop-Outlook optional, kein Blocker.
+
 **Session-Reflexion (20.05.26):** Agentur-Anfrage DACH: PDF mit **Gesamtbild** in Teil A, **Shortlist**, Vergütung **ohne Agentur-Fixkosten** (nur CPA/%; Medien Modell A oder B). Georg: Schluss für heute – nächstes Mal CPA eintragen, dann erste Agentur ansprechen.
 
 **Session-Reflexion (10.05.26, Abend):** Georg: **Schluss für heute** – Chrome/Galerie-Lizenz bleibt; **VK2-Stripe** bewusst **gesperrt** (Server + Admin + Tests), bis LVK2 verlässlich getestet ist. Freigabe später = Flag **`VK2_CHECKOUT_DISABLED`** in **`createCheckoutShared.js`** wieder entfernen.
