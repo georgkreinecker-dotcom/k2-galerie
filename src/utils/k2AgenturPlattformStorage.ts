@@ -29,6 +29,8 @@ export type K2AgenturKanalRow = {
   status: K2AgenturKanalStatus
   /** Freitext, z. B. „200“ für 200 €/Monat Test */
   budgetEurMonat: string
+  /** Manuell aus Ads-Konto (letzte 7 Tage) – Phase A Steuerzentrale */
+  kostenEur7Tage: string
   kontoEingerichtet: boolean
   notizen: string
 }
@@ -65,6 +67,7 @@ function defaultRow(produkt: MarketingProduktId, kanal: MarketingPaidKanalId): K
     kanal,
     status: 'offen',
     budgetEurMonat: '',
+    kostenEur7Tage: '',
     kontoEingerichtet: false,
     notizen: '',
   }
@@ -116,6 +119,10 @@ function mergeWithDefaults(parsed: Partial<K2AgenturPlattformState> & { version?
         status: isValidStatus(patch.status) ? patch.status : kanaele[key].status,
         budgetEurMonat:
           typeof patch.budgetEurMonat === 'string' ? patch.budgetEurMonat.slice(0, 32) : kanaele[key].budgetEurMonat,
+        kostenEur7Tage:
+          typeof patch.kostenEur7Tage === 'string'
+            ? patch.kostenEur7Tage.slice(0, 16)
+            : kanaele[key].kostenEur7Tage ?? '',
         kontoEingerichtet: patch.kontoEingerichtet === true,
         notizen: typeof patch.notizen === 'string' ? patch.notizen.slice(0, 4000) : kanaele[key].notizen,
       }
@@ -257,11 +264,12 @@ export function markPaketKopiert(state: K2AgenturPlattformState, kanalKey: strin
   return toggleKanalSchritt(state, kanalKey, autoId, true)
 }
 
-/** Nach „Anzeigen-Paket kopieren“: Creative-Schritt automatisch abhaken. */
+/** Nach „Fertige Anzeige kopieren“: Text + Ziel-URL automatisch abhaken. */
 export function markAnzeigenPaketKopiert(state: K2AgenturPlattformState, kanalKey: string): K2AgenturPlattformState {
+  let next = state
   const autoId = kanalStepIdAutoOnAnzeigenKopiert()
-  if (!autoId) return state
-  return toggleKanalSchritt(state, kanalKey, autoId, true)
+  if (autoId) next = toggleKanalSchritt(next, kanalKey, autoId, true)
+  return markPaketKopiert(next, kanalKey)
 }
 
 /** Nach „Auswertungs-Paket kopieren“: Auswertung-Schritt abhaken. */

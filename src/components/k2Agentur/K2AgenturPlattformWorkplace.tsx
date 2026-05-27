@@ -20,6 +20,7 @@ import {
 import { formatSchaltPaketText, getSchaltPaket } from '../../config/k2AgenturLaunchCheckliste'
 import { getNextRecommendedKanal } from '../../config/k2AgenturKanalPrioritaet'
 import K2AgenturLaunchChecklistePanel from './K2AgenturLaunchChecklistePanel'
+import K2AgenturSteuerzentralePanel from './K2AgenturSteuerzentralePanel'
 
 const R = PROJECT_ROUTES['k2-galerie']
 
@@ -270,6 +271,10 @@ export default function K2AgenturPlattformWorkplace() {
           )
         })}
       </section>
+
+      <div style={{ marginBottom: '1.25rem' }}>
+        <K2AgenturSteuerzentralePanel state={state} onPatchKanal={patchKanal} mode="pilot" />
+      </div>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.75rem' }}>
         <button
