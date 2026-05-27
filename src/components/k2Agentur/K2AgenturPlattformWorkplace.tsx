@@ -8,12 +8,18 @@ import { K2_GALERIE_APF_EINSTIEG, PROJECT_ROUTES } from '../../config/navigation
 import { listMarketingKanalUrls, type MarketingProduktId } from '../../config/marketingKanalP1P2P3'
 import {
   countK2AgenturByStatus,
+  getGlobalChecklistProgress,
   kanalStorageKey,
   loadK2AgenturPlattform,
+  markPaketKopiert,
   saveK2AgenturPlattform,
+  sumBudgetEurMonat,
   type K2AgenturKanalStatus,
   type K2AgenturPlattformState,
 } from '../../utils/k2AgenturPlattformStorage'
+import { formatSchaltPaketText, getSchaltPaket } from '../../config/k2AgenturLaunchCheckliste'
+import { getNextRecommendedKanal } from '../../config/k2AgenturKanalPrioritaet'
+import K2AgenturLaunchChecklistePanel from './K2AgenturLaunchChecklistePanel'
 
 const R = PROJECT_ROUTES['k2-galerie']
 
@@ -62,6 +68,8 @@ async function copyText(text: string): Promise<boolean> {
 export default function K2AgenturPlattformWorkplace() {
   const [state, setState] = useState<K2AgenturPlattformState>(() => loadK2AgenturPlattform())
   const [filter, setFilter] = useState<'alle' | MarketingProduktId>('alle')
+  const [view, setView] = useState<'kanaele' | 'checkliste'>('checkliste')
+  const [openChecklistKanal, setOpenChecklistKanal] = useState<string | null>(null)
   const [savedAt, setSavedAt] = useState<number | null>(null)
   const [copyHint, setCopyHint] = useState<string | null>(null)
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -102,11 +110,39 @@ export default function K2AgenturPlattformWorkplace() {
   )
 
   const counts = countK2AgenturByStatus(state)
+  const globalProg = getGlobalChecklistProgress(state)
+  const budgetSum = sumBudgetEurMonat(state)
+  const nextKanal = getNextRecommendedKanal(state)
   const rows = katalog.filter((r) => filter === 'alle' || r.produkt === filter)
 
-  const handleCopy = async (url: string, label: string) => {
+  const handleCopy = async (url: string, label: string, kanalKey?: string) => {
     const ok = await copyText(url)
-    setCopyHint(ok ? `✅ ${label} – Link kopiert` : `⚠️ Kopieren fehlgeschlagen – Link markieren`)
+    if (kanalKey && ok) {
+      const next = markPaketKopiert(state, kanalKey)
+      setState(next)
+      saveK2AgenturPlattform(next)
+      setSavedAt(Date.now())
+    }
+    setCopyHint(
+      ok
+        ? kanalKey
+          ? `✅ ${label} – Schalt-Paket/URL kopiert, Checkliste aktualisiert`
+          : `✅ ${label} – Link kopiert`
+        : `⚠️ Kopieren fehlgeschlagen – Link markieren`,
+    )
+    setTimeout(() => setCopyHint(null), 2800)
+  }
+
+  const handleCopyPaket = async (produkt: MarketingProduktId, kanal: (typeof katalog)[0]['kanal'], label: string) => {
+    const key = kanalStorageKey(produkt, kanal)
+    const paket = getSchaltPaket(produkt, kanal)
+    if (!paket) return
+    const ok = await copyText(formatSchaltPaketText(paket))
+    if (ok) {
+      const next = markPaketKopiert(state, key)
+      persist(next)
+    }
+    setCopyHint(ok ? `✅ ${label} – Schalt-Paket kopiert` : `⚠️ Kopieren fehlgeschlagen`)
     setTimeout(() => setCopyHint(null), 2800)
   }
 
@@ -124,10 +160,16 @@ export default function K2AgenturPlattformWorkplace() {
         <h1 style={{ margin: '0 0 0.35rem', fontSize: '1.5rem', fontWeight: 700, color: '#1c1a18' }}>
           K2 Agentur
         </h1>
-        <p style={{ margin: '0 0 0.75rem', fontSize: '0.92rem', color: '#5c5650', lineHeight: 1.55, maxWidth: 640 }}>
-          Unsere <strong>eigene Internet-Agentur</strong> auf der APf – Plan B ohne Fixhonorar. Hier verwaltest du
-          Google, Meta und LinkedIn für <strong>P1, P2 und P3</strong>. Landing-URLs sind technisch fertig; du trägst
-          sie in die Ads-Konten ein und pflegst den Stand hier.
+        <p style={{ margin: '0 0 0.75rem', fontSize: '0.92rem', color: '#5c5650', lineHeight: 1.55, maxWidth: 720 }}>
+          Unsere <strong>eigene Internet-Agentur</strong> auf der APf – Plan B ohne Fixhonorar. Tab{' '}
+          <strong>Checkliste</strong>: Schritt für Schritt abhaken + Schalt-Paket kopieren. Tab <strong>Kanäle</strong>:
+          Status, Budget, URLs. Einmal-Konten: {globalProg.done}/{globalProg.total} erledigt.
+          {budgetSum > 0 && (
+            <>
+              {' '}
+              · Summe Monatsbudgets: <strong>{budgetSum} €</strong>
+            </>
+          )}
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem', alignItems: 'center' }}>
           <Link
@@ -162,6 +204,46 @@ export default function K2AgenturPlattformWorkplace() {
         </div>
       </header>
 
+      {nextKanal && (
+        <section
+          style={{
+            marginBottom: '1rem',
+            padding: '0.85rem 1rem',
+            borderRadius: 12,
+            border: '2px solid #b54a1e',
+            background: '#fff7ed',
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '0.65rem',
+            alignItems: 'center',
+          }}
+        >
+          <span style={{ flex: 1, fontSize: '0.9rem', color: '#1c1a18', lineHeight: 1.45 }}>
+            <strong>Nächster Kanal (Reihenfolge):</strong> {nextKanal.produktLabel} · {nextKanal.kanalLabel} –{' '}
+            {nextKanal.progressDone}/{nextKanal.progressTotal} Schritte erledigt
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setView('checkliste')
+              setOpenChecklistKanal(nextKanal.key)
+            }}
+            style={{
+              padding: '0.45rem 0.9rem',
+              borderRadius: 8,
+              border: 'none',
+              background: '#b54a1e',
+              color: '#fff',
+              fontWeight: 700,
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+            }}
+          >
+            → Zur Checkliste
+          </button>
+        </section>
+      )}
+
       <section
         style={{
           display: 'grid',
@@ -189,6 +271,19 @@ export default function K2AgenturPlattformWorkplace() {
         })}
       </section>
 
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.75rem' }}>
+        <button
+          type="button"
+          onClick={() => setView('checkliste')}
+          style={viewTabStyle(view === 'checkliste')}
+        >
+          ✅ Checkliste &amp; Schalt-Paket
+        </button>
+        <button type="button" onClick={() => setView('kanaele')} style={viewTabStyle(view === 'kanaele')}>
+          📡 Kanäle-Übersicht
+        </button>
+      </div>
+
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '1rem' }}>
         {PRODUKT_FILTER.map((p) => (
           <button
@@ -211,6 +306,17 @@ export default function K2AgenturPlattformWorkplace() {
         ))}
       </div>
 
+      {view === 'checkliste' ? (
+        <K2AgenturLaunchChecklistePanel
+          state={state}
+          onPersist={persist}
+          filter={filter}
+          onCopyFeedback={setCopyHint}
+          copyText={copyText}
+          openKanal={openChecklistKanal}
+          setOpenKanal={setOpenChecklistKanal}
+        />
+      ) : (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
         {rows.map((meta) => {
           const key = kanalStorageKey(meta.produkt, meta.kanal)
@@ -336,10 +442,17 @@ export default function K2AgenturPlattformWorkplace() {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
                 <button
                   type="button"
-                  onClick={() => handleCopy(meta.landingUrl, meta.kanalLabel)}
+                  onClick={() => handleCopyPaket(meta.produkt, meta.kanal, meta.kanalLabel)}
                   style={primaryBtn}
                 >
-                  📋 Ziel-URL kopieren
+                  📦 Schalt-Paket kopieren
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(meta.landingUrl, meta.kanalLabel, key)}
+                  style={secondaryBtn}
+                >
+                  📋 Nur URL
                 </button>
                 <a
                   href={meta.landingUrl}
@@ -362,6 +475,7 @@ export default function K2AgenturPlattformWorkplace() {
           )
         })}
       </div>
+      )}
 
       <section
         style={{
@@ -438,6 +552,30 @@ const primaryBtn: CSSProperties = {
   fontWeight: 700,
   fontSize: '0.85rem',
   cursor: 'pointer',
+}
+
+const secondaryBtn: CSSProperties = {
+  padding: '0.45rem 0.85rem',
+  borderRadius: 8,
+  border: '1px solid #c4b8a8',
+  background: '#fffefb',
+  color: '#1c1a18',
+  fontWeight: 600,
+  fontSize: '0.85rem',
+  cursor: 'pointer',
+}
+
+function viewTabStyle(active: boolean): CSSProperties {
+  return {
+    padding: '0.5rem 0.9rem',
+    borderRadius: 8,
+    border: active ? '2px solid #0d9488' : '1px solid #c4b8a8',
+    background: active ? '#0d9488' : '#fffefb',
+    color: active ? '#fff' : '#1c1a18',
+    fontWeight: 700,
+    fontSize: '0.88rem',
+    cursor: 'pointer',
+  }
 }
 
 function linkBtnStyle(bg: string, color: string, border: string): CSSProperties {

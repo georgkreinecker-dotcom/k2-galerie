@@ -18,6 +18,8 @@ describe('k2AgenturPlattformStorage', () => {
     const s = createDefaultK2AgenturPlattformState()
     expect(Object.keys(s.kanaele)).toHaveLength(9)
     expect(s.kanaele[kanalStorageKey('p1', 'google')].status).toBe('offen')
+    expect(s.version).toBe(2)
+    expect(Object.keys(s.globalSchritte).length).toBeGreaterThanOrEqual(3)
   })
 
   it('speichert und lädt Status', () => {
