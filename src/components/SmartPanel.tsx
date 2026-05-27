@@ -103,6 +103,20 @@ const DEFAULT_ITEMS: PanelItem[] = [
   { id: 'handbuch', label: '🧠 Handbuch', page: 'handbuch', url: '/k2team-handbuch', color: 'rgba(95,251,241,0.08)', border: 'rgba(95,251,241,0.2)' },
 ]
 
+/** Neue Kacheln in DEFAULT_ITEMS nachziehen (gespeicherte Reihenfolge darf nicht verstecken). */
+function mergePanelOrderWithDefaults(order: string[]): string[] {
+  const known = new Set(DEFAULT_ITEMS.map((i) => i.id))
+  const filtered = order.filter((id) => known.has(id))
+  const missing = DEFAULT_ITEMS.map((i) => i.id).filter((id) => !filtered.includes(id))
+  if (missing.length === 0) return filtered
+  const merged = [...filtered]
+  const mok2Idx = merged.indexOf('mok2')
+  if (mok2Idx >= 0) merged.splice(mok2Idx + 1, 0, ...missing)
+  else merged.push(...missing)
+  try { localStorage.setItem(PANEL_ORDER_KEY, JSON.stringify(merged)) } catch { /* ignore */ }
+  return merged
+}
+
 function loadOrder(): string[] {
   try {
     const saved = localStorage.getItem(PANEL_ORDER_KEY)
@@ -111,14 +125,11 @@ function loadOrder(): string[] {
       // Alte Kachel „oeffentlichkeitsarbeit“ → mit „presse“ zusammengeführt (ein Einstieg)
       const migrated = order.map((id) => (id === 'oeffentlichkeitsarbeit' ? 'presse' : id))
       const deduped = migrated.filter((id, idx) => migrated.indexOf(id) === idx)
-      if (deduped.length !== order.length || migrated.some((id, i) => id !== order[i])) {
-        try { localStorage.setItem(PANEL_ORDER_KEY, JSON.stringify(deduped)) } catch { /* ignore */ }
-        return deduped
-      }
-      return order
+      const base = deduped.length !== order.length || migrated.some((id, i) => id !== order[i]) ? deduped : order
+      return mergePanelOrderWithDefaults(base)
     }
   } catch { /* ignore */ }
-  return ['k2', 'oek2', 'k2-familie', 'vk2', 'mok2', 'kampagne', 'k2-welt-strategie', 'k2-markt', 'presse', 'notizen', 'handbuch']
+  return ['k2', 'oek2', 'k2-familie', 'vk2', 'mok2', 'k2-agentur', 'kampagne', 'k2-welt-strategie', 'k2-markt', 'presse', 'notizen', 'handbuch']
 }
 
 function saveOrder(order: string[]) {
@@ -130,7 +141,7 @@ const K2_SOFTWAREENTWICKLUNG = PROJECT_ROUTES['k2-galerie'].softwareentwicklung
 const EINLADUNG_EROEFFNUNG_24 = PROJECT_ROUTES['k2-galerie'].notizenEinladungEroeffnung24
 const MARKETING_OEK2_PAGE = PROJECT_ROUTES['k2-galerie'].marketingOek2
 /** Arbeitsmappen – Hall of Fame: K2 Galerie, K2 Markt, K2 Familie, Notizen, Vermächtnis (jeweils eigenes Produkt) */
-const GALERIE_ITEM_IDS = ['uebersicht', 'lizenzen', 'k2', 'oek2', 'vk2', 'mok2', 'kampagne', 'presse'] as const
+const GALERIE_ITEM_IDS = ['uebersicht', 'lizenzen', 'k2', 'oek2', 'vk2', 'mok2', 'k2-agentur', 'kampagne', 'presse'] as const
 const MAPPEN = [
   { id: 'ready-to-go', label: 'K2 Ready to go', icon: '🎯', itemIds: [] as const },
   {
@@ -453,6 +464,53 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
             title="Texte wie auf dem Schreibtisch: Bereiche und Zettel, keine Listen"
           >
             🪑 Texte-Schreibtisch
+          </Link>
+        )}
+        {onNavigate ? (
+          <button
+            type="button"
+            onClick={() => onNavigate('k2-agentur')}
+            style={{
+              width: '100%',
+              marginTop: '0.45rem',
+              padding: '0.65rem 0.85rem',
+              background: 'linear-gradient(135deg, rgba(13,148,136,0.35), rgba(20,184,166,0.18))',
+              border: activePage === 'k2-agentur' ? '2px solid rgba(45,212,191,0.9)' : '1px solid rgba(13,148,136,0.55)',
+              borderRadius: '10px',
+              color: '#5eead4',
+              fontWeight: 800,
+              fontSize: '0.9rem',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              textAlign: 'center',
+              boxShadow: '0 2px 12px rgba(13,148,136,0.2)',
+            }}
+            title="P1/P2/P3 Marketing-Kanäle: Status, URLs, Budget"
+          >
+            📡 K2 Agentur
+          </button>
+        ) : (
+          <Link
+            to={PROJECT_ROUTES['k2-galerie'].k2Agentur}
+            style={{
+              display: 'block',
+              width: '100%',
+              marginTop: '0.45rem',
+              padding: '0.65rem 0.85rem',
+              background: 'linear-gradient(135deg, rgba(13,148,136,0.35), rgba(20,184,166,0.18))',
+              border: '1px solid rgba(13,148,136,0.55)',
+              borderRadius: '10px',
+              color: '#5eead4',
+              fontWeight: 800,
+              fontSize: '0.9rem',
+              textDecoration: 'none',
+              fontFamily: 'inherit',
+              textAlign: 'center',
+              boxShadow: '0 2px 12px rgba(13,148,136,0.2)',
+            }}
+            title="P1/P2/P3 Marketing-Kanäle: Status, URLs, Budget"
+          >
+            📡 K2 Agentur
           </Link>
         )}
         <button
@@ -1086,7 +1144,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                               background: item.color,
                               border: `1px solid ${item.border}`,
                               borderRadius: '8px',
-                              color: item.id === 'uebersicht' ? '#2dd4bf' : item.id === 'lizenzen' ? '#f59e0b' : item.id === 'oek2' ? '#5ffbf1' : item.id === 'mok2' ? '#fbbf24' : '#ff8c42',
+                              color: item.id === 'uebersicht' ? '#2dd4bf' : item.id === 'lizenzen' ? '#f59e0b' : item.id === 'oek2' ? '#5ffbf1' : item.id === 'mok2' ? '#fbbf24' : item.id === 'k2-agentur' ? '#2dd4bf' : '#ff8c42',
                               fontWeight: 600,
                               fontSize: '0.88rem',
                               textAlign: 'center',
@@ -1106,7 +1164,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                               background: item.color,
                               border: `1px solid ${item.border}`,
                               borderRadius: '8px',
-                              color: item.id === 'uebersicht' ? '#2dd4bf' : item.id === 'lizenzen' ? '#f59e0b' : item.id === 'oek2' ? '#5ffbf1' : item.id === 'mok2' ? '#fbbf24' : '#ff8c42',
+                              color: item.id === 'uebersicht' ? '#2dd4bf' : item.id === 'lizenzen' ? '#f59e0b' : item.id === 'oek2' ? '#5ffbf1' : item.id === 'mok2' ? '#fbbf24' : item.id === 'k2-agentur' ? '#2dd4bf' : '#ff8c42',
                               fontWeight: 600,
                               fontSize: '0.88rem',
                               textAlign: 'center',
