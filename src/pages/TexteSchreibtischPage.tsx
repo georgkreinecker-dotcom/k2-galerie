@@ -176,10 +176,23 @@ const BEREICHE: Bereich[] = [
     zoneBg: 'linear-gradient(145deg, rgba(15,118,110,0.09), rgba(240,253,250,0.98))',
     zettel: [
       {
+        id: 'k2-agentur-plattform',
+        titel: 'K2 Agentur – APf',
+        zweck: '9 Kanäle · Status · Links kopieren',
+        to: R.k2Agentur,
+      },
+      {
         id: 'agentur-anforderungskatalog',
         titel: 'Agentur-Anfrage + Katalog',
         zweck: 'DACH · drei Produkte · Drucken',
         to: '/texte-schreibtisch/agentur-anforderungskatalog-internetvertrieb.html',
+        showDruckWeiterleiten: true,
+      },
+      {
+        id: 'marketing-kanaele-p1-p2-p3',
+        titel: '9 Landing-URLs',
+        zweck: 'P1/P2/P3 · Drucken',
+        to: '/texte-schreibtisch/marketing-kanaele-p1-p2-p3.html',
         showDruckWeiterleiten: true,
       },
       {

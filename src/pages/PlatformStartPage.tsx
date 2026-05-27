@@ -70,6 +70,13 @@ const secondaryFeatures = [
     icon: '📢',
   },
   {
+    title: 'K2 Agentur',
+    description: 'P1/P2/P3 – Google, Meta, LinkedIn verwalten (Plan B)',
+    to: PROJECT_ROUTES['k2-galerie'].k2Agentur,
+    cta: 'Agentur öffnen →',
+    icon: '📡',
+  },
+  {
     title: 'Übersicht-Board',
     description: 'Lizenznehmer, Empfehler, Abrechnung auf einen Blick – ein Klick zu Details',
     to: PROJECT_ROUTES['k2-galerie'].uebersicht,

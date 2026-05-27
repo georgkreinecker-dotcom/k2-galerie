@@ -171,6 +171,8 @@ export const PROJECT_ROUTES = {
     marketingOek2: '/projects/k2-galerie/marketing-oek2',
     /** mök2: Werbefahrplan – eigene Arbeitsfläche (Kampagnen, Zeitraum, Aktivitäten) */
     werbefahrplan: '/projects/k2-galerie/werbefahrplan',
+    /** APf-only: K2 Agentur – P1/P2/P3 Kanäle Google/Meta/LinkedIn verwalten */
+    k2Agentur: '/projects/k2-galerie/k2-agentur',
     /**
      * Präsentationsmappe (Kurz-URL für Flyer, mök2, Werbeunterlagen).
      * **Standard:** App leitet ohne `?view=kurz` auf `praesentationsmappeVollversion` um → **letztgültige Mappe** = Vollversion (`public/praesentationsmappe-vollversion/`).
@@ -273,6 +275,7 @@ export const PROJECT_ROUTES = {
     produktVorschau: '/projects/k2-galerie/produkt-vorschau',
     marketingOek2: '/projects/k2-galerie/marketing-oek2',
     werbefahrplan: '/projects/k2-galerie/werbefahrplan',
+    k2Agentur: '/projects/k2-galerie/k2-agentur',
     praesentationsmappe: '/projects/k2-galerie/praesentationsmappe',
     praesentationsmappeVollversion: '/projects/k2-galerie/praesentationsmappe-vollversion',
     /** Promo A4 „Essenz“ – eigenständiger Flyer, nicht in der Präsentationsmappe */
@@ -350,6 +353,7 @@ export const PROJECT_ROUTES = {
     produktVorschau: '/projects/k2-galerie/produkt-vorschau',
     marketingOek2: '/projects/k2-galerie/marketing-oek2',
     werbefahrplan: '/projects/k2-galerie/werbefahrplan',
+    k2Agentur: '/projects/k2-galerie/k2-agentur',
     praesentationsmappe: '/projects/k2-galerie/praesentationsmappe',
     praesentationsmappeVollversion: '/projects/k2-galerie/praesentationsmappe-vollversion',
     /** Promo A4 „Essenz“ – eigenständiger Flyer, nicht in der Präsentationsmappe */

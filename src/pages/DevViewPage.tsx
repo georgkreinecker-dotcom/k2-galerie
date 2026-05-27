@@ -31,6 +31,7 @@ import K2FamilieEntwicklungDokuPage from './K2FamilieEntwicklungDokuPage'
 import K2FamiliePraesentationsmappePage from './K2FamiliePraesentationsmappePage'
 import K2FamiliePraesentationsmappeKundePage from './K2FamiliePraesentationsmappeKundePage'
 import KampagneMarketingStrategiePage from './KampagneMarketingStrategiePage'
+import K2AgenturPlattformPage from './K2AgenturPlattformPage'
 import K2WeltStrategiePage from './K2WeltStrategiePage'
 import K2MarktPage from './K2MarktPage'
 import K2MarktOberflaechePage from './K2MarktOberflaechePage'
@@ -535,6 +536,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
         return '/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit'
       case 'softwareentwicklung': return PROJECT_ROUTES['k2-galerie'].softwareentwicklung
       case 'promo-video-produktion': return PROJECT_ROUTES['k2-galerie'].promoVideoProduktion
+      case 'k2-agentur': return PROJECT_ROUTES['k2-galerie'].k2Agentur
       case 'promo-runway-pack': return PROJECT_ROUTES['k2-galerie'].promoRunwayPack
       case 'mobile-connect': return PROJECT_ROUTES['k2-galerie'].mobileConnect
       case 'admin-einstellungen': return '/admin?tab=einstellungen'
@@ -1129,6 +1131,7 @@ end tell`
     { id: 'notizen', name: 'Notizen', component: NotizenPage },
     { id: 'texte-schreibtisch', name: 'Texte-Schreibtisch', component: TexteSchreibtischPage },
     { id: 'kampagne', name: 'Kampagne Marketing-Strategie', component: KampagneMarketingStrategiePage },
+    { id: 'k2-agentur', name: 'K2 Agentur', component: K2AgenturPlattformPage },
     { id: 'k2-welt-strategie', name: 'K2-Welt – Strategie & Portfolio', component: K2WeltStrategiePage },
     { id: 'softwareentwicklung', name: 'K2 Softwareentwicklung', component: K2SoftwareentwicklungPage },
     { id: 'promo-video-produktion', name: 'Promo-Video-Produktion', component: PromoVideoProduktionPage },
