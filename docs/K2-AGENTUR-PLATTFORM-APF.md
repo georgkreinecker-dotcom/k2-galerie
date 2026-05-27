@@ -13,10 +13,10 @@
 
 - **Tab Checkliste:** Schritt-für-Schritt abhaken (3× einmalige Konten + 8 Schritte pro Kanal)
 - **Schalt-Paket kopieren:** Kampagnenname, Ziel-URL, Zielgruppen-Vorschlag – Ziel-URL-Schritt wird abgehakt
-- **Anzeigen-Paket kopieren:** Headlines + Beschreibungen aus `tenantConfig` (Zeichenlimits pro Kanal) – Schritt „Anzeige“ wird abgehakt
+- **Anzeigen-Paket kopieren:** kurze Headlines + Beschreibungen **extra für Ads** (eigene Tabelle in `k2AgenturAnzeigenTexte.ts`) – **nicht** mök2-Strategietext; Schritt „Anzeige“ wird abgehakt
+- **mök2-Lesehinweise:** nur Links zum Lesen (USPs, CD, …) – nicht zum Kopieren in Anzeigen
 - **Auswertungs-Paket (7 Tage):** Vorlage kopieren → Kanal-Notizen + Schritt „Auswertung“
 - **Creative-Spez kopieren:** Bildmaße + CD-Hinweis (global in der Checkliste)
-- **mök2-Lesehinweise:** pro Kanal Links zum passenden mök2-Inhalt (P1/P2/P3)
 - **Nächster Kanal:** orangefarbener Hinweis mit empfohlener Schalt-Reihenfolge
 - **Ampel-Status übernehmen:** aus Checkliste berechnet (offen / vorbereitet / live)
 - **Tab Kanäle:** 9 Kanäle, Budget, Summe Monatsbudgets, Notizen, URLs

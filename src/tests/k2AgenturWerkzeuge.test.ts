@@ -16,13 +16,15 @@ import {
 } from '../utils/k2AgenturPlattformStorage'
 
 describe('k2AgenturWerkzeuge', () => {
-  it('Anzeigen-Paket enthält Headlines und Ziel-URL', () => {
+  it('Anzeigen-Paket: kurze Ads-Texte, nicht mök2-Slogan', () => {
     const p = getAnzeigenPaket('p1', 'google')
     expect(p).not.toBeNull()
     const text = formatAnzeigenPaketText(p!)
-    expect(text).toContain('Headlines')
+    expect(text).toContain('Nicht der mök2-Strategietext')
     expect(text).toContain(p!.schalt.landingUrl)
+    expect(p!.headlines[0]).toBe('Online-Galerie starten')
     expect(p!.headlines[0].length).toBeLessThanOrEqual(30)
+    expect(p!.headlines[0]).not.toContain('für Menschen mit Ideen')
   })
 
   it('markAnzeigenPaketKopiert hakt anzeige-creative ab', () => {

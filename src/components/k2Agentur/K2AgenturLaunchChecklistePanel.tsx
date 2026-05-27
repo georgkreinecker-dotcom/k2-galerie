@@ -77,7 +77,7 @@ export default function K2AgenturLaunchChecklistePanel({
     const ok = await copyText(formatAnzeigenPaketText(paket))
     if (ok) {
       onPersist(markAnzeigenPaketKopiert(state, key))
-      onCopyFeedback('✅ Anzeigen-Paket kopiert – Schritt „Anzeige“ abgehakt')
+      onCopyFeedback('✅ Kurze Anzeigen-Texte kopiert (nicht mök2) – Schritt „Anzeige“ abgehakt')
     } else {
       onCopyFeedback('⚠️ Kopieren fehlgeschlagen')
     }
@@ -115,9 +115,9 @@ export default function K2AgenturLaunchChecklistePanel({
       >
         <h2 style={{ margin: '0 0 0.35rem', fontSize: '1.1rem', color: '#134e4a' }}>Sportwagen-Standard</h2>
         <p style={{ margin: '0 0 0.65rem', fontSize: '0.88rem', color: '#115e59', lineHeight: 1.55 }}>
-          <strong>Automatisiert:</strong> Schalt-Paket, Anzeigen-Texte, Auswertungs-Vorlage und Creative-Maße aus einer
-          Quelle – Kopieren hakt passende Schritte ab. <strong>mök2-Lesehinweise</strong> pro Produkt beim Kanal.{' '}
-          Schalten in Google/Meta/LinkedIn bleibt manuell – ohne deren API.
+          <strong>Automatisiert:</strong> Schalt-Paket (URL + Kampagne), <strong>kurze Anzeigen-Texte</strong> (eigene
+          Quelle – nicht mök2), Auswertung, Creative-Maße. <strong>mök2</strong> = nur Links zum Lesen vor dem Schalten.{' '}
+          Schalten in den Konten bleibt manuell.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
           <ProgressChip label="Einmal (3 Konten)" done={globalProg.done} total={globalProg.total} />
@@ -213,24 +213,30 @@ export default function K2AgenturLaunchChecklistePanel({
                         margin: '0.75rem 0 0.5rem',
                         padding: '0.55rem 0.65rem',
                         borderRadius: 8,
-                        background: '#f6f4f0',
-                        border: '1px solid #e7e0d4',
+                        background: '#f8fafc',
+                        border: '1px dashed #94a3b8',
                       }}
                     >
-                      <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1c1a18', marginBottom: '0.35rem' }}>
-                        mök2 vor dem Schalten lesen
+                      <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569', marginBottom: '0.2rem' }}>
+                        Strategie lesen (mök2) – nicht kopieren
                       </div>
+                      <p style={{ margin: '0 0 0.35rem', fontSize: '0.78rem', color: '#64748b', lineHeight: 1.45 }}>
+                        USPs, Positionierung, CD – einmal durchlesen. Das ist <strong>nicht</strong> das Anzeigen-Paket.
+                      </p>
                       <ul style={{ margin: 0, paddingLeft: '1.1rem', fontSize: '0.82rem', lineHeight: 1.5 }}>
                         {K2_AGENTUR_MOK2_LESEHINWEIS[meta.produkt].map((hint) => (
                           <li key={hint.href} style={{ marginBottom: '0.2rem' }}>
-                            <Link to={hint.href} style={{ color: '#b54a1e', fontWeight: 600 }}>
+                            <Link to={hint.href} style={{ color: '#64748b', fontWeight: 600 }}>
                               {hint.label}
                             </Link>
                           </li>
                         ))}
                       </ul>
                     </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem', margin: '0.75rem 0' }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1c1a18', margin: '0.65rem 0 0.35rem' }}>
+                      In Ads-Konto einfügen (kopieren)
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem', margin: '0 0 0.75rem' }}>
                       <button type="button" onClick={() => handlePaketKopieren(meta.produkt, meta.kanal)} style={primaryBtn}>
                         📦 Schalt-Paket kopieren
                       </button>

@@ -58,7 +58,7 @@ export const K2_AGENTUR_KANAL_LAUNCH_STEPS: LaunchStepDef[] = [
   {
     id: 'anzeige-creative',
     label: 'Anzeige mit Text + Bild/Video',
-    hint: 'Button „Anzeigen-Paket kopieren“ – Headlines + Texte aus einer Quelle.',
+    hint: '„Anzeigen-Paket kopieren“ = kurze Headlines/Beschreibungen fürs Ads-Konto (nicht mök2).',
     autoOnAnzeigenKopiert: true,
   },
   {
