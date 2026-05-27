@@ -2,7 +2,8 @@
  * K2 Familie – Lizenz erwerben (Stripe Checkout).
  * Route: /projects/k2-familie/lizenz-erwerben (ohne K2FamilieLayout – öffentlicher Stripe-Einstieg)
  */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import '../App.css'
 import { K2_FAMILIE_LIZENZPREISE } from '../config/licencePricing'
@@ -10,6 +11,7 @@ import { AGB_ROUTE, BASE_APP_URL, PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import { openCheckoutOrPaymentUrl } from '../utils/openCheckoutOrPaymentUrl'
+import { getMarketingAttributionForCheckout, reportMarketingAttributionLanding } from '../utils/marketingAttribution'
 import { adminTheme } from '../config/theme'
 
 type FamiliePlan = 'familie_monat' | 'familie_jahr'
@@ -41,6 +43,7 @@ const OPTIONS: { id: FamiliePlan; title: string; subtitle: string; preis: string
 ]
 
 export default function K2FamilieLizenzErwerbenPage() {
+  const location = useLocation()
   const [plan, setPlan] = useState<FamiliePlan>('familie_jahr')
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
@@ -48,6 +51,15 @@ export default function K2FamilieLizenzErwerbenPage() {
   const [error, setError] = useState<string | null>(null)
   const [checkoutNewTab, setCheckoutNewTab] = useState(false)
   const [agbAccepted, setAgbAccepted] = useState(false)
+
+  useEffect(() => {
+    reportMarketingAttributionLanding({
+      surface: 'k2_familie',
+      tenantVisitKey: 'familie-lizenz',
+      sessionDedupeKey: 'k2-familie-lizenz-erwerben',
+      search: location.search,
+    })
+  }, [location.search])
 
   const a = adminTheme
   const accent = '#b54a1e'
@@ -79,6 +91,7 @@ export default function K2FamilieLizenzErwerbenPage() {
           licenceType: plan,
           email: email.trim(),
           name: name.trim(),
+          marketingAttribution: getMarketingAttributionForCheckout(),
         }),
       })
       const data = await res.json().catch(() => ({}))

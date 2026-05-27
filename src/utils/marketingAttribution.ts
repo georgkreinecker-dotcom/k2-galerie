@@ -10,10 +10,27 @@ export type MarketingAttributionSurface = 'oeffentlich' | 'vk2' | 'k2_familie'
 
 const SESSION_VISITOR_KEY = 'k2-mattr-vid'
 const FIRST_TOUCH_KEY = 'k2-mattr-ft'
+const UTM_TOUCH_KEY = 'k2-mattr-utm'
 const FIRST_TOUCH_MAX_AGE_MS = 90 * 86400000
 const LANDING_SENT_PREFIX = 'k2-mattr-land-'
 
 type FirstTouchPayload = { campaign: string; at: string }
+
+export type MarketingUtmTouch = {
+  utm_source: string | null
+  utm_medium: string | null
+  utm_campaign: string | null
+  ag: string | null
+  at: string
+}
+
+export type MarketingAttributionCheckoutPayload = {
+  campaign_key: string | null
+  utm_source: string | null
+  utm_medium: string | null
+  utm_campaign: string | null
+  ag: string | null
+}
 
 function randomUuidV4(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -96,6 +113,84 @@ export function getEffectiveMarketingCampaignKey(search: string): string | null 
     return fromUrl
   }
   return readFirstTouchCampaign()
+}
+
+const UTM_PARAM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'ag'] as const
+
+function sanitizeUtmValue(raw: string | null, max = 128): string | null {
+  const s = raw?.trim()
+  if (!s) return null
+  if (!/^[a-zA-Z0-9_-]{1,128}$/.test(s)) return null
+  return s.slice(0, max)
+}
+
+/** UTM/ag aus URL lesen (Agentur-Kanäle). */
+export function parseUtmTouchFromSearch(search: string): Omit<MarketingUtmTouch, 'at'> | null {
+  try {
+    const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search)
+    const utm_source = sanitizeUtmValue(params.get('utm_source'))
+    const utm_medium = sanitizeUtmValue(params.get('utm_medium'))
+    const utm_campaign = sanitizeUtmValue(params.get('utm_campaign'))
+    const ag = sanitizeUtmValue(params.get('ag'))
+    if (!utm_source && !utm_medium && !utm_campaign && !ag) return null
+    return { utm_source, utm_medium, utm_campaign, ag }
+  } catch {
+    return null
+  }
+}
+
+function readUtmTouch(): MarketingUtmTouch | null {
+  if (typeof localStorage === 'undefined') return null
+  try {
+    const raw = localStorage.getItem(UTM_TOUCH_KEY)
+    if (!raw?.trim()) return null
+    const o = JSON.parse(raw) as MarketingUtmTouch
+    if (!o?.at) return null
+    const t = new Date(o.at).getTime()
+    if (!Number.isFinite(t) || Date.now() - t > FIRST_TOUCH_MAX_AGE_MS) {
+      localStorage.removeItem(UTM_TOUCH_KEY)
+      return null
+    }
+    return o
+  } catch {
+    return null
+  }
+}
+
+function writeUtmTouchIfEmpty(touch: Omit<MarketingUtmTouch, 'at'>): void {
+  if (typeof localStorage === 'undefined') return
+  if (readUtmTouch()) return
+  try {
+    const payload: MarketingUtmTouch = { ...touch, at: new Date().toISOString() }
+    localStorage.setItem(UTM_TOUCH_KEY, JSON.stringify(payload))
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
+ * Beim ersten Seitenaufruf: Kampagne + UTM aus URL merken (für Stripe-Metadaten).
+ * In appBootstrap einmal aufrufen.
+ */
+export function captureMarketingAttributionFromWindow(): void {
+  if (typeof window === 'undefined') return
+  const search = window.location.search ?? ''
+  getEffectiveMarketingCampaignKey(search)
+  const utm = parseUtmTouchFromSearch(search)
+  if (utm) writeUtmTouchIfEmpty(utm)
+}
+
+/** Für Checkout-API: First-Touch Kampagne + UTM/ag (max. Stripe-Metadaten-Länge). */
+export function getMarketingAttributionForCheckout(): MarketingAttributionCheckoutPayload {
+  const campaign_key = readFirstTouchCampaign()
+  const utm = readUtmTouch()
+  return {
+    campaign_key,
+    utm_source: utm?.utm_source ?? null,
+    utm_medium: utm?.utm_medium ?? null,
+    utm_campaign: utm?.utm_campaign ?? campaign_key,
+    ag: utm?.ag ?? null,
+  }
 }
 
 function safeReferrerHost(): string | null {

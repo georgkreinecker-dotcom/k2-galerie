@@ -6,6 +6,8 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { applyK2FamiliePwaBranding } from './utils/k2FamiliePwaBranding'
+import { captureMarketingAttributionFromWindow } from './utils/marketingAttribution'
+import { initGa4IfConfigured } from './utils/marketingAnalytics'
 
 function applyDesignFromStorageSync() {
   try {
@@ -28,6 +30,8 @@ export function run(): void {
   applyDesignFromStorageSync()
   if (typeof window !== 'undefined') {
     applyK2FamiliePwaBranding(window.location.pathname)
+    captureMarketingAttributionFromWindow()
+    initGa4IfConfigured()
   }
   const rootElement = document.getElementById('root')
   if (!rootElement) {

@@ -2,7 +2,7 @@
 
 **Was wir JETZT tun:** **Pause** – Georg Session beendet (22.05.26). Zuletzt: **Testuser-Pilot** (alle Zettel versendet, Stand stimmt). **Nächster Schritt (wenn wieder dran):** Agentur-PDF CPA/% in B.6 oder neuer Testuser über `/testuser-anmeldung?mappe=1`. Outlook-Desktop-App optional (Web-Outlook reicht zum Lesen; **📧 Senden** nutzt Mac-Mail/mailto).
 
-**Einordnung:** Testuser-Mappe = ein Schnellweg aus Anmelde-E-Mail; Status „Zugang gesendet“ nur nach echtem **📧 Senden**. Mail vs. Outlook-Web = kein K2-Thema. Agentur-Vertrieb + VK2-Stripe offen wie zuvor.
+**Einordnung:** Testuser-Mappe = ein Schnellweg aus Anmelde-E-Mail; Status „Zugang gesendet“ nur nach echtem **📧 Senden**. Mail vs. Outlook-Web = kein K2-Thema. Agentur-Vertrieb + VK2-Stripe offen wie zuvor. **Supabase (Mail Mai 2026):** Bestehende Tabellen ok – **ab 30.10.2026** bei **neuen** Tabellen in `public` → `GRANT` in Migration; Joe meldet rechtzeitig (vor neuer Migration / neuem Supabase-Projekt).
 
 **Letzter Stand:** 22.05.26 – **Schluss für heute:** Testuser 12–14 nachgeholt (E-Mail aus Liste); alle auf „Zugang gesendet“. Fix Status≠Versand + **📧 Senden** – **Commit:** `9bfa14f7` ✅ **main**. Kurz: Outlook nur Web (kein Standard-Mail nötig).
 

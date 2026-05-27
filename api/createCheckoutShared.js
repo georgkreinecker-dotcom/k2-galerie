@@ -53,8 +53,27 @@ export function generateFamilieTenantId(email) {
  * @param {{ licenceType: string, email: string, name: string, focusDirection?: string, empfehlerId?: string, productLine?: string, secretKey: string, baseUrl: string }} opts
  * @returns {Promise<{ url: string }>}
  */
+function marketingMetaFromAttribution(raw) {
+  if (!raw || typeof raw !== 'object') return {}
+  const o = raw
+  const out = {}
+  const campaign = typeof o.campaign_key === 'string' ? o.campaign_key.trim().slice(0, 128) : ''
+  if (campaign) out.campaign_key = campaign
+  const us = typeof o.utm_source === 'string' ? o.utm_source.trim().slice(0, 64) : ''
+  if (us) out.utm_source = us
+  const um = typeof o.utm_medium === 'string' ? o.utm_medium.trim().slice(0, 64) : ''
+  if (um) out.utm_medium = um
+  const uc = typeof o.utm_campaign === 'string' ? o.utm_campaign.trim().slice(0, 128) : ''
+  if (uc) out.utm_campaign = uc
+  const ag = typeof o.ag === 'string' ? o.ag.trim().slice(0, 64) : ''
+  if (ag) out.ag = ag
+  return out
+}
+
 export async function createStripeCheckoutSession(opts) {
-  const { licenceType, email, name, focusDirection, empfehlerId, productLine, secretKey, baseUrl } = opts
+  const { licenceType, email, name, focusDirection, empfehlerId, productLine, marketingAttribution, secretKey, baseUrl } =
+    opts
+  const marketingMeta = marketingMetaFromAttribution(marketingAttribution)
   const lt = typeof licenceType === 'string' ? licenceType.trim() : ''
   const focusDirectionNorm = normalizeFocusDirection(focusDirection)
   const b = baseUrl.replace(/\/$/, '')
@@ -77,6 +96,7 @@ export async function createStripeCheckoutSession(opts) {
       tenantId,
       productLine: 'k2_familie',
       focusDirection: focusDirectionNorm,
+      ...marketingMeta,
     }
 
     if (lt === 'familie_jahr') {
@@ -198,6 +218,7 @@ export async function createStripeCheckoutSession(opts) {
     productLine: productLineNorm,
     focusDirection: focusDirectionNorm,
     ...empMeta,
+    ...marketingMeta,
   }
   /** Doppelte Quelle: bei mode payment kann der PaymentIntent zuverlässiger sein als Session.metadata (Webhook/Abruf). */
   const paymentIntentMeta = Object.fromEntries(

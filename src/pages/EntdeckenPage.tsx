@@ -33,6 +33,7 @@ import {
 import { ENTDECKEN_HERO_IMAGE_FALLBACK_PATH, isEntdeckenHeroVideoUrl } from '../config/entdeckenHeroMedia'
 import { loadEntdeckenHeroOverlayIfFresh } from '../utils/entdeckenHeroOverlayStorage'
 import { setEntdeckenQ1PrintFooterSuppress } from '../utils/entdeckenQ1PrintFooterSuppress'
+import { reportMarketingAttributionLanding } from '../utils/marketingAttribution'
 
 /** Plakat q1: große Zeile zwischen kgm solution und Produktvorstellung – Kurzform der Galerie-Marke (z. B. „K2“). */
 const ENTDECKEN_Q1_K2_KURZMARKE = K2_GALERIE_PUBLIC_BRAND.trim().split(/\s+/)[0] || 'K2'
@@ -651,6 +652,14 @@ export default function EntdeckenPage() {
   useEffect(() => {
     try { sessionStorage.removeItem('k2-from-entdecken') } catch (_) {}
   }, [])
+  useEffect(() => {
+    reportMarketingAttributionLanding({
+      surface: 'oeffentlich',
+      tenantVisitKey: 'entdecken',
+      sessionDedupeKey: 'entdecken-hub',
+      search: location.search,
+    })
+  }, [location.search])
   // ?step=hub → direkt zum Hub springen (z.B. Zurück-Button vom Admin)
   // ?q1=verein → Vereins-Antwort vorausfüllen
   const initialStep: Step = (() => {

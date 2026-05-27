@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Agentur-Kanäle P1 P2 P3 – Landing-URLs für Google, Meta, LinkedIn (kgm solution)" />
+  <title>Marketing-Kanäle P1 · P2 · P3 – Landing-URLs (kgm solution)</title>
+  <style>
+    @page { size: A4; margin: 12mm 14mm 18mm 14mm; }
+    * { box-sizing: border-box; }
+    html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body {
+      margin: 0;
+      padding: 1.5rem 1rem 2.5rem;
+      font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+      font-size: 10.5pt;
+      line-height: 1.55;
+      color: #1a1816;
+      background: #f6f2eb;
+      max-width: 52rem;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .hinweis-screen {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 8.5pt;
+      color: #64748b;
+      text-align: center;
+      margin-bottom: 1.25rem;
+      padding: 0.45rem 0.65rem;
+      background: #e8e4dc;
+      border-radius: 4px;
+    }
+    .deckblatt {
+      text-align: center;
+      padding: 1rem 0 1.25rem;
+      border-bottom: 1px solid #c4b8a8;
+      margin-bottom: 1.25rem;
+    }
+    .deckblatt h1 { font-size: 1.25rem; margin: 0 0 0.35rem; color: #2c2419; }
+    .deckblatt .meta { font-size: 9pt; color: #6b5d4d; margin: 0; }
+    h2 {
+      font-size: 1.05rem;
+      color: #3d2e1f;
+      margin: 1.35rem 0 0.45rem;
+      page-break-after: avoid;
+      border-bottom: 1px solid #d4c8b8;
+      padding-bottom: 0.2rem;
+    }
+    h3 { font-size: 0.98rem; margin: 1rem 0 0.35rem; color: #4a4035; page-break-after: avoid; }
+    p { margin: 0 0 0.65rem; }
+    ul, ol { margin: 0 0 0.75rem; padding-left: 1.35em; }
+    li { margin-bottom: 0.35rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8.5pt;
+      margin: 0.5rem 0 0.85rem;
+      word-break: break-all;
+    }
+    th, td {
+      border: 1px solid #c4b8a8;
+      padding: 0.4rem 0.45rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #ebe6dc; font-weight: 700; }
+    .kasten {
+      background: #fffefb;
+      border: 1px solid #b8a88e;
+      border-left: 5px solid #0d9488;
+      padding: 0.75rem 0.9rem;
+      margin: 0.65rem 0 0.85rem;
+      border-radius: 4px;
+    }
+    .kasten-warn {
+      border-left-color: #b45309;
+      background: #fffaf5;
+    }
+    .ampel { display: inline-block; width: 0.65rem; height: 0.65rem; border-radius: 50%; margin-right: 0.25rem; vertical-align: middle; }
+    .gruen { background: #166534; }
+    .orange { background: #c2410c; }
+    code, .url {
+      font-family: ui-monospace, Menlo, monospace;
+      font-size: 8pt;
+      background: #f0ebe3;
+      padding: 0.1rem 0.25rem;
+      border-radius: 2px;
+    }
+    a.url { text-decoration: none; color: #1d4ed8; word-break: break-all; }
+    a.url:hover { text-decoration: underline; }
+    @media print {
+      .hinweis-screen { display: none; }
+      body { background: #fff; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <p class="hinweis-screen">Im Browser öffnen (Chrome/Safari) – dann drucken oder Links kopieren. Quelle im Code: <code>src/config/marketingKanalP1P2P3.ts</code></p>
+
+  <header class="deckblatt">
+    <h1>Agentur-Kanäle P1 · P2 · P3</h1>
+    <p class="meta">Landing-URLs für Google Ads, Meta, LinkedIn · Stand 20.05.2026 · kgm solution</p>
+  </header>
+
+  <div class="kasten">
+    <p><strong>Was Joe erledigt hat (technisch):</strong></p>
+    <ul>
+      <li><span class="ampel gruen"></span>Neun Landing-URLs mit einheitlicher Kennzeichnung (<code>k=</code>, <code>utm_*</code>)</li>
+      <li><span class="ampel gruen"></span>First-Touch speichern – Kauf/Lizenz weiß später, welche Kampagne</li>
+      <li><span class="ampel gruen"></span>Landing-Messung auf Entdecken (P1), VK2-Galerie (P2), Familie-Mappe (P3)</li>
+      <li><span class="ampel gruen"></span>GA4 vorbereitet – aktiv sobald <code>VITE_GA4_MEASUREMENT_ID</code> in Vercel gesetzt ist</li>
+    </ul>
+  </div>
+
+  <div class="kasten kasten-warn">
+    <p><strong>Was du in den Ads-Konten noch tust:</strong> Konto anlegen (oder Agentur), Budget, Anzeigentexte/Bilder freigeben, <strong>Ziel-URL aus der Tabelle unten</strong> in jede Kampagne eintragen. Kein Agentur-Fixhonorar nötig – nur die Kanäle belegen.</p>
+    <p><strong>P2 Hinweis:</strong> VK2-Online-Kauf ist derzeit Demo/Leads – Landing zeigt die Vereinsplattform; Lizenz über <code>/projects/k2-galerie/lizenz-kaufen</code> wenn gewünscht.</p>
+  </div>
+
+  <h2>1 · P1 – K2 Galerie (Künstler:innen)</h2>
+  <p>Landing: <strong>Entdecken</strong> · Checkout (nicht als Ads-URL): <code>/projects/k2-galerie/lizenz-kaufen</code></p>
+  <table>
+    <thead>
+      <tr><th>Kanal</th><th>Kampagne (k / utm_campaign)</th><th>Ziel-URL (in Ads eintragen)</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Google Ads</td>
+        <td><code>p1-google-2026q2</code></td>
+        <td><a class="url" href="https://k2-galerie.vercel.app/entdecken?k=p1-google-2026q2&amp;utm_source=google&amp;utm_medium=cpc&amp;utm_campaign=p1-google-2026q2">https://k2-galerie.vercel.app/entdecken?k=p1-google-2026q2&amp;utm_source=google&amp;utm_medium=cpc&amp;utm_campaign=p1-google-2026q2</a></td>
+      </tr>
+      <tr>
+        <td>Meta</td>
+        <td><code>p1-meta-2026q2</code></td>
+        <td><a class="url" href="https://k2-galerie.vercel.app/entdecken?k=p1-meta-2026q2&amp;utm_source=meta&amp;utm_medium=cpc&amp;utm_campaign=p1-meta-2026q2">https://k2-galerie.vercel.app/entdecken?k=p1-meta-2026q2&amp;utm_source=meta&amp;utm_medium=cpc&amp;utm_campaign=p1-meta-2026q2</a></td>
+      </tr>
+      <tr>
+        <td>LinkedIn</td>
+        <td><code>p1-linkedin-2026q2</code></td>
+        <td><a class="url" href="https://k2-galerie.vercel.app/entdecken?k=p1-linkedin-2026q2&amp;utm_source=linkedin&amp;utm_medium=cpc&amp;utm_campaign=p1-linkedin-2026q2">https://k2-galerie.vercel.app/entdecken?k=p1-linkedin-2026q2&amp;utm_source=linkedin&amp;utm_medium=cpc&amp;utm_campaign=p1-linkedin-2026q2</a></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>2 · P2 – VK2 (Vereine)</h2>
+  <p>Landing: <strong>VK2-Galerie</strong> · Checkout: <code>/projects/k2-galerie/lizenz-kaufen</code></p>
+  <table>
+    <thead>
+      <tr><th>Kanal</th><th>Kampagne</th><th>Ziel-URL</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Google Ads</td>
+        <td><code>p2-google-2026q2</code></td>
+        <td><a class="url" href="https://k2-galerie.vercel.app/projects/vk2/galerie?k=p2-google-2026q2&amp;utm_source=google&amp;utm_medium=cpc&amp;utm_campaign=p2-google-2026q2">https://k2-galerie.vercel.app/projects/vk2/galerie?k=p2-google-2026q2&amp;utm_source=google&amp;utm_medium=cpc&amp;utm_campaign=p2-google-2026q2</a></td>
+      </tr>
+      <tr>
+        <td>Meta</td>
+        <td><code>p2-meta-2026q2</code></td>
+        <td><a class="url" href="https://k2-galerie.vercel.app/projects/vk2/galerie?k=p2-meta-2026q2&amp;utm_source=meta&amp;utm_medium=cpc&amp;utm_campaign=p2-meta-2026q2">https://k2-galerie.vercel.app/projects/vk2/galerie?k=p2-meta-2026q2&amp;utm_source=meta&amp;utm_medium=cpc&amp;utm_campaign=p2-meta-2026q2</a></td>
+      </tr>
+      <tr>
+        <td>LinkedIn</td>
+        <td><code>p2-linkedin-2026q2</code></td>
+        <td><a class="url" href="https://k2-galerie.vercel.app/projects/vk2/galerie?k=p2-linkedin-2026q2&amp;utm_source=linkedin&amp;utm_medium=cpc&amp;utm_campaign=p2-linkedin-2026q2">https://k2-galerie.vercel.app/projects/vk2/galerie?k=p2-linkedin-2026q2&amp;utm_source=linkedin&amp;utm_medium=cpc&amp;utm_campaign=p2-linkedin-2026q2</a></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>3 · P3 – K2 Familie</h2>
+  <p>Landing: <strong>Präsentationsmappe Kunde</strong> · Checkout: <code>/projects/k2-familie/lizenz-erwerben</code></p>
+  <table>
+    <thead>
+      <tr><th>Kanal</th><th>Kampagne</th><th>Ziel-URL</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Google Ads</td>
+        <td><code>p3-google-2026q2</code></td>
+        <td><a class="url" href="https://k2-galerie.vercel.app/projects/k2-familie/praesentationsmappe-kunde?k=p3-google-2026q2&amp;utm_source=google&amp;utm_medium=cpc&amp;utm_campaign=p3-google-2026q2">https://k2-galerie.vercel.app/projects/k2-familie/praesentationsmappe-kunde?k=p3-google-2026q2&amp;utm_source=google&amp;utm_medium=cpc&amp;utm_campaign=p3-google-2026q2</a></td>
+      </tr>
+      <tr>
+        <td>Meta</td>
+        <td><code>p3-meta-2026q2</code></td>
+        <td><a class="url" href="https://k2-galerie.vercel.app/projects/k2-familie/praesentationsmappe-kunde?k=p3-meta-2026q2&amp;utm_source=meta&amp;utm_medium=cpc&amp;utm_campaign=p3-meta-2026q2">https://k2-galerie.vercel.app/projects/k2-familie/praesentationsmappe-kunde?k=p3-meta-2026q2&amp;utm_source=meta&amp;utm_medium=cpc&amp;utm_campaign=p3-meta-2026q2</a></td>
+      </tr>
+      <tr>
+        <td>LinkedIn</td>
+        <td><code>p3-linkedin-2026q2</code></td>
+        <td><a class="url" href="https://k2-galerie.vercel.app/projects/k2-familie/praesentationsmappe-kunde?k=p3-linkedin-2026q2&amp;utm_source=linkedin&amp;utm_medium=cpc&amp;utm_campaign=p3-linkedin-2026q2">https://k2-galerie.vercel.app/projects/k2-familie/praesentationsmappe-kunde?k=p3-linkedin-2026q2&amp;utm_source=linkedin&amp;utm_medium=cpc&amp;utm_campaign=p3-linkedin-2026q2</a></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>4 · Kurz-Checkliste</h2>
+  <ol>
+    <li>Link aus Tabelle kopieren → in Google/Meta/LinkedIn als <strong>Finale URL</strong> einfügen.</li>
+    <li>Budget starten (z. B. 150–300 €/Kanal testweise – Plan B).</li>
+    <li>Optional: GA4-Mess-ID in Vercel → Environment → <code>VITE_GA4_MEASUREMENT_ID=G-…</code> → neu deployen.</li>
+    <li>Nach Klick auf Landing: Attribution liegt im Browser; bei Lizenzkauf geht Kampagne mit an Stripe (Metadaten).</li>
+  </ol>
+
+  <h2>5 · Verweise</h2>
+  <ul>
+    <li>Plan B (ohne Agentur-Fix): <code>public/texte-schreibtisch/plan-b-marketing-ohne-agentur-fix.html</code></li>
+    <li>Agentur-Katalog (Anforderungen): <code>public/texte-schreibtisch/agentur-anforderungskatalog-internetvertrieb.html</code></li>
+    <li>Technik-Doku: <code>docs/MARKETING-KANAL-P1-P2-P3-EINRICHTUNG.md</code></li>
+  </ul>
+
+  <p style="font-size: 9pt; color: #6b5d4d; margin-top: 2rem;">Copyright © 2026 kgm solution. Konzept und technische Umsetzung: kgm solution (G. Kreinecker).</p>
+
+</body>
+</html>

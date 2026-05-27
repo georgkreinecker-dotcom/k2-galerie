@@ -32,7 +32,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Ungültiger JSON-Body' })
   }
 
-  const { licenceType, email, name, focusDirection, empfehlerId, productLine } = body
+  const { licenceType, email, name, focusDirection, empfehlerId, productLine, marketingAttribution } = body
 
   const baseUrl = process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
@@ -46,6 +46,7 @@ export default async function handler(req, res) {
       focusDirection,
       empfehlerId,
       productLine,
+      marketingAttribution,
       secretKey: secret,
       baseUrl,
     })

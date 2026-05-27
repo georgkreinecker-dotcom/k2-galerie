@@ -17,6 +17,7 @@ import { isValidEmpfehlerIdFormat } from '../utils/empfehlerId'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import { LIZENZ_MUSTER_EMAIL, LIZENZ_MUSTER_NAME } from '../utils/lizenzMusterDemo'
 import { openCheckoutOrPaymentUrl } from '../utils/openCheckoutOrPaymentUrl'
+import { getMarketingAttributionForCheckout } from '../utils/marketingAttribution'
 import { DEFAULT_OEK2_FOCUS_DIRECTION_ID, FOCUS_DIRECTIONS, type FocusDirectionId } from '../config/tenantConfig'
 
 const LICENCE_OPTIONS = [
@@ -71,6 +72,7 @@ export default function LizenzKaufenPage() {
           name: name.trim(),
           focusDirection,
           ...(empfehlerId.trim() && isValidEmpfehlerIdFormat(empfehlerId) ? { empfehlerId: empfehlerId.trim() } : {}),
+          marketingAttribution: getMarketingAttributionForCheckout(),
         }),
       })
       const data = await res.json().catch(() => ({}))
