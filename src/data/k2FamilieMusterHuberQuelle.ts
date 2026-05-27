@@ -10,7 +10,7 @@
  *    – `/projects/k2-familie/meine-familie?t=huber`  →  `getMusterfamilieHuberMeineFamiliePathWithQuery()`
  *    – `/projects/k2-familie/einstieg?t=huber`     →  `getMusterfamilieHuberEinstiegPathWithQuery()`
  * 2) `FamilieTenantContext` + Sync-Komponenten: Query `t` setzt `currentTenantId === FAMILIE_HUBER_TENANT_ID`.
- * 3) `seedFamilieHuber()`: schreibt Stammdaten + **FAMILIE_HUBER_DEFAULT_PAGE_CONTENT** per
+ * 3) `ensureMusterfamilieHuberDemoBereit()` (= Demo-Sitzung + `seedFamilieHuber()`): Stammdaten + **FAMILIE_HUBER_DEFAULT_PAGE_CONTENT** per
  *    `setFamilyPageContent` → `k2-familie-huber-page-content` (localStorage).
  * 4) Ohne Speicher: `getFamilyPageContent('huber')` = FAMILIE_HUBER_DEFAULT_PAGE_CONTENT; **andere** Mandanten = kein
  *    Default-Willkommensbild (Huber-PNGs enthalten Muster-Marketing im Bild).
@@ -22,6 +22,8 @@
  */
 
 import { PROJECT_ROUTES } from '../config/navigation'
+import { seedFamilieHuber } from './familieHuberMuster'
+import { isFamilieNurMusterSession, setFamilieNurMusterSession } from '../utils/familieMusterSession'
 
 const R = PROJECT_ROUTES['k2-familie']
 
@@ -57,4 +59,22 @@ export function getMusterfamilieHuberMeineFamiliePathWithQuery(): string {
 /** Muster-Demo: Einstiegs-Seite mit Mandanten-Query (Flyer/QR/Mappe). */
 export function getMusterfamilieHuberEinstiegPathWithQuery(): string {
   return `${R.einstieg}?t=${FAMILIE_HUBER_TENANT_ID}`
+}
+
+/**
+ * Marketing/Flyer/Ads mit `?t=huber`: Demo-Sitzung + Seed (Stammdaten, „Du“, Hero).
+ * Eine Quelle – Aufrufer: FamilieEinladungQuerySync, FamilieApfMeineFamilieSync.
+ */
+export function ensureMusterfamilieHuberDemoBereit(): boolean {
+  setFamilieNurMusterSession(true)
+  return seedFamilieHuber()
+}
+
+/** Ads/Flyer `?t=huber` oder aktive Huber-Demo-Sitzung – kein persönlicher Code-Zugang. */
+export function isHuberMusterDemoAktiv(locationSearch: string, tenantId: string): boolean {
+  const t = new URLSearchParams(locationSearch || '').get('t')?.trim().toLowerCase()
+  return (
+    t === FAMILIE_HUBER_TENANT_ID ||
+    (tenantId === FAMILIE_HUBER_TENANT_ID && isFamilieNurMusterSession())
+  )
 }

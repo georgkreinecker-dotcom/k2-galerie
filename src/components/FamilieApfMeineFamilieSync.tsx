@@ -17,7 +17,8 @@ import {
   resolveApfMeineFamilieTenantIdPreferNonDemo,
 } from '../config/k2FamilieApfDefaults'
 import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
-import { clearFamilieNurMusterSession, setFamilieNurMusterSession } from '../utils/familieMusterSession'
+import { ensureMusterfamilieHuberDemoBereit } from '../data/k2FamilieMusterHuberQuelle'
+import { clearFamilieNurMusterSession } from '../utils/familieMusterSession'
 import { ensureFamilieHuberInTenantListForPicker } from '../utils/familieTenantCookieBackup'
 import { K2_FAMILIE_DEFAULT_TENANT } from '../utils/familieStorage'
 import { isK2FamilieMeineFamilieHomePath } from '../utils/k2FamiliePwaBranding'
@@ -40,7 +41,8 @@ export function FamilieApfMeineFamilieSync() {
     if (hasFamilieEinladungOrMusterQuery(location.search || '')) {
       const tRaw = sp.get('t')?.trim().toLowerCase() ?? ''
       if (tRaw === FAMILIE_HUBER_TENANT_ID) {
-        setFamilieNurMusterSession(true)
+        ensureMusterfamilieHuberDemoBereit()
+        bumpFamilieStorageRevision()
         if (currentTenantId !== FAMILIE_HUBER_TENANT_ID) {
           ensureTenantInListAndSelect(FAMILIE_HUBER_TENANT_ID)
         }

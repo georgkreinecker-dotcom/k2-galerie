@@ -22,6 +22,7 @@ import {
 import { setFamilieMitgliederAppUiSession } from '../utils/familieMitgliederAppUi'
 import { clearFamilieNurMusterSession } from '../utils/familieMusterSession'
 import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
+import { ensureMusterfamilieHuberDemoBereit } from '../data/k2FamilieMusterHuberQuelle'
 import { isFamiliePilotTenantId, seedFamiliePilotIfNeeded } from '../utils/familiePilotSeed'
 import { syncFamilieIdentitaetMitIchBinPerson } from '../utils/familieIdentitaetIchSync'
 
@@ -190,6 +191,8 @@ export function FamilieEinladungQuerySync() {
          * echte Einladungsdaten mit der Demo-tenant).
          */
         if (t === FAMILIE_HUBER_TENANT_ID) {
+          ensureMusterfamilieHuberDemoBereit()
+          bumpFamilieStorageRevision()
           strip()
           return
         }

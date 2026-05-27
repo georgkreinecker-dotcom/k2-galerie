@@ -38,7 +38,11 @@ import {
 } from '../utils/familieMitgliedsNummer'
 import type { K2FamilieStartpunktTyp } from '../types/k2Familie'
 import { isK2FamilieNurMitgliedEinstiegModus } from '../utils/familieIdentitaet'
-import { seedFamilieHuber, FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
+import { FAMILIE_HUBER_TENANT_ID, seedFamilieHuber } from '../data/familieHuberMuster'
+import {
+  ensureMusterfamilieHuberDemoBereit,
+  isHuberMusterDemoAktiv,
+} from '../data/k2FamilieMusterHuberQuelle'
 import { clearFamilieNurMusterSession, isFamilieNurMusterSession } from '../utils/familieMusterSession'
 import {
   MUSTER_HINT_HOME_KACHEL_EVENTS_KALENDER,
@@ -47,7 +51,7 @@ import {
   MUSTER_HINT_HOME_KACHEL_STAMMBAUM,
   MUSTER_HINT_HOME_STAMMDATEN,
 } from '../config/familieMusterDemoHints'
-import { useMemo, useState, useEffect, type CSSProperties } from 'react'
+import { useMemo, useState, useEffect, useLayoutEffect, type CSSProperties } from 'react'
 import { adminTheme } from '../config/theme'
 import { K2_FAMILIE_UI } from '../config/k2FamilieUiColors'
 import { K2_FAMILIE_NAV_LABEL_GESCHICHTE } from '../config/k2FamilieNavLabels'
@@ -132,6 +136,20 @@ export default function K2FamilieHomePage() {
   const [familieCloudSyncBusy, setFamilieCloudSyncBusy] = useState(false)
   /** Willkommens-Hero: Tippen öffnet Vollbild (Overlay oben darf Touches nicht blockieren). */
   const [heroBildVollbild, setHeroBildVollbild] = useState(false)
+
+  /** Marketing `?t=huber`: Seed + keine Code-Maske (auch wenn Sync einen Tick später läuft). */
+  useLayoutEffect(() => {
+    const t = new URLSearchParams(location.search).get('t')?.trim().toLowerCase()
+    if (t !== FAMILIE_HUBER_TENANT_ID) return
+    if (ensureMusterfamilieHuberDemoBereit()) {
+      bumpFamilieStorageRevision()
+    }
+  }, [location.search, bumpFamilieStorageRevision])
+
+  const huberMusterDemoAktiv = useMemo(
+    () => isHuberMusterDemoAktiv(location.search, currentTenantId),
+    [location.search, currentTenantId, familieStorageRevision],
+  )
 
   const einstAmpel = useMemo(() => loadEinstellungen(currentTenantId), [currentTenantId, familieStorageRevision])
   const identitaetBannerFamilienname = useMemo(() => {
@@ -488,8 +506,10 @@ export default function K2FamilieHomePage() {
   const needsIdentitaetSessionBanner = Boolean(
     ichIdSession && loadIdentitaetBestaetigt(currentTenantId) !== ichIdSession,
   )
-  const isDemoMusterHuber = currentTenantId === FAMILIE_HUBER_TENANT_ID && isFamilieNurMusterSession()
+  const isDemoMusterHuber = huberMusterDemoAktiv
   const nurMusterDemo = isFamilieNurMusterSession()
+  /** Muster-Demo: kein „Dein Code“-Band – Umschauen ohne Einladungs-QR. */
+  const zeigePersoenlichenCodeZugang = !ichBinPersonId?.trim() && !huberMusterDemoAktiv
   const musterHintProps = (text: string) =>
     nurMusterDemo ? ({ 'data-muster-hint': text } as const) : ({} as const)
   /** Demo Huber (Nur-Muster-Sitzung): kein gelber Code-Banner – Rechte gelten über familieIdentitaet. */
@@ -763,7 +783,7 @@ export default function K2FamilieHomePage() {
           </div>
         ) : null}
 
-        {!ichBinPersonId?.trim() ? (
+        {zeigePersoenlichenCodeZugang ? (
           <div
             id="k2-familie-persoenlicher-code"
             style={{
