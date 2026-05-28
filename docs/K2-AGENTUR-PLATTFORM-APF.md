@@ -11,14 +11,28 @@
 
 ## Was die Plattform kann
 
-- **Tab Checkliste:** Schritt-für-Schritt abhaken (3× einmalige Konten + 8 Schritte pro Kanal)
+### End-to-End (Hauptweg – eine Seite)
+
+| Phase | Was du tust |
+|-------|-------------|
+| **① Konten bereit** | Google, Meta, LinkedIn + Creative-Maße einmal abhaken → „Weiter zu Phase 2“ |
+| **② Kanal schalten** | **Ein** Kanal in Sportwagen-Reihenfolge: Anzeige kopieren → Ads → Checkliste → Landing → erledigt; Vorheriger/Nächster Kanal |
+| **③ Auswerten** | Pro live-Kanal Auswertungs-Vorlage kopieren (7 Tage) |
+
+Oben: **3-Phasen-Leiste** mit Fortschritt und „→ hier“ (empfohlene Phase). Unten eingeklappt: **Werkzeuge** (Kanäle & Budget, alle 9 Checklisten, Strategie, Partner).
+
+Logik: `src/config/k2AgenturEndToEndFlow.ts` · UI: `K2AgenturE2EPhaseStepper`, `K2AgenturVorbereitenPhasePanel`, `K2AgenturSchaltenEndToEndPanel`, `K2AgenturAuswertenPhasePanel`
+
+### Werkzeuge (bei Bedarf)
+
+- **Checkliste:** Schritt-für-Schritt abhaken (3× einmalige Konten + 8 Schritte pro Kanal)
 - **Schalt-Paket kopieren:** Kampagnenname, Ziel-URL, Zielgruppen-Vorschlag – Ziel-URL-Schritt wird abgehakt
 - **Fertige Anzeige kopieren:** Vorschau + ein Block (Kampagne, URL, 3 Headlines, 2 Beschreibungen, CTA) – direkt ins Ads-Konto; Schritte „Anzeige“ und „Ziel-URL“ werden abgehakt
 - **Auswertungs-Paket (7 Tage):** Vorlage kopieren → Kanal-Notizen + Schritt „Auswertung“
 - **Creative-Spez kopieren:** Bildmaße + CD-Hinweis (global in der Checkliste)
 - **Nächster Kanal:** orangefarbener Hinweis mit empfohlener Schalt-Reihenfolge
 - **Ampel-Status übernehmen:** aus Checkliste berechnet (offen / vorbereitet / live)
-- **Tab Kanäle:** 9 Kanäle, Budget, Summe Monatsbudgets, Notizen, URLs
+- **Kanäle & Budget:** 9 Kanäle, Budget, Summe Monatsbudgets, Notizen, URLs (unter Werkzeuge)
 - Speicher nur auf diesem Mac: `localStorage` `k2-agentur-plattform`
 
 ### Sportwagen-Standard (eine Quelle)
@@ -33,7 +47,9 @@
 | mök2-Lesehinweise | `k2AgenturMok2Lesehinweise.ts` |
 | Schalt-Reihenfolge | `k2AgenturKanalPrioritaet.ts` |
 | Fortschritt abhaken | `k2AgenturPlattformStorage.ts` |
-| UI | `K2AgenturLaunchChecklistePanel.tsx` |
+| E2E-Phasen | `k2AgenturEndToEndFlow.ts` |
+| UI Checkliste | `K2AgenturLaunchChecklistePanel.tsx` |
+| UI E2E | `K2AgenturPlattformWorkplace.tsx` + Phase-Panels |
 
 **Nicht automatisierbar ohne Ads-API:** Anzeigen in Google/Meta/LinkedIn anlegen – dafür Checkliste + Schalt-Paket + Links zu den Konten.
 
