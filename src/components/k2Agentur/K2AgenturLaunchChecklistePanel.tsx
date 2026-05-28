@@ -102,79 +102,74 @@ export default function K2AgenturLaunchChecklistePanel({
     onCopyFeedback(ok ? '✅ Creative-Spez kopiert' : '⚠️ Kopieren fehlgeschlagen')
   }
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-      <section
-        style={{
-          padding: '1rem 1.1rem',
-          borderRadius: 12,
-          border: '1px solid #0d9488',
-          background: 'linear-gradient(145deg, #ecfdf5 0%, #f0fdfa 100%)',
-        }}
-      >
-        <h2 style={{ margin: '0 0 0.35rem', fontSize: '1.1rem', color: '#134e4a' }}>Sportwagen-Standard</h2>
-        <p style={{ margin: '0 0 0.65rem', fontSize: '0.88rem', color: '#115e59', lineHeight: 1.55 }}>
-          <strong>Pro Kanal:</strong> fertige Anzeige zum Kopieren (URL, Headlines, Beschreibungen) – direkt ins
-          Ads-Konto. Auswertung und Creative-Maße global. Schalten in den Konten bleibt manuell.
-        </p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
-          <ProgressChip label="Einmal (3 Konten)" done={globalProg.done} total={globalProg.total} />
-          <button type="button" onClick={handleCreativeSpecKopieren} style={secondaryBtn}>
-            🎨 Creative-Spez kopieren
-          </button>
-          <button
-            type="button"
-            onClick={() => onPersist(applySuggestedStatusToAllKanaele(state))}
-            style={primaryBtn}
-          >
-            ⚡ Ampel-Status aus Checkliste übernehmen
-          </button>
-        </div>
-      </section>
+  const rowKeys = useMemo(
+    () => rows.map((meta) => kanalStorageKey(meta.produkt, meta.kanal)),
+    [rows],
+  )
 
-      <section
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+      <details
         style={{
-          padding: '1rem 1.05rem',
-          borderRadius: 12,
+          padding: '0.65rem 0.85rem',
+          borderRadius: 10,
           border: '1px solid #c4b8a8',
-          background: '#fffefb',
+          background: '#f6f4f0',
         }}
       >
-        <h3 style={{ margin: '0 0 0.65rem', fontSize: '1rem', color: '#1c1a18' }}>
-          Einmal für alle Kanäle ({globalProg.done}/{globalProg.total})
-        </h3>
-        <ol style={{ margin: 0, paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
-          {K2_AGENTUR_GLOBAL_LAUNCH_STEPS.map((step) => (
-            <li key={step.id} style={{ listStyle: 'none', marginLeft: '-1.25rem' }}>
-              <CheckRow
-                checked={state.globalSchritte[step.id] === true}
-                label={step.label}
-                hint={step.hint}
-                onChange={(c) => onPersist(toggleGlobalSchritt(state, step.id, c))}
-              />
-            </li>
-          ))}
-        </ol>
-      </section>
+        <summary style={{ cursor: 'pointer', fontWeight: 700, color: '#5c5650', fontSize: '0.88rem' }}>
+          Einmal vorbereiten · Creative · Ampel ({globalProg.done}/{globalProg.total})
+        </summary>
+        <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
+            <button type="button" onClick={handleCreativeSpecKopieren} style={secondaryBtn}>
+              Creative-Spez
+            </button>
+            <button
+              type="button"
+              onClick={() => onPersist(applySuggestedStatusToAllKanaele(state))}
+              style={secondaryBtn}
+            >
+              Ampel übernehmen
+            </button>
+          </div>
+          <ol style={{ margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+            {K2_AGENTUR_GLOBAL_LAUNCH_STEPS.map((step) => (
+              <li key={step.id} style={{ listStyle: 'none' }}>
+                <CheckRow
+                  checked={state.globalSchritte[step.id] === true}
+                  label={step.label}
+                  hint={step.hint}
+                  compact
+                  onChange={(c) => onPersist(toggleGlobalSchritt(state, step.id, c))}
+                />
+              </li>
+            ))}
+          </ol>
+        </div>
+      </details>
 
       <section>
-        <h3 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: '#1c1a18' }}>
-          Pro Kanal ({totals.perKanal} Schritte × {rows.length} Kanäle)
-        </h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-          {rows.map((meta) => {
+        <h2 style={{ margin: '0 0 0.5rem', fontSize: '0.95rem', fontWeight: 800, color: '#1c1a18' }}>
+          Kanäle ({rows.length}) – je {totals.perKanal} Schritte
+        </h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          {rows.map((meta, rowIndex) => {
             const key = kanalStorageKey(meta.produkt, meta.kanal)
             const prog = getKanalChecklistProgress(state, key)
             const suggested = suggestKanalStatusFromChecklist(state, key)
             const isOpen = openKanal === key
             const schalt = getSchaltPaket(meta.produkt, meta.kanal)
             const fertigeAnzeige = getAnzeigenPaket(meta.produkt, meta.kanal)
+            const shortTitle = `${meta.produkt.toUpperCase()} · ${meta.kanalLabel}`
+            const prevKey = rowIndex > 0 ? rowKeys[rowIndex - 1] : null
+            const nextKey = rowIndex < rowKeys.length - 1 ? rowKeys[rowIndex + 1] : null
             return (
               <article
                 key={key}
                 style={{
                   borderRadius: 12,
-                  border: '1px solid #d4c8b8',
+                  border: isOpen ? '2px solid #b54a1e' : '1px solid #d4c8b8',
                   background: '#fffefb',
                   overflow: 'hidden',
                 }}
@@ -187,73 +182,112 @@ export default function K2AgenturLaunchChecklistePanel({
                     display: 'flex',
                     flexWrap: 'wrap',
                     alignItems: 'center',
-                    gap: '0.5rem',
-                    padding: '0.75rem 1rem',
+                    gap: '0.45rem',
+                    padding: '0.7rem 0.9rem',
                     border: 'none',
-                    background: isOpen ? '#f6f4f0' : '#fffefb',
+                    background: isOpen ? '#fff7ed' : '#fffefb',
                     cursor: 'pointer',
                     textAlign: 'left',
                     fontFamily: 'inherit',
                   }}
                 >
-                  <span style={{ fontSize: '1.1rem' }}>{isOpen ? '▼' : '▶'}</span>
-                  <span style={{ flex: 1, fontWeight: 700, color: '#1c1a18', fontSize: '0.92rem' }}>
-                    {meta.produktLabel} · {meta.kanalLabel}
-                  </span>
+                  <span style={{ fontSize: '0.95rem', color: '#b54a1e' }}>{isOpen ? '▼' : '▶'}</span>
+                  <span style={{ flex: 1, fontWeight: 800, color: '#1c1a18', fontSize: '0.95rem' }}>{shortTitle}</span>
                   <ProgressChip done={prog.done} total={prog.total} />
-                  <span style={{ fontSize: '0.75rem', color: '#5c5650' }}>
-                    Vorschlag: <strong>{suggested}</strong>
-                  </span>
+                  {!isOpen && (
+                    <span style={{ fontSize: '0.72rem', color: '#5c5650' }}>{suggested}</span>
+                  )}
                 </button>
                 {isOpen && (
-                  <div style={{ padding: '0 0 1rem 1rem', borderTop: '1px solid #ebe8e2' }}>
+                  <div style={{ padding: '0 0.9rem 0.9rem', borderTop: '1px solid #ebe8e2' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleFertigeAnzeigeKopieren(meta.produkt, meta.kanal)}
+                      style={{
+                        ...primaryBtn,
+                        width: '100%',
+                        fontSize: '1rem',
+                        padding: '0.7rem 1rem',
+                        marginTop: '0.75rem',
+                      }}
+                    >
+                      📋 Fertige Anzeige kopieren
+                    </button>
+                    <p style={{ margin: '0.45rem 0 0', fontSize: '0.78rem', color: '#5c5650', textAlign: 'center' }}>
+                      Dann im Ads-Konto einfügen und unten abhaken
+                    </p>
+
                     {fertigeAnzeige && (
-                      <FertigeAnzeigeVorschau paket={fertigeAnzeige} />
+                      <details style={{ marginTop: '0.65rem' }}>
+                        <summary style={{ cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, color: '#b54a1e' }}>
+                          Vorschau anzeigen
+                        </summary>
+                        <FertigeAnzeigeVorschau paket={fertigeAnzeige} compact />
+                      </details>
                     )}
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem', margin: '0.75rem 0 0.65rem' }}>
-                      <button
-                        type="button"
-                        onClick={() => handleFertigeAnzeigeKopieren(meta.produkt, meta.kanal)}
-                        style={{ ...primaryBtn, fontSize: '0.95rem', padding: '0.55rem 1rem' }}
-                      >
-                        📋 Fertige Anzeige kopieren
-                      </button>
-                      <button type="button" onClick={() => handlePaketKopieren(meta.produkt, meta.kanal)} style={secondaryBtn}>
-                        Nur URL + Kampagne
-                      </button>
-                      <button type="button" onClick={() => handleAuswertungKopieren(meta.produkt, meta.kanal)} style={secondaryBtn}>
-                        📊 Auswertung (7 Tage)
-                      </button>
-                      <a
-                        href={K2_AGENTUR_PLATTFORM_CONSOLE_URL[meta.kanal]}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={secondaryLink}
-                      >
-                        ↗ {meta.kanal === 'google' ? 'Google Ads' : meta.kanal === 'meta' ? 'Meta' : 'LinkedIn'}{' '}
-                        öffnen
-                      </a>
-                      <a
-                        href={meta.landingUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={secondaryLink}
-                      >
-                        Landing testen
-                      </a>
-                      {schalt && (
-                        <Link to={schalt.checkoutPath} style={secondaryLink}>
-                          Checkout testen
-                        </Link>
+
+                    <details style={{ marginTop: '0.5rem' }}>
+                      <summary style={{ cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, color: '#5c5650' }}>
+                        Weitere Aktionen
+                      </summary>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.5rem' }}>
+                        <button type="button" onClick={() => handlePaketKopieren(meta.produkt, meta.kanal)} style={secondaryBtn}>
+                          URL + Kampagne
+                        </button>
+                        <button type="button" onClick={() => handleAuswertungKopieren(meta.produkt, meta.kanal)} style={secondaryBtn}>
+                          Auswertung
+                        </button>
+                        <a
+                          href={K2_AGENTUR_PLATTFORM_CONSOLE_URL[meta.kanal]}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={secondaryLink}
+                        >
+                          Ads öffnen
+                        </a>
+                        <a href={meta.landingUrl} target="_blank" rel="noopener noreferrer" style={secondaryLink}>
+                          Landing
+                        </a>
+                        {schalt && (
+                          <Link to={schalt.checkoutPath} style={secondaryLink}>
+                            Checkout
+                          </Link>
+                        )}
+                      </div>
+                    </details>
+
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        gap: '0.5rem',
+                        margin: '0.75rem 0 0.5rem',
+                      }}
+                    >
+                      {prevKey ? (
+                        <button type="button" onClick={() => setOpenKanal(prevKey)} style={navBtn}>
+                          ◀ Vorheriger
+                        </button>
+                      ) : (
+                        <span />
+                      )}
+                      {nextKey ? (
+                        <button type="button" onClick={() => setOpenKanal(nextKey)} style={navBtn}>
+                          Nächster ▶
+                        </button>
+                      ) : (
+                        <span />
                       )}
                     </div>
-                    <ol style={{ margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+
+                    <ol style={{ margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                       {K2_AGENTUR_KANAL_LAUNCH_STEPS.map((step) => (
                         <li key={step.id} style={{ listStyle: 'none' }}>
                           <CheckRow
                             checked={state.kanalSchritte[key]?.[step.id] === true}
                             label={step.label}
                             hint={step.hint}
+                            compact
                             onChange={(c) => onPersist(toggleKanalSchritt(state, key, step.id, c))}
                           />
                         </li>
@@ -270,21 +304,29 @@ export default function K2AgenturLaunchChecklistePanel({
   )
 }
 
-function FertigeAnzeigeVorschau({ paket }: { paket: NonNullable<ReturnType<typeof getAnzeigenPaket>> }) {
+function FertigeAnzeigeVorschau({
+  paket,
+  compact = false,
+}: {
+  paket: NonNullable<ReturnType<typeof getAnzeigenPaket>>
+  compact?: boolean
+}) {
   const s = paket.schalt
   return (
     <div
       style={{
-        marginTop: '0.75rem',
-        padding: '0.85rem 1rem',
+        marginTop: compact ? '0.5rem' : '0.75rem',
+        padding: compact ? '0.65rem 0.75rem' : '0.85rem 1rem',
         borderRadius: 10,
-        border: '2px solid #b54a1e',
-        background: 'linear-gradient(180deg, #fffefb 0%, #faf6f0 100%)',
+        border: '1px solid #d4c8b8',
+        background: '#faf8f5',
       }}
     >
-      <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#1c1a18', marginBottom: '0.5rem' }}>
-        Fertige Anzeige – so landet sie im Kanal
-      </div>
+      {!compact && (
+        <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#1c1a18', marginBottom: '0.5rem' }}>
+          Fertige Anzeige – so landet sie im Kanal
+        </div>
+      )}
       <div style={{ fontSize: '0.78rem', color: '#5c5650', marginBottom: '0.65rem', lineHeight: 1.45 }}>
         Kampagne: <strong>{s.campaignKey}</strong>
         <br />
@@ -322,20 +364,23 @@ function CheckRow({
   checked,
   label,
   hint,
+  compact = false,
   onChange,
 }: {
   checked: boolean
   label: string
   hint: string
+  compact?: boolean
   onChange: (checked: boolean) => void
 }) {
   return (
     <label
+      title={compact ? hint : undefined}
       style={{
         display: 'flex',
-        gap: '0.55rem',
-        alignItems: 'flex-start',
-        padding: '0.45rem 0.55rem',
+        gap: '0.5rem',
+        alignItems: 'center',
+        padding: compact ? '0.35rem 0.45rem' : '0.45rem 0.55rem',
         borderRadius: 8,
         background: checked ? '#ecfdf5' : 'transparent',
         border: checked ? '1px solid #6ee7b7' : '1px solid transparent',
@@ -346,13 +391,25 @@ function CheckRow({
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        style={{ marginTop: '0.2rem', width: 18, height: 18, flexShrink: 0 }}
+        style={{ width: 18, height: 18, flexShrink: 0, alignSelf: compact ? 'center' : 'flex-start', marginTop: compact ? 0 : '0.15rem' }}
       />
-      <span>
-        <span style={{ display: 'block', fontWeight: 600, color: '#1c1a18', fontSize: '0.9rem' }}>{label}</span>
-        <span style={{ display: 'block', fontSize: '0.78rem', color: '#5c5650', lineHeight: 1.45, marginTop: '0.15rem' }}>
-          {hint}
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <span
+          style={{
+            display: 'block',
+            fontWeight: 600,
+            color: '#1c1a18',
+            fontSize: compact ? '0.86rem' : '0.9rem',
+            lineHeight: 1.35,
+          }}
+        >
+          {label}
         </span>
+        {!compact && (
+          <span style={{ display: 'block', fontSize: '0.78rem', color: '#5c5650', lineHeight: 1.45, marginTop: '0.15rem' }}>
+            {hint}
+          </span>
+        )}
       </span>
     </label>
   )
@@ -409,5 +466,16 @@ const secondaryBtn: CSSProperties = {
   color: '#1c1a18',
   fontWeight: 700,
   fontSize: '0.85rem',
+  cursor: 'pointer',
+}
+
+const navBtn: CSSProperties = {
+  padding: '0.35rem 0.65rem',
+  borderRadius: 8,
+  border: '1px solid #c4b8a8',
+  background: '#f6f4f0',
+  color: '#1c1a18',
+  fontWeight: 700,
+  fontSize: '0.8rem',
   cursor: 'pointer',
 }

@@ -123,6 +123,11 @@ export default function K2AgenturPlattformWorkplace() {
   const nextKanal = getNextRecommendedKanal(state)
   const rows = katalog.filter((r) => filter === 'alle' || r.produkt === filter)
 
+  useEffect(() => {
+    if (view !== 'checkliste' || !nextKanal) return
+    setOpenChecklistKanal((prev) => prev ?? nextKanal.key)
+  }, [view, nextKanal?.key])
+
   const handleCopy = async (url: string, label: string, kanalKey?: string) => {
     const ok = await copyText(url)
     if (kanalKey && ok) {
@@ -165,25 +170,16 @@ export default function K2AgenturPlattformWorkplace() {
           background: 'linear-gradient(145deg, #fffefb 0%, #f6f4f0 100%)',
         }}
       >
-        <h1 style={{ margin: '0 0 0.35rem', fontSize: '1.5rem', fontWeight: 700, color: '#1c1a18' }}>
+        <h1 style={{ margin: '0 0 0.35rem', fontSize: '1.45rem', fontWeight: 800, color: '#1c1a18' }}>
           K2 Agentur
         </h1>
-        <p style={{ margin: '0 0 0.75rem', fontSize: '0.92rem', color: '#5c5650', lineHeight: 1.55, maxWidth: 720 }}>
-          Unsere <strong>eigene Internet-Agentur</strong> auf der APf – Plan B ohne Fixhonorar. Tab{' '}
-          <strong>Checkliste</strong>: Schritt für Schritt abhaken + Schalt-Paket kopieren. Tab <strong>Kanäle</strong>:
-          Status, Budget, URLs. Einmal-Konten: {globalProg.done}/{globalProg.total} erledigt.
-          {budgetSum > 0 && (
-            <>
-              {' '}
-              · Summe Monatsbudgets: <strong>{budgetSum} €</strong>
-            </>
-          )}
+        <p style={{ margin: '0 0 0.65rem', fontSize: '0.9rem', color: '#5c5650', lineHeight: 1.5, maxWidth: 640 }}>
+          <strong>Ein Kanal nach dem anderen.</strong> Tab <strong>Schalten</strong>: Anzeige kopieren → im Ads-Konto
+          einfügen → abhaken. Gesamt: {globalProg.done}/{globalProg.total} Konten bereit
+          {budgetSum > 0 ? ` · ${budgetSum} €/Monat Budget` : ''}.
         </p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem', alignItems: 'center' }}>
-          <Link
-            to={K2_GALERIE_APF_EINSTIEG}
-            style={linkBtnStyle('#f6f4f0', '#b54a1e', '#b54a1e')}
-          >
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', alignItems: 'center', fontSize: '0.84rem' }}>
+          <Link to={K2_GALERIE_APF_EINSTIEG} style={linkBtnStyle('#f6f4f0', '#b54a1e', '#b54a1e')}>
             ← APf
           </Link>
           <a
@@ -192,145 +188,147 @@ export default function K2AgenturPlattformWorkplace() {
             rel="noopener noreferrer"
             style={linkBtnStyle('#fffefb', '#0d9488', '#0d9488')}
           >
-            📄 Alle 9 Links (Druck)
+            📄 Druck
           </a>
           <a
             href="/texte-schreibtisch/k2-agentur-agentur-partner-vorbereitung.html"
             target="_blank"
             rel="noopener noreferrer"
-            style={linkBtnStyle('#faf5ff', '#7c3aed', '#7c3aed')}
+            style={linkBtnStyle('#fffefb', '#5c5650', '#c4b8a8')}
           >
-            🤝 Agentur-Partner (Druck)
+            Partner
           </a>
-          <Link to={R.werbefahrplan} style={linkBtnStyle('#fffefb', '#1c1a18', '#c4b8a8')}>
+          <Link to={R.werbefahrplan} style={linkBtnStyle('#fffefb', '#5c5650', '#c4b8a8')}>
             Werbefahrplan
           </Link>
-          <Link to={R.marketingOek2} style={linkBtnStyle('#fffefb', '#1c1a18', '#c4b8a8')}>
-            mök2
-          </Link>
-          <Link to="/mission-control" style={linkBtnStyle('#fffefb', '#1c1a18', '#c4b8a8')}>
-            Mission Control
-          </Link>
-          {savedAt != null && (
-            <span style={{ fontSize: '0.82rem', color: '#166534', fontWeight: 600 }}>✅ Gespeichert</span>
-          )}
-          {copyHint && (
-            <span style={{ fontSize: '0.82rem', color: '#1d4ed8', fontWeight: 600 }}>{copyHint}</span>
-          )}
+          {savedAt != null && <span style={{ color: '#166534', fontWeight: 700 }}>✅ Gespeichert</span>}
+          {copyHint && <span style={{ color: '#1d4ed8', fontWeight: 700 }}>{copyHint}</span>}
         </div>
       </header>
 
-      {nextKanal && (
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+          gap: '0.35rem',
+          marginBottom: '1rem',
+        }}
+        role="tablist"
+        aria-label="Bereiche"
+      >
+        <button type="button" role="tab" aria-selected={view === 'checkliste'} onClick={() => setView('checkliste')} style={mainTabStyle(view === 'checkliste')}>
+          ① Schalten
+        </button>
+        <button type="button" role="tab" aria-selected={view === 'kanaele'} onClick={() => setView('kanaele')} style={mainTabStyle(view === 'kanaele')}>
+          ② Kanäle
+        </button>
+        <button type="button" role="tab" aria-selected={view === 'strategie'} onClick={() => setView('strategie')} style={mainTabStyle(view === 'strategie')}>
+          Strategie
+        </button>
+        <button type="button" role="tab" aria-selected={view === 'partner'} onClick={() => setView('partner')} style={mainTabStyle(view === 'partner')}>
+          Partner
+        </button>
+      </div>
+
+      {view === 'checkliste' && nextKanal && (
         <section
           style={{
             marginBottom: '1rem',
-            padding: '0.85rem 1rem',
+            padding: '1rem 1.05rem',
             borderRadius: 12,
             border: '2px solid #b54a1e',
-            background: '#fff7ed',
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '0.65rem',
-            alignItems: 'center',
+            background: 'linear-gradient(145deg, #fff7ed 0%, #fffefb 100%)',
           }}
         >
-          <span style={{ flex: 1, fontSize: '0.9rem', color: '#1c1a18', lineHeight: 1.45 }}>
-            <strong>Nächster Kanal (Reihenfolge):</strong> {nextKanal.produktLabel} · {nextKanal.kanalLabel} –{' '}
-            {nextKanal.progressDone}/{nextKanal.progressTotal} Schritte erledigt
-          </span>
+          <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#b54a1e', marginBottom: '0.35rem', letterSpacing: '0.04em' }}>
+            JETZT DRAN
+          </div>
+          <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#1c1a18', marginBottom: '0.25rem' }}>
+            {nextKanal.produktLabel.split('–')[0]?.trim() ?? 'P1'} · {nextKanal.kanalLabel}
+          </div>
+          <p style={{ margin: '0 0 0.75rem', fontSize: '0.88rem', color: '#5c5650', lineHeight: 1.45 }}>
+            Schritt {nextKanal.progressDone + 1} von {nextKanal.progressTotal}: unten aufklappen →{' '}
+            <strong>📋 Fertige Anzeige kopieren</strong> → in Google/Meta/LinkedIn einfügen.
+          </p>
           <button
             type="button"
-            onClick={() => {
-              setView('checkliste')
-              setOpenChecklistKanal(nextKanal.key)
-            }}
+            onClick={() => setOpenChecklistKanal(nextKanal.key)}
             style={{
-              padding: '0.45rem 0.9rem',
-              borderRadius: 8,
+              width: '100%',
+              maxWidth: 360,
+              padding: '0.65rem 1rem',
+              borderRadius: 10,
               border: 'none',
               background: '#b54a1e',
               color: '#fff',
-              fontWeight: 700,
-              fontSize: '0.85rem',
+              fontWeight: 800,
+              fontSize: '0.95rem',
               cursor: 'pointer',
             }}
           >
-            → Zur Checkliste
+            ▼ Diesen Kanal öffnen
           </button>
         </section>
       )}
 
-      <section
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-          gap: '0.65rem',
-          marginBottom: '1.25rem',
-        }}
-      >
-        {(['offen', 'vorbereitet', 'live', 'pausiert'] as K2AgenturKanalStatus[]).map((s) => {
-          const c = STATUS_COLOR[s]
-          return (
-            <div
-              key={s}
-              style={{
-                padding: '0.65rem 0.75rem',
-                borderRadius: 10,
-                border: `2px solid ${c.border}`,
-                background: c.bg,
-              }}
-            >
-              <div style={{ fontSize: '1.35rem', fontWeight: 800, color: c.text }}>{counts[s]}</div>
-              <div style={{ fontSize: '0.78rem', color: c.text, fontWeight: 600 }}>{STATUS_LABEL[s]}</div>
-            </div>
-          )
-        })}
-      </section>
-
-      <div style={{ marginBottom: '1.25rem' }}>
-        <K2AgenturSteuerzentralePanel state={state} onPatchKanal={patchKanal} mode="pilot" />
-      </div>
-
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.75rem' }}>
-        <button
-          type="button"
-          onClick={() => setView('checkliste')}
-          style={viewTabStyle(view === 'checkliste')}
-        >
-          ✅ Checkliste &amp; Schalt-Paket
-        </button>
-        <button type="button" onClick={() => setView('kanaele')} style={viewTabStyle(view === 'kanaele')}>
-          📡 Kanäle-Übersicht
-        </button>
-        <button type="button" onClick={() => setView('strategie')} style={viewTabStyle(view === 'strategie')}>
-          📋 Strategie &amp; Keywords
-        </button>
-        <button type="button" onClick={() => setView('partner')} style={viewTabStylePartner(view === 'partner')}>
-          🤝 Agentur-Partner
-        </button>
-      </div>
-
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '1rem' }}>
-        {PRODUKT_FILTER.map((p) => (
-          <button
-            key={p.id}
-            type="button"
-            onClick={() => setFilter(p.id)}
+      {view === 'kanaele' && (
+        <>
+          <section
             style={{
-              padding: '0.4rem 0.85rem',
-              borderRadius: 8,
-              border: filter === p.id ? '2px solid #b54a1e' : '1px solid #c4b8a8',
-              background: filter === p.id ? '#b54a1e' : '#fffefb',
-              color: filter === p.id ? '#fff' : '#1c1a18',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              cursor: 'pointer',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: '0.5rem',
+              marginBottom: '1rem',
             }}
           >
-            {p.label}
-          </button>
-        ))}
-      </div>
+            {(['offen', 'vorbereitet', 'live', 'pausiert'] as K2AgenturKanalStatus[]).map((s) => {
+              const c = STATUS_COLOR[s]
+              return (
+                <div
+                  key={s}
+                  style={{
+                    padding: '0.55rem 0.65rem',
+                    borderRadius: 10,
+                    border: `2px solid ${c.border}`,
+                    background: c.bg,
+                    textAlign: 'center',
+                  }}
+                >
+                  <div style={{ fontSize: '1.25rem', fontWeight: 800, color: c.text }}>{counts[s]}</div>
+                  <div style={{ fontSize: '0.72rem', color: c.text, fontWeight: 600 }}>{STATUS_LABEL[s]}</div>
+                </div>
+              )
+            })}
+          </section>
+          <div style={{ marginBottom: '1.25rem' }}>
+            <K2AgenturSteuerzentralePanel state={state} onPatchKanal={patchKanal} mode="pilot" />
+          </div>
+        </>
+      )}
+
+      {(view === 'checkliste' || view === 'kanaele') && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginBottom: '0.85rem' }}>
+          {PRODUKT_FILTER.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => setFilter(p.id)}
+              style={{
+                padding: '0.38rem 0.75rem',
+                borderRadius: 999,
+                border: filter === p.id ? '2px solid #b54a1e' : '1px solid #c4b8a8',
+                background: filter === p.id ? '#b54a1e' : '#fffefb',
+                color: filter === p.id ? '#fff' : '#1c1a18',
+                fontWeight: 700,
+                fontSize: '0.82rem',
+                cursor: 'pointer',
+              }}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {view === 'strategie' ? (
         <K2AgenturStrategieDruckPanel />
@@ -606,27 +604,14 @@ const secondaryBtn: CSSProperties = {
   cursor: 'pointer',
 }
 
-function viewTabStyle(active: boolean): CSSProperties {
+function mainTabStyle(active: boolean): CSSProperties {
   return {
-    padding: '0.5rem 0.9rem',
-    borderRadius: 8,
-    border: active ? '2px solid #0d9488' : '1px solid #c4b8a8',
-    background: active ? '#0d9488' : '#fffefb',
+    padding: '0.65rem 0.5rem',
+    borderRadius: 10,
+    border: active ? '2px solid #b54a1e' : '1px solid #c4b8a8',
+    background: active ? '#b54a1e' : '#fffefb',
     color: active ? '#fff' : '#1c1a18',
-    fontWeight: 700,
-    fontSize: '0.88rem',
-    cursor: 'pointer',
-  }
-}
-
-function viewTabStylePartner(active: boolean): CSSProperties {
-  return {
-    padding: '0.5rem 0.9rem',
-    borderRadius: 8,
-    border: active ? '2px solid #7c3aed' : '1px solid #c4b8a8',
-    background: active ? '#7c3aed' : '#fffefb',
-    color: active ? '#fff' : '#1c1a18',
-    fontWeight: 700,
+    fontWeight: 800,
     fontSize: '0.88rem',
     cursor: 'pointer',
   }
