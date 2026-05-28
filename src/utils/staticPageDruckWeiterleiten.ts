@@ -38,10 +38,28 @@ export async function weiterleitenTitelUrl(title: string, url: string): Promise<
       /* Abbruch oder Fehler — Clipboard versuchen */
     }
   }
+  const ok = await kopiereUrl(url)
+  return ok ? 'kopiert' : 'abgebrochen'
+}
+
+/** Link in Zwischenablage (eine Aktion, klares Feedback). */
+export async function kopiereUrl(url: string): Promise<boolean> {
+  if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) return false
   try {
     await navigator.clipboard.writeText(url)
-    return 'kopiert'
+    return true
   } catch {
-    return 'abgebrochen'
+    return false
+  }
+}
+
+/** System-Teilen-Dialog (nur wenn vom Browser angeboten). */
+export async function teileTitelUrl(title: string, url: string): Promise<boolean> {
+  if (typeof navigator === 'undefined' || typeof navigator.share !== 'function') return false
+  try {
+    await navigator.share({ title, text: title, url })
+    return true
+  } catch {
+    return false
   }
 }

@@ -1,14 +1,10 @@
-import { createContext, useCallback, useContext, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PROJECT_ROUTES, K2_GALERIE_APF_EINSTIEG, flyerEventBogenUrl } from '../config/navigation'
 import { getApfPreferredFamilieTenantId } from '../utils/familieTenantCookieBackup'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { TexteSchreibtischBoard } from '../components/TexteSchreibtischBoard'
-import {
-  absoluteUrlVonPath,
-  oeffneDruckdialogFuerUrl,
-  weiterleitenTitelUrl,
-} from '../utils/staticPageDruckWeiterleiten'
+import { ZettelAktionsLeiste } from '../components/texteSchreibtisch/ZettelAktionsLeiste'
 import { K2_AGENTUR_MASTER_STRATEGIE_P1_URL, K2_AGENTUR_PARTNER_DRUCK_URL } from '../config/k2AgenturAgenturVorbereitung'
 import { K2_AGENTUR_KEYWORDS_P1_GOOGLE_DRUCK_URL } from '../config/k2AgenturGoogleKeywordsP1'
 import {
@@ -578,134 +574,19 @@ function zettelDragPayload(z: Zettel, openHref: string): string {
   return `## ${z.titel}\n${z.zweck}\n\n[Öffnen](${openHref})`
 }
 
-/** PDF/HTML unter /public: kein React-Router-Link (sonst SPA-Navigation ohne echtes Dokument). */
-function isStaticDocumentHref(to: string): boolean {
-  return /\.(pdf|html)(\?|#|$)/i.test(to)
-}
-
-function ZettelOeffnenLink({
-  to,
-  children,
-  style,
-  onVorOeffnen,
-}: {
-  to: string
-  children: ReactNode
-  style: CSSProperties
-  onVorOeffnen?: () => void
-}) {
-  if (isStaticDocumentHref(to)) {
-    return (
-      <a
-        href={to}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={style}
-        onClick={() => onVorOeffnen?.()}
-      >
-        {children}
-      </a>
-    )
-  }
-  return (
-    <Link to={to} style={style} onClick={() => onVorOeffnen?.()}>
-      {children}
-    </Link>
-  )
-}
-
-const BTN_ZETTEL_SEC: CSSProperties = {
-  padding: '0.4rem 0.65rem',
-  borderRadius: 8,
-  border: '1px solid rgba(28,26,24,0.15)',
-  background: '#fffefb',
-  color: '#1c1a18',
-  fontWeight: 700,
-  fontSize: '0.78rem',
-  cursor: 'pointer',
-  fontFamily: 'inherit',
-}
-
-function ZettelDruckWeiterleitenLeiste({ titel, openPath }: { titel: string; openPath: string }) {
-  const [hinweis, setHinweis] = useState<string | null>(null)
-  const abs = absoluteUrlVonPath(openPath)
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', justifyContent: 'center' }}>
-        <button
-          type="button"
-          onClick={() => oeffneDruckdialogFuerUrl(abs)}
-          style={BTN_ZETTEL_SEC}
-          title="Seite in neuem Tab öffnen und Druckdialog (PDF/Papier)"
-        >
-          🖨️ Drucken
-        </button>
-        <button
-          type="button"
-          onClick={async () => {
-            const r = await weiterleitenTitelUrl(titel, abs)
-            if (r === 'geteilt') setHinweis('Teilen war möglich.')
-            else if (r === 'kopiert') setHinweis('Link in die Zwischenablage kopiert.')
-            else setHinweis('Link: ' + abs)
-            setTimeout(() => setHinweis(null), 3200)
-          }}
-          style={{ ...BTN_ZETTEL_SEC, background: '#1c1917', color: '#fff', border: '1px solid #292524' }}
-          title="System-Teilen oder Link kopieren"
-        >
-          🔗 Weiterleiten
-        </button>
-      </div>
-      {hinweis && (
-        <span style={{ fontSize: '0.72rem', textAlign: 'center', color: '#166534', fontWeight: 600 }}>✓ {hinweis}</span>
-      )}
-    </div>
-  )
-}
-
-function ZettelOeffnenButton({
-  z,
-  href,
-  compact,
-  bereichId,
-  bereichTitel,
-}: {
-  z: Zettel
-  href: string
-  compact?: boolean
-  bereichId?: string
-  bereichTitel?: string
-}) {
-  const merken = useMerkeLetztesThema()
-  const onVorOeffnen =
-    bereichId && bereichTitel ? () => merken(z, bereichId, bereichTitel) : undefined
-  return (
-    <>
-      <ZettelOeffnenLink
-        to={href}
-        onVorOeffnen={onVorOeffnen}
-        style={{
-          display: 'block',
-          textAlign: 'center',
-          padding: compact ? '0.4rem 0.55rem' : '0.55rem 0.75rem',
-          borderRadius: 10,
-          background: '#b54a1e',
-          color: '#fff',
-          fontWeight: 800,
-          fontSize: compact ? '0.78rem' : '0.84rem',
-          textDecoration: 'none',
-          border: '1px solid rgba(28,26,24,0.12)',
-          flexShrink: 0,
-        }}
-      >
-        Öffnen →
-      </ZettelOeffnenLink>
-      {z.showDruckWeiterleiten && <ZettelDruckWeiterleitenLeiste titel={z.titel} openPath={href} />}
-    </>
-  )
+function zettelMerkenCallback(
+  merken: (z: Zettel, bereichId: string, bereichTitel: string) => void,
+  z: Zettel,
+  bereichId?: string,
+  bereichTitel?: string,
+): (() => void) | undefined {
+  if (!bereichId || !bereichTitel) return undefined
+  return () => merken(z, bereichId, bereichTitel)
 }
 
 /** Ganz oben: zuletzt geöffnetes oder angesehenes Thema */
 function LetztesThemaKasten({ thema }: { thema: LetztesThemaAnzeige | null }) {
+  const merken = useMerkeLetztesThema()
   if (!thema) return null
   const href = resolveZettelOeffnenHref(thema.z)
   const zeit = formatLetztesThemaZeit(thema.at)
@@ -743,11 +624,11 @@ function LetztesThemaKasten({ thema }: { thema: LetztesThemaAnzeige | null }) {
           <div style={{ fontWeight: 800, fontSize: '1.05rem', lineHeight: 1.3 }}>{thema.z.titel}</div>
           <div style={{ fontSize: '0.82rem', color: '#5c5650', marginTop: '0.2rem', lineHeight: 1.4 }}>{thema.z.zweck}</div>
         </div>
-        <ZettelOeffnenButton
-          z={thema.z}
+        <ZettelAktionsLeiste
+          titel={thema.z.titel}
           href={href}
-          bereichId={thema.bereichId}
-          bereichTitel={thema.bereichTitel}
+          showDruckWeiterleiten={thema.z.showDruckWeiterleiten}
+          onVorOeffnen={zettelMerkenCallback(merken, thema.z, thema.bereichId, thema.bereichTitel)}
         />
       </div>
     </section>
@@ -756,6 +637,7 @@ function LetztesThemaKasten({ thema }: { thema: LetztesThemaAnzeige | null }) {
 
 /** Oben: feste Kacheln – kein Blättern in Schubladen */
 function SchnellzugriffLeiste() {
+  const merken = useMerkeLetztesThema()
   return (
     <section
       aria-labelledby="schnellzugriff-heading"
@@ -800,7 +682,13 @@ function SchnellzugriffLeiste() {
                 <div style={{ fontWeight: 800, fontSize: '0.88rem', lineHeight: 1.25 }}>{z.titel}</div>
                 <div style={{ fontSize: '0.75rem', color: '#5c5650', marginTop: '0.15rem' }}>{z.zweck}</div>
               </div>
-              <ZettelOeffnenButton z={z} href={href} compact bereichId="schnellzugriff" bereichTitel="Schnellzugriff" />
+              <ZettelAktionsLeiste
+                titel={z.titel}
+                href={href}
+                showDruckWeiterleiten={z.showDruckWeiterleiten}
+                compact
+                onVorOeffnen={zettelMerkenCallback(merken, z, 'schnellzugriff', 'Schnellzugriff')}
+              />
             </div>
           )
         })}
@@ -827,6 +715,8 @@ function HangeregisterSchublade({
   const z = n > 0 ? b.zettel[safeIdx] : null
   const zettelOpenHref = z ? resolveZettelOeffnenHref(z) : ''
   const rot = z?.rotateDeg ?? 0
+  const prevIdx = n < 2 ? 0 : safeIdx <= 0 ? n - 1 : safeIdx - 1
+  const nextIdx = n < 2 ? 0 : safeIdx >= n - 1 ? 0 : safeIdx + 1
 
   const goPrev = () => {
     if (n < 2) return
@@ -996,7 +886,13 @@ function HangeregisterSchublade({
                   <div style={{ fontWeight: 800, fontSize: '0.86rem', lineHeight: 1.25 }}>{zz.titel}</div>
                   <div style={{ fontSize: '0.74rem', color: '#5c5650', marginTop: '0.12rem', lineHeight: 1.35 }}>{zz.zweck}</div>
                 </div>
-                <ZettelOeffnenButton z={zz} href={href} compact bereichId={b.id} bereichTitel={b.titel} />
+                <ZettelAktionsLeiste
+                  titel={zz.titel}
+                  href={href}
+                  showDruckWeiterleiten={zz.showDruckWeiterleiten}
+                  compact
+                  onVorOeffnen={zettelMerkenCallback(merken, zz, b.id, b.titel)}
+                />
               </li>
             )
           })}
@@ -1016,55 +912,6 @@ function HangeregisterSchublade({
             boxShadow: 'inset 0 1px 4px rgba(28,26,24,0.06)',
           }}
         >
-          {n > 1 && (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.45rem',
-                flexWrap: 'wrap',
-                marginBottom: '0.1rem',
-              }}
-            >
-              <button
-                type="button"
-                onClick={goPrev}
-                style={{
-                  padding: '0.35rem 0.65rem',
-                  borderRadius: 8,
-                  border: '1px solid rgba(28,26,24,0.15)',
-                  background: '#fffefb',
-                  color: '#1c1a18',
-                  fontWeight: 700,
-                  fontSize: '0.78rem',
-                  cursor: 'pointer',
-                }}
-              >
-                ← Vorheriger Zettel
-              </button>
-              <span style={{ fontSize: '0.75rem', color: '#5c5650', fontWeight: 600 }}>
-                {safeIdx + 1} / {n}
-              </span>
-              <button
-                type="button"
-                onClick={goNext}
-                style={{
-                  padding: '0.35rem 0.65rem',
-                  borderRadius: 8,
-                  border: '1px solid rgba(28,26,24,0.15)',
-                  background: '#fffefb',
-                  color: '#1c1a18',
-                  fontWeight: 700,
-                  fontSize: '0.78rem',
-                  cursor: 'pointer',
-                }}
-              >
-                Nächster Zettel →
-              </button>
-            </div>
-          )}
-
           <div
             draggable
             title="Ziehen = in die Mitte legen · unten: Seite wirklich öffnen"
@@ -1107,8 +954,24 @@ function HangeregisterSchublade({
             <div style={{ fontSize: '0.82rem', color: '#5c5650', lineHeight: 1.4 }}>{z.zweck}</div>
           </div>
 
-          <ZettelOeffnenButton z={z} href={zettelOpenHref} bereichId={b.id} bereichTitel={b.titel} />
-          {z.showDruckWeiterleiten && <ZettelDruckWeiterleitenLeiste titel={z.titel} openPath={zettelOpenHref} />}
+          <ZettelAktionsLeiste
+            titel={z.titel}
+            href={zettelOpenHref}
+            showDruckWeiterleiten={z.showDruckWeiterleiten}
+            onVorOeffnen={zettelMerkenCallback(merken, z, b.id, b.titel)}
+            blaettern={
+              n > 1
+                ? {
+                    index: safeIdx,
+                    total: n,
+                    onPrev: goPrev,
+                    onNext: goNext,
+                    prevTitel: b.zettel[prevIdx]?.titel,
+                    nextTitel: b.zettel[nextIdx]?.titel,
+                  }
+                : undefined
+            }
+          />
         </div>
       )}
     </section>
@@ -1132,6 +995,7 @@ function alleZettelMitBereich(): { z: Zettel; bereich: string; bereichId: string
 }
 
 function SuchergebnisListe({ query }: { query: string }) {
+  const merken = useMerkeLetztesThema()
   const treffer = useMemo(() => {
     const q = normSuche(query.trim())
     if (!q) return []
@@ -1188,7 +1052,15 @@ function SuchergebnisListe({ query }: { query: string }) {
                     {bereich} · {z.zweck}
                   </div>
                 </div>
-                <ZettelOeffnenButton z={z} href={href} compact bereichId={bereichId} bereichTitel={bereich} />
+                <div style={{ flex: '1 1 14rem', minWidth: 200, maxWidth: 320 }}>
+                  <ZettelAktionsLeiste
+                    titel={z.titel}
+                    href={href}
+                    showDruckWeiterleiten={z.showDruckWeiterleiten}
+                    compact
+                    onVorOeffnen={zettelMerkenCallback(merken, z, bereichId, bereich)}
+                  />
+                </div>
               </li>
             )
           })}
