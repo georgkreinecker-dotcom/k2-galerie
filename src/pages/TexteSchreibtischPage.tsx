@@ -5,6 +5,10 @@ import { getApfPreferredFamilieTenantId } from '../utils/familieTenantCookieBack
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { TexteSchreibtischBoard } from '../components/TexteSchreibtischBoard'
 import { ZettelAktionsLeiste } from '../components/texteSchreibtisch/ZettelAktionsLeiste'
+import {
+  TexteSchreibtischSeitenAnsicht,
+  type SeitenAnsichtKontext,
+} from '../components/texteSchreibtisch/TexteSchreibtischSeitenAnsicht'
 import { K2_AGENTUR_MASTER_STRATEGIE_P1_URL, K2_AGENTUR_PARTNER_DRUCK_URL } from '../config/k2AgenturAgenturVorbereitung'
 import { K2_AGENTUR_KEYWORDS_P1_GOOGLE_DRUCK_URL } from '../config/k2AgenturGoogleKeywordsP1'
 import {
@@ -546,8 +550,23 @@ const LetztesThemaContext = createContext<{
   merken: (z: Zettel, bereichId: string, bereichTitel: string) => void
 }>({ merken: () => {} })
 
+const SeitenAnsichtContext = createContext<{
+  openSeitenAnsicht: (bereichId: string, bereichTitel: string, zettelIndex: number) => void
+}>({ openSeitenAnsicht: () => {} })
+
 function useMerkeLetztesThema() {
   return useContext(LetztesThemaContext).merken
+}
+
+function useOpenSeitenAnsicht() {
+  return useContext(SeitenAnsichtContext).openSeitenAnsicht
+}
+
+function findeZettelListeFuerSeitenAnsicht(bereichId: string): { titel: string; zettel: Zettel[] } | null {
+  if (bereichId === 'schnellzugriff') return { titel: 'Schnellzugriff', zettel: SCHNELLZUGRIFF }
+  const b = BEREICHE.find((x) => x.id === bereichId)
+  if (!b) return null
+  return { titel: b.titel, zettel: b.zettel }
 }
 
 function initialZettelIndex(b: Bereich, letztesBereichId: string | null | undefined, letztesZettelId: string | null | undefined): number {
@@ -587,6 +606,7 @@ function zettelMerkenCallback(
 /** Ganz oben: zuletzt geöffnetes oder angesehenes Thema */
 function LetztesThemaKasten({ thema }: { thema: LetztesThemaAnzeige | null }) {
   const merken = useMerkeLetztesThema()
+  const openSeitenAnsicht = useOpenSeitenAnsicht()
   if (!thema) return null
   const href = resolveZettelOeffnenHref(thema.z)
   const zeit = formatLetztesThemaZeit(thema.at)
@@ -629,6 +649,11 @@ function LetztesThemaKasten({ thema }: { thema: LetztesThemaAnzeige | null }) {
           href={href}
           showDruckWeiterleiten={thema.z.showDruckWeiterleiten}
           onVorOeffnen={zettelMerkenCallback(merken, thema.z, thema.bereichId, thema.bereichTitel)}
+          onSeitenAnsicht={() => {
+            const hit = findeZettelListeFuerSeitenAnsicht(thema.bereichId)
+            const idx = hit?.zettel.findIndex((zz) => zz.id === thema.z.id) ?? 0
+            openSeitenAnsicht(thema.bereichId, thema.bereichTitel, idx >= 0 ? idx : 0)
+          }}
         />
       </div>
     </section>
@@ -638,6 +663,7 @@ function LetztesThemaKasten({ thema }: { thema: LetztesThemaAnzeige | null }) {
 /** Oben: feste Kacheln – kein Blättern in Schubladen */
 function SchnellzugriffLeiste() {
   const merken = useMerkeLetztesThema()
+  const openSeitenAnsicht = useOpenSeitenAnsicht()
   return (
     <section
       aria-labelledby="schnellzugriff-heading"
@@ -663,7 +689,7 @@ function SchnellzugriffLeiste() {
           gap: '0.5rem',
         }}
       >
-        {SCHNELLZUGRIFF.map((z) => {
+        {SCHNELLZUGRIFF.map((z, zi) => {
           const href = resolveZettelOeffnenHref(z)
           return (
             <div
@@ -688,6 +714,7 @@ function SchnellzugriffLeiste() {
                 showDruckWeiterleiten={z.showDruckWeiterleiten}
                 compact
                 onVorOeffnen={zettelMerkenCallback(merken, z, 'schnellzugriff', 'Schnellzugriff')}
+                onSeitenAnsicht={() => openSeitenAnsicht('schnellzugriff', 'Schnellzugriff', zi)}
               />
             </div>
           )
@@ -708,6 +735,7 @@ function HangeregisterSchublade({
   letztesZettelId?: string | null
 }) {
   const merken = useMerkeLetztesThema()
+  const openSeitenAnsicht = useOpenSeitenAnsicht()
   const [eingeklappt, setEingeklappt] = useState(() => !bereichSollOffenSein(b, letztesBereichId))
   const [zettelIndex, setZettelIndex] = useState(() => initialZettelIndex(b, letztesBereichId, letztesZettelId))
   const n = b.zettel.length
@@ -867,7 +895,7 @@ function HangeregisterSchublade({
             flex: 1,
           }}
         >
-          {b.zettel.map((zz) => {
+          {b.zettel.map((zz, zi) => {
             const href = resolveZettelOeffnenHref(zz)
             return (
               <li
@@ -892,6 +920,7 @@ function HangeregisterSchublade({
                   showDruckWeiterleiten={zz.showDruckWeiterleiten}
                   compact
                   onVorOeffnen={zettelMerkenCallback(merken, zz, b.id, b.titel)}
+                  onSeitenAnsicht={() => openSeitenAnsicht(b.id, b.titel, zi)}
                 />
               </li>
             )
@@ -959,6 +988,7 @@ function HangeregisterSchublade({
             href={zettelOpenHref}
             showDruckWeiterleiten={z.showDruckWeiterleiten}
             onVorOeffnen={zettelMerkenCallback(merken, z, b.id, b.titel)}
+            onSeitenAnsicht={() => openSeitenAnsicht(b.id, b.titel, safeIdx)}
             blaettern={
               n > 1
                 ? {
@@ -996,6 +1026,7 @@ function alleZettelMitBereich(): { z: Zettel; bereich: string; bereichId: string
 
 function SuchergebnisListe({ query }: { query: string }) {
   const merken = useMerkeLetztesThema()
+  const openSeitenAnsicht = useOpenSeitenAnsicht()
   const treffer = useMemo(() => {
     const q = normSuche(query.trim())
     if (!q) return []
@@ -1059,6 +1090,11 @@ function SuchergebnisListe({ query }: { query: string }) {
                     showDruckWeiterleiten={z.showDruckWeiterleiten}
                     compact
                     onVorOeffnen={zettelMerkenCallback(merken, z, bereichId, bereich)}
+                    onSeitenAnsicht={() => {
+                      const hit = findeZettelListeFuerSeitenAnsicht(bereichId)
+                      const idx = hit?.zettel.findIndex((zz) => zz.id === z.id) ?? 0
+                      openSeitenAnsicht(bereichId, bereich, idx >= 0 ? idx : 0)
+                    }}
                   />
                 </div>
               </li>
@@ -1073,13 +1109,37 @@ function SuchergebnisListe({ query }: { query: string }) {
 export default function TexteSchreibtischPage() {
   const [suche, setSuche] = useState('')
   const [letztesThema, setLetztesThema] = useState<LetztesThemaAnzeige | null>(() => ladeLetztesThemaAusSpeicher())
+  const [seitenAnsicht, setSeitenAnsicht] = useState<SeitenAnsichtKontext | null>(null)
+
   const merken = useCallback((z: Zettel, bereichId: string, bereichTitel: string) => {
     speichereLetztesThema(z, bereichId, bereichTitel)
     setLetztesThema({ z, bereichId, bereichTitel, at: new Date().toISOString() })
   }, [])
 
+  const openSeitenAnsicht = useCallback(
+    (bereichId: string, bereichTitel: string, zettelIndex: number) => {
+      const hit = findeZettelListeFuerSeitenAnsicht(bereichId)
+      if (!hit || hit.zettel.length === 0) return
+      const idx = Math.min(Math.max(0, zettelIndex), hit.zettel.length - 1)
+      const z = hit.zettel[idx]
+      if (z) merken(z, bereichId, bereichTitel)
+      setSeitenAnsicht({
+        bereichId,
+        bereichTitel,
+        zettel: hit.zettel,
+        zettelIndex: idx,
+      })
+      setSuche('')
+      if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' })
+    },
+    [merken],
+  )
+
+  const inSeitenAnsicht = seitenAnsicht != null
+
   return (
     <LetztesThemaContext.Provider value={{ merken }}>
+    <SeitenAnsichtContext.Provider value={{ openSeitenAnsicht }}>
     <div
       style={{
         minHeight: '100vh',
@@ -1109,41 +1169,65 @@ export default function TexteSchreibtischPage() {
             🪑 Texte-Schreibtisch
           </h1>
           <p style={{ margin: 0, fontSize: '0.95rem', color: '#5c5650', maxWidth: 52 * 16, lineHeight: 1.45 }}>
-            <strong>Oben:</strong> dein <strong>letztes Thema</strong> – sofort sichtbar, ein Klick zum Weitermachen. Darunter Schnellzugriff, Suche und{' '}
-            <strong>fünf Schubladen</strong> (die passende ist aufgeklappt).
+            {inSeitenAnsicht ? (
+              <>
+                <strong>Seitenansicht</strong> – ein Zettel groß, blättern, drucken oder kopieren.{' '}
+                <strong>← Zur Übersicht</strong> bringt dich zurück zum Hängeordner.
+              </>
+            ) : (
+              <>
+                <strong>Oben:</strong> dein <strong>letztes Thema</strong> – sofort sichtbar. <strong>📄 Seite</strong> = groß auf dem
+                Schreibtisch (blättern ohne Weg). Darunter Schnellzugriff, Suche und <strong>fünf Schubladen</strong>.
+              </>
+            )}
           </p>
         </header>
 
-        <LetztesThemaKasten thema={letztesThema} />
-
-        <SchnellzugriffLeiste />
-
-        <div style={{ marginBottom: '1rem' }}>
-          <label htmlFor="texte-schreibtisch-suche" style={{ display: 'block', fontWeight: 800, fontSize: '0.9rem', marginBottom: '0.35rem' }}>
-            🔍 Alle Zettel durchsuchen
-          </label>
-          <input
-            id="texte-schreibtisch-suche"
-            type="search"
-            value={suche}
-            onChange={(e) => setSuche(e.target.value)}
-            placeholder="z. B. Gruppe, Agentur, Flyer, Besucherliste, Handbuch …"
-            style={{
-              width: '100%',
-              maxWidth: 480,
-              padding: '0.55rem 0.75rem',
-              borderRadius: 10,
-              border: '1px solid rgba(28,26,24,0.18)',
-              fontSize: '0.95rem',
-              background: '#fffefb',
-              color: '#1c1a18',
-            }}
+        {inSeitenAnsicht && seitenAnsicht ? (
+          <TexteSchreibtischSeitenAnsicht
+            kontext={seitenAnsicht}
+            resolveHref={resolveZettelOeffnenHref}
+            onZurueck={() => setSeitenAnsicht(null)}
+            onIndexChange={(index) =>
+              setSeitenAnsicht((prev) => (prev ? { ...prev, zettelIndex: index } : prev))
+            }
+            onMerken={(z) => merken(z, seitenAnsicht.bereichId, seitenAnsicht.bereichTitel)}
           />
-        </div>
+        ) : (
+          <>
+            <LetztesThemaKasten thema={letztesThema} />
 
-        <SuchergebnisListe query={suche} />
+            <SchnellzugriffLeiste />
+
+            <div style={{ marginBottom: '1rem' }}>
+              <label htmlFor="texte-schreibtisch-suche" style={{ display: 'block', fontWeight: 800, fontSize: '0.9rem', marginBottom: '0.35rem' }}>
+                🔍 Alle Zettel durchsuchen
+              </label>
+              <input
+                id="texte-schreibtisch-suche"
+                type="search"
+                value={suche}
+                onChange={(e) => setSuche(e.target.value)}
+                placeholder="z. B. Gruppe, Agentur, Flyer, Besucherliste, Handbuch …"
+                style={{
+                  width: '100%',
+                  maxWidth: 480,
+                  padding: '0.55rem 0.75rem',
+                  borderRadius: 10,
+                  border: '1px solid rgba(28,26,24,0.18)',
+                  fontSize: '0.95rem',
+                  background: '#fffefb',
+                  color: '#1c1a18',
+                }}
+              />
+            </div>
+
+            <SuchergebnisListe query={suche} />
+          </>
+        )}
 
         {/* Ein Kasten: Schubladen nebeneinander; innen können später weitere Ordner/Kästen dazukommen */}
+        {!inSeitenAnsicht && (
         <section
           aria-labelledby="haengeordner-heading"
           style={{
@@ -1210,6 +1294,7 @@ export default function TexteSchreibtischPage() {
             </div>
           </div>
         </section>
+        )}
 
         <TexteSchreibtischBoard variant="page" />
 
@@ -1224,6 +1309,7 @@ export default function TexteSchreibtischPage() {
         </footer>
       </div>
     </div>
+    </SeitenAnsichtContext.Provider>
     </LetztesThemaContext.Provider>
   )
 }

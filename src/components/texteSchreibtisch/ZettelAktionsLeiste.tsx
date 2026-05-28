@@ -26,6 +26,8 @@ type ZettelAktionsProps = {
   showDruckWeiterleiten?: boolean
   compact?: boolean
   onVorOeffnen?: () => void
+  /** Seitenansicht auf dem Schreibtisch (ohne Wegnavigation) */
+  onSeitenAnsicht?: () => void
   blaettern?: ZettelBlaetternNav
 }
 
@@ -90,6 +92,7 @@ export function ZettelAktionsLeiste({
   showDruckWeiterleiten,
   compact,
   onVorOeffnen,
+  onSeitenAnsicht,
   blaettern,
 }: ZettelAktionsProps) {
   const [hinweis, setHinweis] = useState<string | null>(null)
@@ -152,24 +155,53 @@ export function ZettelAktionsLeiste({
         </div>
       )}
 
-      <ZettelOeffnenLink
-        to={href}
-        onVorOeffnen={onVorOeffnen}
+      <div
         style={{
-          display: 'block',
-          textAlign: 'center',
-          padding: compact ? '0.45rem 0.6rem' : '0.55rem 0.75rem',
-          borderRadius: 10,
-          background: '#b54a1e',
-          color: '#fff',
-          fontWeight: 800,
-          fontSize: compact ? '0.78rem' : '0.84rem',
-          textDecoration: 'none',
-          border: '1px solid rgba(28,26,24,0.12)',
+          display: 'grid',
+          gridTemplateColumns: onSeitenAnsicht ? '1fr 1fr' : '1fr',
+          gap: '0.4rem',
         }}
       >
-        Öffnen →
-      </ZettelOeffnenLink>
+        {onSeitenAnsicht && (
+          <button
+            type="button"
+            onClick={() => {
+              onVorOeffnen?.()
+              onSeitenAnsicht()
+            }}
+            style={{
+              ...btnBase,
+              padding: compact ? '0.45rem 0.6rem' : '0.55rem 0.75rem',
+              background: '#1c4a7a',
+              color: '#fff',
+              border: '1px solid #153e6a',
+              fontWeight: 800,
+              fontSize: compact ? '0.78rem' : '0.84rem',
+            }}
+            title="Groß auf dem Schreibtisch – blättern ohne die Übersicht zu verlassen"
+          >
+            📄 Seite
+          </button>
+        )}
+        <ZettelOeffnenLink
+          to={href}
+          onVorOeffnen={onVorOeffnen}
+          style={{
+            display: 'block',
+            textAlign: 'center',
+            padding: compact ? '0.45rem 0.6rem' : '0.55rem 0.75rem',
+            borderRadius: 10,
+            background: '#b54a1e',
+            color: '#fff',
+            fontWeight: 800,
+            fontSize: compact ? '0.78rem' : '0.84rem',
+            textDecoration: 'none',
+            border: '1px solid rgba(28,26,24,0.12)',
+          }}
+        >
+          Öffnen →
+        </ZettelOeffnenLink>
+      </div>
 
       {showDruckWeiterleiten && (
         <div style={aktionenZeile}>
