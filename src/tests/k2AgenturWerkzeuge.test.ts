@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatAnzeigenPaketText, getAnzeigenPaket } from '../config/k2AgenturAnzeigenTexte'
+import { formatFertigeAnzeigeText, getAnzeigenPaket } from '../config/k2AgenturAnzeigenTexte'
 import { formatAuswertungPaketText } from '../config/k2AgenturAuswertungPaket'
 import { formatCreativeSpecText } from '../config/k2AgenturCreativeSpec'
 import { K2_AGENTUR_MOK2_LESEHINWEIS } from '../config/k2AgenturMok2Lesehinweise'
@@ -16,24 +16,25 @@ import {
 } from '../utils/k2AgenturPlattformStorage'
 
 describe('k2AgenturWerkzeuge', () => {
-  it('Anzeigen-Paket: kurze Ads-Texte, nicht mök2-Slogan', () => {
+  it('Fertige Anzeige: Kopierblock mit URL und Werbelinien', () => {
     const p = getAnzeigenPaket('p1', 'google')
     expect(p).not.toBeNull()
-    const text = formatAnzeigenPaketText(p!)
-    expect(text).toContain('Nicht der mök2-Strategietext')
+    const text = formatFertigeAnzeigeText(p!)
+    expect(text).toContain('FERTIGE ANZEIGE')
+    expect(text).toContain('Finale URL:')
     expect(text).toContain(p!.schalt.landingUrl)
-    expect(p!.headlines[0]).toBe('Online-Galerie starten')
+    expect(p!.descriptions[0]).toContain('Instagram')
     expect(p!.headlines[0].length).toBeLessThanOrEqual(30)
-    expect(p!.headlines[0]).not.toContain('für Menschen mit Ideen')
   })
 
-  it('markAnzeigenPaketKopiert hakt anzeige-creative ab', () => {
+  it('markAnzeigenPaketKopiert hakt Anzeige und Ziel-URL ab', () => {
     const autoId = kanalStepIdAutoOnAnzeigenKopiert()
     expect(autoId).toBe('anzeige-creative')
     const key = kanalStorageKey('p2', 'meta')
     let s = createDefaultK2AgenturPlattformState()
     s = markAnzeigenPaketKopiert(s, key)
     expect(s.kanalSchritte[key][autoId!]).toBe(true)
+    expect(s.kanalSchritte[key]['ziel-url-eingetragen']).toBe(true)
   })
 
   it('Auswertungs-Paket enthält Kampagne und Entscheidungsfelder', () => {

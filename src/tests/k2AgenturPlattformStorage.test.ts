@@ -42,4 +42,18 @@ describe('k2AgenturPlattformStorage', () => {
     expect(c.live).toBe(2)
     expect(c.offen).toBe(7)
   })
+
+  it('persistiert Partner-Vorbereitung (Option B)', () => {
+    const s = createDefaultK2AgenturPlattformState()
+    s.partnerVorbereitung.feinschliffErledigt['fein-pilot-p1-google-live'] = true
+    s.partnerVorbereitung.angebotPruefungErledigt['ang-deckel'] = true
+    s.partnerVorbereitung.angebotNotizen = 'Deckel: 1.500 €'
+    saveK2AgenturPlattform(s)
+
+    const loaded = loadK2AgenturPlattform()
+    expect(loaded.partnerVorbereitung.antwortMailGesendet).toBe(true)
+    expect(loaded.partnerVorbereitung.feinschliffErledigt['fein-pilot-p1-google-live']).toBe(true)
+    expect(loaded.partnerVorbereitung.angebotPruefungErledigt['ang-deckel']).toBe(true)
+    expect(loaded.partnerVorbereitung.angebotNotizen).toContain('1.500')
+  })
 })

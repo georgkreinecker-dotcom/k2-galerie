@@ -1,8 +1,12 @@
 /**
  * Agentur-Kanäle P1 / P2 / P3 – eine Quelle für Landing-URLs (Google, Meta, LinkedIn).
  * Georg kopiert die Links in Ads-Konten; Joe pflegt Kampagnen-IDs hier.
+ *
+ * Landing = jeweils die **Muster-/Demo-Seite** des Produkts (nicht Eingangstor /entdecken,
+ * nicht Katalog, nicht Präsentationsmappe).
  */
-import { BASE_APP_URL, ENTDECKEN_ROUTE, PROJECT_ROUTES } from './navigation'
+import { getMusterfamilieHuberMeineFamiliePathWithQuery } from '../data/k2FamilieMusterHuberQuelle'
+import { BASE_APP_URL, PROJECT_ROUTES } from './navigation'
 
 export type MarketingProduktId = 'p1' | 'p2' | 'p3'
 
@@ -18,11 +22,14 @@ export type BuildMarketingKanalUrlOptions = {
   absolute?: boolean
 }
 
-/** Wohin bezahlte Anzeigen pro Produkt zeigen (Landing). */
+/** Wohin bezahlte Anzeigen pro Produkt zeigen (Landing = Musterseite). */
 export const MARKETING_PRODUKT_LANDING_PATH: Record<MarketingProduktId, string> = {
-  p1: ENTDECKEN_ROUTE,
+  /** ök2-Demo-Galerie (Musterwerke, Muster-Stammdaten) – nicht /entdecken (Eingangstor). */
+  p1: PROJECT_ROUTES['k2-galerie'].galerieOeffentlich,
+  /** VK2-Vereinsplattform (Muster-Verein) – nicht /projects/vk2/katalog. */
   p2: PROJECT_ROUTES.vk2.galerie,
-  p3: PROJECT_ROUTES['k2-familie'].familiePraesentationsmappeKunde,
+  /** Musterfamilie Huber – nicht Präsentationsmappe-Kunde. */
+  p3: getMusterfamilieHuberMeineFamiliePathWithQuery(),
 }
 
 /** Checkout / Lizenz (für Doku – nicht als Ads-Landing). */

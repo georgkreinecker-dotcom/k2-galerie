@@ -13,6 +13,10 @@ import {
   K2_AGENTUR_KANAL_LAUNCH_STEPS,
 } from '../config/k2AgenturLaunchCheckliste'
 import {
+  K2_AGENTUR_ANGEBOT_PRUEFUNG,
+  K2_AGENTUR_FEINSCHLIFF_SCHRITTE,
+} from '../config/k2AgenturAgenturVorbereitung'
+import {
   listMarketingKanalUrls,
   type MarketingPaidKanalId,
   type MarketingProduktId,
@@ -35,6 +39,13 @@ export type K2AgenturKanalRow = {
   notizen: string
 }
 
+export type K2AgenturPartnerVorbereitungState = {
+  antwortMailGesendet: boolean
+  feinschliffErledigt: Record<string, boolean>
+  angebotPruefungErledigt: Record<string, boolean>
+  angebotNotizen: string
+}
+
 export type K2AgenturPlattformState = {
   version: 2
   kanaele: Record<string, K2AgenturKanalRow>
@@ -43,6 +54,8 @@ export type K2AgenturPlattformState = {
   globalSchritte: Record<string, boolean>
   /** Pro Kanal-Key: Schritt-ID → erledigt */
   kanalSchritte: Record<string, Record<string, boolean>>
+  /** Option B: Agentur-Partner (5 Punkte, Angebots-Prüfung) */
+  partnerVorbereitung: K2AgenturPartnerVorbereitungState
 }
 
 export function kanalStorageKey(produkt: MarketingProduktId, kanal: MarketingPaidKanalId): string {
@@ -59,6 +72,21 @@ function defaultKanalSchritteForKey(_key: string): Record<string, boolean> {
   const out: Record<string, boolean> = {}
   for (const id of kanalStepIds()) out[id] = false
   return out
+}
+
+function defaultPartnerSchritte(ids: string[]): Record<string, boolean> {
+  const out: Record<string, boolean> = {}
+  for (const id of ids) out[id] = false
+  return out
+}
+
+export function createDefaultPartnerVorbereitung(): K2AgenturPartnerVorbereitungState {
+  return {
+    antwortMailGesendet: true,
+    feinschliffErledigt: defaultPartnerSchritte(K2_AGENTUR_FEINSCHLIFF_SCHRITTE.map((s) => s.id)),
+    angebotPruefungErledigt: defaultPartnerSchritte(K2_AGENTUR_ANGEBOT_PRUEFUNG.map((s) => s.id)),
+    angebotNotizen: '',
+  }
 }
 
 function defaultRow(produkt: MarketingProduktId, kanal: MarketingPaidKanalId): K2AgenturKanalRow {
@@ -87,6 +115,7 @@ export function createDefaultK2AgenturPlattformState(): K2AgenturPlattformState 
     allgemeinNotizen: '',
     globalSchritte: defaultGlobalSchritte(),
     kanalSchritte,
+    partnerVorbereitung: createDefaultPartnerVorbereitung(),
   }
 }
 
@@ -136,12 +165,33 @@ function mergeWithDefaults(parsed: Partial<K2AgenturPlattformState> & { version?
   }
   const allgemeinNotizen =
     typeof parsed.allgemeinNotizen === 'string' ? parsed.allgemeinNotizen.slice(0, 8000) : ''
+  const partnerBase = base.partnerVorbereitung ?? createDefaultPartnerVorbereitung()
+  const partnerRaw = parsed.partnerVorbereitung
+  const partnerVorbereitung: K2AgenturPartnerVorbereitungState = {
+    antwortMailGesendet:
+      partnerRaw && typeof partnerRaw === 'object' && partnerRaw.antwortMailGesendet === true
+        ? true
+        : partnerBase.antwortMailGesendet,
+    feinschliffErledigt: mergeSchritte(
+      partnerBase.feinschliffErledigt,
+      partnerRaw && typeof partnerRaw === 'object' ? partnerRaw.feinschliffErledigt : undefined,
+    ),
+    angebotPruefungErledigt: mergeSchritte(
+      partnerBase.angebotPruefungErledigt,
+      partnerRaw && typeof partnerRaw === 'object' ? partnerRaw.angebotPruefungErledigt : undefined,
+    ),
+    angebotNotizen:
+      partnerRaw && typeof partnerRaw === 'object' && typeof partnerRaw.angebotNotizen === 'string'
+        ? partnerRaw.angebotNotizen.slice(0, 8000)
+        : partnerBase.angebotNotizen,
+  }
   return {
     version: 2,
     kanaele,
     allgemeinNotizen,
     globalSchritte: mergeSchritte(base.globalSchritte, parsed.globalSchritte),
     kanalSchritte,
+    partnerVorbereitung,
   }
 }
 
@@ -313,6 +363,56 @@ export function applySuggestedStatusToAllKanaele(state: K2AgenturPlattformState)
     kanaele[key] = { ...kanaele[key], status: suggested }
   }
   return { ...state, kanaele }
+}
+
+export function getPartnerFeinschliffProgress(state: K2AgenturPlattformState): { done: number; total: number } {
+  return countChecked(state.partnerVorbereitung?.feinschliffErledigt ?? {})
+}
+
+export function getPartnerAngebotProgress(state: K2AgenturPlattformState): { done: number; total: number } {
+  return countChecked(state.partnerVorbereitung?.angebotPruefungErledigt ?? {})
+}
+
+export function patchPartnerVorbereitung(
+  state: K2AgenturPlattformState,
+  patch: Partial<K2AgenturPartnerVorbereitungState>,
+): K2AgenturPlattformState {
+  const base = state.partnerVorbereitung ?? createDefaultPartnerVorbereitung()
+  return {
+    ...state,
+    partnerVorbereitung: {
+      ...base,
+      ...patch,
+      feinschliffErledigt: patch.feinschliffErledigt
+        ? { ...base.feinschliffErledigt, ...patch.feinschliffErledigt }
+        : base.feinschliffErledigt,
+      angebotPruefungErledigt: patch.angebotPruefungErledigt
+        ? { ...base.angebotPruefungErledigt, ...patch.angebotPruefungErledigt }
+        : base.angebotPruefungErledigt,
+    },
+  }
+}
+
+export function togglePartnerFeinschliff(
+  state: K2AgenturPlattformState,
+  stepId: string,
+  checked: boolean,
+): K2AgenturPlattformState {
+  const pv = state.partnerVorbereitung ?? createDefaultPartnerVorbereitung()
+  return patchPartnerVorbereitung(state, {
+    feinschliffErledigt: { ...pv.feinschliffErledigt, [stepId]: checked },
+  })
+}
+
+export function togglePartnerAngebotPruefung(
+  state: K2AgenturPlattformState,
+  stepId: string,
+  checked: boolean,
+): K2AgenturPlattformState {
+  const pv = state.partnerVorbereitung ?? createDefaultPartnerVorbereitung()
+  return patchPartnerVorbereitung(state, {
+    angebotPruefungErledigt: { ...pv.angebotPruefungErledigt, [stepId]: checked },
+  })
 }
 
 export { K2_AGENTUR_GLOBAL_LAUNCH_STEPS, K2_AGENTUR_KANAL_LAUNCH_STEPS }

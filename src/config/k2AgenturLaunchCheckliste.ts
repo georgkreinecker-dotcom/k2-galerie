@@ -2,6 +2,7 @@
  * K2 Agentur – Schalt-Checkliste (Sportwagen: eine Quelle, viele Kanäle).
  * Schritte + Schalt-Paket-Text + Plattform-Links – nur hier pflegen.
  */
+import { formatGoogleKeywordsForKanal } from './k2AgenturStrategieKeywordsRegistry'
 import {
   buildMarketingCampaignKey,
   listMarketingKanalUrls,
@@ -58,7 +59,7 @@ export const K2_AGENTUR_KANAL_LAUNCH_STEPS: LaunchStepDef[] = [
   {
     id: 'anzeige-creative',
     label: 'Anzeige mit Text + Bild/Video',
-    hint: '„Anzeigen-Paket kopieren“ = kurze Headlines/Beschreibungen fürs Ads-Konto (nicht mök2).',
+    hint: '„Fertige Anzeige kopieren“ – Headlines, Beschreibungen, URL ins Ads-Konto einfügen.',
     autoOnAnzeigenKopiert: true,
   },
   {
@@ -92,9 +93,9 @@ export const K2_AGENTUR_PLATTFORM_CONSOLE_URL: Record<MarketingPaidKanalId, stri
 
 const ZIELGRUPPE_HINT: Record<MarketingPaidKanalId, Record<MarketingProduktId, string>> = {
   google: {
-    p1: 'z. B. Online Galerie Künstler, Kunst verkaufen online, Atelier Website',
-    p2: 'z. B. Kunstverein Website, Vereinsgalerie online, VK2',
-    p3: 'z. B. Familienbuch digital, Stammbaum App, Familienchronik',
+    p1: '13 Keywords Kunst (Pilot) + Negativ – Block im Schalt-Paket · weitere Sparten: keywords-p1-sparten.html',
+    p2: '12 Keywords VK2 – Block im Schalt-Paket · Druck keywords-p2-google.html',
+    p3: '12 Keywords K2 Familie – Block im Schalt-Paket · Druck keywords-p3-google.html',
   },
   meta: {
     p1: 'Künstler:innen, Malerei/Keramik, Galerie-Interesse, DACH',
@@ -142,7 +143,7 @@ export function getSchaltPaket(
 
 /** Ein Block zum Kopieren in Ads-Konto (Sportwagen: ein Klick). */
 export function formatSchaltPaketText(p: SchaltPaket): string {
-  return [
+  const parts = [
     '── K2 Agentur · Schalt-Paket ──',
     `Produkt: ${p.produktLabel}`,
     `Kanal: ${p.kanalLabel}`,
@@ -151,13 +152,18 @@ export function formatSchaltPaketText(p: SchaltPaket): string {
     `Ziel-URL (Final URL): ${p.landingUrl}`,
     `Checkout (nach Klick): ${p.checkoutPath}`,
     '',
-    `Zielgruppe/Keywords (Vorschlag): ${p.zielgruppeHint}`,
+    `Zielgruppe/Keywords: ${p.zielgruppeHint}`,
     '',
     `Plattform öffnen: ${p.plattformUrl}`,
     '',
-    'Reihenfolge: Konto → Kampagne → Budget → Zielgruppe → Anzeige → Ziel-URL → Aktiv',
-    '── Ende Schalt-Paket ──',
-  ].join('\n')
+    'Reihenfolge: Konto → Kampagne → Budget → Keywords → Anzeige → Ziel-URL → Aktiv',
+  ]
+  if (p.kanal === 'google') {
+    const kw = formatGoogleKeywordsForKanal(p.produkt, p.kanal)
+    if (kw) parts.push('', kw)
+  }
+  parts.push('', '── Ende Schalt-Paket ──')
+  return parts.join('\n')
 }
 
 export function globalStepIds(): string[] {

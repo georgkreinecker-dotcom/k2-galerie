@@ -19,8 +19,15 @@ import {
 } from '../../utils/k2AgenturPlattformStorage'
 import { formatSchaltPaketText, getSchaltPaket } from '../../config/k2AgenturLaunchCheckliste'
 import { getNextRecommendedKanal } from '../../config/k2AgenturKanalPrioritaet'
+import K2AgenturAgenturPartnerPanel from './K2AgenturAgenturPartnerPanel'
+import K2AgenturStrategieDruckPanel from './K2AgenturStrategieDruckPanel'
 import K2AgenturLaunchChecklistePanel from './K2AgenturLaunchChecklistePanel'
 import K2AgenturSteuerzentralePanel from './K2AgenturSteuerzentralePanel'
+import {
+  patchPartnerVorbereitung,
+  togglePartnerAngebotPruefung,
+  togglePartnerFeinschliff,
+} from '../../utils/k2AgenturPlattformStorage'
 
 const R = PROJECT_ROUTES['k2-galerie']
 
@@ -69,7 +76,7 @@ async function copyText(text: string): Promise<boolean> {
 export default function K2AgenturPlattformWorkplace() {
   const [state, setState] = useState<K2AgenturPlattformState>(() => loadK2AgenturPlattform())
   const [filter, setFilter] = useState<'alle' | MarketingProduktId>('alle')
-  const [view, setView] = useState<'kanaele' | 'checkliste'>('checkliste')
+  const [view, setView] = useState<'kanaele' | 'checkliste' | 'strategie' | 'partner'>('checkliste')
   const [openChecklistKanal, setOpenChecklistKanal] = useState<string | null>(null)
   const [savedAt, setSavedAt] = useState<number | null>(null)
   const [copyHint, setCopyHint] = useState<string | null>(null)
@@ -187,6 +194,14 @@ export default function K2AgenturPlattformWorkplace() {
           >
             📄 Alle 9 Links (Druck)
           </a>
+          <a
+            href="/texte-schreibtisch/k2-agentur-agentur-partner-vorbereitung.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={linkBtnStyle('#faf5ff', '#7c3aed', '#7c3aed')}
+          >
+            🤝 Agentur-Partner (Druck)
+          </a>
           <Link to={R.werbefahrplan} style={linkBtnStyle('#fffefb', '#1c1a18', '#c4b8a8')}>
             Werbefahrplan
           </Link>
@@ -287,6 +302,12 @@ export default function K2AgenturPlattformWorkplace() {
         <button type="button" onClick={() => setView('kanaele')} style={viewTabStyle(view === 'kanaele')}>
           📡 Kanäle-Übersicht
         </button>
+        <button type="button" onClick={() => setView('strategie')} style={viewTabStyle(view === 'strategie')}>
+          📋 Strategie &amp; Keywords
+        </button>
+        <button type="button" onClick={() => setView('partner')} style={viewTabStylePartner(view === 'partner')}>
+          🤝 Agentur-Partner
+        </button>
       </div>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '1rem' }}>
@@ -311,7 +332,22 @@ export default function K2AgenturPlattformWorkplace() {
         ))}
       </div>
 
-      {view === 'checkliste' ? (
+      {view === 'strategie' ? (
+        <K2AgenturStrategieDruckPanel />
+      ) : view === 'partner' ? (
+        <K2AgenturAgenturPartnerPanel
+          state={state}
+          onToggleFeinschliff={(stepId, checked) => {
+            persist(togglePartnerFeinschliff(state, stepId, checked))
+          }}
+          onToggleAngebot={(stepId, checked) => {
+            persist(togglePartnerAngebotPruefung(state, stepId, checked))
+          }}
+          onAngebotNotizen={(text) => {
+            persist(patchPartnerVorbereitung(state, { angebotNotizen: text }))
+          }}
+        />
+      ) : view === 'checkliste' ? (
         <K2AgenturLaunchChecklistePanel
           state={state}
           onPersist={persist}
@@ -576,6 +612,19 @@ function viewTabStyle(active: boolean): CSSProperties {
     borderRadius: 8,
     border: active ? '2px solid #0d9488' : '1px solid #c4b8a8',
     background: active ? '#0d9488' : '#fffefb',
+    color: active ? '#fff' : '#1c1a18',
+    fontWeight: 700,
+    fontSize: '0.88rem',
+    cursor: 'pointer',
+  }
+}
+
+function viewTabStylePartner(active: boolean): CSSProperties {
+  return {
+    padding: '0.5rem 0.9rem',
+    borderRadius: 8,
+    border: active ? '2px solid #7c3aed' : '1px solid #c4b8a8',
+    background: active ? '#7c3aed' : '#fffefb',
     color: active ? '#fff' : '#1c1a18',
     fontWeight: 700,
     fontSize: '0.88rem',

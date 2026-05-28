@@ -9,6 +9,16 @@ import {
   oeffneDruckdialogFuerUrl,
   weiterleitenTitelUrl,
 } from '../utils/staticPageDruckWeiterleiten'
+import { K2_AGENTUR_MASTER_STRATEGIE_P1_URL, K2_AGENTUR_PARTNER_DRUCK_URL } from '../config/k2AgenturAgenturVorbereitung'
+import { K2_AGENTUR_KEYWORDS_P1_GOOGLE_DRUCK_URL } from '../config/k2AgenturGoogleKeywordsP1'
+import {
+  K2_AGENTUR_KEYWORDS_P1_SPARTEN_DRUCK_URL,
+  K2_AGENTUR_KEYWORDS_P2_GOOGLE_DRUCK_URL,
+  K2_AGENTUR_KEYWORDS_P3_GOOGLE_DRUCK_URL,
+  K2_AGENTUR_MASTER_STRATEGIE_MEIN_WEG_URL,
+  K2_AGENTUR_MASTER_STRATEGIE_P2_URL,
+  K2_AGENTUR_MASTER_STRATEGIE_P3_URL,
+} from '../config/k2AgenturStrategieKeywordsRegistry'
 
 const R = PROJECT_ROUTES['k2-galerie']
 const R_K2_FAMILIE = PROJECT_ROUTES['k2-familie']
@@ -180,6 +190,69 @@ const BEREICHE: Bereich[] = [
         titel: 'K2 Agentur – APf',
         zweck: '9 Kanäle · Status · Links kopieren',
         to: R.k2Agentur,
+      },
+      {
+        id: 'master-strategie-p1',
+        titel: 'Master-Strategie P1',
+        zweck: '1 Seite · Agentur & Plan B',
+        to: K2_AGENTUR_MASTER_STRATEGIE_P1_URL,
+        showDruckWeiterleiten: true,
+      },
+      {
+        id: 'keywords-p1-google',
+        titel: 'Keywords P1 · Kunst',
+        zweck: '13 Begriffe · Pilot · Negativ',
+        to: K2_AGENTUR_KEYWORDS_P1_GOOGLE_DRUCK_URL,
+        showDruckWeiterleiten: true,
+      },
+      {
+        id: 'master-mein-weg',
+        titel: 'Master · Mein Weg',
+        zweck: '6 Sparten · Anzeigengruppen',
+        to: K2_AGENTUR_MASTER_STRATEGIE_MEIN_WEG_URL,
+        showDruckWeiterleiten: true,
+      },
+      {
+        id: 'keywords-p1-sparten',
+        titel: 'Keywords P1 · 5 Sparten',
+        zweck: 'Handwerk · Design · Mode · Food · Portfolio',
+        to: K2_AGENTUR_KEYWORDS_P1_SPARTEN_DRUCK_URL,
+        showDruckWeiterleiten: true,
+      },
+      {
+        id: 'master-strategie-p2',
+        titel: 'Master-Strategie P2',
+        zweck: 'VK2 · Vereine · 1 Seite',
+        to: K2_AGENTUR_MASTER_STRATEGIE_P2_URL,
+        showDruckWeiterleiten: true,
+      },
+      {
+        id: 'keywords-p2-google',
+        titel: 'Keywords P2 · Google',
+        zweck: '12 Begriffe · VK2',
+        to: K2_AGENTUR_KEYWORDS_P2_GOOGLE_DRUCK_URL,
+        showDruckWeiterleiten: true,
+      },
+      {
+        id: 'master-strategie-p3',
+        titel: 'Master-Strategie P3',
+        zweck: 'K2 Familie · 1 Seite',
+        to: K2_AGENTUR_MASTER_STRATEGIE_P3_URL,
+        showDruckWeiterleiten: true,
+      },
+      {
+        id: 'keywords-p3-google',
+        titel: 'Keywords P3 · Google',
+        zweck: '12 Begriffe · Familie',
+        to: K2_AGENTUR_KEYWORDS_P3_GOOGLE_DRUCK_URL,
+        showDruckWeiterleiten: true,
+      },
+      {
+        id: 'agentur-partner-vorbereitung',
+        titel: 'Agentur-Partner – 5 Punkte',
+        zweck: 'Nach Antwort · Feinschliff · Angebot',
+        to: K2_AGENTUR_PARTNER_DRUCK_URL,
+        showDruckWeiterleiten: true,
       },
       {
         id: 'agentur-anforderungskatalog',

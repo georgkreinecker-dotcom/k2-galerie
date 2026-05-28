@@ -20,7 +20,18 @@ describe('k2AgenturLaunchCheckliste', () => {
     const text = formatSchaltPaketText(p!)
     expect(text).toContain('p1-google-2026q2')
     expect(text).toContain('utm_campaign=p1-google-2026q2')
-    expect(text).toContain('/entdecken')
+    expect(text).toContain('/projects/k2-galerie/galerie-oeffentlich')
+    expect(text).toContain('Keywords P1 · Google Ads')
+  })
+
+  it('Schalt-Paket P2/P3 Google enthält produktspezifische Keywords', () => {
+    const p2Text = formatSchaltPaketText(getSchaltPaket('p2', 'google')!)
+    expect(p2Text).toContain('Keywords P2 · Google Ads (VK2)')
+    expect(p2Text).toContain('"vereinsgalerie online"')
+
+    const p3Text = formatSchaltPaketText(getSchaltPaket('p3', 'google')!)
+    expect(p3Text).toContain('Keywords P3 · Google Ads (K2 Familie)')
+    expect(p3Text).toContain('"stammbaum online speichern"')
   })
 
   it('markPaketKopiert hakt Ziel-URL-Schritt ab', () => {

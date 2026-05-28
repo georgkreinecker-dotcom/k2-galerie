@@ -13,17 +13,20 @@ Im Browser: `https://k2-galerie.vercel.app/texte-schreibtisch/marketing-kanaele-
 | Datei | Inhalt |
 |-------|--------|
 | `src/config/marketingKanalP1P2P3.ts` | Landing-Pfade, `buildMarketingKanalUrl`, `listMarketingKanalUrls` |
+| `src/config/k2AgenturGoogleKeywordsP1.ts` | P1 Google: 13 Keywords (Priorität) + Negativ-Start · Schalt-Paket |
 | `src/utils/marketingAttribution.ts` | `k=` / UTM First-Touch, Checkout-Payload |
 | `src/utils/marketingAnalytics.ts` | GA4 wenn `VITE_GA4_MEASUREMENT_ID` gesetzt |
 | `src/appBootstrap.tsx` | Attribution + GA4 beim App-Start |
 
 ## Landings
 
-| Produkt | Ads-Landing | Checkout |
-|---------|-------------|----------|
-| P1 | `/entdecken` | `/projects/k2-galerie/lizenz-kaufen` |
-| P2 | `/projects/vk2/galerie` | `/projects/k2-galerie/lizenz-kaufen` |
-| P3 | `/projects/k2-familie/praesentationsmappe-kunde` | `/projects/k2-familie/lizenz-erwerben` |
+| Produkt | Ads-Landing (Musterseite) | Checkout |
+|---------|---------------------------|----------|
+| P1 | `/projects/k2-galerie/galerie-oeffentlich` (ök2-Demo) | `/projects/k2-galerie/lizenz-kaufen` |
+| P2 | `/projects/vk2/galerie` (VK2-Muster) | `/projects/k2-galerie/lizenz-kaufen` |
+| P3 | `/projects/k2-familie/meine-familie?t=huber` (Musterfamilie Huber) | `/projects/k2-familie/lizenz-erwerben` |
+
+**Nicht** als Ads-Landing: `/entdecken` (Eingangstor), VK2-Katalog, Familie-Präsentationsmappe.
 
 Kampagnen-Schlüssel: `{produkt}-{kanal}-2026q2` (z. B. `p1-google-2026q2`).
 

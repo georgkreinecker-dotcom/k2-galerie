@@ -6,9 +6,10 @@ import {
 } from '../config/marketingKanalP1P2P3'
 
 describe('marketingKanalP1P2P3', () => {
-  it('baut Google-URL für P1 mit campaign_key und UTM', () => {
+  it('baut Google-URL für P1 auf ök2-Muster-Galerie', () => {
     const url = buildMarketingKanalUrl('p1', 'google')
-    expect(url).toContain('https://k2-galerie.vercel.app/entdecken?')
+    expect(url).toContain('/projects/k2-galerie/galerie-oeffentlich?')
+    expect(url).not.toContain('/entdecken')
     expect(url).toContain('utm_source=google')
     expect(url).toContain('utm_medium=cpc')
     expect(url).toContain('utm_campaign=p1-google-2026q2')
@@ -22,9 +23,10 @@ describe('marketingKanalP1P2P3', () => {
     expect(url).toContain('utm_campaign=p2-meta-2026q2')
   })
 
-  it('baut LinkedIn-URL für P3', () => {
+  it('baut LinkedIn-URL für P3 auf Musterfamilie Huber', () => {
     const url = buildMarketingKanalUrl('p3', 'linkedin', { absolute: true })
-    expect(url).toContain('/projects/k2-familie/praesentationsmappe-kunde?')
+    expect(url).toContain('/projects/k2-familie/meine-familie?')
+    expect(url).toContain('t=huber')
     expect(url).toContain('utm_source=linkedin')
   })
 

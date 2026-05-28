@@ -12,10 +12,9 @@ import {
   getSchaltPaket,
   countLaunchStepsTotal,
 } from '../../config/k2AgenturLaunchCheckliste'
-import { formatAnzeigenPaketText, getAnzeigenPaket } from '../../config/k2AgenturAnzeigenTexte'
+import { formatFertigeAnzeigeText, getAnzeigenPaket } from '../../config/k2AgenturAnzeigenTexte'
 import { formatAuswertungPaketText } from '../../config/k2AgenturAuswertungPaket'
 import { formatCreativeSpecText } from '../../config/k2AgenturCreativeSpec'
-import { K2_AGENTUR_MOK2_LESEHINWEIS } from '../../config/k2AgenturMok2Lesehinweise'
 import { listMarketingKanalUrls, type MarketingProduktId } from '../../config/marketingKanalP1P2P3'
 import {
   applySuggestedStatusToAllKanaele,
@@ -70,14 +69,14 @@ export default function K2AgenturLaunchChecklistePanel({
     }
   }
 
-  const handleAnzeigenKopieren = async (produkt: MarketingProduktId, kanal: typeof rows[0]['kanal']) => {
+  const handleFertigeAnzeigeKopieren = async (produkt: MarketingProduktId, kanal: typeof rows[0]['kanal']) => {
     const key = kanalStorageKey(produkt, kanal)
     const paket = getAnzeigenPaket(produkt, kanal)
     if (!paket) return
-    const ok = await copyText(formatAnzeigenPaketText(paket))
+    const ok = await copyText(formatFertigeAnzeigeText(paket))
     if (ok) {
       onPersist(markAnzeigenPaketKopiert(state, key))
-      onCopyFeedback('✅ Kurze Anzeigen-Texte kopiert (nicht mök2) – Schritt „Anzeige“ abgehakt')
+      onCopyFeedback('✅ Fertige Anzeige kopiert – Texte + Ziel-URL abgehakt')
     } else {
       onCopyFeedback('⚠️ Kopieren fehlgeschlagen')
     }
@@ -115,9 +114,8 @@ export default function K2AgenturLaunchChecklistePanel({
       >
         <h2 style={{ margin: '0 0 0.35rem', fontSize: '1.1rem', color: '#134e4a' }}>Sportwagen-Standard</h2>
         <p style={{ margin: '0 0 0.65rem', fontSize: '0.88rem', color: '#115e59', lineHeight: 1.55 }}>
-          <strong>Automatisiert:</strong> Schalt-Paket (URL + Kampagne), <strong>kurze Anzeigen-Texte</strong> (eigene
-          Quelle – nicht mök2), Auswertung, Creative-Maße. <strong>mök2</strong> = nur Links zum Lesen vor dem Schalten.{' '}
-          Schalten in den Konten bleibt manuell.
+          <strong>Pro Kanal:</strong> fertige Anzeige zum Kopieren (URL, Headlines, Beschreibungen) – direkt ins
+          Ads-Konto. Auswertung und Creative-Maße global. Schalten in den Konten bleibt manuell.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
           <ProgressChip label="Einmal (3 Konten)" done={globalProg.done} total={globalProg.total} />
@@ -170,6 +168,7 @@ export default function K2AgenturLaunchChecklistePanel({
             const suggested = suggestKanalStatusFromChecklist(state, key)
             const isOpen = openKanal === key
             const schalt = getSchaltPaket(meta.produkt, meta.kanal)
+            const fertigeAnzeige = getAnzeigenPaket(meta.produkt, meta.kanal)
             return (
               <article
                 key={key}
@@ -208,40 +207,19 @@ export default function K2AgenturLaunchChecklistePanel({
                 </button>
                 {isOpen && (
                   <div style={{ padding: '0 0 1rem 1rem', borderTop: '1px solid #ebe8e2' }}>
-                    <div
-                      style={{
-                        margin: '0.75rem 0 0.5rem',
-                        padding: '0.55rem 0.65rem',
-                        borderRadius: 8,
-                        background: '#f8fafc',
-                        border: '1px dashed #94a3b8',
-                      }}
-                    >
-                      <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569', marginBottom: '0.2rem' }}>
-                        Strategie lesen (mök2) – nicht kopieren
-                      </div>
-                      <p style={{ margin: '0 0 0.35rem', fontSize: '0.78rem', color: '#64748b', lineHeight: 1.45 }}>
-                        USPs, Positionierung, CD – einmal durchlesen. Das ist <strong>nicht</strong> das Anzeigen-Paket.
-                      </p>
-                      <ul style={{ margin: 0, paddingLeft: '1.1rem', fontSize: '0.82rem', lineHeight: 1.5 }}>
-                        {K2_AGENTUR_MOK2_LESEHINWEIS[meta.produkt].map((hint) => (
-                          <li key={hint.href} style={{ marginBottom: '0.2rem' }}>
-                            <Link to={hint.href} style={{ color: '#64748b', fontWeight: 600 }}>
-                              {hint.label}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1c1a18', margin: '0.65rem 0 0.35rem' }}>
-                      In Ads-Konto einfügen (kopieren)
-                    </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem', margin: '0 0 0.75rem' }}>
-                      <button type="button" onClick={() => handlePaketKopieren(meta.produkt, meta.kanal)} style={primaryBtn}>
-                        📦 Schalt-Paket kopieren
+                    {fertigeAnzeige && (
+                      <FertigeAnzeigeVorschau paket={fertigeAnzeige} />
+                    )}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem', margin: '0.75rem 0 0.65rem' }}>
+                      <button
+                        type="button"
+                        onClick={() => handleFertigeAnzeigeKopieren(meta.produkt, meta.kanal)}
+                        style={{ ...primaryBtn, fontSize: '0.95rem', padding: '0.55rem 1rem' }}
+                      >
+                        📋 Fertige Anzeige kopieren
                       </button>
-                      <button type="button" onClick={() => handleAnzeigenKopieren(meta.produkt, meta.kanal)} style={primaryBtn}>
-                        ✍️ Anzeigen-Paket kopieren
+                      <button type="button" onClick={() => handlePaketKopieren(meta.produkt, meta.kanal)} style={secondaryBtn}>
+                        Nur URL + Kampagne
                       </button>
                       <button type="button" onClick={() => handleAuswertungKopieren(meta.produkt, meta.kanal)} style={secondaryBtn}>
                         📊 Auswertung (7 Tage)
@@ -288,6 +266,54 @@ export default function K2AgenturLaunchChecklistePanel({
           })}
         </div>
       </section>
+    </div>
+  )
+}
+
+function FertigeAnzeigeVorschau({ paket }: { paket: NonNullable<ReturnType<typeof getAnzeigenPaket>> }) {
+  const s = paket.schalt
+  return (
+    <div
+      style={{
+        marginTop: '0.75rem',
+        padding: '0.85rem 1rem',
+        borderRadius: 10,
+        border: '2px solid #b54a1e',
+        background: 'linear-gradient(180deg, #fffefb 0%, #faf6f0 100%)',
+      }}
+    >
+      <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#1c1a18', marginBottom: '0.5rem' }}>
+        Fertige Anzeige – so landet sie im Kanal
+      </div>
+      <div style={{ fontSize: '0.78rem', color: '#5c5650', marginBottom: '0.65rem', lineHeight: 1.45 }}>
+        Kampagne: <strong>{s.campaignKey}</strong>
+        <br />
+        Finale URL:{' '}
+        <a href={s.landingUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#b54a1e', wordBreak: 'break-all' }}>
+          {s.landingUrl}
+        </a>
+      </div>
+      <div style={{ display: 'grid', gap: '0.5rem', fontSize: '0.85rem', lineHeight: 1.5 }}>
+        <div>
+          <div style={{ fontWeight: 700, color: '#b54a1e', fontSize: '0.75rem', marginBottom: '0.2rem' }}>HEADLINES</div>
+          {paket.headlines.map((h, i) => (
+            <div key={i} style={{ color: '#1c1a18', fontWeight: 600 }}>
+              {i + 1}. {h}
+            </div>
+          ))}
+        </div>
+        <div>
+          <div style={{ fontWeight: 700, color: '#b54a1e', fontSize: '0.75rem', marginBottom: '0.2rem' }}>BESCHREIBUNGEN</div>
+          {paket.descriptions.map((d, i) => (
+            <div key={i} style={{ color: '#1c1a18' }}>
+              {i + 1}. {d}
+            </div>
+          ))}
+        </div>
+        <div style={{ fontSize: '0.82rem', color: '#5c5650' }}>
+          Button: <strong>{paket.cta}</strong> · {s.zielgruppeHint}
+        </div>
+      </div>
     </div>
   )
 }

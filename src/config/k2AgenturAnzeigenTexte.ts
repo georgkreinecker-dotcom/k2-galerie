@@ -1,11 +1,15 @@
 /**
- * K2 Agentur – Anzeigen-Paket (kurze Texte für Google/Meta/LinkedIn-Felder).
- *
- * Bewusst NICHT mök2 und NICHT die langen Positionierungs-Slogans aus tenantConfig.
- * mök2 = nur lesen (siehe k2AgenturMok2Lesehinweise.ts).
- * Hier = fertige, kanal-knappe Anzeigenvarianten zum Einfügen.
+ * K2 Agentur – fertige Anzeige zum Einfügen (Google/Meta/LinkedIn).
+ * Kurztexte für Ads-Felder – abgeleitet aus verbindlichen Werbelinien (tenantConfig), auf Kanal-Limits gekürzt.
  */
+import { formatGoogleKeywordsForKanal } from './k2AgenturStrategieKeywordsRegistry'
 import type { MarketingPaidKanalId, MarketingProduktId } from './marketingKanalP1P2P3'
+import {
+  PRODUCT_K2_FAMILIE_WERBE_KERN_KOMPAKT,
+  PRODUCT_K2_FAMILIE_WERBESLOGAN,
+  PRODUCT_WERBESLOGAN,
+  PRODUCT_WERBESLOGAN_2,
+} from './tenantConfig'
 import { getSchaltPaket, type SchaltPaket } from './k2AgenturLaunchCheckliste'
 
 export type AnzeigenPaket = {
@@ -39,32 +43,45 @@ const LIMITS: Record<MarketingPaidKanalId, { headline: number; description: numb
   },
 }
 
-/**
- * Kurze Anzeigentexte pro Produkt × Kanal – extra formuliert, nicht aus mök2 übernommen.
- */
+/** Verbindliche Werbelinien → Headlines/Beschreibungen (pro Kanal gekürzt). */
+function p1CopyForKanal(kanal: MarketingPaidKanalId): AnzeigenCopySet {
+  const lim = LIMITS[kanal]
+  return {
+    headlines: [
+      clip('K2 Galerie – Demo', lim.headline),
+      clip('Ideen, die gesehen werden', lim.headline),
+      clip('Mehr als ein Insta-Post', lim.headline),
+    ],
+    descriptions: [
+      clip(PRODUCT_WERBESLOGAN_2, lim.description),
+      clip(
+        `${PRODUCT_WERBESLOGAN} Galerie, Shop, Tour – kostenlose Demo, ohne Anmeldung.`,
+        lim.description,
+      ),
+    ],
+  }
+}
+
+function p3CopyForKanal(kanal: MarketingPaidKanalId): AnzeigenCopySet {
+  const lim = LIMITS[kanal]
+  return {
+    headlines: [
+      clip(PRODUCT_K2_FAMILIE_WERBESLOGAN, lim.headline),
+      clip('Stammbaum & Erinnerungen', lim.headline),
+      clip('K2 Familie – Demo', lim.headline),
+    ],
+    descriptions: [
+      clip(PRODUCT_K2_FAMILIE_WERBE_KERN_KOMPAKT, lim.description),
+      clip('Geschichten und Fotos nur für eure Familie. Demo ohne Anmeldung.', lim.description),
+    ],
+  }
+}
+
 const ANZEIGEN_COPY: Record<MarketingProduktId, Record<MarketingPaidKanalId, AnzeigenCopySet>> = {
   p1: {
-    google: {
-      headlines: ['Online-Galerie starten', 'Kunst sichtbar verkaufen', 'Demo: K2 Galerie'],
-      descriptions: [
-        'Galerie, Shop und Tour in einer Demo. Kostenlos ansehen – ohne Anmeldung.',
-        'Eigener Webauftritt statt nur Social Media. Demo jetzt öffnen.',
-      ],
-    },
-    meta: {
-      headlines: ['Deine Galerie – ein Ort', 'Werke zeigen & verkaufen', 'Mehr als ein Insta-Post'],
-      descriptions: [
-        'Professionell online: Werke, Shop, virtuelle Tour. Demo in einer Minute – kostenlos.',
-        'Für Künstler:innen mit Ideen, die gesehen werden wollen. Jetzt Demo entdecken.',
-      ],
-    },
-    linkedin: {
-      headlines: ['Galerie-Software für Künstler:innen', 'Eigene Plattform statt nur Social', 'Demo: digitale Galerie'],
-      descriptions: [
-        'Werke präsentieren, verkaufen, Events – alles an einem Ort. Kostenlose Demo ansehen.',
-        'Für Galerien und Künstler:innen: professioneller Auftritt ohne Technik-Stress.',
-      ],
-    },
+    google: p1CopyForKanal('google'),
+    meta: p1CopyForKanal('meta'),
+    linkedin: p1CopyForKanal('linkedin'),
   },
   p2: {
     google: {
@@ -90,27 +107,9 @@ const ANZEIGEN_COPY: Record<MarketingProduktId, Record<MarketingPaidKanalId, Anz
     },
   },
   p3: {
-    google: {
-      headlines: ['Privater Familienraum', 'Stammbaum digital', 'K2 Familie – Demo'],
-      descriptions: [
-        'Geschichten, Fotos, Stammbaum – nur für eure Familie. Demo ohne Anmeldung.',
-        'Familiendaten bleiben bei der Familie. Jetzt Demo ansehen.',
-      ],
-    },
-    meta: {
-      headlines: ['Euer Familienraum online', 'Stammbaum & Erinnerungen', 'Nur für die Familie'],
-      descriptions: [
-        'Geschichten und Fotos sicher teilen – ohne öffentliches Netzwerk. Demo kostenlos.',
-        'Für Familien, die Erinnerungen bewahren wollen. Ein Klick zur Demo.',
-      ],
-    },
-    linkedin: {
-      headlines: ['Digitaler Raum für Familien', 'Stammbaum & Familiengeschichte', 'K2 Familie – privat'],
-      descriptions: [
-        'Familienchronik und Fotos nur für Angehörige. Demo für interessierte Familien.',
-        'Daten gehören der Familie – kein Social-Media-Profil. Demo ansehen.',
-      ],
-    },
+    google: p3CopyForKanal('google'),
+    meta: p3CopyForKanal('meta'),
+    linkedin: p3CopyForKanal('linkedin'),
   },
 }
 
@@ -156,30 +155,39 @@ export function getAnzeigenPaket(
   }
 }
 
-export function formatAnzeigenPaketText(p: AnzeigenPaket): string {
+/** Fertige Anzeige – alles zum Einfügen ins Ads-Konto (ein Kopierblock). */
+export function formatFertigeAnzeigeText(p: AnzeigenPaket): string {
   const s = p.schalt
   const lines = [
-    '── K2 Agentur · Anzeigen-Paket (kurz – für Ads-Felder) ──',
-    'Hinweis: Nicht der mök2-Strategietext. mök2 nur zum Lesen – hier nur Headlines & Beschreibungen.',
-    `Produkt: ${s.produktLabel} · Kanal: ${s.kanalLabel}`,
-    `Ziel-URL (Final URL): ${s.landingUrl}`,
+    `FERTIGE ANZEIGE · ${s.produktLabel} · ${s.kanalLabel}`,
     '',
-    `Zeichenlimits: ${p.limits.note}`,
+    `Kampagnenname: ${s.campaignKey}`,
+    `Finale URL: ${s.landingUrl}`,
     '',
-    '── Headlines (A/B/C) – in Anzeigenkonto einfügen ──',
-    `A: ${p.headlines[0] ?? ''}`,
-    `B: ${p.headlines[1] ?? ''}`,
-    `C: ${p.headlines[2] ?? ''}`,
+    'HEADLINE 1:',
+    p.headlines[0] ?? '',
+    'HEADLINE 2:',
+    p.headlines[1] ?? '',
+    'HEADLINE 3:',
+    p.headlines[2] ?? '',
     '',
-    '── Beschreibungen (A/B) ──',
-    `A: ${p.descriptions[0] ?? ''}`,
-    `B: ${p.descriptions[1] ?? ''}`,
+    'BESCHREIBUNG 1:',
+    p.descriptions[0] ?? '',
+    'BESCHREIBUNG 2:',
+    p.descriptions[1] ?? '',
     '',
-    `CTA-Button (Vorschlag): ${p.cta}`,
+    `BUTTON / CTA: ${p.cta}`,
     '',
-    `Keywords/Zielgruppe (Vorschlag): ${s.zielgruppeHint}`,
+    `Zielgruppe / Keywords: ${s.zielgruppeHint}`,
     '',
-    '── Ende Anzeigen-Paket ──',
+    `(${p.limits.note})`,
   ]
+  if (s.kanal === 'google') {
+    const kw = formatGoogleKeywordsForKanal(s.produkt, s.kanal)
+    if (kw) lines.push('', kw)
+  }
   return lines.join('\n')
 }
+
+/** @deprecated Alias – nutze formatFertigeAnzeigeText */
+export const formatAnzeigenPaketText = formatFertigeAnzeigeText
