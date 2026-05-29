@@ -7,6 +7,8 @@ import { K2_AGENTUR_MASTER_STRATEGIE_P1_URL } from './k2AgenturMasterStrategieP1
 import { K2_AGENTUR_MASTER_STRATEGIE_P2_URL } from './k2AgenturMasterStrategieP2'
 import { K2_AGENTUR_MASTER_STRATEGIE_P3_URL } from './k2AgenturMasterStrategieP3'
 import { K2_AGENTUR_MASTER_STRATEGIE_MEIN_WEG_URL } from './k2AgenturMasterStrategieMeinWeg'
+import { buildMarketingKanalUrl } from './marketingKanalP1P2P3'
+import { AGB_ROUTE, PROJECT_ROUTES } from './navigation'
 
 export type AgenturFuenfPunkteAmpel = 'gruen' | 'gelb'
 
@@ -128,7 +130,19 @@ export type AgenturAktionsSchritt = {
   punktNr?: 1 | 2 | 3 | 4 | 5
   /** Druck/PDF im Schreibtisch */
   druckUrl?: string
+  /** Test-Link (relativ, gleiche Origin wie APf) */
+  testPath?: string
 }
+
+/** Themen aus Partner-Rückmeldung (Conversion-ready) – ohne externe Agentur umsetzbar */
+export type PartnerRueckmeldungKategorie = 'strecke' | 'angebot' | 'vertrauen' | 'positionierung' | 'messung'
+
+export type PartnerRueckmeldungSchritt = AgenturAktionsSchritt & {
+  kategorie: PartnerRueckmeldungKategorie
+  kategorieLabel: string
+}
+
+const P1_GOOGLE_LANDING = buildMarketingKanalUrl('p1', 'google', { absolute: false })
 
 /** Feinschliff bei uns – vor / parallel zur Agentur-Validierung */
 export const K2_AGENTUR_FEINSCHLIFF_SCHRITTE: AgenturAktionsSchritt[] = [
@@ -183,6 +197,91 @@ export const K2_AGENTUR_FEINSCHLIFF_SCHRITTE: AgenturAktionsSchritt[] = [
     label: 'Sales-Playbook 1 Seite',
     hint: 'Wer reagiert bei roter Ampel, Wochenbudget-Obergrenze, wann pausieren.',
     punktNr: 5,
+  },
+]
+
+/**
+ * Verbesserungen aus Agentur-Rückmeldung („noch nicht conversion-ready“) –
+ * wir fahren mit K2 Agentur weiter und arbeiten das selbst ab (Plan B).
+ */
+export const K2_AGENTUR_PARTNER_RUECKMELDUNG_SCHRITTE: PartnerRueckmeldungSchritt[] = [
+  {
+    id: 'rueck-strecke-e2e',
+    kategorie: 'strecke',
+    kategorieLabel: 'Conversion-Strecke',
+    label: 'Ganze Strecke einmal durchspielen',
+    hint: 'Klick wie ein Kunde: Demo ansehen → Lizenz wählen → Checkout → Erfolgsseite. Mac und Handy.',
+    punktNr: 3,
+    testPath: P1_GOOGLE_LANDING,
+  },
+  {
+    id: 'rueck-angebot-preise',
+    kategorie: 'angebot',
+    kategorieLabel: 'Angebotsklarheit',
+    label: 'Preise & Stufen vor dem Kauf sichtbar',
+    hint: 'Auf der Lizenz-Seite: Was kostet was? Demo ist Muster – Lizenz ist eigene Galerie.',
+    punktNr: 5,
+    testPath: PROJECT_ROUTES['k2-galerie'].lizenzKaufen,
+  },
+  {
+    id: 'rueck-demo-vs-lizenz',
+    kategorie: 'angebot',
+    kategorieLabel: 'Angebotsklarheit',
+    label: 'Demo vs. Lizenz in einem Satz auf der Landing',
+    hint: 'Besucher versteht sofort: hier ausprobieren – dort kaufen. Kein Rätselraten.',
+    punktNr: 3,
+    testPath: P1_GOOGLE_LANDING,
+  },
+  {
+    id: 'rueck-vertrauen-footer',
+    kategorie: 'vertrauen',
+    kategorieLabel: 'Vertrauen',
+    label: 'Impressum, AGB, kgm solution erreichbar',
+    hint: 'Von der Demo-Galerie aus: seriöser Kontakt, kein „leerer“ Fuß.',
+    punktNr: 3,
+    testPath: AGB_ROUTE,
+  },
+  {
+    id: 'rueck-nutzen-oben',
+    kategorie: 'positionierung',
+    kategorieLabel: 'Positionierung',
+    label: 'Drei Nutzen-Sätze im ersten Bildschirm',
+    hint: 'Nutzen für Künstler:innen (sichtbar, verkaufen, einfach) – nicht Technik-Features.',
+    punktNr: 2,
+    testPath: P1_GOOGLE_LANDING,
+  },
+  {
+    id: 'rueck-anzeige-landing',
+    kategorie: 'positionierung',
+    kategorieLabel: 'Positionierung',
+    label: 'Anzeige und Landing passen zusammen',
+    hint: 'Headlines aus „Fertige Anzeige“ = gleiche Botschaft wie erster Eindruck auf der Galerie.',
+    punktNr: 3,
+  },
+  {
+    id: 'rueck-mobile-cta',
+    kategorie: 'strecke',
+    kategorieLabel: 'Conversion-Strecke',
+    label: 'Handy: Lizenz-Button & Checkout lesbar',
+    hint: 'Ohne langes Suchen: CTA sichtbar, Formular und Bezahlung ohne Zoom-Fummeln.',
+    punktNr: 3,
+    testPath: P1_GOOGLE_LANDING,
+  },
+  {
+    id: 'rueck-pilot-7tage',
+    kategorie: 'messung',
+    kategorieLabel: 'Messung (Pilot)',
+    label: 'Nach Google-Freigabe: 7 Tage auswerten',
+    hint: 'Kosten eintragen, Lizenzen zählen, Ampel in Steuerzentrale – Suchbegriffe/CTR notieren.',
+    punktNr: 2,
+  },
+  {
+    id: 'rueck-creative-b',
+    kategorie: 'messung',
+    kategorieLabel: 'Messung (Pilot)',
+    label: 'Zweite Anzeigen-Variante (optional)',
+    hint: 'Headline B in Google – nur wenn Strecke und Angebot oben grün sind.',
+    punktNr: 3,
   },
 ]
 
@@ -250,6 +349,9 @@ export const K2_AGENTUR_VERHANDLUNG_KERN = {
 
 export const K2_AGENTUR_PARTNER_DRUCK_URL =
   '/texte-schreibtisch/k2-agentur-agentur-partner-vorbereitung.html'
+
+export const K2_AGENTUR_PARTNER_RUECKMELDUNG_DRUCK_URL =
+  '/texte-schreibtisch/agentur-rueckmeldung-verbesserungen-p1.html'
 
 export { K2_AGENTUR_MASTER_STRATEGIE_P1_URL } from './k2AgenturMasterStrategieP1'
 

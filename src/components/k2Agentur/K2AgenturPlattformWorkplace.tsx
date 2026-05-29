@@ -36,6 +36,7 @@ import {
   patchPartnerVorbereitung,
   togglePartnerAngebotPruefung,
   togglePartnerFeinschliff,
+  togglePartnerRueckmeldung,
 } from '../../utils/k2AgenturPlattformStorage'
 
 const R = PROJECT_ROUTES['k2-galerie']
@@ -320,6 +321,9 @@ export default function K2AgenturPlattformWorkplace() {
               state={state}
               onToggleFeinschliff={(stepId, checked) => {
                 persist(togglePartnerFeinschliff(state, stepId, checked))
+              }}
+              onToggleRueckmeldung={(stepId, checked) => {
+                persist(togglePartnerRueckmeldung(state, stepId, checked))
               }}
               onToggleAngebot={(stepId, checked) => {
                 persist(togglePartnerAngebotPruefung(state, stepId, checked))

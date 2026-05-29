@@ -4,7 +4,22 @@
 
 **In der App (Option B):** K2 Agentur → Tab **„Agentur-Partner“**  
 **Druck/PDF:** `public/texte-schreibtisch/k2-agentur-agentur-partner-vorbereitung.html`  
+**Verbesserungen aus Rückmeldung (P1):** K2 Agentur → Partner-Tab · Druck `public/texte-schreibtisch/agentur-rueckmeldung-verbesserungen-p1.html` · Quelle `K2_AGENTUR_PARTNER_RUECKMELDUNG_SCHRITTE` in `k2AgenturAgenturVorbereitung.ts`  
 **Master-Strategie P1 (1 Seite):** `public/texte-schreibtisch/k2-agentur-master-strategie-p1.html` · Quelle `src/config/k2AgenturMasterStrategieP1.ts`
+
+---
+
+## Agentur lehnt ab – wir verbessern selbst (Plan B)
+
+**Mai 2026:** Externe Agentur sieht die Seite noch nicht als „conversion-ready“ für ihr Erfolgsmodell. **Georg fährt mit eigener K2 Agentur weiter** – die Rückmeldung ist **kein Stop**, sondern eine **Checkliste**:
+
+1. **Strecke** – Klickpfad Demo → Lizenz → Bezahlung → Erfolg (Mac + Handy)  
+2. **Angebotsklarheit** – Preise sichtbar, Demo vs. Lizenz verständlich  
+3. **Vertrauen** – AGB, Impressum, kgm solution erreichbar  
+4. **Positionierung** – Nutzen oben, Anzeige = Landing  
+5. **Messung** – erst nach Google-Freigabe: 7-Tage-Pilot, dann ggf. Creative B  
+
+**Reihenfolge:** Punkte 1–4 vor mehr Werbebudget. Abhaken in der APf unter **Agentur-Partner**.
 
 ---
 

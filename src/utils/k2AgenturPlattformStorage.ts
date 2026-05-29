@@ -15,6 +15,7 @@ import {
 import {
   K2_AGENTUR_ANGEBOT_PRUEFUNG,
   K2_AGENTUR_FEINSCHLIFF_SCHRITTE,
+  K2_AGENTUR_PARTNER_RUECKMELDUNG_SCHRITTE,
 } from '../config/k2AgenturAgenturVorbereitung'
 import {
   listMarketingKanalUrls,
@@ -42,6 +43,8 @@ export type K2AgenturKanalRow = {
 export type K2AgenturPartnerVorbereitungState = {
   antwortMailGesendet: boolean
   feinschliffErledigt: Record<string, boolean>
+  /** Verbesserungen aus Partner-Rückmeldung (eigene K2 Agentur, Plan B) */
+  rueckmeldungErledigt: Record<string, boolean>
   angebotPruefungErledigt: Record<string, boolean>
   angebotNotizen: string
 }
@@ -84,6 +87,9 @@ export function createDefaultPartnerVorbereitung(): K2AgenturPartnerVorbereitung
   return {
     antwortMailGesendet: true,
     feinschliffErledigt: defaultPartnerSchritte(K2_AGENTUR_FEINSCHLIFF_SCHRITTE.map((s) => s.id)),
+    rueckmeldungErledigt: defaultPartnerSchritte(
+      K2_AGENTUR_PARTNER_RUECKMELDUNG_SCHRITTE.map((s) => s.id),
+    ),
     angebotPruefungErledigt: defaultPartnerSchritte(K2_AGENTUR_ANGEBOT_PRUEFUNG.map((s) => s.id)),
     angebotNotizen: '',
   }
@@ -175,6 +181,10 @@ function mergeWithDefaults(parsed: Partial<K2AgenturPlattformState> & { version?
     feinschliffErledigt: mergeSchritte(
       partnerBase.feinschliffErledigt,
       partnerRaw && typeof partnerRaw === 'object' ? partnerRaw.feinschliffErledigt : undefined,
+    ),
+    rueckmeldungErledigt: mergeSchritte(
+      partnerBase.rueckmeldungErledigt,
+      partnerRaw && typeof partnerRaw === 'object' ? partnerRaw.rueckmeldungErledigt : undefined,
     ),
     angebotPruefungErledigt: mergeSchritte(
       partnerBase.angebotPruefungErledigt,
@@ -373,6 +383,13 @@ export function getPartnerAngebotProgress(state: K2AgenturPlattformState): { don
   return countChecked(state.partnerVorbereitung?.angebotPruefungErledigt ?? {})
 }
 
+export function getPartnerRueckmeldungProgress(state: K2AgenturPlattformState): {
+  done: number
+  total: number
+} {
+  return countChecked(state.partnerVorbereitung?.rueckmeldungErledigt ?? {})
+}
+
 export function patchPartnerVorbereitung(
   state: K2AgenturPlattformState,
   patch: Partial<K2AgenturPartnerVorbereitungState>,
@@ -386,6 +403,9 @@ export function patchPartnerVorbereitung(
       feinschliffErledigt: patch.feinschliffErledigt
         ? { ...base.feinschliffErledigt, ...patch.feinschliffErledigt }
         : base.feinschliffErledigt,
+      rueckmeldungErledigt: patch.rueckmeldungErledigt
+        ? { ...base.rueckmeldungErledigt, ...patch.rueckmeldungErledigt }
+        : base.rueckmeldungErledigt,
       angebotPruefungErledigt: patch.angebotPruefungErledigt
         ? { ...base.angebotPruefungErledigt, ...patch.angebotPruefungErledigt }
         : base.angebotPruefungErledigt,
@@ -412,6 +432,17 @@ export function togglePartnerAngebotPruefung(
   const pv = state.partnerVorbereitung ?? createDefaultPartnerVorbereitung()
   return patchPartnerVorbereitung(state, {
     angebotPruefungErledigt: { ...pv.angebotPruefungErledigt, [stepId]: checked },
+  })
+}
+
+export function togglePartnerRueckmeldung(
+  state: K2AgenturPlattformState,
+  stepId: string,
+  checked: boolean,
+): K2AgenturPlattformState {
+  const pv = state.partnerVorbereitung ?? createDefaultPartnerVorbereitung()
+  return patchPartnerVorbereitung(state, {
+    rueckmeldungErledigt: { ...pv.rueckmeldungErledigt, [stepId]: checked },
   })
 }
 

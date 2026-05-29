@@ -10,6 +10,8 @@ import {
   K2_AGENTUR_MASTER_STRATEGIE_P1_URL,
   K2_AGENTUR_PARTNER_DRUCK_URL,
   K2_AGENTUR_PARTNER_MAIL_GESENDET_LABEL,
+  K2_AGENTUR_PARTNER_RUECKMELDUNG_DRUCK_URL,
+  K2_AGENTUR_PARTNER_RUECKMELDUNG_SCHRITTE,
   K2_AGENTUR_VERHANDLUNG_KERN,
 } from '../../config/k2AgenturAgenturVorbereitung'
 import {
@@ -21,11 +23,13 @@ import type { K2AgenturPlattformState } from '../../utils/k2AgenturPlattformStor
 import {
   getPartnerAngebotProgress,
   getPartnerFeinschliffProgress,
+  getPartnerRueckmeldungProgress,
 } from '../../utils/k2AgenturPlattformStorage'
 
 type Props = {
   state: K2AgenturPlattformState
   onToggleFeinschliff: (stepId: string, checked: boolean) => void
+  onToggleRueckmeldung: (stepId: string, checked: boolean) => void
   onToggleAngebot: (stepId: string, checked: boolean) => void
   onAngebotNotizen: (text: string) => void
 }
@@ -39,11 +43,13 @@ function ampelStyle(ampel: 'gruen' | 'gelb'): CSSProperties {
 export default function K2AgenturAgenturPartnerPanel({
   state,
   onToggleFeinschliff,
+  onToggleRueckmeldung,
   onToggleAngebot,
   onAngebotNotizen,
 }: Props) {
   const pv = state.partnerVorbereitung
   const feinProg = getPartnerFeinschliffProgress(state)
+  const rueckProg = getPartnerRueckmeldungProgress(state)
   const angProg = getPartnerAngebotProgress(state)
 
   return (
@@ -60,8 +66,9 @@ export default function K2AgenturAgenturPartnerPanel({
           🤝 Agentur-Partner – Vorbereitung
         </h2>
         <p style={{ margin: '0 0 0.65rem', fontSize: '0.9rem', color: '#5c5650', lineHeight: 1.5 }}>
-          Entlang der <strong>5 Punkte</strong> präzise handeln: Bestand, Feinschliff bei uns, Angebot prüfen,
-          Verhandlung. {K2_AGENTUR_PARTNER_MAIL_GESENDET_LABEL}
+          Entlang der <strong>5 Punkte</strong> präzise handeln: Bestand, Feinschliff bei uns,{' '}
+          <strong>Verbesserungen aus Partner-Rückmeldung</strong> (eigene K2 Agentur), Angebot prüfen.{' '}
+          {K2_AGENTUR_PARTNER_MAIL_GESENDET_LABEL}
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
           <a href={K2_AGENTUR_MASTER_STRATEGIE_P1_URL} target="_blank" rel="noopener noreferrer" style={linkBtn}>
@@ -78,6 +85,14 @@ export default function K2AgenturAgenturPartnerPanel({
           </a>
           <a href={K2_AGENTUR_PARTNER_DRUCK_URL} target="_blank" rel="noopener noreferrer" style={linkBtn}>
             📄 5-Punkte-Vorbereitung (Druck)
+          </a>
+          <a
+            href={K2_AGENTUR_PARTNER_RUECKMELDUNG_DRUCK_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={linkBtn}
+          >
+            📄 Verbesserungen P1 (Druck)
           </a>
         </div>
       </section>
@@ -155,6 +170,62 @@ export default function K2AgenturAgenturPartnerPanel({
                         {' '}
                         <a href={step.druckUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#0f766e' }}>
                           → Druck/PDF
+                        </a>
+                      </>
+                    ) : null}
+                  </span>
+                </span>
+              </label>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section
+        style={{
+          ...card,
+          border: '2px solid #0d9488',
+          background: 'linear-gradient(145deg, #f0fdfa 0%, #ecfdf5 100%)',
+        }}
+      >
+        <h3 style={h3}>
+          Verbesserungen aus Rückmeldung ({rueckProg.done}/{rueckProg.total})
+        </h3>
+        <p style={{ ...p, fontSize: '0.82rem' }}>
+          Agentur lehnt Kooperation ab – wir nutzen die Kritik (Conversion, Vertrauen, Angebot) selbst in K2
+          Agentur. Erst Strecke &amp; Klarheit, dann Budget in Google.
+        </p>
+        <ul style={checkList}>
+          {K2_AGENTUR_PARTNER_RUECKMELDUNG_SCHRITTE.map((step) => (
+            <li key={step.id} style={checkItem}>
+              <label style={checkLabel}>
+                <input
+                  type="checkbox"
+                  checked={pv?.rueckmeldungErledigt[step.id] === true}
+                  onChange={(e) => onToggleRueckmeldung(step.id, e.target.checked)}
+                />
+                <span>
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      fontSize: '0.68rem',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.04em',
+                      color: '#0f766e',
+                      marginBottom: '0.15rem',
+                    }}
+                  >
+                    {step.kategorieLabel}
+                  </span>
+                  <strong style={{ display: 'block' }}>{step.label}</strong>
+                  <span style={{ display: 'block', fontSize: '0.78rem', color: '#5c5650', fontWeight: 400 }}>
+                    {step.hint}
+                    {step.testPath ? (
+                      <>
+                        {' '}
+                        <a href={step.testPath} target="_blank" rel="noopener noreferrer" style={{ color: '#0f766e' }}>
+                          → testen
                         </a>
                       </>
                     ) : null}
