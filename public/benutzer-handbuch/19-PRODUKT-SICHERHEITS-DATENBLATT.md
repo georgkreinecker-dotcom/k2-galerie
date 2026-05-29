@@ -1,6 +1,6 @@
 # Produkt-Sicherheitsdatenblatt – Informationstechnik
 
-**Hinweis:** Dieses Blatt beschreibt **Informationssicherheit, Datenschutz und Betrieb** der Software **K2 Galerie** und der verwandten Produktlinien **öffentliche Demo ök2**, **Vereinsplattform VK2** und **K2 Familie**. Es ist **kein** chemisches Sicherheitsdatenblatt nach REACH, CLP oder GHS.
+**Hinweis:** Dieses Blatt beschreibt **Informationssicherheit, Datenschutz und Betrieb** der Software **K2 Galerie** und der verwandten Produktlinien **öffentliche Demo ök2** und **Vereinsplattform VK2**. **K2 Familie** ist ein **eigenes Produkt** mit eigenem Handbuch und eigener Doku. Es ist **kein** chemisches Sicherheitsdatenblatt nach REACH, CLP oder GHS.
 
 **Stand:** Mai 2026 · **Dokumenttyp:** interne und nutzerlesbare Kurzfassung · **Vertiefung:** ausführliche technische Details liegen in der Projekt-Doku unter `docs/` im Entwickler-Repository.
 
@@ -11,7 +11,7 @@
 | Feld | Inhalt |
 |------|--------|
 | **Bezeichnung** | K2 Galerie – Progressive Web App und zugehörige Mandanten-Oberflächen |
-| **Produktlinien** | Galerie mit Admin für Kunsthandel und Selbstvermarktung; Demo-Mandant ök2; Vereinsplattform VK2; Familien-Stammbaum K2 Familie |
+| **Produktlinien** | Galerie mit Admin für Kunsthandel und Selbstvermarktung; Demo-Mandant ök2; Vereinsplattform VK2 |
 | **Auslieferung** | Über Hosting-Anbieter **Vercel** als HTTPS-Webanwendung; Datenhaltung im Browser **localStorage** auf dem Gerät des Nutzers sowie – je nach Feature – Anbindungen an **Supabase**, Zahlungsdienst **Stripe** und weitere in der Konfiguration genannte Dienste |
 
 ## 2. Hersteller und verantwortliche Stelle
@@ -28,7 +28,7 @@ Anfragen zu diesem Blatt und zur dokumentierten Schutzstellung erfolgen über di
 
 ## 4. Datenhaltung und Kontext-Trennung
 
-Die Anwendung arbeitet mit **klar getrennten Speicher-Schlüsseln** für K2, ök2, VK2 und K2 Familie. Wesentliche Regeln:
+Die Anwendung arbeitet mit **klar getrennten Speicher-Schlüsseln** für K2, ök2 und VK2. Wesentliche Regeln:
 
 - **ök2** enthält ausschließlich **Muster- und Demo-Inhalte**, keine echten K2-Stamm- oder Werkdaten.
 - **Besucher** dürfen auf öffentlichen Seiten **keine gemeinsamen Stammdaten oder Werke verändern**; Ausnahme nach Konzept: **Shop-Bestellung** als Kundeneingabe.

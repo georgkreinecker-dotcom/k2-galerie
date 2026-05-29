@@ -67,7 +67,7 @@ export default function ProspektK2GaleriePage() {
   }, [qrVersionTs])
 
   const returnTo = (location.state as { returnTo?: string } | null)?.returnTo
-  const leadText = 'Für die Kunst gedacht, für den Markt gemacht. Ateliers, Galerien, Kunstvereine. Windows, Android, macOS, iOS · Browser & PWA. Lizenzen: Basic, Pro, Pro+, Pro++, VK2.'
+  const leadText = 'Für die Kunst gedacht, für den Markt gemacht. Ateliers, Galerien, Kunstvereine. Windows, Android, macOS, iOS · Browser & PWA. Lizenzen: Basic, Pro, VK2 – 4 Wochen gratis testen.'
 
   return (
     <div className="prospekt-wrap" style={{ minHeight: '100vh', background: '#faf8f5', color: '#1c1a18' }}>
@@ -123,7 +123,7 @@ export default function ProspektK2GaleriePage() {
 
           <h2 style={{ color: TEAL_LIGHT, fontSize: '1rem', fontWeight: 600, margin: '0 0 0.5rem' }}>Kernfunktionen</h2>
           <p style={{ fontSize: '0.85rem', lineHeight: 1.45, margin: '0 0 0.5rem' }}>
-            <strong>Galerie & Werke:</strong> Fotos, Titel, Preis, Kategorien; Vorschau; Veröffentlichen; gleicher Stand auf Mac, Tablet und Handy. <strong>Admin:</strong> Werke, Design (Farben, Texte, Bilder), Einstellungen, Schritt-für-Schritt-Assistent, Statistik/Werkkatalog, Event- und Medienplanung. <strong>Kassa & Kassabuch:</strong> Verkauf erfassen (Shop oder „Als Kasse öffnen“); ab Pro: Kassabuch (Eingänge); ab Pro+: Ausgänge, Bar, Beleg (QR/Foto), PDF-Export. <strong>Event- und Medienplanung:</strong> Events anlegen, Einladungen, Mediengenerator, Verteiler und Social Media – aus Stammdaten und Event-Daten. <strong>Werbeunterlagen:</strong> Newsletter, Plakat, Flyer aus einer Quelle im Galerie-Design.
+            <strong>Galerie & Werke:</strong> Fotos, Titel, Preis, Kategorien; Vorschau; Veröffentlichen; gleicher Stand auf Mac, Tablet und Handy. <strong>Admin:</strong> Werke, Design (Farben, Texte, Bilder), Einstellungen, Schritt-für-Schritt-Assistent, Statistik/Werkkatalog, Event- und Medienplanung. <strong>Kassa & Kassabuch:</strong> Verkauf erfassen (Shop oder „Als Kasse öffnen“); ab Pro: volles Kassabuch, Rechnung (§ 11 UStG), Buchhaltung (CSV, Belege-PDF). <strong>Event- und Medienplanung:</strong> Events anlegen, Einladungen, Mediengenerator, Verteiler und Social Media – aus Stammdaten und Event-Daten. <strong>Werbeunterlagen:</strong> Newsletter, Plakat, Flyer aus einer Quelle im Galerie-Design.
           </p>
 
           <h2 style={{ color: TEAL_LIGHT, fontSize: '1rem', fontWeight: 600, margin: '0 0 0.5rem' }}>Technik & Qualität</h2>
@@ -133,7 +133,7 @@ export default function ProspektK2GaleriePage() {
 
           <h2 style={{ color: TEAL_LIGHT, fontSize: '1rem', fontWeight: 600, margin: '0 0 0.5rem' }}>Lizenzen</h2>
           <p style={{ fontSize: '0.85rem', lineHeight: 1.45, margin: '0 0 0.5rem' }}>
-            <strong>Basic</strong> 15 €/Monat: Galerie, Werke, Design; keine Kassa. <strong>Pro</strong> 35 €/Monat: plus Kassa, Kassabuch (Eingänge). <strong>Pro+</strong> 45 €/Monat: plus volles Kassabuch und gesamter Marketingbereich. <strong>Pro++</strong> 55 €/Monat: Pro+ inkl. Rechnung (§ 11 UStG). <strong>VK2 (Kunstvereine):</strong> ab 10 registrierten Mitgliedern für den Verein kostenfrei; Lizenzmitglieder 50 % Lizenz. Abschluss über Stripe; ausdruckbare Lizenzbestätigung.
+            <strong>Basic</strong> 10 €/Monat: Galerie, Werke, Design; keine Kassa. <strong>Pro</strong> 25 €/Monat: alles in einer Stufe – Kassa, volles Kassabuch, Rechnung (§ 11 UStG), Marketing, Buchhaltung. <strong>VK2 (Kunstvereine):</strong> 25 €/Monat; ab 10 registrierten Mitgliedern für den Verein kostenfrei; Lizenzmitglieder 50 % Lizenz. <strong>4 Wochen gratis testen.</strong> Abschluss über Stripe; ausdruckbare Lizenzbestätigung.
           </p>
 
           <div className="prospekt-qr-block" style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: `1px solid ${TEAL_LIGHT}40`, display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-start' }}>

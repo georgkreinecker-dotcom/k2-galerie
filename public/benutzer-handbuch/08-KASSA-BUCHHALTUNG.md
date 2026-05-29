@@ -4,7 +4,7 @@
 
 Dieses Kapitel beschreibt **Kassa** und **Buchhaltung** vollständig: wo Sie die Kassa finden, wie Sie Verkäufe erfassen, Belege drucken, das Kassabuch führen – und wie Sie mit der **Buchhaltung** (Zeitraum, CSV, Belege-PDF) die Vorarbeit für Ihren Steuerberater erledigen.
 
-**Lizenzstufen:** Die Kassafunktion ist ab **Pro** verfügbar. **Basic** = keine Kassa. **Pro** = Kassa + Kassabuch (nur Eingänge). **Pro+** und **Pro++** = volles Kassabuch (Eingänge + Ausgänge). **Pro++** = zusätzlich **vollständige Rechnungspflege** (§ 11 UStG) und **vollständige Buchhaltung** (Belege als PDF pro Zeitraum).
+**Lizenzstufen:** **Basic** (10 €/Monat) = Galerie ohne Kassa. **Pro** (25 €/Monat) = alles in einer Stufe: Kassa, volles Kassabuch (Eingänge + Ausgänge), **Rechnung (§ 11 UStG)**, Marketing (Events, Flyer, Presse, Social) und **Buchhaltung** (CSV, Belege als PDF). **4 Wochen gratis testen** vor dem Kauf.
 
 ---
 
@@ -13,7 +13,7 @@ Dieses Kapitel beschreibt **Kassa** und **Buchhaltung** vollständig: wo Sie die
 **Im Admin** finden Sie eine Karte oder einen Link **„Kassa“**. Ein Klick öffnet den **Kassa-Einstieg**. Dort wählen Sie:
 
 - **Erhalten (Eingang)** – Verkauf erfassen und Beleg drucken. Sie landen in der **Kasse** (Shop mit Warenkorb und Zahlungsarten).
-- **Auszahlen (Kassabuch)** – nur sichtbar bei **Pro+** oder **Pro++**. Dort erfassen Sie Ausgaben (Bar privat, Kassa an Bank, Bar mit Beleg). Sie landen im **Kassabuch** bzw. auf der Seite „Neuer Kassausgang“.
+- **Auszahlen (Kassabuch)** – nur mit **Pro**. Dort erfassen Sie Ausgaben (Bar privat, Kassa an Bank, Bar mit Beleg). Sie landen im **Kassabuch** bzw. auf der Seite „Neuer Kassausgang“.
 
 **Wichtig:** Wenn Sie die **Galerie** als Besucherin oder Besucher ansehen und von dort einen Link zum **Shop** nutzen, sehen Sie die **Kundenansicht** („Meine Auswahl“, Reservierung) – **nicht** die Kasse. Die **Kasse** nutzen Sie immer **vom Admin aus** (Kassa-Einstieg). In der Kundenansicht erscheint bei Anmeldung ggf. **„Als Kasse öffnen“** – ein Klick schaltet in die Kassenansicht um.
 
@@ -62,7 +62,7 @@ Ein **Klick** schließt den Verkauf ab: Werke werden als verkauft erfasst, Stüc
 - **OK** = **Kassabon** (80 mm, für Etikettendrucker/Kassenbondrucker).  
 - **Abbrechen** = **Rechnung (A4)** (normaler Drucker oder als PDF).
 
-**Bei Rechnung als Zahlungsart** wird **direkt** die **Rechnung (A4)** zum Drucken angeboten (mit Rechnungsnummer bei Pro++).
+**Bei Rechnung als Zahlungsart** wird **direkt** die **Rechnung (A4)** zum Drucken angeboten (mit fortlaufender Rechnungsnummer bei **Pro**).
 
 **Inhalt:** Auf **Kassabon** und **Rechnung** stehen: Datum, Uhrzeit, verkaufte Werke (Nummer, Titel, Preis), Gesamtbetrag, Zahlungsart, Ihre Stammdaten (Name, Adresse, Kontakt). Die Rechnung (A4) enthält zusätzlich die Rechnungsnummer und eignet sich für Abrechnung und Buchführung.
 
@@ -70,15 +70,15 @@ Ein **Klick** schließt den Verkauf ab: Werke werden als verkauft erfasst, Stüc
 
 ---
 
-## Pro++: Vollständige Rechnungspflege (§ 11 UStG)
+## Pro: Rechnungspflege (§ 11 UStG)
 
-Mit **Pro++** erhalten Sie **vollständige Rechnungspflege** nach **§ 11 UStG**:
+Mit **Pro** erhalten Sie **vollständige Rechnungspflege** nach **§ 11 UStG**:
 
 - **Fortlaufende Rechnungsnummer** – lückenlos und in der richtigen Reihenfolge.
 - **Pflichtangaben** – alle gesetzlich vorgeschriebenen Angaben (Name/Firma, Adresse, USt-IdNr. falls vorhanden, Kundendaten, Leistungsbeschreibung, Beträge, Steueraufschlüsselung, Zahlungsbedingungen).
 - **USt-Aufschlüsselung** – Umsatzsteuer korrekt ausgewiesen (Netto, USt-Satz, USt-Betrag, Brutto).
 
-**Basic, Pro, Pro+:** Rechnungen (A4) drucken möglich; die **vollständige Rechnungspflege** (fortlaufende Nummer, alle Pflichtangaben, USt-Aufschlüsselung) ist **nur mit Pro++** enthalten.
+**Basic:** keine Kassa, keine Rechnungspflege nach § 11. **Pro:** Rechnungen (A4) inkl. fortlaufender Nummer, Pflichtangaben und USt-Aufschlüsselung.
 
 ---
 
@@ -93,9 +93,9 @@ Stornierung ist endgültig; für die Buchführung ggf. Beleg oder Notiz aufbewah
 
 ---
 
-## Kassabuch – Eingänge und Ausgänge (Pro+ / Pro++)
+## Kassabuch – Eingänge und Ausgänge (Pro)
 
-Mit **Pro** werden **nur Verkäufe** (Eingänge) im Kassabuch geführt. Mit **Pro+** oder **Pro++** können Sie das **volle Kassabuch** nutzen:
+Mit **Pro** nutzen Sie das **volle Kassabuch**:
 
 - **Eingänge:** Jeder Verkauf (Bar, Karte, Rechnung) wird automatisch als **Eingang** erfasst.
 - **Ausgänge:** **Kassausgänge** erfassen – z. B. **Bar privat**, **Kassa an Bank**, **Bank an Kassa**, **Bar mit Beleg**.
@@ -137,9 +137,9 @@ In der **öffentlichen Demo-Galerie** zeigt die Seite **Buchhaltung** zusätzlic
 
 In **Ihrer eigenen Galerie** nutzen Sie dieselben **EK- und VK-Felder** an den Werken. Die **farbig hervorgehobenen Summen** der Demo sind ein **Muster**, wie Kleingewerbe den Überblick nutzen kann. **Aktualisieren** auf der Buchhaltungsseite lädt Verkäufe und Demo-Werke neu, nachdem Sie etwas geändert haben.
 
-### Pro++ = vollständige Buchhaltung
+### Pro = vollständige Buchhaltung
 
-Mit **Pro++** haben Sie zusätzlich zur **Rechnung (§ 11 UStG)** die **vollständige Buchhaltungsfunktion**: Rechnungspflege inkl. fortlaufender Nummer und USt-Aufschlüsselung **und** in der Buchhaltung **Belege als PDF** pro Zeitraum. Sie können damit alle Unterlagen für den Steuerberater aus einer App bereitstellen.
+Mit **Pro** haben Sie **Rechnung (§ 11 UStG)** und die **vollständige Buchhaltungsfunktion**: Rechnungspflege inkl. fortlaufender Nummer und USt-Aufschlüsselung **und** in der Buchhaltung **Belege als PDF** pro Zeitraum. Sie können damit alle Unterlagen für den Steuerberater aus einer App bereitstellen.
 
 ### Aufbewahrung und Rechtliches
 
@@ -157,10 +157,10 @@ Mit **Pro++** haben Sie zusätzlich zur **Rechnung (§ 11 UStG)** die **vollstä
 
 ## Kurz zusammengefasst
 
-- **Kassa finden:** Admin → **Kassa** (Kassa-Einstieg). Dann **Erhalten** (Verkauf) oder **Auszahlen** (Kassabuch, nur Pro+).
+- **Kassa finden:** Admin → **Kassa** (Kassa-Einstieg). Dann **Erhalten** (Verkauf) oder **Auszahlen** (Kassabuch, nur Pro).
 - **Verkauf:** Werk per **QR scannen**, **Seriennummer eingeben** oder aus **Liste wählen** → zur Auswahl. Buttons **Bar**, **Karte**, **Rechnung** → Verkauf erfasst. Oder **Weitere Optionen** für Rabatt/Kundendaten.
 - **Belege:** Nach Bar/Karte: **„Kassabon oder Rechnung?“** – OK = Kassabon (80 mm), Abbrechen = Rechnung (A4). Bei Rechnung: direkt Rechnung (A4). **Bon erneut drucken** möglich.
 - **Storno:** In **Verkaufsliste – Storno** Verkauf **Stornieren** (Verkauf aufheben) oder nur **Bon erneut drucken**.
-- **Kassabuch:** Pro = nur Eingänge. Pro+ / Pro++ = volles Kassabuch (Eingänge + Ausgänge). Kassabuch drucken und CSV-Export.
-- **Buchhaltung:** Admin → Kassa → **Buchhaltung**. **Zeitraum** wählen (Jahr/Von–Bis) → **Kassabuch-CSV**, **Verkäufe-CSV**, **Belege als PDF**. Vorarbeit in der App; UStVA/EO beim Steuerberater. **7 Jahre** Aufbewahrung. **Pro++** = Rechnung (§ 11 UStG) + vollständige Buchhaltung (Belege-PDF pro Zeitraum).
+- **Kassabuch:** Mit **Pro** volles Kassabuch (Eingänge + Ausgänge). Kassabuch drucken und CSV-Export.
+- **Buchhaltung:** Admin → Kassa → **Buchhaltung**. **Zeitraum** wählen (Jahr/Von–Bis) → **Kassabuch-CSV**, **Verkäufe-CSV**, **Belege als PDF**. Vorarbeit in der App; UStVA/EO beim Steuerberater. **7 Jahre** Aufbewahrung. **Pro** = Rechnung (§ 11 UStG) + vollständige Buchhaltung (Belege-PDF pro Zeitraum).
 - **EK am Werk** optional für Einstand; leer = Eigenproduktion. In der **Demo:** Rohertrag-Übersicht und Lager-Vorschau als Alltags-Hilfe, keine Steuerberatung.

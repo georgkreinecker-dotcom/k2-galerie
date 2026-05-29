@@ -143,7 +143,7 @@ export function getKassabuchMitEingaengen(tenant: KassabuchTenant): KassabuchEin
   }
 }
 
-/** Lizenzstufe für Kassa/Kassabuch: Basic = keine Kassa, Pro = Kassa ohne volles Kassabuch, Pro+ / Pro++ = volles Kassabuch (Pro++ inkl. Rechnung). VK2 = immer Pro (eingeschränkte Vereins-Kassa). */
+/** Lizenzstufe für Kassa/Kassabuch: Basic = keine Kassa; Pro (inkl. Legacy Pro+/Pro++) = voller Umfang; VK2 = Vereins-Kassa. */
 export type KassabuchLizenzStufe = 'basic' | 'pro' | 'proplus' | 'propplus'
 
 const K2_LIZENZ_STUFE_KEY = 'k2-lizenz-stufe'
@@ -188,7 +188,7 @@ export function hasKassa(tenant: KassabuchTenant): boolean {
 export function hasKassabuchVoll(tenant: KassabuchTenant): boolean {
   if (tenant === 'vk2') return false
   const stufe = getKassabuchLizenzStufe(tenant)
-  return stufe === 'proplus' || stufe === 'propplus'
+  return stufe === 'pro' || stufe === 'proplus' || stufe === 'propplus'
 }
 
 /** Kassabuch führen Ja/Nein – Einstellung pro Kontext (default: true). VK2 = nur Einnahmen. */

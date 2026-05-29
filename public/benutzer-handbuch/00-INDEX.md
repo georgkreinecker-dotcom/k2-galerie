@@ -36,7 +36,7 @@ Admin-Bereich **Statistik/Werkkatalog**: Verkaufs- und Lagerstatistik, druckbare
 
 8. [Kassa und Buchhaltung](08-KASSA-BUCHHALTUNG.md)
 
-Vollständige Beschreibung: Kassa finden, Verkauf erfassen (QR, Seriennummer), Zahlungsarten, Kassenbon und Rechnung drucken, Storno, Kassabuch (Eingänge/Ausgänge), Buchhaltung (Zeitraum, Kassabuch-CSV, Verkäufe-CSV, Belege als PDF), **EK-Kalkulation** am Werk, Rohertrag und Lager-Vorschau in der **Demo**, Pro++ Rechnungspflege und vollständige Buchhaltung, 7 Jahre Aufbewahrung.
+Vollständige Beschreibung: Kassa finden, Verkauf erfassen (QR, Seriennummer), Zahlungsarten, Kassenbon und Rechnung drucken, Storno, Kassabuch (Eingänge/Ausgänge), Buchhaltung (Zeitraum, Kassabuch-CSV, Verkäufe-CSV, Belege als PDF), **EK-Kalkulation** am Werk, Rohertrag und Lager-Vorschau in der **Demo**, **Pro:** Rechnungspflege und vollständige Buchhaltung, 7 Jahre Aufbewahrung.
 
 9. [Shop und Internetbestellung](12-SHOP-INTERNET-BESTELLUNG.md)
 
@@ -46,37 +46,19 @@ Besucher: Warenkorb, Bestellung, **Wunsch-Zahlungsart** (keine automatische Abbu
 
 Stammdaten (Galerie/Verein, Kontakt, Adresse). YouTube, Instagram, Highlight-Video unter Stammdaten. Backup, Veröffentlichen, Drucker. **Admin-Zugang:** Link und QR in den Stammdaten je nach Galerie-Typ; **Passwort** getrennt erklärt. Vereine: Verein anlegen, Kategorien.
 
-11. [K2 Familie – Vertrauen, privater Raum](16-K2-FAMILIE-VERTRAUEN-PRIVATER-RAUM.md)
+11. [Testuser: Zugang und Konditionen](17-TESTUSER-ZUGANG.md)
 
-**Für alle:** Familienraum **privat**; **hinein** nur mit **persönlicher ID** auf der Karte – **Vertrauenssache**, einheitlich in App, Handbuch und Doku.
+**Persönlicher Testzugang** für **ök2** und **VK2**, Name der App, Paket mit Handbuch und Testprotokoll, **erster Einstieg am PC/Laptop**, Verweis auf Konditionen und Bewerbung.
 
-12. [K2 Familie – Rolle Inhaber:in](13-K2-FAMILIE-INHABER-ROLLE.md)
-
-Für **Inhaber:innen**: Verantwortung, nur-Inhaber-Bereiche, Arbeitsansicht, Sicherung, Zugang; **Rollen auf Karten** im nächsten Kapitel.
-
-13. [K2 Familie – Bearbeiter:innen und Leser:innen](14-K2-FAMILIE-BEARBEITER-UND-LESER.md)
-
-**Eine** Rechte-Tabelle und zwei Merksätze; persönlicher Code und Einladung; Kurzverweis Vereinsplattform; Checklisten.
-
-13a. [K2 Familie – Die drei Rollen im Überblick](18-K2-FAMILIE-ROLLEN-MODELL.md)
-
-**Eine** Inhaber:in, Bearbeiter:innen = Familie mit Schreibrechten, Leser:innen = v. a. Gäste über den Link; Verweise auf die Detailkapitel.
-
-14. [K2 Familie – Lizenz und Kündigung](15-K2-FAMILIE-LIZENZ.md)
-
-**Für alle Mitglieder:** Wer ist **Lizenznehmer:in** (Inhaber:in), **Kündigung** wie bei der Galerie – ohne Bindung, Daten vorher sichern.
-
-15. [Testuser: Zugang und Konditionen](17-TESTUSER-ZUGANG.md)
-
-**Persönlicher Testzugang**, Name der App, Paket mit Handbuch und Testprotokoll, **erster Einstieg am PC/Laptop**, Verweis auf Konditionen und Bewerbung.
-
-16. [Produkt-Sicherheitsdatenblatt IT](19-PRODUKT-SICHERHEITS-DATENBLATT.md)
+12. [Produkt-Sicherheitsdatenblatt IT](19-PRODUKT-SICHERHEITS-DATENBLATT.md)
 
 **Informationssicherheit** der Plattform in Kurzfassung: Mandantentrennung, Transport und Schutzheader, CSP, Backup, **ehrliche Grenzen** – **kein** chemisches Sicherheitsdatenblatt.
 
-17. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
+13. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
 
 **Gleiche URL auf PC und Handy**, Stand aktualisieren, Drucken, QR-Code, Passwort vergessen, Hilfe.
+
+**K2 Familie** (Familien-Stammbaum) hat ein **eigenes Handbuch** – nicht in diesem Benutzerhandbuch: Route `/k2-familie-handbuch` bzw. Projekt K2 Familie → Handbuch.
 
 ---
 

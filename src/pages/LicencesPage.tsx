@@ -4,9 +4,8 @@ import '../App.css'
 import { BASE_APP_URL, PLATFORM_ROUTES, PROJECT_ROUTES } from '../config/navigation'
 import { getSendPilotInviteApiUrl, getPilotInviteMailStatusUrl, isPilotInviteLocalDevHostname } from '../utils/pilotInviteClient'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
-import { LIZENZPREISE } from '../config/licencePricing'
+import { LIZENZPREISE, getPublicLicenceTierCards, LIZENZ_TESTPHASE_LABEL } from '../config/licencePricing'
 import TermWithExplanation from '../components/TermWithExplanation'
-import LizenzZeitplanPilotStripeInfo from '../components/LizenzZeitplanPilotStripeInfo'
 import { PilotInviteEmailPreview } from '../components/PilotInviteEmailPreview'
 import { downloadPilotInviteEml } from '../utils/pilotInviteEmlDownload'
 import { isResendTestingRecipientsOnlyError } from '../utils/resendPilotInviteHints'
@@ -64,13 +63,7 @@ export interface LicenceGrant {
   createdAt: string
 }
 
-const LICENCE_TYPES: { id: 'basic' | 'pro' | 'proplus' | 'propplus' | 'vk2'; name: string; price: string; priceEur: number | null; summary: string; icon: string; highlight?: boolean }[] = [
-  { id: 'basic',   name: LIZENZPREISE.basic.name,   price: LIZENZPREISE.basic.price,   priceEur: LIZENZPREISE.basic.priceEur,   icon: '🎨',  summary: 'Bis 30 Werke, 1 Galerie, Events, Etiketten, Standard-URL – ohne Kassa' },
-  { id: 'pro',     name: LIZENZPREISE.pro.name,    price: LIZENZPREISE.pro.price,     priceEur: LIZENZPREISE.pro.priceEur,     icon: '⭐',  summary: 'Alles aus Basic + unbegrenzte Werke, Custom Domain – ohne vollen Marketingbereich' },
-  { id: 'proplus', name: LIZENZPREISE.proplus.name, price: LIZENZPREISE.proplus.price, priceEur: LIZENZPREISE.proplus.priceEur, icon: '💎',  summary: 'Alles aus Pro + gesamter Marketingbereich (Events, Galeriepräsentation, Flyer, Presse, Social Media)' },
-  { id: 'propplus', name: LIZENZPREISE.propplus.name, price: LIZENZPREISE.propplus.price, priceEur: LIZENZPREISE.propplus.priceEur, icon: '📄',  summary: 'Alles aus Pro+ + Rechnung (§ 11 UStG): fortlaufende Nummerierung, Pflichtangaben, USt-Aufschlüsselung', highlight: true },
-  { id: 'vk2',     name: LIZENZPREISE.vk2.name,    price: LIZENZPREISE.vk2.price, priceEur: LIZENZPREISE.vk2.priceEur, icon: '🏛️', summary: 'Verein nutzt Pro; ab 10 Mitgliedern für den Verein kostenfrei; Vereinsmitglieder 50 % Rabatt' },
-]
+const LICENCE_TYPES = getPublicLicenceTierCards()
 
 function loadGrants(): LicenceGrant[] {
   try {
@@ -108,7 +101,7 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
   const [grants, setGrants] = useState<LicenceGrant[]>([])
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [licenseType, setLicenseType] = useState<LicenceGrant['licenseType']>('proplus')
+  const [licenseType, setLicenseType] = useState<LicenceGrant['licenseType']>('pro')
   const [empfehlerId, setEmpfehlerId] = useState('')
   const [message, setMessage] = useState<{ type: 'ok' | 'error'; text: string } | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -281,7 +274,7 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
     saveGrants(next)
     setName('')
     setEmail('')
-    setLicenseType('proplus')
+    setLicenseType('pro')
     setEmpfehlerId('')
     setMessage({ type: 'ok', text: hatEmpfehlung ? '✅ Lizenz erfasst. 10 % Empfehlungs-Rabatt wurde berücksichtigt.' : '✅ Lizenz erfasst.' })
   }
@@ -361,12 +354,10 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
         </nav>
 
         <h1 style={{ marginBottom: '0.5rem' }}>💼 Lizenzen</h1>
-        <LizenzZeitplanPilotStripeInfo variant="licences" />
         <p style={{ marginBottom: '0.75rem', fontSize: '0.9rem' }}>
           <Link to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} style={{ color: 'var(--k2-accent)', fontWeight: 600 }}>
             Lizenz online auswählen &amp; bezahlen
           </Link>
-          <span style={{ color: 'var(--k2-muted)' }}> – für Pilot:innen nach Vereinbarung; öffentlicher Standardstart siehe Kasten oben.</span>
           <br />
           <Link to="/lizenz-erfolg?muster=1" style={{ color: 'var(--k2-muted)', fontSize: '0.85rem' }}>
             Mustervorschau Erfolgsseite (ohne Zahlung)
@@ -477,16 +468,15 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
         }}>
           <h2 style={{ fontSize: '1rem', margin: '0 0 0.75rem', color: 'var(--k2-muted)' }}>Details im Überblick</h2>
           <div style={{ fontSize: '0.88rem', color: 'var(--k2-muted)', lineHeight: 1.7 }}>
-            <p style={{ margin: '0 0 0.5rem' }}><strong style={{ color: 'var(--k2-text)' }}>🎨 Basic</strong> – Bis 30 Werke, 1 Galerie, Events, Etiketten, Marketing (Basis), <TermWithExplanation term="Standard-URL" /> – <strong>ohne Kassa.</strong> <strong>15 €/Monat.</strong></p>
-            <p style={{ margin: '0 0 0.5rem' }}><strong style={{ color: 'var(--k2-text)' }}>⭐ Pro</strong> – Alles aus Basic + unbegrenzte Werke, <TermWithExplanation term="Custom Domain" /> – ohne vollen Marketingbereich. <strong>35 €/Monat.</strong></p>
-            <p style={{ margin: '0 0 0.5rem' }}><strong style={{ color: 'var(--k2-text)' }}>💎 Pro+</strong> – Alles aus Pro + <strong style={{ color: 'var(--k2-text)' }}>gesamter Marketingbereich</strong>: Events, Galeriepräsentation, Flyer, Presse, Social Media, Plakat, PR-Dokumente. <strong>45 €/Monat.</strong></p>
-            <p style={{ margin: '0 0 0.5rem', padding: '0.6rem 0.85rem', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 8 }}>
-              <strong style={{ color: '#fbbf24' }}>📄 Pro++</strong> – Alles aus Pro+ + <strong style={{ color: 'var(--k2-text)' }}>Rechnung</strong> (§ 11 UStG): fortlaufende Rechnungsnummer, Pflichtangaben, USt-Aufschlüsselung. <strong>55 €/Monat.</strong>
+            <p style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', lineHeight: 1.55, color: 'var(--k2-muted)', padding: '0.65rem 0.85rem', background: 'rgba(34,197,94,0.08)', borderRadius: 8, border: '1px solid rgba(22,101,52,0.25)' }}>
+              <strong style={{ color: 'var(--k2-text)' }}>🎁 {LIZENZ_TESTPHASE_LABEL}</strong> – danach Basic, Pro oder VK2 wählen.
             </p>
-            <p style={{ margin: 0 }}><strong style={{ color: 'var(--k2-text)' }}>🏛️ Kunstvereine (VK2)</strong> – Verein nutzt Pro (35 €); ab 10 registrierten Mitgliedern für den Verein kostenfrei. Vereinsmitglieder: 50 % Rabatt. Nicht registrierte Mitglieder im System erfasst (Datenschutz beachten).</p>
+            <p style={{ margin: '0 0 0.5rem' }}><strong style={{ color: 'var(--k2-text)' }}>🎨 Basic</strong> – Bis 30 Werke, 1 Galerie, Events, Etiketten, <TermWithExplanation term="Standard-URL" /> – <strong>ohne Kassa.</strong> <strong>{LIZENZPREISE.basic.price}.</strong></p>
+            <p style={{ margin: '0 0 0.5rem' }}><strong style={{ color: 'var(--k2-text)' }}>⭐ Pro</strong> – Alles in einer App: unbegrenzte Werke, <TermWithExplanation term="Custom Domain" />, Kassa, Marketing, Rechnung (§ 11 UStG), Buchhaltung. <strong>{LIZENZPREISE.pro.price}.</strong></p>
+            <p style={{ margin: 0 }}><strong style={{ color: 'var(--k2-text)' }}>🏛️ Kunstvereine (VK2)</strong> – Vereinsplattform wie Pro; <strong>{LIZENZPREISE.vk2.price}</strong>; ab 10 registrierten Mitgliedern für den Verein kostenfrei. Vereinsmitglieder: 50 % Rabatt.</p>
           </div>
           <p style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', marginTop: '0.75rem', marginBottom: 0 }}>
-            Aufstufung jederzeit möglich: Basic → Pro → Pro+ → Pro++ → Kunstvereine (VK2). Daten bleiben erhalten.
+            Aufstufung jederzeit möglich: Basic → Pro → Kunstvereine (VK2). Daten bleiben erhalten.
           </p>
         </section>
 

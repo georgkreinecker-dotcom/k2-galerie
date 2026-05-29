@@ -14,7 +14,7 @@ Dieser Prospekt fasst funktionale und technische Informationen für Präsentatio
 - Galerie, Admin, Kassa, Events, Presse und Werbeunterlagen aus einer Hand
 - Multi-Tenant: K2 (Galerie), ök2 (Demo), VK2 (Vereinsplattform)
 - Windows, Android, macOS, iOS – Browser und PWA
-- Lizenzmodell: Basic, Pro, Pro+, Pro++, VK2 (alle Vereine, Kunstvereine = Einstieg)
+- Lizenzmodell: Basic, Pro, VK2 (Kunstvereine); **4 Wochen gratis testen**
 
 ---
 
@@ -32,10 +32,10 @@ Dieser Prospekt fasst funktionale und technische Informationen für Präsentatio
 | **Willkommen – Social & Video** | Optional **YouTube**, **Instagram**, **Highlight-Video** im Willkommensbereich; gepflegt in **Stammdaten** (Einstellungen → Galerie), **nicht** im Tab Design – eine Quelle für Web und Außenkommunikation. |
 | **Admin** | Werke hinzufuegen/bearbeiten, Aussehen & Design, Einstellungen (Stammdaten, Backup, Lizenz), Schritt-fuer-Schritt-Assistent, **Statistik/Werkkatalog**, Event- und Medienplanung. |
 | **Statistik/Werkkatalog** | Verkaufs- und Lagerstatistik, druckbarer Werkkatalog, PDF- und Speicherdaten-Export, Kundenadressen; Kassa weiter über Verkauf/Shop. |
-| **Kassa & Kassabuch** | Verkauf erfassen (Shop oder „Als Kasse öffnen“); ab Pro: Kassabuch (Eingänge); ab Pro+: Kassausgänge, Bar, Beleg (QR/Foto), PDF-Export. Basic: keine Kassa. |
+| **Kassa & Kassabuch** | Verkauf erfassen (Shop oder „Als Kasse öffnen“); ab **Pro**: volles Kassabuch (Eingänge + Ausgänge), Rechnung § 11, Buchhaltung (CSV, Belege-PDF). **Basic**: keine Kassa. |
 | **Event- und Medienplanung** | Events anlegen, Einladungen, Mediengenerator, Verteiler, Presseaussendung pro Event und Social Media – aus Stammdaten und Event-Daten. |
 | **Werbeunterlagen** | Newsletter, Plakat, Flyer, PR-Vorschläge – aus einer Quelle, Galerie-Design, druckbar. |
-| **Lizenzen** | Basic (15 €/Monat), Pro (35 €/Monat), Pro+ (45 €/Monat), Pro++ (55 €/Monat, inkl. Rechnung § 11 UStG), VK2 (Kunstvereine, ab 10 Mitgliedern kostenfrei). Stripe-Checkout, Bestätigung druckbar, keine Kartendaten in der App. |
+| **Lizenzen** | Basic (10 €/Monat), Pro (25 €/Monat, voller Umfang), VK2 (25 €/Monat; ab 10 Mitgliedern für den Verein kostenfrei). **4 Wochen gratis testen.** Stripe-Checkout, Bestätigung druckbar, keine Kartendaten in der App. |
 | **Multi-Tenant** | **K2** = echte Galerie (Stammdaten, Werke). **ök2** = öffentliche Demo (Musterwerke, Mustertexte). **VK2** = Vereinsplattform (Mitglieder, Vereinsgalerie, eigene Stammdaten). Keine Vermischung. |
 
 ---
@@ -78,11 +78,11 @@ Web-App plattformneutral; keine produktive Funktion setzt einen Mac voraus. Quel
 
 | Stufe | Preis | Umfang |
 |-------|-------|--------|
-| Basic | 15 €/Monat | Galerie, Werke, Design; keine Kassa. |
-| Pro | 35 €/Monat | + Kassa (Verkauf erfassen), Kassabuch nur Eingänge. |
-| Pro+ | 45 €/Monat | + Volles Kassabuch (Eingaenge + Ausgaenge), gesamter Marketingbereich (Event- und Medienplanung, Flyer, Presse, Social). |
-| Pro++ | 55 €/Monat | Pro+ inkl. Rechnung (§ 11 UStG): fortlaufende Nummer, Pflichtangaben, USt-Aufschlüsselung. |
-| VK2 (Kunstvereine) | ab 10 Mitgliedern kostenfrei | Vereinsplattform, Mitglieder, Vereinsgalerie; Lizenzmitglied 50 % Lizenz. |
+| Basic | 10 €/Monat | Galerie, Werke, Design, Events, Etiketten; keine Kassa. |
+| Pro | 25 €/Monat | Alles: Kassa, volles Kassabuch, Rechnung (§ 11 UStG), Marketing (Events, Flyer, Presse, Social), Buchhaltung (CSV, Belege-PDF). |
+| VK2 (Kunstvereine) | 25 €/Monat; ab 10 Mitgliedern kostenfrei | Vereinsplattform, Mitglieder, Vereinsgalerie; Lizenzmitglied 50 % Lizenz. |
+
+**Testphase:** 4 Wochen gratis testen (siehe `LIZENZ_TESTPHASE_LABEL` in licencePricing.ts).
 
 Quelle: src/config/licencePricing.ts. Kein direkter Kundenkontakt; Bestätigung und Abrechnung über System (Stripe, Druck).
 

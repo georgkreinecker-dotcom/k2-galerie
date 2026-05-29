@@ -23,9 +23,9 @@ In der **Demo-Galerie** zeigt die Buchhaltungsseite zusätzlich **Rohertrag** un
 
 ---
 
-## Pro++ = vollständige Buchhaltung
+## Pro = vollständige Buchhaltung
 
-Mit der Lizenzstufe **Pro++** haben Sie zusätzlich zur **Rechnung (§ 11 UStG)** die **vollständige Buchhaltungsfunktion**: Rechnungspflege inkl. fortlaufender Nummer und USt-Aufschlüsselung **und** in der Buchhaltung **Belege als PDF** pro Zeitraum. Sie können damit alle Unterlagen für den Steuerberater aus einer App bereitstellen – ohne zusätzliche Buchhaltungssoftware.
+Mit der Lizenzstufe **Pro** haben Sie zusätzlich zur **Rechnung (§ 11 UStG)** die **vollständige Buchhaltungsfunktion**: Rechnungspflege inkl. fortlaufender Nummer und USt-Aufschlüsselung **und** in der Buchhaltung **Belege als PDF** pro Zeitraum. Sie können damit alle Unterlagen für den Steuerberater aus einer App bereitstellen – ohne zusätzliche Buchhaltungssoftware.
 
 ---
 
@@ -43,5 +43,5 @@ Mit der Lizenzstufe **Pro++** haben Sie zusätzlich zur **Rechnung (§ 11 UStG)*
 - **Export:** Kassabuch-CSV, Verkäufe-CSV, Belege als PDF.
 - **Vorarbeit** in der App; UStVA/EO beim Steuerberater.
 - **7 Jahre** Aufbewahrung der Unterlagen.
-- **Pro++** = Rechnung (§ 11 UStG) + vollständige Buchhaltung (Belege-PDF pro Zeitraum).
+- **Pro** = Rechnung (§ 11 UStG) + vollständige Buchhaltung (Belege-PDF pro Zeitraum).
 - **EK** und **Rohertrag/Lager** in der Demo siehe [Kassa und Buchhaltung](08-KASSA-BUCHHALTUNG.md) Abschnitt EK-Kalkulation und Rohertrag in der Demo.

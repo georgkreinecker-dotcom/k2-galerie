@@ -5,17 +5,15 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import '../App.css'
-import { LIZENZPREISE } from '../config/licencePricing'
+import { LIZENZPREISE, LIZENZ_TESTPHASE_LABEL } from '../config/licencePricing'
 import {
   AGB_ROUTE,
-  BASE_APP_URL,
   OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE,
   PROJECT_ROUTES,
 } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { isValidEmpfehlerIdFormat } from '../utils/empfehlerId'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
-import { LIZENZ_MUSTER_EMAIL, LIZENZ_MUSTER_NAME } from '../utils/lizenzMusterDemo'
 import { openCheckoutOrPaymentUrl } from '../utils/openCheckoutOrPaymentUrl'
 import { getMarketingAttributionForCheckout } from '../utils/marketingAttribution'
 import { DEFAULT_OEK2_FOCUS_DIRECTION_ID, FOCUS_DIRECTIONS, type FocusDirectionId } from '../config/tenantConfig'
@@ -23,15 +21,13 @@ import { DEFAULT_OEK2_FOCUS_DIRECTION_ID, FOCUS_DIRECTIONS, type FocusDirectionI
 const LICENCE_OPTIONS = [
   { id: 'basic' as const, ...LIZENZPREISE.basic },
   { id: 'pro' as const, ...LIZENZPREISE.pro },
-  { id: 'proplus' as const, ...LIZENZPREISE.proplus },
-  { id: 'propplus' as const, ...LIZENZPREISE.propplus },
 ]
 
 export default function LizenzKaufenPage() {
   const [searchParams] = useSearchParams()
   const empfehlerFromUrl = searchParams.get('empfehler')?.trim() || ''
 
-  const [licenceType, setLicenceType] = useState<'basic' | 'pro' | 'proplus' | 'propplus'>('pro')
+  const [licenceType, setLicenceType] = useState<'basic' | 'pro'>('pro')
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
   const [empfehlerId, setEmpfehlerId] = useState(empfehlerFromUrl)
@@ -41,8 +37,6 @@ export default function LizenzKaufenPage() {
   /** true = Stripe-Checkout wurde in neuem Tab geöffnet (z. B. Cursor-Vorschau/iframe) */
   const [checkoutStripeOpenedNewTab, setCheckoutStripeOpenedNewTab] = useState(false)
   const [agbAccepted, setAgbAccepted] = useState(false)
-
-  const stripeTestLiveUrl = `${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].lizenzKaufen}`
 
   useEffect(() => {
     if (empfehlerFromUrl && isValidEmpfehlerIdFormat(empfehlerFromUrl)) setEmpfehlerId(empfehlerFromUrl)
@@ -129,74 +123,10 @@ export default function LizenzKaufenPage() {
         <p style={{ color: muted, fontSize: '0.9rem', marginBottom: '1.75rem' }}>
           Produkt anklicken – Name und E-Mail eintragen – Zahlung per Karte (Stripe). Nach dem Kauf ist deine Lizenz aktiv.
         </p>
-        {import.meta.env.DEV && (
-          <div
-            style={{
-              marginBottom: '1.25rem',
-              padding: '0.75rem 1rem',
-              background: 'rgba(251,191,36,0.12)',
-              border: '1px solid rgba(180,83,9,0.28)',
-              borderRadius: 12,
-              fontSize: '0.88rem',
-              color: text,
-            }}
-          >
-            <div style={{ fontWeight: 700, marginBottom: '0.45rem', color: accentDeep }}>
-              Funktionstest Stripe (nur Entwicklung)
-            </div>
-            <p style={{ margin: '0 0 0.65rem', lineHeight: 1.45, fontSize: '0.88rem' }}>
-              Lokal ohne <code style={{ fontSize: '0.82rem' }}>STRIPE_SECRET_KEY</code> schlägt <strong>Jetzt bezahlen</strong> fehl.{' '}
-              <strong>Standard:</strong> Vercel-Seite öffnen → Formular → Testkarte.
-            </p>
-            <a
-              href={stripeTestLiveUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: 'block',
-                width: '100%',
-                boxSizing: 'border-box',
-                marginBottom: '0.65rem',
-                padding: '0.9rem 1rem',
-                background: accentDeep,
-                color: '#fff',
-                borderRadius: 12,
-                fontWeight: 800,
-                fontSize: '1.02rem',
-                textDecoration: 'none',
-                textAlign: 'center',
-              }}
-            >
-              Funktionstest auf Vercel (ein Klick)
-            </a>
-            <button
-              type="button"
-              onClick={() => {
-                setName(LIZENZ_MUSTER_NAME)
-                setEmail(LIZENZ_MUSTER_EMAIL)
-                setLicenceType('pro')
-              }}
-              style={{
-                padding: '0.5rem 0.85rem',
-                background: bgCard,
-                border: `1px solid ${accent}55`,
-                borderRadius: 10,
-                fontFamily: fontBody,
-                fontSize: '0.88rem',
-                fontWeight: 600,
-                color: accentDeep,
-                cursor: 'pointer',
-              }}
-            >
-              Formular mit Musterdaten füllen
-            </button>
-          </div>
-        )}
-
         {/* 1. Produkt per Klick auswählen */}
         <div style={{ marginBottom: '1.75rem' }}>
           <div style={{ fontSize: '0.85rem', fontWeight: 600, color: text, marginBottom: '0.6rem' }}>Lizenz wählen</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
             {LICENCE_OPTIONS.map((opt) => {
               const selected = licenceType === opt.id
               return (

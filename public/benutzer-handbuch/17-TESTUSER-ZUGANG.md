@@ -1,6 +1,6 @@
 # Testuser: Zugang und Konditionen
 
-**Für alle, die von kgm einen persönlichen Testzugang erhalten** – egal ob **ök2** (Demo-Galerie), **VK2** (Vereinsplattform) oder **K2 Familie** (Familien-App).
+**Für alle, die von kgm einen persönlichen Testzugang erhalten** – für **ök2** (Demo-Galerie) oder **VK2** (Vereinsplattform). **K2 Familie** hat ein **eigenes Handbuch** unter `/k2-familie-handbuch`.
 
 ---
 
@@ -25,7 +25,7 @@
 - **Begrenzte Teilnahme:** Nicht jede Bewerbung führt zu einem Platz – die Auswahl trifft kgm.
 - **Testprotokoll:** Für die beschriebenen Vorteile (Dauer der kostenfreien Nutzung, Gutschein-Regelungen) ist ein **vollständig ausgefülltes und eingereichtes** Protokoll vorgesehen – siehe die **Infos (Testuser)** im K2Team-Handbuch und die E-Mail von uns.
 
-**Details und aktuelle Fassung:** [Infos (Testuser) – drei Produktlinien](/zettel-testuser-produktlinien) (Übersicht ök2, VK2, K2 Familie).
+**Details und aktuelle Fassung:** [Infos (Testuser) – Produktlinien](/zettel-testuser-produktlinien) (Übersicht ök2, VK2; K2 Familie separat).
 
 ---
 

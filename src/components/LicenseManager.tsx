@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { usePersistentString } from '../hooks/usePersistentState'
-import { LIZENZPREISE } from '../config/licencePricing'
+import { LIZENZPREISE, LIZENZ_TESTPHASE_LABEL } from '../config/licencePricing'
 import { PROJECT_ROUTES } from '../config/navigation'
 
 interface PricingPlan {
@@ -35,34 +35,8 @@ const LicenseManager = () => {
       name: LIZENZPREISE.pro.name,
       price: String(LIZENZPREISE.pro.priceEur),
       period: 'monatlich',
-      features: [
-        'Unbegrenzte Werke',
-        'Custom Domain',
-        'Eventplanung + Öffentlichkeitsarbeit',
-        'Prioritäts-Support'
-      ]
-    },
-    {
-      id: 'proplus',
-      name: LIZENZPREISE.proplus.name,
-      price: String(LIZENZPREISE.proplus.priceEur),
-      period: 'monatlich',
-      features: [
-        'Alles aus Pro',
-        'Gesamter Marketingbereich',
-        'Flyer, Presse, Social Media'
-      ]
-    },
-    {
-      id: 'propplus',
-      name: LIZENZPREISE.propplus.name,
-      price: String(LIZENZPREISE.propplus.priceEur),
-      period: 'monatlich',
       popular: true,
-      features: [
-        'Alles aus Pro+',
-        'Rechnung (§ 11 UStG): fortlaufende Nummerierung, Pflichtangaben, USt-Aufschlüsselung'
-      ]
+      features: [...LIZENZPREISE.pro.features],
     },
     {
       id: 'vk2',
@@ -223,7 +197,7 @@ const LicenseManager = () => {
         color: '#8fa0c9'
       }}>
         <span style={{ display: 'block', marginBottom: '0.25rem', color: '#ffffff', fontWeight: 600 }}>Festgelegte Preise</span>
-        <span>Basic {LIZENZPREISE.basic.price}, Pro {LIZENZPREISE.pro.price}, Pro+ {LIZENZPREISE.proplus.price}, Pro++ {LIZENZPREISE.propplus.price}. VK2: {LIZENZPREISE.vk2.priceLabel}. Quelle: licencePricing.ts. Siehe mök2 → Lizenzstruktur VK2.</span>
+        <span>Basic {LIZENZPREISE.basic.price}, Pro {LIZENZPREISE.pro.price} (voller Umfang). VK2: {LIZENZPREISE.vk2.priceLabel}. {LIZENZ_TESTPHASE_LABEL}. Quelle: licencePricing.ts. Siehe mök2 → Lizenzstruktur VK2.</span>
       </div>
 
       {/* Empfehlungsprogramm – gehört zum Lizenzthema, geht nicht unter */}

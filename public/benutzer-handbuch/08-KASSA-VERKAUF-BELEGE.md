@@ -4,7 +4,7 @@
 
 Dieses Kapitel erklärt die **Kassafunktion** Schritt für Schritt: wo Sie die Kassa finden, wie Sie einen Verkauf erfassen, welche Zahlungsarten es gibt, wie Sie einen Kassenbon oder eine Rechnung drucken – und was das **Kassabuch** kann. Die Kassa eignet sich für den Verkauf vor Ort (z. B. am iPad oder Handy im Atelier oder auf der Messe).
 
-**Hinweis zu den Lizenzstufen:** Die Kassafunktion ist ab **Pro** verfügbar. **Basic** = keine Kassa. **Pro** = Kassa + Kassabuch (nur Eingänge). **Pro+** und **Pro++** = volles Kassabuch (Eingänge + Ausgänge). **Pro++** enthält zusätzlich die **vollständige Rechnungspflege nach Rechnungslegungsnorm** (§ 11 UStG) – fortlaufende Rechnungsnummer, Pflichtangaben, USt-Aufschlüsselung (siehe Abschnitt „Pro++: Vollständige Rechnungspflege“ unten).
+**Hinweis zu den Lizenzstufen:** **Basic** (10 €/Monat) = keine Kassa. **Pro** (25 €/Monat) = Kassa, volles Kassabuch, Rechnung (§ 11 UStG), Marketing und Buchhaltung – alles in einer Stufe. **4 Wochen gratis testen** vor dem Kauf. Details zur Rechnungspflege siehe Abschnitt „Pro: Rechnungspflege“ unten.
 
 ---
 
@@ -12,7 +12,7 @@ Dieses Kapitel erklärt die **Kassafunktion** Schritt für Schritt: wo Sie die K
 
 **Im Admin:** Im Admin-Bereich finden Sie eine Karte oder einen Link **„Kassa“**. Ein Klick darauf öffnet den **Kassa-Einstieg**. Dort wählen Sie:
 - **Erhalten (Eingang)** – Verkauf erfassen und Beleg drucken → Sie landen in der **Kasse** (Shop mit Warenkorb und Zahlungsarten).
-- **Auszahlen (Kassabuch)** – nur sichtbar, wenn Ihre Lizenz das volle Kassabuch enthält (Pro+ oder Pro++). Dort erfassen Sie Ausgaben (Bar privat, Kassa an Bank, Bar mit Beleg). Sie landen im **Kassabuch** bzw. auf der Seite „Neuer Kassausgang“.
+- **Auszahlen (Kassabuch)** – nur mit **Pro**. Dort erfassen Sie Ausgaben (Bar privat, Kassa an Bank, Bar mit Beleg). Sie landen im **Kassabuch** bzw. auf der Seite „Neuer Kassausgang“.
 
 **Wichtig:** Wenn Sie die **Galerie** als Besucherin oder Besucher ansehen und von dort aus einen Link zum **Shop** nutzen, sehen Sie die **Kundenansicht** („Meine Auswahl“, Reservierung, Kontakt) – **nicht** die Kasse. Um die **Kasse** zu nutzen, müssen Sie immer **vom Admin aus** starten (Kassa-Einstieg). Wenn Sie versehentlich in der Kundenansicht landen und bereits im Admin angemeldet sind, kann ein Link **„Als Kasse öffnen“** erscheinen – ein Klick darauf schaltet in die Kassenansicht um.
 
@@ -73,17 +73,17 @@ Wenn Sie **Rabatt** geben oder **Kundendaten** (z. B. für die Rechnung) erfas
 
 ---
 
-## Pro++: Vollständige Rechnungspflege nach Rechnungslegungsnorm
+## Pro: Rechnungspflege nach Rechnungslegungsnorm
 
-Mit der Lizenzstufe **Pro++** erhalten Sie **vollständige Rechnungspflege** nach Rechnungslegungsnorm (**§ 11 UStG**). Das bedeutet:
+Mit **Pro** erhalten Sie **vollständige Rechnungspflege** nach Rechnungslegungsnorm (**§ 11 UStG**). Das bedeutet:
 
 - **Fortlaufende Rechnungsnummer:** Jede Rechnung erhält eine eindeutige, fortlaufende Nummer – lückenlos und in der richtigen Reihenfolge, wie für die Buchführung und das Finanzamt erforderlich.
 - **Pflichtangaben:** Die Rechnung enthält alle gesetzlich vorgeschriebenen Angaben (z. B. Ihr Name/ Ihre Firma, Adresse, USt-IdNr. falls vorhanden, Kundendaten, Leistungsbeschreibung, Beträge, Steueraufschlüsselung, Zahlungsbedingungen).
 - **USt-Aufschlüsselung:** Die Umsatzsteuer wird korrekt ausgewiesen und aufgeschlüsselt (z. B. Netto, USt-Satz, USt-Betrag, Brutto). So erfüllen Sie die Anforderungen an eine ordnungsgemäße Rechnung und können Ihre Abrechnung und Vorsteuer ggf. korrekt geltend machen.
 
-**Für wen ist Pro++ gedacht?** Für alle, die **rechtssicher rechnen** müssen – z. B. bei Geschäftskunden, bei Abrechnung mit dem Finanzamt oder wenn Sie Rechnungen mit USt-Aufschlüsselung ausstellen müssen. Mit **Basic, Pro oder Pro+** können Sie ebenfalls Rechnungen (A4) drucken; die **vollständige Rechnungspflege nach Rechnungslegungsnorm** (fortlaufende Nummer, alle Pflichtangaben, USt-Aufschlüsselung) ist jedoch **nur mit Pro++** enthalten.
+**Basic** enthält keine Kassa und keine Rechnungspflege nach § 11. **Pro** ist für alle gedacht, die **rechtssicher rechnen** und verkaufen möchten – Kassa, Marketing und Buchhaltung in einer App.
 
-**Pro++ = vollständige Buchhaltung, nicht nur Rechnungen.** In der **Buchhaltung** (Kassa → Buchhaltung) können Sie für einen gewählten Zeitraum neben Kassabuch- und Verkäufe-CSV auch **Belege als PDF** erzeugen: Alle erfassten Belege (Fotos, QR-Texte) des Zeitraums werden in einem druckbaren Fenster angezeigt – Sie wählen „Drucken“ und „Als PDF speichern“ und können die PDF-Datei an Ihren Steuerberater senden. So haben Sie in einer App die komplette Buchhaltung inklusive Belegen.
+**Pro = vollständige Buchhaltung, nicht nur Rechnungen.** In der **Buchhaltung** (Kassa → Buchhaltung) können Sie für einen gewählten Zeitraum neben Kassabuch- und Verkäufe-CSV auch **Belege als PDF** erzeugen: Alle erfassten Belege (Fotos, QR-Texte) des Zeitraums werden in einem druckbaren Fenster angezeigt – Sie wählen „Drucken“ und „Als PDF speichern“ und können die PDF-Datei an Ihren Steuerberater senden. So haben Sie in einer App die komplette Buchhaltung inklusive Belegen.
 
 ---
 
@@ -103,9 +103,9 @@ Nach dem Stornieren erscheint eine Bestätigung. Die Stornierung ist endgültig;
 
 ---
 
-## Kassabuch – Eingänge und Ausgänge (Pro+ / Pro++)
+## Kassabuch – Eingänge und Ausgänge (Pro)
 
-Mit der Lizenzstufe **Pro** werden **nur die Verkäufe** (Eingänge) im Kassabuch geführt. Mit **Pro+** oder **Pro++** können Sie das **volle Kassabuch** nutzen:
+Mit **Pro** nutzen Sie das **volle Kassabuch**:
 
 - **Eingänge:** Jeder Verkauf (Bar, Karte, Rechnung) wird automatisch als **Eingang** im Kassabuch erfasst.  
 - **Ausgänge:** Sie können **Kassausgänge** erfassen: z. B. **Bar privat** (Entnahme aus der Kasse), **Kassa an Bank** (Einzahlung), **Bank an Kassa** (Abhebung), **Bar mit Beleg** (Ausgabe mit Quittung/Foto).  
@@ -126,12 +126,12 @@ Mit der Lizenzstufe **Pro** werden **nur die Verkäufe** (Eingänge) im Kassabuc
 
 ## Kurz zusammengefasst
 
-- **Kassa finden:** Admin → **Kassa** (Kassa-Einstieg). Dann **Erhalten** (Verkauf) oder **Auszahlen** (Kassabuch, nur Pro+).  
+- **Kassa finden:** Admin → **Kassa** (Kassa-Einstieg). Dann **Erhalten** (Verkauf) oder **Auszahlen** (Kassabuch, nur Pro).  
 - **Verkauf erfassen:** Werk per **QR-Code scannen**, **Seriennummer eingeben** oder aus **Liste wählen** → zur Auswahl hinzufügen. Mehrere Werke möglich.  
 - **Abschließen:** Button **Bar**, **Karte** oder **Rechnung** → Verkauf ist sofort erfasst. Oder **„Weitere Optionen“** für Rabatt/Kundendaten.  
 - **Belege:** Nach Bar/Karte: Dialog **„Kassabon oder Rechnung?“** – **OK** = Kassabon (80 mm), **Abbrechen** = Rechnung (A4). Bei Rechnung als Zahlungsart: direkt Rechnung (A4). **Bon erneut drucken** möglich (ohne Storno).  
 - **Storno:** In **„Verkaufsliste – Storno“** Verkauf auswählen → **Stornieren** (Verkauf aufheben, Werk wieder verfügbar) oder nur **Bon erneut drucken**.  
-- **Kassabuch:** Pro = nur Eingänge (Verkäufe). Pro+ / Pro++ = volles Kassabuch (Eingänge + Ausgänge: Bar privat, Kassa an Bank, Bar mit Beleg). Kassabuch drucken und CSV-Export für Steuerberater.
-- **Pro++ = vollständige Buchhaltung:** Rechnungspflege (§ 11 UStG) + in der Buchhaltung **Belege als PDF** (Zeitraum wählen → Belege drucken/als PDF speichern → an Steuerberater senden). Nicht nur Rechnungen, sondern komplette Buchhaltung in einer App.
+- **Kassabuch:** Mit **Pro** volles Kassabuch (Eingänge + Ausgänge: Bar privat, Kassa an Bank, Bar mit Beleg). Kassabuch drucken und CSV-Export für Steuerberater.
+- **Pro = vollständige Buchhaltung:** Rechnungspflege (§ 11 UStG) + in der Buchhaltung **Belege als PDF** (Zeitraum wählen → Belege drucken/als PDF speichern → an Steuerberater senden). Nicht nur Rechnungen, sondern komplette Buchhaltung in einer App.
 - **Buchhaltung & Steuerberater:** Schnellauswahl Jahr, CSVs + Belege-PDF → Vorarbeit hier kostenlos; UStVA/EO beim Steuerberater. Unterlagen **7 Jahre** aufbewahren.
 - **Kunden & Statistik:** Kunden unter Kassa/Lager → Kundenadressen. Verkaufs- und Lagerstatistik drucken im Bereich Statistik.

@@ -5,6 +5,7 @@
 import Stripe from 'stripe'
 import {
   STRIPE_CHECKOUT_LICENCE_TYPES,
+  STRIPE_LEGACY_CHECKOUT_LICENCE_TYPES,
   STRIPE_LICENCE_PRICE_CENTS,
   STRIPE_FAMILIE_CHECKOUT_TYPES,
   STRIPE_FAMILIE_LICENCE_PRICE_CENTS,
@@ -74,7 +75,7 @@ export async function createStripeCheckoutSession(opts) {
   const { licenceType, email, name, focusDirection, empfehlerId, productLine, marketingAttribution, secretKey, baseUrl } =
     opts
   const marketingMeta = marketingMetaFromAttribution(marketingAttribution)
-  const lt = typeof licenceType === 'string' ? licenceType.trim() : ''
+  const ltRaw = typeof licenceType === 'string' ? licenceType.trim() : ''
   const focusDirectionNorm = normalizeFocusDirection(focusDirection)
   const b = baseUrl.replace(/\/$/, '')
 
@@ -84,14 +85,14 @@ export async function createStripeCheckoutSession(opts) {
     throw err
   }
 
-  if (STRIPE_FAMILIE_CHECKOUT_TYPES.includes(lt)) {
+  if (STRIPE_FAMILIE_CHECKOUT_TYPES.includes(ltRaw)) {
     const tenantId = generateFamilieTenantId(email)
     const successUrl = `${b}/lizenz-erfolg?session_id={CHECKOUT_SESSION_ID}`
     const cancelUrl = `${b}/projects/k2-familie/lizenz-erwerben`
     const stripe = new Stripe(secretKey)
     /** K2 Familie: kein Empfehlungsprogramm – empfehlerId wird nicht in Stripe-Metadaten geschrieben. */
     const metaBase = {
-      licenceType: lt,
+      licenceType: ltRaw,
       customerName: (name || '').trim().substring(0, 200),
       tenantId,
       productLine: 'k2_familie',
@@ -99,7 +100,7 @@ export async function createStripeCheckoutSession(opts) {
       ...marketingMeta,
     }
 
-    if (lt === 'familie_jahr') {
+    if (ltRaw === 'familie_jahr') {
       const session = await stripe.checkout.sessions.create({
         mode: 'subscription',
         payment_method_types: ['card'],
@@ -133,7 +134,7 @@ export async function createStripeCheckoutSession(opts) {
       return { url: session.url }
     }
 
-    if (lt === 'familie_monat') {
+    if (ltRaw === 'familie_monat') {
       const session = await stripe.checkout.sessions.create({
         mode: 'subscription',
         payment_method_types: ['card'],
@@ -168,6 +169,14 @@ export async function createStripeCheckoutSession(opts) {
     }
   }
 
+  /** Galerie: nur basic | pro (Legacy proplus/propplus → pro) */
+  const lt =
+    ltRaw === 'basic'
+      ? 'basic'
+      : STRIPE_CHECKOUT_LICENCE_TYPES.includes(ltRaw) || STRIPE_LEGACY_CHECKOUT_LICENCE_TYPES.includes(ltRaw)
+        ? 'pro'
+        : ltRaw
+
   const productLineNorm = resolveGalleryOrVk2ProductLineForCheckout(lt, productLine)
 
   /** VK2: Stripe-Checkout bis auf Weiteres gesperrt (nicht getestet / kein Go-Live). */
@@ -183,7 +192,7 @@ export async function createStripeCheckoutSession(opts) {
     empfehlerId && empfehlerId.trim() ? { empfehlerId: empfehlerId.trim().substring(0, 100) } : {}
 
   const priceCents =
-    lt && STRIPE_CHECKOUT_LICENCE_TYPES.includes(lt) ? STRIPE_LICENCE_PRICE_CENTS[lt] : undefined
+    lt === 'basic' ? STRIPE_LICENCE_PRICE_CENTS.basic : lt === 'pro' ? STRIPE_LICENCE_PRICE_CENTS.pro : undefined
   if (!priceCents) {
     const err = new Error('Fehlende Angaben')
     err.code = 'VALIDATION'
@@ -195,22 +204,8 @@ export async function createStripeCheckoutSession(opts) {
   const cancelUrl = productLineNorm === 'vk2' ? `${b}/admin?context=vk2` : `${b}/projects/k2-galerie/lizenz-kaufen`
 
   const stripe = new Stripe(secretKey)
-  const productLabel =
-    lt === 'basic'
-      ? 'Basic'
-      : lt === 'pro'
-        ? 'Pro'
-        : lt === 'proplus'
-          ? 'Pro+'
-          : 'Pro++'
-  const productDesc =
-    lt === 'basic'
-      ? '15 €/Monat'
-      : lt === 'pro'
-        ? '35 €/Monat'
-        : lt === 'proplus'
-          ? '45 €/Monat'
-          : '55 €/Monat'
+  const productLabel = lt === 'basic' ? 'Basic' : 'Pro'
+  const productDesc = `${priceCents / 100} €/Monat`
   const sessionMeta = {
     licenceType: lt,
     customerName: (name || '').trim().substring(0, 200),

@@ -3,13 +3,14 @@
  * Galerie: muss mit src/config/licencePricing.ts (priceEur) übereinstimmen – Tests: stripeLicenceContract.test.ts
  * K2 Familie: src/config/licencePricing.ts K2_FAMILIE_LIZENZPREISE
  */
-export const STRIPE_CHECKOUT_LICENCE_TYPES = ['basic', 'pro', 'proplus', 'propplus']
+export const STRIPE_CHECKOUT_LICENCE_TYPES = ['basic', 'pro']
+
+/** Legacy-Checkout-Typen (API): werden auf Pro-Preis abgerechnet und als pro gespeichert */
+export const STRIPE_LEGACY_CHECKOUT_LICENCE_TYPES = ['proplus', 'propplus']
 
 export const STRIPE_LICENCE_PRICE_CENTS = {
-  basic: 1500,
-  pro: 3500,
-  proplus: 4500,
-  propplus: 5500,
+  basic: 1000,
+  pro: 2500,
 }
 
 /** K2 Familie – Checkout-Typen (gleiche API wie Galerie-Lizenz) */

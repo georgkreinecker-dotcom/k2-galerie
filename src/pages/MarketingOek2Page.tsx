@@ -1096,7 +1096,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <ul style={{ lineHeight: 1.65, paddingLeft: '1.2em', marginBottom: '1rem', fontSize: '0.9rem' }}>
           <li><strong>Eine Oberfläche, eine Datenbasis:</strong> Galerie, Werke, Kasse, Lager, Events, Marketing, Etiketten – alles in einer App. Einmal erfassen, überall nutzen.</li>
           <li><strong>Corporate Design aus einer Quelle:</strong> Farben und Akzente aus <strong>Galerie gestalten</strong> ziehen durch Web und Werbemittel – kein Medienbruch zwischen Homepage und Druck. Argument für Gespräche und Prospekte: mök2 → „Corporate Design – eine Linie“.</li>
-          <li><strong>Kasse &amp; Lagerhaltung integriert:</strong> Verkauf erfassen, Beleg drucken (Etikett oder A4), Verkaufs- und Lagerstatistik, Storno, CSV für Buchhaltung, Umsatz heute. Pro++: vollständige Buchhaltung (Kassabuch-/Verkäufe-CSV, Belege als PDF pro Zeitraum – Vorarbeit für Steuerberater; 7 Jahre Aufbewahrung). Werkkatalog mit Status Galerie/Lager/Verkauft. Kein separates Kassensystem nötig.</li>
+          <li><strong>Kasse &amp; Lagerhaltung integriert:</strong> Verkauf erfassen, Beleg drucken (Etikett oder A4), Verkaufs- und Lagerstatistik, Storno, CSV für Buchhaltung, Umsatz heute. Pro: vollständige Buchhaltung (Kassabuch-/Verkäufe-CSV, Belege als PDF pro Zeitraum – Vorarbeit für Steuerberater; 7 Jahre Aufbewahrung). Werkkatalog mit Status Galerie/Lager/Verkauft. Kein separates Kassensystem nötig.</li>
           <li><strong>Ein Stand auf allen Geräten:</strong> Admin am Rechner, Galerie und Kassa auf Tablet/Handy – gleicher Stand per QR, keine Medienbrüche.</li>
           <li><strong>Sprache und Begriffe für Künstler:innen:</strong> Werke, Vita, Events, Stammdaten, Öffentlichkeitsarbeit – kein abstraktes „CMS“ oder „Items“.</li>
           <li><strong>Branche:</strong> Künstler:innen und kleine Galerien sind mit „Webauftritt + Kasse + Events + Marketing aus einer Hand“ <strong>unterversorgt</strong>. Reine Kassensysteme oder reine Website-Baukästen decken den Bedarf nicht ab – ök2 füllt diese Lücke.</li>
@@ -2742,7 +2742,7 @@ ${PRODUCT_INSERAT_VIERTEL_IMPRESSUM}`}
           10. Lizenzen (Konditionen & Vergebung)
         </h2>
         <p style={{ marginBottom: '1rem', lineHeight: 1.6 }}>
-          Lizenz-Stufen (Basic, Pro, Pro+, Pro++, VK2), Preismodelle und die <strong>Vergabe von Lizenzen</strong> gehören zur Vertriebs-Arbeitsplattform. Beim Vergeben kann optional eine <strong>Empfehler-ID</strong> erfasst werden – Grundlage für die automatisierte Abrechnung des Empfehlungs-Programms (Multi-Level-Vergütung). <strong>Lizenz jederzeit durch den Nutzer beendbar</strong>, keine Mindestlaufzeit, keine Bindung – Ausstieg so einfach wie Einstieg (AGB §10). Doku: <code>docs/LICENCE-STRUKTUR.md</code>, <code>docs/ABRECHNUNGSSTRUKTUR-EMPFEHLUNGSPROGRAMM.md</code>.
+          Lizenz-Stufen (Basic, Pro, VK2), Preismodelle und die <strong>Vergabe von Lizenzen</strong> gehören zur Vertriebs-Arbeitsplattform. Beim Vergeben kann optional eine <strong>Empfehler-ID</strong> erfasst werden – Grundlage für die automatisierte Abrechnung des Empfehlungs-Programms (Multi-Level-Vergütung). <strong>Lizenz jederzeit durch den Nutzer beendbar</strong>, keine Mindestlaufzeit, keine Bindung – Ausstieg so einfach wie Einstieg (AGB §10). Doku: <code>docs/LICENCE-STRUKTUR.md</code>, <code>docs/ABRECHNUNGSSTRUKTUR-EMPFEHLUNGSPROGRAMM.md</code>.
         </p>
         <h3
           id="mok2-10-lizenz-abschliessen"
@@ -2869,7 +2869,7 @@ ${PRODUCT_INSERAT_VIERTEL_IMPRESSUM}`}
         </p>
         <p style={{ marginBottom: '0.75rem', fontWeight: 600, color: '#5ffbf1' }}>Marktwert</p>
         <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', marginBottom: '1rem', lineHeight: 1.55 }}>
-          Unverändert: Marktwert = Zahlungsbereitschaft der Zielgruppe (Künstler:innen, kleine Galerien, Vereine) und Vergleichspreise am Markt. Daraus leiten sich die <strong>realistischen Lizenzgebühren</strong> ab (Basic, Pro, Pro+, Pro++, VK2) – siehe Abschnitt unten. Das gewachsene Produkt (Lebenszyklus, Multi-Tenant, Startklar) stärkt die Position für Vertrieb und Preisgestaltung; die Orientierung an marktgerechten Sätzen bleibt.
+          Unverändert: Marktwert = Zahlungsbereitschaft der Zielgruppe (Künstler:innen, kleine Galerien, Vereine) und Vergleichspreise am Markt. Daraus leiten sich die <strong>realistischen Lizenzgebühren</strong> ab (Basic, Pro, VK2) – siehe Abschnitt unten. Das gewachsene Produkt (Lebenszyklus, Multi-Tenant, Startklar) stärkt die Position für Vertrieb und Preisgestaltung; die Orientierung an marktgerechten Sätzen bleibt.
         </p>
 
         <h3 id="mok2-marktwert" style={{ fontSize: '1.1rem', color: '#5ffbf1', marginTop: '1.5rem', marginBottom: '0.5rem' }}>Realistische Lizenzgebühren (Orientierung für die Preisgestaltung)</h3>
@@ -2887,38 +2887,28 @@ ${PRODUCT_INSERAT_VIERTEL_IMPRESSUM}`}
           <tbody>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.5rem 0.6rem', fontWeight: 600 }}>Basic</td>
-              <td style={{ padding: '0.5rem 0.6rem' }}><strong>15 €/Monat</strong></td>
-              <td style={{ padding: '0.5rem 0.6rem' }}>Galerie + Shop + Einstieg (bis 30 Werke, Events, Kasse, Etiketten) – für Künstler:innen mit kleinem Budget. Vergleich: KUNSTMATRIX Basic 10 €, Wix 16–17 €.</td>
+              <td style={{ padding: '0.5rem 0.6rem' }}><strong>10 €/Monat</strong></td>
+              <td style={{ padding: '0.5rem 0.6rem' }}>Galerie, Werke, Design, Events, Etiketten – ohne Kassa. Für Künstler:innen mit kleinem Budget.</td>
             </tr>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.5rem 0.6rem', fontWeight: 600 }}>Pro</td>
-              <td style={{ padding: '0.5rem 0.6rem' }}><strong>35 €/Monat</strong></td>
-              <td style={{ padding: '0.5rem 0.6rem' }}>Alles aus Basic + unbegrenzte Werke, Custom Domain – ohne vollen Marketingbereich. Alles in einer App (Galerie, Kasse, Events, Etiketten).</td>
-            </tr>
-            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-              <td style={{ padding: '0.5rem 0.6rem', fontWeight: 600 }}>Pro+</td>
-              <td style={{ padding: '0.5rem 0.6rem' }}><strong>45 €/Monat</strong></td>
-              <td style={{ padding: '0.5rem 0.6rem' }}>Alles aus Pro + <strong>gesamter Marketingbereich</strong>: Events, Galeriepräsentation, Flyer, Presse, Social Media, Plakat, PR-Dokumente aus einem Guss.</td>
-            </tr>
-            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-              <td style={{ padding: '0.5rem 0.6rem', fontWeight: 600 }}>Pro++</td>
-              <td style={{ padding: '0.5rem 0.6rem' }}><strong>55 €/Monat</strong></td>
-              <td style={{ padding: '0.5rem 0.6rem' }}>Alles aus Pro+ + <strong>Rechnung (§ 11 UStG)</strong> und <strong>vollständige Buchhaltung</strong>: Kassabuch- und Verkäufe-CSV, Belege als PDF pro Zeitraum – Vorarbeit für den Steuerberater; Aufbewahrung 7 Jahre. Keine Haftung für Buchführung/Steuern (AGB §8).</td>
+              <td style={{ padding: '0.5rem 0.6rem' }}><strong>25 €/Monat</strong></td>
+              <td style={{ padding: '0.5rem 0.6rem' }}>Alles in einer Stufe: unbegrenzte Werke, Custom Domain, Kassa, volles Kassabuch, Marketing (Events, Flyer, Presse, Social), Rechnung (§ 11 UStG), Buchhaltung (CSV, Belege-PDF).</td>
             </tr>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.5rem 0.6rem', fontWeight: 600 }}>VK2 (Verein)</td>
-              <td style={{ padding: '0.5rem 0.6rem' }}>Wie Pro (35 €); <strong>ab 10 Mitgliedern für den Verein kostenfrei</strong>; Lizenzmitglieder 50 %</td>
-              <td style={{ padding: '0.5rem 0.6rem' }}>Kein direkter Marktvergleich; Multiplikator (ein Verein → viele sichtbar). Konditionen wie in Lizenzstruktur VK2.</td>
+              <td style={{ padding: '0.5rem 0.6rem' }}><strong>25 €/Monat</strong>; <strong>ab 10 Mitgliedern für den Verein kostenfrei</strong>; Lizenzmitglieder 50 %</td>
+              <td style={{ padding: '0.5rem 0.6rem' }}>Vereinsplattform wie Pro; Konditionen wie in Lizenzstruktur VK2.</td>
             </tr>
           </tbody>
         </table>
         <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)', marginBottom: '1rem', lineHeight: 1.5 }}>
-          <strong>Fazit (Stand Start):</strong> Basic <strong>15 €/Monat</strong>, Pro <strong>35 €/Monat</strong>, Pro+ <strong>45 €/Monat</strong> (mit vollem Marketingbereich), Pro++ <strong>55 €/Monat</strong> (inkl. Rechnung § 11 UStG und vollständiger Buchhaltung), VK2 wie Pro – ab 10 Mitgliedern für den Verein kostenfrei. Damit ist die Preisgestaltung für den Start entschieden und wird in der Kommunikation überall einheitlich genutzt.
+          <strong>Fazit (Stand Start):</strong> Basic <strong>10 €/Monat</strong>, Pro <strong>25 €/Monat</strong> (voller Umfang), VK2 <strong>25 €/Monat</strong> – ab 10 Mitgliedern für den Verein kostenfrei. <strong>4 Wochen gratis testen.</strong> Damit ist die Preisgestaltung für den Start entschieden und wird in der Kommunikation überall einheitlich genutzt.
         </p>
 
         <h4 style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.9)', marginTop: '1rem', marginBottom: '0.5rem' }}>Erlöspotenzial (Beispielrechnung bei diesen Gebühren)</h4>
         <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', marginBottom: '0.5rem' }}>
-          Bei Basic 15 €, Pro 35 €, Pro+ 45 €, Pro++ 55 €/Monat: Basic 180 €/Jahr, Pro 420 €/Jahr, Pro+ 540 €/Jahr, Pro++ 660 €/Jahr.
+          Bei Basic 10 €, Pro 25 €/Monat: Basic 120 €/Jahr, Pro 300 €/Jahr.
         </p>
         <table style={{ width: '100%', maxWidth: 560, borderCollapse: 'collapse', fontSize: '0.9rem', marginBottom: '1rem' }}>
           <thead>
@@ -2931,18 +2921,18 @@ ${PRODUCT_INSERAT_VIERTEL_IMPRESSUM}`}
           <tbody>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.4rem 0.6rem' }}>Konservativ (Einstieg)</td>
-              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>20 Basic, 10 Pro, 5 Pro+</td>
-              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>ca. 7.200 €</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>20 Basic, 10 Pro</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>ca. 5.400 €</td>
             </tr>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.4rem 0.6rem' }}>Mittleres Szenario</td>
-              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>50 Basic, 25 Pro, 15 Pro+</td>
-              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>ca. 18.000 €</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>50 Basic, 25 Pro</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>ca. 13.500 €</td>
             </tr>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.4rem 0.6rem' }}>Starkes Wachstum</td>
-              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>150 Basic, 75 Pro, 50 Pro+</td>
-              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>ca. 54.000 €</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>150 Basic, 75 Pro</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>ca. 40.500 €</td>
             </tr>
           </tbody>
         </table>
@@ -2989,28 +2979,18 @@ ${PRODUCT_INSERAT_VIERTEL_IMPRESSUM}`}
           <tbody>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.5rem 0.75rem', fontWeight: 600 }}>Basic</td>
-              <td style={{ padding: '0.5rem 0.75rem' }}>Galerie-Webauftritt, Werke, einfacher Shop (bis 30 Werke, Events, Kasse, Etiketten)</td>
-              <td style={{ padding: '0.5rem 0.75rem' }}>15 €/Monat</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>Galerie-Webauftritt, Werke, Design (bis 30 Werke, Events, Etiketten) – ohne Kassa</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>10 €/Monat</td>
             </tr>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.5rem 0.75rem', fontWeight: 600 }}>Pro</td>
-              <td style={{ padding: '0.5rem 0.75rem' }}>Alles aus Basic + unbegrenzte Werke, Custom Domain – ohne vollen Marketingbereich</td>
-              <td style={{ padding: '0.5rem 0.75rem' }}>35 €/Monat</td>
-            </tr>
-            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-              <td style={{ padding: '0.5rem 0.75rem', fontWeight: 600 }}>Pro+</td>
-              <td style={{ padding: '0.5rem 0.75rem' }}>Alles aus Pro + gesamter Marketingbereich (Events, Galeriepräsentation, Flyer, Presse, Social Media, PR-Dokumente)</td>
-              <td style={{ padding: '0.5rem 0.75rem' }}>45 €/Monat</td>
-            </tr>
-            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-              <td style={{ padding: '0.5rem 0.75rem', fontWeight: 600 }}>Pro++</td>
-              <td style={{ padding: '0.5rem 0.75rem' }}>Alles aus Pro+ + Rechnung (§ 11 UStG) + vollständige Buchhaltung (Kassabuch-/Verkäufe-CSV, Belege-PDF pro Zeitraum – Vorarbeit für Steuerberater; 7 Jahre Aufbewahrung)</td>
-              <td style={{ padding: '0.5rem 0.75rem' }}>55 €/Monat</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>Alles: Kassa, volles Kassabuch, Marketing, Rechnung (§ 11 UStG), Buchhaltung, unbegrenzte Werke, Custom Domain</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>25 €/Monat</td>
             </tr>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.5rem 0.75rem', fontWeight: 600 }}>VK2 (Verein)</td>
               <td style={{ padding: '0.5rem 0.75rem' }}>Pro für Kunstvereine; ab 10 Mitgliedern für den Verein kostenfrei, Lizenzmitglieder 50 %</td>
-              <td style={{ padding: '0.5rem 0.75rem' }}>wie Pro (35 €); ab 10 Mitgliedern kostenfrei</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>25 €/Monat; ab 10 Mitgliedern kostenfrei</td>
             </tr>
           </tbody>
         </table>
@@ -3018,7 +2998,7 @@ ${PRODUCT_INSERAT_VIERTEL_IMPRESSUM}`}
           Preise für den Start festgelegt. In Prospekt, Werbeunterlagen und bei „Lizenz anfragen“ einheitlich nutzen.
         </p>
         <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)' }}>
-          <strong>Details:</strong> Siehe Abschnitt <a href="#mok2-marktwert" style={{ color: '#5ffbf1', textDecoration: 'none' }}>Produktbewertung → Realistische Lizenzgebühren</a>: Basic <strong>15 €/Monat</strong>, Pro <strong>35 €/Monat</strong>, Pro+ <strong>45 €/Monat</strong>, Pro++ <strong>55 €/Monat</strong>, VK2 wie Pro. Ausführlich: <code>docs/MARKTCHECK-PREISE-BASIC-PRO-VERGLEICH.md</code>.
+          <strong>Details:</strong> Siehe Abschnitt <a href="#mok2-marktwert" style={{ color: '#5ffbf1', textDecoration: 'none' }}>Produktbewertung → Realistische Lizenzgebühren</a>: Basic <strong>10 €/Monat</strong>, Pro <strong>25 €/Monat</strong>, VK2 <strong>25 €/Monat</strong>. <strong>4 Wochen gratis testen.</strong> Quelle: <code>src/config/licencePricing.ts</code>.
         </p>
       </section>
 
@@ -3028,7 +3008,7 @@ ${PRODUCT_INSERAT_VIERTEL_IMPRESSUM}`}
           Haupt- und Nebenlizenzen (Konzept)
         </h2>
         <p style={{ marginBottom: '0.85rem', lineHeight: 1.65, fontSize: '0.95rem', color: 'rgba(255,255,255,0.92)' }}>
-          <strong>Hauptlizenz</strong> = der vertragliche Kern: <strong>eine</strong> definierte Produkt-Instanz in der gewählten Stufe (Basic, Pro, Pro+, Pro++ oder VK2 als Vereins-Stufe). Ein <strong>Mandant (tenantId)</strong> = eine geschlossene Daten- und Nutzungswelt – klar umrissen.
+          <strong>Hauptlizenz</strong> = der vertragliche Kern: <strong>eine</strong> definierte Produkt-Instanz in der gewählten Stufe (Basic, Pro oder VK2 als Vereins-Stufe). Ein <strong>Mandant (tenantId)</strong> = eine geschlossene Daten- und Nutzungswelt – klar umrissen.
         </p>
         <p style={{ marginBottom: '0.65rem', lineHeight: 1.6, fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)' }}>
           <strong>Nebenlizenzen</strong> sind <strong>Zusätze</strong>, die gesondert benannt und abrechenbar sind – nicht „still mit drin“:
@@ -3357,10 +3337,10 @@ ${PRODUCT_INSERAT_VIERTEL_IMPRESSUM}`}
 
       <section id="mok2-14" style={{ marginTop: '2.5rem', paddingTop: '2rem', borderTop: '1px solid rgba(251,191,36,0.4)', pageBreakInside: 'avoid' as const }}>
         <h2 style={{ fontSize: '1.25rem', color: '#fbbf24', marginBottom: '0.5rem', borderBottom: '1px solid rgba(251,191,36,0.4)', paddingBottom: '0.35rem' }}>
-          14. 💎 Pro+ & Pro++ – Marketingbereich, Rechnung & Buchhaltung
+          14. 💎 Pro – Marketing, Rechnung & Buchhaltung
         </h2>
         <p style={{ lineHeight: 1.7, marginBottom: '1rem', color: 'rgba(255,255,255,0.85)' }}>
-          Neben Basic (15 €), Pro (35 €) und Kunstvereine (VK2, wie Pro) gibt es <strong style={{ color: '#fbbf24' }}>Pro+ (45 €/Monat)</strong> – Pro inklusive gesamten Marketingbereich: Events, Galeriepräsentation, Flyer, Presse, Social Media, Plakat, PR-Dokumente aus einem Guss. <strong style={{ color: '#fbbf24' }}>Pro++ (55 €/Monat)</strong> ergänzt Pro+ um <strong>Rechnung (§ 11 UStG)</strong> und <strong>vollständige Buchhaltung</strong>: fortlaufende Rechnungsnummer, Pflichtangaben, USt-Aufschlüsselung; dazu Kassabuch- und Verkäufe-CSV, Belege als PDF pro Zeitraum – Vorarbeit für den Steuerberater, Aufbewahrung 7 Jahre. Rechtliche Verantwortung für Buchführung und Steuern trägt der Nutzer/Steuerberater (AGB §8).
+          Neben Basic (10 €) und Kunstvereine (VK2, 25 €) gibt es <strong style={{ color: '#fbbf24' }}>Pro (25 €/Monat)</strong> – alles in einer Stufe: gesamter Marketingbereich (Events, Galeriepräsentation, Flyer, Presse, Social Media, Plakat, PR-Dokumente), <strong>Kassa</strong>, volles Kassabuch, <strong>Rechnung (§ 11 UStG)</strong> und <strong>vollständige Buchhaltung</strong> (fortlaufende Rechnungsnummer, Pflichtangaben, USt-Aufschlüsselung; Kassabuch- und Verkäufe-CSV, Belege als PDF pro Zeitraum – Vorarbeit für den Steuerberater, Aufbewahrung 7 Jahre). Rechtliche Verantwortung für Buchführung und Steuern trägt der Nutzer/Steuerberater (AGB §8). <strong>4 Wochen gratis testen.</strong>
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>

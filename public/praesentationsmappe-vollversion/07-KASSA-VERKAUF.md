@@ -2,7 +2,7 @@
 
 Verkauf vor Ort: Kassa in der App, Belege druckbar (z. B. WLAN-Etikettendrucker). Verkaufte Werke erfassen, Etiketten fuer Werke – alles aus einer Hand.
 
-**Buchhaltung (Kassa -> Buchhaltung):** Zeitraum waehlen (z. B. Jahr), Kassabuch- und Verkaeufe-CSV exportieren, Belege als PDF – Vorarbeit fuer den Steuerberater. Unterlagen 7 Jahre aufbewahren. Mit Pro++ vollstaendige Buchhaltung in einer App.
+**Buchhaltung (Kassa -> Buchhaltung):** Zeitraum waehlen (z. B. Jahr), Kassabuch- und Verkaeufe-CSV exportieren, Belege als PDF – Vorarbeit fuer den Steuerberater. Unterlagen 7 Jahre aufbewahren. Mit **Pro** vollständige Buchhaltung in einer App.
 
 **EK-Kalkulation:** An jedem Werk optional **EK** Einstand und **VK** Verkaufspreis pflegen. **Ohne** EK gilt das Werk wie **Eigenproduktion** fuer Wareneinsatz-Ueberblicke. **Stueckzahl** steuert Lager. In der **Demo-Galerie** zusaetzlich **Rohertrag** und **Lager-Vorschau** in der Buchhaltung Muster fuer Kleingewerbe, keine Steuerberatung.
 

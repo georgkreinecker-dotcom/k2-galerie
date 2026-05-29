@@ -1947,7 +1947,6 @@ import { getArtworkLagerInfo, getArtworkNumberKey, revertOneOrderUnitForArtwork,
 import { urlWithBuildVersion } from '../src/buildInfo.generated'
 import { getOrCreateEmpfehlerId, isValidEmpfehlerIdFormat } from '../src/utils/empfehlerId'
 import { LIZENZPREISE } from '../src/config/licencePricing'
-import LizenzZeitplanPilotStripeInfo from '../src/components/LizenzZeitplanPilotStripeInfo'
 import { getGutschriftSumme } from '../src/utils/empfehlerGutschrift'
 import { writePngDpi } from 'png-dpi-reader-writer'
 
@@ -3108,7 +3107,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const settingsContentRef = useRef<HTMLDivElement>(null)
   /** Ref auf den oberen Rand des Admin-Bereichs – für „Zurück in den Admin-Bereich“ (scrollt den tatsächlichen Scroll-Container) */
   const adminTopRef = useRef<HTMLDivElement>(null)
-  const [lizenzLicenceType, setLizenzLicenceType] = useState<'basic' | 'pro' | 'proplus' | 'propplus'>('pro')
+  const [lizenzLicenceType, setLizenzLicenceType] = useState<'basic' | 'pro'>('pro')
   const [lizenzName, setLizenzName] = useState('')
   const [lizenzEmail, setLizenzEmail] = useState('')
   const [lizenzEmpfehlerId, setLizenzEmpfehlerId] = useState('')
@@ -3129,6 +3128,27 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [previewFullscreenPage, setPreviewFullscreenPage] = useState<1 | 2>(1) // welche Seite in der Vorschau (immer nur eine)
   const [designPreviewHeightPx, setDesignPreviewHeightPx] = useState(560) // Vorschau-Höhe – per Ziehen anpassbar
   const [designPreviewScale, setDesignPreviewScale] = useState(1) // 1 = 100%, manuell vergrößerbar
+  /** Live-Template-iframe: kleiner Default, damit Gestaltwerkzeuge (1–4) sichtbar bleiben */
+  const [liveTemplatePreviewScale, setLiveTemplatePreviewScale] = useState(() => {
+    try {
+      if (typeof sessionStorage === 'undefined') return 0.75
+      const raw = sessionStorage.getItem('k2-admin-live-template-scale')
+      if (raw === '0.6') return 0.6
+      if (raw === '0.75') return 0.75
+      if (raw === '1') return 1
+    } catch {
+      /* ignore */
+    }
+    return 0.75
+  })
+  const persistLiveTemplatePreviewScale = React.useCallback((scale: 0.6 | 0.75 | 1) => {
+    setLiveTemplatePreviewScale(scale)
+    try {
+      sessionStorage.setItem('k2-admin-live-template-scale', String(scale))
+    } catch {
+      /* ignore */
+    }
+  }, [])
   const [designLivePreviewVersion, setDesignLivePreviewVersion] = useState(0)
   /** Vorschau-Tab: kompakte Toolbar + weniger Text oben = mehr Platz für die Galerie-Vorschau (sessionStorage). */
   const [designToolbarCompact, setDesignToolbarCompact] = useState(() => {
@@ -4841,7 +4861,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     }
   }, [tenant.isOeffentlich, tenant.isVk2])
 
-  /** Testpilot: Kassa/Lizenzstufe Pro++ setzen – einmal wenn k2-pilot-einladung gesetzt ist. */
+  /** Testpilot: Kassa/Lizenzstufe Pro setzen – einmal wenn k2-pilot-einladung gesetzt ist. */
   const pilotLizenzPropplusAppliedRef = React.useRef(false)
   React.useEffect(() => {
     if (pilotLizenzPropplusAppliedRef.current) return
@@ -4861,12 +4881,12 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     }
     if (tenant.isOeffentlich && parsed.context === 'oeffentlich') {
       pilotLizenzPropplusAppliedRef.current = true
-      setKassabuchLizenzStufe('oeffentlich', 'propplus')
+      setKassabuchLizenzStufe('oeffentlich', 'pro')
       return
     }
     if (tenant.isVk2 && parsed.context === 'vk2') {
       pilotLizenzPropplusAppliedRef.current = true
-      setKassabuchLizenzStufe('vk2', 'propplus')
+      setKassabuchLizenzStufe('vk2', 'pro')
     }
   }, [tenant.isOeffentlich, tenant.isVk2])
 
@@ -14823,48 +14843,113 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
     )
   }
 
-  const renderLiveTemplatePanel = (heightPx: number) => (
-    <div style={{ marginTop: '0.6rem', padding: '0.55rem', background: 'rgba(255,255,255,0.04)', border: `1px solid ${s.accent}33`, borderRadius: 10 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.35rem' }}>
-        <strong style={{ color: s.text, fontSize: '0.88rem' }}>Live-Template-Vorschau (1:1 Frontseite) [NEU]</strong>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginLeft: 'auto' }}>
-          <button
-            type="button"
-            onClick={() => { void publishMobile() }}
-            disabled={isDeploying}
+  const LIVE_TEMPLATE_IFRAME_BASE_HEIGHT_PX = 400
+  const renderLiveTemplatePanel = () => {
+    const scale = liveTemplatePreviewScale
+    const visibleHeightPx = Math.round(LIVE_TEMPLATE_IFRAME_BASE_HEIGHT_PX * scale)
+    return (
+      <div
+        style={{
+          marginTop: '0.35rem',
+          padding: '0.55rem',
+          background: 'rgba(255,255,255,0.04)',
+          border: `1px solid ${s.accent}33`,
+          borderRadius: 10,
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '0.5rem',
+            marginBottom: '0.35rem',
+            flexWrap: 'wrap',
+          }}
+        >
+          <strong style={{ color: s.text, fontSize: '0.85rem' }}>Live-Template (1:1)</strong>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap', marginLeft: 'auto' }}>
+            <span style={{ color: s.muted, fontSize: '0.72rem', fontWeight: 600 }}>Größe</span>
+            {([0.6, 0.75, 1] as const).map((sc) => (
+              <button
+                key={sc}
+                type="button"
+                onClick={() => persistLiveTemplatePreviewScale(sc)}
+                style={{
+                  padding: '0.15rem 0.38rem',
+                  fontSize: '0.72rem',
+                  background: liveTemplatePreviewScale === sc ? 'rgba(95,251,241,0.2)' : 'transparent',
+                  border:
+                    '1px solid ' +
+                    (liveTemplatePreviewScale === sc ? s.accent : 'rgba(255,255,255,0.15)'),
+                  borderRadius: 6,
+                  color: liveTemplatePreviewScale === sc ? s.accent : s.muted,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                }}
+              >
+                {Math.round(sc * 100)}%
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => {
+                void publishMobile()
+              }}
+              disabled={isDeploying}
+              style={{
+                padding: '0.28rem 0.55rem',
+                borderRadius: 8,
+                border: `1.5px solid ${s.accent}`,
+                background: isDeploying ? 'rgba(0,0,0,0.1)' : 'rgba(95,251,241,0.18)',
+                color: s.accent,
+                fontWeight: 800,
+                fontSize: '0.72rem',
+                cursor: isDeploying ? 'not-allowed' : 'pointer',
+                fontFamily: 'inherit',
+              }}
+              title="Änderungen jetzt öffentlich auf allen Geräten aktualisieren"
+            >
+              {isDeploying ? '⏳…' : '📤 Veröff.'}
+            </button>
+            <Link
+              to={designLiveTemplateRoute}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: s.accent, fontSize: '0.75rem', fontWeight: 700 }}
+            >
+              Tab
+            </Link>
+          </div>
+        </div>
+        <div
+          style={{
+            height: visibleHeightPx,
+            overflow: 'auto',
+            border: `1px solid ${s.accent}22`,
+            borderRadius: 8,
+            background: '#fff',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
+          <iframe
+            key={`live-template-${designLivePreviewVersion}`}
+            title="Live Template Vorschau"
+            src={designLiveTemplateRoute}
             style={{
-              padding: '0.32rem 0.65rem',
-              borderRadius: 8,
-              border: `1.5px solid ${s.accent}`,
-              background: isDeploying ? 'rgba(0,0,0,0.1)' : 'rgba(95,251,241,0.18)',
-              color: s.accent,
-              fontWeight: 800,
-              fontSize: '0.78rem',
-              cursor: isDeploying ? 'not-allowed' : 'pointer',
+              width: `${100 / scale}%`,
+              height: LIVE_TEMPLATE_IFRAME_BASE_HEIGHT_PX,
+              transform: `scale(${scale})`,
+              transformOrigin: 'top left',
+              border: 'none',
+              display: 'block',
+              background: '#fff',
             }}
-            title="Änderungen jetzt öffentlich auf allen Geräten aktualisieren"
-          >
-            {isDeploying ? '⏳ Veröffentlicht…' : '📤 Öffentlich aktualisieren'}
-          </button>
-          <Link to={designLiveTemplateRoute} target="_blank" rel="noopener noreferrer" style={{ color: s.accent, fontSize: '0.8rem', fontWeight: 700 }}>
-            Im Tab öffnen
-          </Link>
+          />
         </div>
       </div>
-      <iframe
-        key={`live-template-${designLivePreviewVersion}`}
-        title="Live Template Vorschau"
-        src={designLiveTemplateRoute}
-        style={{
-          width: '100%',
-          height: heightPx,
-          border: `1px solid ${s.accent}22`,
-          borderRadius: 8,
-          background: '#fff',
-        }}
-      />
-    </div>
-  )
+    )
+  }
   const renderDesignVorschau = () => {
     const dtCompact = designToolbarCompact
     return (
@@ -14933,7 +15018,6 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 </div>
               </>
             )}
-            <div style={{ marginTop: dtCompact ? '0.35rem' : 0 }}>{renderLiveTemplatePanel(dtCompact ? 500 : 680)}</div>
             {/* Nur K2: Entdecken-Seite (Landing) – ein Klick = Bild wählen, sofort gespeichert */}
             {false && !tenant.isOeffentlich && !tenant.isVk2 && (() => {
               const entdeckenHeroVorschauSrc =
@@ -15341,6 +15425,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 ))}
               </div>
             </div>
+            {renderLiveTemplatePanel()}
           </div>
           <input type="file" accept="image/*" ref={galerieImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'pageHero' }); setPendingPageImage({ field: 'galerieCardImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Galerie-Karte – im Fenster „Bild übernehmen“ klicken'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
           <input type="file" accept="image/*" ref={virtualTourImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'pageHero' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – im Fenster „Bild übernehmen“ klicken'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
@@ -19043,7 +19128,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               const fAccent = '#b54a1e'
               return (
                 <>
-                  {renderLiveTemplatePanel(360)}
+                  {renderLiveTemplatePanel()}
                   <div style={{ position: 'sticky', top: 0, zIndex: 20, background: s.bgDark, borderBottom: `2px solid ${s.accent}33`, padding: '0.75rem 1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                     <button type="button" onClick={() => setDesignSubTab('vorschau')} style={{ padding: '0.5rem 1rem', border: `1px solid ${s.accent}44`, borderRadius: 8, fontSize: '0.95rem', background: s.bgElevated, color: s.text, cursor: 'pointer', fontWeight: 600 }}>← Vorschau</button>
                     <span style={{ fontSize: '0.85rem', color: s.muted, flex: 1 }}>Eingangsseite „Entdecken“ nur für die echte K2-Galerie – Hero-Bild und Texte; Farben aus dem Design-Tab</span>
@@ -19087,7 +19172,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               const fAccent = '#b54a1e'
               return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
-                  {renderLiveTemplatePanel(320)}
+                  {renderLiveTemplatePanel()}
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'clamp(1.5rem, 4vw, 2.5rem)', alignItems: 'start' }}>
                   {/* Linke Spalte: einfache Farbwahl – auf hellem Hintergrund dunkle Schrift (Lesbarkeit). */}
                   <div style={{ flex: '1 1 260px', minWidth: 260, maxWidth: 420, display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -19666,7 +19751,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               }}>
                 ✈️ Du nutzt einen <strong>Test-Pilot-Zugang</strong>
                 {tenant.isOeffentlich ? ' (ök2 – Künstler-Demo)' : ' (VK2 – Vereinsplattform)'}
-                {' '}– Stufe <strong>Pro++</strong> kostenlos und ohne Ablaufdatum. Bitte unten unter „Meine Daten“ Namen und Kontakt eintragen, dann kannst du voll durchstarten.
+                {' '}– Stufe <strong>Pro</strong> kostenlos und ohne Ablaufdatum. Bitte unten unter „Meine Daten“ Namen und Kontakt eintragen, dann kannst du voll durchstarten.
               </div>
             )}
 
@@ -22472,8 +22557,6 @@ ${name}`
                 : [
                     { id: 'basic' as const, ...LIZENZPREISE.basic },
                     { id: 'pro' as const, ...LIZENZPREISE.pro },
-                    { id: 'proplus' as const, ...LIZENZPREISE.proplus },
-                    { id: 'propplus' as const, ...LIZENZPREISE.propplus },
                   ]
               const handleLizenzSubmit = async (e: React.FormEvent) => {
                 e.preventDefault()
@@ -22789,12 +22872,8 @@ ${name}`
                 ) : (
                   <>
                     <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: s.muted, lineHeight: 1.6 }}>
-                      Was jedes Paket enthält – Unterschiede auf einen Blick, damit die Mehrkosten nachvollziehbar sind.
+                      Was jedes Paket enthält – auf einen Blick.
                     </p>
-
-                    <div style={{ marginBottom: '1.25rem' }}>
-                      <LizenzZeitplanPilotStripeInfo variant="licences" />
-                    </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       <div style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px', padding: '1.25rem' }}>
@@ -22809,40 +22888,16 @@ ${name}`
                         </ul>
                       </div>
 
-                      <div style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px', padding: '1.25rem' }}>
+                      <div style={{ background: s.bgCard, border: `2px solid ${s.accent}44`, borderRadius: '12px', padding: '1.25rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                           <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>Pro</span>
                           <span style={{ fontSize: '1rem', fontWeight: 600, color: s.accent }}>{LIZENZPREISE.pro.price}</span>
                         </div>
-                        <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.muted }}>Alles aus Basic, plus:</p>
+                        <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.muted }}>Alles aus Basic, plus voller Umfang:</p>
                         <ul style={{ margin: 0, padding: '0 0 0 1.25rem', fontSize: '0.9rem', color: s.text, lineHeight: 1.75 }}>
-                          <li><strong>Unbegrenzte Werke</strong></li>
-                          <li><strong>Custom Domain</strong> (eigene Adresse)</li>
-                          <li>Weiterhin ohne vollen Marketingbereich</li>
-                        </ul>
-                      </div>
-
-                      <div style={{ background: s.bgCard, border: `2px solid ${s.accent}44`, borderRadius: '12px', padding: '1.25rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                          <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>Pro+</span>
-                          <span style={{ fontSize: '1rem', fontWeight: 600, color: s.accent }}>{LIZENZPREISE.proplus.price}</span>
-                        </div>
-                        <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.muted }}>Alles aus Pro, plus:</p>
-                        <ul style={{ margin: 0, padding: '0 0 0 1.25rem', fontSize: '0.9rem', color: s.text, lineHeight: 1.75 }}>
-                          <li><strong>Gesamter Marketingbereich</strong></li>
-                          <li>Events, Galeriepräsentation, Flyer, Presse</li>
-                          <li>Social Media, Plakat, PR-Dokumente aus einem Guss</li>
-                        </ul>
-                      </div>
-
-                      <div style={{ background: s.bgCard, border: `2px solid ${s.accent}44`, borderRadius: '12px', padding: '1.25rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                          <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>Pro++</span>
-                          <span style={{ fontSize: '1rem', fontWeight: 600, color: s.accent }}>{LIZENZPREISE.propplus.price}</span>
-                        </div>
-                        <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.muted }}>Alles aus Pro+, plus:</p>
-                        <ul style={{ margin: 0, padding: '0 0 0 1.25rem', fontSize: '0.9rem', color: s.text, lineHeight: 1.75 }}>
-                          <li><strong>Rechnung</strong> (§ 11 UStG): fortlaufende Rechnungsnummer, Pflichtangaben, USt-Aufschlüsselung</li>
+                          {LIZENZPREISE.pro.features.map((f) => (
+                            <li key={f}>{f}</li>
+                          ))}
                         </ul>
                       </div>
 
@@ -22865,7 +22920,7 @@ ${name}`
                     <div style={{ marginTop: '1.25rem', padding: '1rem', background: `${s.accent}0c`, borderRadius: 12, border: `1px solid ${s.accent}33` }}>
                       <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text, margin: '0 0 0.5rem' }}>Wie kann ich upgraden?</h4>
                       <p style={{ margin: 0, fontSize: '0.9rem', color: s.text, lineHeight: 1.6 }}>
-                        Von Basic auf Pro oder Pro auf Pro+: Gehe zu <strong>Einstellungen → Lizenz abschließen</strong>, wähle die höhere Stufe und schließe die Zahlung ab. Deine Lizenz wird automatisch aktualisiert.
+                        Von Basic auf Pro: Gehe zu <strong>Einstellungen → Lizenz abschließen</strong>, wähle Pro und schließe die Zahlung ab. Deine Lizenz wird automatisch aktualisiert.
                       </p>
                     </div>
                   </>
@@ -28076,21 +28131,12 @@ ${name}`
               </div>
               <div style={{ minHeight: 400, borderRadius: '12px', overflow: 'hidden', border: `1px solid ${(s?.accent ?? '#0d9488')}33`, background: s?.bgCard ?? '#fff', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', color: s?.muted ?? '#94a3b8', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}>
-                  Live-Template – identisch zur Frontseite
-                </div>
-                <iframe
-                  key={`presse-live-template-${designLivePreviewVersion}`}
-                  title="Presse Live-Template"
-                  src={designLiveTemplateRoute}
-                  style={{ width: '100%', height: 200, border: 'none', display: 'block', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}
-                />
-                <div style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', color: s?.muted ?? '#94a3b8', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}>
                   Vorschau – so kommt der Text im Dokument an (Links klickbar, Bild & QR wenn gesetzt)
                 </div>
                 <iframe
                   title="Presse-Vorschau"
                   srcDoc={previewHtml}
-                  style={{ width: '100%', height: 'calc(100% - 228px)', minHeight: 260, border: 'none', display: 'block' }}
+                  style={{ width: '100%', flex: 1, minHeight: 360, border: 'none', display: 'block' }}
                   sandbox="allow-same-origin allow-scripts"
                 />
               </div>
@@ -28314,21 +28360,12 @@ ${name}`
               </div>
               <div style={{ minHeight: 400, borderRadius: '12px', overflow: 'hidden', border: `1px solid ${(s?.accent ?? '#0d9488')}33`, background: s?.bgCard ?? '#fff', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', color: s?.muted ?? '#94a3b8', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}>
-                  Live-Template – identisch zur Frontseite
-                </div>
-                <iframe
-                  key={`social-live-template-${designLivePreviewVersion}`}
-                  title="Social Live-Template"
-                  src={designLiveTemplateRoute}
-                  style={{ width: '100%', height: 200, border: 'none', display: 'block', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}
-                />
-                <div style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', color: s?.muted ?? '#94a3b8', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}>
                   Vorschau – so kommt der Post im Dokument an
                 </div>
                 <iframe
                   title="Social-Media-Vorschau"
                   srcDoc={previewHtml}
-                  style={{ width: '100%', height: 'calc(100% - 228px)', minHeight: 260, border: 'none', display: 'block' }}
+                  style={{ width: '100%', flex: 1, minHeight: 360, border: 'none', display: 'block' }}
                   sandbox="allow-same-origin allow-scripts"
                 />
               </div>
@@ -28952,21 +28989,12 @@ ${name}`
               </div>
               <div style={{ minHeight: 400, borderRadius: '12px', overflow: 'hidden', border: `1px solid ${(s?.accent ?? '#0d9488')}33`, background: s?.bgCard ?? '#fff', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', color: s?.muted ?? '#94a3b8', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}>
-                  Live-Template – identisch zur Frontseite
-                </div>
-                <iframe
-                  key={`newsletter-live-template-${designLivePreviewVersion}`}
-                  title="Newsletter Live-Template"
-                  src={designLiveTemplateRoute}
-                  style={{ width: '100%', height: 200, border: 'none', display: 'block', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}
-                />
-                <div style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', color: s?.muted ?? '#94a3b8', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}>
                   Vorschau – so kommt der Newsletter im Dokument an
                 </div>
                 <iframe
                   title="Newsletter-Vorschau"
                   srcDoc={previewHtml}
-                  style={{ width: '100%', height: 'calc(100% - 228px)', minHeight: 260, border: 'none', display: 'block' }}
+                  style={{ width: '100%', flex: 1, minHeight: 360, border: 'none', display: 'block' }}
                   sandbox="allow-same-origin allow-scripts"
                 />
               </div>

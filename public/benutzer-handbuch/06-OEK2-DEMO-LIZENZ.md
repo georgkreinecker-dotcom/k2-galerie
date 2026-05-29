@@ -8,7 +8,7 @@ Dieses Kapitel richtet sich an Nutzerinnen und Nutzer der **öffentlichen Demo**
 
 Die Demo ist eine voll funktionsfähige Vorschau der K2 Galerie. Sie können damit in Ruhe ausprobieren, wie eine eigene Galerie aussehen und funktionieren würde: Werke anlegen, Design anpassen, Galerie ansehen und veröffentlichen. Die Demo verwendet **Beispieldaten** – keine echten Kundendaten. Sie eignet sich ideal, um die App kennenzulernen, bevor Sie eine Lizenz erwerben.
 
-**Testphase (2 Wochen kostenlos):** Sie können die Galerie **2 Wochen kostenlos** testen. Dafür sind die erforderlichen Angaben (z. B. E-Mail) einzugeben. Wenn Sie nach Ablauf der 2 Wochen keine Lizenz abschließen, werden Ihre in der Testphase gespeicherten Daten **unverzüglich gelöscht** und die Lizenz erlischt – das ist in den **AGB** festgehalten. Der Eintritt in den Zugangsbereich setzt voraus, dass Sie die **AGB gelesen und durch Ankreuzen bestätigt** haben (wie bei der Nutzung üblich).
+**Testphase (4 Wochen gratis testen):** Sie können die Galerie **4 Wochen gratis** testen. Dafür sind die erforderlichen Angaben (z. B. E-Mail) einzugeben. Wenn Sie nach Ablauf der Testphase keine Lizenz abschließen, werden Ihre in der Testphase gespeicherten Daten **unverzüglich gelöscht** und die Lizenz erlischt – das ist in den **AGB** festgehalten. Der Eintritt in den Zugangsbereich setzt voraus, dass Sie die **AGB gelesen und durch Ankreuzen bestätigt** haben (wie bei der Nutzung üblich).
 
 ---
 
@@ -41,13 +41,11 @@ Damit Sie auf einen Blick sehen, welche Stufe zu Ihnen passt, hier die **Lizenzs
 
 | Stufe | Preis | Enthalten |
 |-------|--------|-----------|
-| **Basic** | 15 €/Monat | Galerie, Werke **bis 30**, Design, Events, Etiketten, Standard-URL. **Keine Kassa.** |
-| **Pro** | 35 €/Monat | Alles aus Basic + **Kassa** (Verkauf erfassen, Belege drucken), Kassabuch (Eingänge), **unbegrenzte** Werke, Custom Domain. |
-| **Pro+** | 45 €/Monat | Alles aus Pro + **volles Kassabuch** (Eingänge und Ausgänge: Bar privat, Kassa an Bank, Bar mit Beleg) + **gesamter Marketingbereich** (Events, Galeriepräsentation, Flyer, Presse, Social Media). |
-| **Pro++** | 55 €/Monat | Alles aus Pro+ + **vollständige Rechnungspflege** (§ 11 UStG) + **vollständige Buchhaltung**: Rechnungen, Kassabuch, Verkäufe-CSV und **Belege als PDF** (Fotos/QR des Zeitraums zum Drucken oder Speichern – an Steuerberater mitsendbar). |
-| **VK2 (Kunstvereine)** | Vereinskonditionen | **Eigener Weg** wie die Einzelgalerie-Lizenzen Basic–Pro++: Vereinsplattform, Kauf und Demo über den **VK2-Bereich** – siehe **[Demo und Lizenz – Vereinsplattform](../vk2-handbuch/07-DEMO-LIZENZ.md)**. Auf der Seite **„Lizenz auswählen & bezahlen“** für Galerie-Produkte erscheinen nur **Basic, Pro, Pro+, Pro++**. |
+| **Basic** | 10 €/Monat | Galerie, Werke **bis 30**, Design, Events, Etiketten, Standard-URL. **Keine Kassa.** |
+| **Pro** | 25 €/Monat | **Alles in einer Stufe:** unbegrenzte Werke, Custom Domain, **Kassa** (Verkauf, Belege), **volles Kassabuch** (Eingänge + Ausgänge), **gesamter Marketingbereich** (Events, Flyer, Presse, Social Media), **Rechnung (§ 11 UStG)** und **vollständige Buchhaltung** (CSV, Belege als PDF). |
+| **VK2 (Kunstvereine)** | 25 €/Monat | **Eigener Weg** wie die Einzelgalerie: Vereinsplattform, Kauf und Demo über den **VK2-Bereich** – siehe **[Demo und Lizenz – Vereinsplattform](../vk2-handbuch/07-DEMO-LIZENZ.md)**. **Ab 10 registrierten Mitgliedern** für den Verein kostenfrei; Lizenzmitglieder 50 % Rabatt. Auf der Seite **„Lizenz auswählen & bezahlen“** für Galerie-Produkte erscheinen nur **Basic** und **Pro**. |
 
-**Kurz:** Basic = Einstieg ohne Kassa (bis 30 Werke). Pro = mit Kassa und Kassabuch (Eingänge). Pro+ = volles Kassabuch + ganzer Marketingbereich. Pro++ = vollständige Buchhaltung inkl. Rechnungspflege § 11 UStG. VK2 = Vereinslizenz mit eigenem Einstieg (Handbuch-Link oben).
+**Kurz:** Basic = Einstieg ohne Kassa (bis 30 Werke). Pro = voller Umfang in einer Lizenz. VK2 = Vereinslizenz mit eigenem Einstieg (Handbuch-Link oben). **4 Wochen gratis testen** vor dem Kauf.
 
 ---
 
@@ -55,11 +53,11 @@ Damit Sie auf einen Blick sehen, welche Stufe zu Ihnen passt, hier die **Lizenzs
 
 Der Lizenzabschluss für **Einzel-Galerien** läuft **vollständig in der App** – Sie müssen nichts anfragen und keine E-Mails schreiben.
 
-**Wo:** Im **Admin** unter **[Einstellungen](10-EINSTELLUNGEN.md)** auf den Link **„Lizenz online kaufen“** – oder dieselbe Seite erreichen Sie über das Projekt **K2 Galerie** als **„Lizenz auswählen & bezahlen“**. Dort stehen die Produkte **Basic, Pro, Pro+, Pro++**.
+**Wo:** Im **Admin** unter **[Einstellungen](10-EINSTELLUNGEN.md)** auf den Link **„Lizenz online kaufen“** – oder dieselbe Seite erreichen Sie über das Projekt **K2 Galerie** als **„Lizenz auswählen & bezahlen“**. Dort stehen die Produkte **Basic** und **Pro**.
 
 **Ablauf:**
 
-1. **Produkt** wählen (Basic, Pro, Pro+ oder Pro++).
+1. **Produkt** wählen (Basic oder Pro).
 2. **Schwerpunkt / Sparte** wählen (**Pflicht**): z. B. Kunst & Galerie, Handwerk & Manufaktur, Design & Möbel, Mode & Kleinserien, Food & Genuss, Dienstleister & Portfolio. Damit werden passende **Typen und Kategorien** für Ihre Werke vorbereitet (so wie in der aktuellen App vorgesehen).
 3. **Optional:** **Empfehler-ID** eintragen, wenn Sie eingeladen wurden – Format **K2-E-** plus sechs Zeichen (z. B. aus einem Link mit `?empfehler=…`, der das Feld vorfüllen kann).
 4. **Name** und **E-Mail** eintragen.
@@ -67,7 +65,7 @@ Der Lizenzabschluss für **Einzel-Galerien** läuft **vollständig in der App** 
 6. **Jetzt bezahlen** – Sie werden zu **Stripe** weitergeleitet (Karte). Nach erfolgreicher Zahlung ist **Ihre Lizenz aktiv**.
 7. Auf der **Erfolgsseite** und in der **Lizenzbestätigung** finden Sie die **Adresse Ihrer Galerie** und den **Admin-Link** (mit Ihrer Mandanten-ID und dem gewählten Schwerpunkt in der URL – bitte nicht manuell kürzen; der **Admin-QR** passt dazu).
 
-**Vereinsplattform VK2:** Kauf und Demo sind **nicht** dieselbe Formularseite wie für Basic–Pro++; nutzen Sie das **[VK2-Kapitel](../vk2-handbuch/07-DEMO-LIZENZ.md)** (Admin VK2 → Lizenz / Stripe).
+**Vereinsplattform VK2:** Kauf und Demo sind **nicht** dieselbe Formularseite wie für Basic/Pro; nutzen Sie das **[VK2-Kapitel](../vk2-handbuch/07-DEMO-LIZENZ.md)** (Admin VK2 → Lizenz / Stripe).
 
 Keine Anrufe, keine E-Mail-Schleife: Sie kaufen, zahlen, fertig.
 

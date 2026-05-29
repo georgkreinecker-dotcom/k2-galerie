@@ -60,7 +60,7 @@ Im Admin gibt es den Bereich **Statistik/Werkkatalog** (eine Registerkarte): Hie
 
 ## Kassa und Kassabuch
 
-Unter **„Kassa“** erfassen Sie Verkäufe, drucken Belege und führen das Kassabuch. Unter **Kassa → Buchhaltung** erledigen Sie die Vorarbeit für den Steuerberater (Zeitraum, CSV, Belege-PDF). Dort finden Sie auch Hinweise zur **EK-Kalkulation** am Werk sowie **Rohertrag** und **Lager-Vorschau** in der **Demo**. Die **vollständige Beschreibung** – Verkauf erfassen, Zahlungsarten, Belege, Storno, Kassabuch, Buchhaltung, Pro++ – steht im Kapitel [Kassa und Buchhaltung](08-KASSA-BUCHHALTUNG.md). Details für Vereine: [Vereinsplattform](05-VK2-VEREINSPLATTFORM.md).
+Unter **„Kassa“** erfassen Sie Verkäufe, drucken Belege und führen das Kassabuch. Unter **Kassa → Buchhaltung** erledigen Sie die Vorarbeit für den Steuerberater (Zeitraum, CSV, Belege-PDF). Dort finden Sie auch Hinweise zur **EK-Kalkulation** am Werk sowie **Rohertrag** und **Lager-Vorschau** in der **Demo**. Die **vollständige Beschreibung** – Verkauf erfassen, Zahlungsarten, Belege, Storno, Kassabuch, Buchhaltung, Pro – steht im Kapitel [Kassa und Buchhaltung](08-KASSA-BUCHHALTUNG.md). Details für Vereine: [Vereinsplattform](05-VK2-VEREINSPLATTFORM.md).
 
 ---
 

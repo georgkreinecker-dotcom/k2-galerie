@@ -17,7 +17,7 @@ Dieses Kapitel gilt für **Testpilot:innen**, die per **Zettel**, **persönliche
 
 - **Pilot-Session:** Die Einladung bzw. der Zettel stellt ein, dass ihr im **Admin** als **Testpilot:in** gelten sollt (Hinweise „Testpilot“, kein Muster-Demo-QR für Lizenznehmer).  
 - **Name:** Wo vorgesehen, kann euer **Name** in die **Vereins-Stammdaten** übernommen werden, wenn dort noch Demo oder leer steht – ihr könnt den **Vereinsnamen** jederzeit unter **Einstellungen → Stammdaten** selbst eintragen (z. B. einen Testnamen wie „Vereinsmaier“).
-- **Lizenzstufe:** Für die Testphase kann die **Demo-Pro++**-Logik greifen, wie bei der E-Mail-Einladung – Details siehe Kapitel **Demo und Lizenz**.
+- **Lizenzstufe:** Für die Testphase kann die **Pro**-Pilot-Logik greifen, wie bei der E-Mail-Einladung – Details siehe Kapitel **Demo und Lizenz**.
 
 ---
 
