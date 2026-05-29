@@ -15,7 +15,8 @@ Im Browser: `https://k2-galerie.vercel.app/texte-schreibtisch/marketing-kanaele-
 | `src/config/marketingKanalP1P2P3.ts` | Landing-Pfade, `buildMarketingKanalUrl`, `listMarketingKanalUrls` |
 | `src/config/k2AgenturGoogleKeywordsP1.ts` | P1 Google: 13 Keywords (Priorität) + Negativ-Start · Schalt-Paket |
 | `src/utils/marketingAttribution.ts` | `k=` / UTM First-Touch, Checkout-Payload |
-| `src/utils/marketingAnalytics.ts` | GA4 wenn `VITE_GA4_MEASUREMENT_ID` gesetzt |
+| `src/utils/marketingAnalytics.ts` | GA4 (`VITE_GA4_MEASUREMENT_ID`) + Google Ads Tag (`AW-18195006153` Pilot, überschreibbar per `VITE_GOOGLE_ADS_ID`) |
+| `src/config/googleAdsConfig.ts` | Pilot Conversion-ID Google Ads |
 | `src/appBootstrap.tsx` | Attribution + GA4 beim App-Start |
 
 ## Landings
@@ -34,7 +35,9 @@ Kampagnen-Schlüssel: `{produkt}-{kanal}-2026q2` (z. B. `p1-google-2026q2`).
 
 Environment Variable: `VITE_GA4_MEASUREMENT_ID` = `G-XXXXXXXXXX` (Google Analytics 4).
 
-Ohne Variable: Attribution und Stripe-Metadaten funktionieren trotzdem; GA4 bleibt aus.
+**Google Ads Conversion-Tag:** `AW-18195006153` ist im Code hinterlegt (`googleAdsConfig.ts`) – **nicht** manuell in `index.html` einfügen. Nach Deploy lädt die App gtag.js automatisch. Conversion-Ziel: `/lizenz-erfolg` (echte Stripe-Session). Optional in Vercel: `VITE_GOOGLE_ADS_CONVERSION_SEND_TO=AW-18195006153/<Label>` aus der Conversion-Aktion in Google Ads.
+
+Ohne GA4-Variable: Attribution und Stripe-Metadaten funktionieren trotzdem; GA4 bleibt aus. Google Ads-Tag läuft mit Pilot-ID.
 
 ## Tests
 

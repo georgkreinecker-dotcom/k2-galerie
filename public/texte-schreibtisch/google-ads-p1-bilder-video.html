@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="P1 Google Ads – Quellbilder aus Präsentationsmappe und App für Video-Generator" />
+  <title>P1 · Google – Bilder für Video (kgm solution)</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 1.25rem 1rem 2.5rem;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 11pt;
+      line-height: 1.5;
+      color: #1c1a18;
+      background: #f6f2eb;
+      max-width: 56rem;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .deckblatt {
+      text-align: center;
+      padding: 0.75rem 0 1rem;
+      border-bottom: 1px solid #c4b8a8;
+      margin-bottom: 1rem;
+    }
+    .deckblatt h1 { font-family: Georgia, serif; font-size: 1.2rem; margin: 0 0 0.35rem; }
+    .deckblatt p { margin: 0; font-size: 9.5pt; color: #5c5650; }
+    .kasten {
+      background: #fffefb;
+      border: 1px solid #b8a88e;
+      border-left: 5px solid #0d9488;
+      padding: 0.75rem 0.9rem;
+      margin: 0 0 1rem;
+      border-radius: 6px;
+    }
+    .kasten h2 { margin: 0 0 0.4rem; font-size: 1rem; color: #0d9488; }
+    .kasten ol { margin: 0.35rem 0 0; padding-left: 1.25em; }
+  .kasten li { margin-bottom: 0.35rem; }
+    h2.section {
+      font-family: Georgia, serif;
+      font-size: 1.05rem;
+      margin: 1.25rem 0 0.6rem;
+      color: #3d2e1f;
+      border-bottom: 1px solid #d4c8b8;
+      padding-bottom: 0.2rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+      gap: 0.85rem;
+    }
+    .karte {
+      background: #fffefb;
+      border: 1px solid #c4b8a8;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .karte img {
+      width: 100%;
+      height: 9rem;
+      object-fit: cover;
+      object-position: top center;
+      background: #ebe8e2;
+      display: block;
+    }
+    .karte .meta { padding: 0.5rem 0.6rem 0.65rem; }
+    .karte strong { display: block; font-size: 0.88rem; color: #1c1a18; }
+    .karte .tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.12rem 0.4rem;
+      border-radius: 4px;
+      margin-top: 0.25rem;
+    }
+    .tag-map { background: #dbeafe; color: #1e40af; }
+    .tag-app { background: #dcfce7; color: #166534; }
+    .karte a {
+      display: inline-block;
+      margin-top: 0.4rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #b54a1e;
+      text-decoration: none;
+    }
+    .karte a:hover { text-decoration: underline; }
+    .szene {
+      background: #fffaf5;
+      border: 1px dashed #b45309;
+      border-radius: 6px;
+      padding: 0.6rem 0.75rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.88rem;
+    }
+    .szene strong { color: #92400e; }
+  </style>
+</head>
+<body>
+  <header class="deckblatt">
+    <h1>P1 · Galerie – Bilder für Google-Video</h1>
+    <p>12 Quellbilder aus Präsentationsmappe (ök2-Demo) und App-Screens · nur Demo, keine K2-Echtwerke</p>
+  </header>
+
+  <div class="kasten">
+    <h2>So nutzt du sie in Google („Video erstellen“)</h2>
+    <ol>
+      <li>Bild unten anklicken → <strong>Speichern unter…</strong> (oder Rechtsklick → Bild speichern).</li>
+      <li>In Google: <strong>+ Bild hinzufügen</strong> → gespeicherte Datei wählen.</li>
+      <li>Pro Video <strong>2 Szenen</strong> (je 1 Bild pro Szene) – Vorschlag unten.</li>
+      <li><strong>Videolänge 10 s</strong> reicht für den Start.</li>
+    </ol>
+  </div>
+
+  <h2 class="section">Vorschlag: 3 Videos à 2 Szenen</h2>
+  <div class="szene"><strong>Video 1 – Galerie für Besucher:</strong> Szene 1 = 01 Willkommen · Szene 2 = 02 Galerie Werkkarten</div>
+  <div class="szene"><strong>Video 2 – Arbeiten in der App:</strong> Szene 1 = 06 Admin Start · Szene 2 = 08 Werke verwalten</div>
+  <div class="szene"><strong>Video 3 – Gestalten & Lizenz:</strong> Szene 1 = 07 Galerie gestalten · Szene 2 = 10 Lizenz abschließen</div>
+
+  <h2 class="section">Präsentationsmappe (Galerie-Ansicht)</h2>
+  <div class="grid" id="grid-map"></div>
+
+  <h2 class="section">App (Screens aus der Präsentationsmappe)</h2>
+  <div class="grid" id="grid-app"></div>
+
+  <script>
+    const BASE = '/google-ads-p1-video-quellen/'
+    const BILDER = [
+      { file: '01-praesentation-willkommen.jpg', titel: 'Willkommen', quelle: 'map' },
+      { file: '02-praesentation-galerie-werkkarten.png', titel: 'Galerie mit Werkkarten', quelle: 'map' },
+      { file: '03-praesentation-galerie-karte.jpg', titel: 'Galerie-Karte', quelle: 'map' },
+      { file: '04-praesentation-entdecken.jpg', titel: 'Entdecken', quelle: 'map' },
+      { file: '05-praesentation-virtueller-rundgang.jpg', titel: 'Virtueller Rundgang', quelle: 'map' },
+      { file: '06-app-admin-start.png', titel: 'Admin – Start', quelle: 'app' },
+      { file: '07-app-galerie-gestalten.png', titel: 'Galerie gestalten', quelle: 'app' },
+      { file: '08-app-werke-verwalten.png', titel: 'Werke verwalten', quelle: 'app' },
+      { file: '09-app-kassa.png', titel: 'Kassa', quelle: 'app' },
+      { file: '10-app-lizenz.png', titel: 'Lizenz abschließen', quelle: 'app' },
+      { file: '11-app-events-marketing.png', titel: 'Events & Marketing', quelle: 'app' },
+      { file: '12-app-einstellungen.png', titel: 'Einstellungen', quelle: 'app' },
+    ]
+    function karte(b) {
+      const tag = b.quelle === 'map'
+        ? '<span class="tag tag-map">Präsentationsmappe</span>'
+        : '<span class="tag tag-app">App</span>'
+      const src = BASE + b.file
+      return `<article class="karte">
+        <img src="${src}" alt="${b.titel}" loading="lazy" />
+        <div class="meta">
+          <strong>${b.titel}</strong>
+          ${tag}
+          <a href="${src}" download>${b.file}</a>
+        </div>
+      </article>`
+    }
+    document.getElementById('grid-map').innerHTML = BILDER.filter((x) => x.quelle === 'map').map(karte).join('')
+    document.getElementById('grid-app').innerHTML = BILDER.filter((x) => x.quelle === 'app').map(karte).join('')
+  </script>
+</body>
+</html>

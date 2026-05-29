@@ -12,6 +12,7 @@ import { formatFertigeAnzeigeText, getAnzeigenPaket } from '../../config/k2Agent
 import { formatAuswertungPaketText } from '../../config/k2AgenturAuswertungPaket'
 import { formatSchaltPaketText, getSchaltPaket } from '../../config/k2AgenturLaunchCheckliste'
 import { K2_AGENTUR_KANAL_PRIORITY } from '../../config/k2AgenturKanalPrioritaet'
+import { K2_AGENTUR_GOOGLE_ADS_P1_VIDEO_BILDER_DRUCK_URL } from '../../config/k2AgenturGoogleAdsP1VideoBilder'
 import { listMarketingKanalUrls } from '../../config/marketingKanalP1P2P3'
 import {
   getKanalChecklistProgress,
@@ -160,6 +161,16 @@ export default function K2AgenturSchaltenEndToEndPanel({
             >
               📋 Fertige Anzeige kopieren
             </button>
+            {meta.produkt === 'p1' && meta.kanal === 'google' && (
+              <a
+                href={K2_AGENTUR_GOOGLE_ADS_P1_VIDEO_BILDER_DRUCK_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ ...linkBtn, display: 'inline-block', marginTop: '0.5rem' }}
+              >
+                🖼️ Bilder für Google-Video (12 Stück)
+              </a>
+            )}
             {fertigeAnzeige && (
               <details style={{ marginTop: '0.5rem' }}>
                 <summary style={{ cursor: 'pointer', fontSize: '0.82rem', color: '#b54a1e', fontWeight: 600 }}>

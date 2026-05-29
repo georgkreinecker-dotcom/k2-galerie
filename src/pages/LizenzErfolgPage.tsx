@@ -19,6 +19,7 @@ import {
   resolveLizenzErfolgProductLine,
   getLizenzErfolgCopy,
 } from '../utils/lizenzErfolgCopy'
+import { trackGoogleAdsLicenceConversion } from '../utils/marketingAnalytics'
 
 type LicenceLinks = {
   galerie_url: string | null
@@ -110,6 +111,7 @@ export default function LizenzErfolgPage() {
   /** Verhindert, dass eine ältere Fetch-Kette nach „Erneut prüfen“ noch setLinks ausführt. */
   const licenceFetchEpochRef = useRef(0)
   const licenceSessionForLinksRef = useRef<string | null>(null)
+  const googleAdsConversionSentRef = useRef(false)
   const bestaetigungsDatum = new Date().toLocaleDateString('de-AT', { day: '2-digit', month: '2-digit', year: 'numeric' })
   const copy = useMemo(
     () => getLizenzErfolgCopy(links?.product_line ?? 'k2_galerie'),
@@ -139,6 +141,13 @@ export default function LizenzErfolgPage() {
     })
     setLinksError(null)
   }, [sessionId, musterParam])
+
+  /** Echter Kauf (Stripe-Session): Google-Ads-Conversion einmal melden. */
+  useEffect(() => {
+    if (!sessionId || musterParam === '1' || !links || googleAdsConversionSentRef.current) return
+    googleAdsConversionSentRef.current = true
+    trackGoogleAdsLicenceConversion()
+  }, [sessionId, musterParam, links])
 
   useEffect(() => {
     if (!sessionId) return
