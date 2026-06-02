@@ -314,7 +314,15 @@ export default function K2AgenturPlattformWorkplace() {
             ))}
           </div>
 
-          {werkzeugTab === 'strategie' && <K2AgenturStrategieDruckPanel />}
+          {werkzeugTab === 'strategie' && (
+            <K2AgenturStrategieDruckPanel
+              copyText={copyText}
+              onCopyFeedback={(msg: string) => {
+                setCopyHint(msg)
+                setTimeout(() => setCopyHint(null), 2800)
+              }}
+            />
+          )}
 
           {werkzeugTab === 'partner' && (
             <K2AgenturAgenturPartnerPanel

@@ -3,9 +3,12 @@
  */
 
 import type { FocusDirectionId } from './tenantConfig'
+import { buildMarketingKanalUrl } from './marketingKanalP1P2P3'
 import {
   formatGoogleKeywordsBlock,
   GOOGLE_NEGATIV_KEYWORDS_BASIS,
+  googleKeywordAlsEingabe,
+  sortKeywordsByPrio,
   type GoogleKeywordEintrag,
 } from './k2AgenturGoogleKeywordsShared'
 
@@ -124,5 +127,99 @@ export function formatGoogleKeywordsP1AlleSpartenBlock(): string {
     parts.push(formatGoogleKeywordsP1SparteBlock(s), '')
   }
   parts.push('Kunst-Pilot: siehe Keywords P1 · Kunst (k2-agentur-keywords-p1-google.html)', '── Ende alle Sparten ──')
+  return parts.join('\n')
+}
+
+/** Phase B: je Sparte Top-N Keywords (Priorität 1–N), nicht alle 50 in eine Gruppe. */
+export const P1_GOOGLE_SPARTE_KEYWORD_TOP = 8
+
+const P1_SPARTEN_ORDER: readonly P1SparteKeywordId[] = [
+  'handwerk',
+  'design',
+  'mode',
+  'food',
+  'dienstleister',
+]
+
+export function getP1SparteKeywordsTopForGoogle(
+  sparte: P1SparteKeywordId,
+  top = P1_GOOGLE_SPARTE_KEYWORD_TOP,
+): GoogleKeywordEintrag[] {
+  return sortKeywordsByPrio(SPARTE_KEYWORDS[sparte]).slice(0, top)
+}
+
+export function buildP1SparteGoogleCampaignKey(sparte: P1SparteKeywordId): string {
+  return `p1-google-${sparte}-2026q2`
+}
+
+export type P1SparteGoogleAdGroupPlan = {
+  sparte: P1SparteKeywordId
+  label: string
+  anzeigengruppeName: string
+  campaignKey: string
+  keywordCount: number
+}
+
+export function listP1SparteGoogleAdGroupPlans(): readonly P1SparteGoogleAdGroupPlan[] {
+  return P1_SPARTEN_ORDER.map((sparte) => ({
+    sparte,
+    label: SPARTE_LABEL[sparte],
+    anzeigengruppeName: `P1 · ${SPARTE_LABEL[sparte]}`,
+    campaignKey: buildP1SparteGoogleCampaignKey(sparte),
+    keywordCount: getP1SparteKeywordsTopForGoogle(sparte).length,
+  }))
+}
+
+/** Ein Kopierblock pro Sparte → neue Anzeigengruppe in Google Ads. */
+export function formatGoogleKeywordsP1SparteAnzeigengruppePaket(
+  sparte: P1SparteKeywordId,
+  landingUrl?: string,
+): string {
+  const landing = landingUrl ?? buildMarketingKanalUrl('p1', 'google')
+  const keywords = getP1SparteKeywordsTopForGoogle(sparte)
+  const lines: string[] = [
+    `── P1 · Google Ads · Anzeigengruppe: ${SPARTE_LABEL[sparte]} (Phase B) ──`,
+    '',
+    'Phase B: Erst wenn Kunst-Pilot (13 Keywords) 7–14 Tage lief.',
+    'Eigene Anzeigengruppe – nicht in die Kunst-Liste mischen.',
+    '',
+    `Anzeigengruppe (Vorschlag): P1 · ${SPARTE_LABEL[sparte]}`,
+    `Kampagnen-Key (k= / utm_campaign): ${buildP1SparteGoogleCampaignKey(sparte)}`,
+    `Final URL: ${landing}`,
+    '',
+    `Keywords (Top ${P1_GOOGLE_SPARTE_KEYWORD_TOP} · eine Zeile = ein Eintrag):`,
+    ...keywords.map((k) => googleKeywordAlsEingabe(k.suchbegriff, k.match)),
+    '',
+    '── Negativ-Keywords (Start) ──',
+    NEGATIV_SPARTEN.join(', '),
+    '',
+    'Anzeigentext: „Fertige Anzeige“ P1 · Google aus der Checkliste.',
+    '── Ende Anzeigengruppe ──',
+  ]
+  return lines.join('\n')
+}
+
+/** Übersicht aller 5 Sparten-Anzeigengruppen (Planung). */
+export function formatGoogleKeywordsP1SpartenPhaseBPlan(landingUrl?: string): string {
+  const landing = landingUrl ?? buildMarketingKanalUrl('p1', 'google')
+  const parts: string[] = [
+    '── P1 · Google · Phase B · 5 Sparten (Mein Weg) ──',
+    '',
+    'Jede Sparte = eigene Anzeigengruppe (8 Keywords, Prio 1–8).',
+    'Nicht alle ~50 Begriffe in die Kunst-Anzeigengruppe.',
+    `Landing ök2-Demo: ${landing}`,
+    '',
+    'Übersicht:',
+  ]
+  for (const plan of listP1SparteGoogleAdGroupPlans()) {
+    parts.push(
+      `• ${plan.label} → Anzeigengruppe „${plan.anzeigengruppeName}“ · ${plan.campaignKey} · ${plan.keywordCount} Keywords`,
+    )
+  }
+  parts.push(
+    '',
+    'Einzeln kopieren: K2 Agentur → Strategie & Keywords → Phase B je Sparte.',
+    '── Ende Phase B Plan ──',
+  )
   return parts.join('\n')
 }

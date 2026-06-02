@@ -93,7 +93,7 @@ export const K2_AGENTUR_PLATTFORM_CONSOLE_URL: Record<MarketingPaidKanalId, stri
 
 const ZIELGRUPPE_HINT: Record<MarketingPaidKanalId, Record<MarketingProduktId, string>> = {
   google: {
-    p1: '13 Keywords Kunst (Pilot) + Negativ – Block im Schalt-Paket · weitere Sparten: keywords-p1-sparten.html',
+    p1: '13 Keywords Kunst (Pilot) – Schalt-Paket · Phase B: 5 Sparten je Top 8 in K2 Agentur (Strategie oder hier unter P1·Google)',
     p2: '12 Keywords VK2 – Block im Schalt-Paket · Druck keywords-p2-google.html',
     p3: '12 Keywords K2 Familie – Block im Schalt-Paket · Druck keywords-p3-google.html',
   },

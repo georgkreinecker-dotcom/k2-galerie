@@ -7,6 +7,7 @@ import {
   K2_AGENTUR_KEYWORDS_DRUCK,
   K2_AGENTUR_MASTER_STRATEGIEN,
 } from '../../config/k2AgenturStrategieKeywordsRegistry'
+import K2AgenturP1SpartenGooglePanel from './K2AgenturP1SpartenGooglePanel'
 
 const linkBtn: CSSProperties = {
   display: 'inline-block',
@@ -20,7 +21,12 @@ const linkBtn: CSSProperties = {
   textDecoration: 'none',
 }
 
-export default function K2AgenturStrategieDruckPanel() {
+type Props = {
+  copyText?: (text: string) => Promise<boolean>
+  onCopyFeedback?: (msg: string) => void
+}
+
+export default function K2AgenturStrategieDruckPanel({ copyText, onCopyFeedback }: Props) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <section
@@ -61,6 +67,8 @@ export default function K2AgenturStrategieDruckPanel() {
           ))}
         </div>
       </section>
+
+      {copyText && <K2AgenturP1SpartenGooglePanel copyText={copyText} onCopyFeedback={onCopyFeedback} />}
     </div>
   )
 }

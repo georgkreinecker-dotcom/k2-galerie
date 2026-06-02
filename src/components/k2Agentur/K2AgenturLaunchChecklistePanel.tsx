@@ -16,6 +16,7 @@ import { formatFertigeAnzeigeText, getAnzeigenPaket } from '../../config/k2Agent
 import { formatAuswertungPaketText } from '../../config/k2AgenturAuswertungPaket'
 import { formatCreativeSpecText } from '../../config/k2AgenturCreativeSpec'
 import { listMarketingKanalUrls, type MarketingProduktId } from '../../config/marketingKanalP1P2P3'
+import K2AgenturP1SpartenGooglePanel from './K2AgenturP1SpartenGooglePanel'
 import {
   applySuggestedStatusToAllKanaele,
   appendKanalNotizBlock,
@@ -224,6 +225,12 @@ export default function K2AgenturLaunchChecklistePanel({
                         </summary>
                         <FertigeAnzeigeVorschau paket={fertigeAnzeige} compact />
                       </details>
+                    )}
+
+                    {meta.produkt === 'p1' && meta.kanal === 'google' && (
+                      <div style={{ marginTop: '0.75rem' }}>
+                        <K2AgenturP1SpartenGooglePanel copyText={copyText} onCopyFeedback={onCopyFeedback} />
+                      </div>
                     )}
 
                     <details style={{ marginTop: '0.5rem' }}>
