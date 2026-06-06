@@ -7,10 +7,30 @@
 import { MUSTER_EVENTS } from '../config/tenantConfig'
 import { loadEvents } from './eventsStorage'
 
+function mergeOek2StoredWithMuster(stored: any[]): any[] {
+  const muster = JSON.parse(JSON.stringify(MUSTER_EVENTS)) as any[]
+  if (!Array.isArray(stored) || stored.length === 0) return muster
+  const musterIds = new Set(muster.map((e: any) => e?.id).filter(Boolean))
+  const mergedMuster = muster.map((e: any) => {
+    const s = stored.find((x: any) => x?.id === e.id)
+    return s ? { ...e, ...s } : e
+  })
+  const extras = stored.filter((x: any) => x?.id && !musterIds.has(x.id))
+  const combined = [...mergedMuster, ...extras]
+  combined.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  return combined
+}
+
+/** Admin ök2: Muster + bereinigte k2-oeffentlich-events (keine K2-Echtdaten). */
+export function getOek2EventsForAdmin(): any[] {
+  const stored = loadEvents('oeffentlich')
+  return mergeOek2StoredWithMuster(stored)
+}
+
 /** Events aus Speicher; wenn ök2 und leer → Muster-Event(e) aus dem Code (immer dieselbe Demo-Linie). */
 export function getOeffentlichEventsWithMusterFallback(): any[] {
   const list = loadEvents('oeffentlich')
-  if (Array.isArray(list) && list.length > 0) return list
+  if (Array.isArray(list) && list.length > 0) return mergeOek2StoredWithMuster(list)
   return JSON.parse(JSON.stringify(MUSTER_EVENTS)) as any[]
 }
 

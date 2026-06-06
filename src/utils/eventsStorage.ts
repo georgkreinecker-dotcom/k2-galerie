@@ -3,6 +3,10 @@
  * Alle Lese-/Schreibzugriffe für k2-events, k2-oeffentlich-events, k2-vk2-events laufen hier.
  */
 
+import {
+  filterK2ContaminationFromOek2Events,
+  readRawK2EventsFromStorage,
+} from './oek2EventK2Guard'
 import { pilotScopeVk2Key } from './vk2StorageKeys'
 
 export type EventsTenantId = 'k2' | 'oeffentlich' | 'vk2'
@@ -156,6 +160,23 @@ export function loadEvents(tenantId: EventsTenantId): any[] {
       }
     }
 
+    // ök2: K2-Echtdaten (z. B. Eröffnung K2 Galerie) auch bei neuer ID entfernen
+    if (tenantId === 'oeffentlich' && typeof window !== 'undefined' && list.length > 0) {
+      const k2List = readRawK2EventsFromStorage()
+      const before = list.length
+      list = filterK2ContaminationFromOek2Events(list, k2List) as any[]
+      if (list.length < before) {
+        console.warn(
+          `⚠️ eventsStorage: ${before - list.length} K2-Echtdaten-Event(s) aus ök2 entfernt (Datentrennung)`
+        )
+        try {
+          localStorage.setItem(key, JSON.stringify(list))
+        } catch (e) {
+          console.warn('eventsStorage: ök2-K2-Reparatur – Schreiben fehlgeschlagen', e)
+        }
+      }
+    }
+
     return list
   } catch {
     return []
@@ -241,8 +262,15 @@ export function saveEvents(tenantId: EventsTenantId, events: any[]): void {
       }
       // EISERN: ök2 – keine K2- und keine VK2-Daten (vice versa)
       if (tenantId === 'oeffentlich' && list.length > 0) {
+        const incomingCount = list.length
+        const k2List = readRawK2EventsFromStorage()
+        const beforeContent = list.length
+        list = filterK2ContaminationFromOek2Events(list, k2List) as any[]
+        if (list.length < beforeContent) {
+          console.warn('⚠️ eventsStorage: K2-Echtdaten aus ök2-Schreibvorgang entfernt (Inhalt/Fingerprint)')
+        }
         const { list: filtered, allFiltered } = filterOtherContextFromEvents(list, 'oeffentlich')
-        if (allFiltered) {
+        if (allFiltered || (incomingCount > 0 && filtered.length === 0)) {
           console.warn('⚠️ eventsStorage: Schreibvorgang abgebrochen – nur K2/VK2-Events übergeben, ök2 würde überschrieben')
           return
         }

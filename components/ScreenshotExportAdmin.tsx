@@ -157,7 +157,7 @@ import { applyZettelPilotVornameToOeffentlichMartina } from '../src/utils/zettel
 import { SESSION_OEK2_ZETTEL_VORNAME_KEY } from '../src/utils/oeffentlichStammdatenMuster'
 import { computeK2MalereiMartinaCorrectedNumber } from '../src/utils/k2MalereiMartinaKtoMPrefixFix'
 import { loadEvents as loadEventsFromStorage, saveEvents as saveEventsToStorage, loadK2EventsBackup, mergeEventTimesFromLocal } from '../src/utils/eventsStorage'
-import { pickOpeningEventForWerbemittel } from '../src/utils/oek2MusterEventLinie'
+import { getOek2EventsForAdmin, pickOpeningEventForWerbemittel } from '../src/utils/oek2MusterEventLinie'
 import { loadDocuments as loadDocumentsFromStorage, saveDocuments as saveDocumentsToStorage, loadK2DocumentsBackup } from '../src/utils/documentsStorage'
 import { applyServerPayloadK2 } from '../src/utils/applyServerDataToLocal'
 import {
@@ -2281,21 +2281,8 @@ function saveEvents(tenant: ReturnType<typeof useTenant>, events: any[]): void {
 
 function loadEvents(tenant: ReturnType<typeof useTenant>): any[] {
   try {
-    // ök2: Muster-Events + k2-oeffentlich-events mergen (wie loadDocuments).
     if (tenant.isOeffentlich) {
-      const muster = JSON.parse(JSON.stringify(MUSTER_EVENTS)) as any[]
-      const stored = loadEventsFromStorage('oeffentlich')
-      if (!Array.isArray(stored) || stored.length === 0) return muster
-      if (stored.length === 0) return muster
-      const musterIds = new Set(muster.map((e: any) => e?.id).filter(Boolean))
-      const mergedMuster = muster.map((e: any) => {
-        const s = stored.find((x: any) => x?.id === e.id)
-        return s ? { ...e, ...s } : e
-      })
-      const extras = stored.filter((x: any) => x?.id && !musterIds.has(x.id))
-      const combined = [...mergedMuster, ...extras]
-      combined.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      return combined
+      return getOek2EventsForAdmin()
     }
     if (tenant.isVk2) {
       initVk2DemoEventAndDocumentsIfEmpty()
@@ -12000,6 +11987,10 @@ ${'='.repeat(60)}
 
   // Eröffnungsevent 24.–26. April anlegen (wie gestern angelegt) – Dokumente danach im Event hinzufügen
   const handleCreateEröffnungsevent = () => {
+    if (tenant.isOeffentlich) {
+      alert('In der Demo (ök2) gibt es kein K2-Eröffnungsevent – nur Muster-Events.')
+      return
+    }
     if (effectiveDynamicTenantId) {
       alert('Für Lizenzmandanten ist das K2-Eröffnungsevent deaktiviert.')
       return
