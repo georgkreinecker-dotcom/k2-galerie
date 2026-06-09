@@ -37,8 +37,8 @@ async function handleVisit(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'GET' && req.method !== 'POST') return res.status(405).json({ error: 'Nur GET oder POST' })
 
-  const tenant = getTenant(req)
-  if (!tenant) return res.status(400).json({ error: 'tenant fehlt oder ungültig (1–64 Zeichen: a–z, 0–9, Bindestrich)' })
+  const qAgg = req.query && req.query.aggregatePrefix
+  const aggregatePrefix = typeof qAgg === 'string' ? qAgg.trim() : null
 
   const supabaseUrlRaw = process.env.SUPABASE_URL
   const supabaseUrl = (supabaseUrlRaw || '').trim()

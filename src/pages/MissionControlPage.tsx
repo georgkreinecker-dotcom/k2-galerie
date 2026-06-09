@@ -8,7 +8,13 @@ import {
   MOK2_ROUTE,
 } from '../config/navigation'
 import { LICENSEE_DOMAIN_REGISTRY } from '../config/licenseeDomainRegistry'
-import { fetchVisitCount, fetchVisitCountAggregateByPrefix, VISIT_AGGREGATE_PREFIX_OEK2_PILOT, VISIT_AGGREGATE_PREFIX_VK2_PILOT } from '../utils/visitCountApiOrigin'
+import {
+  fetchVisitCount,
+  fetchVisitCountAggregateByPrefix,
+  getVisitCountApiOrigin,
+  VISIT_AGGREGATE_PREFIX_OEK2_PILOT,
+  VISIT_AGGREGATE_PREFIX_VK2_PILOT,
+} from '../utils/visitCountApiOrigin'
 import {
   computeMissionVisitDailyDeltas,
   formatMissionVisitSnapshotColumnLabel,
@@ -93,7 +99,7 @@ export default function MissionControlPage() {
   }, [])
 
   useEffect(() => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : ''
+    const origin = getVisitCountApiOrigin()
     fetch(`${origin}/api/marketing-attribution?mode=summary&days=90`)
       .then((r) => r.json())
       .then((data) => {
