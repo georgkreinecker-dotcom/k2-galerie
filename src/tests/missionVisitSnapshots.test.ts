@@ -7,12 +7,27 @@ describe('missionVisitSnapshots', () => {
     const d0 = new Date('2026-04-10T08:00:00')
     const d1 = new Date('2026-04-10T18:00:00')
     const a: MissionVisitSnapshot[] = [
-      { at: d0.toISOString(), k2: 1, oeffentlich: 0, vk2Demo: 0, k2FamilieMuster: 0, kreineckerStammbaum: 0 },
+      {
+        at: d0.toISOString(),
+        k2: 1,
+        oeffentlich: 0,
+        oeffentlichPilot: 0,
+        oeffentlichGesamt: 0,
+        vk2Demo: 0,
+        vk2Pilot: 0,
+        vk2Gesamt: 0,
+        k2FamilieMuster: 0,
+        kreineckerStammbaum: 0,
+      },
     ]
     const next = computeNextMissionVisitSnapshots(a, d1, {
       k2: 5,
       oeffentlich: 1,
+      oeffentlichPilot: 2,
+      oeffentlichGesamt: 3,
       vk2Demo: 0,
+      vk2Pilot: 0,
+      vk2Gesamt: 0,
       k2FamilieMuster: 0,
       kreineckerStammbaum: 0,
     })
@@ -27,7 +42,11 @@ describe('missionVisitSnapshots', () => {
         at: new Date('2026-04-10T12:00:00').toISOString(),
         k2: 1,
         oeffentlich: 0,
+        oeffentlichPilot: 0,
+        oeffentlichGesamt: 0,
         vk2Demo: 0,
+        vk2Pilot: 0,
+        vk2Gesamt: 0,
         k2FamilieMuster: 0,
         kreineckerStammbaum: 0,
       },
@@ -35,7 +54,11 @@ describe('missionVisitSnapshots', () => {
     const next = computeNextMissionVisitSnapshots(prev, new Date('2026-04-11T12:00:00'), {
       k2: 2,
       oeffentlich: 0,
+      oeffentlichPilot: 0,
+      oeffentlichGesamt: 0,
       vk2Demo: 0,
+      vk2Pilot: 0,
+      vk2Gesamt: 0,
       k2FamilieMuster: 0,
       kreineckerStammbaum: 0,
     })
@@ -49,7 +72,11 @@ describe('missionVisitSnapshots', () => {
         at: '2026-04-27T20:00:00.000Z',
         k2: 200,
         oeffentlich: 10,
+        oeffentlichPilot: 1,
+        oeffentlichGesamt: 11,
         vk2Demo: 5,
+        vk2Pilot: 0,
+        vk2Gesamt: 5,
         k2FamilieMuster: 3,
         kreineckerStammbaum: 221,
       },
@@ -57,7 +84,11 @@ describe('missionVisitSnapshots', () => {
         at: '2026-04-28T20:00:00.000Z',
         k2: 205,
         oeffentlich: 12,
+        oeffentlichPilot: 1,
+        oeffentlichGesamt: 13,
         vk2Demo: 5,
+        vk2Pilot: 0,
+        vk2Gesamt: 5,
         k2FamilieMuster: 7,
         kreineckerStammbaum: 221,
       },
@@ -65,21 +96,77 @@ describe('missionVisitSnapshots', () => {
         at: '2026-04-29T10:00:00.000Z',
         k2: 208,
         oeffentlich: 12,
+        oeffentlichPilot: 2,
+        oeffentlichGesamt: 14,
         vk2Demo: 6,
+        vk2Pilot: 1,
+        vk2Gesamt: 7,
         k2FamilieMuster: 7,
         kreineckerStammbaum: 223,
       },
     ]
     const d = computeMissionVisitDailyDeltas(timeline)
-    expect(d[0]).toEqual({ k2: 0, oeffentlich: 0, vk2Demo: 0, k2FamilieMuster: 0, kreineckerStammbaum: 0 })
-    expect(d[1]).toEqual({ k2: 5, oeffentlich: 2, vk2Demo: 0, k2FamilieMuster: 4, kreineckerStammbaum: 0 })
-    expect(d[2]).toEqual({ k2: 3, oeffentlich: 0, vk2Demo: 1, k2FamilieMuster: 0, kreineckerStammbaum: 2 })
+    expect(d[0]).toEqual({
+      k2: 0,
+      oeffentlich: 0,
+      oeffentlichPilot: 0,
+      oeffentlichGesamt: 0,
+      vk2Demo: 0,
+      vk2Pilot: 0,
+      vk2Gesamt: 0,
+      k2FamilieMuster: 0,
+      kreineckerStammbaum: 0,
+    })
+    expect(d[1]).toEqual({
+      k2: 5,
+      oeffentlich: 2,
+      oeffentlichPilot: 0,
+      oeffentlichGesamt: 2,
+      vk2Demo: 0,
+      vk2Pilot: 0,
+      vk2Gesamt: 0,
+      k2FamilieMuster: 4,
+      kreineckerStammbaum: 0,
+    })
+    expect(d[2]).toEqual({
+      k2: 3,
+      oeffentlich: 0,
+      oeffentlichPilot: 1,
+      oeffentlichGesamt: 1,
+      vk2Demo: 1,
+      vk2Pilot: 1,
+      vk2Gesamt: 2,
+      k2FamilieMuster: 0,
+      kreineckerStammbaum: 2,
+    })
   })
 
   it('Tageszuwachs: API-Rückgang wird als 0 gezählt', () => {
     const timeline: MissionVisitSnapshot[] = [
-      { at: '2026-04-01T12:00:00.000Z', k2: 10, oeffentlich: 0, vk2Demo: 0, k2FamilieMuster: 0, kreineckerStammbaum: 0 },
-      { at: '2026-04-02T12:00:00.000Z', k2: 8, oeffentlich: 0, vk2Demo: 0, k2FamilieMuster: 0, kreineckerStammbaum: 0 },
+      {
+        at: '2026-04-01T12:00:00.000Z',
+        k2: 10,
+        oeffentlich: 0,
+        oeffentlichPilot: 0,
+        oeffentlichGesamt: 0,
+        vk2Demo: 0,
+        vk2Pilot: 0,
+        vk2Gesamt: 0,
+        k2FamilieMuster: 0,
+        kreineckerStammbaum: 0,
+      },
+      {
+        at: '2026-04-02T12:00:00.000Z',
+        k2: 8,
+        oeffentlich: 0,
+        oeffentlichPilot: 0,
+        oeffentlichGesamt: 0,
+        vk2Demo: 0,
+        vk2Pilot: 0,
+        vk2Gesamt: 0,
+        k2FamilieMuster: 0,
+        kreineckerStammbaum: 0,
+      },
     ]
     const d = computeMissionVisitDailyDeltas(timeline)
     expect(d[1].k2).toBe(0)

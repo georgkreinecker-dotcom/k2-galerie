@@ -8,14 +8,17 @@ import {
   MOK2_ROUTE,
 } from '../config/navigation'
 import { LICENSEE_DOMAIN_REGISTRY } from '../config/licenseeDomainRegistry'
-import { fetchVisitCount } from '../utils/visitCountApiOrigin'
+import { fetchVisitCount, fetchVisitCountAggregateByPrefix, VISIT_AGGREGATE_PREFIX_OEK2_PILOT, VISIT_AGGREGATE_PREFIX_VK2_PILOT } from '../utils/visitCountApiOrigin'
 import {
   computeMissionVisitDailyDeltas,
   formatMissionVisitSnapshotColumnLabel,
   loadMissionVisitSnapshots,
   MISSION_VISIT_CHART_KEY_TO_FIELD,
+  type MissionVisitCounts,
   upsertMissionVisitSnapshot,
 } from '../utils/missionVisitSnapshots'
+import { sumVisitCounts } from '../utils/visitTenantAggregate'
+import { GOOGLE_ADS_ID_PILOT } from '../config/googleAdsConfig'
 
 const SHOW_VISIT_CHART_KEY = 'k2-mission-control-show-visit-chart'
 
@@ -52,13 +55,7 @@ const PROJECT_ENTRY_COLOR: Record<string, string> = {
 
 export default function MissionControlPage() {
   const [showVisitChart, setShowVisitChart] = useState(() => getPersistentBoolean(SHOW_VISIT_CHART_KEY))
-  const [visits, setVisits] = useState<{
-    k2: number
-    oeffentlich: number
-    vk2Demo: number
-    k2FamilieMuster: number
-    kreineckerStammbaum: number
-  } | null>(null)
+  const [visits, setVisits] = useState<MissionVisitCounts | null>(null)
   const [visitTimeline, setVisitTimeline] = useState(loadMissionVisitSnapshots)
   const [attrSummary, setAttrSummary] = useState<{
     configured: boolean
@@ -72,11 +69,23 @@ export default function MissionControlPage() {
     Promise.all([
       fetchVisitCount('k2'),
       fetchVisitCount('oeffentlich'),
+      fetchVisitCountAggregateByPrefix(VISIT_AGGREGATE_PREFIX_OEK2_PILOT),
       fetchVisitCount('vk2'),
+      fetchVisitCountAggregateByPrefix(VISIT_AGGREGATE_PREFIX_VK2_PILOT),
       fetchVisitCount('k2-familie-muster'),
       fetchVisitCount('k2-familie-kreinecker-stammbaum'),
-    ]).then(([k2, oef, vk2Demo, k2FamilieMuster, kreineckerStammbaum]) => {
-      const next = { k2, oeffentlich: oef, vk2Demo, k2FamilieMuster, kreineckerStammbaum }
+    ]).then(([k2, oef, oefPilot, vk2Demo, vk2Pilot, k2FamilieMuster, kreineckerStammbaum]) => {
+      const next: MissionVisitCounts = {
+        k2,
+        oeffentlich: oef,
+        oeffentlichPilot: oefPilot,
+        oeffentlichGesamt: sumVisitCounts(oef, oefPilot),
+        vk2Demo,
+        vk2Pilot,
+        vk2Gesamt: sumVisitCounts(vk2Demo, vk2Pilot),
+        k2FamilieMuster,
+        kreineckerStammbaum,
+      }
       setVisits(next)
       upsertMissionVisitSnapshot(next)
       setVisitTimeline(loadMissionVisitSnapshots())
@@ -129,8 +138,8 @@ export default function MissionControlPage() {
   const visitSum =
     visits != null
       ? visits.k2 +
-        visits.oeffentlich +
-        visits.vk2Demo +
+        visits.oeffentlichGesamt +
+        visits.vk2Gesamt +
         visits.k2FamilieMuster +
         visits.kreineckerStammbaum
       : null
@@ -139,8 +148,13 @@ export default function MissionControlPage() {
     if (!visits) return null
     return [
       { key: 'k2', label: 'K2 Galerie', value: visits.k2, barColor: '#5ffbf1' },
-      { key: 'oeffentlich', label: 'ök2 Demo', value: visits.oeffentlich, barColor: '#fcd34d' },
-      { key: 'vk2', label: 'VK2-Demo', value: visits.vk2Demo, barColor: '#a78bfa' },
+      {
+        key: 'oeffentlich',
+        label: 'ök2 gesamt (Demo + Pilot)',
+        value: visits.oeffentlichGesamt,
+        barColor: '#fcd34d',
+      },
+      { key: 'vk2', label: 'VK2 gesamt (Demo + Pilot)', value: visits.vk2Gesamt, barColor: '#a78bfa' },
       { key: 'fam-muster', label: 'K2 Familie Muster', value: visits.k2FamilieMuster, barColor: '#34d399' },
       { key: 'krein', label: 'Kreinecker-Stammbaum', value: visits.kreineckerStammbaum, barColor: '#fb923c' },
     ]
@@ -278,7 +292,8 @@ export default function MissionControlPage() {
         >
           <h2 style={{ margin: '0 0 0.75rem', fontSize: '1.15rem', color: '#a5b4fc' }}>👁 Besucher (Zähler)</h2>
           <p style={{ margin: '0 0 0.35rem', fontSize: '0.85rem', color: '#8fa0c9' }}>
-            Pro Browser-Sitzung einmal gezählt – Galerie, ök2, VK2-Demo, Musterfamilie Huber, Kreinecker-Stammbaum.
+            Pro Browser-Sitzung einmal gezählt – Galerie, ök2 (Demo + Pilot-Zähler), VK2, Musterfamilie Huber,
+            Kreinecker-Stammbaum.
           </p>
           <p
             style={{
@@ -343,10 +358,22 @@ export default function MissionControlPage() {
                 <strong style={{ color: '#f0f6ff' }}>K2:</strong> {visits?.k2 ?? '–'}
               </div>
               <div>
-                <strong style={{ color: '#f0f6ff' }}>ök2:</strong> {visits?.oeffentlich ?? '–'}
+                <strong style={{ color: '#fcd34d' }}>ök2 gesamt:</strong> {visits?.oeffentlichGesamt ?? '–'}
+                {visits != null && (
+                  <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
+                    {' '}
+                    (Demo {visits.oeffentlich} + Pilot {visits.oeffentlichPilot})
+                  </span>
+                )}
               </div>
               <div>
-                <strong style={{ color: '#f0f6ff' }}>VK2-Demo:</strong> {visits?.vk2Demo ?? '–'}
+                <strong style={{ color: '#f0f6ff' }}>VK2 gesamt:</strong> {visits?.vk2Gesamt ?? '–'}
+                {visits != null && (
+                  <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
+                    {' '}
+                    (Demo {visits.vk2Demo} + Pilot {visits.vk2Pilot})
+                  </span>
+                )}
               </div>
               <div>
                 <strong style={{ color: '#f0f6ff' }}>K2 Familie Muster:</strong> {visits?.k2FamilieMuster ?? '–'}
@@ -369,6 +396,59 @@ export default function MissionControlPage() {
               Übersicht-Board → Lizenzen, Zahlen, Export
             </Link>
           </div>
+
+          <div
+            className="mission-visit-no-print"
+            style={{
+              marginTop: '1rem',
+              padding: '0.75rem 0.9rem',
+              borderRadius: '10px',
+              background: 'rgba(15,23,42,0.45)',
+              border: '1px solid rgba(251,191,36,0.45)',
+            }}
+          >
+            <h3 style={{ margin: '0 0 0.5rem', fontSize: '0.95rem', color: '#fde68a' }}>
+              📊 Google Ads – Abgleich (P1 ök2)
+            </h3>
+            <p style={{ margin: '0 0 0.55rem', fontSize: '0.82rem', color: '#cbd5e1', lineHeight: 1.55 }}>
+              <strong>Google Klicks</strong> = jeder Klick auf die Anzeige. <strong>Unser Zähler</strong> = einmal pro
+              Browser-Sitzung, erst nach Galerie-Laden. Vergleiche deshalb <strong>ök2 gesamt</strong> (oben) mit Google –
+              nicht nur die Demo-Basis. Pilot-Besuche (Zettel / vorname+entwurf) sind in gesamt enthalten.
+            </p>
+            <p style={{ margin: '0 0 0.65rem', fontSize: '0.78rem', color: '#94a3b8' }}>
+              Conversion-Tag im Code: <code style={{ color: '#a5f3fc' }}>{GOOGLE_ADS_ID_PILOT}</code> · Ziel-Seite:{' '}
+              <code style={{ color: '#a5f3fc' }}>/lizenz-erfolg</code> (echte Stripe-Session)
+            </p>
+            <ol
+              style={{
+                margin: 0,
+                paddingLeft: '1.25rem',
+                fontSize: '0.8rem',
+                color: '#e2e8f0',
+                lineHeight: 1.55,
+              }}
+            >
+              <li>
+                Google Ads → Ziele → Conversion-Aktion anlegen: <strong>Website</strong>, URL enthält{' '}
+                <code>/lizenz-erfolg</code>
+              </li>
+              <li>
+                Label kopieren → Vercel:{' '}
+                <code>VITE_GOOGLE_ADS_CONVERSION_SEND_TO={GOOGLE_ADS_ID_PILOT}/&lt;Label&gt;</code> → neu deployen
+              </li>
+              <li>Testkauf (Stripe Testmodus) → Erfolgsseite → in Google „Conversions“ prüfen (24–48 h)</li>
+              <li>Einrichtungs-Checkliste in Google auf 100 % (Sitelinks, Zusatzinfos – wie im Ads-Dashboard)</li>
+            </ol>
+            <p style={{ margin: '0.65rem 0 0', fontSize: '0.78rem' }}>
+              <a
+                href="/texte-schreibtisch/marketing-kanaele-p1-p2-p3.html#google-conversion"
+                style={{ color: '#7dd3fc', fontWeight: 600 }}
+              >
+                Druckbare Checkliste (Schreibtisch) →
+              </a>
+            </p>
+          </div>
+
           {showVisitChart && visitChartRows && (
             <div className="mission-visit-chart" style={{ marginTop: '1.25rem' }}>
               <h3

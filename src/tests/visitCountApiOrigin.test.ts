@@ -29,3 +29,26 @@ describe('fetchVisitCount', () => {
     expect(n).toBe(0)
   })
 })
+
+describe('fetchVisitCountAggregateByPrefix', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
+  })
+
+  it('GET nutzt aggregatePrefix', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ count: 12 }),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    const { fetchVisitCountAggregateByPrefix } = await import('../utils/visitCountApiOrigin')
+    const n = await fetchVisitCountAggregateByPrefix('oeffentlich-pilot')
+    expect(n).toBe(12)
+    const base = BASE_APP_URL.replace(/\/$/, '')
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${base}/api/visit?aggregatePrefix=oeffentlich-pilot`,
+      expect.objectContaining({ cache: 'no-store' }),
+    )
+  })
+})

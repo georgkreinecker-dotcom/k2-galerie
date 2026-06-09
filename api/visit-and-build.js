@@ -9,8 +9,15 @@ const { createClient } = require('@supabase/supabase-js')
 /** Synchron zu src/utils/reportPublicGalleryVisit.ts (VISIT_TENANT_ID_RE) */
 const VISIT_TENANT_RE = /^[a-z0-9-]{1,64}$/
 
+/** Synchron zu src/utils/visitTenantAggregate.ts */
+const VISIT_AGGREGATE_PREFIXES = new Set(['oeffentlich-pilot', 'vk2-pilot'])
+
 function isValidVisitTenant(t) {
   return typeof t === 'string' && VISIT_TENANT_RE.test(t)
+}
+
+function isValidVisitAggregatePrefix(p) {
+  return typeof p === 'string' && VISIT_AGGREGATE_PREFIXES.has(p)
 }
 
 function getTenant(req) {
@@ -55,6 +62,40 @@ async function handleVisit(req, res) {
 
   const supabase = createClient(supabaseUrl, key)
   try {
+    if (aggregatePrefix) {
+      if (req.method !== 'GET') {
+        return res.status(405).json({ error: 'aggregatePrefix nur mit GET' })
+      }
+      if (!isValidVisitAggregatePrefix(aggregatePrefix)) {
+        return res.status(400).json({ error: 'aggregatePrefix ungültig (oeffentlich-pilot oder vk2-pilot)' })
+      }
+      const { data: rows, error: aggErr } = await supabase
+        .from('visits')
+        .select('tenant_id, count')
+        .like('tenant_id', `${aggregatePrefix}%`)
+      if (aggErr) {
+        return res.status(500).json({
+          count: 0,
+          error: `Supabase aggregate fehlgeschlagen: ${aggErr.message}`,
+          configured: true,
+        })
+      }
+      const sum = (rows || []).reduce((acc, row) => acc + (row && row.count != null ? row.count : 0), 0)
+      return res.status(200).json({
+        count: sum,
+        configured: true,
+        aggregatePrefix,
+        parts: (rows || []).length,
+      })
+    }
+
+    const tenant = getTenant(req)
+    if (!tenant) {
+      return res.status(400).json({
+        error: 'tenant fehlt oder ungültig (1–64 Zeichen: a–z, 0–9, Bindestrich) – oder aggregatePrefix=oeffentlich-pilot|vk2-pilot',
+      })
+    }
+
     if (req.method === 'POST') {
       const { data: row, error: selErr } = await supabase
         .from('visits')

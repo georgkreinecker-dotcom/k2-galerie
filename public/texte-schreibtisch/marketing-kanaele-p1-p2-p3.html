@@ -202,7 +202,21 @@
     <li>Nach Klick auf Landing: Attribution liegt im Browser; bei Lizenzkauf geht Kampagne mit an Stripe (Metadaten).</li>
   </ol>
 
-  <h2>5 · Verweise</h2>
+  <h2 id="google-conversion">6 · Google Ads – Conversion-Ziel (Checkliste)</h2>
+  <div class="kasten kasten-warn">
+    <p><strong>Warum Google „Klicks“ ≠ euer Besucher-Zähler:</strong> Google zählt jeden Anzeigen-Klick. Die App zählt <strong>einmal pro Browser-Sitzung</strong>, erst wenn die Galerie geladen ist. In Mission Control steht <strong>ök2 gesamt</strong> = Demo + Pilot-Zähler – damit vergleichen, nicht nur die Demo-Basis.</p>
+  </div>
+  <ol>
+    <li><strong>Tag im Code (fertig):</strong> Conversion-ID <code>AW-18195006153</code> – lädt automatisch nach Deploy (<code>src/config/googleAdsConfig.ts</code>).</li>
+    <li><strong>Google Ads → Ziele → Conversion-Aktion:</strong> Typ <strong>Website</strong>, Ziel-URL enthält <code>/lizenz-erfolg</code> (echter Lizenzkauf nach Stripe, nicht <code>?muster=1</code>).</li>
+    <li><strong>Label aus Google kopieren</strong> → Vercel Environment: <code>VITE_GOOGLE_ADS_CONVERSION_SEND_TO=AW-18195006153/&lt;Label-aus-Google&gt;</code> → Production neu deployen.</li>
+    <li><strong>Test:</strong> Stripe-Testkauf → Seite <code>/lizenz-erfolg?session_id=…</code> → in Google Ads unter Conversions prüfen (oft 24–48 h Verzögerung).</li>
+    <li><strong>Einrichtungs-Checkliste in Google auf 100 %:</strong> Sitelinks, Zusatzinformationen, responsive Anzeigen – sonst „Aktiv (eingeschränkt)“ und schlechte Effektivität.</li>
+    <li><strong>Optional GA4:</strong> <code>VITE_GA4_MEASUREMENT_ID=G-…</code> in Vercel (Attribution läuft auch ohne).</li>
+  </ol>
+  <p>P1-Landing bleibt <strong>ohne</strong> <code>vorname</code>/<code>entwurf</code> – sonst landen Besucher im Pilot-Zähler statt in der Demo-Basis (Ads-URLs aus Tabelle oben unverändert nutzen).</p>
+
+  <h2>7 · Verweise</h2>
   <ul>
     <li>Plan B (ohne Agentur-Fix): <code>public/texte-schreibtisch/plan-b-marketing-ohne-agentur-fix.html</code></li>
     <li>Agentur-Katalog (Anforderungen): <code>public/texte-schreibtisch/agentur-anforderungskatalog-internetvertrieb.html</code></li>

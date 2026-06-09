@@ -39,6 +39,21 @@ Environment Variable: `VITE_GA4_MEASUREMENT_ID` = `G-XXXXXXXXXX` (Google Analyti
 
 Ohne GA4-Variable: Attribution und Stripe-Metadaten funktionieren trotzdem; GA4 bleibt aus. Google Ads-Tag läuft mit Pilot-ID.
 
+## Google Ads – Conversion-Ziel (Checkliste)
+
+**Abgleich Klicks vs. Besucher:** Google zählt jeden Klick; die App zählt einmal pro Sitzung nach Galerie-Laden. Mission Control zeigt **ök2 gesamt** = `oeffentlich` + Summe aller `oeffentlich-pilot-*` (API: `GET /api/visit?aggregatePrefix=oeffentlich-pilot`).
+
+| Schritt | Wo | Was |
+|--------|-----|-----|
+| 1 | Code (fertig) | Tag `AW-18195006153` in `googleAdsConfig.ts` / `marketingAnalytics.ts` |
+| 2 | Google Ads → Ziele | Conversion-Aktion **Website**, URL enthält `/lizenz-erfolg` |
+| 3 | Vercel Env | `VITE_GOOGLE_ADS_CONVERSION_SEND_TO=AW-18195006153/<Label>` aus Google |
+| 4 | Test | Stripe-Testkauf → `/lizenz-erfolg?session_id=…` → Conversion in Google prüfen |
+| 5 | Google Ads Konto | Einrichtungs-Checkliste 100 % (Sitelinks, Zusatzinfos) |
+| 6 | Mission Control | **ök2 gesamt** mit Google-Klicks vergleichen (nicht nur Demo-Basis) |
+
+Druckversion: `public/texte-schreibtisch/marketing-kanaele-p1-p2-p3.html#google-conversion`
+
 ## Tests
 
 `src/tests/marketingKanalP1P2P3.test.ts`

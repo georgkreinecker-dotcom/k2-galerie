@@ -9,7 +9,15 @@ export const MISSION_VISIT_SNAPSHOTS_KEY = 'k2-mission-visit-snapshots-v1'
 export type MissionVisitCounts = {
   k2: number
   oeffentlich: number
+  /** Summe aller oeffentlich-pilot-* (Testpilot-Zettel / vorname+entwurf) */
+  oeffentlichPilot: number
+  /** oeffentlich + oeffentlichPilot – für Abgleich mit Google Ads P1 */
+  oeffentlichGesamt: number
   vk2Demo: number
+  /** Summe aller vk2-pilot-* */
+  vk2Pilot: number
+  /** vk2 + vk2Pilot */
+  vk2Gesamt: number
   k2FamilieMuster: number
   kreineckerStammbaum: number
 }
@@ -26,11 +34,21 @@ export function normalizeMissionVisitSnapshotRow(x: unknown): MissionVisitSnapsh
   if (!x || typeof x !== 'object') return null
   const o = x as Record<string, unknown>
   if (typeof o.at !== 'string') return null
+  const oeffentlich = num(o.oeffentlich)
+  const oeffentlichPilot = num(o.oeffentlichPilot)
+  const oeffentlichGesamt = num(o.oeffentlichGesamt) || oeffentlich + oeffentlichPilot
+  const vk2Demo = num(o.vk2Demo)
+  const vk2Pilot = num(o.vk2Pilot)
+  const vk2Gesamt = num(o.vk2Gesamt) || vk2Demo + vk2Pilot
   return {
     at: o.at,
     k2: num(o.k2),
-    oeffentlich: num(o.oeffentlich),
-    vk2Demo: num(o.vk2Demo),
+    oeffentlich,
+    oeffentlichPilot,
+    oeffentlichGesamt,
+    vk2Demo,
+    vk2Pilot,
+    vk2Gesamt,
     k2FamilieMuster: num(o.k2FamilieMuster),
     kreineckerStammbaum: num(o.kreineckerStammbaum),
   }
@@ -79,8 +97,8 @@ export function upsertMissionVisitSnapshot(counts: MissionVisitCounts): void {
 /** Matrix: Welcher Wert aus dem Snapshot zur_chart-Zeile (key) gehört */
 export const MISSION_VISIT_CHART_KEY_TO_FIELD: Record<string, keyof MissionVisitCounts> = {
   k2: 'k2',
-  oeffentlich: 'oeffentlich',
-  vk2: 'vk2Demo',
+  oeffentlich: 'oeffentlichGesamt',
+  vk2: 'vk2Gesamt',
   'fam-muster': 'k2FamilieMuster',
   krein: 'kreineckerStammbaum',
 }
@@ -94,7 +112,11 @@ export function formatMissionVisitSnapshotColumnLabel(isoAt: string): string {
 const COUNT_FIELDS: (keyof MissionVisitCounts)[] = [
   'k2',
   'oeffentlich',
+  'oeffentlichPilot',
+  'oeffentlichGesamt',
   'vk2Demo',
+  'vk2Pilot',
+  'vk2Gesamt',
   'k2FamilieMuster',
   'kreineckerStammbaum',
 ]
@@ -104,13 +126,27 @@ export function computeMissionVisitDailyDeltas(timeline: MissionVisitSnapshot[])
   if (timeline.length === 0) return []
   return timeline.map((snap, i) => {
     if (i === 0) {
-      return { k2: 0, oeffentlich: 0, vk2Demo: 0, k2FamilieMuster: 0, kreineckerStammbaum: 0 }
+      return {
+        k2: 0,
+        oeffentlich: 0,
+        oeffentlichPilot: 0,
+        oeffentlichGesamt: 0,
+        vk2Demo: 0,
+        vk2Pilot: 0,
+        vk2Gesamt: 0,
+        k2FamilieMuster: 0,
+        kreineckerStammbaum: 0,
+      }
     }
     const prev = timeline[i - 1]
     const out: MissionVisitCounts = {
       k2: 0,
       oeffentlich: 0,
+      oeffentlichPilot: 0,
+      oeffentlichGesamt: 0,
       vk2Demo: 0,
+      vk2Pilot: 0,
+      vk2Gesamt: 0,
       k2FamilieMuster: 0,
       kreineckerStammbaum: 0,
     }

@@ -1,4 +1,11 @@
 import { BASE_APP_URL } from '../config/navigation'
+import {
+  isValidVisitAggregatePrefix,
+  VISIT_AGGREGATE_PREFIX_OEK2_PILOT,
+  VISIT_AGGREGATE_PREFIX_VK2_PILOT,
+} from './visitTenantAggregate'
+
+export { VISIT_AGGREGATE_PREFIX_OEK2_PILOT, VISIT_AGGREGATE_PREFIX_VK2_PILOT }
 
 /**
  * Basis-URL für **GET** /api/visit?tenant=… (Zähler nur lesen, Admin / Übersicht / Mission Control).
@@ -18,6 +25,16 @@ export function fetchVisitCount(tenant: string): Promise<number> {
   const base = getVisitCountApiOrigin()
   return fetch(`${base}/api/visit?tenant=${encodeURIComponent(tenant)}`, { cache: 'no-store' })
     .then((r) => (r.ok ? r.json() : Promise.reject(new Error('visit GET'))))
+    .then((d: { count?: unknown }) => (typeof d.count === 'number' ? d.count : 0))
+    .catch(() => 0)
+}
+
+/** Summe aller Zähler mit tenant_id-Präfix (z. B. oeffentlich-pilot-15). */
+export function fetchVisitCountAggregateByPrefix(prefix: string): Promise<number> {
+  if (!isValidVisitAggregatePrefix(prefix)) return Promise.resolve(0)
+  const base = getVisitCountApiOrigin()
+  return fetch(`${base}/api/visit?aggregatePrefix=${encodeURIComponent(prefix)}`, { cache: 'no-store' })
+    .then((r) => (r.ok ? r.json() : Promise.reject(new Error('visit aggregate GET'))))
     .then((d: { count?: unknown }) => (typeof d.count === 'number' ? d.count : 0))
     .catch(() => 0)
 }
