@@ -4,7 +4,7 @@
 
 **Einordnung:** Google Ads **zwei Spuren:** **Lokal Eferding** = echte K2-Galerie, 5 €/Tag, Suchnetzwerk, Landing `/galerie` – Georg hat Kampagne **aktiv (lernt)** mit Keywords, RSA, 4 Sitelinks. **P1** = Lizenz/Demo – im Repo 6 Sitelinks + CSV/HTML; in Google noch 3 fremde Sitelinks löschen und Felder richtig trennen. Alles im Schreibtisch + Config (Sportwagenmodus eine Quelle).
 
-**Letzter Stand:** 28.05.26 – **Google Ads Lokal Eferding + P1 Sitelinks:** Config/Tests/HTML/CSV für Eferding (Keywords, RSA, Sitelinks); P1-Sitelinks-Quelle + Aufräum-Anleitung HTML; Marketing-Doku ergänzt; Gruppen-Einladungen Schreibtisch. **qs:local** grün. **Commit:** _(nach Push eintragen)_ ✅ **main**
+**Letzter Stand:** 28.05.26 – **Google Ads Lokal Eferding + P1 Sitelinks:** Config/Tests/HTML/CSV für Eferding (Keywords, RSA, Sitelinks); P1-Sitelinks-Quelle + Aufräum-Anleitung HTML; Marketing-Doku ergänzt; Gruppen-Einladungen Schreibtisch. **qs:local** grün. **Commit:** `1fbc4e3a` ✅ **main**
 
 **Letzter Stand:** 10.06.26 – **Besucherzähler Mission Control (Client):** `visitCountApiOrigin.ts` immer Production-API; `MissionControlPage` mit Meta-Laden + Warnbanner. **qs:local** grün. **Commit:** `0a66f76c` ✅ **main**
 
