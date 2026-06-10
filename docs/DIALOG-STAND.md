@@ -4,7 +4,7 @@
 
 **Einordnung:** API liefert echte Zahlen (z. B. K2 ≈ 358); Anzeige war 0, weil lokal/falscher Host HTML statt JSON holte. Fix: Zähler-GET immer von **BASE_APP_URL** + Fehlerhinweis + „Zähler neu laden“. Server-Fix **`aggregatePrefix`** war schon in **`c5299d7f`**.
 
-**Letzter Stand:** 10.06.26 – **Besucherzähler Mission Control (Client):** `visitCountApiOrigin.ts` immer Production-API; `MissionControlPage` mit Meta-Laden + Warnbanner. **qs:local** grün. **Commit:** _(nach Push eintragen)_ ✅ **main**
+**Letzter Stand:** 10.06.26 – **Besucherzähler Mission Control (Client):** `visitCountApiOrigin.ts` immer Production-API; `MissionControlPage` mit Meta-Laden + Warnbanner. **qs:local** grün. **Commit:** `0a66f76c` ✅ **main**
 
 **Letzter Stand:** 10.05.26 (Abend) – **Schluss für heute:** Georg beendet die Session; **DIALOG-STAND** + **WIR-PROZESS** (**`da73cbd3`**); VK2-Stripe-Sperre **`ce6bc0b1`**, Intro-Text **`8aca5260`**. **`git`** sauber.
 
