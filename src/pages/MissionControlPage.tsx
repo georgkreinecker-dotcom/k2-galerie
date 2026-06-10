@@ -10,7 +10,8 @@ import {
 import { LICENSEE_DOMAIN_REGISTRY } from '../config/licenseeDomainRegistry'
 import {
   fetchVisitCount,
-  fetchVisitCountAggregateByPrefix,
+  fetchVisitCountAggregateByPrefixWithMeta,
+  fetchVisitCountWithMeta,
   getVisitCountApiOrigin,
   VISIT_AGGREGATE_PREFIX_OEK2_PILOT,
   VISIT_AGGREGATE_PREFIX_VK2_PILOT,
@@ -70,17 +71,28 @@ export default function MissionControlPage() {
     error?: string
   } | null>(null)
   const [licenseeVisitCounts, setLicenseeVisitCounts] = useState<Record<string, number> | null>(null)
+  const [visitLoadIssue, setVisitLoadIssue] = useState<string | null>(null)
+  const [visitReloadTick, setVisitReloadTick] = useState(0)
 
   useEffect(() => {
+    let cancelled = false
     Promise.all([
-      fetchVisitCount('k2'),
-      fetchVisitCount('oeffentlich'),
-      fetchVisitCountAggregateByPrefix(VISIT_AGGREGATE_PREFIX_OEK2_PILOT),
-      fetchVisitCount('vk2'),
-      fetchVisitCountAggregateByPrefix(VISIT_AGGREGATE_PREFIX_VK2_PILOT),
-      fetchVisitCount('k2-familie-muster'),
-      fetchVisitCount('k2-familie-kreinecker-stammbaum'),
-    ]).then(([k2, oef, oefPilot, vk2Demo, vk2Pilot, k2FamilieMuster, kreineckerStammbaum]) => {
+      fetchVisitCountWithMeta('k2'),
+      fetchVisitCountWithMeta('oeffentlich'),
+      fetchVisitCountAggregateByPrefixWithMeta(VISIT_AGGREGATE_PREFIX_OEK2_PILOT),
+      fetchVisitCountWithMeta('vk2'),
+      fetchVisitCountAggregateByPrefixWithMeta(VISIT_AGGREGATE_PREFIX_VK2_PILOT),
+      fetchVisitCountWithMeta('k2-familie-muster'),
+      fetchVisitCountWithMeta('k2-familie-kreinecker-stammbaum'),
+    ]).then(([k2R, oefR, oefPilotR, vk2DemoR, vk2PilotR, k2FamilieMusterR, kreineckerStammbaumR]) => {
+      if (cancelled) return
+      const k2 = k2R.count
+      const oef = oefR.count
+      const oefPilot = oefPilotR.count
+      const vk2Demo = vk2DemoR.count
+      const vk2Pilot = vk2PilotR.count
+      const k2FamilieMuster = k2FamilieMusterR.count
+      const kreineckerStammbaum = kreineckerStammbaumR.count
       const next: MissionVisitCounts = {
         k2,
         oeffentlich: oef,
@@ -92,11 +104,32 @@ export default function MissionControlPage() {
         k2FamilieMuster,
         kreineckerStammbaum,
       }
+      const results = [k2R, oefR, oefPilotR, vk2DemoR, vk2PilotR, k2FamilieMusterR, kreineckerStammbaumR]
+      const failed = results.filter((r) => !r.loaded)
+      const sum =
+        next.k2 +
+        next.oeffentlichGesamt +
+        next.vk2Gesamt +
+        next.k2FamilieMuster +
+        next.kreineckerStammbaum
+      if (failed.length > 0 && sum === 0) {
+        const firstErr = failed.find((r) => r.error)?.error ?? 'Unbekannt'
+        setVisitLoadIssue(
+          `Zähler nicht geladen (${firstErr}). Quelle: ${getVisitCountApiOrigin()}/api/visit – bitte „Zähler neu laden“ oder Seite im Browser (nicht Cursor-Vorschau) öffnen.`,
+        )
+      } else {
+        setVisitLoadIssue(null)
+      }
       setVisits(next)
-      upsertMissionVisitSnapshot(next)
-      setVisitTimeline(loadMissionVisitSnapshots())
+      if (sum > 0) {
+        upsertMissionVisitSnapshot(next)
+        setVisitTimeline(loadMissionVisitSnapshots())
+      }
     })
-  }, [])
+    return () => {
+      cancelled = true
+    }
+  }, [visitReloadTick])
 
   useEffect(() => {
     const origin = getVisitCountApiOrigin()
@@ -315,6 +348,42 @@ export default function MissionControlPage() {
             🔧 <strong>Nur für dich / Entwicklung:</strong> diese Ansicht und Grafik erscheinen in der APf (Mission Control),{' '}
             <strong>nicht</strong> in der K2-Familie-Nutzer-Oberfläche.
           </p>
+          {visitLoadIssue ? (
+            <div
+              className="mission-visit-no-print"
+              style={{
+                margin: '0 0 1rem',
+                padding: '0.65rem 0.85rem',
+                borderRadius: '10px',
+                background: 'rgba(127,29,29,0.35)',
+                border: '1px solid rgba(248,113,113,0.55)',
+                fontSize: '0.82rem',
+                color: '#fecaca',
+                lineHeight: 1.5,
+              }}
+            >
+              ⚠️ {visitLoadIssue}
+              <div style={{ marginTop: '0.55rem' }}>
+                <button
+                  type="button"
+                  className="btn small-btn"
+                  onClick={() => {
+                    setVisits(null)
+                    setVisitReloadTick((t) => t + 1)
+                  }}
+                  style={{
+                    background: 'linear-gradient(120deg, #b91c1c, #dc2626)',
+                    color: '#fff',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    border: '1px solid rgba(254,202,202,0.4)',
+                  }}
+                >
+                  Zähler neu laden
+                </button>
+              </div>
+            </div>
+          ) : null}
           <div
             className="mission-visit-no-print"
             style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center', marginBottom: '1rem' }}

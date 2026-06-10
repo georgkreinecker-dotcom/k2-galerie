@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **Pause** – Georg Session beendet (22.05.26). Zuletzt: **Testuser-Pilot** (alle Zettel versendet, Stand stimmt). **Nächster Schritt (wenn wieder dran):** Agentur-PDF CPA/% in B.6 oder neuer Testuser über `/testuser-anmeldung?mappe=1`. Outlook-Desktop-App optional (Web-Outlook reicht zum Lesen; **📧 Senden** nutzt Mac-Mail/mailto).
+**Was wir JETZT tun:** **Besucherzähler Mission Control** – Client-Fix deployen; Georg prüft nach Vercel „Ready“: [Mission Control im Browser](https://k2-galerie.vercel.app/mission-control) (nicht Cursor-Vorschau).
 
-**Einordnung:** Testuser-Mappe = ein Schnellweg aus Anmelde-E-Mail; Status „Zugang gesendet“ nur nach echtem **📧 Senden**. Mail vs. Outlook-Web = kein K2-Thema. Agentur-Vertrieb + VK2-Stripe offen wie zuvor. **Supabase (Mail Mai 2026):** Bestehende Tabellen ok – **ab 30.10.2026** bei **neuen** Tabellen in `public` → `GRANT` in Migration; Joe meldet rechtzeitig (vor neuer Migration / neuem Supabase-Projekt).
+**Einordnung:** API liefert echte Zahlen (z. B. K2 ≈ 358); Anzeige war 0, weil lokal/falscher Host HTML statt JSON holte. Fix: Zähler-GET immer von **BASE_APP_URL** + Fehlerhinweis + „Zähler neu laden“. Server-Fix **`aggregatePrefix`** war schon in **`c5299d7f`**.
 
-**Letzter Stand:** 22.05.26 – **Schluss für heute:** Testuser 12–14 nachgeholt (E-Mail aus Liste); alle auf „Zugang gesendet“. Fix Status≠Versand + **📧 Senden** – **Commit:** `9bfa14f7` ✅ **main**. Kurz: Outlook nur Web (kein Standard-Mail nötig).
+**Letzter Stand:** 10.06.26 – **Besucherzähler Mission Control (Client):** `visitCountApiOrigin.ts` immer Production-API; `MissionControlPage` mit Meta-Laden + Warnbanner. **qs:local** grün. **Commit:** _(nach Push eintragen)_ ✅ **main**
 
 **Letzter Stand:** 10.05.26 (Abend) – **Schluss für heute:** Georg beendet die Session; **DIALOG-STAND** + **WIR-PROZESS** (**`da73cbd3`**); VK2-Stripe-Sperre **`ce6bc0b1`**, Intro-Text **`8aca5260`**. **`git`** sauber.
 

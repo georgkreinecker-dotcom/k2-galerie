@@ -8,17 +8,17 @@ describe('fetchVisitCount', () => {
     vi.restoreAllMocks()
   })
 
-  it('GET nutzt BASE_APP_URL und liefert count', async () => {
+  it('GET nutzt immer BASE_APP_URL und liefert count', async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({ count: 7 }),
+      json: () => Promise.resolve({ count: 7, configured: true }),
     })
     vi.stubGlobal('fetch', fetchMock)
     const n = await fetchVisitCount('oeffentlich')
     expect(n).toBe(7)
     const base = BASE_APP_URL.replace(/\/$/, '')
     expect(fetchMock).toHaveBeenCalledWith(
-      `${base}/api/visit?tenant=oeffentlich`,
+      expect.stringMatching(new RegExp(`^${base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/api/visit\\?tenant=oeffentlich&_=`)),
       expect.objectContaining({ cache: 'no-store' }),
     )
   })
@@ -47,7 +47,11 @@ describe('fetchVisitCountAggregateByPrefix', () => {
     expect(n).toBe(12)
     const base = BASE_APP_URL.replace(/\/$/, '')
     expect(fetchMock).toHaveBeenCalledWith(
-      `${base}/api/visit?aggregatePrefix=oeffentlich-pilot`,
+      expect.stringMatching(
+        new RegExp(
+          `^${base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/api/visit\\?aggregatePrefix=oeffentlich-pilot&_=`,
+        ),
+      ),
       expect.objectContaining({ cache: 'no-store' }),
     )
   })
