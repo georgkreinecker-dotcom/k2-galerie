@@ -14,6 +14,11 @@ import { K2_AGENTUR_KEYWORDS_P1_GOOGLE_DRUCK_URL } from '../config/k2AgenturGoog
 import { K2_AGENTUR_SITELINKS_P1_GOOGLE_DRUCK_URL } from '../config/k2AgenturGoogleSitelinksP1'
 import { K2_AGENTUR_SITELINKS_P3_GOOGLE_DRUCK_URL } from '../config/k2AgenturGoogleSitelinksP3'
 import {
+  K2_AGENTUR_LOKAL_EFERDING_GOOGLE_DRUCK_URL,
+  K2_AGENTUR_KEYWORDS_LOKAL_EFERDING_GOOGLE_DRUCK_URL,
+  K2_AGENTUR_SITELINKS_LOKAL_EFERDING_GOOGLE_DRUCK_URL,
+} from '../config/k2AgenturGoogleLokalEferding'
+import {
   K2_AGENTUR_KEYWORDS_P1_SPARTEN_DRUCK_URL,
   K2_AGENTUR_KEYWORDS_P2_GOOGLE_DRUCK_URL,
   K2_AGENTUR_KEYWORDS_P3_GOOGLE_DRUCK_URL,
@@ -289,6 +294,27 @@ const BEREICHE: Bereich[] = [
         titel: 'Sitelinks P3 · Google',
         zweck: '6 Links + 10 Zusatzinfos · Kopieren',
         to: K2_AGENTUR_SITELINKS_P3_GOOGLE_DRUCK_URL,
+        showDruckWeiterleiten: true,
+      },
+      {
+        id: 'lokal-eferding-google',
+        titel: 'Lokal Eferding · Google',
+        zweck: '5 €/Tag · Samstag + Gruppen · Schalt-Paket',
+        to: K2_AGENTUR_LOKAL_EFERDING_GOOGLE_DRUCK_URL,
+        showDruckWeiterleiten: true,
+      },
+      {
+        id: 'keywords-lokal-eferding-google',
+        titel: 'Keywords Lokal Eferding',
+        zweck: '2 Anzeigengruppen · 16 Begriffe',
+        to: K2_AGENTUR_KEYWORDS_LOKAL_EFERDING_GOOGLE_DRUCK_URL,
+        showDruckWeiterleiten: true,
+      },
+      {
+        id: 'sitelinks-lokal-eferding-google',
+        titel: 'Sitelinks Lokal Eferding',
+        zweck: '6 Links + 10 Zusatzinfos · CSV',
+        to: K2_AGENTUR_SITELINKS_LOKAL_EFERDING_GOOGLE_DRUCK_URL,
         showDruckWeiterleiten: true,
       },
       {

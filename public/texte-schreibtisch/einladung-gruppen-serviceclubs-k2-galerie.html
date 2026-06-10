@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Persönliche Einladung an Verantwortliche eines Vereins – Gruppenbesuch K2 Galerie Kunst & Keramik" />
-  <title>Gruppeneinladung (persönlich) – K2 Galerie Kunst & Keramik</title>
+  <meta name="description" content="Einladung an Serviceclubs – Gruppenbesuch K2 Galerie Kunst & Keramik in Eferding" />
+  <title>Gruppeneinladung Serviceclubs – K2 Galerie Kunst & Keramik</title>
   <style>
     @page { size: A4; margin: 14mm 16mm 14mm 16mm; }
     * { box-sizing: border-box; }
@@ -45,6 +45,21 @@
       color: #5c5650;
     }
     .vorlage strong { color: #1a1816; }
+    .club-badge {
+      display: inline-block;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 8pt;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #1d4ed8;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 4px;
+      padding: 0.15rem 0.45rem;
+      margin-left: 0.35rem;
+      vertical-align: middle;
+    }
     .empfaenger {
       margin-bottom: 1.35rem;
       font-size: 10.5pt;
@@ -119,7 +134,7 @@
     .kopierblock {
       background: #fffefb;
       border: 1px solid #b8a88e;
-      border-left: 4px solid #0d9488;
+      border-left: 4px solid #1d4ed8;
       padding: 0.85rem 1rem;
       margin: 1.5rem 0 0;
       font-size: 9.5pt;
@@ -130,11 +145,22 @@
       font-family: ui-sans-serif, system-ui, sans-serif;
       font-size: 8.5pt;
       font-weight: 700;
-      color: #0f766e;
+      color: #1d4ed8;
       margin: 0 0 0.5rem;
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
+    .varianten {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 8.5pt;
+      margin-bottom: 1rem;
+      padding: 0.5rem 0.65rem;
+      background: #f8fafc;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      line-height: 1.5;
+    }
+    .varianten a { color: #0f766e; font-weight: 600; }
     a { color: #0f766e; }
     .seitenfuss {
       position: fixed;
@@ -180,22 +206,29 @@
       }
       .seitenfuss::after { content: "Seite " counter(page); }
       .platzhalter { background: transparent; font-weight: inherit; }
+      .varianten { display: none; }
     }
   </style>
 </head>
 <body>
   <p class="hinweis-screen">
-    <strong>Sie-Version (formell).</strong> Gelbe Platzhalter <span class="platzhalter">[…]</span> ersetzen,
-    dann <strong>Drucken</strong> (⌘P) oder E-Mail-Text unten kopieren.
-    <a href="einladung-gruppen-verantwortliche-k2-galerie-du.html">Du</a>
-    · <a href="einladung-gruppen-serviceclubs-k2-galerie.html">Serviceclubs</a>.
+    <strong>Serviceclubs</strong> (z. B. Rotary, Lions, Kiwanis, Inner Wheel).
+    Platzhalter <span class="platzhalter">[…]</span> ersetzen, dann <strong>Drucken</strong> (⌘P) oder E-Mail-Text unten kopieren.
+  </p>
+
+  <p class="varianten">
+    <strong>Andere Zielgruppe?</strong>
+    <a href="einladung-gruppen-verantwortliche-k2-galerie.html">Vereine (Sie)</a>
+    · <a href="einladung-gruppen-verantwortliche-k2-galerie-du.html">vertrautes Du</a>
+    · diese Seite = <strong>Serviceclubs</strong>
   </p>
 
   <p class="vorlage">
-    <strong>Vorlage – pro Verein anpassen:</strong><br />
-    Anrede: <span class="platzhalter">[Frau / Herr]</span> · Name: <span class="platzhalter">[Vorname Nachname]</span> ·
-    Verein: <span class="platzhalter">[Name des Vereins]</span> ·
-    Funktion (optional): <span class="platzhalter">[z. B. Obfrau, Obmann, Leitung]</span>
+    <strong>Vorlage – pro Club anpassen:</strong><span class="club-badge">Serviceclub</span><br />
+    Anrede: <span class="platzhalter">[Sehr geehrte Frau … / Sehr geehrter Herr …]</span> ·
+    Name: <span class="platzhalter">[Vorname Nachname]</span> ·
+    Club: <span class="platzhalter">[z. B. Rotary Club Eferding, Lions Club …]</span> ·
+    Funktion: <span class="platzhalter">[z. B. Präsident/in, Programmbeauftragte/r, Besuchskommission]</span>
   </p>
 
   <div class="briefkopf">
@@ -205,49 +238,51 @@
   </div>
 
   <div class="empfaenger">
-    <span class="platzhalter">[Funktion im Verein]</span><br />
+    <span class="platzhalter">[Funktion im Club]</span><br />
     <span class="platzhalter">[Anrede] [Vorname Nachname]</span><br />
-    <strong><span class="platzhalter">[Name des Vereins]</span></strong><br />
+    <strong><span class="platzhalter">[Name des Serviceclubs]</span></strong><br />
     <span class="platzhalter">[Straße, PLZ Ort]</span>
   </div>
 
   <div class="brief-druck-inhalt">
   <p class="betreff">
-    <strong>Betreff (E-Mail):</strong> Für den <span class="platzhalter">[Name des Vereins]</span> – Kunst erleben in Eferding (Termin nach Absprache)
+    <strong>Betreff (E-Mail):</strong> Programmpunkt für den <span class="platzhalter">[Name des Serviceclubs]</span> – Kunst &amp; Begegnung in Eferding
   </p>
 
-  <h1>Kunst erleben – für den <span class="platzhalter">[Name des Vereins]</span></h1>
+  <h1>Kunst erleben – ein Besuch für den <span class="platzhalter">[Name des Serviceclubs]</span></h1>
 
   <p>
-    <span class="platzhalter">[Sehr geehrte Frau Müller / Sehr geehrter Herr Huber / Liebe Maria,]</span>
-  </p>
-
-  <p>
-    Wer für den <strong><span class="platzhalter">[Name des Vereins]</span></strong> Verantwortung trägt, möchte den Mitgliedern
-    gern etwas <strong>Besonderes</strong> schenken – nicht immer dasselbe Programm, sondern ein Erlebnis, das hängen bleibt.
-    Dafür schreibe ich Ihnen: Martina malt, ich arbeite mit Keramik. In der Schlossergasse haben wir unsere
-    <strong>K2 Galerie Kunst &amp; Keramik</strong> – eine <strong>kleine, feine, persönliche Galerie</strong> in Eferding,
-    die wir uns lange gewünscht haben und die wir gern mit Gruppen teilen.
+    <span class="platzhalter">[Sehr geehrte Frau … / Sehr geehrter Herr …]</span>
   </p>
 
   <p>
-    Sie können Ihrem Verein einen Besuch mit Kunst schenken – <strong>wann es passt, finden wir gemeinsam</strong>
-    (Vormittag, Nachmittag, was Ihrer Gruppe gut tut): Wir zeigen unsere Werke, Ihre Leute schauen in Ruhe,
-    wir sprechen über die Kunst – was bewegt, wie etwas entstanden ist. Am Eröffnungswochenende war viel Leben drin;
-    jetzt ist es oft stiller, und genau dann entstehen die schönsten Gespräche vor einem Bild.
-    Kein großer Betrieb, kein Lärm – nur Begegnung mit Malerei und Keramik, in Ihrem Tempo.
+    Serviceclubs leben vom gemeinsamen Tun und vom Austausch – und manchmal sucht das Programm
+    einen <strong>Punkt mit Tiefe</strong>, der über den üblichen Vortrag hinausgeht.
+    Dafür schreibe ich Ihnen: Martina malt, ich arbeite mit Keramik. In der Schlossergasse
+    betreiben wir die <strong>K2 Galerie Kunst &amp; Keramik</strong> – eine
+    <strong>kleine, feine, persönliche Galerie</strong> in Eferding, die wir uns lange gewünscht haben
+    und die wir gern mit Clubs und Gruppen teilen.
   </p>
 
   <p>
-    Manch einer bleibt danach – oder kommt vorher – zum <strong>Mittag- oder Abendessen im Ristorante Antonio</strong>,
-    gleich nebenan, ein Schritt von der Tür. Wenn das für Sie und Ihre Leute passt, sprechen wir das gern mit.
+    Sie können Ihrem Club einen <strong>Besuch mit Kunst</strong> als Programmpunkt schenken –
+    <strong>wann es in Ihren Kalender passt, stimmen wir gemeinsam ab</strong>
+    (Vormittag, Nachmittag, Dauer nach Absprache): Wir führen durch die Werke, die Mitglieder schauen in Ruhe,
+    wir sprechen über Entstehung und Motive – Gespräche, die in einem Club gut ankommen.
+    Kein großer Betrieb, kein Lärm – Begegnung mit Malerei und Keramik, im Tempo Ihrer Runde.
+  </p>
+
+  <p>
+    Wer möchte, kann den Besuch mit einem <strong>Mittag- oder Abendessen im Ristorante Antonio</strong>
+    verbinden – gleich nebenan, ein Schritt von der Galerie. Wenn das für Ihren Club passt,
+    richten wir das gern mit ein.
   </p>
 
   <div class="fakten">
-    <p><strong>Schlossergasse 4, 4070 Eferding</strong> · Termin nach Absprache</p>
+    <p><strong>Schlossergasse 4, 4070 Eferding</strong> · Termin nach Absprache · auch für Clubs aus der Region gut erreichbar</p>
     <div class="galerie-vorschau">
       <div>
-        <p class="galerie-vorschau-label">Vorab online – Link oder QR:</p>
+        <p class="galerie-vorschau-label">Galerie vorab ansehen – Link oder QR:</p>
         <p style="margin: 0; font-size: 9.5pt;"><a href="https://k2-galerie.vercel.app/galerie">k2-galerie.vercel.app/galerie</a></p>
       </div>
       <img
@@ -261,35 +296,35 @@
   </div>
 
   <p>
-    Ich würde mich freuen, vom <strong><span class="platzhalter">[Name des Vereins]</span></strong> zu hören –
+    Ich würde mich freuen, vom <strong><span class="platzhalter">[Name des Serviceclubs]</span></strong> zu hören –
     eine Mail an <a href="mailto:georg.kreinecker@kgm.at">georg.kreinecker@kgm.at</a> oder ein Anruf unter <strong>0664 1046337</strong> reicht.
   </p>
 
   <p class="unterschrift">
-    Herzliche Grüße<br /><br />
+    Mit freundlichen Grüßen<br /><br />
     <strong>Martina &amp; Georg Kreinecker</strong><br />
     K2 Galerie Kunst &amp; Keramik<br />
     Schlossergasse 4 · 4070 Eferding
   </p>
   </div>
 
-  <div class="kopierblock" role="region" aria-label="E-Mail-Text zum Kopieren">
+  <div class="kopierblock" role="region" aria-label="E-Mail-Text zum Kopieren (Serviceclub)">
     <p class="kopierblock-titel">E-Mail – Text zum Kopieren (Platzhalter ersetzen)</p>[Anrede] [Nachname],
 
-als Verantwortliche/r für den [Name des Vereins] möchten Sie Ihren Mitgliedern gern etwas Besonderes bieten – dafür schreibe ich Ihnen.
+für das Programm des [Name des Serviceclubs] suchen Sie manchmal einen Punkt mit Tiefe – dafür schreibe ich Ihnen.
 
-Martina und ich haben in der Schlossergasse eine kleine, feine, persönliche Galerie (K2 Galerie Kunst & Keramik) in Eferding. Sie können Ihrem Verein einen Besuch damit schenken – wann es passt, finden wir gemeinsam: Wir zeigen unsere Werke, Ihre Leute schauen, wir sprechen über die Kunst – ruhig, persönlich, in Ihrem Tempo.
+Martina und ich haben in der Schlossergasse die K2 Galerie Kunst & Keramik in Eferding – klein, fein, persönlich. Sie können Ihrem Club einen Besuch mit Kunst als Programmpunkt schenken: Wir führen durch die Werke, die Mitglieder schauen in Ruhe, wir sprechen über Entstehung und Motive – im Tempo Ihrer Runde.
 
-Manch einer isst danach oder davor im Ristorante Antonio, gleich nebenan – ein Schritt von der Galerie. Gern richten wir das mit ein.
+Optional: Mittag- oder Abendessen im Ristorante Antonio, gleich nebenan. Gern richten wir das mit ein.
 
 Schlossergasse 4, Eferding · Termin nach Absprache · Vorab: https://k2-galerie.vercel.app/galerie
 
 Ich freue mich auf Ihre Rückmeldung: georg.kreinecker@kgm.at · 0664 1046337
 
-Herzliche Grüße
+Mit freundlichen Grüßen
 Martina & Georg Kreinecker</div>
 
-  <p class="hinweis-screen" style="margin-top: 1.5rem;">Texte-Schreibtisch · Gruppenbesuche · persönliche Vorlage · Mai 2026</p>
+  <p class="hinweis-screen" style="margin-top: 1.5rem;">Texte-Schreibtisch · Gruppenbesuche · Serviceclubs · Mai 2026</p>
 
   <div class="seitenfuss" aria-hidden="true"></div>
 </body>

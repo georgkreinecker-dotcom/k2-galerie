@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Lokal Google Ads – K2 Galerie Eferding, 5 €/Tag, Samstag & Gruppen" />
+  <title>Lokal Eferding · Google Ads (K2 Galerie)</title>
+  <style>
+    @page { size: A4; margin: 10mm 12mm 14mm 12mm; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0 auto; padding: 1rem; max-width: 52rem;
+      font-family: "Palatino Linotype", Palatino, Georgia, serif;
+      font-size: 9.5pt; line-height: 1.45; color: #1a1816; background: #f6f2eb;
+    }
+    .hinweis-screen {
+      font-family: ui-sans-serif, system-ui, sans-serif; font-size: 8pt;
+      text-align: center; color: #64748b; background: #e8e4dc;
+      padding: 0.45rem 0.6rem; margin-bottom: 0.75rem; border-radius: 4px;
+    }
+    h1 { font-size: 1.15rem; margin: 0 0 0.25rem; text-align: center; }
+    .meta { text-align: center; font-size: 8.5pt; color: #6b5d4d; margin: 0 0 0.85rem; }
+    .kasten {
+      background: #fffefb; border: 1px solid #b8a88e; border-left: 5px solid #0f766e;
+      padding: 0.65rem 0.85rem; margin: 0 0 0.85rem; border-radius: 4px; font-size: 9pt;
+    }
+    .kasten-warn { border-left-color: #b45309; background: #fffaf5; }
+    h2 { font-size: 1rem; margin: 1rem 0 0.4rem; border-bottom: 1px solid #d4c8b8; padding-bottom: 0.15rem; color: #3d2e1f; }
+    ol.steps { margin: 0.35rem 0 0.75rem; padding-left: 1.35em; font-size: 9pt; }
+    ol.steps li { margin-bottom: 0.35rem; }
+    .kopier {
+      font-family: ui-monospace, Menlo, monospace; font-size: 7.5pt; line-height: 1.35;
+      background: #f0ebe3; padding: 0.25rem 0.35rem; border-radius: 3px;
+      word-break: break-all; display: block; margin-top: 0.15rem;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 8.5pt; margin-bottom: 0.75rem; }
+    th, td { border: 1px solid #c4b8a8; padding: 0.35rem 0.4rem; vertical-align: top; }
+    th { background: #ebe6dc; }
+    a.url { color: #0f766e; word-break: break-all; }
+    @media print { .hinweis-screen { display: none; } body { background: #fff; padding: 0; } }
+  </style>
+</head>
+<body>
+  <p class="hinweis-screen">Im Browser öffnen (Chrome/Safari) · Quelle: <code>src/config/k2AgenturGoogleLokalEferding.ts</code></p>
+
+  <h1>Lokal Eferding · Google Ads</h1>
+  <p class="meta"><strong>K2 Galerie Kunst &amp; Keramik</strong> · 5&nbsp;€/Tag · Samstag + Gruppen · Landing <code>/galerie</code></p>
+
+  <div class="kasten">
+    <strong>🎯 Ziel dieser Kampagne</strong>
+    <ul style="margin: 0.35rem 0 0; padding-left: 1.2em; font-size: 9pt;">
+      <li><strong>Samstag:</strong> Besucher zur Galerie (Öffnungszeiten auf der Homepage)</li>
+      <li><strong>Gruppen:</strong> Vereine, Clubs, Senioren – Termin nach Vereinbarung</li>
+      <li><strong>Homepage:</strong> Werke online ansehen → Lust auf Besuch</li>
+    </ul>
+    <p style="margin: 0.5rem 0 0; font-size: 8.5pt;"><strong>Nicht</strong> Lizenz-Verkauf (das ist P1) – kein Conversion-Ziel <code>/lizenz-erfolg</code>.</p>
+  </div>
+
+  <h2>1 · Kampagne anlegen (5 Minuten)</h2>
+  <ol class="steps">
+    <li>Google Ads → <strong>Neue Kampagne</strong> → Ziel <strong>Website-Besuche</strong> (oder „Leads“ ohne Lizenz-URL).</li>
+    <li>Kampagnenname: <strong>Lokal K2 Galerie Eferding</strong> (exakt – für CSV-Upload).</li>
+    <li>Netzwerk: nur <strong>Google Suche</strong>.</li>
+    <li>Budget: <strong>5,00&nbsp;€ pro Tag</strong>.</li>
+    <li>Geo: <strong>Eferding</strong> + Radius <strong>35&nbsp;km</strong>.</li>
+    <li>Zeitplan (optional): Do–Sa etwas stärker – Samstag ist Haupttag.</li>
+    <li>Finale URL (beide Anzeigengruppen):
+      <span class="kopier">https://k2-galerie.vercel.app/galerie?k=eferding-google-2026q2&amp;utm_source=google&amp;utm_medium=cpc&amp;utm_campaign=eferding-google-2026q2</span>
+    </li>
+  </ol>
+
+  <h2>2 · Zwei Anzeigengruppen</h2>
+  <table>
+    <thead><tr><th>Anzeigengruppe</th><th>Keywords</th><th>Anzeigentexte</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Samstag &amp; Galerie</strong></td>
+        <td><a class="url" href="k2-agentur-keywords-lokal-eferding-google.html#samstag">Keywords · Samstag</a></td>
+        <td>Headlines/Beschreibungen unten (Abschnitt 3a)</td>
+      </tr>
+      <tr>
+        <td><strong>Gruppen &amp; Termin</strong></td>
+        <td><a class="url" href="k2-agentur-keywords-lokal-eferding-google.html#gruppen">Keywords · Gruppen</a></td>
+        <td>Headlines/Beschreibungen unten (Abschnitt 3b)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 id="rsa-samstag">3a · Anzeigentexte · Samstag &amp; Galerie</h2>
+  <p style="font-size: 9pt; margin: 0 0 0.35rem;"><strong>Headlines</strong> (Responsive Search – alle einfügen):</p>
+  <p style="font-size: 8.5pt; margin: 0 0 0.5rem;">K2 Galerie Eferding · Samstag geöffnet · Kunst &amp; Keramik · Schlossergasse 4 · Werke online ansehen · Malerei und Keramik · Kleine Galerie vor Ort · Martina &amp; Georg · Besuch ohne Termin Sa</p>
+  <p style="font-size: 9pt; margin: 0 0 0.35rem;"><strong>Beschreibungen:</strong></p>
+  <ol style="font-size: 8.5pt; margin: 0 0 0.75rem;">
+    <li>Jeden Samstag offen – Malerei &amp; Keramik Eferding. Werke online &amp; Schlossergasse 4.</li>
+    <li>K2 Galerie – persönlich, klein, fein. Zeiten und Route auf unserer Homepage.</li>
+    <li>Vor dem Besuch online durchstöbern, samstags vorbeikommen. Öffnungszeiten auf der Website.</li>
+  </ol>
+
+  <h2 id="rsa-gruppen">3b · Anzeigentexte · Gruppen &amp; Termin</h2>
+  <p style="font-size: 8.5pt; margin: 0 0 0.35rem;"><strong>Headlines:</strong> Gruppenbesuch Eferding · Programmpunkt für Clubs · Galerie mit Führung · Termin nach Vereinbarung · Kunst für Vereine · Senioren &amp; Gruppen · Schlossergasse 4 · K2 Galerie Eferding · Klein &amp; persönlich</p>
+  <p style="font-size: 9pt; margin: 0 0 0.35rem;"><strong>Beschreibungen:</strong></p>
+  <ol style="font-size: 8.5pt; margin: 0 0 0.75rem;">
+    <li>Verein oder Club: Besuch mit Führung – Termin telefonisch vereinbaren. Eferding.</li>
+    <li>Martina &amp; Georg führen durch Malerei und Keramik. Termin – auch außerhalb Samstag.</li>
+    <li>Programmpunkt für Vereine: Kunst erleben, Fragen stellen. Schlossergasse 4.</li>
+  </ol>
+
+  <h2>4 · Erweiterungen</h2>
+  <div class="kasten">
+    <p style="margin: 0 0 0.35rem;"><strong>Sitelinks + Zusatzinfos:</strong> <a class="url" href="k2-agentur-sitelinks-lokal-eferding-google.html">k2-agentur-sitelinks-lokal-eferding-google.html</a></p>
+    <p style="margin: 0; font-size: 8.5pt;">CSV auf dem Schreibtisch: <code>k2-agentur-sitelinks-lokal-eferding-google.csv</code> – Empfehlung „Sitelinks hinzufügen“ → hochladen.</p>
+  </div>
+  <ul style="font-size: 9pt; margin: 0 0 0.75rem; padding-left: 1.25em;">
+    <li><strong>Anruf:</strong> Martina 0676 7519162 · Georg 0664 1046337</li>
+    <li><strong>Standort:</strong> Schlossergasse 4, 4070 Eferding</li>
+    <li><strong>Gruppentext Vorlage:</strong> <a class="url" href="einladung-gruppen-serviceclubs-k2-galerie.html">Serviceclubs-Einladung</a></li>
+  </ul>
+
+  <h2>5 · Negativ-Keywords (Kampagne)</h2>
+  <p style="font-size: 8.5pt; margin: 0 0 0.75rem;">software, lizenz, online galerie erstellen, website erstellen, app, jobs, museum wien, stockfoto, kunstmesse, ticket, … (+ Basisliste im Code)</p>
+
+  <h2>6 · Danach prüfen</h2>
+  <ol class="steps">
+    <li>Einmal testen: Anzeige klicken → landet auf <strong>/galerie</strong> mit Stand-Badge.</li>
+    <li>Mission Control: Besucher K2-Galerie (nicht ök2-Pilot verwechseln).</li>
+    <li>Nach 7–14 Tagen: Suchbegriffe → schlechte als Negativ, gute behalten.</li>
+  </ol>
+
+  <p style="font-size: 8.5pt; color: #6b5d4d; margin-top: 1.5rem;">Copyright © 2026 kgm solution. Konzept und technische Umsetzung: kgm solution (G. Kreinecker).</p>
+</body>
+</html>

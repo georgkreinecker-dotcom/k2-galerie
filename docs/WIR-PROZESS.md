@@ -124,6 +124,8 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 
 ## Session-Reflexion (wird ergänzt)
 
+**Session-Reflexion (28.05.26):** Google Ads **Lokal Eferding** end-to-end: Repo-Quelle (Keywords, RSA, Sitelinks) + Georg hat Kampagne live (5 €/Tag, Suchnetzwerk). **P1:** fremde Sitelinks in Google erkannt – Aufräum-Checkliste im Schreibtisch statt raten. Nächstes Mal: P1 in Google bereinigen, Eferding-Suchbegriffe nach einer Woche lesen.
+
 | Datum | Was ich gelernt habe |
 |---|---|
 | 09.05.26 | **Lizenz-Domains:** Auf dem **gleichen Vercel-Build** reicht Hostname-Tabelle allein nicht, wenn Kunden noch unter **`k2-galerie.vercel.app/g/…`** liegen – **`VITE_LICENSEE_PUBLIC_HOSTNAMES`** ist die harte Trennung pro eigener Domain (vor Plattform-Prefix-Regel), mit Tests und Doku nachziehen. |

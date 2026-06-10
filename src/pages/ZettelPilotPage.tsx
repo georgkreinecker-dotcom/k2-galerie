@@ -18,6 +18,7 @@ import {
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { buildFamiliePilotFamilienZugang, buildFamiliePilotTenantIdFromZettelNr } from '../utils/familiePilotSeed'
 import { buildOek2PilotGalerieUrl } from '../utils/pilotOek2GalerieUrl'
+import { toAbsolutePilotShareUrl } from '../utils/pilotInviteClient'
 import { adaptPilotOek2Vk2ZettelMd } from '../utils/pilotZettelMdAdapt'
 import { buildVk2PilotGalerieUrl } from '../utils/vk2PilotUrls'
 import { registerPilotZettelInKatalog } from '../utils/testuserKatalogStorage'
@@ -183,6 +184,12 @@ export default function ZettelPilotPage() {
   const pilotEinladungSessionRef = useRef(false)
   /** Sichtbarer Hinweis: der einzige „automatische“ Schritt für dich in der App (Katalog-Eintrag) */
   const [katalogHinweis, setKatalogHinweis] = useState(false)
+  const [linkKopiert, setLinkKopiert] = useState(false)
+
+  const shareUrlForEmpfaenger = useMemo(() => {
+    if (typeof window === 'undefined') return ''
+    return toAbsolutePilotShareUrl(`${window.location.pathname}${window.location.search}`)
+  }, [searchParams.toString()])
 
   /** Gleicher Ablauf wie E-Mail-Einladung (PilotEinladungPage goOek2/goVk2): k2-pilot-einladung + Name */
   useEffect(() => {
@@ -400,6 +407,32 @@ export default function ZettelPilotPage() {
         >
           🖨️ Drucken / Als PDF speichern
         </button>
+        {shareUrlForEmpfaenger ? (
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(shareUrlForEmpfaenger)
+                setLinkKopiert(true)
+                window.setTimeout(() => setLinkKopiert(false), 2500)
+              } catch {
+                window.prompt('Link für Testuser (kopieren):', shareUrlForEmpfaenger)
+              }
+            }}
+            style={{
+              padding: '0.5rem 1rem',
+              background: linkKopiert ? '#14532d' : '#b54a1e',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 6,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+            title={shareUrlForEmpfaenger}
+          >
+            {linkKopiert ? '✅ Link kopiert (Vercel)' : '📋 Link für Testuser kopieren'}
+          </button>
+        ) : null}
         <Link to="/mission-control" style={{ color: '#333', fontSize: '0.9rem' }}>← Mission Control</Link>
         <Link to="/zettel-pilot-form" style={{ color: '#333', fontSize: '0.9rem' }}>Neuer Test-Pilot</Link>
         {katalogHinweis ? (

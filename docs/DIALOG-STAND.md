@@ -1,8 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **Besucherzähler Mission Control** – Client-Fix deployen; Georg prüft nach Vercel „Ready“: [Mission Control im Browser](https://k2-galerie.vercel.app/mission-control) (nicht Cursor-Vorschau).
+**Was wir JETZT tun:** **Schluss für heute (28.05.26).** Nächster Einstieg: (1) **P1-Sitelinks in Google aufräumen** – Anleitung Abschnitt 0 auf [Sitelinks P1](https://k2-galerie.vercel.app/projects/k2-galerie?page=texte-schreibtisch&doc=k2-agentur-sitelinks-p1-google.html#aufraeumen); (2) **Lokal Eferding** nach ~7 Tagen Suchbegriffe in Google prüfen (Kampagne läuft bereits).
 
-**Einordnung:** API liefert echte Zahlen (z. B. K2 ≈ 358); Anzeige war 0, weil lokal/falscher Host HTML statt JSON holte. Fix: Zähler-GET immer von **BASE_APP_URL** + Fehlerhinweis + „Zähler neu laden“. Server-Fix **`aggregatePrefix`** war schon in **`c5299d7f`**.
+**Einordnung:** Google Ads **zwei Spuren:** **Lokal Eferding** = echte K2-Galerie, 5 €/Tag, Suchnetzwerk, Landing `/galerie` – Georg hat Kampagne **aktiv (lernt)** mit Keywords, RSA, 4 Sitelinks. **P1** = Lizenz/Demo – im Repo 6 Sitelinks + CSV/HTML; in Google noch 3 fremde Sitelinks löschen und Felder richtig trennen. Alles im Schreibtisch + Config (Sportwagenmodus eine Quelle).
+
+**Letzter Stand:** 28.05.26 – **Google Ads Lokal Eferding + P1 Sitelinks:** Config/Tests/HTML/CSV für Eferding (Keywords, RSA, Sitelinks); P1-Sitelinks-Quelle + Aufräum-Anleitung HTML; Marketing-Doku ergänzt; Gruppen-Einladungen Schreibtisch. **qs:local** grün. **Commit:** _(nach Push eintragen)_ ✅ **main**
 
 **Letzter Stand:** 10.06.26 – **Besucherzähler Mission Control (Client):** `visitCountApiOrigin.ts` immer Production-API; `MissionControlPage` mit Meta-Laden + Warnbanner. **qs:local** grün. **Commit:** `0a66f76c` ✅ **main**
 

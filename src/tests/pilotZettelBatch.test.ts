@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { buildZettelPilotRelPath } from '../utils/pilotZettelBatch'
+import { buildZettelPilotRelPath, absoluteZugangsblattUrl } from '../utils/pilotZettelBatch'
+import { toAbsolutePilotShareUrl } from '../utils/pilotInviteClient'
 
 describe('pilotZettelBatch', () => {
   it('buildZettelPilotRelPath enthält name, type und pilotUrl', () => {
@@ -16,5 +17,25 @@ describe('pilotZettelBatch', () => {
     expect(q.get('type')).toBe('familie')
     expect(q.get('nr')).toBe('12')
     expect(q.get('pilotUrl')).toBeTruthy()
+    expect(q.get('pilotUrl')).toContain('k2-galerie.vercel.app')
+  })
+
+  it('absoluteZugangsblattUrl: localhost-Origin → Vercel (Simuliert APf am Mac)', () => {
+    const prev = globalThis.window
+    Object.defineProperty(globalThis, 'window', {
+      configurable: true,
+      value: {
+        location: { hostname: 'localhost', origin: 'http://localhost:5177', pathname: '/zettel-pilot', search: '?nr=15' },
+      },
+    })
+    try {
+      const abs = absoluteZugangsblattUrl('/zettel-pilot?name=Woifal&nr=15')
+      expect(abs.startsWith('https://k2-galerie.vercel.app/zettel-pilot?')).toBe(true)
+      expect(abs).not.toContain('localhost')
+      const fixed = toAbsolutePilotShareUrl('http://localhost:5177/zettel-pilot?nr=15')
+      expect(fixed).toBe('https://k2-galerie.vercel.app/zettel-pilot?nr=15')
+    } finally {
+      Object.defineProperty(globalThis, 'window', { configurable: true, value: prev })
+    }
   })
 })

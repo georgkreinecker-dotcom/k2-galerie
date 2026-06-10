@@ -12,6 +12,7 @@ import {
   loadTestuserKatalog,
   type TestuserKatalogEintrag,
 } from './testuserKatalogStorage'
+import { toAbsolutePilotShareUrl } from './pilotInviteClient'
 import { buildVk2PilotGalerieUrl } from './vk2PilotUrls'
 
 const FAMILIE_URL = BASE_APP_URL + K2_FAMILIE_WILLKOMMEN_ROUTE
@@ -48,9 +49,9 @@ export function buildZettelPilotRelPath(input: {
   return `/zettel-pilot?${params.toString()}`
 }
 
-function originForAbsoluteUrl(): string {
-  if (typeof window !== 'undefined' && window.location?.origin) return window.location.origin
-  return BASE_APP_URL
+/** Relativer Zugangsblatt-Pfad → absolute URL für E-Mail / externe Empfänger (nie localhost von der APf). */
+export function absoluteZugangsblattUrl(relativePath: string): string {
+  return toAbsolutePilotShareUrl(relativePath)
 }
 
 /**
@@ -68,7 +69,6 @@ export function createPilotZettelsForBewerbung(input: {
   if (!name || !appName || input.linien.length === 0) return []
 
   const created: CreatedPilotZettel[] = []
-  const origin = originForAbsoluteUrl()
 
   for (const linie of input.linien) {
     const zettelNr = getNextPilotZettelNr()
@@ -97,7 +97,7 @@ export function createPilotZettelsForBewerbung(input: {
       linie,
       zettelNr,
       zugangsblattUrl,
-      absoluteUrl: `${origin}${zugangsblattUrl}`,
+      absoluteUrl: absoluteZugangsblattUrl(zugangsblattUrl),
     })
   }
   return created
@@ -114,12 +114,11 @@ export function katalogEintragToCreatedZettel(row: TestuserKatalogEintrag): Crea
   const url = row.zugangsblattUrl?.trim()
   const linie = row.pilotLinie
   if (!url || !linie || !row.zettelNr?.trim()) return null
-  const origin = originForAbsoluteUrl()
   return {
     linie,
     zettelNr: row.zettelNr.trim(),
     zugangsblattUrl: url,
-    absoluteUrl: url.startsWith('http') ? url : `${origin}${url}`,
+    absoluteUrl: toAbsolutePilotShareUrl(url),
   }
 }
 
