@@ -14,6 +14,8 @@ Im Browser: `https://k2-galerie.vercel.app/texte-schreibtisch/marketing-kanaele-
 |-------|--------|
 | `src/config/marketingKanalP1P2P3.ts` | Landing-Pfade, `buildMarketingKanalUrl`, `listMarketingKanalUrls` |
 | `src/config/k2AgenturGoogleKeywordsP1.ts` | P1 Google: 13 Keywords (Priorität) + Negativ-Start · Schalt-Paket |
+| `src/config/k2AgenturGoogleSitelinksP1.ts` | P1 Google: 6 Sitelinks + 10 Zusatzinfos (Copy-Paste) |
+| `src/config/k2AgenturGoogleSitelinksP3.ts` | P3 Google: 6 Sitelinks + 10 Zusatzinfos (K2 Familie) |
 | `src/utils/marketingAttribution.ts` | `k=` / UTM First-Touch, Checkout-Payload |
 | `src/utils/marketingAnalytics.ts` | GA4 (`VITE_GA4_MEASUREMENT_ID`) + Google Ads Tag (`AW-18195006153` Pilot, überschreibbar per `VITE_GOOGLE_ADS_ID`) |
 | `src/config/googleAdsConfig.ts` | Pilot Conversion-ID Google Ads |
@@ -49,7 +51,7 @@ Ohne GA4-Variable: Attribution und Stripe-Metadaten funktionieren trotzdem; GA4 
 | 2 | Google Ads → Ziele | Conversion-Aktion **Website**, URL enthält `/lizenz-erfolg` |
 | 3 | Vercel Env | `VITE_GOOGLE_ADS_CONVERSION_SEND_TO=AW-18195006153/<Label>` aus Google |
 | 4 | Test | Stripe-Testkauf → `/lizenz-erfolg?session_id=…` → Conversion in Google prüfen |
-| 5 | Google Ads Konto | Einrichtungs-Checkliste 100 % (Sitelinks, Zusatzinfos) |
+| 5 | Google Ads Konto | Einrichtungs-Checkliste 100 % – Sitelinks P1: `k2-agentur-sitelinks-p1-google.html` · P3: `k2-agentur-sitelinks-p3-google.html` |
 | 6 | Mission Control | **ök2 gesamt** mit Google-Klicks vergleichen (nicht nur Demo-Basis) |
 
 Druckversion: `public/texte-schreibtisch/marketing-kanaele-p1-p2-p3.html#google-conversion`

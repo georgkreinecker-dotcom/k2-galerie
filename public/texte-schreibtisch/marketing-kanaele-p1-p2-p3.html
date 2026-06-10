@@ -202,6 +202,20 @@
     <li>Nach Klick auf Landing: Attribution liegt im Browser; bei Lizenzkauf geht Kampagne mit an Stripe (Metadaten).</li>
   </ol>
 
+  <h2 id="sitelinks-p1">5 · Sitelinks P1 (Google – Copy &amp; Paste)</h2>
+  <div class="kasten">
+    <p><strong>6 Sitelinks + 10 Zusatzinfos</strong> – Texte und URLs fertig, du kopierst nur in Google Ads:</p>
+    <p><a class="url" href="k2-agentur-sitelinks-p1-google.html">k2-agentur-sitelinks-p1-google.html</a></p>
+    <p style="margin: 0.35rem 0 0; font-size: 9pt;">Quelle im Code: <code>src/config/k2AgenturGoogleSitelinksP1.ts</code></p>
+  </div>
+
+  <h2 id="sitelinks-p3">5b · Sitelinks P3 (Google – Copy &amp; Paste)</h2>
+  <div class="kasten">
+    <p><strong>6 Sitelinks + 10 Zusatzinfos</strong> für K2 Familie – Musterfamilie Huber, Lizenz, Stammbaum:</p>
+    <p><a class="url" href="k2-agentur-sitelinks-p3-google.html">k2-agentur-sitelinks-p3-google.html</a></p>
+    <p style="margin: 0.35rem 0 0; font-size: 9pt;">CSV: <code>k2-agentur-sitelinks-p3-google.csv</code> · Quelle: <code>src/config/k2AgenturGoogleSitelinksP3.ts</code></p>
+  </div>
+
   <h2 id="google-conversion">6 · Google Ads – Conversion-Ziel (Checkliste)</h2>
   <div class="kasten kasten-warn">
     <p><strong>Warum Google „Klicks“ ≠ euer Besucher-Zähler:</strong> Google zählt jeden Anzeigen-Klick. Die App zählt <strong>einmal pro Browser-Sitzung</strong>, erst wenn die Galerie geladen ist. In Mission Control steht <strong>ök2 gesamt</strong> = Demo + Pilot-Zähler – damit vergleichen, nicht nur die Demo-Basis.</p>
@@ -211,13 +225,15 @@
     <li><strong>Google Ads → Ziele → Conversion-Aktion:</strong> Typ <strong>Website</strong>, Ziel-URL enthält <code>/lizenz-erfolg</code> (echter Lizenzkauf nach Stripe, nicht <code>?muster=1</code>).</li>
     <li><strong>Label aus Google kopieren</strong> → Vercel Environment: <code>VITE_GOOGLE_ADS_CONVERSION_SEND_TO=AW-18195006153/&lt;Label-aus-Google&gt;</code> → Production neu deployen.</li>
     <li><strong>Test:</strong> Stripe-Testkauf → Seite <code>/lizenz-erfolg?session_id=…</code> → in Google Ads unter Conversions prüfen (oft 24–48 h Verzögerung).</li>
-    <li><strong>Einrichtungs-Checkliste in Google auf 100 %:</strong> Sitelinks, Zusatzinformationen, responsive Anzeigen – sonst „Aktiv (eingeschränkt)“ und schlechte Effektivität.</li>
+    <li><strong>Einrichtungs-Checkliste in Google auf 100 %:</strong> Sitelinks + Zusatzinfos – fertig zum Kopieren: <a href="k2-agentur-sitelinks-p1-google.html">Sitelinks P1 · Google</a> (ca. 10 Min., nur einfügen).</li>
     <li><strong>Optional GA4:</strong> <code>VITE_GA4_MEASUREMENT_ID=G-…</code> in Vercel (Attribution läuft auch ohne).</li>
   </ol>
   <p>P1-Landing bleibt <strong>ohne</strong> <code>vorname</code>/<code>entwurf</code> – sonst landen Besucher im Pilot-Zähler statt in der Demo-Basis (Ads-URLs aus Tabelle oben unverändert nutzen).</p>
 
   <h2>7 · Verweise</h2>
   <ul>
+    <li>Sitelinks P1 Google: <code>public/texte-schreibtisch/k2-agentur-sitelinks-p1-google.html</code></li>
+    <li>Sitelinks P3 Google: <code>public/texte-schreibtisch/k2-agentur-sitelinks-p3-google.html</code></li>
     <li>Plan B (ohne Agentur-Fix): <code>public/texte-schreibtisch/plan-b-marketing-ohne-agentur-fix.html</code></li>
     <li>Agentur-Katalog (Anforderungen): <code>public/texte-schreibtisch/agentur-anforderungskatalog-internetvertrieb.html</code></li>
     <li>Technik-Doku: <code>docs/MARKETING-KANAL-P1-P2-P3-EINRICHTUNG.md</code></li>

@@ -11,6 +11,8 @@ import {
 } from '../components/texteSchreibtisch/TexteSchreibtischSeitenAnsicht'
 import { K2_AGENTUR_MASTER_STRATEGIE_P1_URL, K2_AGENTUR_PARTNER_DRUCK_URL } from '../config/k2AgenturAgenturVorbereitung'
 import { K2_AGENTUR_KEYWORDS_P1_GOOGLE_DRUCK_URL } from '../config/k2AgenturGoogleKeywordsP1'
+import { K2_AGENTUR_SITELINKS_P1_GOOGLE_DRUCK_URL } from '../config/k2AgenturGoogleSitelinksP1'
+import { K2_AGENTUR_SITELINKS_P3_GOOGLE_DRUCK_URL } from '../config/k2AgenturGoogleSitelinksP3'
 import {
   K2_AGENTUR_KEYWORDS_P1_SPARTEN_DRUCK_URL,
   K2_AGENTUR_KEYWORDS_P2_GOOGLE_DRUCK_URL,
@@ -55,9 +57,23 @@ type Bereich = {
 const SCHNELLZUGRIFF: Zettel[] = [
   {
     id: 'sq-gruppen',
-    titel: 'Gruppeneinladung',
-    zweck: 'Persönlich · Verein + Name eintragen',
+    titel: 'Gruppeneinladung (Sie)',
+    zweck: 'Formell · Verein + Name eintragen',
     to: '/texte-schreibtisch/einladung-gruppen-verantwortliche-k2-galerie.html',
+    showDruckWeiterleiten: true,
+  },
+  {
+    id: 'sq-gruppen-du',
+    titel: 'Gruppeneinladung (Du)',
+    zweck: 'Vertraut · Verein + Vorname',
+    to: '/texte-schreibtisch/einladung-gruppen-verantwortliche-k2-galerie-du.html',
+    showDruckWeiterleiten: true,
+  },
+  {
+    id: 'sq-gruppen-serviceclubs',
+    titel: 'Gruppeneinladung (Serviceclubs)',
+    zweck: 'Rotary, Lions, Programmpunkt',
+    to: '/texte-schreibtisch/einladung-gruppen-serviceclubs-k2-galerie.html',
     showDruckWeiterleiten: true,
   },
   {
@@ -104,9 +120,23 @@ const BEREICHE: Bereich[] = [
     zettel: [
       {
         id: 'einladung-gruppen-verantwortliche',
-        titel: 'Gruppeneinladung (Verantwortliche)',
-        zweck: 'Persönlich · Ansprechperson + Verein',
+        titel: 'Gruppeneinladung (Sie)',
+        zweck: 'Formell · Ansprechperson + Verein',
         to: '/texte-schreibtisch/einladung-gruppen-verantwortliche-k2-galerie.html',
+        showDruckWeiterleiten: true,
+      },
+      {
+        id: 'einladung-gruppen-verantwortliche-du',
+        titel: 'Gruppeneinladung (Du)',
+        zweck: 'Vertraut · Ansprechperson + Verein',
+        to: '/texte-schreibtisch/einladung-gruppen-verantwortliche-k2-galerie-du.html',
+        showDruckWeiterleiten: true,
+      },
+      {
+        id: 'einladung-gruppen-serviceclubs',
+        titel: 'Gruppeneinladung (Serviceclubs)',
+        zweck: 'Rotary, Lions · Programmpunkt Kunst',
+        to: '/texte-schreibtisch/einladung-gruppen-serviceclubs-k2-galerie.html',
         showDruckWeiterleiten: true,
       },
       {
@@ -206,6 +236,13 @@ const BEREICHE: Bereich[] = [
         showDruckWeiterleiten: true,
       },
       {
+        id: 'sitelinks-p1-google',
+        titel: 'Sitelinks P1 · Google',
+        zweck: '6 Links + 10 Zusatzinfos · Kopieren',
+        to: K2_AGENTUR_SITELINKS_P1_GOOGLE_DRUCK_URL,
+        showDruckWeiterleiten: true,
+      },
+      {
         id: 'master-mein-weg',
         titel: 'Master · Mein Weg',
         zweck: '6 Sparten · Anzeigengruppen',
@@ -245,6 +282,13 @@ const BEREICHE: Bereich[] = [
         titel: 'Keywords P3 · Google',
         zweck: '12 Begriffe · Familie',
         to: K2_AGENTUR_KEYWORDS_P3_GOOGLE_DRUCK_URL,
+        showDruckWeiterleiten: true,
+      },
+      {
+        id: 'sitelinks-p3-google',
+        titel: 'Sitelinks P3 · Google',
+        zweck: '6 Links + 10 Zusatzinfos · Kopieren',
+        to: K2_AGENTUR_SITELINKS_P3_GOOGLE_DRUCK_URL,
         showDruckWeiterleiten: true,
       },
       {
