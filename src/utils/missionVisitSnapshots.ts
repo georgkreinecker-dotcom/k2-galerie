@@ -201,6 +201,44 @@ export function upsertLicenseeVisitSnapshot(tenantId: string, count: number): vo
   }
 }
 
+/** Letzte N Kalendertage (0 = alle Punkte). */
+export function filterSeriesByDays(points: MissionVisitSeriesPoint[], days: number): MissionVisitSeriesPoint[] {
+  if (days <= 0 || points.length === 0) return points
+  const cutoff = new Date()
+  cutoff.setHours(0, 0, 0, 0)
+  cutoff.setDate(cutoff.getDate() - (days - 1))
+  return points.filter((p) => {
+    const d = new Date(p.at)
+    return !Number.isNaN(d.getTime()) && d >= cutoff
+  })
+}
+
+/** Für lange Zeiträume: Balken auf maxBars Wochen-Buckets zusammenfassen (Summe Tageszuwachs). */
+export function bucketSeriesForChart(
+  points: MissionVisitSeriesPoint[],
+  maxBars: number,
+): MissionVisitSeriesPoint[] {
+  if (points.length <= maxBars) return points
+  const bucketSize = Math.ceil(points.length / maxBars)
+  const out: MissionVisitSeriesPoint[] = []
+  for (let i = 0; i < points.length; i += bucketSize) {
+    const chunk = points.slice(i, i + bucketSize)
+    const last = chunk[chunk.length - 1]
+    const dailySum = chunk.reduce((a, p) => a + p.daily, 0)
+    out.push({
+      at: last.at,
+      label: chunk.length > 1 ? `${chunk[0].label}–${last.label}` : last.label,
+      cumulative: last.cumulative,
+      daily: dailySum,
+    })
+  }
+  return out
+}
+
+export function sumSeriesDailyInWindow(points: MissionVisitSeriesPoint[]): number {
+  return points.reduce((a, p) => a + p.daily, 0)
+}
+
 export function buildLicenseeVisitSeries(snapshots: LicenseeVisitSnapshot[]): MissionVisitSeriesPoint[] {
   if (snapshots.length === 0) return []
   return snapshots.map((snap, i) => {

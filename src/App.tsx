@@ -108,6 +108,8 @@ import DevViewPage from './pages/DevViewPage'
 import PlatformStartPage from './pages/PlatformStartPage'
 import MissionControlPage from './pages/MissionControlPage'
 import MissionControlSystemPage from './pages/MissionControlSystemPage'
+import MissionVisitZeitleistePage from './pages/MissionVisitZeitleistePage'
+import MissionVisitZeitleisteProduktPage from './pages/MissionVisitZeitleisteProduktPage'
 import FlyerK2GaleriePage from './pages/FlyerK2GaleriePage'
 import ProspektK2GaleriePage from './pages/ProspektK2GaleriePage'
 import PresseEinladungK2GaleriePage from './pages/PresseEinladungK2GaleriePage'
@@ -1005,6 +1007,11 @@ function App() {
       } />
       <Route path="/control-studio" element={<Navigate to={PROJECT_ROUTES['k2-galerie'].controlStudio} replace />} />
       <Route path={PLATFORM_ROUTES.missionControl} element={<MissionControlPage />} />
+      <Route
+        path={`${PLATFORM_ROUTES.missionControl}/besucher-zeitleiste/:productId`}
+        element={<MissionVisitZeitleisteProduktPage />}
+      />
+      <Route path={PLATFORM_ROUTES.missionControlBesucherZeitleiste} element={<MissionVisitZeitleistePage />} />
       <Route path={PLATFORM_ROUTES.missionControlSystem} element={<MissionControlSystemPage />} />
       <Route path="/mobile-connect" element={<Navigate to={PROJECT_ROUTES['k2-galerie'].mobileConnect} replace />} />
       

@@ -3229,6 +3229,57 @@ body:has(.stammbaum-druck-view:not(.stammbaum-druck-view--vorschau)) {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
+
+  /* Mission Control: Zeitleisten-Seiten (Einzel + Gesamtüberblick) – im Druckdialog ggf. Querformat wählen */
+  body[data-mission-print-zeitleiste='1'] .mission-visit-no-print {
+    display: none !important;
+  }
+  body[data-mission-print-zeitleiste='1'] .mission-visit-zeitleiste-panel {
+    break-inside: avoid;
+    background: #fff !important;
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+  }
+  body[data-mission-print-zeitleiste='1'] .mission-visit-zeitleiste-panel h1,
+  body[data-mission-print-zeitleiste='1'] .mission-visit-zeitleiste-panel p,
+  body[data-mission-print-zeitleiste='1'] .mission-visit-print-zeitfenster {
+    color: #1c1a18 !important;
+  }
+  body[data-mission-print-zeitleiste='1'] .mission-visit-matrix-table th,
+  body[data-mission-print-zeitleiste='1'] .mission-visit-matrix-table td {
+    border-color: #bbb !important;
+    color: #1c1a18 !important;
+    font-size: 8pt !important;
+    padding: 0.2rem 0.3rem !important;
+  }
+  body[data-mission-print-zeitleiste='1'] .mission-visit-matrix-table thead th {
+    background: #e8e8e8 !important;
+  }
+  body[data-mission-print-zeitleiste='1'] .mission-visit-matrix-table tbody th {
+    background: #f5f5f5 !important;
+  }
+  body[data-mission-print-zeitleiste='1'] .mission-visit-matrix-delta-pos {
+    color: #166534 !important;
+  }
+  body[data-mission-print-zeitleiste='1'] .mission-visit-timeline-xlabel {
+    fill: #5c5650 !important;
+    font-size: 7px !important;
+  }
+  body[data-mission-print-zeitleiste='1'] .mission-visit-report-seitenfuss {
+    display: block !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 0.65rem;
+    color: #444 !important;
+    padding: 0.25rem 0;
+    background: #fff !important;
+  }
+  body[data-mission-print-zeitleiste='1'] .mission-visit-report-seitenfuss::after {
+    content: 'Seite ' counter(page);
+  }
 }
 
 /* Mission Control: Balken-Grafik Besucher (Bildschirm) */

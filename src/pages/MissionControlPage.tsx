@@ -1,8 +1,12 @@
-import { Fragment, useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { PROJECT_ROUTES, PLATFORM_ROUTES } from '../config/navigation'
+import {
+  licenseeProductId,
+  missionVisitZeitleisteOverviewPath,
+  missionVisitZeitleisteProductPath,
+} from '../config/missionVisitZeitleiste'
 import { LICENSEE_DOMAIN_REGISTRY } from '../config/licenseeDomainRegistry'
-import MissionVisitProductTimeline from '../components/mission/MissionVisitProductTimeline'
 import {
   fetchVisitCount,
   fetchVisitCountAggregateByPrefixWithMeta,
@@ -12,13 +16,9 @@ import {
   VISIT_AGGREGATE_PREFIX_VK2_PILOT,
 } from '../utils/visitCountApiOrigin'
 import {
-  buildLicenseeVisitSeries,
-  buildMissionVisitSeriesForField,
-  loadLicenseeVisitSnapshots,
   loadMissionVisitSnapshots,
   type MissionVisitCounts,
   type MissionVisitSnapshot,
-  MISSION_VISIT_CHART_KEY_TO_FIELD,
   upsertLicenseeVisitSnapshot,
   upsertMissionVisitSnapshot,
 } from '../utils/missionVisitSnapshots'
@@ -30,19 +30,15 @@ type VisitArea = {
   value: number
   detail?: string
   color: string
-  timelineField: keyof MissionVisitCounts
 }
 
 export default function MissionControlPage() {
   const [visits, setVisits] = useState<MissionVisitCounts | null>(null)
-  const [visitTimeline, setVisitTimeline] = useState<MissionVisitSnapshot[]>(() => loadMissionVisitSnapshots())
+  const [, setVisitTimeline] = useState<MissionVisitSnapshot[]>(() => loadMissionVisitSnapshots())
   const [licenseeVisitCounts, setLicenseeVisitCounts] = useState<Record<string, number> | null>(null)
-  const [licenseeTimelineTick, setLicenseeTimelineTick] = useState(0)
   const [stripeLicenceCount, setStripeLicenceCount] = useState<number | null>(null)
   const [visitLoadIssue, setVisitLoadIssue] = useState<string | null>(null)
   const [visitReloadTick, setVisitReloadTick] = useState(0)
-  const [expandedProduct, setExpandedProduct] = useState<string | null>(null)
-  const [expandedLicensee, setExpandedLicensee] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -107,7 +103,6 @@ export default function MissionControlPage() {
         upsertLicenseeVisitSnapshot(id, counts[i])
       })
       setLicenseeVisitCounts(next)
-      setLicenseeTimelineTick((t) => t + 1)
     })
   }, [visitReloadTick])
 
@@ -125,14 +120,13 @@ export default function MissionControlPage() {
   const visitAreas = useMemo((): VisitArea[] | null => {
     if (!visits) return null
     return [
-      { key: 'k2', label: 'K2 Galerie', value: visits.k2, color: '#5ffbf1', timelineField: 'k2' },
+      { key: 'k2', label: 'K2 Galerie', value: visits.k2, color: '#5ffbf1' },
       {
         key: 'oeffentlich',
         label: 'ök2 gesamt',
         value: visits.oeffentlichGesamt,
         detail: `Demo ${visits.oeffentlich} · Pilot ${visits.oeffentlichPilot}`,
         color: '#fcd34d',
-        timelineField: 'oeffentlichGesamt',
       },
       {
         key: 'vk2',
@@ -140,22 +134,9 @@ export default function MissionControlPage() {
         value: visits.vk2Gesamt,
         detail: `Demo ${visits.vk2Demo} · Pilot ${visits.vk2Pilot}`,
         color: '#a78bfa',
-        timelineField: 'vk2Gesamt',
       },
-      {
-        key: 'fam-muster',
-        label: 'K2 Familie Muster',
-        value: visits.k2FamilieMuster,
-        color: '#34d399',
-        timelineField: 'k2FamilieMuster',
-      },
-      {
-        key: 'krein',
-        label: 'Kreinecker-Stammbaum',
-        value: visits.kreineckerStammbaum,
-        color: '#fb923c',
-        timelineField: 'kreineckerStammbaum',
-      },
+      { key: 'fam-muster', label: 'K2 Familie Muster', value: visits.k2FamilieMuster, color: '#34d399' },
+      { key: 'krein', label: 'Kreinecker-Stammbaum', value: visits.kreineckerStammbaum, color: '#fb923c' },
     ]
   }, [visits])
 
@@ -173,27 +154,6 @@ export default function MissionControlPage() {
     if (!licenseeVisitCounts) return null
     return Object.values(licenseeVisitCounts).reduce((a, n) => a + n, 0)
   }, [licenseeVisitCounts])
-
-  const productTimelineSeries = useCallback(
-    (row: VisitArea) => buildMissionVisitSeriesForField(visitTimeline, row.timelineField),
-    [visitTimeline],
-  )
-
-  const licenseeTimelineSeries = useCallback(
-    (tenantId: string) => {
-      void licenseeTimelineTick
-      return buildLicenseeVisitSeries(loadLicenseeVisitSnapshots(tenantId))
-    },
-    [licenseeTimelineTick],
-  )
-
-  const toggleProduct = (key: string) => {
-    setExpandedProduct((prev) => (prev === key ? null : key))
-  }
-
-  const toggleLicensee = (tenantId: string) => {
-    setExpandedLicensee((prev) => (prev === tenantId ? null : tenantId))
-  }
 
   const reloadCounts = () => {
     setVisits(null)
@@ -264,7 +224,7 @@ export default function MissionControlPage() {
           <header style={{ marginBottom: '1.1rem' }}>
             <h1 style={{ margin: 0, fontSize: '1.35rem', color: '#f0f6ff', fontWeight: 800 }}>📊 Besucher & Lizenzen</h1>
             <p style={{ margin: '0.4rem 0 0', fontSize: '0.85rem', color: '#94a3b8', lineHeight: 1.45 }}>
-              Karte antippen → Zeitleiste pro Produkt. Galerie-Sichten einmal pro Browser-Sitzung.
+              Aktuelle Zahlen hier · Zeitleisten mit Zeitfenster und Druck auf eigener Seite.
             </p>
           </header>
 
@@ -316,8 +276,20 @@ export default function MissionControlPage() {
                 cursor: 'pointer',
               }}
             >
-              🖨️ PDF / Drucken
+              🖨️ Übersicht drucken
             </button>
+            <Link
+              to={missionVisitZeitleisteOverviewPath()}
+              className="btn small-btn"
+              style={{
+                background: 'linear-gradient(120deg, #7c3aed, #6366f1)',
+                color: '#fff',
+                textDecoration: 'none',
+                fontWeight: 700,
+              }}
+            >
+              📈 Zeitleisten & Zeitfenster
+            </Link>
           </div>
 
           <h2 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: '#a5b4fc', fontWeight: 700 }}>👁 Besucher</h2>
@@ -364,69 +336,44 @@ export default function MissionControlPage() {
             {visitAreas?.map((row) => {
               const pct = visitMax > 0 ? Math.round((row.value / visitMax) * 100) : 0
               const share = visitSum && visitSum > 0 ? Math.round((row.value / visitSum) * 100) : 0
-              const isOpen = expandedProduct === row.key
-              const chartField = MISSION_VISIT_CHART_KEY_TO_FIELD[row.key]
-              const hasTimeline = chartField != null
-
               return (
                 <div
                   key={row.key}
                   style={{
                     borderRadius: '12px',
                     background: 'rgba(15,23,42,0.55)',
-                    border: `1px solid ${isOpen ? row.color : `${row.color}44`}`,
-                    boxShadow: isOpen ? `0 0 0 1px ${row.color}55` : undefined,
-                    overflow: 'hidden',
+                    border: `1px solid ${row.color}44`,
+                    padding: '0.85rem 1rem',
                   }}
                 >
-                  <button
-                    type="button"
-                    onClick={() => hasTimeline && toggleProduct(row.key)}
-                    disabled={!hasTimeline}
-                    aria-expanded={isOpen}
+                  <div style={{ fontSize: '0.78rem', color: '#cbd5e1' }}>{row.label}</div>
+                  <div style={{ fontSize: '1.65rem', fontWeight: 800, color: row.color, lineHeight: 1.1, marginTop: '0.25rem' }}>
+                    {row.value}
+                  </div>
+                  {row.detail ? (
+                    <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '0.25rem' }}>{row.detail}</div>
+                  ) : null}
+                  <div className="mission-visit-bar-track" style={{ marginTop: '0.55rem' }}>
+                    <div
+                      className="mission-visit-bar-fill"
+                      style={{ width: `${pct}%`, background: row.color }}
+                      title={`${share}% der Summe`}
+                    />
+                  </div>
+                  <Link
+                    to={missionVisitZeitleisteProductPath(row.key)}
+                    className="mission-visit-no-print"
                     style={{
-                      width: '100%',
-                      margin: 0,
-                      padding: '0.85rem 1rem',
-                      border: 'none',
-                      background: isOpen ? `${row.color}12` : 'transparent',
-                      textAlign: 'left',
-                      cursor: hasTimeline ? 'pointer' : 'default',
-                      font: 'inherit',
-                      color: 'inherit',
+                      display: 'inline-block',
+                      marginTop: '0.55rem',
+                      fontSize: '0.76rem',
+                      fontWeight: 700,
+                      color: row.color,
+                      textDecoration: 'none',
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-                      <div style={{ fontSize: '0.78rem', color: '#cbd5e1' }}>{row.label}</div>
-                      {hasTimeline ? (
-                        <span style={{ fontSize: '0.72rem', color: row.color, fontWeight: 700, flexShrink: 0 }}>
-                          {isOpen ? '▲' : '▼'} Zeitleiste
-                        </span>
-                      ) : null}
-                    </div>
-                    <div style={{ fontSize: '1.65rem', fontWeight: 800, color: row.color, lineHeight: 1.1, marginTop: '0.25rem' }}>
-                      {row.value}
-                    </div>
-                    {row.detail ? (
-                      <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '0.25rem' }}>{row.detail}</div>
-                    ) : null}
-                    <div className="mission-visit-bar-track" style={{ marginTop: '0.55rem' }}>
-                      <div
-                        className="mission-visit-bar-fill"
-                        style={{ width: `${pct}%`, background: row.color }}
-                        title={`${share}% der Summe`}
-                      />
-                    </div>
-                  </button>
-                  {isOpen && hasTimeline ? (
-                    <div style={{ padding: '0 1rem 0.85rem' }}>
-                      <MissionVisitProductTimeline
-                        label={row.label}
-                        color={row.color}
-                        points={productTimelineSeries(row)}
-                      />
-                    </div>
-                  ) : null}
+                    📈 Zeitleiste →
+                  </Link>
                 </div>
               )
             })}
@@ -436,7 +383,7 @@ export default function MissionControlPage() {
             💼 Lizenz-Kunden (Register)
           </h2>
           <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: '#94a3b8' }}>
-            Zeile antippen → Zeitleiste · Summe Pilot-Kunden:{' '}
+            Summe Pilot-Kunden:{' '}
             <strong style={{ color: '#fde68a' }}>{licenseeVisitSum == null ? '…' : licenseeVisitSum}</strong>
           </p>
           <div style={{ overflowX: 'auto' }}>
@@ -445,7 +392,7 @@ export default function MissionControlPage() {
                 <tr style={{ borderBottom: '1px solid rgba(251,191,36,0.35)', textAlign: 'left' }}>
                   <th style={{ padding: '0.45rem 0.6rem 0.55rem 0' }}>Kunde</th>
                   <th style={{ padding: '0.45rem 0.6rem', textAlign: 'right' }}>Besucher</th>
-                  <th className="mission-visit-no-print" style={{ padding: '0.45rem 0 0.55rem 0.6rem', width: '7rem' }}>
+                  <th className="mission-visit-no-print" style={{ padding: '0.45rem 0 0.55rem 0.6rem' }}>
                     Zeitleiste
                   </th>
                   <th className="mission-visit-no-print" style={{ padding: '0.45rem 0 0.55rem 0.6rem' }}>
@@ -455,65 +402,32 @@ export default function MissionControlPage() {
               </thead>
               <tbody>
                 {LICENSEE_DOMAIN_REGISTRY.map((row) => {
-                  const isOpen = expandedLicensee === row.tenantId
                   const count = licenseeVisitCounts == null ? null : licenseeVisitCounts[row.tenantId] ?? 0
                   return (
-                    <Fragment key={row.tenantId}>
-                      <tr
-                        onClick={() => toggleLicensee(row.tenantId)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault()
-                            toggleLicensee(row.tenantId)
-                          }
-                        }}
-                        tabIndex={0}
-                        role="button"
-                        aria-expanded={isOpen}
-                        style={{
-                          borderBottom: isOpen ? 'none' : '1px solid rgba(148,163,184,0.12)',
-                          cursor: 'pointer',
-                          background: isOpen ? 'rgba(251,191,36,0.08)' : undefined,
-                        }}
-                      >
-                        <td style={{ padding: '0.5rem 0.6rem 0.5rem 0', color: '#fef3c7', fontWeight: 600 }}>{row.label}</td>
-                        <td style={{ padding: '0.5rem 0.6rem', textAlign: 'right', fontWeight: 800, fontSize: '1.05rem' }}>
-                          {count == null ? '…' : count}
-                        </td>
-                        <td
-                          className="mission-visit-no-print"
-                          style={{ padding: '0.5rem 0.6rem', color: '#fcd34d', fontWeight: 700, fontSize: '0.8rem' }}
+                    <tr key={row.tenantId} style={{ borderBottom: '1px solid rgba(148,163,184,0.12)' }}>
+                      <td style={{ padding: '0.5rem 0.6rem 0.5rem 0', color: '#fef3c7', fontWeight: 600 }}>{row.label}</td>
+                      <td style={{ padding: '0.5rem 0.6rem', textAlign: 'right', fontWeight: 800, fontSize: '1.05rem' }}>
+                        {count == null ? '…' : count}
+                      </td>
+                      <td className="mission-visit-no-print" style={{ padding: '0.5rem 0.6rem' }}>
+                        <Link
+                          to={missionVisitZeitleisteProductPath(licenseeProductId(row.tenantId))}
+                          style={{ color: '#fcd34d', fontWeight: 700, fontSize: '0.8rem', textDecoration: 'none' }}
                         >
-                          {isOpen ? '▲ zu' : '▼ öffnen'}
-                        </td>
-                        <td
-                          className="mission-visit-no-print"
-                          style={{ padding: '0.5rem 0 0.5rem 0.6rem' }}
-                          onClick={(e) => e.stopPropagation()}
-                          onKeyDown={(e) => e.stopPropagation()}
+                          📈 öffnen
+                        </Link>
+                      </td>
+                      <td className="mission-visit-no-print" style={{ padding: '0.5rem 0 0.5rem 0.6rem' }}>
+                        <a
+                          href={row.canonicalGalerieUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: '#7dd3fc', fontWeight: 600, textDecoration: 'none', fontSize: '0.82rem' }}
                         >
-                          <a
-                            href={row.canonicalGalerieUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ color: '#7dd3fc', fontWeight: 600, textDecoration: 'none', fontSize: '0.82rem' }}
-                          >
-                            Öffnen →
-                          </a>
-                        </td>
-                      </tr>
-                      {isOpen ? (
-                        <tr key={`${row.tenantId}-timeline`}>
-                          <td colSpan={4} style={{ padding: '0 0.6rem 0.85rem 0', borderBottom: '1px solid rgba(148,163,184,0.12)' }}>
-                            <MissionVisitProductTimeline
-                              label={row.label}
-                              color="#fcd34d"
-                              points={licenseeTimelineSeries(row.tenantId)}
-                            />
-                          </td>
-                        </tr>
-                      ) : null}
-                    </Fragment>
+                          Öffnen →
+                        </a>
+                      </td>
+                    </tr>
                   )
                 })}
               </tbody>

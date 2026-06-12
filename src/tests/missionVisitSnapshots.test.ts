@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import type { MissionVisitSnapshot } from '../utils/missionVisitSnapshots'
 import {
+  bucketSeriesForChart,
   buildLicenseeVisitSeries,
   buildMissionVisitSeriesForField,
   computeMissionVisitDailyDeltas,
   computeNextMissionVisitSnapshots,
+  filterSeriesByDays,
   normalizeMissionVisitSnapshotRow,
+  type MissionVisitSeriesPoint,
 } from '../utils/missionVisitSnapshots'
 
 describe('missionVisitSnapshots', () => {
@@ -225,5 +228,31 @@ describe('missionVisitSnapshots', () => {
     ])
     expect(series[1].daily).toBe(3)
     expect(series[1].cumulative).toBe(5)
+  })
+
+  it('filterSeriesByDays: nur letzte N Tage', () => {
+    const today = new Date()
+    const mk = (offset: number, daily: number): MissionVisitSeriesPoint => {
+      const d = new Date(today)
+      d.setDate(d.getDate() - offset)
+      return { at: d.toISOString(), label: String(offset), cumulative: 10, daily }
+    }
+    const all = [mk(10, 1), mk(5, 2), mk(1, 3), mk(0, 4)]
+    const last7 = filterSeriesByDays(all, 7)
+    expect(last7.length).toBe(3)
+    expect(last7[0].daily).toBe(2)
+    expect(last7[last7.length - 1].daily).toBe(4)
+  })
+
+  it('bucketSeriesForChart: fasst lange Reihen zusammen', () => {
+    const points: MissionVisitSeriesPoint[] = Array.from({ length: 40 }, (_, i) => ({
+      at: `2026-01-${String(i + 1).padStart(2, '0')}T12:00:00.000Z`,
+      label: String(i + 1),
+      cumulative: i + 1,
+      daily: 1,
+    }))
+    const bucketed = bucketSeriesForChart(points, 10)
+    expect(bucketed.length).toBeLessThanOrEqual(10)
+    expect(bucketed[bucketed.length - 1].cumulative).toBe(40)
   })
 })
