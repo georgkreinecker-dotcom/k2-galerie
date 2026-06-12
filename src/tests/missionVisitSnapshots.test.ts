@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { MissionVisitSnapshot } from '../utils/missionVisitSnapshots'
-import { computeMissionVisitDailyDeltas, computeNextMissionVisitSnapshots, normalizeMissionVisitSnapshotRow } from '../utils/missionVisitSnapshots'
+import {
+  buildLicenseeVisitSeries,
+  buildMissionVisitSeriesForField,
+  computeMissionVisitDailyDeltas,
+  computeNextMissionVisitSnapshots,
+  normalizeMissionVisitSnapshotRow,
+} from '../utils/missionVisitSnapshots'
 
 describe('missionVisitSnapshots', () => {
   it('ersetzt den Eintrag am selben Kalendertag', () => {
@@ -176,5 +182,48 @@ describe('missionVisitSnapshots', () => {
     const r = normalizeMissionVisitSnapshotRow({ at: '2026-01-01T00:00:00.000Z', k2: 3 })
     expect(r).not.toBeNull()
     expect(r!.kreineckerStammbaum).toBe(0)
+  })
+
+  it('buildMissionVisitSeriesForField: kumuliert + Tageszuwachs', () => {
+    const timeline: MissionVisitSnapshot[] = [
+      {
+        at: '2026-04-27T20:00:00.000Z',
+        k2: 10,
+        oeffentlich: 0,
+        oeffentlichPilot: 0,
+        oeffentlichGesamt: 0,
+        vk2Demo: 0,
+        vk2Pilot: 0,
+        vk2Gesamt: 0,
+        k2FamilieMuster: 0,
+        kreineckerStammbaum: 0,
+      },
+      {
+        at: '2026-04-28T20:00:00.000Z',
+        k2: 15,
+        oeffentlich: 0,
+        oeffentlichPilot: 0,
+        oeffentlichGesamt: 0,
+        vk2Demo: 0,
+        vk2Pilot: 0,
+        vk2Gesamt: 0,
+        k2FamilieMuster: 0,
+        kreineckerStammbaum: 0,
+      },
+    ]
+    const series = buildMissionVisitSeriesForField(timeline, 'k2')
+    expect(series).toHaveLength(2)
+    expect(series[0].daily).toBe(0)
+    expect(series[1].cumulative).toBe(15)
+    expect(series[1].daily).toBe(5)
+  })
+
+  it('buildLicenseeVisitSeries: ein Mandant', () => {
+    const series = buildLicenseeVisitSeries([
+      { at: '2026-05-01T12:00:00.000Z', count: 2 },
+      { at: '2026-05-02T12:00:00.000Z', count: 5 },
+    ])
+    expect(series[1].daily).toBe(3)
+    expect(series[1].cumulative).toBe(5)
   })
 })

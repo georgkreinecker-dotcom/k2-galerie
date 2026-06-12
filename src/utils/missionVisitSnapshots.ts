@@ -122,6 +122,99 @@ const COUNT_FIELDS: (keyof MissionVisitCounts)[] = [
 ]
 
 /** Tageszuwachs pro Snapshot-Zeile: Differenz zum Vortag (kein Monotonie-Abfall → 0). Erster Tag ohne Vortrag: überall 0. */
+export type MissionVisitSeriesPoint = {
+  at: string
+  label: string
+  cumulative: number
+  daily: number
+}
+
+/** Ein Produkt/Bereich: kumuliert + Tageszuwachs pro Snapshot-Tag */
+export function buildMissionVisitSeriesForField(
+  timeline: MissionVisitSnapshot[],
+  field: keyof MissionVisitCounts,
+): MissionVisitSeriesPoint[] {
+  if (timeline.length === 0) return []
+  const deltas = computeMissionVisitDailyDeltas(timeline)
+  return timeline.map((snap, i) => ({
+    at: snap.at,
+    label: formatMissionVisitSnapshotColumnLabel(snap.at),
+    cumulative: snap[field],
+    daily: deltas[i][field],
+  }))
+}
+
+// —— Lizenz-Mandanten (ein Zähler pro tenantId, eigene Zeitleiste) ——
+
+export const MISSION_LICENSEE_VISIT_SNAPSHOTS_KEY = 'k2-mission-licensee-visit-snapshots-v1'
+
+export type LicenseeVisitSnapshot = { at: string; count: number }
+
+function loadLicenseeSnapshotMap(): Record<string, LicenseeVisitSnapshot[]> {
+  try {
+    const raw = localStorage.getItem(MISSION_LICENSEE_VISIT_SNAPSHOTS_KEY)
+    if (!raw) return {}
+    const p = JSON.parse(raw) as unknown
+    if (!p || typeof p !== 'object') return {}
+    const out: Record<string, LicenseeVisitSnapshot[]> = {}
+    for (const [tenantId, rows] of Object.entries(p as Record<string, unknown>)) {
+      if (!Array.isArray(rows)) continue
+      const list = rows
+        .map((r) => {
+          if (!r || typeof r !== 'object') return null
+          const o = r as Record<string, unknown>
+          if (typeof o.at !== 'string') return null
+          const count = typeof o.count === 'number' && Number.isFinite(o.count) ? Math.max(0, Math.floor(o.count)) : 0
+          return { at: o.at, count }
+        })
+        .filter((r): r is LicenseeVisitSnapshot => r != null)
+      if (list.length > 0) out[tenantId] = list
+    }
+    return out
+  } catch {
+    return {}
+  }
+}
+
+export function loadLicenseeVisitSnapshots(tenantId: string): LicenseeVisitSnapshot[] {
+  return loadLicenseeSnapshotMap()[tenantId] ?? []
+}
+
+export function upsertLicenseeVisitSnapshot(tenantId: string, count: number): void {
+  try {
+    const map = loadLicenseeSnapshotMap()
+    const prev = map[tenantId] ?? []
+    const now = new Date()
+    const dayStr = now.toDateString()
+    const entry: LicenseeVisitSnapshot = { at: now.toISOString(), count }
+    const last = prev[prev.length - 1]
+    let next: LicenseeVisitSnapshot[]
+    if (last && new Date(last.at).toDateString() === dayStr) {
+      next = [...prev.slice(0, -1), entry]
+    } else {
+      next = [...prev, entry]
+    }
+    map[tenantId] = next.slice(-MAX_SNAPSHOTS)
+    localStorage.setItem(MISSION_LICENSEE_VISIT_SNAPSHOTS_KEY, JSON.stringify(map))
+  } catch {
+    /* ignore */
+  }
+}
+
+export function buildLicenseeVisitSeries(snapshots: LicenseeVisitSnapshot[]): MissionVisitSeriesPoint[] {
+  if (snapshots.length === 0) return []
+  return snapshots.map((snap, i) => {
+    const prev = i > 0 ? snapshots[i - 1].count : snap.count
+    const daily = i === 0 ? 0 : Math.max(0, snap.count - prev)
+    return {
+      at: snap.at,
+      label: formatMissionVisitSnapshotColumnLabel(snap.at),
+      cumulative: snap.count,
+      daily,
+    }
+  })
+}
+
 export function computeMissionVisitDailyDeltas(timeline: MissionVisitSnapshot[]): MissionVisitCounts[] {
   if (timeline.length === 0) return []
   return timeline.map((snap, i) => {
