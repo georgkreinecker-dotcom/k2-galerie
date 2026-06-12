@@ -4,7 +4,7 @@
 
 **Einordnung:** Webhook-Lücke geschlossen: `persistLicenceFromCheckoutSession` (Webhook + Erfolgsseite-Heal). Lizenzkunden ≠ APf-Entwicklung.
 
-**Letzter Stand:** 12.06.26 – **Stripe→Supabase Heal** + **Mission Control Online-Lizenzen** + **Familie: keine Leitstruktur für Lizenz-Mandanten** – `persistLicenceFromCheckoutSession.js`, `get-licence-by-session` schreibt bei Stripe-Fallback in DB; `heal-recent-stripe-licences.mjs`; Mission Control/Hook; `k2FamilieApfDefaults`. **qs:local** grün. **Commit:** (nach Push) ✅ **main**
+**Letzter Stand:** 12.06.26 – **Stripe→Supabase Heal** + **Mission Control Online-Lizenzen** + **Familie: keine Leitstruktur für Lizenz-Mandanten** – `persistLicenceFromCheckoutSession.js`, `get-licence-by-session` schreibt bei Stripe-Fallback in DB; `heal-recent-stripe-licences.mjs`; Mission Control/Hook; `k2FamilieApfDefaults`. **qs:local** grün. **Commit:** `a3f50ab8` ✅ **main**
 
 **Letzter Stand:** 28.05.26 – **Mission Control: klickbare Zeitleiste pro Produkt/Lizenz** – `MissionVisitProductTimeline`, Snapshots erweitert. **Commit:** `e155cf59` ✅ **main**
 
