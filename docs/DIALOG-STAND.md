@@ -1,8 +1,8 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **Schluss für heute (28.05.26).** Nächster Einstieg: (1) **P1-Sitelinks in Google aufräumen** – Anleitung Abschnitt 0 auf [Sitelinks P1](https://k2-galerie.vercel.app/projects/k2-galerie?page=texte-schreibtisch&doc=k2-agentur-sitelinks-p1-google.html#aufraeumen); (2) **Lokal Eferding** nach ~7 Tagen Suchbegriffe in Google prüfen (Kampagne läuft bereits).
+**Was wir JETZT tun:** **Mission Control** vereinfacht – nur Besucher + Lizenzen; Georg prüft im Browser `/mission-control`. Optional weiter: P1-Sitelinks in Google aufräumen (Schreibtisch Abschnitt 0).
 
-**Einordnung:** Google Ads **zwei Spuren:** **Lokal Eferding** = echte K2-Galerie, 5 €/Tag, Suchnetzwerk, Landing `/galerie` – Georg hat Kampagne **aktiv (lernt)** mit Keywords, RSA, 4 Sitelinks. **P1** = Lizenz/Demo – im Repo 6 Sitelinks + CSV/HTML; in Google noch 3 fremde Sitelinks löschen und Felder richtig trennen. Alles im Schreibtisch + Config (Sportwagenmodus eine Quelle).
+**Einordnung:** Mission Control = **Zahlen auf einen Blick** (keine Matrix, keine Linien-Grafik, kein Google-Ads-Setup-Block auf der Seite). Werbe-Korrelation & Projekt-Kacheln bleiben unter **Mehr (System)**. Google Ads Lokal Eferding läuft parallel.
 
 **Letzter Stand:** 28.05.26 – **Google Ads Lokal Eferding + P1 Sitelinks:** Config/Tests/HTML/CSV für Eferding (Keywords, RSA, Sitelinks); P1-Sitelinks-Quelle + Aufräum-Anleitung HTML; Marketing-Doku ergänzt; Gruppen-Einladungen Schreibtisch. **qs:local** grün. **Commit:** `1fbc4e3a` ✅ **main**
 
