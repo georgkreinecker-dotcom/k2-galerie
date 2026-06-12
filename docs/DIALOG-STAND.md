@@ -4,7 +4,7 @@
 
 **Einordnung:** Google-Ads P1 (~1000+ Klicks): Besucherzähler ök2 (~1244) stimmte; Attribution-Tabelle **016** fehlte in Supabase (jetzt da) – alte Landings nicht rekonstruierbar. Ab Deploy: Landing auch Vorschau + Lizenz-Kaufen; `conversion_licence` beim Webhook.
 
-**Letzter Stand:** 12.06.26 – **Google-Ads ök2 Attribution nachgezogen** – Migration 016 im SQL-Bundle; `marketingAttributionPersist.js`; Landing Vorschau/Lizenz-Kaufen; Doku Checkliste P1. **qs:local** grün. **Commit:** (folgt Push) ✅ **main**
+**Letzter Stand:** 12.06.26 – **Google-Ads ök2 Attribution nachgezogen** – Migration 016 im SQL-Bundle; `marketingAttributionPersist.js`; Landing Vorschau/Lizenz-Kaufen; Doku Checkliste P1. **qs:local** grün. **Commit:** `8ddfb128` ✅ **main**
 
 **Letzter Stand:** 12.06.26 – **Stripe→Supabase Heal** + **Mission Control** + **Familie ohne APf-Leiste** – **Commit:** `b203e71b` ✅ **main**
 
