@@ -15,7 +15,7 @@ import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../conf
 import { isValidEmpfehlerIdFormat } from '../utils/empfehlerId'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import { openCheckoutOrPaymentUrl } from '../utils/openCheckoutOrPaymentUrl'
-import { getMarketingAttributionForCheckout } from '../utils/marketingAttribution'
+import { getMarketingAttributionForCheckout, reportMarketingAttributionLanding } from '../utils/marketingAttribution'
 import { DEFAULT_OEK2_FOCUS_DIRECTION_ID, FOCUS_DIRECTIONS, type FocusDirectionId } from '../config/tenantConfig'
 
 const LICENCE_OPTIONS = [
@@ -41,6 +41,16 @@ export default function LizenzKaufenPage() {
   useEffect(() => {
     if (empfehlerFromUrl && isValidEmpfehlerIdFormat(empfehlerFromUrl)) setEmpfehlerId(empfehlerFromUrl)
   }, [empfehlerFromUrl])
+
+  /** P1-Sitelink „4 Wochen gratis“ – Landing messen (k= bleibt ohnehin in localStorage). */
+  useEffect(() => {
+    reportMarketingAttributionLanding({
+      surface: 'oeffentlich',
+      tenantVisitKey: 'oeffentlich',
+      sessionDedupeKey: 'lizenz-kaufen-p1',
+      search: searchParams.toString() ? `?${searchParams.toString()}` : '',
+    })
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

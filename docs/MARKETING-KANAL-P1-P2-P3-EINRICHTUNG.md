@@ -73,6 +73,20 @@ Ohne GA4-Variable: Attribution und Stripe-Metadaten funktionieren trotzdem; GA4 
 
 Druckversion: `public/texte-schreibtisch/marketing-kanaele-p1-p2-p3.html#google-conversion`
 
+## Google-Ads-P1 – Check nach Kampagne (ök2, 1000+ Klicks)
+
+| Prüfpunkt | Erwartung | Stand |
+|-----------|-----------|--------|
+| Besucher ök2 | `GET /api/visit?tenant=oeffentlich` ≈ Klicks (einmal pro Sitzung) | ✅ lief (z. B. ~1244) |
+| Attribution-Tabelle | `marketing_attribution_events` in Supabase (Migration **016**) | ✅ nachgezogen; **ältere Landings nicht rekonstruierbar** |
+| Steuerzentrale | Mission Control → K2 Agentur → Landings/Conversion pro `p1-google-2026q2` | ab Deploy + neue Besucher |
+| Sitelinks | Demo-Galerie + Vorschau + Lizenz-Kaufen messen Landing | ✅ Vorschau + Lizenz-Kaufen ergänzt |
+| Checkout | `k=` in Stripe-Metadaten → `conversion_licence` beim Webhook | ✅ serverseitig |
+| Google Conversion | `VITE_GOOGLE_ADS_CONVERSION_SEND_TO` in Vercel (Label aus Ads) | manuell prüfen |
+| GA4 | `VITE_GA4_MEASUREMENT_ID` optional | optional |
+
+**Merksatz:** Klicks (Google) ≠ Landings (unsere API). Besucherzähler war die zuverlässige Spur während 016 fehlte.
+
 ## Tests
 
 `src/tests/marketingKanalP1P2P3.test.ts`

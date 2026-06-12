@@ -4,6 +4,7 @@
  */
 import { rowsFromCheckoutSession } from './stripeWebhookLicenceShared.js'
 import { seedGalerieLicenceBlobIfMissing } from './licenceBlobSeedShared.js'
+import { persistMarketingLicenceConversion } from './marketingAttributionPersist.js'
 
 async function trySeedK2GalerieBlob(rowPack) {
   if (rowPack.productLine !== 'k2_galerie') return
@@ -141,6 +142,7 @@ export async function persistLicenceFromCheckoutSession(supabase, session, baseU
     }
 
     await trySeedK2GalerieBlob(rowPack)
+    await persistMarketingLicenceConversion(supabase, session, rowPack)
     return { ok: true, licenceId: licence.id }
   } catch (err) {
     console.error('persistLicence:', err)

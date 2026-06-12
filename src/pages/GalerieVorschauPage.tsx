@@ -27,6 +27,8 @@ import {
 import { getShopOrdersKey, getShopSoldArtworksKey } from '../utils/shopContextKeys'
 import { getArtworkLagerInfo } from '../utils/artworkLagerStatus'
 import { readKuenstlerFallbackGalerieKarten, resolveArtistLabelForGalerieStatistik } from '../utils/artworkArtistDisplay'
+import { reportMarketingAttributionLanding } from '../utils/marketingAttribution'
+import { resolveOek2PublicGalleryVisitTenantId } from '../utils/publicGalleryVisitTenant'
 // Fotos für neue Werke nur im Admin (Neues Werk hinzufügen) – dort Option Freistellen/Original
 import '../App.css'
 
@@ -330,6 +332,18 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
       }
     } catch (_) {}
   }, [musterOnly, fromApf, embeddedInApf])
+
+  useEffect(() => {
+    if (!musterOnly) return
+    const tenant = resolveOek2PublicGalleryVisitTenantId()
+    reportMarketingAttributionLanding({
+      surface: 'oeffentlich',
+      tenantVisitKey: tenant,
+      sessionDedupeKey: `vorschau-${tenant}`,
+      search: location.search,
+    })
+  }, [musterOnly, location.search])
+
   /** Guide nur für Fremde (Besucher), nicht für Programmier-APf (fromApf / embedded) oder Admin */
   const isGalerieUser =
     fromApf === true ||

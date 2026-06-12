@@ -1,10 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **Nach Deploy prüfen** – Mission Control zeigt Käufe; Familie-Lizenz ohne APf-Leiste; bei leerer DB: Erfolgsseite oder `scripts/heal-recent-stripe-licences.mjs` (Vercel-Env).
+**Was wir JETZT tun:** **Nach Vercel-Deploy** – ök2-Landings in Steuerzentrale (Mission Control → K2 Agentur); ggf. `VITE_GOOGLE_ADS_CONVERSION_SEND_TO` in Vercel prüfen.
 
-**Einordnung:** Webhook-Lücke geschlossen: `persistLicenceFromCheckoutSession` (Webhook + Erfolgsseite-Heal). Lizenzkunden ≠ APf-Entwicklung.
+**Einordnung:** Google-Ads P1 (~1000+ Klicks): Besucherzähler ök2 (~1244) stimmte; Attribution-Tabelle **016** fehlte in Supabase (jetzt da) – alte Landings nicht rekonstruierbar. Ab Deploy: Landing auch Vorschau + Lizenz-Kaufen; `conversion_licence` beim Webhook.
 
-**Letzter Stand:** 12.06.26 – **Stripe→Supabase Heal** + **Mission Control Online-Lizenzen** + **Familie: keine Leitstruktur für Lizenz-Mandanten** – `persistLicenceFromCheckoutSession.js`, `get-licence-by-session` schreibt bei Stripe-Fallback in DB; `heal-recent-stripe-licences.mjs`; Mission Control/Hook; `k2FamilieApfDefaults`. **qs:local** grün. **Commit:** `a3f50ab8` ✅ **main**
+**Letzter Stand:** 12.06.26 – **Google-Ads ök2 Attribution nachgezogen** – Migration 016 im SQL-Bundle; `marketingAttributionPersist.js`; Landing Vorschau/Lizenz-Kaufen; Doku Checkliste P1. **qs:local** grün. **Commit:** (folgt Push) ✅ **main**
+
+**Letzter Stand:** 12.06.26 – **Stripe→Supabase Heal** + **Mission Control** + **Familie ohne APf-Leiste** – **Commit:** `b203e71b` ✅ **main**
 
 **Letzter Stand:** 28.05.26 – **Mission Control: klickbare Zeitleiste pro Produkt/Lizenz** – `MissionVisitProductTimeline`, Snapshots erweitert. **Commit:** `e155cf59` ✅ **main**
 
