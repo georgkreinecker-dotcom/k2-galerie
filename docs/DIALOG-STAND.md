@@ -1,8 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **Mission Control** vereinfacht – nur Besucher + Lizenzen; Georg prüft im Browser `/mission-control`. Optional weiter: P1-Sitelinks in Google aufräumen (Schreibtisch Abschnitt 0).
+**Was wir JETZT tun:** **Mission Control** – Georg tippt im Browser auf eine **Besucher-Karte** oder **Lizenz-Zeile** → **Zeitleiste** (Tageszuwachs) öffnet sich. Nach 1–2 Tagen Nutzung füllt sich der Verlauf (lokale Snapshots am Mac).
 
-**Einordnung:** Mission Control = **Zahlen auf einen Blick** (keine Matrix, keine Linien-Grafik, kein Google-Ads-Setup-Block auf der Seite). Werbe-Korrelation & Projekt-Kacheln bleiben unter **Mehr (System)**. Google Ads Lokal Eferding läuft parallel.
+**Einordnung:** Mission Control = **Zahlen + optional Zeitleiste pro Produkt** (Klick, nicht alles auf einmal). Keine große Matrix auf der Hauptseite. Werbe-Korrelation unter **Mehr (System)**. Google Ads Lokal Eferding läuft parallel.
+
+**Letzter Stand:** 28.05.26 – **Mission Control: klickbare Zeitleiste pro Produkt/Lizenz** – `MissionVisitProductTimeline`, Snapshots erweitert (`buildMissionVisitSeriesForField`, Lizenz-Mandanten). **qs:local** grün. **Commit:** `e155cf59` ✅ **main**
 
 **Letzter Stand:** 28.05.26 – **Google Ads Lokal Eferding + P1 Sitelinks:** Config/Tests/HTML/CSV für Eferding (Keywords, RSA, Sitelinks); P1-Sitelinks-Quelle + Aufräum-Anleitung HTML; Marketing-Doku ergänzt; Gruppen-Einladungen Schreibtisch. **qs:local** grün. **Commit:** `1fbc4e3a` ✅ **main**
 
