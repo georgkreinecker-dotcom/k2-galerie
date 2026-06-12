@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **Mission Control Zeitleisten** – Georg testet im Browser: **Zeitleisten & Zeitfenster** (Gesamtüberblick) und **📈 Zeitleiste →** pro Produkt; Zeitfenster 7–90 Tage; **Drucken** auf beiden Seiten.
+**Was wir JETZT tun:** **Nach Deploy prüfen** – Mission Control zeigt Käufe; Familie-Lizenz ohne APf-Leiste; bei leerer DB: Erfolgsseite oder `scripts/heal-recent-stripe-licences.mjs` (Vercel-Env).
 
-**Einordnung:** Lange Verläufe nicht mehr in der Karte aufgeklappt – **eigene druckbare Seiten** mit Zeitfenster + gebündelter Grafik. Hauptseite = aktuelle Zahlen. Google Ads Lokal Eferding parallel.
+**Einordnung:** Webhook-Lücke geschlossen: `persistLicenceFromCheckoutSession` (Webhook + Erfolgsseite-Heal). Lizenzkunden ≠ APf-Entwicklung.
 
-**Letzter Stand:** 12.06.26 – **Mission Control: Zeitleisten-Einzelseiten + Gesamtüberblick** – `/mission-control/besucher-zeitleiste`, Einzelprodukt-Route, Zeitfenster, Druck, Matrix. **qs:local** grün. **Commit:** (nach Push) ✅ **main**
+**Letzter Stand:** 12.06.26 – **Stripe→Supabase Heal** + **Mission Control Online-Lizenzen** + **Familie: keine Leitstruktur für Lizenz-Mandanten** – `persistLicenceFromCheckoutSession.js`, `get-licence-by-session` schreibt bei Stripe-Fallback in DB; `heal-recent-stripe-licences.mjs`; Mission Control/Hook; `k2FamilieApfDefaults`. **qs:local** grün. **Commit:** (nach Push) ✅ **main**
 
 **Letzter Stand:** 28.05.26 – **Mission Control: klickbare Zeitleiste pro Produkt/Lizenz** – `MissionVisitProductTimeline`, Snapshots erweitert. **Commit:** `e155cf59` ✅ **main**
 

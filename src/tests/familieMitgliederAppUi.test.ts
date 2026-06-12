@@ -8,13 +8,19 @@ import {
   shouldShowFamilieLeitstrukturPanel,
 } from '../utils/familieMitgliederAppUi'
 
-vi.mock('../config/k2FamilieApfDefaults', () => ({
-  isK2FamilieApfArbeitsplattform: vi.fn(() => false),
-}))
+vi.mock('../config/k2FamilieApfDefaults', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../config/k2FamilieApfDefaults')>()
+  return {
+    ...actual,
+    isK2FamilieApfArbeitsplattform: vi.fn(() => false),
+  }
+})
 
 import { isK2FamilieApfArbeitsplattform } from '../config/k2FamilieApfDefaults'
+import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
 
 const TID = 'familie-mitglieder-ui-test'
+const APF_DEV_TID = FAMILIE_HUBER_TENANT_ID
 
 const panelOpts = (capabilities: ReturnType<typeof getFamilieRollenCapabilities>) => ({
   capabilities,
@@ -59,13 +65,15 @@ describe('familieMitgliederAppUi', () => {
     ).toBe(false)
   })
 
-  it('APf: nur Inhaber:in; nicht nach QR-Mitglieder-Session', () => {
+  it('APf: Lizenz-Mandant ohne Leitstruktur; Entwicklungs-Mandant nur Inhaber:in', () => {
     vi.mocked(isK2FamilieApfArbeitsplattform).mockReturnValue(true)
     const inhaber = getFamilieRollenCapabilities('inhaber')
     const bearbeiter = getFamilieRollenCapabilities('bearbeiter')
     expect(shouldShowFamilieLeitstrukturPanel(panelOpts(bearbeiter))).toBe(false)
-    expect(shouldShowFamilieLeitstrukturPanel(panelOpts(inhaber))).toBe(true)
-    setFamilieMitgliederAppUiSession(TID)
     expect(shouldShowFamilieLeitstrukturPanel(panelOpts(inhaber))).toBe(false)
+    const devInhaber = { ...panelOpts(inhaber), tenantId: APF_DEV_TID }
+    expect(shouldShowFamilieLeitstrukturPanel(devInhaber)).toBe(true)
+    setFamilieMitgliederAppUiSession(APF_DEV_TID)
+    expect(shouldShowFamilieLeitstrukturPanel(devInhaber)).toBe(false)
   })
 })

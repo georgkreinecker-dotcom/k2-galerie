@@ -1,5 +1,9 @@
-import { LICENSEE_DOMAIN_REGISTRY } from './licenseeDomainRegistry'
 import { PLATFORM_ROUTES } from './navigation'
+import {
+  latestLicencePerTenant,
+  missionLicenceDisplayName,
+  type MissionOnlineLicence,
+} from '../utils/missionOnlineLicences'
 import type { MissionVisitCounts } from '../utils/missionVisitSnapshots'
 import {
   buildLicenseeVisitSeries,
@@ -44,18 +48,23 @@ export function getMissionVisitPlatformProducts(): MissionVisitProductDef[] {
   return PLATFORM_PRODUCTS
 }
 
-export function getMissionVisitLicenseeProducts(): MissionVisitProductDef[] {
-  return LICENSEE_DOMAIN_REGISTRY.map((row) => ({
-    id: licenseeProductId(row.tenantId),
-    label: row.label,
+export function getMissionVisitLicenseeProducts(
+  onlineLicences: MissionOnlineLicence[] = [],
+): MissionVisitProductDef[] {
+  const latest = latestLicencePerTenant(onlineLicences)
+  return [...latest.entries()].map(([tenantId, licence]) => ({
+    id: licenseeProductId(tenantId),
+    label: missionLicenceDisplayName(licence),
     color: '#fcd34d',
     kind: 'licensee' as const,
-    tenantId: row.tenantId,
+    tenantId,
   }))
 }
 
-export function getAllMissionVisitProducts(): MissionVisitProductDef[] {
-  return [...getMissionVisitPlatformProducts(), ...getMissionVisitLicenseeProducts()]
+export function getAllMissionVisitProducts(
+  onlineLicences: MissionOnlineLicence[] = [],
+): MissionVisitProductDef[] {
+  return [...getMissionVisitPlatformProducts(), ...getMissionVisitLicenseeProducts(onlineLicences)]
 }
 
 export function licenseeProductId(tenantId: string): string {
@@ -67,8 +76,11 @@ export function parseLicenseeProductId(productId: string): string | null {
   return productId.slice('lizenz-'.length) || null
 }
 
-export function findMissionVisitProduct(productId: string): MissionVisitProductDef | undefined {
-  return getAllMissionVisitProducts().find((p) => p.id === productId)
+export function findMissionVisitProduct(
+  productId: string,
+  onlineLicences: MissionOnlineLicence[] = [],
+): MissionVisitProductDef | undefined {
+  return getAllMissionVisitProducts(onlineLicences).find((p) => p.id === productId)
 }
 
 export function missionVisitZeitleisteOverviewPath(tage?: MissionVisitZeitfensterTage): string {

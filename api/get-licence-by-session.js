@@ -19,7 +19,8 @@ import {
   parseFamilieTenantIdFromGalerieUrl,
   parseK2GalerieTenantIdFromGalerieUrl,
 } from './stripeWebhookLicenceShared.js'
-import { productLineFromLicenceType, productLineFromStripeSession } from './lizenzProductLineShared.js'
+import { productLineFromLicenceType } from './lizenzProductLineShared.js'
+import { persistLicenceFromCheckoutSession } from './persistLicenceFromCheckoutSession.js'
 
 function resolveBaseUrl() {
   return process.env.VERCEL_URL
@@ -225,6 +226,24 @@ export default async function handler(req, res) {
           })
         }
 
+        const persist = await persistLicenceFromCheckoutSession(supabase, session, baseUrl)
+        if (!persist.ok) {
+          console.warn('get-licence-by-session: Heal in Supabase fehlgeschlagen', persist.error)
+        }
+
+        const { data: healedLicence, error: healReadErr } = await supabase
+          .from('licences')
+          .select('galerie_url, tenant_id, name, email, licence_type')
+          .eq('stripe_session_id', sessionId)
+          .maybeSingle()
+
+        if (!healReadErr && healedLicence) {
+          return res.status(200).json({
+            ...jsonFromDbLicence(healedLicence, baseUrl),
+            healed_from_stripe: true,
+          })
+        }
+
         const rowPack = rowsFromCheckoutSession(session, baseUrl)
         const ins = rowPack.licenceInsert
         let tenantId = ins.tenant_id || null
@@ -233,8 +252,9 @@ export default async function handler(req, res) {
           if (parsed) tenantId = parsed
         }
         const licenceType = ins.licence_type || 'basic'
-        const productLine = rowPack.productLine || productLineFromStripeSession(session, licenceType, tenantId)
-        const focusDirection = rowPack.focusDirection || normalizeFocusDirection(checkoutSessionEffectiveMetadata(session).focusDirection)
+        const productLine = rowPack.productLine
+        const focusDirection =
+          rowPack.focusDirection || normalizeFocusDirection(checkoutSessionEffectiveMetadata(session).focusDirection)
 
         let galerieStripeOut =
           productLine === 'k2_galerie' ? appendFocusDirection(ins.galerie_url || null, focusDirection) : ins.galerie_url || null
@@ -255,6 +275,7 @@ export default async function handler(req, res) {
           product_line: productLine,
           focus_direction: focusDirection,
           from_stripe: true,
+          heal_failed: !persist.ok,
         })
       } catch (stripeErr) {
         if (stripeErr?.code === 'resource_missing') {

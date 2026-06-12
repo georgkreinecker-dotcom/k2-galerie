@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useMissionOnlineLicences } from '../hooks/useMissionOnlineLicences'
 import MissionVisitProductTimeline from '../components/mission/MissionVisitProductTimeline'
 import MissionVisitZeitfensterPicker from '../components/mission/MissionVisitZeitfensterPicker'
 import {
@@ -18,8 +19,9 @@ export default function MissionVisitZeitleisteProduktPage() {
   const { productId = '' } = useParams<{ productId: string }>()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const { licences: onlineLicences } = useMissionOnlineLicences()
   const tage = parseZeitfensterFromSearch(`?${searchParams.toString()}`)
-  const product = findMissionVisitProduct(decodeURIComponent(productId))
+  const product = findMissionVisitProduct(decodeURIComponent(productId), onlineLicences)
 
   const setTage = (next: MissionVisitZeitfensterTage) => {
     if (!product) return

@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useMissionOnlineLicences } from '../hooks/useMissionOnlineLicences'
 import MissionVisitOverviewMatrix from '../components/mission/MissionVisitOverviewMatrix'
 import MissionVisitZeitfensterPicker from '../components/mission/MissionVisitZeitfensterPicker'
 import {
@@ -16,6 +17,7 @@ import { printMissionVisitZeitleiste } from '../utils/missionVisitPrint'
 export default function MissionVisitZeitleistePage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const { licences: onlineLicences } = useMissionOnlineLicences()
   const tage = parseZeitfensterFromSearch(`?${searchParams.toString()}`)
 
   const setTage = (next: MissionVisitZeitfensterTage) => {
@@ -23,7 +25,7 @@ export default function MissionVisitZeitleistePage() {
   }
 
   const { rows, columnPoints } = useMemo(() => {
-    const products = getAllMissionVisitProducts()
+    const products = getAllMissionVisitProducts(onlineLicences)
     const rows = products.map((product) => {
       const full = loadSeriesForProduct(product)
       const points = filterSeriesByDays(full, tage)
@@ -31,7 +33,7 @@ export default function MissionVisitZeitleistePage() {
     })
     const ref = rows.find((r) => r.product.id === 'k2')?.points ?? rows[0]?.points ?? []
     return { rows, columnPoints: ref }
-  }, [tage])
+  }, [tage, onlineLicences])
 
   const windowLabel = tage === 0 ? 'Gesamter gespeicherter Verlauf' : `Letzte ${tage} Tage`
 

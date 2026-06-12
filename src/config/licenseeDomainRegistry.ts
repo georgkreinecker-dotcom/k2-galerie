@@ -1,5 +1,6 @@
 /**
- * Lizenz-Kunden: Domän-Karteikarten – eine Quelle für Mission Control & spätere Auswertungen.
+ * Lizenz-Mandanten: Domän-Karteikarten für Visit-Zähler (tenantId ↔ Hosts, Galerie-URL).
+ * Anzeige „echte Lizenzkäufe“ = Supabase via /api/licence-data (Mission Control), nicht dieses Register.
  * Mensch-lesbare Vorlage / Copy-Paste: docs/LIZENZ-KUNDE-DOMAIN-KARTEIKARTE.md
  */
 export type LicenseeDomainCard = {
@@ -16,8 +17,14 @@ export type LicenseeDomainCard = {
 export const LICENSEE_DOMAIN_REGISTRY: LicenseeDomainCard[] = [
   {
     tenantId: 'galerie-eferding',
-    label: 'Galerie Eferding (Pilot)',
+    label: 'Galerie Eferding',
     canonicalGalerieUrl: 'https://www.galerie-eferding.at/g/galerie-eferding',
     hosts: ['galerie-eferding.at', 'www.galerie-eferding.at'],
   },
 ]
+
+export function findLicenseeDomainByTenantId(tenantId: string): LicenseeDomainCard | undefined {
+  const tid = tenantId.trim()
+  if (!tid) return undefined
+  return LICENSEE_DOMAIN_REGISTRY.find((row) => row.tenantId === tid)
+}

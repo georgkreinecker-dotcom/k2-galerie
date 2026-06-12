@@ -220,6 +220,10 @@ export function FamilieEinladungQuerySync() {
         } else if (m) {
           setFamilieEinladungPending({ t, z, m, fn })
           goMeineFamilieIfNeeded()
+        } else if (!z && !m && t !== FAMILIE_HUBER_TENANT_ID) {
+          /** Lizenz-Einstieg (?t= nur): Produkt-UI ohne APf-Leitstruktur (z. B. nach lizenz-erfolg). */
+          setFamilieMitgliederAppUiSession(t)
+          goMeineFamilieIfNeeded()
         } else if (isFamiliePilotTenantId(t) && z) {
           /** Testpilot K2 Familie (?t=familie-pilot-…): Inhaber:in angelegt, Identität bestätigt – volle App ohne Nur-Zugang. */
           clearFamilieFamilienQrKompaktSession()

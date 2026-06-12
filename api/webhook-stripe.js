@@ -11,33 +11,12 @@
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { rowsFromCheckoutSession } from './stripeWebhookLicenceShared.js'
-import { seedGalerieLicenceBlobIfMissing } from './licenceBlobSeedShared.js'
+import { persistLicenceFromCheckoutSession } from './persistLicenceFromCheckoutSession.js'
 import {
   buildRenewalGutschriftInsert,
   buildRenewalPaymentRow,
   isSubscriptionRenewalInvoice,
 } from './stripeInvoiceRenewalShared.js'
-
-/** Nach Lizenz+Zahlung: Mandanten-Blob mit Name/Sparte aus Checkout (nur wenn Blob noch fehlt). */
-async function trySeedK2GalerieBlob(rowPack) {
-  if (rowPack.productLine !== 'k2_galerie') return
-  const tenantId = rowPack.licenceInsert?.tenant_id
-  if (!tenantId) return
-  try {
-    const out = await seedGalerieLicenceBlobIfMissing({
-      tenantId,
-      customerName: rowPack.licenceInsert?.name || '',
-      customerEmail: rowPack.customerEmail || rowPack.licenceInsert?.email || '',
-      focusDirection: rowPack.focusDirection,
-    })
-    if (out.seeded) console.log('webhook-stripe: gallery blob seeded', tenantId)
-    else if (out.skipped && out.reason === 'blob-exists') {
-      /* ok */
-    } else console.log('webhook-stripe: gallery blob seed', out)
-  } catch (e) {
-    console.error('webhook-stripe: gallery blob seed error', e)
-  }
-}
 
 /** Raw-Body aus Request-Stream lesen (für Stripe-Signaturprüfung erforderlich). */
 function getRawBody(req) {
@@ -233,129 +212,28 @@ export default async function handler(req, res) {
 
   const rowPack = rowsFromCheckoutSession(session, baseUrl)
 
-  try {
-    const { data: existingLicence } = await supabase
-      .from('licences')
-      .select('id')
-      .eq('stripe_session_id', sessionId)
-      .maybeSingle()
-
-    if (existingLicence?.id) {
-      const { data: existingPay } = await supabase
-        .from('payments')
-        .select('id')
-        .eq('stripe_session_id', sessionId)
-        .maybeSingle()
-
-      if (existingPay?.id) {
-        console.log('webhook-stripe: session already processed', sessionId)
-        await trySeedK2GalerieBlob(rowPack)
-        return res.status(200).json({ received: true, duplicate: true })
-      }
-
-      const payRow = rowPack.buildPaymentInsert(existingLicence.id)
-      const { data: payment, error: errPayment } = await supabase
-        .from('payments')
-        .insert(payRow)
-        .select('id')
-        .single()
-
-      if (errPayment) {
-        console.error('webhook-stripe: payments catch-up failed', errPayment)
-        return res.status(500).end()
-      }
-
-      const gut = rowPack.buildGutschriftInsert(payment.id, existingLicence.id)
-      if (gut) {
-        const { error: errG } = await supabase.from('empfehler_gutschriften').insert(gut)
-        if (errG) console.error('webhook-stripe: empfehler_gutschriften catch-up failed', errG)
-      }
-
-      console.log('webhook-stripe: payment catch-up', { sessionId, paymentId: payment.id })
-      await trySeedK2GalerieBlob(rowPack)
-      return res.status(200).json({ received: true, catchUp: true })
-    }
-
-    const { data: licence, error: errLicence } = await supabase
-      .from('licences')
-      .insert(rowPack.licenceInsert)
-      .select('id')
-      .single()
-
-    if (errLicence) {
-      if (errLicence.code === '23505') {
-        const { data: raced } = await supabase
-          .from('licences')
-          .select('id')
-          .eq('stripe_session_id', sessionId)
-          .maybeSingle()
-        if (raced?.id) {
-          const { data: racedPay } = await supabase
-            .from('payments')
-            .select('id')
-            .eq('stripe_session_id', sessionId)
-            .maybeSingle()
-          if (racedPay?.id) {
-            console.log('webhook-stripe: race → already complete', sessionId)
-            await trySeedK2GalerieBlob(rowPack)
-            return res.status(200).json({ received: true, duplicate: true })
-          }
-          const payRow = rowPack.buildPaymentInsert(raced.id)
-          const { data: payment, error: errPay2 } = await supabase
-            .from('payments')
-            .insert(payRow)
-            .select('id')
-            .single()
-          if (errPay2) {
-            console.error('webhook-stripe: payments after race failed', errPay2)
-            return res.status(500).end()
-          }
-          const gut = rowPack.buildGutschriftInsert(payment.id, raced.id)
-          if (gut) {
-            const { error: errG } = await supabase.from('empfehler_gutschriften').insert(gut)
-            if (errG) console.error('webhook-stripe: gutschriften after race failed', errG)
-          }
-          console.log('webhook-stripe: payment after licence race', sessionId)
-          await trySeedK2GalerieBlob(rowPack)
-          return res.status(200).json({ received: true, catchUp: true })
-        }
-      }
-      console.error('webhook-stripe: licences insert failed', errLicence)
-      return res.status(500).end()
-    }
-
-    const { data: payment, error: errPayment } = await supabase
-      .from('payments')
-      .insert(rowPack.buildPaymentInsert(licence.id))
-      .select('id')
-      .single()
-
-    if (errPayment) {
-      console.error('webhook-stripe: payments insert failed', errPayment)
-      return res.status(500).end()
-    }
-
-    const gut = rowPack.buildGutschriftInsert(payment.id, licence.id)
-    if (gut) {
-      const { error: errGutschrift } = await supabase.from('empfehler_gutschriften').insert(gut)
-      if (errGutschrift) {
-        console.error('webhook-stripe: empfehler_gutschriften insert failed', errGutschrift)
-      }
-    }
-
-    console.log('Stripe webhook: checkout.session.completed', {
-      sessionId,
-      licenceId: licence.id,
-      paymentId: payment.id,
-      licenceType: rowPack.licenceType,
-      customerEmail: rowPack.customerEmail,
-      gutschriftCents: rowPack.gutschriftCents,
-    })
-    await trySeedK2GalerieBlob(rowPack)
-  } catch (err) {
-    console.error('webhook-stripe:', err)
+  const persist = await persistLicenceFromCheckoutSession(supabase, session, baseUrl)
+  if (!persist.ok) {
+    console.error('webhook-stripe: persist failed', persist.error, sessionId)
     return res.status(500).end()
   }
+
+  if (persist.duplicate) {
+    console.log('webhook-stripe: session already processed', sessionId)
+    return res.status(200).json({ received: true, duplicate: true })
+  }
+  if (persist.catchUp) {
+    console.log('webhook-stripe: payment catch-up', { sessionId, licenceId: persist.licenceId })
+    return res.status(200).json({ received: true, catchUp: true })
+  }
+
+  console.log('Stripe webhook: checkout.session.completed', {
+    sessionId,
+    licenceId: persist.licenceId,
+    licenceType: rowPack.licenceType,
+    customerEmail: rowPack.customerEmail,
+    gutschriftCents: rowPack.gutschriftCents,
+  })
 
   return res.status(200).json({ received: true })
 }

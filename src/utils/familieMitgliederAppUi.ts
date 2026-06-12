@@ -3,7 +3,10 @@
  * In der **Lizenzversion** (Produktion, PWA, QR) sehen es weder Mitglieder noch Inhaber:innen.
  */
 import type { FamilieRollenCapabilities } from '../types/k2FamilieRollen'
-import { isK2FamilieApfArbeitsplattform } from '../config/k2FamilieApfDefaults'
+import {
+  isFamilieApfLeitstrukturEntwicklungsTenant,
+  isK2FamilieApfArbeitsplattform,
+} from '../config/k2FamilieApfDefaults'
 import { isFamilieEinladungNurZugangAnsicht } from './familieEinladungPending'
 
 const K2_FAMILIE_MITGLIEDER_APP_UI_KEY = 'k2-familie-mitglieder-app-ui'
@@ -72,6 +75,7 @@ export function shouldShowFamilieLeitstrukturPanel(opts: {
 }): boolean {
   if (opts.pathname && isK2FamilieOeffentlicherEinstiegPath(opts.pathname)) return false
   if (!isK2FamilieApfArbeitsplattform()) return false
+  if (!isFamilieApfLeitstrukturEntwicklungsTenant(opts.tenantId)) return false
   if (opts.nurMitgliedEinstieg || opts.huberNurMusterBesuch) return false
   if (!opts.capabilities.canManageFamilienInstanz) return false
   if (isFamilieMitgliederAppUiSession(opts.tenantId)) return false

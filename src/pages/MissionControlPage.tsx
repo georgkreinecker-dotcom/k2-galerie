@@ -6,7 +6,13 @@ import {
   missionVisitZeitleisteOverviewPath,
   missionVisitZeitleisteProductPath,
 } from '../config/missionVisitZeitleiste'
-import { LICENSEE_DOMAIN_REGISTRY } from '../config/licenseeDomainRegistry'
+import { useMissionOnlineLicences } from '../hooks/useMissionOnlineLicences'
+import {
+  formatLicenceTypeLabel,
+  missionLicenceDisplayName,
+  resolveMissionLicenceGalerieUrl,
+  uniqueTenantIdsFromLicences,
+} from '../utils/missionOnlineLicences'
 import {
   fetchVisitCount,
   fetchVisitCountAggregateByPrefixWithMeta,
@@ -36,7 +42,13 @@ export default function MissionControlPage() {
   const [visits, setVisits] = useState<MissionVisitCounts | null>(null)
   const [, setVisitTimeline] = useState<MissionVisitSnapshot[]>(() => loadMissionVisitSnapshots())
   const [licenseeVisitCounts, setLicenseeVisitCounts] = useState<Record<string, number> | null>(null)
-  const [stripeLicenceCount, setStripeLicenceCount] = useState<number | null>(null)
+  const {
+    licences: onlineLicences,
+    loading: onlineLicencesLoading,
+    error: onlineLicencesError,
+    emptyOnlineHint,
+    count: stripeLicenceCount,
+  } = useMissionOnlineLicences()
   const [visitLoadIssue, setVisitLoadIssue] = useState<string | null>(null)
   const [visitReloadTick, setVisitReloadTick] = useState(0)
 
@@ -90,13 +102,21 @@ export default function MissionControlPage() {
     }
   }, [visitReloadTick])
 
+  const licenceTenantIds = useMemo(
+    () => uniqueTenantIdsFromLicences(onlineLicences),
+    [onlineLicences],
+  )
+
   useEffect(() => {
-    const ids = LICENSEE_DOMAIN_REGISTRY.map((c) => c.tenantId)
+    if (onlineLicencesLoading) return
+    const ids = licenceTenantIds
     if (ids.length === 0) {
       setLicenseeVisitCounts({})
       return
     }
+    let cancelled = false
     Promise.all(ids.map((id) => fetchVisitCount(id))).then((counts) => {
+      if (cancelled) return
       const next: Record<string, number> = {}
       ids.forEach((id, i) => {
         next[id] = counts[i]
@@ -104,18 +124,10 @@ export default function MissionControlPage() {
       })
       setLicenseeVisitCounts(next)
     })
-  }, [visitReloadTick])
-
-  useEffect(() => {
-    const origin = getVisitCountApiOrigin()
-    fetch(`${origin}/api/licence-data`)
-      .then((r) => r.json())
-      .then((data) => {
-        const n = Array.isArray(data?.licences) ? data.licences.length : 0
-        setStripeLicenceCount(n)
-      })
-      .catch(() => setStripeLicenceCount(null))
-  }, [])
+    return () => {
+      cancelled = true
+    }
+  }, [visitReloadTick, onlineLicencesLoading, licenceTenantIds])
 
   const visitAreas = useMemo((): VisitArea[] | null => {
     if (!visits) return null
@@ -308,7 +320,7 @@ export default function MissionControlPage() {
               </div>
               <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '0.25rem' }}>Summe Sichten</div>
             </div>
-            {stripeLicenceCount != null ? (
+            {!onlineLicencesLoading ? (
               <div
                 style={{
                   padding: '0.55rem 0.85rem',
@@ -320,7 +332,7 @@ export default function MissionControlPage() {
                 <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#6ee7b7', lineHeight: 1 }}>
                   {stripeLicenceCount}
                 </div>
-                <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>Stripe-Lizenzen</div>
+                <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>Lizenzkäufe online</div>
               </div>
             ) : null}
           </div>
@@ -380,17 +392,27 @@ export default function MissionControlPage() {
           </div>
 
           <h2 style={{ margin: '0 0 0.65rem', fontSize: '1rem', color: '#fcd34d', fontWeight: 700 }}>
-            💼 Lizenz-Kunden (Register)
+            💼 Lizenzkäufe (Stripe)
           </h2>
           <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: '#94a3b8' }}>
-            Summe Pilot-Kunden:{' '}
+            Online gekauft:{' '}
+            <strong style={{ color: '#fde68a' }}>
+              {onlineLicencesLoading ? '…' : stripeLicenceCount}
+            </strong>
+            {' · '}
+            Summe Besucher Kundengalerien:{' '}
             <strong style={{ color: '#fde68a' }}>{licenseeVisitSum == null ? '…' : licenseeVisitSum}</strong>
           </p>
+          {onlineLicencesError ? (
+            <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: '#fecaca' }}>{onlineLicencesError}</p>
+          ) : null}
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem', color: '#e2e8f0' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(251,191,36,0.35)', textAlign: 'left' }}>
                   <th style={{ padding: '0.45rem 0.6rem 0.55rem 0' }}>Kunde</th>
+                  <th style={{ padding: '0.45rem 0.6rem' }}>Lizenz</th>
+                  <th style={{ padding: '0.45rem 0.6rem' }}>Kaufdatum</th>
                   <th style={{ padding: '0.45rem 0.6rem', textAlign: 'right' }}>Besucher</th>
                   <th className="mission-visit-no-print" style={{ padding: '0.45rem 0 0.55rem 0.6rem' }}>
                     Zeitleiste
@@ -401,35 +423,73 @@ export default function MissionControlPage() {
                 </tr>
               </thead>
               <tbody>
-                {LICENSEE_DOMAIN_REGISTRY.map((row) => {
-                  const count = licenseeVisitCounts == null ? null : licenseeVisitCounts[row.tenantId] ?? 0
-                  return (
-                    <tr key={row.tenantId} style={{ borderBottom: '1px solid rgba(148,163,184,0.12)' }}>
-                      <td style={{ padding: '0.5rem 0.6rem 0.5rem 0', color: '#fef3c7', fontWeight: 600 }}>{row.label}</td>
-                      <td style={{ padding: '0.5rem 0.6rem', textAlign: 'right', fontWeight: 800, fontSize: '1.05rem' }}>
-                        {count == null ? '…' : count}
-                      </td>
-                      <td className="mission-visit-no-print" style={{ padding: '0.5rem 0.6rem' }}>
-                        <Link
-                          to={missionVisitZeitleisteProductPath(licenseeProductId(row.tenantId))}
-                          style={{ color: '#fcd34d', fontWeight: 700, fontSize: '0.8rem', textDecoration: 'none' }}
-                        >
-                          📈 öffnen
-                        </Link>
-                      </td>
-                      <td className="mission-visit-no-print" style={{ padding: '0.5rem 0 0.5rem 0.6rem' }}>
-                        <a
-                          href={row.canonicalGalerieUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{ color: '#7dd3fc', fontWeight: 600, textDecoration: 'none', fontSize: '0.82rem' }}
-                        >
-                          Öffnen →
-                        </a>
-                      </td>
-                    </tr>
-                  )
-                })}
+                {onlineLicencesLoading ? (
+                  <tr>
+                    <td colSpan={6} style={{ padding: '0.75rem 0', color: '#94a3b8' }}>
+                      Lizenzkäufe werden geladen …
+                    </td>
+                  </tr>
+                ) : onlineLicences.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} style={{ padding: '0.75rem 0', color: '#94a3b8', lineHeight: 1.5 }}>
+                      Noch keine Online-Lizenzkäufe in Supabase.
+                      {emptyOnlineHint ? ` ${emptyOnlineHint}` : ''}
+                      <br />
+                      <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: '#7dd3fc', fontWeight: 600 }}>
+                        → Lizenzen verwalten
+                      </Link>
+                    </td>
+                  </tr>
+                ) : (
+                  onlineLicences.map((licence) => {
+                    const tenantId = licence.tenant_id?.trim() || ''
+                    const count =
+                      tenantId && licenseeVisitCounts != null ? licenseeVisitCounts[tenantId] ?? 0 : null
+                    const galerieUrl = resolveMissionLicenceGalerieUrl(licence)
+                    return (
+                      <tr key={licence.id} style={{ borderBottom: '1px solid rgba(148,163,184,0.12)' }}>
+                        <td style={{ padding: '0.5rem 0.6rem 0.5rem 0', color: '#fef3c7', fontWeight: 600 }}>
+                          {missionLicenceDisplayName(licence)}
+                        </td>
+                        <td style={{ padding: '0.5rem 0.6rem', color: '#cbd5e1' }}>
+                          {formatLicenceTypeLabel(licence.licence_type)}
+                        </td>
+                        <td style={{ padding: '0.5rem 0.6rem', color: '#94a3b8', fontSize: '0.82rem' }}>
+                          {licence.created_at?.slice(0, 10) || '–'}
+                        </td>
+                        <td style={{ padding: '0.5rem 0.6rem', textAlign: 'right', fontWeight: 800, fontSize: '1.05rem' }}>
+                          {!tenantId ? '–' : count == null ? '…' : count}
+                        </td>
+                        <td className="mission-visit-no-print" style={{ padding: '0.5rem 0.6rem' }}>
+                          {tenantId ? (
+                            <Link
+                              to={missionVisitZeitleisteProductPath(licenseeProductId(tenantId))}
+                              style={{ color: '#fcd34d', fontWeight: 700, fontSize: '0.8rem', textDecoration: 'none' }}
+                            >
+                              📈 öffnen
+                            </Link>
+                          ) : (
+                            <span style={{ color: '#64748b', fontSize: '0.8rem' }}>–</span>
+                          )}
+                        </td>
+                        <td className="mission-visit-no-print" style={{ padding: '0.5rem 0 0.5rem 0.6rem' }}>
+                          {galerieUrl ? (
+                            <a
+                              href={galerieUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ color: '#7dd3fc', fontWeight: 600, textDecoration: 'none', fontSize: '0.82rem' }}
+                            >
+                              Öffnen →
+                            </a>
+                          ) : (
+                            <span style={{ color: '#64748b', fontSize: '0.8rem' }}>–</span>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })
+                )}
               </tbody>
             </table>
           </div>

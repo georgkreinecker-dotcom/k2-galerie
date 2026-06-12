@@ -36,6 +36,21 @@ export function isK2FamilieApfArbeitsplattform(): boolean {
 }
 
 /**
+ * Leitstruktur-Panel links: nur für APf-Entwicklung (Kreinecker, Huber-Demo, Platzhalter default).
+ * Lizenzkunden und Test-Mandanten (z. B. nach Musterlizenz / Stripe) sind **keine** Entwicklungs-Mandanten –
+ * auch wenn sie noch über k2-galerie.vercel.app öffnen.
+ */
+export function isFamilieApfLeitstrukturEntwicklungsTenant(tenantId: string): boolean {
+  const id = tenantId.trim().toLowerCase()
+  if (!id) return false
+  if (id === FAMILIE_HUBER_TENANT_ID) return true
+  if (id === K2_FAMILIE_DEFAULT_TENANT) return true
+  const kreinecker = resolveApfMeineFamilieTenantId()
+  if (kreinecker && id === kreinecker.trim().toLowerCase()) return true
+  return false
+}
+
+/**
  * Mandanten-ID für Georgs Stammfamilie auf der APf.
  * 1) Dasselbe wie Präsentation: `resolveKreineckerPresentationTenantIdFromEnv` (KREINECKER_STAMMBAUM, dann APF_MEINE_FAMILIE)
  * 2) Erster Eintrag, dessen familyDisplayName „Kreinecker“ und „Stamm“ oder „Alkoven“ enthält
