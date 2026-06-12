@@ -1,7 +1,7 @@
 -- =============================================================================
 -- EINMAL in Supabase SQL Editor: alles markieren (Cmd+A), kopieren, einfügen, Run
 -- Voraussetzung: Migrationen 003 und 007 sind bei dir schon erfolgreich gelaufen.
--- Enthält: 008 (licence_type propplus) + 010 (eindeutige stripe_session_id)
+-- Enthält: 008 (licence_type propplus) + 017 (K2 Familie familie_monat/jahr) + 010 (eindeutige stripe_session_id)
 -- =============================================================================
 
 -- ----- 008: Lizenzstufe Pro++ (propplus) erlauben -----
@@ -11,6 +11,23 @@ ALTER TABLE licences
 ALTER TABLE licences
   ADD CONSTRAINT licences_licence_type_check
   CHECK (licence_type IN ('basic', 'pro', 'proplus', 'propplus'));
+
+-- ----- 017: K2 Familie (familie_monat | familie_jahr) – sonst Webhook/Heal schlägt fehl -----
+ALTER TABLE licences
+  DROP CONSTRAINT IF EXISTS licences_licence_type_check;
+
+ALTER TABLE licences
+  ADD CONSTRAINT licences_licence_type_check
+  CHECK (
+    licence_type IN (
+      'basic',
+      'pro',
+      'proplus',
+      'propplus',
+      'familie_monat',
+      'familie_jahr'
+    )
+  );
 
 -- ----- 010: Keine doppelte Lizenz/Zahlung bei gleicher Stripe-Session -----
 CREATE UNIQUE INDEX IF NOT EXISTS idx_licences_stripe_session_unique

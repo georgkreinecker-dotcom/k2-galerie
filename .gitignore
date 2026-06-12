@@ -44,6 +44,7 @@ terminal-startup-error.log
 .env
 .env.local
 .env.production
+.env.vercel.production
 
 # Temporäre Dateien
 *.tmp
