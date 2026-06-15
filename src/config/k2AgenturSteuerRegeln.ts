@@ -52,6 +52,9 @@ export type SteuerRegelErgebnis = {
   aktionLabel: string
 }
 
+/** Google-Ads-Abrechnung: Kampagnen-Kosten 6.–12.06.2026 (7 Tage, 2 Kampagnen). */
+export const K2_AGENTUR_KOSTEN_7T_P1_GOOGLE_ABRECHNUNG = '318'
+
 export const K2_AGENTUR_STEUER_SCHWELLEN = {
   /** Ab dieser Summe (7 Tage) ohne Lizenz → Pause empfohlen */
   kostenOhneConversionPauseEur: 25,

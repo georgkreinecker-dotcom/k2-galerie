@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Leitfaden Leitung – Freunde · Eigenes Projekt mit KI</title>
+  <style>
+    @page { size: A4; margin: 11mm 13mm 16mm 13mm; }
+    * { box-sizing: border-box; }
+    html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body {
+      margin: 0 auto;
+      padding: 1.25rem 1rem 2rem;
+      max-width: 54rem;
+      font-family: "Palatino Linotype", Palatino, Georgia, serif;
+      font-size: 10pt;
+      line-height: 1.5;
+      color: #1a1816;
+      background: #f6f2eb;
+    }
+    .screen-hint {
+      font-family: system-ui, sans-serif;
+      font-size: 8pt;
+      text-align: center;
+      color: #64748b;
+      background: #e8e4dc;
+      padding: 0.35rem 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .kopf {
+      text-align: center;
+      border-bottom: 2px solid #b54a1e;
+      padding-bottom: 0.85rem;
+      margin-bottom: 1rem;
+    }
+    .kopf h1 { font-size: 1.2rem; margin: 0 0 0.2rem; }
+    .kopf .meta { font-size: 8.5pt; color: #5c5650; }
+    .ein-satz {
+      background: #fffefb;
+      border-left: 4px solid #b54a1e;
+      padding: 0.55rem 0.75rem;
+      margin-bottom: 0.85rem;
+      font-weight: 600;
+    }
+    h2 {
+      font-size: 1rem;
+      color: #3d2e1f;
+      margin: 1rem 0 0.35rem;
+      border-bottom: 1px solid #d4c8b8;
+      page-break-after: avoid;
+    }
+    h3 { font-size: 9.5pt; margin: 0.65rem 0 0.25rem; color: #4a4035; }
+    p { margin: 0 0 0.45rem; }
+    ul, ol { margin: 0 0 0.5rem; padding-left: 1.2em; }
+    li { margin-bottom: 0.2rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8.5pt;
+      margin: 0.35rem 0 0.65rem;
+    }
+    th, td {
+      border: 1px solid #c4b8a8;
+      padding: 0.3rem 0.4rem;
+      vertical-align: top;
+    }
+    th { background: #ebe6dc; }
+    .block-zeit { font-weight: 700; white-space: nowrap; width: 3rem; }
+    .kasten {
+      background: #fffefb;
+      border: 1px solid #b8a88e;
+      padding: 0.55rem 0.7rem;
+      margin: 0.4rem 0;
+      font-size: 9pt;
+      border-radius: 4px;
+    }
+    .gruen { border-left: 4px solid #0d9488; }
+    .rot { border-left: 4px solid #b91c1c; }
+    .gelb { border-left: 4px solid #ca8a04; }
+    code, .url {
+      font-family: ui-monospace, Menlo, monospace;
+      font-size: 8pt;
+      background: #f0ebe3;
+      padding: 0.05rem 0.2rem;
+    }
+    a.url { color: #1d4ed8; word-break: break-all; text-decoration: none; }
+    .zwei-spalten {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+    }
+    @media (max-width: 640px) { .zwei-spalten { grid-template-columns: 1fr; } }
+    .checkliste { list-style: none; padding: 0; margin: 0; }
+    .checkliste li::before { content: "☐ "; }
+    .leitfaden-box {
+      background: #fff;
+      border: 2px solid #0d9488;
+      border-radius: 6px;
+      padding: 0.65rem 0.85rem;
+      margin: 0.5rem 0;
+    }
+    .leitfaden-box ol { margin: 0.35rem 0 0; padding-left: 1.3em; }
+    .btn-druck {
+      display: block;
+      margin: 0.75rem auto 0;
+      padding: 0.4rem 0.85rem;
+      font-family: system-ui, sans-serif;
+      font-size: 8.5pt;
+      background: #b54a1e;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    @media print {
+      .screen-hint, .btn-druck { display: none; }
+      body { background: #fff; padding: 0; font-size: 9.5pt; }
+      .zwei-spalten { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <p class="screen-hint">Nur Georg – Leitung. Teilnehmer-Programm: schulung-freunde-programm-teilnehmer.html</p>
+
+  <header class="kopf">
+    <h1>Leitfaden – Leitung</h1>
+    <p class="meta">Freunde · Eigenes Projekt mit KI · Termin: ________________ Ort: ________________</p>
+  </header>
+
+  <p class="ein-satz">Kernbotschaft: „Ich zeige euch den Weg – nicht meine Galerie. Ihr könnt mit derselben Methode euer eigenes Projekt bauen.“</p>
+
+  <h2>1 · Botschaft (nicht verwechseln)</h2>
+  <div class="zwei-spalten">
+    <div class="kasten gruen">
+      <strong>✅ So formulieren</strong>
+      <ul>
+        <li>„Das sind <em>meine</em> Beispiele – ihr könnt etwas ganz anderes bauen.“</li>
+        <li>„Ich programmiere nicht – ich sage der KI, was ich will.“</li>
+        <li>„Der Leitfaden gilt für <em>eure</em> Idee.“</li>
+        <li>„Kein Mitmachen bei mir nötig – eigener Weg.“</li>
+      </ul>
+    </div>
+    <div class="kasten rot">
+      <strong>❌ Nicht der Schwerpunkt</strong>
+      <ul>
+        <li>Eferding-Galerie, Eröffnung, lokale Werke</li>
+        <li>Lizenz kaufen, Abo, K2 als Produkt verkaufen</li>
+        <li>„Werdet meine Mitstreiter“</li>
+        <li>Technik-Details, Terminal, Git</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>2 · Der Leitfaden (Herzstück – auswendig können)</h2>
+  <div class="leitfaden-box">
+    <strong>6 Schritte – für jedes eigene Projekt</strong>
+    <ol>
+      <li><strong>Idee in einem Satz</strong> – Für wen? Was soll es lösen?</li>
+      <li><strong>Erstes Bild</strong> – Skizze, Screenshot, Notiz: So soll es aussehen.</li>
+      <li><strong>Werkzeug</strong> – Cursor + KI (Joe). Mac oder Windows.</li>
+      <li><strong>Klein anfangen</strong> – Ein Screen, eine Funktion, testen, weiter.</li>
+      <li><strong>Du entscheidest, KI baut</strong> – Prüfen: Passt das noch zu meiner Idee?</li>
+      <li><strong>Veröffentlichen</strong> – Online stellen, Handy testen, Feedback holen.</li>
+    </ol>
+  </div>
+  <p style="font-size:8.5pt;color:#5c5650;">Immer wieder auf Schritt 1 zurück: „Was wäre <em>deine</em> Idee?“ – am Ende besonders.</p>
+
+  <h2>3 · Beispiel-Programme (QR + Link für Freunde)</h2>
+  <p style="font-size:8.5pt;color:#5c5650;">QR = Vercel-Stand fürs Handy. Link = relativ am Mac. <strong>K2 Agentur</strong> nur kurz erwähnen – kein QR.</p>
+  <table>
+    <tr><th>Programm</th><th>Link (relativ)</th><th>QR / Hinweis</th></tr>
+    <tr>
+      <td>K2 Galerie Demo</td>
+      <td><a class="url" href="/projects/k2-galerie/galerie-oeffentlich">/projects/k2-galerie/galerie-oeffentlich</a></td>
+      <td>QR auf Teilnehmer-Zettel</td>
+    </tr>
+    <tr>
+      <td>VK2 Verein</td>
+      <td><a class="url" href="/projects/vk2/galerie">/projects/vk2/galerie</a></td>
+      <td>QR auf Teilnehmer-Zettel</td>
+    </tr>
+    <tr>
+      <td>K2 Familie</td>
+      <td><a class="url" href="/projects/k2-familie/willkommen">/projects/k2-familie/willkommen</a></td>
+      <td>QR auf Teilnehmer-Zettel</td>
+    </tr>
+    <tr>
+      <td>K2 Agentur</td>
+      <td><a class="url" href="/projects/k2-galerie/k2-agentur">/projects/k2-galerie/k2-agentur</a></td>
+      <td>Nur Erwähnung – kein QR für Freunde</td>
+    </tr>
+    <tr>
+      <td>Freunde-Erklärung</td>
+      <td><a class="url" href="/freunde-erklaerung.html">/freunde-erklaerung.html</a></td>
+      <td>Nachlese</td>
+    </tr>
+    <tr>
+      <td>E-Mail versenden</td>
+      <td><a class="url" href="schulung-freunde-programm-teilnehmer-email.html">…-teilnehmer-email.html</a></td>
+      <td>.eml laden → Apple Mail → senden</td>
+    </tr>
+  </table>
+  <p style="font-size:8.5pt;color:#5c5650;">Lokal: <code>http://localhost:5177</code> + Pfad. Vorher <code>npm run dev</code>.</p>
+
+  <h2>4 · Ablauf Block für Block</h2>
+  <table>
+    <thead>
+      <tr><th>Min</th><th>Block</th><th>Du tust / sagst</th><th>Zeigst</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="block-zeit">0–10</td>
+        <td><strong>Willkommen</strong></td>
+        <td>Programm verteilen. „Heute geht es um den Weg – eigenes Projekt mit KI. Ich zeige Beispiele aus meiner Arbeit.“</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td class="block-zeit">10–25</td>
+        <td><strong>Rundgang</strong></td>
+        <td>Max. 3 Demos, je 4 Min. Pro Demo: „Das habe ich so gebaut – du könntest X anders machen.“</td>
+        <td>ök2 → optional VK2 oder K2 Familie (nicht alle)</td>
+      </tr>
+      <tr>
+        <td class="block-zeit">25–40</td>
+        <td><strong>Leitfaden</strong></td>
+        <td>6 Schritte durchgehen. Mini-Beispiel: „Stell dir vor, du willst eine Vereins-Homepage …“ Schritt 1–6.</td>
+        <td>Whiteboard / Programm-Zettel</td>
+      </tr>
+      <tr>
+        <td class="block-zeit">40–55</td>
+        <td><strong>Joe live</strong></td>
+        <td>„So arbeite ich täglich.“ Cursor zeigen – eine harmlose Demo-Änderung (ök2 only).</td>
+        <td>Cursor + Browser nebeneinander</td>
+      </tr>
+      <tr>
+        <td class="block-zeit">55–65</td>
+        <td><strong>Ehrlich</strong></td>
+        <td>2 Hochs, 2 Tiefs – Crashes, Geduld, Martina skeptisch. „Es ist machbar, aber nicht magisch.“</td>
+        <td>freunde-erklaerung optional</td>
+      </tr>
+      <tr>
+        <td class="block-zeit">65+</td>
+        <td><strong>Ihre Ideen</strong></td>
+        <td>„Was würdet ihr bauen?“ Notieren. Kein Angebot, kein Follow-up-Druck.</td>
+        <td>—</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>5 · Joe-Auftrag (Live-Demo)</h2>
+  <div class="kasten gruen">
+    <p><strong>Harmlose ök2-Änderung (2–3 Min.):</strong></p>
+    <p>Joe, ändere in der ök2-Demo den Willkommenstext zu: <em>„Willkommen – heute zeigen wir, wie man mit KI ein eigenes Projekt baut.“</em> Nur ök2, keine K2-Daten.</p>
+    <p style="margin:0;font-size:8.5pt;color:#5c5650;">Plan B: Nur Cursor-Fenster zeigen + erklären, ohne Live-Änderung.</p>
+  </div>
+
+  <h2>6 · Wenn jemand fragt: „Wie fange ich an?“</h2>
+  <div class="kasten gelb">
+    <ol style="margin:0.35rem 0 0;padding-left:1.2em;">
+      <li>Idee aufschreiben – ein Satz.</li>
+      <li>Cursor installieren (cursor.com) – kostenlos testen.</li>
+      <li>Erste Nachricht an die KI: „Ich will [Idee]. Zeig mir den ersten Schritt.“</li>
+      <li>Klein bleiben – eine Seite, nicht die ganze App.</li>
+      <li>Georg ist kein Support – aber der Leitfaden gilt für alle.</li>
+    </ol>
+  </div>
+
+  <h2>7 · Mitnahme &amp; Technik</h2>
+  <div class="zwei-spalten">
+    <div class="kasten gruen">
+      <ul class="checkliste">
+        <li>MacBook + Netzteil</li>
+        <li>2–3 Teilnehmer-Programme ausgedruckt</li>
+        <li>optional E-Mail-Version (…-teilnehmer-email.html)</li>
+        <li>WLAN/Hotspot geklärt</li>
+      </ul>
+    </div>
+    <div class="kasten gelb">
+      <strong>Vorher testen</strong>
+      <ul>
+        <li>Demos laden (ök2, ggf. VK2/Familie)</li>
+        <li>Cursor + Joe bereit</li>
+        <li>QR nur wenn sinnvoll – Fokus ist Leitfaden, nicht Handy-Galerie</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>8 · Stichworte (Ein Satz)</h2>
+  <ul>
+    <li><strong>Leitfaden:</strong> „Idee → Bild → Werkzeug → klein bauen → KI setzt um → online.“</li>
+    <li><strong>Georg:</strong> „Kein Programmierer – ich steuere, Joe baut.“</li>
+    <li><strong>Beispiele:</strong> „Galerie, Verein, Familie, Agentur – du wählst dein Thema.“</li>
+    <li><strong>Grenze:</strong> „Nicht mitmachen bei mir – euer eigenes Projekt.“</li>
+  </ul>
+
+  <footer style="margin-top:1.25rem;padding-top:0.5rem;border-top:1px solid #d4c8b8;font-size:8pt;color:#5c5650;text-align:center;">
+    Leitfaden Leitung · Georg · kgm solution · Juni 2026
+  </footer>
+
+  <button type="button" class="btn-druck" onclick="window.print()">🖨️ Drucken</button>
+
+</body>
+</html>

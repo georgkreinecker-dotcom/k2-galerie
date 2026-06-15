@@ -170,6 +170,26 @@ const BEREICHE: Bereich[] = [
         to: '/freunde-erklaerung.html',
       },
       {
+        id: 'schulung-freunde-programm',
+        titel: 'Leitfaden · Eigenes Projekt mit KI',
+        zweck: 'Programm · QR · 6 Schritte · Drucken',
+        to: '/texte-schreibtisch/schulung-freunde-programm-teilnehmer.html',
+        showDruckWeiterleiten: true,
+      },
+      {
+        id: 'schulung-freunde-email',
+        titel: 'Leitfaden · E-Mail versenden',
+        zweck: 'Vorschau · .eml · an Freunde senden',
+        to: '/texte-schreibtisch/schulung-freunde-programm-teilnehmer-email.html',
+      },
+      {
+        id: 'schulung-freunde-leitung',
+        titel: 'Leitfaden · Leitung Georg',
+        zweck: 'Schulung führen · Beispiele · Joe · nur du',
+        to: '/texte-schreibtisch/schulung-freunde-leitung-georg.html',
+        showDruckWeiterleiten: true,
+      },
+      {
         id: 'prospekt',
         titel: 'Prospekt Galerieeröffnung',
         zweck: 'Eine Seite, druckbar',
@@ -339,6 +359,13 @@ const BEREICHE: Bereich[] = [
         showDruckWeiterleiten: true,
       },
       {
+        id: 'kampagnenplan-orientierung',
+        titel: 'Kampagnenplan P1 · Orientierung',
+        zweck: 'Google Ads · nur lokal · Drucken',
+        to: '/texte-schreibtisch/k2-agentur-kampagnenplan-orientierung.html',
+        showDruckWeiterleiten: true,
+      },
+      {
         id: 'mok2-agentur-sektion',
         titel: 'mök2 – Agentur kurz',
         zweck: 'Gleicher Inhalt kompakt',
@@ -458,6 +485,13 @@ const BEREICHE: Bereich[] = [
         titel: 'Brief an Andreas',
         zweck: 'Stand zeigen',
         to: R.notizenBriefAndreas,
+      },
+      {
+        id: 'entwicklung-von-anfang-manager',
+        titel: 'Entwicklung von Anfang an',
+        zweck: 'Für Andreas · druckbar',
+        to: '/texte-schreibtisch/entwicklung-von-anfang-an-manager-blick.html',
+        showDruckWeiterleiten: true,
       },
       {
         id: 'softwarestand',

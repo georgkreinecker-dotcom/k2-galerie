@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>E-Mail – Leitfaden Eigenes Projekt mit KI</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 1rem;
+      font-family: system-ui, sans-serif;
+      background: #ebe6dc;
+      color: #1a1816;
+    }
+    .toolbar {
+      max-width: 640px;
+      margin: 0 auto 1rem;
+      padding: 0.75rem 1rem;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #c4b8a8;
+    }
+    .toolbar h1 { font-size: 1rem; margin: 0 0 0.35rem; }
+    .toolbar p { font-size: 0.85rem; margin: 0 0 0.5rem; color: #5c5650; }
+    .toolbar label { font-size: 0.8rem; font-weight: 600; display: block; margin: 0.5rem 0 0.2rem; }
+    .toolbar input[type="email"] {
+      width: 100%;
+      padding: 0.4rem 0.5rem;
+      border: 1px solid #c4b8a8;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.65rem; }
+    .btn {
+      padding: 0.45rem 0.85rem;
+      font-size: 0.85rem;
+      border-radius: 6px;
+      border: 1px solid #0d7a75;
+      background: #0d7a75;
+      color: #fff;
+      cursor: pointer;
+    }
+    .btn.secondary { background: #fff; color: #0d5c58; }
+    .betreff { font-size: 0.85rem; margin-top: 0.5rem; }
+    .betreff code { background: #f0ebe3; padding: 0.1rem 0.3rem; border-radius: 3px; }
+    .preview-wrap {
+      max-width: 640px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #c4b8a8;
+      overflow: hidden;
+    }
+    .preview-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #5c5650;
+      padding: 0.5rem 1rem;
+      background: #f6f2eb;
+      border-bottom: 1px solid #d4c8b8;
+    }
+    #mail-preview { min-height: 200px; }
+    textarea.plain-copy {
+      width: 100%;
+      min-height: 140px;
+      margin-top: 0.75rem;
+      font-family: ui-monospace, Menlo, monospace;
+      font-size: 0.75rem;
+      padding: 0.5rem;
+      border: 1px solid #c4b8a8;
+      border-radius: 4px;
+      resize: vertical;
+    }
+    @media print { .toolbar { display: none; } }
+  </style>
+</head>
+<body>
+
+  <div class="toolbar">
+    <h1>📧 Leitfaden per E-Mail versenden</h1>
+    <p>Vorschau = was im Postfach ankommt. <strong>E-Mail-Datei (.eml)</strong> in Apple Mail öffnen, Empfänger prüfen, senden.</p>
+    <p class="betreff">Betreff: <code id="betreff-anzeige">Eigenes Projekt mit KI – Leitfaden von Georg</code></p>
+    <label for="empfaenger">Empfänger (optional – steht in der .eml)</label>
+    <input type="email" id="empfaenger" placeholder="freund@beispiel.at" />
+    <div class="btn-row">
+      <button type="button" class="btn" id="btn-eml">📧 E-Mail-Datei (.eml) laden</button>
+      <button type="button" class="btn secondary" id="btn-copy">Plaintext kopieren</button>
+      <a class="btn secondary" href="schulung-freunde-programm-teilnehmer.html" style="text-decoration:none;display:inline-block;">← Druckversion</a>
+    </div>
+    <textarea class="plain-copy" id="plain-copy" readonly aria-label="Plaintext zum Kopieren"></textarea>
+  </div>
+
+  <div class="preview-wrap">
+    <div class="preview-label">Vorschau (HTML wie in der Mail)</div>
+    <div id="mail-preview"></div>
+  </div>
+
+  <script src="schulung-freunde-mail-inhalt.js"></script>
+  <script src="schulung-freunde-mail.js"></script>
+  <script>
+    (function () {
+      function render() {
+        var pkg = window.SCHULUNG_FREUNDE_MAIL;
+        if (!pkg) return;
+        document.getElementById('betreff-anzeige').textContent = pkg.subject;
+        document.getElementById('mail-preview').innerHTML = pkg.html;
+        document.getElementById('plain-copy').value = pkg.text;
+      }
+      render();
+
+      document.getElementById('btn-eml').addEventListener('click', function () {
+        var to = document.getElementById('empfaenger').value.trim();
+        window.downloadSchulungFreundeEml(to || undefined);
+      });
+
+      document.getElementById('btn-copy').addEventListener('click', function () {
+        var ta = document.getElementById('plain-copy');
+        ta.select();
+        try {
+          document.execCommand('copy');
+        } catch (e) {
+          navigator.clipboard.writeText(ta.value);
+        }
+      });
+
+      if (location.hash === '#eml') {
+        setTimeout(function () {
+          document.getElementById('btn-eml').click();
+        }, 300);
+      }
+    })();
+  </script>
+</body>
+</html>

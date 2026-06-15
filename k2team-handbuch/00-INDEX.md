@@ -1,33 +1,90 @@
 # K2Team Handbuch
 
-Kurzreferenz für Zusammenarbeit und Betrieb der K2 Galerie. Stand: Februar 2026.
+Kurzreferenz für Zusammenarbeit und Betrieb der K2 Galerie.
 
 ---
 
-## Inhaltsverzeichnis
+## Inhaltsverzeichnis – Kurzanleitung
 
-| Nr. | Thema | Inhalt |
-|-----|--------|--------|
-| 1 | [Team-Grundlagen](01-TEAM-GRUNDLAGEN.md) | Team, Projekt, Prinzipien |
-| 2 | [Team-Werte](02-TEAM-WERTE.md) | Werte in Kürze |
-| 3 | [Backup & Vollbackup](13-BACKUP-VOLLBACKUP-K2-GALERIE.md) | Speichern, Vollbackup, backupmicro |
-| 4 | [Sicherheit & Vor Veröffentlichung](14-SICHERHEIT-PRODUKT-LABEL.md) | Auth, RLS, Checkliste |
-| 33 | [Produkt-Sicherheitsdatenblatt IT](33-PRODUKT-SICHERHEITS-DATENBLATT.md) | Informationssicherheit, Mandantentrennung, Hosting-Schutzmaßnahmen, Grenzen – **kein** chemisches SDS |
-| 5 | [Session 21.02.26](15-SESSION-21-02-26.md) | Video-Upload, Vollbild, Bilder-Sync, Stand-Badge-Fix |
-| 6 | [Mac ↔ iPad Sync](16-MAC-IPAD-SYNC-SCHRITT-FUER-SCHRITT.md) | Schritt für Schritt: Mac→iPad und iPad→Mac |
-| 7 | [K2 Familie – Erste Schritte](17-K2-FAMILIE-ERSTE-SCHRITTE.md) | Stammbaum, Personen, Momente, Events, Kalender, Familie wechseln |
-| 8 | [K2 Familie – Projekt-Zusammenfassung](18-K2-FAMILIE-PROJEKT-ZUSAMMENFASSUNG.md) | Was ist K2 Familie, Grundbotschaft, Funktionen, Phasen – zum Ausdrucken |
-| 9 | [Martina & Muna – ök2 und VK2 ansehen](19-MARTINA-MUNA-BESUCH-OEK2-VK2.md) | Zettel für Martina: QR, Adressen, Laptop/Handy, Checkliste – einmal ausdrucken |
-| 10 | [Links & QR-Codes – Register](21-LINKS-QR-CODES-REGISTER.md) | Alle QR und zentralen Links: wo sie vorkommen, wohin sie führen, wofür sie da sind |
-| 11 | [Medienplanung – Flyer & Werbung (mök2)](22-MEDIENPLANUNG-FLYER-WERBUNG-MOK2.md) | Wo was liegt, Checkliste Flyer/Werbung, Kontext mök2 – gut arbeiten bei Medienplanung |
-| 12 | [Notfall-Checkliste](23-NOTFALL-CHECKLISTE.md) | Cursor aus? Dialog tot? Parallelstrukturen: DIALOG-STAND, Briefing, Backup – zentral im Smart Panel |
-| 13 | [Texte & Briefe Kompass](24-TEXTE-BRIEFE-KOMPASS.md) | Schnellwahl: welcher Text/Brief wofür; ein Zweck = ein Hauptdokument |
-| 14 | [Lizenz: Eigene URL ab Pro](25-LIZENZ-EIGENE-URL-AB-PRO.md) | Custom Domain/URL pro Lizenznehmer; Variante A eigene Instanz, Variante B gleiches Vercel-Projekt → **`docs/LIZENZ-KUNDE-DOMAIN-KARTEIKARTE.md`** |
-| 15 | [Testpilot-Einladung einrichten](26-TESTPILOT-EINLADUNG-EINRICHTUNG.md) | PILOT_INVITE_SECRET, Resend, Vercel – einmal einrichten, dann Link und optional E-Mail vom Server |
-| 16 | [Lizenznehmer: Admin-QR fürs Handy](27-LIZENZNEHMER-ADMIN-QR-MOBIL.md) | Admin vs. Galerie-QR, Stammdaten nach Registrierung, Lizenz-Erfolgsseite, QR speichern |
-| 17 | [Infos (Testuser) – drei Produktlinien](28-TESTUSER-ZETTEL-PRODUKTLINIEN.md) | ök2, VK2, K2 Familie; Schwerpunkt bis zu fünf Jahre Gratislizenz; ergänzend Gutschein 100 € pro Linie; [Testuser-Anmeldung](/testuser-anmeldung) zum Eintragen; Testprotokolle: Kapitel 29–31 und Ansicht `/testprotokoll-testuser` |
-| 29 | [Testprotokoll ök2](29-TESTPROTOKOLL-OEK2.md) | Vorlage zum Ausfüllen – ök2; gleiche Ansicht unter `/testprotokoll-testuser?linie=oek2` |
-| 30 | [Testprotokoll VK2](30-TESTPROTOKOLL-VK2.md) | Vorlage zum Ausfüllen – VK2; Ansicht `/testprotokoll-testuser?linie=vk2` |
-| 31 | [Testprotokoll K2 Familie](31-TESTPROTOKOLL-K2-FAMILIE.md) | Vorlage zum Ausfüllen – K2 Familie; Ansicht `/testprotokoll-testuser?linie=familie` |
+1. [Team-Grundlagen](01-TEAM-GRUNDLAGEN.md)
+Team, Projekt, Prinzipien
 
-**Weitere Kapitel** (bei Bedarf): [Produkt-Sicherheitsdatenblatt IT](33-PRODUKT-SICHERHEITS-DATENBLATT.md) · [Proaktive Zusammenarbeit](03-PROAKTIVE-ZUSAMMENARBEIT.md) · [Vision](04-VISION-STRATEGIE.md) · [Arbeitsgewohnheiten](05-ARBEITSGEWOHNHEITEN.md) · [Aktueller Stand](06-AKTUELLER-STAND.md) · [Entscheidungen](07-ENTSCHEIDUNGS-FRAMEWORK.md) · [Feedback](08-FEEDBACK.md) · [Git/Vercel](09-GIT-VERCEL-PROBLEME.md) · [Stabilität](10-STABILITAET-FIXES.md) · [Backup-Zusammenfassung](11-BACKUP-ZUSAMMENFASSUNG.md) · [APf-Verbesserungen](12-ARBEITSPLATTFORM-VERBESSERUNGEN.md) · [Video: Prämappe-Analyse](VIDEO-PRODUKTION-PRAEMAPPE-ANALYSE.md) · [Video: Matrix & Drehbuch V1](VIDEO-PRODUKTION-MATRIX-UND-DREHBUCH-V1.md) (Quelle im Repo: `docs/…`, gleicher Inhalt)
+2. [Team-Werte](02-TEAM-WERTE.md)
+Werte in Kürze
+
+3. [Proaktive Zusammenarbeit](03-PROAKTIVE-ZUSAMMENARBEIT.md)
+Wie wir zusammenarbeiten – Briefing, DIALOG-STAND, Sportwagenmodus
+
+4. [Vision & Strategie](04-VISION-STRATEGIE.md)
+Ziele, Produkt-Vision, Skalierung
+
+5. [Arbeitsgewohnheiten](05-ARBEITSGEWOHNHEITEN.md)
+Gewohnheiten und Abläufe am Mac
+
+6. [Aktueller Stand](06-AKTUELLER-STAND.md)
+Wo das Projekt steht – Kurzüberblick
+
+7. [Entscheidungs-Framework](07-ENTSCHEIDUNGS-FRAMEWORK.md)
+Wie wir Entscheidungen treffen
+
+8. [Feedback & Verbesserung](08-FEEDBACK.md)
+Feedback geben und umsetzen
+
+9. [Git/Vercel Probleme](09-GIT-VERCEL-PROBLEME.md)
+Typische Deploy- und Stand-Probleme
+
+10. [Stabilitäts-Fixes](10-STABILITAET-FIXES.md)
+Was wir für Stabilität und Mobile-Sync geändert haben
+
+11. [Backup-Zusammenfassung](11-BACKUP-ZUSAMMENFASSUNG.md)
+Backup-Konzept in Kürze
+
+12. [Arbeitsplattform Verbesserungen](12-ARBEITSPLATTFORM-VERBESSERUNGEN.md)
+APf-Ideen und Verbesserungen
+
+13. [Backup & Vollbackup K2 Galerie](13-BACKUP-VOLLBACKUP-K2-GALERIE.md)
+Speichern, Vollbackup, backupmicro
+
+14. [Produkt-Sicherheitsdatenblatt IT](33-PRODUKT-SICHERHEITS-DATENBLATT.md)
+Informationssicherheit, Mandantentrennung, Hosting – kein chemisches SDS
+
+15. [Zentrale Themen für Nutzer](16-ZENTRALE-THEMEN-FUER-NUTZER.md)
+Was Nutzer wissen sollten – Veröffentlichen, Geräte, Stand
+
+16. [Martina & Muna – ök2 und VK2 ansehen](19-MARTINA-MUNA-BESUCH-OEK2-VK2.md)
+Zettel für Martina: QR, Adressen, Checkliste
+
+17. [Pilot-Zettel – Drucken](20-PILOT-ZETTEL-OEK2-VK2.md)
+Pilot-Zettel ök2 und VK2 zum Ausdrucken
+
+18. [Notfall-Checkliste](23-NOTFALL-CHECKLISTE.md)
+Cursor aus? Dialog tot? DIALOG-STAND, Briefing, Backup
+
+19. [Texte & Briefe Kompass](24-TEXTE-BRIEFE-KOMPASS.md)
+Welcher Text/Brief wofür – ein Zweck = ein Ort
+
+20. [Testpilot-Einladung einrichten](26-TESTPILOT-EINLADUNG-EINRICHTUNG.md)
+Resend, Vercel, Einladungslink vom Server
+
+21. [Lizenznehmer: Admin-QR fürs Handy](27-LIZENZNEHMER-ADMIN-QR-MOBIL.md)
+Admin-QR nach Registrierung, Stammdaten, Erfolgsseite
+
+22. [Infos Testuser – drei Produktlinien](28-TESTUSER-ZETTEL-PRODUKTLINIEN.md)
+ök2, VK2, K2 Familie – Testprotokolle 29–31
+
+23. [Testprotokoll ök2](29-TESTPROTOKOLL-OEK2.md)
+Vorlage ök2 zum Ausfüllen
+
+24. [Testprotokoll VK2](30-TESTPROTOKOLL-VK2.md)
+Vorlage VK2 zum Ausfüllen
+
+25. [Testprotokoll K2 Familie](31-TESTPROTOKOLL-K2-FAMILIE.md)
+Vorlage K2 Familie zum Ausfüllen
+
+26. [Video-Produktion: Präsentationsmappe-Analyse](VIDEO-PRODUKTION-PRAEMAPPE-ANALYSE.md)
+Orientierung für Promo-Video aus der Mappe
+
+27. [Video-Produktion: Matrix & Drehbuch V1](VIDEO-PRODUKTION-MATRIX-UND-DREHBUCH-V1.md)
+Matrix und Drehbuch für das Promo-Video
+
+Button **Drucken** – einzelnes Kapitel oder ganzes Handbuch als PDF.

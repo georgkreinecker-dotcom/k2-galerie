@@ -1,14 +1,32 @@
-import { useState, useEffect, type ReactNode } from 'react'
+import { useState, useEffect, useRef, useCallback, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { ProjectNavButton } from '../components/Navigation'
 
 const HANDBUCH_DOC_PARAM = 'doc'
+
+/** True wenn statt Markdown die SPA-Hülle kam – z. B. Rewrite oder Cache. */
+function responseLooksLikeHtmlInsteadOfMarkdown(text: string, contentType: string | null): boolean {
+  const trimmed = text.trimStart()
+  if (trimmed.startsWith('#')) return false
+  const ct = (contentType || '').toLowerCase()
+  const head = text.slice(0, 4000).trimStart()
+  const htmlShape = /^<!doctype\s+html/i.test(head) || /^<html[\s>]/i.test(head)
+  const sniff = text.slice(0, 2500)
+  const viteSpa = /\/@vite\/client|\/@react-refresh|injectIntoGlobalHook/.test(sniff)
+  if (htmlShape || viteSpa) return true
+  if (ct.includes('text/html') || ct.includes('application/xhtml')) {
+    return htmlShape || viteSpa || /<head[\s>]/i.test(head.slice(0, 800))
+  }
+  return false
+}
 
 export default function K2TeamHandbuchPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null)
   const [docContent, setDocContent] = useState<string>('')
   const [loading, setLoading] = useState(false)
+  const loadSeqRef = useRef(0)
+  const skipNextUrlEffectRef = useRef(false)
 
   const documents = [
     { id: '00-index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
@@ -45,18 +63,9 @@ export default function K2TeamHandbuchPage() {
     { id: 'video-matrix-drehbuch', name: 'Video-Produktion: Matrix & Drehbuch V1', file: 'VIDEO-PRODUKTION-MATRIX-UND-DREHBUCH-V1.md' },
   ]
 
-  useEffect(() => {
-    const docFromUrl = searchParams.get(HANDBUCH_DOC_PARAM)
-    const fileToLoad = docFromUrl && documents.some((d) => d.file === docFromUrl)
-      ? docFromUrl
-      : documents[0].file
-    if (documents.length > 0) {
-      loadDocument(fileToLoad)
-    }
-  }, [searchParams])
-
-
-  const loadDocument = async (filename: string) => {
+  const loadDocument = useCallback(async (filename: string) => {
+    const seq = ++loadSeqRef.current
+    skipNextUrlEffectRef.current = true
     setLoading(true)
     setSelectedDoc(filename)
     // URL immer mitsetzen, damit Link „in der APf öffnen“ funktioniert (page=handbuch&doc=...)
@@ -66,21 +75,54 @@ export default function K2TeamHandbuchPage() {
       return next
     }, { replace: true })
     try {
-      const response = await fetch(`/k2team-handbuch/${filename}`)
+      const docUrl = new URL(`/k2team-handbuch/${filename}`, window.location.origin).href
+      const response = await fetch(docUrl, { cache: 'no-store' })
+      if (seq !== loadSeqRef.current) return
       if (response.ok) {
         const text = await response.text()
-        setDocContent(text)
+        const ct = response.headers.get('content-type')
+        if (responseLooksLikeHtmlInsteadOfMarkdown(text, ct)) {
+          setDocContent(
+            `# Kapitel konnte nicht geladen werden\n\nStatt der Textdatei wurde eine Webseite geliefert (SPA-Hülle oder alter Cache). **Hard-Reload** oder **Stand** prüfen.\n\n**Erwartet:** Markdown unter \`/k2team-handbuch/${filename}\``,
+          )
+        } else {
+          setDocContent(text)
+        }
       } else {
         setDocContent(`# Dokument nicht gefunden\n\nDie Datei \`${filename}\` konnte nicht geladen werden.\n\n**Pfad:** \`/k2team-handbuch/${filename}\`\n\n**Hinweis:** Stelle sicher, dass der Ordner \`k2team-handbuch\` im \`public\` Verzeichnis existiert.`)
       }
     } catch (error) {
+      if (seq !== loadSeqRef.current) return
       setDocContent(`# Fehler beim Laden\n\nFehler: ${error instanceof Error ? error.message : String(error)}\n\n**Datei:** ${filename}`)
     } finally {
-      setLoading(false)
+      if (seq === loadSeqRef.current) setLoading(false)
     }
+  }, [setSearchParams])
+
+  const docFromUrl = searchParams.get(HANDBUCH_DOC_PARAM)
+
+  useEffect(() => {
+    if (skipNextUrlEffectRef.current) {
+      skipNextUrlEffectRef.current = false
+      return
+    }
+    const fileToLoad = docFromUrl && documents.some((d) => d.file === docFromUrl)
+      ? docFromUrl
+      : documents[0].file
+    if (documents.length > 0) {
+      loadDocument(fileToLoad)
+    }
+  }, [docFromUrl, loadDocument])
+
+  const handbuchDocFileFromHref = (href: string): string | null => {
+    const raw = href.trim()
+    if (!raw.endsWith('.md')) return null
+    if (raw.startsWith('http://') || raw.startsWith('https://')) return null
+    const file = raw.includes('/') ? raw.split('/').pop() ?? raw : raw
+    return documents.some((d) => d.file === file) ? file : file
   }
 
-  // Inline **fett**, *kursiv* und [Text](URL) in Fließtext
+  // Inline **fett**, *kursiv* und [Text](URL) in Fließtext und Tabellen
   const renderInline = (s: string): ReactNode => {
     const parts: ReactNode[] = []
     let rest = s
@@ -92,11 +134,29 @@ export default function K2TeamHandbuchPage() {
       if (link) {
         const href = link[2]
         const isExternal = href.startsWith('http://') || href.startsWith('https://')
-        parts.push(
-          <a key={key++} href={href} target={isExternal ? '_blank' : undefined} rel={isExternal ? 'noopener noreferrer' : undefined} className="handbuch-link" style={{ color: '#5ffbf1', textDecoration: 'underline' }}>
-            {link[1]}
-          </a>
-        )
+        const internalMd = handbuchDocFileFromHref(href)
+        if (internalMd) {
+          parts.push(
+            <a
+              key={key++}
+              href="#"
+              className="handbuch-link"
+              style={{ color: '#5ffbf1', textDecoration: 'underline', cursor: 'pointer' }}
+              onClick={(e) => {
+                e.preventDefault()
+                loadDocument(internalMd)
+              }}
+            >
+              {link[1]}
+            </a>
+          )
+        } else {
+          parts.push(
+            <a key={key++} href={href} target={isExternal ? '_blank' : undefined} rel={isExternal ? 'noopener noreferrer' : undefined} className="handbuch-link" style={{ color: '#5ffbf1', textDecoration: 'underline' }}>
+              {link[1]}
+            </a>
+          )
+        }
         rest = rest.slice(link[0].length)
       } else if (bold) {
         parts.push(<strong key={key++}>{bold[1]}</strong>)
@@ -138,7 +198,10 @@ export default function K2TeamHandbuchPage() {
       }
 
       if (line.startsWith('# ')) {
-        out.push(<h1 key={key()} className="handbuch-h1">{line.substring(2).trim()}</h1>)
+        // Oben steht schon „K2Team Handbuch“ – doppelte H1 im Index weglassen
+        if (!(selectedDoc === '00-INDEX.md' && line.substring(2).trim() === 'K2Team Handbuch')) {
+          out.push(<h1 key={key()} className="handbuch-h1">{line.substring(2).trim()}</h1>)
+        }
         i++
         continue
       }
@@ -206,6 +269,36 @@ export default function K2TeamHandbuchPage() {
           i++
         }
         out.push(<ul key={key()} className="handbuch-ul">{items}</ul>)
+        continue
+      }
+
+      const numLinkMatch = trimmed.match(/^(\d+\.)\s+\[([^\]]+)\]\(([^)]+)\)/)
+      if (numLinkMatch) {
+        const [, num, title, path] = numLinkMatch
+        const internalMd = handbuchDocFileFromHref(path)
+        out.push(
+          <p key={key()} className="handbuch-p">
+            {num}{' '}
+            {internalMd ? (
+              <a
+                href="#"
+                className="handbuch-link"
+                style={{ color: '#5ffbf1', textDecoration: 'underline', cursor: 'pointer' }}
+                onClick={(e) => {
+                  e.preventDefault()
+                  loadDocument(internalMd)
+                }}
+              >
+                {title}
+              </a>
+            ) : (
+              <a href={path} className="handbuch-link" style={{ color: '#5ffbf1', textDecoration: 'underline' }}>
+                {title}
+              </a>
+            )}
+          </p>
+        )
+        i++
         continue
       }
 

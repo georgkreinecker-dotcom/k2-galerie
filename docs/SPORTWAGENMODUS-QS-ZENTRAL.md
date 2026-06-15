@@ -23,15 +23,16 @@ Dieser Ablauf ist der verbindliche QS-Kern:
 - Diagnose-Ampel für GitHub/Vercel/Cache/API in einem Lauf
 - Build-Fähigkeit des aktuellen Stands
 
-## APf-Ein-Klick
+## APf-Diagnose (Ampel)
 
-In der APf (`DevViewPage`) ist der Diagnoseweg als Ein-Klick-Ablauf eingebaut:
+In der APf (`DevViewPage`) prüft die **Ampel** den Vercel-Stand und die kritischen Endpunkte:
 
-- Button: `🩺 Ein-Klick Diagnose`
-- Bei Rot: automatische Fehlersuche startet
-- Direkter Weg: `Vercel öffnen`
+- Beim Start: automatische Ampel-Prüfung
+- **Jetzt prüfen:** Stand vergleichen + volle Endpunkt-Diagnose (mit Ergebnis-Dialog)
+- **Vercel öffnen:** Dashboard direkt
+- **Escape:** blockierende Overlays im eingebetteten Admin schließen (Notfall)
 
-Ziel: Auch nach Wochen ohne Details im Kopf mit einem Klick wieder handlungsfähig sein.
+Ziel: Mit einem klaren Ort wieder handlungsfähig sein – ohne extra Buttons in der Leiste.
 
 ## CI-Pflicht
 

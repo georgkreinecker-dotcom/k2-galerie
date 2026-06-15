@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { GOOGLE_ADS_ID_PILOT } from '../config/googleAdsConfig'
+import { GOOGLE_ADS_CONVERSION_SEND_TO_PILOT, GOOGLE_ADS_ID_PILOT } from '../config/googleAdsConfig'
 import {
   getGoogleAdsConversionSendTo,
   getGoogleAdsId,
@@ -25,6 +25,12 @@ describe('marketingAnalytics', () => {
     vi.stubEnv('VITE_GOOGLE_ADS_CONVERSION_SEND_TO', 'AW-1/abc')
     expect(getGoogleAdsConversionSendTo()).toBe('AW-1/abc')
     vi.stubEnv('VITE_GOOGLE_ADS_CONVERSION_SEND_TO', 'nur-aw')
+    expect(getGoogleAdsConversionSendTo()).toBeNull()
+  })
+
+  it('Conversion send_to: Env vor Pilot-Constant', () => {
+    vi.stubEnv('VITE_GOOGLE_ADS_CONVERSION_SEND_TO', '')
+    expect(GOOGLE_ADS_CONVERSION_SEND_TO_PILOT).toBe('')
     expect(getGoogleAdsConversionSendTo()).toBeNull()
   })
 })

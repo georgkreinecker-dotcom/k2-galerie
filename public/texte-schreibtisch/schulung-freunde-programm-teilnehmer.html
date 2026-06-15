@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Programm – Eigenes Projekt mit KI entwickeln</title>
+  <style>
+    @page { size: A4; margin: 14mm 16mm 20mm 16mm; }
+    * { box-sizing: border-box; }
+    html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body {
+      margin: 0 auto;
+      padding: 1.75rem 1.25rem 2.5rem;
+      max-width: 42rem;
+      font-family: "Palatino Linotype", Palatino, Georgia, serif;
+      font-size: 11pt;
+      line-height: 1.6;
+      color: #1a1816;
+      background: #faf8f5;
+    }
+    .screen-hint, .mail-hinweis {
+      font-family: system-ui, sans-serif;
+      font-size: 8.5pt;
+      text-align: center;
+      color: #64748b;
+      background: #ebe6dc;
+      padding: 0.4rem 0.6rem;
+      border-radius: 4px;
+      margin-bottom: 0.75rem;
+    }
+    .mail-hinweis { background: #e8f4f3; color: #0d5c58; margin-bottom: 1.25rem; }
+    .mail-hinweis a { color: #0d7a75; font-weight: 600; }
+    .mail-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-top: 0.5rem; }
+    .btn-mail {
+      font-family: system-ui, sans-serif;
+      font-size: 8.5pt;
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      border: 1px solid #0d7a75;
+      background: #fff;
+      color: #0d5c58;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .btn-mail.primary { background: #0d7a75; color: #fff; border-color: #0d7a75; }
+    .kopf {
+      text-align: center;
+      border-bottom: 2px solid #0d7a75;
+      padding-bottom: 1.1rem;
+      margin-bottom: 1.25rem;
+    }
+    .kopf .marke { font-size: 9pt; letter-spacing: 0.14em; text-transform: uppercase; color: #0d7a75; }
+    .kopf h1 { font-size: 1.45rem; margin: 0.35rem 0 0.25rem; color: #2c2419; font-weight: 700; }
+    .kopf .unter { font-size: 10pt; color: #5c5650; margin: 0; }
+    .lead {
+      background: #fff;
+      border-left: 4px solid #0d7a75;
+      padding: 0.85rem 1rem;
+      margin: 0 0 1.25rem;
+      font-size: 11pt;
+      font-style: italic;
+      line-height: 1.55;
+    }
+    h2 {
+      font-size: 1.05rem;
+      color: #3d2e1f;
+      margin: 1.25rem 0 0.5rem;
+      border-bottom: 1px solid #d4c8b8;
+      padding-bottom: 0.15rem;
+    }
+    p { margin: 0 0 0.6rem; }
+    ul, ol { margin: 0 0 0.75rem; padding-left: 1.2em; }
+    li { margin-bottom: 0.35rem; }
+    .ablauf { width: 100%; border-collapse: collapse; font-size: 10pt; margin: 0.5rem 0 1rem; }
+    .ablauf th, .ablauf td { border: 1px solid #c4b8a8; padding: 0.45rem 0.55rem; vertical-align: top; }
+    .ablauf th { background: #ebe6dc; text-align: left; }
+    .ablauf td:first-child { font-weight: 600; white-space: nowrap; width: 4.5rem; }
+    .kasten {
+      background: #fff;
+      border: 1px solid #c4b8a8;
+      border-radius: 6px;
+      padding: 0.75rem 0.9rem;
+      margin: 0.65rem 0;
+    }
+    .kasten-gruen { border-left: 4px solid #0d7a75; }
+    .kasten-orange { border-left: 4px solid #b54a1e; }
+    .programme {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+      margin: 0.5rem 0 0.75rem;
+      font-size: 10pt;
+    }
+    .prog-karte {
+      background: #fff;
+      border: 1px solid #ddd5c8;
+      border-radius: 6px;
+      padding: 0.6rem 0.65rem;
+    }
+    .prog-karte.full { grid-column: 1 / -1; }
+    .prog-karte strong { display: block; color: #3d2e1f; margin-bottom: 0.2rem; font-size: 10.5pt; }
+    .prog-karte p { margin: 0 0 0.45rem; font-size: 9.5pt; line-height: 1.45; color: #5c5650; }
+    .prog-qr-row {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      margin-top: 0.35rem;
+    }
+    .prog-qr {
+      width: 72px;
+      height: 72px;
+      border-radius: 4px;
+      background: #fff;
+      border: 1px solid #ddd5c8;
+      flex-shrink: 0;
+    }
+    .prog-link {
+      font-family: system-ui, sans-serif;
+      font-size: 8.5pt;
+      color: #0d7a75;
+      word-break: break-all;
+      line-height: 1.35;
+    }
+    .qr-hinweis { font-size: 8.5pt; color: #5c5650; margin: 0 0 0.5rem; }
+    .schritte { counter-reset: schritt; list-style: none; padding: 0; margin: 0.5rem 0 0.75rem; }
+    .schritte li {
+      counter-increment: schritt;
+      position: relative;
+      padding: 0.55rem 0.55rem 0.55rem 2.4rem;
+      margin-bottom: 0.45rem;
+      background: #fff;
+      border: 1px solid #ddd5c8;
+      border-radius: 6px;
+      font-size: 10.5pt;
+    }
+    .schritt-titel { font-weight: 700; color: #3d2e1f; }
+    .schritte li::before {
+      content: counter(schritt);
+      position: absolute;
+      left: 0.55rem;
+      top: 0.55rem;
+      width: 1.5rem;
+      height: 1.5rem;
+      background: #0d7a75;
+      color: #fff;
+      border-radius: 50%;
+      font-size: 9pt;
+      font-weight: 700;
+      line-height: 1.5rem;
+      text-align: center;
+    }
+    .fuss {
+      margin-top: 2rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid #d4c8b8;
+      font-size: 9pt;
+      color: #5c5650;
+      text-align: center;
+    }
+    .btn-druck {
+      display: block;
+      margin: 1rem auto 0;
+      padding: 0.45rem 1rem;
+      font-family: system-ui, sans-serif;
+      font-size: 9pt;
+      background: #0d7a75;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    @media print {
+      .screen-hint, .mail-hinweis, .btn-druck, .mail-actions { display: none; }
+      body { background: #fff; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <p class="screen-hint">Für Teilnehmer – ausdrucken oder im Browser lesen. Kern: <strong>Leitfaden für dein eigenes Projekt mit KI.</strong></p>
+
+  <div class="mail-hinweis no-print">
+    📧 <strong>Per E-Mail versenden?</strong>
+    <div class="mail-actions">
+      <a class="btn-mail primary" href="schulung-freunde-programm-teilnehmer-email.html">E-Mail-Ansicht öffnen</a>
+      <button type="button" class="btn-mail" id="btn-eml">E-Mail-Datei (.eml) laden</button>
+    </div>
+  </div>
+
+  <header class="kopf">
+    <div class="marke">kgm solution · Leitfaden</div>
+    <h1>Eigenes Projekt entwickeln – mit KI</h1>
+    <p class="unter">Georg Kreinecker · Einführung für Freunde</p>
+    <p class="unter" style="margin-top:0.5rem;"><strong>Termin:</strong> ______________________ &nbsp;·&nbsp; <strong>Ort:</strong> ______________________</p>
+  </header>
+
+  <p class="lead">
+    Georg hat ohne Programmierkenntnisse mehrere digitale Projekte gebaut – mit einem KI-Assistenten. Heute geht es um den Weg: <strong>Wie du aus einer eigenen Idee ein funktionierendes Projekt machen kannst.</strong>
+  </p>
+
+  <h2>Was Georg als Beispiele zeigt</h2>
+  <p class="qr-hinweis">Das sind seine Projekte – du kannst etwas völlig anderes bauen. <strong>QR scannen</strong> = Demo am Handy (aktueller Stand im Netz). <strong>Link</strong> = am Mac im Browser öffnen.</p>
+  <div class="programme">
+    <div class="prog-karte">
+      <strong>🖼️ K2 Galerie</strong>
+      <p>Digitale Galerie – Werke, Events, Kassa, Etiketten</p>
+      <div class="prog-qr-row">
+        <img class="prog-qr" data-path="/projects/k2-galerie/galerie-oeffentlich" width="72" height="72" alt="QR K2 Galerie Demo" />
+        <a class="prog-link" href="/projects/k2-galerie/galerie-oeffentlich">/projects/k2-galerie/galerie-oeffentlich</a>
+      </div>
+    </div>
+    <div class="prog-karte">
+      <strong>🏛️ VK2</strong>
+      <p>Plattform für Vereine – Mitglieder, gemeinsame Galerie</p>
+      <div class="prog-qr-row">
+        <img class="prog-qr" data-path="/projects/vk2/galerie" width="72" height="72" alt="QR VK2" />
+        <a class="prog-link" href="/projects/vk2/galerie">/projects/vk2/galerie</a>
+      </div>
+    </div>
+    <div class="prog-karte">
+      <strong>👨‍👩‍👧 K2 Familie</strong>
+      <p>Familienstammbaum – modern, privat, vernetzt</p>
+      <div class="prog-qr-row">
+        <img class="prog-qr" data-path="/projects/k2-familie/willkommen" width="72" height="72" alt="QR K2 Familie" />
+        <a class="prog-link" href="/projects/k2-familie/willkommen">/projects/k2-familie/willkommen</a>
+      </div>
+    </div>
+    <div class="prog-karte full">
+      <strong>📊 K2 Agentur</strong>
+      <p>Marketing &amp; Kampagnen – Georgs Steuerzentrale für Vermarktung (wird nur kurz erwähnt, kein öffentlicher Demo-Link).</p>
+    </div>
+  </div>
+
+  <h2>Der Leitfaden – 6 Schritte für dein Projekt</h2>
+  <ol class="schritte">
+    <li><span class="schritt-titel">Idee klar machen</span> Was willst du erreichen? Für wen? Ein Satz reicht – z. B. „Vereinsmitglieder sollen ihre Werke online zeigen.“</li>
+    <li><span class="schritt-titel">Erstes Bild im Kopf</span> Wie soll es aussehen, wenn jemand es öffnet? Skizze, Foto, Notiz – Hauptsache sichtbar.</li>
+    <li><span class="schritt-titel">Werkzeug wählen</span> Georg nutzt <strong>Cursor</strong> mit KI-Assistent (Joe). Mac oder PC und Neugier reichen.</li>
+    <li><span class="schritt-titel">In kleinen Schritten bauen</span> Ein Bildschirm, ein Button – testen, dann weiter.</li>
+    <li><span class="schritt-titel">KI führt aus, du entscheidest</span> Du sagst was du willst – die KI baut. Du prüfst: Passt das?</li>
+    <li><span class="schritt-titel">Online stellen</span> Veröffentlichen – dann Handy, Tablet, PC überall erreichbar.</li>
+  </ol>
+
+  <h2>Ablauf heute (ca. 60–75 Minuten)</h2>
+  <table class="ablauf">
+    <thead><tr><th>Zeit</th><th>Block</th><th>Inhalt</th></tr></thead>
+    <tbody>
+      <tr><td>0:00</td><td><strong>Willkommen</strong></td><td>Beispiel-Projekte – als Inspiration, nicht zum Mitmachen.</td></tr>
+      <tr><td>0:10</td><td><strong>Rundgang</strong></td><td>Demos per QR oder Link – du siehst, was möglich ist.</td></tr>
+      <tr><td>0:25</td><td><strong>Leitfaden</strong></td><td>Die 6 Schritte – Georg erklärt an einem Mini-Beispiel.</td></tr>
+      <tr><td>0:40</td><td><strong>Live am Mac</strong></td><td>Georg + Joe: kleine Änderung in Echtzeit.</td></tr>
+      <tr><td>0:55</td><td><strong>Ehrlichkeit</strong></td><td>Was gut lief, was schiefging.</td></tr>
+      <tr><td>1:05</td><td><strong>Deine Idee?</strong></td><td>Was könntest <em>du</em> bauen? Kein Druck.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Was du brauchst – und was nicht</h2>
+  <div class="kasten kasten-gruen">
+    <strong>✅ Reicht zum Start</strong>
+    <ul style="margin:0.4rem 0 0;">
+      <li>Eine Idee, die dich interessiert</li>
+      <li>Computer (Mac oder Windows)</li>
+      <li>Geduld und Neugier</li>
+    </ul>
+  </div>
+  <div class="kasten kasten-orange">
+    <strong>❌ Nicht nötig</strong>
+    <ul style="margin:0.4rem 0 0;">
+      <li>Programmieren gelernt zu haben</li>
+      <li>Bei Georgs Projekten mitzuarbeiten</li>
+      <li>Webdesigner oder teure Agentur</li>
+    </ul>
+  </div>
+
+  <h2>Nach der Einführung</h2>
+  <p>Ausführlicher Hintergrund: <a href="/freunde-erklaerung.html">freunde-erklaerung.html</a></p>
+
+  <footer class="fuss">
+    Georg Kreinecker · kgm solution · Copyright © 2026 kgm solution
+  </footer>
+
+  <button type="button" class="btn-druck no-print" onclick="window.print()">🖨️ Drucken</button>
+
+  <script>
+    (function () {
+      var SCAN_BASE = 'https://k2-galerie.vercel.app';
+      var QR_API = 'https://api.qrserver.com/v1/create-qr-code/?size=100x100&margin=2&data=';
+      document.querySelectorAll('.prog-qr[data-path]').forEach(function (img) {
+        var path = img.getAttribute('data-path');
+        if (!path) return;
+        img.src = QR_API + encodeURIComponent(SCAN_BASE + path);
+      });
+
+      var btn = document.getElementById('btn-eml');
+      if (btn) {
+        btn.addEventListener('click', function () {
+          if (typeof window.downloadSchulungFreundeEml === 'function') {
+            window.downloadSchulungFreundeEml();
+            return;
+          }
+          window.location.href = 'schulung-freunde-programm-teilnehmer-email.html#eml';
+        });
+      }
+    })();
+  </script>
+  <script src="schulung-freunde-mail-inhalt.js"></script>
+  <script src="schulung-freunde-mail.js"></script>
+</body>
+</html>

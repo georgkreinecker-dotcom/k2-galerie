@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Wie K2 Galerie und die Plattform von Anfang an entwickelt wurden – zum Ausdrucken für Gespräche mit Managern und Freunden." />
+  <title>Entwicklung von Anfang an · Manager-Blick · kgm solution</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 14mm 16mm 22mm 16mm;
+    }
+    * { box-sizing: border-box; }
+    html {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    body {
+      margin: 0;
+      padding: 1.5rem 1.1rem 2.5rem;
+      font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, "Times New Roman", serif;
+      font-size: 10.5pt;
+      line-height: 1.55;
+      color: #1a1816;
+      background: #f6f2eb;
+      max-width: 42rem;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .deckblatt {
+      text-align: center;
+      padding: 1.25rem 0 1.75rem;
+      border-bottom: 1px solid #c4b8a8;
+      margin-bottom: 1.35rem;
+    }
+    .deckblatt .linie {
+      width: 4rem;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #0c5c55, transparent);
+      margin: 0 auto 1rem;
+    }
+    .deckblatt h1 {
+      font-size: 1.35rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      margin: 0 0 0.3rem;
+      color: #2c2419;
+    }
+    .deckblatt .untertitel {
+      font-size: 0.98rem;
+      color: #4a4035;
+      margin: 0 0 0.5rem;
+    }
+    .deckblatt .meta {
+      font-size: 9pt;
+      color: #6b5d4d;
+      font-style: italic;
+      margin: 0;
+    }
+    h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #0c5c55;
+      margin: 1.35rem 0 0.5rem;
+      page-break-after: avoid;
+      break-after: avoid;
+    }
+    h2 .nr { color: #7a5c3e; font-weight: 600; margin-right: 0.3rem; }
+    p {
+      margin: 0 0 0.7rem;
+      text-align: justify;
+      hyphens: auto;
+      -webkit-hyphens: auto;
+    }
+    .elevator {
+      font-size: 1.02rem;
+      font-style: italic;
+      text-align: center;
+      color: #3d2e1f;
+      margin: 0.75rem 0 1.1rem;
+      line-height: 1.45;
+      padding: 0.65rem 0.85rem;
+      border-left: 3px solid #0c5c55;
+      border-right: 3px solid #0c5c55;
+      background: rgba(255, 255, 255, 0.45);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9pt;
+      margin: 0.5rem 0 0.85rem;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    th, td {
+      border: 1px solid #c9bfb2;
+      padding: 0.4rem 0.45rem;
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: #ebe4d8;
+      font-weight: 600;
+      color: #2c2419;
+    }
+    tr:nth-child(even) td { background: rgba(255, 255, 255, 0.35); }
+    ul {
+      margin: 0.35rem 0 0.7rem;
+      padding-left: 1.15rem;
+    }
+    li { margin-bottom: 0.28rem; }
+    .kasten {
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid #d4c9b8;
+      padding: 0.7rem 0.85rem;
+      margin: 0.65rem 0;
+      font-size: 10pt;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .kasten strong { color: #3d2e1f; }
+    .zwei-spalten {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+      margin: 0.5rem 0 0.85rem;
+      font-size: 9.5pt;
+    }
+    .spalte {
+      border: 1px solid #d4c9b8;
+      padding: 0.55rem 0.65rem;
+      background: rgba(255, 255, 255, 0.4);
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .spalte h3 {
+      font-size: 9.5pt;
+      margin: 0 0 0.35rem;
+      color: #0c5c55;
+    }
+    .spalte ul { margin: 0; padding-left: 1rem; }
+    .demo {
+      font-size: 9.5pt;
+      margin-top: 0.85rem;
+    }
+    .demo a { color: #0c5c55; word-break: break-all; }
+    .abschluss {
+      margin-top: 1.35rem;
+      padding-top: 0.85rem;
+      border-top: 1px solid #c4b8a8;
+      font-size: 10pt;
+    }
+    .signatur {
+      text-align: center;
+      margin-top: 0.75rem;
+      font-size: 9.5pt;
+      color: #5c5044;
+    }
+    .hinweis-screen {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 9pt;
+      color: #64748b;
+      text-align: center;
+      margin-bottom: 1rem;
+      padding: 0.45rem;
+      background: #e8e4dc;
+      border-radius: 4px;
+    }
+    .seitenfuss { display: none; }
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+        max-width: none;
+        font-size: 10pt;
+        line-height: 1.45;
+      }
+      .hinweis-screen { display: none !important; }
+      .seitenfuss {
+        display: block;
+        position: fixed;
+        bottom: 6mm;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 8pt;
+        color: #666;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+      }
+      .seitenfuss::after {
+        content: "Seite " counter(page);
+      }
+      h2 { page-break-after: avoid; }
+      .deckblatt { page-break-after: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <p class="hinweis-screen no-print">Zum Drucken: <strong>Drucken</strong> → PDF oder Papier. Seitenzahlen erscheinen in der Druckvorschau.</p>
+
+  <header class="deckblatt">
+    <div class="linie" aria-hidden="true"></div>
+    <h1>Wie wir von Anfang an entwickelt haben</h1>
+    <p class="untertitel">Kurzüberblick für Manager und Freunde</p>
+    <p class="meta">kgm solution · K2 Galerie · Mai 2026 · Georg Kreinecker</p>
+  </header>
+
+  <p class="elevator">
+    „Wir haben <strong>zuerst für uns selbst</strong> eine echte Galerie im Netz gebaut – und daraus Schritt für Schritt eine <strong>skalierbare Plattform</strong> gemacht. <strong>Ohne klassisches Entwicklerteam</strong> – mit Unternehmer-Erfahrung, klaren Regeln und KI als Werkzeug.“
+  </p>
+
+  <h2><span class="nr">1</span>Ausgangspunkt: echtes Geschäft, kein IT-Projekt</h2>
+  <p>
+    Martina und ich wollten unsere <strong>Galerie professionell zeigen</strong>: Werke, Ausstellungen, Kasse, Etiketten, Flyer – und auf Mac, Handy und Tablet <strong>immer derselbe Stand</strong>. Nicht „wir bauen mal eine App“, sondern <strong>echter Betrieb</strong> mit echten Daten. Das nennt man in der Wirtschaft <strong>Dogfooding</strong>: wir sind selbst Kunde Nummer eins.
+  </p>
+  <p>
+    Die Galerie in Eferding (Eröffnung 24. April 2026) war der Motor. Ich suchte ein Kassensystem für die Eröffnung – nichts Passendes. Also habe ich es selbst gebaut.
+  </p>
+
+  <h2><span class="nr">2</span>Wer entwickelt hat – und wie</h2>
+  <p>
+    Ich bin <strong>kein Programmierer</strong>. Unternehmer seit dem 25. Lebensjahr: Maschinenbau, Consulting, Trading, Immobilien. Ich kenne <strong>Prozesse, Qualität und Skalierung</strong>.
+  </p>
+  <p>
+    Die technische Umsetzung läuft am Mac mit <strong>Cursor</strong> (Entwicklungsumgebung mit KI-Assistent „Joe“). Ich sage <strong>was</strong> und <strong>warum</strong>; die KI setzt um, ich prüfe am Produkt. Martina hält mich geerdet – das ist wichtig.
+  </p>
+  <div class="kasten">
+    <strong>Zahlen (Orientierung):</strong> Grob <strong>200 Stunden</strong> eigener Aufwand (eine Person, ohne Programmier-Vorkenntnisse, mit KI). Wiederbeschaffungswert durch eine Agentur für denselben Umfang: etwa <strong>188.000–498.000 €</strong> – nicht als „Verdienst“, sondern als Bezugsgröße für Bewertung und Partner.
+  </div>
+
+  <h2><span class="nr">3</span>So haben wir es „zum Laufen gebracht“</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Hebel</th>
+        <th>Was das bedeutet</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Ein Standard pro Aufgabe</strong></td>
+        <td>Speichern, Veröffentlichen, Drucken – jeweils <strong>ein</strong> klarer Weg, überall gleich (Sportwagenmodus)</td>
+      </tr>
+      <tr>
+        <td><strong>Regeln &amp; Gedächtnis</strong></td>
+        <td>Hunderte festgeschriebene Regeln und Doku – die KI „vergisst“ zwischen Arbeitstagen nicht</td>
+      </tr>
+      <tr>
+        <td><strong>Tests vor Änderungen</strong></td>
+        <td>Wie Aufwärmen: erst prüfen, dann bauen – über 45 automatische Tests</td>
+      </tr>
+      <tr>
+        <td><strong>Cloud-Deployment</strong></td>
+        <td>Änderung hochladen → Vercel baut automatisch → Handy per QR sieht denselben Stand</td>
+      </tr>
+      <tr>
+        <td><strong>Strikte Datentrennung</strong></td>
+        <td>Echte Galerie, Demo, Verein – <strong>keine Vermischung</strong> (Vertrauen, Datenschutz)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2><span class="nr">4</span>Was heute läuft (Produkt, nicht Prototyp)</h2>
+  <ul>
+    <li><strong>K2 Galerie</strong> – unsere echte Galerie im Netz</li>
+    <li><strong>ök2</strong> – öffentliche Demo für Interessenten und Lizenzen</li>
+    <li><strong>VK2</strong> – Vereinsplattform (Kunstvereine als Einstieg)</li>
+    <li>Admin, Shop/Kasse, Events, Werbemittel, Handbücher, Lizenzen</li>
+    <li>Läuft als <strong>Web-App im Browser</strong> – Windows, Mac, Android, iPad – ohne App Store</li>
+  </ul>
+
+  <h2><span class="nr">5</span>Wohin das geht</h2>
+  <p>
+    Aus <strong>einer Galerie</strong> wird eine <strong>SaaS-Plattform</strong> (kgm solution): Jede Künstlerin, jeder Verein bekommt dieselbe Architektur – eigene Daten, eigene Marke. Skalierung über <strong>Automatisierung</strong> (Lizenz, Zahlung, Bestätigung) – nicht über persönlichen Kundensupport für jeden Einzelnen.
+  </p>
+  <p class="leitidee" style="font-style: italic; text-align: center; margin: 0.65rem 0;">„Für die Kunst gedacht, für den Markt gemacht.“</p>
+
+  <h2><span class="nr">6</span>Technik in 30 Sekunden</h2>
+  <p>
+    <strong>React</strong>-Webapp, gehostet auf <strong>Vercel</strong>, Daten über <strong>Supabase</strong> und synchronisierte Galerie-Dateien. <strong>Progressive Web App</strong> – ein Build, alle Geräte. Multi-Mandanten-fähig. Alles in <strong>Git</strong> – jede Änderung nachvollziehbar.
+  </p>
+
+  <h2><span class="nr">7</span>Ehrlich: Stärken und offene Punkte</h2>
+  <div class="zwei-spalten">
+    <div class="spalte">
+      <h3>Stärken</h3>
+      <ul>
+        <li>Vom Pain Point zur Plattform</li>
+        <li>Hoher Hebel: wenig Kopfcount</li>
+        <li>Disziplin: Tests, Backup, Doku</li>
+        <li>Breite: Galerie, Kasse, Marketing, Verein, Lizenz</li>
+      </ul>
+    </div>
+    <div class="spalte">
+      <h3>Offen / gelernt</h3>
+      <ul>
+        <li>Nicht alles „Enterprise fertig“ – aber Produktion für uns steht</li>
+        <li>KI ersetzt kein Denken – Struktur trägt Qualität</li>
+        <li>Sync und Cache haben viel Lernarbeit gekostet</li>
+        <li>Fehler dokumentiert – damit sie nicht wieder passieren</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2><span class="nr">8</span>Live ansehen</h2>
+  <p class="demo">
+    <strong>Demo-Galerie (ök2):</strong> <a href="/galerie-oeffentlich">/galerie-oeffentlich</a><br />
+    <strong>Einstieg Entdecken:</strong> <a href="/entdecken">/entdecken</a><br />
+    <strong>Qualitätsbeweis:</strong> QR am Mac scannen → Handy zeigt denselben Stand wie der Server.
+  </p>
+
+  <div class="abschluss">
+    <p>
+      <strong>Kernbotschaft:</strong> Wir haben keine Softwarefirma gegründet – wir haben <strong>unser Galerie-Problem gelöst</strong> und gemerkt: Das brauchen viele. Mit <strong>Unternehmer-Kopf</strong>, <strong>klaren Prozessen</strong> und <strong>KI am Schreibtisch</strong> – in einer Größenordnung, die früher ein ganzes Team und viel Zeit gebraucht hätte.
+    </p>
+    <p class="signatur">
+      <strong>Georg Kreinecker</strong> · kgm solution · K2 Galerie Kunst &amp; Keramik<br />
+      <span style="font-style: italic;">Texte-Schreibtisch · Persönlich · zum Ausdrucken oder Mitgeben</span>
+    </p>
+  </div>
+
+  <div class="seitenfuss" aria-hidden="true"></div>
+</body>
+</html>

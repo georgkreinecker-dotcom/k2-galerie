@@ -243,7 +243,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       }))
 
       if (source === 'manual') {
-        alert(`${allGood ? '✅' : '⚠️'} Ein-Klick Diagnose\n\n${details.join('\n')}\n\nVercel Dashboard:\n${VERCEL_DASHBOARD_URL}`)
+        alert(`${allGood ? '✅' : '⚠️'} Vercel-Diagnose\n\n${details.join('\n')}\n\nVercel Dashboard:\n${VERCEL_DASHBOARD_URL}`)
         if (!allGood) {
           const openDashboard = window.confirm('Soll ich das Vercel-Dashboard jetzt direkt öffnen?')
           if (openDashboard) {
@@ -266,7 +266,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
     }
   }
 
-  const checkDeployAmpel = async () => {
+  const checkDeployAmpel = async (opts?: { skipAutoDiagnose?: boolean }) => {
     try {
       setDeployHealth((prev) => ({
         ...prev,
@@ -332,10 +332,10 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       setDeployHealth({
         state: 'stale',
         text: 'Nicht aktuell: Push fehlt',
-        details: 'Server-Stand ist älter als dein lokaler Stand. Ein-Klick Diagnose starten und bei Bedarf Vercel direkt öffnen.',
+        details: 'Server-Stand ist älter als dein lokaler Stand. „Jetzt prüfen“ oder „Vercel öffnen“.',
         serverTimestamp: serverTs
       })
-      if (!autoDiagnoseLockRef.current) {
+      if (!opts?.skipAutoDiagnose && !autoDiagnoseLockRef.current) {
         autoDiagnoseLockRef.current = true
         void runOneClickDiagnose('auto').finally(() => {
           autoDiagnoseLockRef.current = false
@@ -345,16 +345,22 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       setDeployHealth({
         state: 'error',
         text: 'Prüfung fehlgeschlagen',
-        details: `${err instanceof Error ? err.message : String(err)} – Ein-Klick Diagnose nutzen.`,
+        details: `${err instanceof Error ? err.message : String(err)} – „Jetzt prüfen“ nutzen.`,
         serverTimestamp: null
       })
-      if (!autoDiagnoseLockRef.current) {
+      if (!opts?.skipAutoDiagnose && !autoDiagnoseLockRef.current) {
         autoDiagnoseLockRef.current = true
         void runOneClickDiagnose('auto').finally(() => {
           autoDiagnoseLockRef.current = false
         })
       }
     }
+  }
+
+  const runJetztPruefen = async () => {
+    if (diagnoseRunning) return
+    await checkDeployAmpel({ skipAutoDiagnose: true })
+    await runOneClickDiagnose('manual')
   }
 
   useEffect(() => {
@@ -590,7 +596,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
     }
   }, [])
 
-  /** Escape: zuerst Grafiker-Tisch, sonst Admin-iframe entsperren (Fokus oft im iframe – dort hilft 🔓 APf entsperren) */
+  /** Escape: zuerst Grafiker-Tisch, sonst Admin-iframe entsperren (blockierende Overlays im eingebetteten Admin) */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
@@ -1774,32 +1780,6 @@ end tell`
           {gitPushing ? '⏳ Push...' : '📦 Code-Update (Git)'}
         </button>
         <button
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            void runOneClickDiagnose('manual')
-          }}
-          disabled={diagnoseRunning}
-          style={{
-            padding: '0.5rem 1rem',
-            background: diagnoseRunning ? 'rgba(255, 140, 66, 0.3)' : 'rgba(255, 140, 66, 0.2)',
-            color: 'var(--k2-accent)',
-            border: '1px solid rgba(255, 140, 66, 0.4)',
-            borderRadius: '6px',
-            fontSize: '0.9rem',
-            cursor: diagnoseRunning ? 'wait' : 'pointer',
-            fontWeight: '500',
-            opacity: diagnoseRunning ? 0.7 : 1,
-            pointerEvents: diagnoseRunning ? 'none' : 'auto',
-            minWidth: '150px',
-            position: 'relative',
-            zIndex: 1000 // Sicherstellen dass Button immer klickbar ist
-          }}
-          title="Ein Klick Diagnose für Vercel/API/Cache starten"
-        >
-          {diagnoseRunning ? '⏳ Diagnose…' : '🩺 Ein-Klick Diagnose'}
-        </button>
-        <button
           type="button"
           onClick={(e) => {
             e.preventDefault()
@@ -1833,37 +1813,6 @@ end tell`
         >
           {devVollbackupBusy ? '⏳ Vollbackups…' : '💾 Alle Vollbackups (4×)'}
         </button>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            postEntsperrenToProjectIframes()
-          }}
-          style={{
-            padding: '0.5rem 1rem',
-            background: '#b54a1e',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '6px',
-            fontSize: '0.9rem',
-            cursor: 'pointer',
-            fontWeight: 600,
-          }}
-          title="Schließt im eingebetteten Admin blockierende Vollbild-Overlays (z. B. Öffentlichkeitsarbeit) – wie 🔓 Entsperren im Admin"
-        >
-          🔓 APf entsperren
-        </button>
-        <span
-          style={{
-            fontSize: '0.72rem',
-            color: 'rgba(255,255,255,0.75)',
-            maxWidth: '280px',
-            lineHeight: 1.2
-          }}
-        >
-          Sportwagenmodus QS: Ein Klick prüft alles. Bei Rot startet Fehlersuche und führt direkt zu Vercel.
-        </span>
         <div
           style={{
             display: 'flex',
@@ -1901,8 +1850,9 @@ end tell`
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
-              void checkDeployAmpel()
+              void runJetztPruefen()
             }}
+            disabled={diagnoseRunning}
             style={{
               marginLeft: '0.25rem',
               padding: '0.3rem 0.55rem',
@@ -1911,11 +1861,13 @@ end tell`
               border: '1px solid rgba(255,255,255,0.3)',
               background: 'rgba(0,0,0,0.16)',
               color: '#fff',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap'
+              cursor: diagnoseRunning ? 'wait' : 'pointer',
+              whiteSpace: 'nowrap',
+              opacity: diagnoseRunning ? 0.7 : 1
             }}
+            title="Stand mit Vercel vergleichen und alle kritischen Endpunkte prüfen"
           >
-            Jetzt prüfen
+            {diagnoseRunning ? '⏳ …' : 'Jetzt prüfen'}
           </button>
           <button
             type="button"

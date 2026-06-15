@@ -4,6 +4,7 @@
 
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import {
+  K2_AGENTUR_KOSTEN_7T_P1_GOOGLE_ABRECHNUNG,
   K2_AGENTUR_PHASE_A_PILOT,
   K2_AGENTUR_STEUER_SCHWELLEN,
   STEUER_AMPEL_STYLE,
@@ -54,6 +55,22 @@ export default function K2AgenturSteuerzentralePanel({
       cancelled = true
     }
   }, [])
+
+  const pilotKey = kanalStorageKey(K2_AGENTUR_PHASE_A_PILOT.produkt, K2_AGENTUR_PHASE_A_PILOT.kanal)
+
+  useEffect(() => {
+    if (mode !== 'pilot') return
+    const row = state.kanaele[pilotKey]
+    if (!row || row.kostenEur7Tage.trim()) return
+    const flag = 'k2-agentur-kosten-abrechnung-2026-06-12'
+    if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(flag) === '1') return
+    onPatchKanal(pilotKey, { kostenEur7Tage: K2_AGENTUR_KOSTEN_7T_P1_GOOGLE_ABRECHNUNG })
+    try {
+      sessionStorage.setItem(flag, '1')
+    } catch {
+      /* optional */
+    }
+  }, [mode, pilotKey, state.kanaele, onPatchKanal])
 
   const slots = useMemo(() => {
     const katalog = listMarketingKanalUrls()
@@ -232,6 +249,21 @@ function KanalSteuerKarte({
             style={inputStyle}
           />
         </label>
+        {row.kostenEur7Tage.trim() !== K2_AGENTUR_KOSTEN_7T_P1_GOOGLE_ABRECHNUNG && (
+          <button
+            type="button"
+            onClick={() => onPatch({ kostenEur7Tage: K2_AGENTUR_KOSTEN_7T_P1_GOOGLE_ABRECHNUNG })}
+            style={{
+              ...linkBtn,
+              border: '1px solid #b54a1e',
+              color: '#b54a1e',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+            }}
+          >
+            Abrechnung 6.–12.6.: {K2_AGENTUR_KOSTEN_7T_P1_GOOGLE_ABRECHNUNG} €
+          </button>
+        )}
         <label style={fieldLabel}>
           Budget/Monat (€)
           <input

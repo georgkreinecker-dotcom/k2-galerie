@@ -1,8 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **Nach Vercel-Deploy** – ök2-Landings in Steuerzentrale (Mission Control → K2 Agentur); ggf. `VITE_GOOGLE_ADS_CONVERSION_SEND_TO` in Vercel prüfen.
+**Was wir JETZT tun:** **Pause** – Georg: Schluss für heute (28.05.26). Nächster Einstieg: Mission Control / Google-Ads P1 oder offener Commit BoardMind-Entfernung prüfen.
 
-**Einordnung:** Google-Ads P1 (~1000+ Klicks): Besucherzähler ök2 (~1244) stimmte; Attribution-Tabelle **016** fehlte in Supabase (jetzt da) – alte Landings nicht rekonstruierbar. Ab Deploy: Landing auch Vorschau + Lizenz-Kaufen; `conversion_licence` beim Webhook.
+**Einordnung:** BoardMind/Andreas-Projekt aus Repo entfernt (Route, SmartPanel, Monorepo, Tests). Agentur-Korrespondenz bleibt unter Schreibtisch + K2 Agentur Tab **Agentur-Partner** – keine extra HTML-Seiten für Antwort-Mail gewünscht.
+
+**Letzter Stand:** 28.05.26 – **Schluss für heute:** BoardMind/Andreas aus K2-Repo entfernt; Agentur-Mail-HTMLs nicht gebaut (nicht gewünscht). Nächster Schritt: Commit+Push prüfen falls noch lokal.
 
 **Letzter Stand:** 12.06.26 – **Google-Ads ök2 Attribution nachgezogen** – Migration 016 im SQL-Bundle; `marketingAttributionPersist.js`; Landing Vorschau/Lizenz-Kaufen; Doku Checkliste P1. **qs:local** grün. **Commit:** `8ddfb128` ✅ **main**
 

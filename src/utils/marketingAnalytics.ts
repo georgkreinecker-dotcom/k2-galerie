@@ -2,7 +2,7 @@
  * Google Analytics 4 + Google Ads (gtag.js) – nur wenn IDs gesetzt (Env oder Pilot-Default für Ads).
  * Kein Tracking im iframe (Cursor Preview). DSGVO: Einwilligungsmodus in Google Ads separat klären (EEA).
  */
-import { GOOGLE_ADS_ID_PILOT } from '../config/googleAdsConfig'
+import { GOOGLE_ADS_CONVERSION_SEND_TO_PILOT, GOOGLE_ADS_ID_PILOT } from '../config/googleAdsConfig'
 
 let gtagBootstrapped = false
 let gtagScriptLoaded = false
@@ -35,10 +35,11 @@ export function getGoogleAdsId(): string | null {
  */
 export function getGoogleAdsConversionSendTo(): string | null {
   const raw = import.meta.env.VITE_GOOGLE_ADS_CONVERSION_SEND_TO
-  const v = typeof raw === 'string' ? raw.trim() : ''
-  if (!v.includes('/')) return null
-  if (!v.startsWith('AW-')) return null
-  return v
+  const fromEnv = typeof raw === 'string' ? raw.trim() : ''
+  if (fromEnv.includes('/') && fromEnv.startsWith('AW-')) return fromEnv
+  const pilot = GOOGLE_ADS_CONVERSION_SEND_TO_PILOT.trim()
+  if (pilot.includes('/') && pilot.startsWith('AW-')) return pilot
+  return null
 }
 
 function ensureGtagBootstrap(): GtagWindow['gtag'] | null {
