@@ -61,10 +61,10 @@ export const GOOGLE_SITELINKS_P1: readonly GoogleSitelinkP1Eintrag[] = [
   },
   {
     prio: 2,
-    titel: '4 Wochen gratis testen',
+    titel: 'Galerie-Software kaufen',
     path: PROJECT_ROUTES['k2-galerie'].lizenzKaufen,
-    beschreibung1: 'K2 Galerie ausprobieren',
-    beschreibung2: 'Danach Basic oder Pro',
+    beschreibung1: 'Monatsabo ab 10 Euro',
+    beschreibung2: 'Zahlung über Stripe',
   },
   {
     prio: 3,
@@ -97,7 +97,7 @@ export const GOOGLE_SITELINKS_P1: readonly GoogleSitelinkP1Eintrag[] = [
 ] as const
 
 export const GOOGLE_CALLOUTS_P1: readonly GoogleCalloutP1Eintrag[] = [
-  { prio: 1, text: '4 Wochen gratis testen' },
+  { prio: 1, text: 'Galerie-Software' },
   { prio: 2, text: 'Ab 10 € pro Monat' },
   { prio: 3, text: 'Demo ohne Anmeldung' },
   { prio: 4, text: 'Galerie, Shop & Tour' },

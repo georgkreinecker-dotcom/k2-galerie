@@ -14,7 +14,7 @@ const root = path.join(__dirname, '..')
 const campaign = 'Campaign #1'
 const rows = [
   ['Demo-Galerie ansehen', 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie-oeffentlich?k=p1-google-2026q2&utm_source=google&utm_medium=cpc&utm_campaign=p1-google-2026q2', 'Musterwerke live im Browser', 'Ohne Anmeldung sofort'],
-  ['4 Wochen gratis testen', 'https://k2-galerie.vercel.app/projects/k2-galerie/lizenz-kaufen?k=p1-google-2026q2&utm_source=google&utm_medium=cpc&utm_campaign=p1-google-2026q2', 'K2 Galerie ausprobieren', 'Danach Basic oder Pro'],
+  ['Galerie-Software kaufen', 'https://k2-galerie.vercel.app/projects/k2-galerie/lizenz-kaufen?k=p1-google-2026q2&utm_source=google&utm_medium=cpc&utm_campaign=p1-google-2026q2', 'Monatsabo ab 10 Euro', 'Zahlung über Stripe'],
   ['Preise & Lizenzen', 'https://k2-galerie.vercel.app/projects/k2-galerie/licences?k=p1-google-2026q2&utm_source=google&utm_medium=cpc&utm_campaign=p1-google-2026q2', 'Ab 10 Euro pro Monat', 'Pro mit Kassa & Marketing'],
   ['Benutzerhandbuch', 'https://k2-galerie.vercel.app/benutzer-handbuch?k=p1-google-2026q2&utm_source=google&utm_medium=cpc&utm_campaign=p1-google-2026q2', 'Schritt für Schritt erklärt', 'Für Künstler:innen & Galerien'],
   ['Galerie-Vorschau', 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie-oeffentlich-vorschau?k=p1-google-2026q2&utm_source=google&utm_medium=cpc&utm_campaign=p1-google-2026q2', 'So sieht Besucher:innen aus', 'Design & Werke im Überblick'],

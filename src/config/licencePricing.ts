@@ -3,10 +3,13 @@
  * Öffentlich: Basic · Pro (alles inkl.) · VK2. Pro+/Pro++ = Legacy (Altdaten, gleicher Preis wie Pro).
  */
 
-/** Gratis-Test vor Lizenzkauf (AGB, Galerie-Admin-Testphase) */
-export const LIZENZ_TESTPHASE_WOCHEN = 4
-export const LIZENZ_TESTPHASE_TAGE = LIZENZ_TESTPHASE_WOCHEN * 7
-export const LIZENZ_TESTPHASE_LABEL = `${LIZENZ_TESTPHASE_WOCHEN} Wochen gratis testen`
+/** Eingeladene Testpilot:innen (Testprotokoll) – nicht in Google Ads verwenden. */
+export const LIZENZ_PILOT_TESTPHASE_WOCHEN = 4
+export const LIZENZ_PILOT_TESTPHASE_TAGE = LIZENZ_PILOT_TESTPHASE_WOCHEN * 7
+
+/** @deprecated Alias – nur Pilot-Doku */
+export const LIZENZ_TESTPHASE_WOCHEN = LIZENZ_PILOT_TESTPHASE_WOCHEN
+export const LIZENZ_TESTPHASE_TAGE = LIZENZ_PILOT_TESTPHASE_TAGE
 
 export const LIZENZPREISE = {
   basic: {
@@ -37,6 +40,12 @@ export const LIZENZPREISE = {
     priceEur: 25,
   },
 } as const
+
+/** Öffentliche UI – ehrlich: Demo ansehen, Lizenz kostet ab Abschluss (kein „gratis testen“ in Werbung). */
+export const LIZENZ_PUBLIC_OFFER_LINE = `Demo zuerst ansehen · Lizenz ab ${LIZENZPREISE.basic.price} (Stripe-Monatsabo)`
+
+/** @deprecated Bitte LIZENZ_PUBLIC_OFFER_LINE nutzen – Name bleibt für bestehende Imports. */
+export const LIZENZ_TESTPHASE_LABEL = LIZENZ_PUBLIC_OFFER_LINE
 
 export type PublicLicenceTierId = 'basic' | 'pro' | 'vk2'
 

@@ -468,8 +468,8 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
         }}>
           <h2 style={{ fontSize: '1rem', margin: '0 0 0.75rem', color: 'var(--k2-muted)' }}>Details im Überblick</h2>
           <div style={{ fontSize: '0.88rem', color: 'var(--k2-muted)', lineHeight: 1.7 }}>
-            <p style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', lineHeight: 1.55, color: 'var(--k2-muted)', padding: '0.65rem 0.85rem', background: 'rgba(34,197,94,0.08)', borderRadius: 8, border: '1px solid rgba(22,101,52,0.25)' }}>
-              <strong style={{ color: 'var(--k2-text)' }}>🎁 {LIZENZ_TESTPHASE_LABEL}</strong> – danach Basic, Pro oder VK2 wählen.
+            <p style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', lineHeight: 1.55, color: 'var(--k2-muted)', padding: '0.65rem 0.85rem', background: 'rgba(255,248,240,0.12)', borderRadius: 8, border: '1px solid rgba(181,74,30,0.35)' }}>
+              <strong style={{ color: 'var(--k2-text)' }}>{LIZENZ_TESTPHASE_LABEL}</strong> – Lizenz online über Stripe (Basic, Pro oder VK2).
             </p>
             <p style={{ margin: '0 0 0.5rem' }}><strong style={{ color: 'var(--k2-text)' }}>🎨 Basic</strong> – Bis 30 Werke, 1 Galerie, Events, Etiketten, <TermWithExplanation term="Standard-URL" /> – <strong>ohne Kassa.</strong> <strong>{LIZENZPREISE.basic.price}.</strong></p>
             <p style={{ margin: '0 0 0.5rem' }}><strong style={{ color: 'var(--k2-text)' }}>⭐ Pro</strong> – Alles in einer App: unbegrenzte Werke, <TermWithExplanation term="Custom Domain" />, Kassa, Marketing, Rechnung (§ 11 UStG), Buchhaltung. <strong>{LIZENZPREISE.pro.price}.</strong></p>

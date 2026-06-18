@@ -2903,7 +2903,7 @@ ${PRODUCT_INSERAT_VIERTEL_IMPRESSUM}`}
           </tbody>
         </table>
         <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)', marginBottom: '1rem', lineHeight: 1.5 }}>
-          <strong>Fazit (Stand Start):</strong> Basic <strong>10 €/Monat</strong>, Pro <strong>25 €/Monat</strong> (voller Umfang), VK2 <strong>25 €/Monat</strong> – ab 10 Mitgliedern für den Verein kostenfrei. <strong>4 Wochen gratis testen.</strong> Damit ist die Preisgestaltung für den Start entschieden und wird in der Kommunikation überall einheitlich genutzt.
+          <strong>Fazit (Stand Start):</strong> Basic <strong>10 €/Monat</strong>, Pro <strong>25 €/Monat</strong> (voller Umfang), VK2 <strong>25 €/Monat</strong> – ab 10 Mitgliedern für den Verein kostenfrei. <strong>Demo ohne Anmeldung · Lizenz ab 10 €/Monat (Stripe).</strong> Damit ist die Preisgestaltung für den Start entschieden und wird in der Kommunikation überall einheitlich genutzt.
         </p>
 
         <h4 style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.9)', marginTop: '1rem', marginBottom: '0.5rem' }}>Erlöspotenzial (Beispielrechnung bei diesen Gebühren)</h4>
@@ -2998,7 +2998,7 @@ ${PRODUCT_INSERAT_VIERTEL_IMPRESSUM}`}
           Preise für den Start festgelegt. In Prospekt, Werbeunterlagen und bei „Lizenz anfragen“ einheitlich nutzen.
         </p>
         <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)' }}>
-          <strong>Details:</strong> Siehe Abschnitt <a href="#mok2-marktwert" style={{ color: '#5ffbf1', textDecoration: 'none' }}>Produktbewertung → Realistische Lizenzgebühren</a>: Basic <strong>10 €/Monat</strong>, Pro <strong>25 €/Monat</strong>, VK2 <strong>25 €/Monat</strong>. <strong>4 Wochen gratis testen.</strong> Quelle: <code>src/config/licencePricing.ts</code>.
+          <strong>Details:</strong> Siehe Abschnitt <a href="#mok2-marktwert" style={{ color: '#5ffbf1', textDecoration: 'none' }}>Produktbewertung → Realistische Lizenzgebühren</a>: Basic <strong>10 €/Monat</strong>, Pro <strong>25 €/Monat</strong>, VK2 <strong>25 €/Monat</strong>. <strong>Demo ohne Anmeldung · Lizenz ab 10 €/Monat (Stripe).</strong> Quelle: <code>src/config/licencePricing.ts</code>.
         </p>
       </section>
 
@@ -3340,7 +3340,7 @@ ${PRODUCT_INSERAT_VIERTEL_IMPRESSUM}`}
           14. 💎 Pro – Marketing, Rechnung & Buchhaltung
         </h2>
         <p style={{ lineHeight: 1.7, marginBottom: '1rem', color: 'rgba(255,255,255,0.85)' }}>
-          Neben Basic (10 €) und Kunstvereine (VK2, 25 €) gibt es <strong style={{ color: '#fbbf24' }}>Pro (25 €/Monat)</strong> – alles in einer Stufe: gesamter Marketingbereich (Events, Galeriepräsentation, Flyer, Presse, Social Media, Plakat, PR-Dokumente), <strong>Kassa</strong>, volles Kassabuch, <strong>Rechnung (§ 11 UStG)</strong> und <strong>vollständige Buchhaltung</strong> (fortlaufende Rechnungsnummer, Pflichtangaben, USt-Aufschlüsselung; Kassabuch- und Verkäufe-CSV, Belege als PDF pro Zeitraum – Vorarbeit für den Steuerberater, Aufbewahrung 7 Jahre). Rechtliche Verantwortung für Buchführung und Steuern trägt der Nutzer/Steuerberater (AGB §8). <strong>4 Wochen gratis testen.</strong>
+          Neben Basic (10 €) und Kunstvereine (VK2, 25 €) gibt es <strong style={{ color: '#fbbf24' }}>Pro (25 €/Monat)</strong> – alles in einer Stufe: gesamter Marketingbereich (Events, Galeriepräsentation, Flyer, Presse, Social Media, Plakat, PR-Dokumente), <strong>Kassa</strong>, volles Kassabuch, <strong>Rechnung (§ 11 UStG)</strong> und <strong>vollständige Buchhaltung</strong> (fortlaufende Rechnungsnummer, Pflichtangaben, USt-Aufschlüsselung; Kassabuch- und Verkäufe-CSV, Belege als PDF pro Zeitraum – Vorarbeit für den Steuerberater, Aufbewahrung 7 Jahre). Rechtliche Verantwortung für Buchführung und Steuern trägt der Nutzer/Steuerberater (AGB §8). <strong>Demo ohne Anmeldung · Lizenz ab 10 €/Monat (Stripe).</strong>
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>

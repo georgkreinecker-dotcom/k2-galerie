@@ -8,7 +8,7 @@ Dieses Kapitel richtet sich an Nutzerinnen und Nutzer der **öffentlichen Demo**
 
 Die Demo ist eine voll funktionsfähige Vorschau der K2 Galerie. Sie können damit in Ruhe ausprobieren, wie eine eigene Galerie aussehen und funktionieren würde: Werke anlegen, Design anpassen, Galerie ansehen und veröffentlichen. Die Demo verwendet **Beispieldaten** – keine echten Kundendaten. Sie eignet sich ideal, um die App kennenzulernen, bevor Sie eine Lizenz erwerben.
 
-**Testphase (4 Wochen gratis testen):** Sie können die Galerie **4 Wochen gratis** testen. Dafür sind die erforderlichen Angaben (z. B. E-Mail) einzugeben. Wenn Sie nach Ablauf der Testphase keine Lizenz abschließen, werden Ihre in der Testphase gespeicherten Daten **unverzüglich gelöscht** und die Lizenz erlischt – das ist in den **AGB** festgehalten. Der Eintritt in den Zugangsbereich setzt voraus, dass Sie die **AGB gelesen und durch Ankreuzen bestätigt** haben (wie bei der Nutzung üblich).
+**Demo ohne Anmeldung:** Die öffentliche Demo (ök2) können Sie **ohne Anmeldung** im Browser ansehen – mit **Musterwerken und Mustertexten**, keine echte Galerie. Wenn Sie eine **eigene Lizenz** möchten, schließen Sie **Basic** oder **Pro** über **Stripe** ab; **mit Abschluss** beginnt das **Monatsabo** zum angezeigten Preis. Es gibt **keine separate kostenlose Testlizenz** über den Online-Checkout – das ist in den **AGB** festgehalten. **Eingeladene Testpilot:innen** können gesonderte Testbedingungen erhalten.
 
 ---
 
@@ -45,7 +45,7 @@ Damit Sie auf einen Blick sehen, welche Stufe zu Ihnen passt, hier die **Lizenzs
 | **Pro** | 25 €/Monat | **Alles in einer Stufe:** unbegrenzte Werke, Custom Domain, **Kassa** (Verkauf, Belege), **volles Kassabuch** (Eingänge + Ausgänge), **gesamter Marketingbereich** (Events, Flyer, Presse, Social Media), **Rechnung (§ 11 UStG)** und **vollständige Buchhaltung** (CSV, Belege als PDF). |
 | **VK2 (Kunstvereine)** | 25 €/Monat | **Eigener Weg** wie die Einzelgalerie: Vereinsplattform, Kauf und Demo über den **VK2-Bereich** – siehe **[Demo und Lizenz – Vereinsplattform](../vk2-handbuch/07-DEMO-LIZENZ.md)**. **Ab 10 registrierten Mitgliedern** für den Verein kostenfrei; Lizenzmitglieder 50 % Rabatt. Auf der Seite **„Lizenz auswählen & bezahlen“** für Galerie-Produkte erscheinen nur **Basic** und **Pro**. |
 
-**Kurz:** Basic = Einstieg ohne Kassa (bis 30 Werke). Pro = voller Umfang in einer Lizenz. VK2 = Vereinslizenz mit eigenem Einstieg (Handbuch-Link oben). **4 Wochen gratis testen** vor dem Kauf.
+**Kurz:** Basic = Einstieg ohne Kassa (bis 30 Werke). Pro = voller Umfang in einer Lizenz. VK2 = Vereinslizenz mit eigenem Einstieg (Handbuch-Link oben). **Demo zuerst ansehen** – Lizenz online über Stripe.
 
 ---
 

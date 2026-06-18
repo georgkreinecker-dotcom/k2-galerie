@@ -4,7 +4,7 @@
 
 Dieses Kapitel erklärt die **Kassafunktion** Schritt für Schritt: wo Sie die Kassa finden, wie Sie einen Verkauf erfassen, welche Zahlungsarten es gibt, wie Sie einen Kassenbon oder eine Rechnung drucken – und was das **Kassabuch** kann. Die Kassa eignet sich für den Verkauf vor Ort (z. B. am iPad oder Handy im Atelier oder auf der Messe).
 
-**Hinweis zu den Lizenzstufen:** **Basic** (10 €/Monat) = keine Kassa. **Pro** (25 €/Monat) = Kassa, volles Kassabuch, Rechnung (§ 11 UStG), Marketing und Buchhaltung – alles in einer Stufe. **4 Wochen gratis testen** vor dem Kauf. Details zur Rechnungspflege siehe Abschnitt „Pro: Rechnungspflege“ unten.
+**Hinweis zu den Lizenzstufen:** **Basic** (10 €/Monat) = keine Kassa. **Pro** (25 €/Monat) = Kassa, volles Kassabuch, Rechnung (§ 11 UStG), Marketing und Buchhaltung – alles in einer Stufe. **Demo ohne Anmeldung** – Lizenz online über Stripe. Details zur Rechnungspflege siehe Abschnitt „Pro: Rechnungspflege“ unten.
 
 ---
 

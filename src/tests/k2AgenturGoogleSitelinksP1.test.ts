@@ -52,9 +52,11 @@ describe('k2AgenturGoogleSitelinksP1', () => {
       expect(row.titel.length).toBeLessThanOrEqual(GOOGLE_SITELINK_LIMITS.titel)
       expect(row.beschreibung1.length).toBeLessThanOrEqual(GOOGLE_SITELINK_LIMITS.beschreibung)
       expect(row.beschreibung2.length).toBeLessThanOrEqual(GOOGLE_SITELINK_LIMITS.beschreibung)
+      expect(row.titel.toLowerCase()).not.toContain('gratis testen')
     }
     for (const c of GOOGLE_CALLOUTS_P1) {
       expect(c.text.length).toBeLessThanOrEqual(GOOGLE_SITELINK_LIMITS.callout)
+      expect(c.text.toLowerCase()).not.toContain('gratis testen')
     }
   })
 })

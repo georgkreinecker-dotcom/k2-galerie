@@ -12,6 +12,7 @@ import { buildVitaDocumentHtml } from '../utils/vitaDocument'
 import { getGalerieImages, getPageContentGalerie, mergePageContentGalerieFromServer } from '../config/pageContentGalerie'
 import { GalerieSocialLinks } from '../components/GalerieSocialLinks'
 import { Oek2GalerieLeitfadenModal } from '../components/Oek2GalerieLeitfadenModal'
+import Oek2AdsTransparencyBanner from '../components/Oek2AdsTransparencyBanner'
 import { getPageTexts, cleanK2PageTextsFromVk2, type GaleriePageTexts } from '../config/pageTexts'
 import { getPageContentEntdecken, DEFAULT_HERO_RUNDGANG_INVITE } from '../config/pageContentEntdecken'
 import { appendToHistory } from '../utils/artworkHistory'
@@ -3450,7 +3451,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
               paddingTop: 'clamp(3.25rem, 10vw, 4.5rem)',
             }}
           >
-            {renderOek2SpartenKasten()}
+            <Oek2AdsTransparencyBanner />
+            <div style={{ marginTop: 'clamp(0.65rem, 1.5vw, 0.85rem)' }}>
+              {renderOek2SpartenKasten()}
+            </div>
             {oek2RundgangInviteLine.trim() ? (
               isPlatformInstance() ? (
                 <button

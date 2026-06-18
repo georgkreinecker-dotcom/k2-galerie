@@ -14,7 +14,7 @@ Dieser Prospekt fasst funktionale und technische Informationen für Präsentatio
 - Galerie, Admin, Kassa, Events, Presse und Werbeunterlagen aus einer Hand
 - Multi-Tenant: K2 (Galerie), ök2 (Demo), VK2 (Vereinsplattform)
 - Windows, Android, macOS, iOS – Browser und PWA
-- Lizenzmodell: Basic, Pro, VK2 (Kunstvereine); **4 Wochen gratis testen**
+- Lizenzmodell: Basic, Pro, VK2 (Kunstvereine); **Demo ohne Anmeldung · Lizenz ab 10 €/Monat**
 
 ---
 
@@ -35,7 +35,7 @@ Dieser Prospekt fasst funktionale und technische Informationen für Präsentatio
 | **Kassa & Kassabuch** | Verkauf erfassen (Shop oder „Als Kasse öffnen“); ab **Pro**: volles Kassabuch (Eingänge + Ausgänge), Rechnung § 11, Buchhaltung (CSV, Belege-PDF). **Basic**: keine Kassa. |
 | **Event- und Medienplanung** | Events anlegen, Einladungen, Mediengenerator, Verteiler, Presseaussendung pro Event und Social Media – aus Stammdaten und Event-Daten. |
 | **Werbeunterlagen** | Newsletter, Plakat, Flyer, PR-Vorschläge – aus einer Quelle, Galerie-Design, druckbar. |
-| **Lizenzen** | Basic (10 €/Monat), Pro (25 €/Monat, voller Umfang), VK2 (25 €/Monat; ab 10 Mitgliedern für den Verein kostenfrei). **4 Wochen gratis testen.** Stripe-Checkout, Bestätigung druckbar, keine Kartendaten in der App. |
+| **Lizenzen** | Basic (10 €/Monat), Pro (25 €/Monat, voller Umfang), VK2 (25 €/Monat; ab 10 Mitgliedern für den Verein kostenfrei). **Demo ohne Anmeldung · Lizenz ab 10 €/Monat.** Stripe-Checkout, Bestätigung druckbar, keine Kartendaten in der App. |
 | **Multi-Tenant** | **K2** = echte Galerie (Stammdaten, Werke). **ök2** = öffentliche Demo (Musterwerke, Mustertexte). **VK2** = Vereinsplattform (Mitglieder, Vereinsgalerie, eigene Stammdaten). Keine Vermischung. |
 
 ---
@@ -82,7 +82,7 @@ Web-App plattformneutral; keine produktive Funktion setzt einen Mac voraus. Quel
 | Pro | 25 €/Monat | Alles: Kassa, volles Kassabuch, Rechnung (§ 11 UStG), Marketing (Events, Flyer, Presse, Social), Buchhaltung (CSV, Belege-PDF). |
 | VK2 (Kunstvereine) | 25 €/Monat; ab 10 Mitgliedern kostenfrei | Vereinsplattform, Mitglieder, Vereinsgalerie; Lizenzmitglied 50 % Lizenz. |
 
-**Testphase:** 4 Wochen gratis testen (siehe `LIZENZ_TESTPHASE_LABEL` in licencePricing.ts).
+**Angebot:** Demo ohne Anmeldung; Lizenz ab 10 €/Monat über Stripe (siehe `LIZENZ_PUBLIC_OFFER_LINE` in licencePricing.ts).
 
 Quelle: src/config/licencePricing.ts. Kein direkter Kundenkontakt; Bestätigung und Abrechnung über System (Stripe, Druck).
 

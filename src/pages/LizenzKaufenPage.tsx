@@ -5,13 +5,14 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import '../App.css'
-import { LIZENZPREISE, LIZENZ_TESTPHASE_LABEL } from '../config/licencePricing'
+import { LIZENZPREISE, LIZENZ_PUBLIC_OFFER_LINE } from '../config/licencePricing'
+import { LIZENZ_CHECKOUT_HINWEIS } from '../config/oek2AdsTransparency'
 import {
   AGB_ROUTE,
   OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE,
   PROJECT_ROUTES,
 } from '../config/navigation'
-import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
+import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { isValidEmpfehlerIdFormat } from '../utils/empfehlerId'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import { openCheckoutOrPaymentUrl } from '../utils/openCheckoutOrPaymentUrl'
@@ -42,7 +43,7 @@ export default function LizenzKaufenPage() {
     if (empfehlerFromUrl && isValidEmpfehlerIdFormat(empfehlerFromUrl)) setEmpfehlerId(empfehlerFromUrl)
   }, [empfehlerFromUrl])
 
-  /** P1-Sitelink „4 Wochen gratis“ – Landing messen (k= bleibt ohnehin in localStorage). */
+  /** P1-Sitelink Landing – Attribution messen (k= bleibt ohnehin in localStorage). */
   useEffect(() => {
     reportMarketingAttributionLanding({
       surface: 'oeffentlich',
@@ -130,6 +131,26 @@ export default function LizenzKaufenPage() {
         <h1 style={{ fontFamily: fontHeading, fontSize: 'clamp(1.5rem, 4vw, 1.85rem)', fontWeight: 700, color: text, marginBottom: '0.35rem' }}>
           Lizenz auswählen & bezahlen
         </h1>
+        <p style={{ color: muted, fontSize: '0.9rem', marginBottom: '0.75rem' }}>
+          <strong>{PRODUCT_BRAND_NAME}</strong> · Galerie-Software · {LIZENZ_PUBLIC_OFFER_LINE}
+        </p>
+        <p
+          style={{
+            color: text,
+            fontSize: '0.88rem',
+            marginBottom: '1.25rem',
+            lineHeight: 1.55,
+            padding: '0.65rem 0.85rem',
+            background: '#fff8f0',
+            border: '1px solid rgba(181,74,30,0.35)',
+            borderRadius: 10,
+          }}
+        >
+          {LIZENZ_CHECKOUT_HINWEIS}{' '}
+          <Link to={AGB_ROUTE} style={{ color: accentDeep, fontWeight: 600 }}>
+            AGB
+          </Link>
+        </p>
         <p style={{ color: muted, fontSize: '0.9rem', marginBottom: '1.75rem' }}>
           Produkt anklicken – Name und E-Mail eintragen – Zahlung per Karte (Stripe). Nach dem Kauf ist deine Lizenz aktiv.
         </p>

@@ -67,7 +67,7 @@ export default function ProspektK2GaleriePage() {
   }, [qrVersionTs])
 
   const returnTo = (location.state as { returnTo?: string } | null)?.returnTo
-  const leadText = 'Für die Kunst gedacht, für den Markt gemacht. Ateliers, Galerien, Kunstvereine. Windows, Android, macOS, iOS · Browser & PWA. Lizenzen: Basic, Pro, VK2 – 4 Wochen gratis testen.'
+  const leadText = 'Für die Kunst gedacht, für den Markt gemacht. Ateliers, Galerien, Kunstvereine. Windows, Android, macOS, iOS · Browser & PWA. Lizenzen: Basic, Pro, VK2 – Demo ohne Anmeldung, Lizenz ab 10 €/Monat.'
 
   return (
     <div className="prospekt-wrap" style={{ minHeight: '100vh', background: '#faf8f5', color: '#1c1a18' }}>
@@ -133,7 +133,7 @@ export default function ProspektK2GaleriePage() {
 
           <h2 style={{ color: TEAL_LIGHT, fontSize: '1rem', fontWeight: 600, margin: '0 0 0.5rem' }}>Lizenzen</h2>
           <p style={{ fontSize: '0.85rem', lineHeight: 1.45, margin: '0 0 0.5rem' }}>
-            <strong>Basic</strong> 10 €/Monat: Galerie, Werke, Design; keine Kassa. <strong>Pro</strong> 25 €/Monat: alles in einer Stufe – Kassa, volles Kassabuch, Rechnung (§ 11 UStG), Marketing, Buchhaltung. <strong>VK2 (Kunstvereine):</strong> 25 €/Monat; ab 10 registrierten Mitgliedern für den Verein kostenfrei; Lizenzmitglieder 50 % Lizenz. <strong>4 Wochen gratis testen.</strong> Abschluss über Stripe; ausdruckbare Lizenzbestätigung.
+            <strong>Basic</strong> 10 €/Monat: Galerie, Werke, Design; keine Kassa. <strong>Pro</strong> 25 €/Monat: alles in einer Stufe – Kassa, volles Kassabuch, Rechnung (§ 11 UStG), Marketing, Buchhaltung. <strong>VK2 (Kunstvereine):</strong> 25 €/Monat; ab 10 registrierten Mitgliedern für den Verein kostenfrei; Lizenzmitglieder 50 % Lizenz. <strong>Demo ohne Anmeldung · Lizenz über Stripe ab Abschluss.</strong> Ausdruckbare Lizenzbestätigung; ausdruckbare Lizenzbestätigung.
           </p>
 
           <div className="prospekt-qr-block" style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: `1px solid ${TEAL_LIGHT}40`, display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-start' }}>

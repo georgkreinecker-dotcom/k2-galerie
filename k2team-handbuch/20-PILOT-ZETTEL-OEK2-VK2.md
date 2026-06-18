@@ -16,7 +16,7 @@
 
 **Deinen Weg festlegen:** Bei **ök2** unter **„Wofür nutzt du deine Galerie?“** eine **Sparte** wählen (z. B. Kunst & Galerie, Handwerk …) – davon hängen Typ und Kategorien in „Werke verwalten“ ab. Bei **VK2** in den Einstellungen **Verein** und **Kunstrichtungen** zu euch passend eintragen.
 
-**In einem Satz:** *„Plattform für Galerie, Kasse, Einladungen, Presse – **ök2** ist die Demo, **VK2** die Vereinsplattform. Beides gratis testen.“*
+**In einem Satz:** *„Plattform für Galerie, Kasse, Einladungen, Presse – **ök2** ist die Demo, **VK2** die Vereinsplattform. Beides als Demo ohne Anmeldung ansehen.“*
 
 **Handy:** QR scannen. **Laptop:** Adresse aus der Tabelle eintippen. **Dabeihaben:** Lesezeichen oder „Zum Startbildschirm hinzufügen“. Daten liegen im Netz – nach **Veröffentlichen** (macht in der Regel das Team) siehst du auf allen Geräten denselben Stand.
 

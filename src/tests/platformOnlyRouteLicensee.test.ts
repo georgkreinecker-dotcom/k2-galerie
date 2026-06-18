@@ -4,7 +4,7 @@
  */
 import { createElement } from 'react'
 import { createRoot } from 'react-dom/client'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('../config/tenantConfig', async (importOriginal) => {
@@ -16,32 +16,34 @@ import { PlatformOnlyRoute } from '../components/PlatformOnlyRoute'
 
 describe('PlatformOnlyRoute – simulierter Lizenznehmer-Host', () => {
   it('redirectet /familie-Schutz auf / (kein Familien-UI)', async () => {
+    const router = createMemoryRouter(
+      [
+        {
+          path: '/familie',
+          element: createElement(
+            PlatformOnlyRoute,
+            null,
+            createElement('span', null, 'INSIDE_K2_FAMILIE'),
+          ),
+        },
+        {
+          path: '/',
+          element: createElement('span', null, 'ROOT_FALLBACK'),
+        },
+      ],
+      { initialEntries: ['/familie'] },
+    )
+
     const container = document.createElement('div')
     const root = createRoot(container)
-    root.render(
-      createElement(
-        MemoryRouter,
-        { initialEntries: ['/familie'] },
-        createElement(
-          Routes,
-          null,
-          createElement(Route, {
-            path: '/familie',
-            element: createElement(
-              PlatformOnlyRoute,
-              null,
-              createElement('span', null, 'INSIDE_K2_FAMILIE'),
-            ),
-          }),
-          createElement(Route, {
-            path: '/',
-            element: createElement('span', null, 'ROOT_FALLBACK'),
-          }),
-        ),
-      ),
+    root.render(createElement(RouterProvider, { router }))
+
+    await vi.waitFor(
+      () => {
+        expect(container.textContent).toContain('ROOT_FALLBACK')
+      },
+      { timeout: 2000 },
     )
-    await new Promise<void>((r) => setTimeout(r, 50))
-    expect(container.textContent).toContain('ROOT_FALLBACK')
     expect(container.textContent).not.toContain('INSIDE_K2_FAMILIE')
     root.unmount()
   })

@@ -72,9 +72,21 @@ export default function AGBPage() {
         </section>
 
         <section style={{ marginBottom: '1.75rem' }}>
-          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>3. Testphase (2 Wochen kostenlos) und Umgang mit Daten</h2>
-          <p style={{ margin: 0, lineHeight: 1.7, fontSize: '0.95rem' }}>
-            Der Nutzer bzw. die Nutzerin kann eine <strong>Testphase von 2 Wochen</strong> kostenlos nutzen. Dafür sind die erforderlichen Angaben (z. B. E-Mail-Adresse) einzugeben. Wir versichern: Die in der Testphase eingegebenen Daten werden ausschließlich für die Durchführung der Testphase und die Abwicklung einer eventuell abgeschlossenen Lizenz verwendet. <strong>Wenn nach Ablauf der 2 Wochen keine Lizenz abgeschlossen wird, werden die in der Testphase gespeicherten Daten unverzüglich gelöscht</strong>; die Lizenz erlischt in diesem Fall. Der Eintritt in den Zugangsbereich bzw. der Start der Testphase setzt voraus, dass die AGB gelesen und durch Bestätigung (z. B. Ankreuzen) akzeptiert wurden – wie bei der Nutzung üblich.
+          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>3. Demo, Lizenz und Umgang mit Daten</h2>
+          <p style={{ margin: '0 0 0.75rem', lineHeight: 1.7, fontSize: '0.95rem' }}>
+            Die öffentliche <strong>Demo-Galerie (ök2)</strong> dient der unverbindlichen Information. Sie kann{' '}
+            <strong>ohne Anmeldung</strong> im Browser angesehen werden; es werden <strong>Musterwerke und Mustertexte</strong>{' '}
+            gezeigt – <strong>keine echte Galerie und kein Kunsthandel</strong>.
+          </p>
+          <p style={{ margin: '0 0 0.75rem', lineHeight: 1.7, fontSize: '0.95rem' }}>
+            Eine <strong>kostenpflichtige Lizenz</strong> (Basic, Pro, VK2) wird über <strong>Stripe</strong> abgeschlossen;{' '}
+            <strong>mit Abschluss</strong> beginnt das <strong>Monatsabo</strong> zum beim Checkout angezeigten Preis. Es gibt{' '}
+            <strong>keine separate kostenlose Testlizenz</strong> über den Online-Checkout, sofern nicht ausdrücklich anders in der
+            Anwendung beim Abschluss angegeben.
+          </p>
+          <p style={{ margin: '0 0 0.75rem', lineHeight: 1.7, fontSize: '0.95rem' }}>
+            Eingeladene <strong>Testpilot:innen</strong> können gesonderte Testbedingungen erhalten (siehe Testprotokolle). Daten aus
+            Demo und Lizenz werden getrennt geführt; echte Galeriedaten (K2) werden nicht in die Demo übernommen.
           </p>
         </section>
 

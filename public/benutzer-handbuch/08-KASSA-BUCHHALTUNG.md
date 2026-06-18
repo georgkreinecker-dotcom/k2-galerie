@@ -4,7 +4,7 @@
 
 Dieses Kapitel beschreibt **Kassa** und **Buchhaltung** vollständig: wo Sie die Kassa finden, wie Sie Verkäufe erfassen, Belege drucken, das Kassabuch führen – und wie Sie mit der **Buchhaltung** (Zeitraum, CSV, Belege-PDF) die Vorarbeit für Ihren Steuerberater erledigen.
 
-**Lizenzstufen:** **Basic** (10 €/Monat) = Galerie ohne Kassa. **Pro** (25 €/Monat) = alles in einer Stufe: Kassa, volles Kassabuch (Eingänge + Ausgänge), **Rechnung (§ 11 UStG)**, Marketing (Events, Flyer, Presse, Social) und **Buchhaltung** (CSV, Belege als PDF). **4 Wochen gratis testen** vor dem Kauf.
+**Lizenzstufen:** **Basic** (10 €/Monat) = Galerie ohne Kassa. **Pro** (25 €/Monat) = alles in einer Stufe: Kassa, volles Kassabuch (Eingänge + Ausgänge), **Rechnung (§ 11 UStG)**, Marketing (Events, Flyer, Presse, Social) und **Buchhaltung** (CSV, Belege als PDF). **Demo ohne Anmeldung** – Lizenz online über Stripe.
 
 ---
 
