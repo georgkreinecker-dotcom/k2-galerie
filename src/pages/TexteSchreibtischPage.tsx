@@ -124,6 +124,27 @@ const BEREICHE: Bereich[] = [
     ansicht: 'liste',
     zettel: [
       {
+        id: 'k2-galerie-sommerpause-2026-mit-qr',
+        titel: 'Sommerpause A4 + QR',
+        zweck: 'Tür · Online-Galerie · Tel.',
+        to: '/texte-schreibtisch/k2-galerie-sommerpause-2026-mit-qr.html',
+        showDruckWeiterleiten: true,
+      },
+      {
+        id: 'k2-galerie-sommerpause-2026',
+        titel: 'Sommerpause A4',
+        zweck: 'Tür · bis 1. Okt · Tel. Anfrage',
+        to: '/texte-schreibtisch/k2-galerie-sommerpause-2026.html',
+        showDruckWeiterleiten: true,
+      },
+      {
+        id: 'k2-galerie-sommerpause-2026-online-qr',
+        titel: 'Galerie online (QR)',
+        zweck: 'Zusatz · QR scannen · Internet',
+        to: '/texte-schreibtisch/k2-galerie-sommerpause-2026-online-qr.html',
+        showDruckWeiterleiten: true,
+      },
+      {
         id: 'einladung-gruppen-verantwortliche',
         titel: 'Gruppeneinladung (Sie)',
         zweck: 'Formell · Ansprechperson + Verein',

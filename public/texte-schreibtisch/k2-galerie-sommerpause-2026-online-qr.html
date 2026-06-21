@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="K2 Galerie – online besuchen (QR)" />
+  <title>Galerie online – K2 Galerie Kunst&Keramik</title>
+  <style>
+    @page { size: A4 portrait; margin: 15mm; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      color: #1c1a18;
+      background: #f6f2eb;
+    }
+    .hinweis-screen {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 9pt;
+      color: #5c5650;
+      text-align: center;
+      padding: 0.6rem 1rem;
+      background: #e0dbd2;
+      line-height: 1.45;
+    }
+    .blatt {
+      max-width: 180mm;
+      margin: 0 auto;
+      padding: 1rem;
+      text-align: center;
+    }
+    .rahmen {
+      border: 2pt solid #b54a1e;
+      padding: 16mm 14mm 18mm;
+      background: #fffefb;
+    }
+    .marke {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 10pt;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #b54a1e;
+      margin: 0 0 10mm;
+      font-weight: 600;
+    }
+    h1 {
+      font-size: 26pt;
+      font-weight: 700;
+      margin: 0 0 12mm;
+      line-height: 1.2;
+      color: #2c2419;
+    }
+    .qr-block {
+      border: 2pt solid #b54a1e;
+      padding: 10mm 10mm 12mm;
+      margin: 0 auto 12mm;
+      max-width: 100mm;
+      background: #fff;
+    }
+    .qr-label {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 12pt;
+      font-weight: 700;
+      color: #1c1a18;
+      margin: 0 0 8mm;
+      line-height: 1.35;
+    }
+    .qr-block img {
+      display: block;
+      width: 68mm;
+      height: 68mm;
+      margin: 0 auto;
+      border: 1pt solid #c4b8a8;
+      background: #fff;
+    }
+    .qr-url {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 10pt;
+      color: #5c5650;
+      margin: 6mm 0 0;
+    }
+    .text {
+      font-size: 12pt;
+      line-height: 1.55;
+      max-width: 140mm;
+      margin: 0 auto;
+      color: #3d3832;
+    }
+    .fuss {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 9pt;
+      color: #5c5650;
+      line-height: 1.45;
+      margin-top: 12mm;
+    }
+    .fuss strong {
+      display: block;
+      color: #1c1a18;
+      font-size: 9.5pt;
+      margin-bottom: 1mm;
+    }
+    .druck-btn {
+      display: block;
+      margin: 1rem auto 1.5rem;
+      padding: 0.65rem 1.4rem;
+      font-size: 11pt;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      background: #b54a1e;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    @media print {
+      .hinweis-screen,
+      .druck-btn { display: none !important; }
+      html, body {
+        background: #fff !important;
+        margin: 0;
+        padding: 0;
+      }
+      .blatt {
+        max-width: none;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      .rahmen {
+        border: 2pt solid #b54a1e;
+        background: #fff;
+        padding: 22mm 15mm;
+      }
+      .qr-block { background: #fff; }
+    }
+  </style>
+</head>
+<body>
+  <p class="hinweis-screen">A4 · Drucken (⌘P) · Zusatz zum Sommerpause-Zettel – nur Galerie online.</p>
+  <button type="button" class="druck-btn" onclick="window.print()">Drucken</button>
+
+  <article class="blatt" aria-label="K2 Galerie online">
+    <div class="rahmen">
+      <p class="marke">K2 Galerie Kunst&amp;Keramik</p>
+      <h1>Galerie online besuchen</h1>
+
+      <div class="qr-block">
+        <p class="qr-label">QR scannen · Handy</p>
+        <img
+          src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&amp;margin=4&amp;data=https%3A%2F%2Fk2-galerie.vercel.app%2Fgalerie"
+          width="300"
+          height="300"
+          alt="QR-Code: K2 Galerie online"
+        />
+        <p class="qr-url">k2-galerie.vercel.app/galerie</p>
+      </div>
+
+      <p class="text">
+        Malerei und Keramik von Martina &amp; Georg – jederzeit im Internet ansehen.
+      </p>
+
+      <footer class="fuss">
+        <strong>Martina &amp; Georg Kreinecker</strong>
+        Schlossergasse 4 · 4070 Eferding · Österreich
+      </footer>
+    </div>
+  </article>
+</body>
+</html>

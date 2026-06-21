@@ -13,6 +13,14 @@ import { getGalerieImages, getPageContentGalerie, mergePageContentGalerieFromSer
 import { GalerieSocialLinks } from '../components/GalerieSocialLinks'
 import { Oek2GalerieLeitfadenModal } from '../components/Oek2GalerieLeitfadenModal'
 import Oek2AdsTransparencyBanner from '../components/Oek2AdsTransparencyBanner'
+import K2GalerieSommerpauseBanner from '../components/K2GalerieSommerpauseBanner'
+import {
+  isK2SommerpauseActive,
+  K2_SOMMERPAUSE_BANNER_TITLE,
+  K2_SOMMERPAUSE_REGULAR_HOURS_LABEL,
+  getK2SommerpauseOpeningHoursLine,
+  getK2SommerpausePhone,
+} from '../config/k2GalerieSommerpause'
 import { getPageTexts, cleanK2PageTextsFromVk2, type GaleriePageTexts } from '../config/pageTexts'
 import { getPageContentEntdecken, DEFAULT_HERO_RUNDGANG_INVITE } from '../config/pageContentEntdecken'
 import { appendToHistory } from '../utils/artworkHistory'
@@ -3554,6 +3562,15 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
           paddingBottom: 'clamp(2rem, 5vw, 3rem)'
         }}
         >
+          {!musterOnly && !vk2 && isK2SommerpauseActive() && (
+            <div
+              style={{
+                padding: 'clamp(3.25rem, 10vw, 4.25rem) clamp(1rem, 2.5vw, 1.5rem) clamp(0.75rem, 2vw, 1rem)',
+              }}
+            >
+              <K2GalerieSommerpauseBanner phone={galleryData?.phone} />
+            </div>
+          )}
           {/* Bild ganz oben – volle Breite, dominant. SVG-Musterbilder = kein echtes Foto → Text-Hero stattdessen */}
           {displayImages.welcomeImage && !displayImages.welcomeImage.endsWith('.svg') && !displayImages.welcomeImage.startsWith('data:image/svg') && (
             <div style={{
@@ -4130,10 +4147,30 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                 >
                   Herzlich willkommen – Galerie betreten →
                 </Link>
-                {galerieOpeningHoursBlock ? (
+                {(() => {
+                  const showK2SommerpauseOpening = !musterOnly && !vk2 && isK2SommerpauseActive()
+                  if (!galerieOpeningHoursBlock && !showK2SommerpauseOpening) return null
+                  const sommerTel = showK2SommerpauseOpening ? getK2SommerpausePhone(galleryData?.phone) : ''
+                  const sommerTelHref = sommerTel.replace(/\s+/g, '')
+                  const labelStyle = {
+                    fontSize: 'clamp(0.68rem, 1.6vw, 0.76rem)',
+                    fontWeight: 700,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase' as const,
+                    color: musterOnly ? theme.accent : 'rgba(255, 200, 160, 0.95)',
+                    marginBottom: '0.35rem',
+                  }
+                  const bodyStyle = {
+                    fontSize: 'clamp(0.95rem, 2.3vw, 1.12rem)',
+                    fontWeight: 600,
+                    lineHeight: 1.45,
+                    color: musterOnly ? theme.text : 'rgba(255, 255, 255, 0.96)',
+                    whiteSpace: 'pre-line' as const,
+                  }
+                  return (
                   <div
                     role="region"
-                    aria-label="Öffnungszeiten"
+                    aria-label={showK2SommerpauseOpening ? 'Sommerpause und Öffnungszeiten' : 'Öffnungszeiten'}
                     style={{
                       marginTop: 'clamp(0.85rem, 2.2vw, 1.15rem)',
                       padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1rem, 2.5vw, 1.25rem)',
@@ -4146,31 +4183,44 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                       alignSelf: 'center',
                     }}
                   >
-                    <div
-                      style={{
-                        fontSize: 'clamp(0.68rem, 1.6vw, 0.76rem)',
-                        fontWeight: 700,
-                        letterSpacing: '0.12em',
-                        textTransform: 'uppercase',
-                        color: musterOnly ? theme.accent : 'rgba(255, 200, 160, 0.95)',
-                        marginBottom: '0.35rem',
-                      }}
-                    >
-                      Öffnungszeiten
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 'clamp(0.95rem, 2.3vw, 1.12rem)',
-                        fontWeight: 600,
-                        lineHeight: 1.45,
-                        color: musterOnly ? theme.text : 'rgba(255, 255, 255, 0.96)',
-                        whiteSpace: 'pre-line',
-                      }}
-                    >
-                      {galerieOpeningHoursBlock}
-                    </div>
+                    {showK2SommerpauseOpening ? (
+                      <>
+                        <div style={labelStyle}>{K2_SOMMERPAUSE_BANNER_TITLE}</div>
+                        <div style={{ ...bodyStyle, marginBottom: sommerTel ? '0.45rem' : galerieOpeningHoursBlock ? '0.65rem' : 0 }}>
+                          {getK2SommerpauseOpeningHoursLine()}
+                        </div>
+                        {sommerTel ? (
+                          <div style={{ ...bodyStyle, fontSize: 'clamp(0.88rem, 2.1vw, 1rem)', marginBottom: galerieOpeningHoursBlock ? '0.75rem' : 0 }}>
+                            Telefon{' '}
+                            <a href={`tel:${sommerTelHref}`} style={{ color: musterOnly ? theme.accent : '#ffd4b0', textDecoration: 'none' }}>
+                              {sommerTel}
+                            </a>
+                          </div>
+                        ) : null}
+                        {galerieOpeningHoursBlock ? (
+                          <div
+                            style={{
+                              marginTop: '0.15rem',
+                              paddingTop: '0.65rem',
+                              borderTop: musterOnly
+                                ? `1px solid color-mix(in srgb, ${theme.accent} 35%, transparent)`
+                                : '1px solid rgba(255, 200, 160, 0.35)',
+                            }}
+                          >
+                            <div style={{ ...labelStyle, marginBottom: '0.3rem' }}>{K2_SOMMERPAUSE_REGULAR_HOURS_LABEL}</div>
+                            <div style={bodyStyle}>{galerieOpeningHoursBlock}</div>
+                          </div>
+                        ) : null}
+                      </>
+                    ) : (
+                      <>
+                        <div style={labelStyle}>Öffnungszeiten</div>
+                        <div style={bodyStyle}>{galerieOpeningHoursBlock}</div>
+                      </>
+                    )}
                   </div>
-                ) : null}
+                  )
+                })()}
                 {!musterOnly && (
                   <p style={{
                     marginTop: 'clamp(0.75rem, 2vw, 1rem)',

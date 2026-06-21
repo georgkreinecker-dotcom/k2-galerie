@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="K2 Galerie Kunst & Keramik – Sommerpause bis 1. Oktober 2026" />
+  <title>Sommerpause – K2 Galerie Kunst&Keramik</title>
+  <style>
+    /* Drucker-sicher: keine Verläufe, keine Schatten, kein Flex beim Drucken (PostScript rangecheck vermeiden) */
+    @page { size: A4 portrait; margin: 15mm; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      color: #1c1a18;
+      background: #f6f2eb;
+    }
+    .hinweis-screen {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 9pt;
+      color: #5c5650;
+      text-align: center;
+      padding: 0.6rem 1rem;
+      background: #e0dbd2;
+      line-height: 1.45;
+    }
+    .blatt {
+      max-width: 180mm;
+      margin: 0 auto;
+      padding: 1rem;
+      text-align: center;
+    }
+    .rahmen {
+      border: 2pt solid #b54a1e;
+      padding: 18mm 14mm 16mm;
+      background: #fffefb;
+    }
+    .marke {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 10pt;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #b54a1e;
+      margin: 0 0 8mm;
+      font-weight: 600;
+    }
+    h1 {
+      font-size: 28pt;
+      font-weight: 700;
+      margin: 0 0 6mm;
+      line-height: 1.15;
+      color: #2c2419;
+    }
+    .zeitraum {
+      font-size: 13pt;
+      margin: 0 0 10mm;
+      color: #5c5650;
+      line-height: 1.4;
+    }
+    .zeitraum strong {
+      display: block;
+      font-size: 16pt;
+      color: #1c1a18;
+      margin-top: 3mm;
+    }
+    .linie {
+      width: 45mm;
+      height: 0;
+      border-top: 2pt solid #b54a1e;
+      margin: 0 auto 10mm;
+    }
+    .text {
+      font-size: 12pt;
+      line-height: 1.55;
+      max-width: 130mm;
+      margin: 0 auto 12mm;
+      color: #3d3832;
+    }
+    .telefon-kasten {
+      border: 2pt solid #b54a1e;
+      padding: 6mm 10mm;
+      margin: 0 auto 10mm;
+      max-width: 120mm;
+      background: #fff;
+    }
+    .telefon-label {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 9pt;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #5c5650;
+      margin: 0 0 3mm;
+    }
+    .telefon-nummer {
+      font-size: 22pt;
+      font-weight: 700;
+      color: #b54a1e;
+      margin: 0;
+      letter-spacing: 0.03em;
+    }
+    .telefon-nummer a {
+      color: inherit;
+      text-decoration: none;
+    }
+    .fuss {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 9pt;
+      color: #5c5650;
+      line-height: 1.45;
+      margin-top: 8mm;
+    }
+    .fuss strong {
+      display: block;
+      color: #1c1a18;
+      font-size: 9.5pt;
+      margin-bottom: 1mm;
+    }
+    .druck-btn {
+      display: block;
+      margin: 1rem auto 1.5rem;
+      padding: 0.65rem 1.4rem;
+      font-size: 11pt;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      background: #b54a1e;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    @media print {
+      .hinweis-screen,
+      .druck-btn { display: none !important; }
+      html, body {
+        background: #fff !important;
+        margin: 0;
+        padding: 0;
+      }
+      .blatt {
+        max-width: none;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      .rahmen {
+        border: 2pt solid #b54a1e;
+        background: #fff;
+        padding: 20mm 15mm;
+      }
+      .telefon-kasten { background: #fff; }
+    }
+  </style>
+</head>
+<body>
+  <p class="hinweis-screen">
+    <strong>Drucken:</strong> Button unten oder ⌘P · A4 Hochformat.<br />
+    Bei Drucker-Fehlermeldung (PostScript): nochmal drucken – Layout ist jetzt drucker-sicher (ohne Verläufe).
+  </p>
+  <button type="button" class="druck-btn" onclick="window.print()">Drucken</button>
+
+  <article class="blatt" aria-label="Sommerpause K2 Galerie">
+    <div class="rahmen">
+      <p class="marke">K2 Galerie Kunst&amp;Keramik</p>
+      <h1>Sommerpause</h1>
+      <p class="zeitraum">
+        Wir sind bis einschließlich
+        <strong>1. Oktober 2026</strong>
+        in der Galerie nicht regulär geöffnet.
+      </p>
+      <div class="linie" aria-hidden="true"></div>
+      <p class="text">
+        Gerne öffnen wir die Galerie auf <strong>telefonische Anfrage</strong> –
+        sprechen Sie uns einfach an.
+      </p>
+      <div class="telefon-kasten">
+        <p class="telefon-label">Telefon</p>
+        <p class="telefon-nummer"><a href="tel:+436641046337">0664 1046337</a></p>
+      </div>
+      <footer class="fuss">
+        <strong>Martina &amp; Georg Kreinecker</strong>
+        Schlossergasse 4 · 4070 Eferding · Österreich
+      </footer>
+    </div>
+  </article>
+</body>
+</html>
