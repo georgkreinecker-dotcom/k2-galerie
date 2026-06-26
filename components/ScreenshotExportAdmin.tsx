@@ -41,6 +41,7 @@ import {
 } from '../src/utils/printerSettingsStorage'
 import { formatEventTerminKomplett } from '../src/utils/eventTerminFormat'
 import { openCheckoutOrPaymentUrl } from '../src/utils/openCheckoutOrPaymentUrl'
+import { openPrintableHtmlDocument, type OpenDocumentInAppFn } from '../src/utils/openPrintableHtmlDocument'
 import { fetchVisitCount } from '../src/utils/visitCountApiOrigin'
 import {
   resolveOek2PublicGalleryVisitTenantId,
@@ -1763,7 +1764,11 @@ function VK2LoginQrBlock({ s }: { s: { accent: string; text: string; muted: stri
 }
 
 /** Druckt eine oder mehrere Mitgliedskarten im Kreditkarten-Format (85×54 mm, 3 pro Reihe) */
-function printMitgliedskarten(mitglieder: import('../src/config/tenantConfig').Vk2Mitglied[], vereinName: string) {
+function printMitgliedskarten(
+  mitglieder: import('../src/config/tenantConfig').Vk2Mitglied[],
+  vereinName: string,
+  openInApp?: OpenDocumentInAppFn
+) {
   const kartenHtml = mitglieder.map(m => {
     const foto = m.mitgliedFotoUrl
       ? `<img src="${m.mitgliedFotoUrl}" alt="" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid #ff8c42;flex-shrink:0;">`
@@ -1815,8 +1820,10 @@ function printMitgliedskarten(mitglieder: import('../src/config/tenantConfig').V
   <div class="grid">${kartenHtml}</div>
 </body></html>`
 
-  const w = window.open('', '_blank')
-  if (w) { try { w.focus() } catch (_) { }; w.document.write(html); w.document.close(); setTimeout(() => w.print(), 400) }
+  openPrintableHtmlDocument(html, 'Mitgliedskarten', {
+    openInApp: openInApp,
+    autoPrint: !openInApp,
+  })
 }
 /** Registrierung: Lizenztyp, Vereinsmitglied, Empfehlungsoption (K2/ök2/VK2 getrennt) */
 const KEY_REGISTRIERUNG = 'k2-registrierung'
@@ -12298,66 +12305,23 @@ ${'='.repeat(60)}
   // Dokument zu PDF konvertieren
   const convertToPDF = async (doc: any) => {
     if (doc.isPDF) {
-      // Bereits PDF - direkt öffnen
-      const printWindow = window.open('', '_blank')
-      if (printWindow) try { printWindow.focus() } catch (_) { }
-      if (!printWindow) {
-        // Fallback: Download-Link erstellen wenn Pop-up blockiert wird
-        if (doc.data) {
-          const link = document.createElement('a')
-          link.href = doc.data
-          link.download = doc.name || `document-${Date.now()}.pdf`
-          document.body.appendChild(link)
-          link.click()
-          setTimeout(() => {
-            document.body.removeChild(link)
-          }, 100)
-          alert('✅ Dokument wurde heruntergeladen!\n\nÖffne die Datei, um sie anzuzeigen.')
-        } else {
-          alert('⚠️ Pop-up-Blocker verhindert PDF-Öffnung.\n\nBitte erlaube Pop-ups für diese Seite oder öffne das Dokument manuell.')
-        }
-        return
+      if (doc.data) {
+        openDocumentUrlInApp(doc.data, doc.name || 'PDF')
+      } else {
+        alert('⚠️ PDF-Daten fehlen. Bitte Dokument erneut hochladen.')
       }
-      printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>${doc.name}</title>
-            <style>
-              body { margin: 0; padding: 0; }
-              iframe { width: 100%; height: 100vh; border: none; }
-            </style>
-          </head>
-          <body>
-            <iframe src="${doc.data}"></iframe>
-            <script>
-              window.onload = () => {
-                setTimeout(() => window.print(), 500);
-              }
-            </script>
-          </body>
-        </html>
-      `)
-      printWindow.document.close()
       return
     }
 
     // Bild zu PDF konvertieren
     if (doc.type.startsWith('image/')) {
-      const printWindow = window.open('', '_blank')
-      if (printWindow) try { printWindow.focus() } catch (_) { }
-      if (!printWindow) {
-        alert('Pop-up-Blocker verhindert PDF-Erstellung.')
-        return
-      }
-
       const date = new Date(doc.uploadedAt).toLocaleDateString('de-DE', { 
         day: '2-digit', 
         month: '2-digit', 
         year: 'numeric'
       })
 
-      printWindow.document.write(`
+      const html = `
         <!DOCTYPE html>
         <html>
           <head>
@@ -12414,18 +12378,10 @@ ${'='.repeat(60)}
             <div class="footer">
               <div>K2 Galerie - Kunst & Keramik</div>
             </div>
-            <script>
-              window.onload = () => {
-                setTimeout(() => {
-                  window.print();
-                  setTimeout(() => window.close(), 500);
-                }, 500);
-              }
-            </script>
           </body>
         </html>
-      `)
-      printWindow.document.close()
+      `
+      openDocumentInApp(html, doc.name || 'Dokument')
       return
     }
 
@@ -14396,13 +14352,6 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
 
     filteredArtworks = sortArtworksNewestFirst(filteredArtworks)
 
-    const printWindow = window.open('', '_blank')
-    if (printWindow) try { printWindow.focus() } catch (_) { }
-    if (!printWindow) {
-      alert('Pop-up-Blocker verhindert PDF-Erstellung. Bitte erlaube Pop-ups.')
-      return
-    }
-
     const title = type === 'galerie' ? 'Werke in der Galerie' : 'Verkaufte Werke'
     const date = new Date().toLocaleDateString('de-DE', { 
       day: '2-digit', 
@@ -14414,7 +14363,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
       ? galleryWebFooter.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       : ''
 
-    printWindow.document.write(`
+    const html = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -14527,19 +14476,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             <div>K2 Galerie - Kunst & Keramik</div>
             ${galleryWebFooterHtml ? `<div>${galleryWebFooterHtml}</div>` : ''}
           </div>
-          
-          <script>
-            window.onload = function() {
-              setTimeout(() => {
-                window.print();
-                setTimeout(() => window.close(), 500);
-              }, 500);
-            }
-          </script>
         </body>
       </html>
-    `)
-    printWindow.document.close()
+    `
+    openDocumentInApp(html, `${title} - K2 Galerie`)
   }
 
   // Cleanup nicht mehr nötig, da wir Data URLs verwenden (keine Blob URLs)
@@ -14824,7 +14764,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
           {mitglied && (
             <button
               type="button"
-              onClick={() => printMitgliedskarten([mitglied], vk2Stammdaten.verein?.name || 'Verein')}
+              onClick={() => printMitgliedskarten([mitglied], vk2Stammdaten.verein?.name || 'Verein', openDocumentInApp)}
               style={{ width: '100%', padding: '0.75rem', background: 'linear-gradient(135deg,#b54a1e,#d4622a)', border: 'none', borderRadius: 10, color: '#fff', fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
             >
               🖨️ Meine Mitgliedskarte drucken
@@ -16121,7 +16061,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             fontFamily: 'system-ui, sans-serif'
           }}>
             <div style={{
-              flexShrink: 0, padding: '0.75rem 1rem', background: '#1c1a18', color: '#fff',
+              flexShrink: 0,
+              padding: 'max(0.75rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) 0.75rem max(1rem, env(safe-area-inset-left))',
+              background: '#1c1a18', color: '#fff',
               display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '1px solid rgba(255,255,255,0.15)', flexWrap: 'wrap'
             }}>
               <button
@@ -16136,8 +16078,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 }}
                 aria-label="Dokument schließen und zurück"
                 style={{
-                  padding: '0.4rem 0.8rem', background: '#b54a1e', color: '#fff', border: 'none', borderRadius: 8,
-                  fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer'
+                  padding: '0.65rem 1rem', minHeight: 44, background: '#b54a1e', color: '#fff', border: 'none', borderRadius: 8,
+                  fontSize: '1rem', fontWeight: 600, cursor: 'pointer', touchAction: 'manipulation'
                 }}
               >← Zurück</button>
               <button
@@ -16182,8 +16124,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   }
                 }}
                 style={{
-                  padding: '0.4rem 0.8rem', background: '#2d5a2d', color: '#fff', border: 'none', borderRadius: 8,
-                  fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer'
+                  padding: '0.65rem 1rem', minHeight: 44, background: '#2d5a2d', color: '#fff', border: 'none', borderRadius: 8,
+                  fontSize: '1rem', fontWeight: 600, cursor: 'pointer', touchAction: 'manipulation'
                 }}
               >Drucken</button>
               <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', flex: 1 }}>{inAppDocumentViewer.title}</span>
@@ -17060,8 +17002,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                             : K2_STAMMDATEN_DEFAULTS.georg.name),
                       }
                 }
+                openDocumentInApp={openDocumentInApp}
               />
-              {/* PDFs & Speicherdaten – hier bei Kassa/Statistik, nicht in Einstellungen */}
               {!tenant.isVk2 && (
               <div style={{ marginTop: '2rem', padding: '1.25rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '16px', boxShadow: s.shadow }}>
                 <h3 style={{ fontSize: '1.1rem', color: s.text, marginBottom: '0.5rem' }}>📄 PDFs & Speicherdaten</h3>
@@ -17153,13 +17095,14 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               isOeffentlich={!!tenant.isOeffentlich}
               isVk2={!!tenant.isVk2}
               allArtworks={allArtworks}
+              openDocumentInApp={openDocumentInApp}
             />
           )}
 
 
           {/* ===== NEWSLETTER & EINLADUNGEN ===== */}
           {activeTab === 'newsletter' && (
-            <NewsletterTab onBack={() => setActiveTab('werke')} isOeffentlich={!!tenant.isOeffentlich} isVk2={!!tenant.isVk2} />
+            <NewsletterTab onBack={() => setActiveTab('werke')} isOeffentlich={!!tenant.isOeffentlich} isVk2={!!tenant.isVk2} openDocumentInApp={openDocumentInApp} />
           )}
 
 
@@ -17170,6 +17113,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               storyForPr={tenant.isOeffentlich ? getStoryForPr(tenant, galleryData, martinaData, georgData) : undefined}
               isOeffentlich={!!tenant.isOeffentlich}
               isVk2={!!tenant.isVk2}
+              openDocumentInApp={openDocumentInApp}
             />
           )}
 
@@ -17209,6 +17153,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           : K2_STAMMDATEN_DEFAULTS.georg.name),
                     }
               }
+              openDocumentInApp={openDocumentInApp}
             />
           )}
 
@@ -17582,8 +17527,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                             '<th>E-Mail</th><th>Telefon</th><th>Mitglied seit</th></tr></thead>',
                             '<tbody>' + rows + '</tbody></table></body></html>'
                           ].join('')
-                          const w = window.open('', '_blank')
-                          if (w) { try { w.focus() } catch (_) { }; w.document.write(html); w.document.close(); setTimeout(() => w.print(), 400) }
+                          openDocumentInApp(html, `Mitgliederliste – ${vereinsName}`)
                         }}
                         style={{ padding: '0.6rem 1.1rem', background: s.bgElevated, color: s.text, border: `1px solid ${s.accent}44`, borderRadius: '10px', fontSize: '0.86rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' as const }}
                       >
@@ -17615,8 +17559,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                             '<p style="font-size:0.8rem;color:#666">Stand: ' + datum + '</p>',
                             karten, '</body></html>'
                           ].join('')
-                          const w = window.open('', '_blank')
-                          if (w) { try { w.focus() } catch (_) { }; w.document.write(html); w.document.close(); setTimeout(() => w.print(), 400) }
+                          openDocumentInApp(html, `Adressliste – ${vereinsName}`)
                         }}
                         style={{ padding: '0.6rem 1.1rem', background: s.bgElevated, color: s.text, border: `1px solid ${s.accent}44`, borderRadius: '10px', fontSize: '0.86rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' as const }}
                       >
@@ -21022,8 +20965,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                             const vereinName = vk2Stammdaten.verein?.name || 'Verein'
                             const rows = mitglieder.map((m, i) => `<tr><td>${i+1}</td><td>${m.name||''}</td><td>${m.email||''}</td><td>${m.typ||''}</td><td>${m.eintrittsdatum||m.seit||''}</td><td>${m.ort||''}</td><td>${m.rolle==='vorstand'?'👑 Vorstand':'Mitglied'}</td></tr>`).join('')
                             const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Mitgliederliste</title><style>body{font-family:system-ui;padding:2rem}h1{font-size:1.3rem;margin-bottom:0.5rem}table{width:100%;border-collapse:collapse;font-size:0.88rem}th,td{padding:0.4rem 0.6rem;border:1px solid #ccc;text-align:left}th{background:#f0f0f0;font-weight:700}@media print{body{padding:1rem}}</style></head><body><h1>Mitgliederliste – ${vereinName}</h1><p style="margin:0 0 0.75rem;color:#666;font-size:0.82rem">${new Date().toLocaleDateString('de-AT')} · ${mitglieder.length} Mitglieder</p><table><thead><tr><th>#</th><th>Name</th><th>E-Mail</th><th>Kategorie</th><th>Eintritt</th><th>Ort</th><th>Rolle</th></tr></thead><tbody>${rows}</tbody></table></body></html>`
-                            const w = window.open('', '_blank')
-                            if (w) { try { w.focus() } catch (_) { }; w.document.write(html); w.document.close(); w.print() }
+                            openDocumentInApp(html, `Mitgliederliste – ${vereinName}`)
                           }}
                           style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: 8, color: s.accent, fontWeight: 600, cursor: 'pointer' }}
                         >
@@ -21040,7 +20982,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                                 if (b.rolle === 'vorstand' && a.rolle !== 'vorstand') return 1
                                 return (a.name || '').localeCompare(b.name || '', 'de')
                               })
-                            printMitgliedskarten(mitglieder, vk2Stammdaten.verein?.name || 'Verein')
+                            printMitgliedskarten(mitglieder, vk2Stammdaten.verein?.name || 'Verein', openDocumentInApp)
                           }}
                           style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: 8, color: s.accent, fontWeight: 600, cursor: 'pointer' }}
                         >
@@ -21184,7 +21126,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                                 <td style={{ padding: '0.5rem 0.75rem', color: s.text }}>{d.typ}</td>
                                 <td style={{ padding: '0.5rem', display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
                                   <button type="button" onClick={() => { setEditingMemberIndex(i); setMemberForm(memberToForm(m)); setShowAddModal(true) }} style={{ padding: '0.35rem 0.6rem', background: `${s.accent}22`, border: `1px solid ${s.accent}55`, borderRadius: 6, color: s.accent, fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>Bearbeiten</button>
-                                  <button type="button" title="Mitgliedskarte drucken" onClick={() => printMitgliedskarten([m], vk2Stammdaten.verein?.name || 'Verein')} style={{ padding: '0.35rem 0.5rem', background: 'none', border: `1px solid ${s.accent}33`, borderRadius: 6, color: s.accent, fontSize: '0.95rem', cursor: 'pointer' }}>🪪</button>
+                                  <button type="button" title="Mitgliedskarte drucken" onClick={() => printMitgliedskarten([m], vk2Stammdaten.verein?.name || 'Verein', openDocumentInApp)} style={{ padding: '0.35rem 0.5rem', background: 'none', border: `1px solid ${s.accent}33`, borderRadius: 6, color: s.accent, fontSize: '0.95rem', cursor: 'pointer' }}>🪪</button>
                                   <button type="button" onClick={() => { const neu = (vk2Stammdaten.mitglieder || []).filter((_, j) => j !== i); setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }); try { saveVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }) } catch (_) {} }} style={{ background: 'none', border: 'none', color: s.muted, cursor: 'pointer', fontSize: '1.1rem' }} title="Entfernen">×</button>
                                 </td>
                               </tr>

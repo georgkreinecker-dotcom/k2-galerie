@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { WERBEUNTERLAGEN_STIL } from '../../src/config/marketingWerbelinie'
 import { useGamificationChecklistsUi } from '../../src/hooks/useGamificationChecklistsUi'
+import { openPrintableHtmlDocument, type OpenDocumentInAppFn } from '../../src/utils/openPrintableHtmlDocument'
 
 const s = WERBEUNTERLAGEN_STIL
 const NEWSLETTER_KEY = 'k2-newsletter-kontakte'
@@ -19,9 +20,10 @@ interface NewsletterTabProps {
   /** Gamification Phase 2: nur ök2/VK2 */
   isOeffentlich?: boolean
   isVk2?: boolean
+  openDocumentInApp?: OpenDocumentInAppFn
 }
 
-export default function NewsletterTab({ onBack, isOeffentlich = false, isVk2 = false }: NewsletterTabProps) {
+export default function NewsletterTab({ onBack, isOeffentlich = false, isVk2 = false, openDocumentInApp }: NewsletterTabProps) {
   const { showChecklists: showGamificationChecklists } = useGamificationChecklistsUi()
   const [kontakte, setKontakte] = useState<any[]>(loadKontakte)
   const [nlName, setNlName] = useState('')
@@ -64,8 +66,6 @@ export default function NewsletterTab({ onBack, isOeffentlich = false, isVk2 = f
   }
 
   const druckeAdressliste = () => {
-    const win = window.open('', '_blank')
-    if (!win) return
     const rows = kontakte.map((k: any, i: number) =>
       `<tr>
         <td style="padding:6px 10px;border-bottom:1px solid #eee">${i + 1}.</td>
@@ -74,12 +74,15 @@ export default function NewsletterTab({ onBack, isOeffentlich = false, isVk2 = f
         <td style="padding:6px 10px;border-bottom:1px solid #eee;color:#888;font-size:0.85rem">${k.kategorie}</td>
       </tr>`
     ).join('')
-    win.document.write(`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Einladungsliste</title>
+    const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Einladungsliste</title>
 <style>body{font-family:sans-serif;padding:20mm 20mm;color:#1a1a1a}h1{font-size:1.3rem;margin-bottom:4px}p{color:#888;font-size:0.85rem;margin-bottom:16px}table{width:100%;border-collapse:collapse}th{text-align:left;padding:6px 10px;border-bottom:2px solid #333;font-size:0.85rem;color:#555}</style></head>
 <body><h1>📬 Einladungsliste</h1><p>Stand: ${new Date().toLocaleDateString('de-DE')} · ${kontakte.length} Kontakte</p>
 <table><thead><tr><th>#</th><th>Name</th><th>E-Mail</th><th>Kategorie</th></tr></thead><tbody>${rows}</tbody></table>
-<script>window.onload=()=>{window.print();window.onafterprint=()=>window.close()}</script></body></html>`)
-    win.document.close()
+</body></html>`
+    openPrintableHtmlDocument(html, 'Einladungsliste', {
+      openInApp: openDocumentInApp,
+      autoPrint: !openDocumentInApp,
+    })
   }
 
   const showGamification = isOeffentlich || isVk2

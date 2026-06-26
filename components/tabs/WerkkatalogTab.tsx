@@ -18,6 +18,7 @@ import {
   type KuenstlerFallbackNamen,
 } from '../../src/utils/artworkArtistDisplay'
 import { sortArtworksCategoryBlocksThenNumberAsc } from '../../src/utils/artworkSort'
+import { openPrintableHtmlDocument, type OpenDocumentInAppFn } from '../../src/utils/openPrintableHtmlDocument'
 
 const s = WERBEUNTERLAGEN_STIL
 
@@ -212,19 +213,16 @@ const WERKKARTE_PRINT_STYLES = `
         @media print { * { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
 `
 
-function openWerkkartePrintWindow(title: string, bodyInner: string): void {
-  const pw = window.open('', '_blank')
-  if (!pw) {
-    alert('Pop-up blockiert – bitte erlauben.')
-    return
-  }
+function openWerkkartePrintWindow(title: string, bodyInner: string, openInApp?: OpenDocumentInAppFn): void {
   const safeTitle = escAttr(title).replace(/</g, '')
-  pw.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
       <title>${safeTitle}</title>
       <style>${WERKKARTE_PRINT_STYLES}</style></head><body>${bodyInner}
-      <script>window.onload=()=>window.print()</script>
-      </body></html>`)
-  pw.document.close()
+      </body></html>`
+  openPrintableHtmlDocument(html, safeTitle, {
+    openInApp: openInApp,
+    autoPrint: !openInApp,
+  })
 }
 
 interface KatalogFilter {
@@ -261,6 +259,8 @@ interface WerkkatalogTabProps {
   kuenstlerFallback?: KuenstlerFallbackNamen | null
   /** Lizenz-Mandant: Reservierungen/Verkäufe aus mandantenspezifischen Keys wie die Kassa. */
   dynamicTenantId?: string | null
+  /** In-App-Viewer mit „← Zurück“ (Standard Admin – wichtig auf Mobil). */
+  openDocumentInApp?: OpenDocumentInAppFn
 }
 
 const ALLE_SPALTEN = [
@@ -296,6 +296,7 @@ export default function WerkkatalogTab({
   isVk2 = false,
   kuenstlerFallback = null,
   dynamicTenantId = null,
+  openDocumentInApp,
 }: WerkkatalogTabProps) {
   /** Typ-/Kategorie-Filter nur ök2; VK2 = nur Katalog der Mitgliederwerke (Kategorisierung in Stammdaten/Werkkarten). */
   const showTypAndCategory = !!isOeffentlich && !isVk2
@@ -480,11 +481,6 @@ export default function WerkkatalogTab({
   const spaltenFuerAuswahl = isVk2 ? ALLE_SPALTEN.filter((col) => VK2_SPALTEN_IDS.includes(col.id)) : ALLE_SPALTEN
 
   const druckeKatalog = () => {
-    const pw = window.open('', '_blank')
-    if (!pw) {
-      alert('Pop-up blockiert – bitte erlauben.')
-      return
-    }
     const galName = galleryData.name || 'K2 Galerie'
     const datum = new Date().toLocaleDateString('de-DE')
     const statusLabel = isVk2
@@ -573,7 +569,7 @@ export default function WerkkatalogTab({
           return `<th style="text-align:${align};padding:6px 8px;border-bottom:2px solid #8b6914;white-space:nowrap">${colHeaders[c] || c}</th>`
         })
         .join('')
-      pw.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
       <title>Werkkatalog – ${galName}</title>
       <style>
         @media print { @page { size: A4 landscape; margin: 12mm; } }
@@ -588,9 +584,11 @@ export default function WerkkatalogTab({
       <h1>📋 Werkkatalog – ${galName}</h1>
       <div class="meta">Stand: ${datum} · Filter: ${statusLabel} · ${filteredSorted.length} Werke</div>
       <table><thead><tr>${thead}</tr></thead><tbody>${rows}</tbody></table>
-      <script>window.onload=()=>window.print()</script>
-    </body></html>`)
-      pw.document.close()
+    </body></html>`
+      openPrintableHtmlDocument(html, `Werkkatalog – ${galName}`, {
+        openInApp: openDocumentInApp,
+        autoPrint: !openDocumentInApp,
+      })
     })()
   }
 
@@ -621,7 +619,7 @@ export default function WerkkatalogTab({
             })}</div>`
         )
         .join('')
-      openWerkkartePrintWindow(`Werkkarten (${resolved.length}) – ${galName}`, body)
+      openWerkkartePrintWindow(`Werkkarten (${resolved.length}) – ${galName}`, body, openDocumentInApp)
     })()
   }
 
@@ -646,7 +644,7 @@ export default function WerkkatalogTab({
         ...(oek2SparteId ? { oek2PrimarySparte: oek2SparteId } : {}),
         ...(!isVk2 ? { artistDisplay: artistFuerDruck(work) } : {}),
       })
-      openWerkkartePrintWindow(`${work.title || work.number || 'Werk'} – ${galName}`, `<div class="werk-page">${inner}</div>`)
+      openWerkkartePrintWindow(`${work.title || work.number || 'Werk'} – ${galName}`, `<div class="werk-page">${inner}</div>`, openDocumentInApp)
     })()
   }
 
@@ -672,7 +670,8 @@ export default function WerkkatalogTab({
       })
       openWerkkartePrintWindow(
         `Echtheitszertifikat – ${work.title || work.number || 'Werk'} – ${galName}`,
-        `<div class="werk-page">${certInner}</div>`
+        `<div class="werk-page">${certInner}</div>`,
+        openDocumentInApp
       )
     })()
   }
@@ -709,7 +708,8 @@ export default function WerkkatalogTab({
       })
       openWerkkartePrintWindow(
         `${work.title || work.number || 'Werk'} + Echtheitszertifikat – ${galName}`,
-        `<div class="werk-page">${inner}</div><div class="werk-page">${certInner}</div>`
+        `<div class="werk-page">${inner}</div><div class="werk-page">${certInner}</div>`,
+        openDocumentInApp
       )
     })()
   }

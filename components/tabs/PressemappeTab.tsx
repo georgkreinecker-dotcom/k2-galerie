@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { WERBEUNTERLAGEN_STIL } from '../../src/config/marketingWerbelinie'
 import { readArtworksRawForContext } from '../../src/utils/artworksStorage'
 import { loadStammdaten, loadVk2Stammdaten } from '../../src/utils/stammdatenStorage'
+import { openPrintableHtmlDocument, type OpenDocumentInAppFn } from '../../src/utils/openPrintableHtmlDocument'
 
 const s = WERBEUNTERLAGEN_STIL
 
@@ -11,9 +12,10 @@ interface PressemappeTabProps {
   storyForPr?: string
   isOeffentlich?: boolean
   isVk2?: boolean
+  openDocumentInApp?: OpenDocumentInAppFn
 }
 
-export default function PressemappeTab({ onBack, storyForPr, isOeffentlich = false, isVk2 = false }: PressemappeTabProps) {
+export default function PressemappeTab({ onBack, storyForPr, isOeffentlich = false, isVk2 = false, openDocumentInApp }: PressemappeTabProps) {
   const galStammdaten: any = (() => {
     if (isVk2) {
       const v = loadVk2Stammdaten()?.verein || {}
@@ -74,8 +76,6 @@ export default function PressemappeTab({ onBack, storyForPr, isOeffentlich = fal
   }
 
   const druckePressemappe = () => {
-    const win = window.open('', '_blank')
-    if (!win) return
     const werkHtml = selectedWerke.map((aw: any) => `
       <div style="display:inline-block;width:160px;margin:8px;vertical-align:top;text-align:center">
         ${aw.image
@@ -86,7 +86,8 @@ export default function PressemappeTab({ onBack, storyForPr, isOeffentlich = fal
         ${aw.price ? `<div style="font-size:0.8rem;color:#555;font-weight:600">€ ${Number(aw.price).toLocaleString('de-AT')}</div>` : ''}
       </div>`).join('')
     const today = new Date().toLocaleDateString('de-DE', { day: '2-digit', month: 'long', year: 'numeric' })
-    win.document.write(`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Pressemappe – ${gName}</title>
+    const title = `Pressemappe – ${gName}`
+    const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>${title}</title>
 <style>
   body{font-family:'Helvetica Neue',sans-serif;color:#1a1a1a;margin:0;padding:0}
   .page{max-width:210mm;margin:0 auto;padding:20mm 18mm;box-sizing:border-box}
@@ -122,9 +123,11 @@ export default function PressemappeTab({ onBack, storyForPr, isOeffentlich = fal
 
   <div class="footer">${gName} · Pressemappe · Stand ${today}</div>
 </div>
-<script>window.onload=()=>{window.print();window.onafterprint=()=>window.close()}</script>
-</body></html>`)
-    win.document.close()
+</body></html>`
+    openPrintableHtmlDocument(html, title, {
+      openInApp: openDocumentInApp,
+      autoPrint: !openDocumentInApp,
+    })
   }
 
   return (

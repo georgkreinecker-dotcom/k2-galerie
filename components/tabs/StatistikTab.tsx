@@ -7,6 +7,7 @@ import {
   resolveArtistLabelForGalerieStatistik,
   type KuenstlerFallbackNamen,
 } from '../../src/utils/artworkArtistDisplay'
+import { openPrintableHtmlDocument, type OpenDocumentInAppFn } from '../../src/utils/openPrintableHtmlDocument'
 
 const s = WERBEUNTERLAGEN_STIL
 /** Eine klare Grünnuance für Geldbeträge auf hellem Hintergrund (Admin-Stil) */
@@ -30,6 +31,8 @@ interface StatistikTabProps {
   isVk2?: boolean
   /** Lizenz-Mandant (?tenantId=): gleiche Key-Ebene wie Shop/Kassa. */
   dynamicTenantId?: string | null
+  /** In-App-Viewer mit „← Zurück“ (Standard Admin – wichtig auf Mobil). */
+  openDocumentInApp?: OpenDocumentInAppFn
 }
 
 export default function StatistikTab({
@@ -42,6 +45,7 @@ export default function StatistikTab({
   isOeffentlich = false,
   isVk2 = false,
   dynamicTenantId = null,
+  openDocumentInApp,
 }: StatistikTabProps) {
   const soldStorageKey = getShopSoldArtworksKey(!!isOeffentlich, !!isVk2, dynamicTenantId || undefined)
   const ordersStorageKey = getShopOrdersKey(!!isOeffentlich, !!isVk2, dynamicTenantId || undefined)
@@ -164,13 +168,10 @@ export default function StatistikTab({
       ? '<h2 style="font-size:1.1rem;margin:0 0 0.5rem">📋 Verkaufsliste</h2><p style="color:#666;margin:0">Keine Verkäufe erfasst.</p>'
       : `<h2 style="font-size:1.1rem;margin:0 0 0.5rem">📋 Verkaufsliste</h2><p class="meta">${new Date().toLocaleDateString('de-DE')} · ${alleVerkaufe.length} Verkauf/Verkäufe · Summe € ${summe.toFixed(2)}</p><table><thead><tr><th>#</th><th>Datum</th><th>Nr.</th><th>Titel</th><th style="text-align:right">Preis</th></tr></thead><tbody>${rows}</tbody></table><p class="summe">Gesamtumsatz: € ${summe.toFixed(2)}</p>`
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Verkaufs- und Lagerstatistik</title><style>body{font-family:system-ui,sans-serif;padding:1.5rem;max-width:900px;margin:0 auto}h1{font-size:1.35rem;margin-bottom:0.75rem}table{width:100%;border-collapse:collapse;font-size:0.9rem}th,td{padding:0.5rem 0.75rem;border:1px solid #ddd;text-align:left}th{background:#f5f5f5;font-weight:700}.summe{font-weight:700;font-size:1rem;margin-top:0.75rem}.meta{color:#666;font-size:0.85rem;margin-bottom:0.75rem}@media print{body{padding:0.5rem}}</style></head><body><h1>Verkaufs- und Lagerstatistik</h1><p style="color:#666;font-size:0.85rem;margin-bottom:1rem">Stand: ${new Date().toLocaleDateString('de-DE')}</p>${lagerBlock}${verkaufsBlock}</body></html>`
-    const w = window.open('', '_blank')
-    if (w) {
-      try { w.focus() } catch (_) {}
-      w.document.write(html)
-      w.document.close()
-      setTimeout(() => w.print(), 300)
-    }
+    openPrintableHtmlDocument(html, 'Verkaufs- und Lagerstatistik', {
+      openInApp: openDocumentInApp,
+      autoPrint: !openDocumentInApp,
+    })
   }
 
   const preise = soldWerke.map((a: any) => a.price || 0).filter((p: number) => p > 0)

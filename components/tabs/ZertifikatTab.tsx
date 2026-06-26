@@ -2,6 +2,7 @@ import React, { useMemo } from 'react'
 import { WERBEUNTERLAGEN_STIL } from '../../src/config/marketingWerbelinie'
 import { loadStammdaten, loadVk2Stammdaten } from '../../src/utils/stammdatenStorage'
 import { readKuenstlerFallbackGalerieKarten, resolveArtistLabelForGalerieStatistik } from '../../src/utils/artworkArtistDisplay'
+import { openPrintableHtmlDocument, type OpenDocumentInAppFn } from '../../src/utils/openPrintableHtmlDocument'
 
 const s = WERBEUNTERLAGEN_STIL
 
@@ -12,6 +13,8 @@ interface ZertifikatTabProps {
   isVk2?: boolean
   /** Dieselbe Liste wie Werkkatalog (Admin-State, Bilder aufgelöst). */
   allArtworks: any[]
+  /** In-App-Viewer mit „← Zurück“ (Standard Admin – wichtig auf Mobil). */
+  openDocumentInApp?: OpenDocumentInAppFn
 }
 
 /**
@@ -24,6 +27,7 @@ export default function ZertifikatTab({
   isOeffentlich = false,
   isVk2 = false,
   allArtworks: artworksFromParent,
+  openDocumentInApp,
 }: ZertifikatTabProps) {
   const kuenstlerFb = useMemo(
     () => readKuenstlerFallbackGalerieKarten(isOeffentlich, isVk2),
@@ -65,8 +69,6 @@ export default function ZertifikatTab({
 
   const druckeZertifikat = (artwork: any) => {
     const artistLabel = artistLabelForPrint(artwork)
-    const win = window.open('', '_blank')
-    if (!win) return
     const imgHtml = artwork.image
       ? `<div style="text-align:center;margin-bottom:20px"><img src="${artwork.image}" style="max-width:260px;max-height:220px;object-fit:contain;border:1px solid #ccc;border-radius:4px" /></div>`
       : '<div style="width:260px;height:180px;border:1px dashed #ccc;border-radius:4px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;color:#999;font-size:0.9rem">Kein Foto</div>'
@@ -83,7 +85,8 @@ export default function ZertifikatTab({
       { label: 'Galerie', value: gName + (gCity ? `, ${gCity}` : '') },
       { label: 'Zertifikat ausgestellt', value: certDate },
     ]
-    win.document.write(`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Echtheitszertifikat – ${artwork.title || artwork.number}</title>
+    const title = `Echtheitszertifikat – ${artwork.title || artwork.number}`
+    const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>${title}</title>
 <style>
   body { font-family: 'Georgia', serif; background: #fff; color: #1a1a1a; margin: 0; padding: 0; }
   .page { width: 148mm; min-height: 210mm; padding: 18mm 16mm; box-sizing: border-box; margin: 0 auto; border: 2px solid #b8a060; position: relative; }
@@ -118,9 +121,11 @@ export default function ZertifikatTab({
   </div>
   <div class="footer">${gName}${gCity ? ` · ${gCity}` : ''} · ${certDate}</div>
 </div>
-<script>window.onload=()=>{window.print();window.onafterprint=()=>window.close()}</script>
-</body></html>`)
-    win.document.close()
+</body></html>`
+    openPrintableHtmlDocument(html, title, {
+      openInApp: openDocumentInApp,
+      autoPrint: !openDocumentInApp,
+    })
   }
 
   return (
