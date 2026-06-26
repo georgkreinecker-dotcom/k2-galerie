@@ -26,6 +26,12 @@ import {
 } from '../utils/zettelPilotOeffentlichPrefill'
 import { getShopOrdersKey, getShopSoldArtworksKey } from '../utils/shopContextKeys'
 import { getArtworkLagerInfo } from '../utils/artworkLagerStatus'
+import {
+  buildGalerieSoldDisplayContext,
+  filterArtworksForGalerieView,
+  getSoldArtworksDisplayDaysFromGalerieStammdaten,
+} from '../utils/galerieSoldDisplay'
+import { fetchKassaSnapshotAndMergeLocal } from '../utils/kassaServerSync'
 import { readKuenstlerFallbackGalerieKarten, resolveArtistLabelForGalerieStatistik } from '../utils/artworkArtistDisplay'
 import { reportMarketingAttributionLanding } from '../utils/marketingAttribution'
 import { resolveOek2PublicGalleryVisitTenantId } from '../utils/publicGalleryVisitTenant'
@@ -278,6 +284,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
   })()
   
   const [artworks, setArtworks] = useState<any[]>(initialArtworks)
+  const [kassaSoldSyncTick, setKassaSoldSyncTick] = useState(0)
   const [filter, setFilter] = useState<Filter>(initialFilter || 'alle')
   const [cartCount, setCartCount] = useState(0)
   /** ök2: Sparte aus Stammdaten (eine) – für Kategorie-Dropdown und entryType beim mobilen Neues Werk; oben wegen useMemo categoriesWithArtworks */
@@ -309,6 +316,36 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
       setFilter('alle')
     }
   }, [filter, categoriesWithArtworks])
+
+  /** K2: Verkaufsstand vom Server + lokal (iPad-Kasse → Galerie zeigt „Verkauft“ + Frist). */
+  useEffect(() => {
+    if (musterOnly || vk2) return
+    let cancelled = false
+    const soldKey = getShopSoldArtworksKey(false, false)
+    const ordersKey = getShopOrdersKey(false, false)
+    const pullKassa = () => {
+      void fetchKassaSnapshotAndMergeLocal(false, false).then((r) => {
+        if (!cancelled && r.success) setKassaSoldSyncTick((t) => t + 1)
+      })
+    }
+    pullKassa()
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') pullKassa()
+    }
+    const onArtworks = () => setKassaSoldSyncTick((t) => t + 1)
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === soldKey || e.key === ordersKey) setKassaSoldSyncTick((t) => t + 1)
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('artworks-updated', onArtworks)
+    window.addEventListener('storage', onStorage)
+    return () => {
+      cancelled = true
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('artworks-updated', onArtworks)
+      window.removeEventListener('storage', onStorage)
+    }
+  }, [musterOnly, vk2])
 
   // Willkommens-Banner (Erster Entwurf): von WillkommenPage oder EntdeckenPage mit Namen → einmalig anzeigen
   const [willkommenName, setWillkommenName] = useState<string | null>(null)
@@ -1691,16 +1728,17 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
 
     try {
       const soldKey = getShopSoldArtworksKey(!!musterOnly, !!vk2)
-      const soldData = localStorage.getItem(soldKey)
-      if (soldData) {
-        const soldArtworks = JSON.parse(soldData)
-        if (Array.isArray(soldArtworks)) {
-          const isSold = soldArtworks.some((a: any) => a && a.number === artwork.number)
-          if (isSold) {
-            alert('Dieses Werk ist bereits verkauft.')
-            return false
-          }
-        }
+      const ordersKey = getShopOrdersKey(!!musterOnly, !!vk2)
+      const soldList = JSON.parse(localStorage.getItem(soldKey) || '[]')
+      const ordersList = JSON.parse(localStorage.getItem(ordersKey) || '[]')
+      const lager = getArtworkLagerInfo(
+        artwork,
+        Array.isArray(soldList) ? soldList : [],
+        Array.isArray(ordersList) ? ordersList : []
+      )
+      if (lager.isAusverkauft) {
+        alert('Dieses Werk ist bereits verkauft.')
+        return false
       }
     } catch (_) {}
 
@@ -2429,10 +2467,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
             filter: filter
           })
           
-          // K2: Verkaufte Werke nach soldArtworksDisplayDays ausblenden (0 = sofort in History)
+          // K2: Verkaufte Werke – eine Quelle (Kasse + Frist aus Stammdaten)
           let soldDisplayDays = 30
-          const soldMap: Map<string, string> = new Map()
-          const soldStatusMap: Map<string, { isSoldOut: boolean; isPartiallySold: boolean }> = new Map()
           const soldArtworksKey = getShopSoldArtworksKey(musterOnly, vk2)
           const ordersKey = getShopOrdersKey(musterOnly, vk2)
           let soldList: any[] = []
@@ -2440,19 +2476,11 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
           if (!musterOnly) {
             try {
               const gal = localStorage.getItem('k2-stammdaten-galerie')
-              if (gal) {
-                const g = JSON.parse(gal)
-                if (typeof g.soldArtworksDisplayDays === 'number') soldDisplayDays = g.soldArtworksDisplayDays
-              }
+              soldDisplayDays = getSoldArtworksDisplayDaysFromGalerieStammdaten(gal)
               const soldRaw = localStorage.getItem(soldArtworksKey)
               if (soldRaw) {
                 const arr = JSON.parse(soldRaw)
-                if (Array.isArray(arr)) {
-                  soldList = arr
-                  arr.forEach((a: any) => {
-                    if (a?.number != null) soldMap.set(String(a.number), a.soldAt || '')
-                  })
-                }
+                if (Array.isArray(arr)) soldList = arr
               }
               const ordersRaw = localStorage.getItem(ordersKey)
               if (ordersRaw) {
@@ -2461,59 +2489,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
               }
             } catch (_) {}
           }
-          currentArtworks.forEach((artwork: any) => {
-            const num = artwork?.number != null ? String(artwork.number) : (artwork?.id != null ? String(artwork.id) : '')
-            if (!num) return
-            const lager = getArtworkLagerInfo(artwork, soldList, ordersList)
-            soldStatusMap.set(num, { isSoldOut: lager.isAusverkauft, isPartiallySold: lager.isTeilverkauft })
-            if (!soldMap.get(num)) {
-              let newestOrderDate = ''
-              for (const o of ordersList) {
-                if (!o || !Array.isArray(o.items)) continue
-                const hasItem = o.items.some((it: any) => String(it?.number ?? '') === num)
-                if (!hasItem) continue
-                const od = String(o.date || '')
-                if (od && (!newestOrderDate || new Date(od).getTime() > new Date(newestOrderDate).getTime())) newestOrderDate = od
-              }
-              if (newestOrderDate) soldMap.set(num, newestOrderDate)
-            }
-          })
-          const filtered = currentArtworks.filter((artwork) => {
-            if (!artwork) return false
-            if (filter === 'alle') {
-              // K2: verkaufte Werke nach Ablauf aus Galerie-Ansicht ausblenden
-              if (!musterOnly && soldMap.size > 0) {
-                const num = artwork.number != null ? String(artwork.number) : (artwork.id != null ? String(artwork.id) : '')
-                const soldAt = num ? soldMap.get(num) : null
-                const soldStatus = num ? soldStatusMap.get(num) : null
-                if (soldAt && soldStatus?.isSoldOut) {
-                  if (soldDisplayDays === 0) return false
-                  const cutoff = Date.now() - soldDisplayDays * 24 * 60 * 60 * 1000
-                  if (new Date(soldAt).getTime() < cutoff) return false
-                }
-              }
-              return true
-            }
-            // WICHTIG: Prüfe ob artwork.category existiert und mit filter übereinstimmt
-            if (!artwork.category) {
-              console.warn('⚠️ Werk ohne category:', artwork.number || artwork.id)
-              return false
-            }
-            let include = artwork.category === filter
-            if (include && !musterOnly && soldMap.size > 0) {
-              const num = artwork.number != null ? String(artwork.number) : (artwork.id != null ? String(artwork.id) : '')
-              const soldAt = num ? soldMap.get(num) : null
-              const soldStatus = num ? soldStatusMap.get(num) : null
-              if (soldAt && soldStatus?.isSoldOut) {
-                if (soldDisplayDays === 0) include = false
-                else {
-                  const cutoff = Date.now() - soldDisplayDays * 24 * 60 * 60 * 1000
-                  if (new Date(soldAt).getTime() < cutoff) include = false
-                }
-              }
-            }
-            return include
-          })
+          void kassaSoldSyncTick
+          const soldCtx = buildGalerieSoldDisplayContext(currentArtworks, soldList, ordersList, soldDisplayDays)
+          const filtered = filterArtworksForGalerieView(currentArtworks, soldCtx, filter, musterOnly)
           // Bei „alle Kategorien“: Kategorie für Kategorie, innerhalb jeder Kategorie Nummern fortlaufend (nicht M/K/M gemischt).
           const filteredArtworks =
             filter === 'alle'
@@ -2562,7 +2540,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
                 let isReserved = false
                 let reservedFor = ''
                 const artworkNum = artwork?.number != null ? String(artwork.number) : (artwork?.id != null ? String(artwork.id) : '')
-                const soldStatus = artworkNum ? soldStatusMap.get(artworkNum) : null
+                const soldStatus = artworkNum ? soldCtx.soldStatusByArtworkKey.get(artworkNum) : null
                 if (soldStatus) {
                   isSold = soldStatus.isSoldOut
                   isPartiallySold = soldStatus.isPartiallySold

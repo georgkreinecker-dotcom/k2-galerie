@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { flyerEventBogenUrl } from '../config/navigation'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { parseArtworkPriceEurFromWork } from '../utils/parseArtworkPriceEur'
-import { getShopSoldArtworksKey } from '../utils/shopContextKeys'
+import { getShopOrdersKey, getShopSoldArtworksKey } from '../utils/shopContextKeys'
+import { isArtworkAusverkauftForShop } from '../utils/artworkLagerStatus'
 
 type TenantGalleryArtwork = {
   number?: string
@@ -197,14 +198,13 @@ export function TenantHomepageTemplate(props: TenantHomepageTemplateProps) {
     !!selectedArtwork &&
     isTenantArtworkShopPurchasable(selectedArtwork, selectedPrice)
   const isSelectedSold = useMemo(() => {
-    const num = String(selectedArtwork?.number || '').trim()
-    if (!num) return false
+    if (!selectedArtwork) return false
     try {
       const soldKey = getShopSoldArtworksKey(false, false, props.tenantId)
-      const soldRaw = localStorage.getItem(soldKey)
-      const sold = soldRaw ? JSON.parse(soldRaw) : []
-      if (!Array.isArray(sold)) return false
-      return sold.some((a: { number?: string }) => a && String(a.number || '').trim() === num)
+      const ordersKey = getShopOrdersKey(false, false, props.tenantId)
+      const soldList = JSON.parse(localStorage.getItem(soldKey) || '[]')
+      const ordersList = JSON.parse(localStorage.getItem(ordersKey) || '[]')
+      return isArtworkAusverkauftForShop(selectedArtwork, soldList, ordersList)
     } catch {
       return false
     }
@@ -224,16 +224,12 @@ export function TenantHomepageTemplate(props: TenantHomepageTemplateProps) {
     }
     try {
       const soldKey = getShopSoldArtworksKey(false, false, props.tenantId)
-      const soldData = localStorage.getItem(soldKey)
-      if (soldData) {
-        const soldArtworks = JSON.parse(soldData)
-        if (Array.isArray(soldArtworks)) {
-          const isSold = soldArtworks.some((a: { number?: string }) => a && a.number === artwork.number)
-          if (isSold) {
-            alert('Dieses Werk ist bereits verkauft.')
-            return
-          }
-        }
+      const ordersKey = getShopOrdersKey(false, false, props.tenantId)
+      const soldList = JSON.parse(localStorage.getItem(soldKey) || '[]')
+      const ordersList = JSON.parse(localStorage.getItem(ordersKey) || '[]')
+      if (isArtworkAusverkauftForShop(artwork, soldList, ordersList)) {
+        alert('Dieses Werk ist bereits verkauft.')
+        return
       }
     } catch {
       /* ignore */

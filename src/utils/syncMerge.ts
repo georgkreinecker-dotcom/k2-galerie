@@ -195,7 +195,8 @@ function getCanonicalK2PrefixedVariants(v: any): string[] {
  * - Hat das Item eine kanonische K2-Nummer → nur präfixierte Varianten (inkl. 30/0030), keine reinen Ziffern.
  * - Sonst (Legacy/Altformate) → volle Key-Varianten inkl. Ziffern-Fallback.
  */
-function getKeysForLookup(a: any, getKey: (x: any) => string | undefined = DEFAULT_GET_KEY): string[] {
+/** Lookup-Keys für Werk-Abgleich (z. B. K2-M-0031 ↔ K2-M-31) – eine Quelle für Merge und Verkauf. */
+export function getKeysForLookup(a: any, getKey: (x: any) => string | undefined = DEFAULT_GET_KEY): string[] {
   const main = getKey(a)
   const uid = String(a?.uid ?? '').trim()
   const keys = new Set<string>()

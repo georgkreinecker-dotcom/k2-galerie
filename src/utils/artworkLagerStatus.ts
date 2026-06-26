@@ -2,6 +2,7 @@
  * Lager / Verkauf – Anzeige aus Werk + Verkaufsliste (Kasse).
  * Eine Quelle für Karten und „Werk bearbeiten“.
  */
+import { getKeysForLookup } from './syncMerge'
 
 export type ArtworkLagerCardVariant = 'verfuegbar' | 'teilweise' | 'ausverkauft'
 
@@ -19,6 +20,19 @@ export type ArtworkLagerInfo = {
 
 export function getArtworkNumberKey(artwork: { number?: string; id?: string }): string {
   return String(artwork?.number ?? artwork?.id ?? '').trim()
+}
+
+/** Gleiches Werk? UID wenn vorhanden, sonst Nummern-Varianten (K2-M-0031 ↔ K2-M-31). */
+export function soldEntryMatchesArtwork(
+  artwork: { number?: string; id?: string; uid?: string },
+  entry: { number?: string; artworkUid?: string }
+): boolean {
+  const uid = String(artwork?.uid ?? '').trim()
+  const entryUid = String(entry?.artworkUid ?? '').trim()
+  if (uid && entryUid && uid === entryUid) return true
+  const artKeys = new Set(getKeysForLookup(artwork))
+  const entryKeys = getKeysForLookup({ number: entry?.number })
+  return entryKeys.some((k) => artKeys.has(k))
 }
 
 function parseQuantityRemaining(artwork: { quantity?: number | string | null }): number {
@@ -51,7 +65,7 @@ export function sumSoldFromListForArtwork(
   const arr = Array.isArray(soldList) ? soldList : []
   let sum = 0
   for (const e of arr) {
-    if (!e || String((e as any).number ?? '').trim() !== num) continue
+    if (!e || !soldEntryMatchesArtwork(artwork, e as { number?: string; artworkUid?: string })) continue
     const sq = (e as any).soldQuantity
     if (sq != null && Number(sq) > 0) sum += Number(sq)
     else sum += 1
@@ -83,12 +97,20 @@ export function sumSoldFromOrdersForArtwork(
     if (!Array.isArray(items)) continue
     for (const it of items) {
       if (!it) continue
-      const inum = String((it as any).number ?? '').trim()
-      if (inum !== num) continue
+      if (!soldEntryMatchesArtwork(artwork, { number: (it as any).number })) continue
       sum += orderLineQuantity(it as { quantity?: unknown })
     }
   }
   return sum
+}
+
+/** Warenkorb / Galerie: blockieren wenn ausverkauft (Kasse + Orders, Nummernvarianten). */
+export function isArtworkAusverkauftForShop(
+  artwork: { number?: string; id?: string; uid?: string; quantity?: number | string | null },
+  soldList: unknown,
+  ordersList?: unknown
+): boolean {
+  return getArtworkLagerInfo(artwork, soldList, ordersList ?? []).isAusverkauft
 }
 
 export function getArtworkLagerInfo(
@@ -125,9 +147,12 @@ export function getArtworkLagerInfo(
 function entryMatchesNumber(
   e: { number?: string; artworkUid?: string },
   artworkNumber: string,
-  _artworkUid?: string
+  artworkUid?: string
 ): boolean {
-  return String(e?.number ?? '').trim() === artworkNumber.trim()
+  return soldEntryMatchesArtwork(
+    { number: artworkNumber, uid: artworkUid },
+    { number: e?.number, artworkUid: e?.artworkUid }
+  )
 }
 
 /**
@@ -183,9 +208,12 @@ function orderLineSubtotalEurForRecalc(item: { price?: unknown; quantity?: unkno
 function orderItemMatchesForRevert(
   it: { number?: unknown; artworkUid?: unknown; quantity?: unknown },
   artworkNumber: string,
-  _artworkUid?: string
+  artworkUid?: string
 ): boolean {
-  return String((it as any)?.number ?? '').trim() === artworkNumber.trim()
+  return soldEntryMatchesArtwork(
+    { number: artworkNumber, uid: artworkUid },
+    { number: String((it as any)?.number ?? ''), artworkUid: String((it as any)?.artworkUid ?? '') }
+  )
 }
 
 /**

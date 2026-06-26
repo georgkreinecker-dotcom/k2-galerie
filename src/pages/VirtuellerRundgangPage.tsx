@@ -4,6 +4,8 @@ import { PROJECT_ROUTES } from '../config/navigation'
 import { getGalerieImages } from '../config/pageContentGalerie'
 import { loadStammdaten } from '../utils/stammdatenStorage'
 import { readArtworksRawByKey } from '../utils/artworksStorage'
+import { isArtworkAusverkauftForShop } from '../utils/artworkLagerStatus'
+import { getShopOrdersKey, getShopSoldArtworksKey } from '../utils/shopContextKeys'
 import '../App.css'
 
 /** Werke laden über Artworks-Schicht (Sportwagen: eine Quelle). */
@@ -77,16 +79,16 @@ const VirtuellerRundgangPage = () => {
     }
 
     try {
-      const soldData = localStorage.getItem('k2-sold-artworks')
-      if (soldData) {
-        const soldArtworks = JSON.parse(soldData)
-        if (Array.isArray(soldArtworks) && soldArtworks.some((a: any) => a && a.number === artwork.number)) {
-          alert('Dieses Werk wurde bereits verkauft.')
-          return
-        }
+      const soldKey = getShopSoldArtworksKey(false, false)
+      const ordersKey = getShopOrdersKey(false, false)
+      const soldList = JSON.parse(localStorage.getItem(soldKey) || '[]')
+      const ordersList = JSON.parse(localStorage.getItem(ordersKey) || '[]')
+      if (isArtworkAusverkauftForShop(artwork, soldList, ordersList)) {
+        alert('Dieses Werk wurde bereits verkauft.')
+        return
       }
-    } catch (error) {
-      // Ignoriere Fehler
+    } catch {
+      /* ignore */
     }
 
     try {

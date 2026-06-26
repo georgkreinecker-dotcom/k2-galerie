@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   getArtworkLagerInfo,
+  isArtworkAusverkauftForShop,
   revertOneOrderUnitForArtwork,
   revertOneSoldUnitInList,
   sumSoldFromListForArtwork,
@@ -58,6 +59,14 @@ describe('artworkLagerStatus', () => {
   it('sumSoldFromList: soldQuantity optional counts as 1', () => {
     const s = sumSoldFromListForArtwork({ number: 'A' }, [{ number: 'A', soldAt: 'x' }])
     expect(s).toBe(1)
+  })
+
+  it('Nummernvariante: Verkauf unter K2-M-31 zählt für Werk K2-M-0031', () => {
+    const sold = [{ number: 'K2-M-31', soldAt: '2026-04-27', soldQuantity: 1 }]
+    const info = getArtworkLagerInfo({ number: 'K2-M-0031', quantity: 1 }, sold)
+    expect(info.soldSumFromList).toBe(1)
+    expect(info.isAusverkauft).toBe(true)
+    expect(isArtworkAusverkauftForShop({ number: 'K2-M-0031', quantity: 1 }, sold, [])).toBe(true)
   })
 
   it('Verkauf zählt bei gleicher Werknummer auch wenn artworkUid nach Sync abweicht', () => {

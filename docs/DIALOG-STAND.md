@@ -1,8 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **Pause** – Georg: Schluss für heute (28.05.26). Nächster Einstieg: Mission Control / Google-Ads P1 oder offener Commit BoardMind-Entfernung prüfen.
+**Was wir JETZT tun:** **Fertig** – Verkaufte Werke (K2): eine Quelle `galerieSoldDisplay` + Kassa-Sync Galerie ↔ Server. Georg kann in Galerie/Vorschau testen (Verkauf iPad → Badge „Verkauft“ auf Mac nach Tab-Wechsel).
 
-**Einordnung:** BoardMind/Andreas-Projekt aus Repo entfernt (Route, SmartPanel, Monorepo, Tests). Agentur-Korrespondenz bleibt unter Schreibtisch + K2 Agentur Tab **Agentur-Partner** – keine extra HTML-Seiten für Antwort-Mail gewünscht.
+**Einordnung:** Sportwagenmodus – `artworkLagerStatus` + `galerieSoldDisplay` für Anzeige/Frist/Ausblenden; `kassaServerSync` für geräteübergreifend; Warenkorb-Block überall `isArtworkAusverkauftForShop` (Galerie-Vorschau, Virtueller Rundgang, Lizenz-Homepage).
+
+**Letzter Stand:** 26.06.26 – **Verkaufte Werke fertig:** `galerieSoldDisplay.ts`, GalerieVorschauPage (Kassa-Pull bei Start/Sichtbar/Verkauf), Admin `scheduleKassaUploadToServer` nach manuellem Verkauf, Nummernvarianten-Abgleich exportiert. **qs:local** grün. **Commit:** _(nach Push eintragen)_ ✅ **main**
 
 **Letzter Stand:** 28.05.26 – **Schluss für heute:** BoardMind/Andreas aus K2-Repo entfernt; Agentur-Mail-HTMLs nicht gebaut (nicht gewünscht). Nächster Schritt: Commit+Push prüfen falls noch lokal.
 

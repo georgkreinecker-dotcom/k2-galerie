@@ -174,7 +174,7 @@ import { safeReload } from '../src/utils/env'
 import { shareBlobAsFile } from '../src/utils/sharePrintFile'
 import { compressImageForStorage } from '../src/utils/compressImageForStorage'
 import { setKassabuchLizenzStufe } from '../src/utils/kassabuchStorage'
-import { uploadKassaSnapshotToServer, fetchKassaSnapshotAndMergeLocal } from '../src/utils/kassaServerSync'
+import { uploadKassaSnapshotToServer, fetchKassaSnapshotAndMergeLocal, scheduleKassaUploadToServer } from '../src/utils/kassaServerSync'
 import { processImageForSave } from '../src/utils/imageProcessingTool'
 import { applyServerDataToLocal, preserveLocalImageData, preserveStorageImageRefs } from '../src/utils/syncMerge'
 import { clearAdminUnlock } from '../src/utils/adminUnlockStorage'
@@ -12805,6 +12805,9 @@ ${'='.repeat(60)}
         soldAt: new Date().toISOString()
       })
       localStorage.setItem(soldKey, JSON.stringify(soldArtworks))
+      if (!tenant.isOeffentlich && !tenant.isVk2) {
+        scheduleKassaUploadToServer(false, false)
+      }
     } else {
       alert(`⚠️ Werk ${artworkNumber} ist bereits als verkauft markiert.`)
       setShowSaleModal(false)
