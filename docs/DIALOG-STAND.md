@@ -1,10 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **Fertig** – Verkaufte Werke (K2): eine Quelle `galerieSoldDisplay` + Kassa-Sync Galerie ↔ Server. Georg kann in Galerie/Vorschau testen (Verkauf iPad → Badge „Verkauft“ auf Mac nach Tab-Wechsel).
+**Was wir JETZT tun:** **Fertig** – Admin-Dokumente am Handy: überall **In-App-Viewer** mit **„← Zurück“** (Statistik, Katalog, Zertifikat, Presse, Newsletter, VK2-Listen, PDF-Export). Georg testet am Handy: Statistik → Verkaufs- und Lagerstatistik → Zurück.
 
-**Einordnung:** Sportwagenmodus – `artworkLagerStatus` + `galerieSoldDisplay` für Anzeige/Frist/Ausblenden; `kassaServerSync` für geräteübergreifend; Warenkorb-Block überall `isArtworkAusverkauftForShop` (Galerie-Vorschau, Virtueller Rundgang, Lizenz-Homepage).
+**Einordnung:** Sportwagenmodus `openDocumentInApp` / `openPrintableHtmlDocument` – ein Standard statt Popup-Tab ohne Ausstieg. Commit: **a5939e3d** auf main.
 
-**Letzter Stand:** 26.06.26 – **Verkaufte Werke fertig:** `galerieSoldDisplay.ts`, GalerieVorschauPage (Kassa-Pull bei Start/Sichtbar/Verkauf), Admin `scheduleKassaUploadToServer` nach manuellem Verkauf, Nummernvarianten-Abgleich exportiert. **qs:local** grün. **Commit:** _(nach Push eintragen)_ ✅ **main**
+**Vorher (erledigt):** Verkaufte Werke (K2): `galerieSoldDisplay` + Kassa-Sync.
+
+**Letzter Stand:** 26.06.26 – **Verkaufte Werke fertig:** `galerieSoldDisplay.ts`, GalerieVorschauPage (Kassa-Pull bei Start/Sichtbar/Verkauf), Admin `scheduleKassaUploadToServer` nach manuellem Verkauf, Nummernvarianten-Abgleich exportiert. **qs:local** grün. **Commit:** `2d6a916d` ✅ **main**
 
 **Letzter Stand:** 28.05.26 – **Schluss für heute:** BoardMind/Andreas aus K2-Repo entfernt; Agentur-Mail-HTMLs nicht gebaut (nicht gewünscht). Nächster Schritt: Commit+Push prüfen falls noch lokal.
 
