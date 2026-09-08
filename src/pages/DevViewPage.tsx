@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react'
 import { Link, useSearchParams, useNavigate, useLocation } from 'react-router-dom'
-import { PROJECT_ROUTES, PLATFORM_ROUTES, getAllProjectIds, isBareK2GalerieApfHubSearch } from '../config/navigation'
+import { PROJECT_ROUTES, PLATFORM_ROUTES, getAllProjectIds, isBareK2GalerieApfHubSearch, HUNDRED_GENERATION_ROUTE, HUNDRED_GENERATION_FLAECHE_ROUTE } from '../config/navigation'
 import { usePersistentBoolean } from '../hooks/usePersistentState'
 import { checkMobileUpdates } from '../utils/supabaseClient'
 import { filterK2ArtworksOnly, downloadAllDeveloperVollbackupsSequentially } from '../utils/autoSave'
@@ -35,6 +35,8 @@ import K2AgenturPlattformPage from './K2AgenturPlattformPage'
 import K2WeltStrategiePage from './K2WeltStrategiePage'
 import K2MarktPage from './K2MarktPage'
 import K2MarktOberflaechePage from './K2MarktOberflaechePage'
+import HundredGenerationPage from './HundredGenerationPage'
+import HundredGenerationFlaechePage from './HundredGenerationFlaechePage'
 import K2SoftwareentwicklungPage from './K2SoftwareentwicklungPage'
 import PromoVideoProduktionPage from './PromoVideoProduktionPage'
 import PromoRunwayPackPage from './PromoRunwayPackPage'
@@ -536,6 +538,8 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       case 'kampagne': return PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie
       case 'k2-welt-strategie': return PROJECT_ROUTES['k2-galerie'].k2WeltStrategie
       case 'k2-markt': return PROJECT_ROUTES['k2-markt'].home
+      case '100-generation': return HUNDRED_GENERATION_ROUTE
+      case '100-generation-flaeche': return HUNDRED_GENERATION_FLAECHE_ROUTE
       case 'mission-control': return PLATFORM_ROUTES.missionControl
       case 'presse':
       case 'oeffentlichkeitsarbeit':
@@ -1145,6 +1149,8 @@ end tell`
     { id: 'mobile-connect', name: 'Mobile verbinden', component: MobileConnectPage },
     { id: 'admin-einstellungen', name: 'Admin – Einstellungen & Backup', component: ScreenshotExportAdmin },
     { id: 'k2-markt', name: 'K2 Markt', component: K2MarktOberflaechePage },
+    { id: '100-generation', name: '100 Generationen – Keramik', component: HundredGenerationPage },
+    { id: '100-generation-flaeche', name: '100 Generationen – Fläche', component: HundredGenerationFlaechePage },
     { id: 'presse', name: 'Events, Medien & Öffentlichkeit (K2)', component: ScreenshotExportAdmin },
     { id: 'handbuch', name: 'Handbuch', component: K2TeamHandbuchPage },
     { id: 'handbuch-galerie', name: 'Handbuch K2 Galerie', component: K2GalerieHandbuchPage },

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import '../App.css'
-import { PLATFORM_ROUTES, MOK2_ROUTE, PROJECT_ROUTES } from '../config/navigation'
+import { PLATFORM_ROUTES, MOK2_ROUTE, PROJECT_ROUTES, HUNDRED_GENERATION_ROUTE } from '../config/navigation'
 import { getProjectCards } from '../config/projectsDisplay'
 
 const projects = getProjectCards()
@@ -16,6 +16,46 @@ export default function ProjectsPage() {
           </div>
           <Link to={PLATFORM_ROUTES.home} className="meta">← Zur Plattform</Link>
         </header>
+
+        {/* 100 Generationen – künstlerisches Projekt */}
+        <div
+          style={{
+            marginBottom: '2rem',
+            padding: '1.5rem 1.75rem',
+            background: 'linear-gradient(135deg, rgba(161, 98, 7, 0.18) 0%, rgba(69, 46, 20, 0.22) 100%)',
+            border: '1px solid rgba(212, 160, 23, 0.4)',
+            borderRadius: 16,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+          }}
+        >
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+            <div>
+              <h2 style={{ margin: '0 0 0.35rem', fontSize: '1.25rem', color: '#f0d78c', fontWeight: 600 }}>100 Generationen</h2>
+              <p style={{ margin: 0, fontSize: '0.95rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>
+                Chaos &amp; Code – skulpturale Keramikserie. Metamorphose des Materials. Ausstellungskonzept und Manifest.
+              </p>
+            </div>
+            <Link
+              to={HUNDRED_GENERATION_ROUTE}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.75rem 1.5rem',
+                background: 'linear-gradient(135deg, #a16207 0%, #78350f 100%)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 12,
+                fontSize: '1.05rem',
+                textDecoration: 'none',
+                fontWeight: 600,
+                boxShadow: '0 2px 12px rgba(161, 98, 7, 0.35)',
+              }}
+            >
+              Konzept öffnen →
+            </Link>
+          </div>
+        </div>
 
         {/* K2 Markt – schöner Zugangsbutton zur Kreativwerkstatt */}
         <div

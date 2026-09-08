@@ -6,7 +6,7 @@
  * - Zusatzeinträge (z. B. „Öffentliche K2 Galerie“): in extraCards in getProjectCards() ergänzen.
  */
 
-import { PROJECT_ROUTES, getAllProjectIds, type ProjectId, K2_GALERIE_APF_EINSTIEG } from './navigation'
+import { PROJECT_ROUTES, getAllProjectIds, type ProjectId, K2_GALERIE_APF_EINSTIEG, HUNDRED_GENERATION_ROUTE } from './navigation'
 
 /** Vercel: APf-Kacheln mit ?apf=1, sonst landet man auf Entdecken */
 const APF_Q = '?apf=1' as const
@@ -18,6 +18,7 @@ export const PROJECT_COLORS: Record<string, string> = {
   vk2: '#e67a2a', // K2-Familie: Orange (Hausherr) – VK2 = Mieter nutzt K2-Design
   'k2-familie': '#0d9488', // Türkis/Grün – Familie, Wachstum, Verbindung
   'k2-markt': '#22c55e', // Grün – K2 Markt (eigenständig, Datenquelle ök2)
+  '100-generation': '#a16207', // Ocker / Ton – künstlerische Keramikserie
 }
 
 /** Fallback-Palette für Projekte ohne Eintrag in PROJECT_COLORS */
@@ -95,6 +96,14 @@ export function getProjectCards(): ProjectCard[] {
       description: 'Kurz erklärt: Stammbaum, Homepage-Gefühl, dann ein Klick zur Familien-App.',
       to: PROJECT_ROUTES['k2-familie'].willkommen,
       color: PROJECT_COLORS['k2-familie'],
+      status: 'in-progress',
+    },
+    {
+      id: '100-generation',
+      title: '100 Generationen',
+      description: 'Chaos & Code – zwei Kapitel: Keramik (Volumen) und Fläche (Bild). Ausstellungskonzept und Manifest.',
+      to: HUNDRED_GENERATION_ROUTE,
+      color: PROJECT_COLORS['100-generation'],
       status: 'in-progress',
     },
   ]

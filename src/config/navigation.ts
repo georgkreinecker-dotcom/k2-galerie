@@ -8,6 +8,15 @@ import { PRODUCT_BRAND_NAME } from './tenantConfig'
 /** Einstieg Vertriebs-Plattform (mök2) – eigener Bereich, nur indirekt mit App-Entwicklung verbunden */
 export const MOK2_ROUTE = '/mok2'
 
+/**
+ * Künstlerisches Projekt „100 Generationen“ – Ausstellungskonzept Chaos & Code.
+ * Eigenständig, nicht Teil der K2-Galerie-Software-Produktlinie.
+ */
+export const HUNDRED_GENERATION_ROUTE = '/projects/100-generation' as const
+
+/** Parallel-Konzept für bildnerische Künstler:innen – Fläche & Code */
+export const HUNDRED_GENERATION_FLAECHE_ROUTE = '/projects/100-generation/flaeche' as const
+
 /** Willkommensseite für Werbung/Flyer: Zugangsbereich (Anmelden / Zur Ansicht / Erster Entwurf) */
 export const WILLKOMMEN_ROUTE = '/willkommen'
 

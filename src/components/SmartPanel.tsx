@@ -6,7 +6,7 @@ const HANDBUCH_DOC_QUERY = 'doc' as const
 const HANDBUCH_DOC_KOMPASS = '24-TEXTE-BRIEFE-KOMPASS.md'
 const HANDBUCH_DOC_ZENTRALE_THEMEN = '16-ZENTRALE-THEMEN-FUER-NUTZER.md'
 const HANDBUCH_DOC_NOTFALL = '23-NOTFALL-CHECKLISTE.md'
-import { PROJECT_ROUTES, PLATFORM_ROUTES, MOK2_ROUTE, ENTDECKEN_ROUTE } from '../config/navigation'
+import { PROJECT_ROUTES, PLATFORM_ROUTES, MOK2_ROUTE, ENTDECKEN_ROUTE, HUNDRED_GENERATION_ROUTE, HUNDRED_GENERATION_FLAECHE_ROUTE } from '../config/navigation'
 import { K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
 import { prepareFreshOek2VisitorSession } from '../utils/oek2FreshStart'
 import { openAppOrHttpUrlInNewTab } from '../utils/safeExternalUrl'
@@ -98,6 +98,8 @@ const DEFAULT_ITEMS: PanelItem[] = [
   { id: 'kampagne', label: '📁 Kampagne Marketing-Strategie', page: 'kampagne', url: PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie, color: 'linear-gradient(135deg, rgba(95,251,241,0.15), rgba(60,200,190,0.08))', border: 'rgba(95,251,241,0.35)' },
   { id: 'k2-welt-strategie', label: '📐 K2-Welt – Strategie & Portfolio', page: 'k2-welt-strategie', url: PROJECT_ROUTES['k2-galerie'].k2WeltStrategie, color: 'linear-gradient(135deg, rgba(129,140,248,0.2), rgba(99,102,241,0.12))', border: 'rgba(129,140,248,0.45)' },
   { id: 'k2-markt', label: '🎯 K2 Markt', page: 'k2-markt', url: PROJECT_ROUTES['k2-markt'].home, color: 'linear-gradient(135deg, rgba(34,197,94,0.15), rgba(22,163,74,0.08))', border: 'rgba(34,197,94,0.35)' },
+  { id: '100-generation', label: '🏺 Keramik – Volumen', page: '100-generation', url: HUNDRED_GENERATION_ROUTE, color: 'linear-gradient(135deg, rgba(161,98,7,0.22), rgba(120,53,15,0.12))', border: 'rgba(212,160,23,0.45)' },
+  { id: '100-generation-flaeche', label: '🖼️ Fläche – Bild', page: '100-generation-flaeche', url: HUNDRED_GENERATION_FLAECHE_ROUTE, color: 'linear-gradient(135deg, rgba(143,168,200,0.2), rgba(71,85,105,0.12))', border: 'rgba(143,168,200,0.45)' },
   { id: 'presse', label: '📰 Events, Medien & Öffentlichkeit (K2)', page: 'presse', url: '/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit', color: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(37,99,235,0.08))', border: 'rgba(59,130,246,0.35)' },
   { id: 'notizen', label: '📝 Notizen', page: 'notizen', url: PROJECT_ROUTES['k2-galerie'].notizen, color: 'linear-gradient(135deg, rgba(196,181,253,0.15), rgba(139,92,246,0.08))', border: 'rgba(196,181,253,0.35)' },
   { id: 'handbuch', label: '🧠 Handbuch', page: 'handbuch', url: '/k2team-handbuch', color: 'rgba(95,251,241,0.08)', border: 'rgba(95,251,241,0.2)' },
@@ -129,7 +131,7 @@ function loadOrder(): string[] {
       return mergePanelOrderWithDefaults(base)
     }
   } catch { /* ignore */ }
-  return ['k2', 'oek2', 'k2-familie', 'vk2', 'mok2', 'k2-agentur', 'kampagne', 'k2-welt-strategie', 'k2-markt', 'presse', 'notizen', 'handbuch']
+  return ['k2', 'oek2', 'k2-familie', 'vk2', 'mok2', 'k2-agentur', 'kampagne', 'k2-welt-strategie', 'k2-markt', '100-generation', '100-generation-flaeche', 'presse', 'notizen', 'handbuch']
 }
 
 function saveOrder(order: string[]) {
@@ -158,6 +160,7 @@ const MAPPEN = [
   },
   { id: 'galerie', label: 'K2 Galerie', icon: '🎨', itemIds: [...GALERIE_ITEM_IDS] },
   { id: 'k2-markt', label: 'K2 Markt', icon: '🏪', itemIds: ['k2-markt'] },
+  { id: '100-generation', label: '100 Generationen', icon: '🏺', itemIds: ['100-generation', '100-generation-flaeche'] },
   { id: 'familie', label: 'K2 Familie', icon: '👨‍👩‍👧‍👦', itemIds: ['k2-familie'] },
   { id: 'notizen', label: 'Notizen', icon: '📝', itemIds: ['notizen'] },
   { id: 'vermaechtnis', label: 'Vermächtnis', icon: '🏛️', itemIds: ['handbuch'] },
@@ -168,7 +171,7 @@ function loadMappenOpen(): Record<string, boolean> {
     const v = localStorage.getItem(MAPPEN_OPEN_KEY)
     if (v) return JSON.parse(v)
   } catch { /* ignore */ }
-  return { 'ready-to-go': true, 'promo-video': true, 'k2-welt-strategie-mappe': true, galerie: true, 'k2-markt': true, familie: true, notizen: true, vermaechtnis: true }
+  return { 'ready-to-go': true, 'promo-video': true, 'k2-welt-strategie-mappe': true, galerie: true, 'k2-markt': true, '100-generation': true, familie: true, notizen: true, vermaechtnis: true }
 }
 
 function saveMappenOpen(open: Record<string, boolean>) {
@@ -1249,6 +1252,61 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                               border: `1px solid ${item.border}`,
                               borderRadius: '8px',
                               color: '#22c55e',
+                              fontWeight: 600,
+                              fontSize: '0.88rem',
+                              textAlign: 'center',
+                              textDecoration: 'none',
+                              fontFamily: 'inherit',
+                              display: 'block',
+                            }}
+                          >
+                            {item.label}
+                          </Link>
+                        )}
+                      </div>
+                    ))}
+                  </>
+                )}
+                {mappe.id === '100-generation' && (
+                  <>
+                    <p style={{ margin: '0 0 0.4rem 0', fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)', lineHeight: 1.45 }}>
+                      Künstlerisches Projekt – Chaos &amp; Code. Zwei Kapitel: Keramik (Volumen) und Fläche (Bild). Nicht K2-Software.
+                    </p>
+                    {items.map(item => (
+                      <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        {onNavigate ? (
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => onNavigate(item.page)}
+                            onKeyDown={e => e.key === 'Enter' && onNavigate(item.page)}
+                            style={{
+                              flex: 1,
+                              padding: '0.65rem 0.85rem',
+                              background: item.color,
+                              border: `1px solid ${item.border}`,
+                              borderRadius: '8px',
+                              color: '#f0d78c',
+                              fontWeight: 600,
+                              fontSize: '0.88rem',
+                              textAlign: 'center',
+                              cursor: 'pointer',
+                              fontFamily: 'inherit',
+                              display: 'block',
+                            }}
+                          >
+                            {item.label}
+                          </span>
+                        ) : (
+                          <Link
+                            to={item.url}
+                            style={{
+                              flex: 1,
+                              padding: '0.65rem 0.85rem',
+                              background: item.color,
+                              border: `1px solid ${item.border}`,
+                              borderRadius: '8px',
+                              color: '#f0d78c',
                               fontWeight: 600,
                               fontSize: '0.88rem',
                               textAlign: 'center',

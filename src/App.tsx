@@ -30,6 +30,8 @@ import K2MarktPage from './pages/K2MarktPage'
 import K2MarktOberflaechePage from './pages/K2MarktOberflaechePage'
 import K2MarktSchichtPage from './pages/K2MarktSchichtPage'
 import K2MarktTorPage from './pages/K2MarktTorPage'
+import HundredGenerationPage from './pages/HundredGenerationPage'
+import HundredGenerationFlaechePage from './pages/HundredGenerationFlaechePage'
 import BenutzerHandbuchPage from './pages/BenutzerHandbuchPage'
 import Vk2HandbuchPage from './pages/Vk2HandbuchPage'
 import MobileConnectPage from './pages/MobileConnectPage'
@@ -115,7 +117,7 @@ import ProspektK2GaleriePage from './pages/ProspektK2GaleriePage'
 import PresseEinladungK2GaleriePage from './pages/PresseEinladungK2GaleriePage'
 import MeinBereichPage from './pages/MeinBereichPage'
 import KundenPage from './pages/KundenPage'
-import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_ROUTE, AGB_ROUTE, ENTDECKEN_ROUTE, shouldRedirectRootUrlToEntdecken, PILOT_SCHREIBEN_ROUTE, MEIN_BEREICH_ROUTE, KREATIVWERKSTATT_ROUTE, K2_GALERIE_APF_EINSTIEG } from './config/navigation'
+import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_ROUTE, AGB_ROUTE, ENTDECKEN_ROUTE, shouldRedirectRootUrlToEntdecken, PILOT_SCHREIBEN_ROUTE, MEIN_BEREICH_ROUTE, KREATIVWERKSTATT_ROUTE, K2_GALERIE_APF_EINSTIEG, HUNDRED_GENERATION_ROUTE, HUNDRED_GENERATION_FLAECHE_ROUTE } from './config/navigation'
 import { getPageMeta, applyPageMeta } from './config/seoPageMeta'
 import { applyK2FamiliePwaBranding } from './utils/k2FamiliePwaBranding'
 import { TenantProvider } from './context/TenantContext'
@@ -863,6 +865,9 @@ function App() {
       <Route path={AGB_ROUTE} element={<AGBPage />} />
       {/* Projekt-Routen – spezifische Pfade VOR /projects/:projectId, damit VK2/K2-Markt nicht abgefangen werden */}
       <Route path={PLATFORM_ROUTES.projects} element={<ProjectsPage />} />
+      {/* Künstlerisches Projekt 100 Generationen – eigenständig */}
+      <Route path={HUNDRED_GENERATION_ROUTE} element={<HundredGenerationPage />} />
+      <Route path={HUNDRED_GENERATION_FLAECHE_ROUTE} element={<HundredGenerationFlaechePage />} />
       {/* K2 Markt – eigenständiges Projekt (Datenquelle ök2). Homepage = Arbeitsoberfläche = manuell arbeiten; netzfähig wie ök2 und K2 Familie */}
       <Route path={PROJECT_ROUTES['k2-markt'].home} element={<K2MarktSchichtPage />} />
       <Route path={PROJECT_ROUTES['k2-markt'].uebersicht} element={<K2MarktOberflaechePage />} />

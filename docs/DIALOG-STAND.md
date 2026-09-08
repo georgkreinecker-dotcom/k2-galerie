@@ -1,12 +1,14 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **Fertig** – Admin-Dokumente am Handy: überall **In-App-Viewer** mit **„← Zurück“** (Statistik, Katalog, Zertifikat, Presse, Newsletter, VK2-Listen, PDF-Export). Georg testet am Handy: Statistik → Verkaufs- und Lagerstatistik → Zurück.
+**Was wir JETZT tun:** **100 Generationen** – zwei Kapitel (Keramik + Fläche) in der APf.
 
-**Einordnung:** Sportwagenmodus `openDocumentInApp` / `openPrintableHtmlDocument` – ein Standard statt Popup-Tab ohne Ausstieg. Commit: **a5939e3d** auf main.
+**Einordnung:** Eigenständiges Kunstprojekt (nicht K2-Software). Keramik = Volumen; Fläche = Parallel-Konzept für bildnerische Künstler:innen.
 
-**Vorher (erledigt):** Verkaufte Werke (K2): `galerieSoldDisplay` + Kassa-Sync.
+**Nächster Schritt:** Georg öffnet Smart Panel → Mappe **100 Generationen** → Keramik / Fläche; optional Vita Bruder / Materialliste.
 
-**Letzter Stand:** 26.06.26 – **Verkaufte Werke fertig:** `galerieSoldDisplay.ts`, GalerieVorschauPage (Kassa-Pull bei Start/Sichtbar/Verkauf), Admin `scheduleKassaUploadToServer` nach manuellem Verkauf, Nummernvarianten-Abgleich exportiert. **qs:local** grün. **Commit:** `2d6a916d` ✅ **main**
+**Letzter Stand:** 08.09.26 – Kapitel **Fläche** angebunden (Route, Smart Panel, DevView, Kapitel-Wechsler).
+
+---
 
 **Letzter Stand:** 28.05.26 – **Schluss für heute:** BoardMind/Andreas aus K2-Repo entfernt; Agentur-Mail-HTMLs nicht gebaut (nicht gewünscht). Nächster Schritt: Commit+Push prüfen falls noch lokal.
 
