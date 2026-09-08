@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Georg öffnet Smart Panel → Mappe **100 Generationen** → Keramik / Fläche; optional Vita Bruder / Materialliste.
 
-**Letzter Stand:** 08.09.26 – Kapitel **Fläche** angebunden (Route, Smart Panel, DevView, Kapitel-Wechsler).
+**Letzter Stand:** 08.09.26 – Kapitel **Fläche** angebunden (Route, Smart Panel, DevView, Kapitel-Wechsler). **Commit:** `f675c5e4` ✅ **main**
 
 ---
 
