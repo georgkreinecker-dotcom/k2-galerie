@@ -201,6 +201,24 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
             >
               🖨️ Plakat A3 (vom Flyer-Master abgeleitet)
             </Link>
+            <a
+              href="/plakate-druckformate-k2/plakatstaender-a1-heute-offen-k2.html"
+              style={{ padding: '0.5rem 0.85rem', background: '#b54a1e', border: '1px solid #8a3a18', borderRadius: 8, textDecoration: 'none', color: '#fff', fontWeight: 700 }}
+            >
+              🪧 Plakatständer A1 · Heute offen
+            </a>
+            <a
+              href="/plakate-druckformate-k2/plakatstaender-a1-heute-offen-k2-pfeil-links.html"
+              style={{ padding: '0.5rem 0.85rem', background: '#ca8a04', border: '1px solid #a16207', borderRadius: 8, textDecoration: 'none', color: '#1c1a18', fontWeight: 700 }}
+            >
+              ◀ A1 · Pfeil links
+            </a>
+            <a
+              href="/plakate-druckformate-k2/plakatstaender-a1-heute-offen-k2-pfeil-rechts.html"
+              style={{ padding: '0.5rem 0.85rem', background: '#ca8a04', border: '1px solid #a16207', borderRadius: 8, textDecoration: 'none', color: '#1c1a18', fontWeight: 700 }}
+            >
+              A1 · Pfeil rechts ▶
+            </a>
           </div>
 
           {/* Deckblatt */}

@@ -179,6 +179,13 @@ const BEREICHE: Bereich[] = [
         showDruckWeiterleiten: true,
       },
       {
+        id: 'beschwerde-schmiedstrassenfest-schlossergasse',
+        titel: 'Beschwerde Schmiedstraßenfest',
+        zweck: 'Gemeinde Eferding · Schlossergasse · PDF',
+        to: '/texte-schreibtisch/beschwerde-schmiedstrassenfest-schlossergasse-eferding.pdf',
+        showDruckWeiterleiten: true,
+      },
+      {
         id: 'einladung',
         titel: 'Einladung 24.–26.04.',
         zweck: 'Freunde · Mail & WhatsApp',
@@ -227,6 +234,27 @@ const BEREICHE: Bereich[] = [
         titel: 'Plakat A3',
         zweck: 'Eröffnung · A3',
         to: flyerEventBogenUrl({ mode: 'a3', tenant: 'k2', fromAdminDerivation: true }),
+      },
+      {
+        id: 'plakatstaender-a1-heute-offen',
+        titel: 'Plakatständer A1 · Heute offen',
+        zweck: 'Straße · große Schrift · Drucken',
+        to: '/plakate-druckformate-k2/plakatstaender-a1-heute-offen-k2.html',
+        showDruckWeiterleiten: true,
+      },
+      {
+        id: 'plakatstaender-a1-heute-offen-pfeil-links',
+        titel: 'Plakatständer A1 · Pfeil links',
+        zweck: 'Gelber Pfeil links · Straße · Drucken',
+        to: '/plakate-druckformate-k2/plakatstaender-a1-heute-offen-k2-pfeil-links.html',
+        showDruckWeiterleiten: true,
+      },
+      {
+        id: 'plakatstaender-a1-heute-offen-pfeil-rechts',
+        titel: 'Plakatständer A1 · Pfeil rechts',
+        zweck: 'Gelber Pfeil rechts · Straße · Drucken',
+        to: '/plakate-druckformate-k2/plakatstaender-a1-heute-offen-k2-pfeil-rechts.html',
+        showDruckWeiterleiten: true,
       },
       {
         id: 'druck-besucherliste-vn-nn-interesse',
@@ -384,6 +412,13 @@ const BEREICHE: Bereich[] = [
         titel: 'Kampagnenplan P1 · Orientierung',
         zweck: 'Google Ads · nur lokal · Drucken',
         to: '/texte-schreibtisch/k2-agentur-kampagnenplan-orientierung.html',
+        showDruckWeiterleiten: true,
+      },
+      {
+        id: 'dba-kgm-solution',
+        titel: 'DBA-Erklärung kgm solution',
+        zweck: 'Google Ads · Marke ↔ Georg · PDF',
+        to: '/texte-schreibtisch/dba-kgm-solution-georg-kreinecker.html',
         showDruckWeiterleiten: true,
       },
       {

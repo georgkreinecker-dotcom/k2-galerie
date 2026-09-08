@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **100 Generationen** – zwei Kapitel (Keramik + Fläche) in der APf.
+**Was wir JETZT tun:** Session beendet (08.09.26 Abend). Nächster Einstieg: **100 Generationen** (Keramik + Fläche) – optional Vita Bruder / Materialliste.
 
-**Einordnung:** Eigenständiges Kunstprojekt (nicht K2-Software). Keramik = Volumen; Fläche = Parallel-Konzept für bildnerische Künstler:innen.
+**Einordnung:** Eigenständiges Kunstprojekt in der APf; zwei Kapitel fertig angebunden. Parallel lagen lokal noch Schreibtisch-/Plakat-/PDF-Export-Arbeiten – mit Session-Ende gesichert.
 
-**Nächster Schritt:** Georg öffnet Smart Panel → Mappe **100 Generationen** → Keramik / Fläche; optional Vita Bruder / Materialliste.
+**Nächster Schritt:** Von Georg – Mappe **100 Generationen** öffnen oder Vita Bruder / Materialliste.
 
-**Letzter Stand:** 08.09.26 – Kapitel **Fläche** angebunden (Route, Smart Panel, DevView, Kapitel-Wechsler). **Commit:** `f675c5e4` ✅ **main**
+**Letzter Stand:** 08.09.26 (Abend) – **Schluss für heute:** Kapitel Fläche auf main (`f675c5e4`); restliche lokale Arbeit (Plakate A1, Schreibtisch, PDF-Export) mitcommittet.
 
 ---
 

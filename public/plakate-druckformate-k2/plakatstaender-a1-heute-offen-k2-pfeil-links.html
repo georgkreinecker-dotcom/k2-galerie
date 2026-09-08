@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="A1 Plakatständer K2 Galerie – Heute offen · gelber Pfeil links" />
+  <title>K2 Galerie – Plakatständer A1 · Heute offen · Pfeil links</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Source+Sans+3:wght@400;600;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --accent: #c45c2a;
+      --accent-deep: #8f3d18;
+      --bg1: #1a120c;
+      --paper: #fdf8f3;
+      --text: #fff8f2;
+      --muted: #d4a574;
+      --werk-bg: url('/img/k2/werk-K2-M-0001.jpg');
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #c8c0b6;
+      color: var(--text);
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .hinweis-screen {
+      font-size: 10pt;
+      color: #3d352c;
+      text-align: center;
+      padding: 10px 16px;
+      background: #e8e2d8;
+      line-height: 1.45;
+    }
+    .hinweis-screen a { color: #8f3d18; font-weight: 600; }
+    .druck-btn {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 0.45rem 1rem;
+      border: none;
+      border-radius: 8px;
+      background: #b54a1e;
+      color: #fff;
+      font-weight: 800;
+      font-size: 10pt;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .wrap {
+      display: flex;
+      justify-content: center;
+      padding: 16px;
+    }
+    .a1 {
+      width: 594mm;
+      height: 841mm;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.28);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      background: var(--bg1);
+    }
+    .bg-foto {
+      position: absolute;
+      inset: 0;
+      background-image: var(--werk-bg);
+      background-size: cover;
+      background-position: center 42%;
+      background-repeat: no-repeat;
+    }
+    .bg-overlay {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg,
+          rgba(26, 18, 12, 0.82) 0%,
+          rgba(26, 18, 12, 0.38) 38%,
+          rgba(26, 18, 12, 0.42) 58%,
+          rgba(26, 18, 12, 0.9) 100%);
+      pointer-events: none;
+    }
+    .kopf {
+      position: relative;
+      z-index: 2;
+      background: linear-gradient(145deg, rgba(196, 92, 42, 0.96) 0%, rgba(143, 61, 24, 0.96) 100%);
+      text-align: center;
+      padding: 14mm 16mm 12mm;
+    }
+    .kopf .marke {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 15mm;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      line-height: 1.15;
+      margin: 0;
+      color: var(--paper);
+    }
+    .kopf .unter {
+      margin: 3mm 0 0;
+      font-size: 6.5mm;
+      font-weight: 600;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: rgba(253, 248, 243, 0.92);
+    }
+    .hero {
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8mm 12mm 10mm;
+      text-align: center;
+    }
+    .heute-offen {
+      margin: 0;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      line-height: 0.88;
+      color: var(--paper);
+      text-shadow:
+        0 4px 24px rgba(0, 0, 0, 0.75),
+        0 2px 0 rgba(0, 0, 0, 0.35);
+    }
+    .heute-offen .zeile {
+      display: block;
+      font-size: 118mm;
+    }
+    .heute-offen .zeile.offen {
+      color: #ffb07a;
+      font-size: 132mm;
+      margin-top: -4mm;
+      text-shadow:
+        0 6px 32px rgba(0, 0, 0, 0.8),
+        0 0 40px rgba(196, 92, 42, 0.45);
+    }
+    .pfeil-gelb {
+      margin: 14mm 0 0;
+      width: 82%;
+      max-width: 480mm;
+      pointer-events: none;
+      filter: drop-shadow(0 8px 22px rgba(0, 0, 0, 0.55));
+    }
+    .pfeil-gelb svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .fuss {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10mm;
+      align-items: end;
+      padding: 10mm 16mm 14mm;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(12, 8, 6, 0.72);
+      backdrop-filter: blur(2px);
+    }
+    .fuss-text {
+      text-align: left;
+    }
+    .fuss-text .adresse {
+      margin: 0 0 4mm;
+      font-size: 11mm;
+      font-weight: 800;
+      line-height: 1.25;
+      color: var(--paper);
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+    }
+    .fuss-text .kontakt {
+      margin: 0;
+      font-size: 8.5mm;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+    .fuss-text .kontakt strong { color: var(--paper); font-weight: 700; }
+    .fuss-text a { color: #ffb07a; text-decoration: none; }
+    .qr {
+      text-align: center;
+    }
+    .qr img {
+      width: 42mm;
+      height: 42mm;
+      display: block;
+      background: #fff;
+      padding: 2mm;
+      border-radius: 3mm;
+    }
+    .qr p {
+      margin: 2mm 0 0;
+      font-size: 5.5mm;
+      color: var(--muted);
+      max-width: 48mm;
+      line-height: 1.3;
+    }
+    .copyright {
+      position: relative;
+      z-index: 2;
+      padding: 0 16mm 8mm;
+      font-size: 4.5mm;
+      color: rgba(212, 165, 116, 0.85);
+      text-align: center;
+      line-height: 1.35;
+      background: rgba(12, 8, 6, 0.72);
+    }
+    @media screen and (max-width: 900px) {
+      .wrap { padding: 8px; overflow-x: auto; }
+      .a1 {
+        width: min(594mm, 100%);
+        height: auto;
+        min-height: 140vw;
+        aspect-ratio: 594 / 841;
+      }
+      .heute-offen .zeile { font-size: 18vw; }
+      .heute-offen .zeile.offen { font-size: 20vw; }
+      .kopf .marke { font-size: 5.5vw; }
+      .kopf .unter { font-size: 2.8vw; }
+      .fuss-text .adresse { font-size: 4vw; }
+      .fuss-text .kontakt { font-size: 3.2vw; }
+      .pfeil-gelb { width: 88%; margin-top: 5vw; }
+    }
+  </style>
+  <link rel="stylesheet" href="/plakate-druckformate-k2/plakatstaender-a1-layout.css" />
+  <link rel="stylesheet" href="/plakate-druckformate-k2/plakatstaender-a1-druck.css" />
+</head>
+<body>
+  <p class="hinweis-screen no-print">
+    <strong>HP / Laser:</strong> grün <strong>Drucken A4</strong> · Dialog: <strong>Farbe</strong> · <strong>Hintergrundgrafiken</strong> an.
+    <a href="/projects/k2-galerie/werbeunterlagen">Werbeunterlagen</a><br />
+    <span class="druck-format-btns">
+      <button type="button" class="druck-btn druck-btn-a4" onclick="druckPlakat('a4')">🖨️ Drucken A4</button>
+      <button type="button" class="druck-btn druck-btn-a1" onclick="druckPlakat('a1')">🖨️ Drucken A1</button>
+    </span>
+  </p>
+
+  <div class="wrap">
+    <div class="a1-print-scale">
+    <article class="a1" aria-label="K2 Galerie Plakatständer Heute offen A1">
+      <div class="bg-foto" aria-hidden="true">
+        <img src="/img/k2/werk-K2-M-0001.jpg" alt="" width="1600" height="1200" decoding="async" fetchpriority="high" />
+      </div>
+      <div class="bg-overlay" aria-hidden="true"></div>
+
+      <header class="kopf">
+        <p class="marke">K2 Galerie Kunst&amp;Keramik</p>
+        <p class="unter">Martina &amp; Georg Kreinecker</p>
+      </header>
+
+      <section class="hero">
+        <h1 class="heute-offen" aria-label="Heute offen">
+          <span class="zeile">Heute</span>
+          <span class="zeile offen">offen</span>
+        </h1>
+        <div class="pfeil-gelb" aria-hidden="true">
+          <svg viewBox="0 0 520 88" xmlns="http://www.w3.org/2000/svg" focusable="false">
+            <path
+              d="M36 44 L148 6 L148 30 L504 30 L504 58 L148 58 L148 82 Z"
+              fill="#FFCC00"
+              stroke="#1a120c"
+              stroke-width="3"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+      </section>
+
+      <footer class="fuss">
+        <div class="fuss-text">
+          <p class="adresse">Schlossergasse 4</p>
+        </div>
+        <div class="qr">
+          <img
+            src="https://api.qrserver.com/v1/create-qr-code/?size=320x320&amp;data=https%3A%2F%2Fk2-galerie.vercel.app%2Fgalerie"
+            width="320"
+            height="320"
+            alt="QR-Code zur K2 Galerie online"
+          />
+          <p>Galerie online</p>
+        </div>
+      </footer>
+
+      <p class="copyright">
+        Copyright © <span id="y"></span> kgm solution · Konzept &amp; Design: kgm solution (G. Kreinecker)
+      </p>
+    </article>
+    </div>
+  </div>
+  <script src="/plakate-druckformate-k2/plakatstaender-a1-druck.js"></script>
+</body>
+</html>

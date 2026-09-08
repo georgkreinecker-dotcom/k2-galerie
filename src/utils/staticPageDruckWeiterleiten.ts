@@ -12,21 +12,32 @@ export function absoluteUrlVonPath(path: string): string {
   return `${window.location.origin}${p}`
 }
 
-export function oeffneDruckdialogFuerUrl(url: string): void {
-  const w = window.open(url, '_blank', 'noopener,noreferrer')
-  if (!w) return
-  w.addEventListener(
-    'load',
-    () => {
-      try {
-        w.focus()
-        w.print()
-      } catch {
-        /* ignore */
-      }
-    },
-    { once: true },
-  )
+/**
+ * Neuer Tab + Druckdialog (wie Etikett/Kassenbon – kein noopener, sonst oft null).
+ * @returns false wenn Pop-up blockiert
+ */
+export function oeffneDruckdialogFuerUrl(url: string): boolean {
+  const mitDruckParam =
+    /\.html(\?|#|$)/i.test(url) && !/[?&]druck=1(?:&|$)/i.test(url)
+      ? `${url}${url.includes('?') ? '&' : '?'}druck=1&format=a4`
+      : url
+  const w = window.open(mitDruckParam, '_blank')
+  if (!w) return false
+  const triggerPrint = () => {
+    try {
+      w.focus()
+      w.print()
+    } catch {
+      /* ignore */
+    }
+  }
+  try {
+    w.addEventListener('load', triggerPrint, { once: true })
+  } catch {
+    /* ignore */
+  }
+  window.setTimeout(triggerPrint, 1200)
+  return true
 }
 
 export async function weiterleitenTitelUrl(title: string, url: string): Promise<'geteilt' | 'kopiert' | 'abgebrochen'> {

@@ -1,0 +1,247 @@
+/* Plakatständer A1 – NUR Druck (Bildschirm = inline-Styles in HTML, unangetastet) */
+
+@page plakat-a1 {
+  size: A1 portrait;
+  margin: 0;
+}
+
+@page plakat-a4 {
+  size: A4 portrait;
+  margin: 0;
+}
+
+/*
+ * HP/Laser: Bildschirm-118mm nie drucken (rangecheck). Nur pt-Größen + A4-Maße.
+ * Farben/Layout wie Bildschirm – kein weißes Kästchen, kein anderes Design.
+ */
+@media print {
+  .hinweis-screen,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #fff !important;
+    margin: 0;
+    padding: 0;
+  }
+
+  .wrap {
+    padding: 0;
+    display: block;
+  }
+
+  .a1-print-scale {
+    margin: 0 auto;
+  }
+
+  .a1 {
+    box-shadow: none !important;
+    transform: none !important;
+    display: block !important;
+  }
+
+  .hero {
+    display: block !important;
+    flex: none !important;
+  }
+
+  .heute-offen,
+  .heute-offen .zeile,
+  .heute-offen .zeile.offen,
+  .fuss-text .adresse,
+  .kopf .marke {
+    text-shadow: none !important;
+    -webkit-text-stroke: 0 !important;
+    paint-order: unset !important;
+  }
+
+  .pfeil-gelb {
+    filter: none !important;
+  }
+
+  .pfeil-gelb svg path {
+    stroke: none !important;
+    fill: #ffcc00 !important;
+  }
+
+  .fuss {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .bg-foto img {
+    filter: none !important;
+    object-fit: cover !important;
+    object-position: center 42% !important;
+  }
+
+  .kopf .marke {
+    font-family: Georgia, 'Times New Roman', serif !important;
+  }
+
+  .kopf .unter,
+  .heute-offen,
+  .fuss-text,
+  .copyright,
+  .qr p {
+    font-family: Arial, Helvetica, 'Helvetica Neue', sans-serif !important;
+  }
+
+  .bg-foto,
+  .bg-foto img,
+  .bg-overlay,
+  .kopf,
+  .hero,
+  .fuss,
+  .heute-offen,
+  .copyright,
+  .pfeil-gelb {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* A4 / HP – Standard (auch ⌘P) */
+  html:not(.print-a1) .a1-print-scale {
+    page: plakat-a4;
+    width: 210mm;
+    height: 297mm;
+    overflow: hidden;
+  }
+
+  html:not(.print-a1) .a1 {
+    width: 210mm;
+    height: 297mm;
+  }
+
+  html:not(.print-a1) .kopf .marke {
+    font-size: 30pt !important;
+  }
+
+  html:not(.print-a1) .kopf .unter {
+    font-size: 8.5pt !important;
+  }
+
+  html:not(.print-a1) .heute-offen .zeile {
+    font-size: 96pt !important;
+    line-height: 0.92 !important;
+  }
+
+  html:not(.print-a1) .heute-offen .zeile.offen {
+    font-size: 108pt !important;
+  }
+
+  html:not(.print-a1) .fuss-text .adresse {
+    font-size: 22pt !important;
+  }
+
+  html:not(.print-a1) .qr img {
+    width: 14.8mm;
+    height: 14.8mm;
+  }
+
+  html:not(.print-a1) .qr p {
+    font-size: 5.5pt;
+  }
+
+  html:not(.print-a1) .copyright {
+    font-size: 4.5pt;
+  }
+
+  /* A1 Plotter */
+  html.print-a1 .a1-print-scale {
+    page: plakat-a1;
+    width: 594mm;
+    height: 841mm;
+    overflow: hidden;
+  }
+
+  html.print-a1 .a1 {
+    width: 594mm;
+    height: 841mm;
+  }
+
+  html.print-a1 .kopf .marke {
+    font-size: 85pt !important;
+  }
+
+  html.print-a1 .kopf .unter {
+    font-size: 24pt !important;
+  }
+
+  html.print-a1 .heute-offen .zeile {
+    font-size: 200pt !important;
+  }
+
+  html.print-a1 .heute-offen .zeile.offen {
+    font-size: 220pt !important;
+  }
+
+  html.print-a1 .fuss-text .adresse {
+    font-size: 62pt !important;
+  }
+
+  /* Grüner Button = explizit A4 */
+  html.print-a4 .a1-print-scale {
+    page: plakat-a4;
+    width: 210mm;
+    height: 297mm;
+    overflow: hidden;
+  }
+
+  html.print-a4 .a1 {
+    width: 210mm;
+    height: 297mm;
+  }
+
+  html.print-a4 .kopf .marke {
+    font-size: 30pt !important;
+  }
+
+  html.print-a4 .kopf .unter {
+    font-size: 8.5pt !important;
+  }
+
+  html.print-a4 .heute-offen .zeile {
+    font-size: 96pt !important;
+    line-height: 0.92 !important;
+  }
+
+  html.print-a4 .heute-offen .zeile.offen {
+    font-size: 108pt !important;
+  }
+
+  html.print-a4 .fuss-text .adresse {
+    font-size: 22pt !important;
+  }
+
+  html.print-a4 .qr img {
+    width: 14.8mm;
+    height: 14.8mm;
+  }
+
+  html.print-a4 .qr p {
+    font-size: 5.5pt;
+  }
+
+  html.print-a4 .copyright {
+    font-size: 4.5pt;
+  }
+}
+
+.druck-format-btns {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.druck-btn-a4 {
+  background: #1a6b3c;
+  order: -1;
+}
+
+.druck-btn-a1 {
+  background: #5c5650;
+}
