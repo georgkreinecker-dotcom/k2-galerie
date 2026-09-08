@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Von Georg – Mappe **100 Generationen** öffnen oder Vita Bruder / Materialliste.
 
-**Letzter Stand:** 08.09.26 (Abend) – **Schluss für heute:** Kapitel Fläche auf main (`f675c5e4`); restliche lokale Arbeit (Plakate A1, Schreibtisch, PDF-Export) mitcommittet.
+**Letzter Stand:** 08.09.26 (Abend) – **Schluss für heute:** Kapitel Fläche auf main (`f675c5e4`); restliche lokale Arbeit (Plakate A1, Schreibtisch, PDF-Export) mitcommittet. **Commit:** `b58c2861` ✅ **main** (Session-Ende-Doku folgt).
 
 ---
 
