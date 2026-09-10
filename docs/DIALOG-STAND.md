@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Entwurfsmappe → Gruppe **Deine Handskizzen** öffnen und drehen/notieren.
 
-**Letzter Stand:** 10.09.26 – 5 Handskizzen + KI-Umsetzungen in Entwurfsmappe.
+**Letzter Stand:** 10.09.26 – 5 Handskizzen + KI-Umsetzungen in Entwurfsmappe. **Commit:** `62a2abe8` ✅ **main**
 
 ---
 
