@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Georg Axt-Anker „Schräg oben“ prüfen; andere Modelle melden falls falsch.
 
-**Letzter Stand:** 10.09.26 – Axt-Anker Schräg-Ansicht korrigiert.
+**Letzter Stand:** 10.09.26 – Axt-Anker Schräg-Ansicht korrigiert. **Commit:** `69b9bf3c` ✅ **main**
 
 ---
 
