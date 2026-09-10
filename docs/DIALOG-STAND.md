@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **100 Generationen – Entwurfsmappe** Axt-Anker Schräg korrigiert.
+**Was wir JETZT tun:** **100 Generationen – Entwurfsmappe** alle Schräg-Ansichten neu (passend zu Vorne/Seite).
 
-**Einordnung:** Schräg oben zeigte falsche Skulptur – durch passende Ansicht ersetzt (Referenz Vorne/Seite).
+**Einordnung:** Georg: Schräg oben war bei allen Modellen eine andere Skulptur – alle 10 mit Referenz neu erzeugt.
 
-**Nächster Schritt:** Georg Axt-Anker „Schräg oben“ prüfen; andere Modelle melden falls falsch.
+**Nächster Schritt:** Entwurfsmappe neu laden, jedes Modell „Schräg oben“ kurz prüfen.
 
-**Letzter Stand:** 10.09.26 – Axt-Anker Schräg-Ansicht korrigiert. **Commit:** `69b9bf3c` ✅ **main**
+**Letzter Stand:** 10.09.26 – Alle Schräg-Ansichten korrigiert.
 
 ---
 
