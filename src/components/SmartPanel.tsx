@@ -99,7 +99,7 @@ const DEFAULT_ITEMS: PanelItem[] = [
   { id: 'k2-welt-strategie', label: '📐 K2-Welt – Strategie & Portfolio', page: 'k2-welt-strategie', url: PROJECT_ROUTES['k2-galerie'].k2WeltStrategie, color: 'linear-gradient(135deg, rgba(129,140,248,0.2), rgba(99,102,241,0.12))', border: 'rgba(129,140,248,0.45)' },
   { id: 'k2-markt', label: '🎯 K2 Markt', page: 'k2-markt', url: PROJECT_ROUTES['k2-markt'].home, color: 'linear-gradient(135deg, rgba(34,197,94,0.15), rgba(22,163,74,0.08))', border: 'rgba(34,197,94,0.35)' },
   { id: '100-generation', label: '🏺 Keramik – Konzept', page: '100-generation', url: HUNDRED_GENERATION_ROUTE, color: 'linear-gradient(135deg, rgba(161,98,7,0.22), rgba(120,53,15,0.12))', border: 'rgba(212,160,23,0.45)' },
-  { id: '100-generation-entwurfsmappe', label: '🗂️ Entwurfsmappe (3D)', page: '100-generation-entwurfsmappe', url: HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE, color: 'linear-gradient(135deg, rgba(212,160,23,0.25), rgba(120,53,15,0.14))', border: 'rgba(212,160,23,0.55)' },
+  { id: '100-generation-entwurfsmappe', label: '🗂️ Entwurfsmappe', page: '100-generation-entwurfsmappe', url: HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE, color: 'linear-gradient(135deg, rgba(212,160,23,0.25), rgba(120,53,15,0.14))', border: 'rgba(212,160,23,0.55)' },
   { id: '100-generation-flaeche', label: '🖼️ Fläche – Bild', page: '100-generation-flaeche', url: HUNDRED_GENERATION_FLAECHE_ROUTE, color: 'linear-gradient(135deg, rgba(143,168,200,0.2), rgba(71,85,105,0.12))', border: 'rgba(143,168,200,0.45)' },
   { id: 'presse', label: '📰 Events, Medien & Öffentlichkeit (K2)', page: 'presse', url: '/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit', color: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(37,99,235,0.08))', border: 'rgba(59,130,246,0.35)' },
   { id: 'notizen', label: '📝 Notizen', page: 'notizen', url: PROJECT_ROUTES['k2-galerie'].notizen, color: 'linear-gradient(135deg, rgba(196,181,253,0.15), rgba(139,92,246,0.08))', border: 'rgba(196,181,253,0.35)' },
@@ -1271,7 +1271,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                 {mappe.id === '100-generation' && (
                   <>
                     <p style={{ margin: '0 0 0.4rem 0', fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)', lineHeight: 1.45 }}>
-                      Chaos &amp; Code. <strong style={{ color: '#f0d78c' }}>Entwurfsmappe</strong> = KI-Bilder + drehbares 3D + Notizen. Konzept und Fläche daneben.
+                      Chaos &amp; Code. <strong style={{ color: '#f0d78c' }}>Entwurfsmappe</strong> = Skizzen + Keramik-Ansichten (Vorne/Seite) + Notizen.
                     </p>
                     {items.map(item => (
                       <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>

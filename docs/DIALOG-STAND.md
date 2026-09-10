@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **100 Generationen – Entwurfsmappe** mit Handskizzen S1–S5.
+**Was wir JETZT tun:** **100 Generationen – Entwurfsmappe** mit Mehransichten (kein Fake-3D).
 
-**Einordnung:** Georgs Skizzen + KI-Keramikfotos + drehbares 3D in der APf.
+**Einordnung:** Grobes Lowpoly-3D entfernt (nicht brauchbar). Stattdessen Vorne/Seite/(Hinten) als echte Keramik-Fotos.
 
-**Nächster Schritt:** Entwurfsmappe → Gruppe **Deine Handskizzen** öffnen und drehen/notieren.
+**Nächster Schritt:** Entwurfsmappe öffnen – Ansichten tippen; später echtes 3D nur mit Scan/GLB.
 
-**Letzter Stand:** 10.09.26 – 5 Handskizzen + KI-Umsetzungen in Entwurfsmappe. **Commit:** `62a2abe8` ✅ **main**
+**Letzter Stand:** 10.09.26 – Fake-3D raus, Mehransichten rein.
 
 ---
 

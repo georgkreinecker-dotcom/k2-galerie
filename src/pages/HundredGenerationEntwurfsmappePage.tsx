@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   HUNDRED_GENERATION_FLAECHE_ROUTE,
@@ -13,8 +13,6 @@ import {
   type HundredGenerationModellId,
 } from '../config/hundredGenerationEntwuerfe'
 import '../App.css'
-
-const KeramikModell3D = lazy(() => import('../components/hundredGeneration/KeramikModell3D'))
 
 function loadNotes(): Record<string, string> {
   try {
@@ -36,16 +34,17 @@ function saveNotes(notes: Record<string, string>) {
 }
 
 /**
- * Arbeitsmappe: Handskizze / KI-Bild + drehbares 3D-Konzeptmodell + Notizen.
+ * Arbeitsmappe: Handskizze + Keramik-Ansichten (Vorne/Seite/Hinten) + Notizen.
+ * Kein Fake-Lowpoly-3D – das war nicht brauchbar.
  */
 export default function HundredGenerationEntwurfsmappePage() {
-  const [gruppe, setGruppe] = useState<HundredGenerationEntwurfGruppe>('handskizze')
+  const [gruppe, setGruppe] = useState<HundredGenerationEntwurfGruppe>('serie')
   const gefiltert = useMemo(
     () => HUNDRED_GENERATION_MODELLE.filter((m) => m.gruppe === gruppe),
     [gruppe]
   )
-  const [activeId, setActiveId] = useState<HundredGenerationModellId>('skizze-zwei-tuerme')
-  const [show3d, setShow3d] = useState(true)
+  const [activeId, setActiveId] = useState<HundredGenerationModellId>('chaosgott')
+  const [ansichtIdx, setAnsichtIdx] = useState(0)
   const [notes, setNotes] = useState<Record<string, string>>(() => loadNotes())
 
   useEffect(() => {
@@ -60,8 +59,14 @@ export default function HundredGenerationEntwurfsmappePage() {
   )
 
   useEffect(() => {
+    setAnsichtIdx(0)
+  }, [activeId])
+
+  useEffect(() => {
     saveNotes(notes)
   }, [notes])
+
+  const ansicht = active.ansichten[Math.min(ansichtIdx, active.ansichten.length - 1)]
 
   return (
     <div className="hg-entwurfsmappe">
@@ -82,7 +87,7 @@ export default function HundredGenerationEntwurfsmappePage() {
           font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
         }
         .hg-entwurfsmappe .shell {
-          max-width: 58rem;
+          max-width: 56rem;
           margin: 0 auto;
           padding: 1.15rem 1.15rem 3rem;
         }
@@ -139,46 +144,30 @@ export default function HundredGenerationEntwurfsmappePage() {
           margin: 0 0 1.25rem;
           font-size: 0.98rem;
         }
-        .hg-entwurfsmappe .gruppen {
-          display: flex;
-          gap: 0.5rem;
-          margin: 0 0 0.85rem;
-          font-family: system-ui, sans-serif;
-        }
-        .hg-entwurfsmappe .gruppen button {
-          appearance: none;
-          border: 1px solid var(--hg-line);
-          background: rgba(255,255,255,0.04);
-          color: var(--hg-muted);
-          padding: 0.5rem 0.9rem;
-          border-radius: 8px;
-          cursor: pointer;
-          font-size: 0.85rem;
-        }
-        .hg-entwurfsmappe .gruppen button.is-on {
-          background: rgba(212, 160, 23, 0.22);
-          color: var(--hg-ink);
-          border-color: var(--hg-accent);
-          font-weight: 600;
-        }
-        .hg-entwurfsmappe .model-tabs {
+        .hg-entwurfsmappe .gruppen,
+        .hg-entwurfsmappe .model-tabs,
+        .hg-entwurfsmappe .ansicht-tabs {
           display: flex;
           flex-wrap: wrap;
           gap: 0.45rem;
-          margin: 0 0 1rem;
+          margin: 0 0 0.85rem;
           font-family: system-ui, sans-serif;
         }
-        .hg-entwurfsmappe .model-tabs button {
+        .hg-entwurfsmappe .gruppen button,
+        .hg-entwurfsmappe .model-tabs button,
+        .hg-entwurfsmappe .ansicht-tabs button {
           appearance: none;
           border: 1px solid var(--hg-line);
           background: rgba(255,255,255,0.04);
           color: var(--hg-muted);
-          padding: 0.45rem 0.7rem;
+          padding: 0.45rem 0.75rem;
           border-radius: 8px;
           cursor: pointer;
-          font-size: 0.8rem;
+          font-size: 0.82rem;
         }
-        .hg-entwurfsmappe .model-tabs button.is-on {
+        .hg-entwurfsmappe .gruppen button.is-on,
+        .hg-entwurfsmappe .model-tabs button.is-on,
+        .hg-entwurfsmappe .ansicht-tabs button.is-on {
           background: rgba(212, 160, 23, 0.22);
           color: var(--hg-ink);
           border-color: var(--hg-accent);
@@ -186,16 +175,13 @@ export default function HundredGenerationEntwurfsmappePage() {
         }
         .hg-entwurfsmappe .work {
           display: grid;
-          grid-template-columns: 1fr 1fr;
+          grid-template-columns: 1fr 1.35fr;
           gap: 1rem;
           margin-bottom: 1.25rem;
         }
-        .hg-entwurfsmappe .work.has-skizze {
-          grid-template-columns: 1fr 1fr 1.15fr;
-        }
-        @media (max-width: 980px) {
-          .hg-entwurfsmappe .work,
-          .hg-entwurfsmappe .work.has-skizze { grid-template-columns: 1fr; }
+        .hg-entwurfsmappe .work.solo { grid-template-columns: 1fr; }
+        @media (max-width: 820px) {
+          .hg-entwurfsmappe .work { grid-template-columns: 1fr; }
         }
         .hg-entwurfsmappe .card {
           background: var(--hg-panel);
@@ -223,17 +209,38 @@ export default function HundredGenerationEntwurfsmappePage() {
           color: var(--hg-muted);
           line-height: 1.45;
         }
-        .hg-entwurfsmappe .toggle3d {
+        .hg-entwurfsmappe .thumb-row {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+          margin-top: 0.75rem;
+        }
+        .hg-entwurfsmappe .thumb-row button {
           appearance: none;
-          border: 1px solid var(--hg-line);
-          background: rgba(212, 160, 23, 0.15);
-          color: var(--hg-ink);
-          padding: 0.4rem 0.75rem;
+          border: 2px solid transparent;
+          padding: 0;
           border-radius: 8px;
+          overflow: hidden;
           cursor: pointer;
+          background: #0a0c10;
+          width: 4.5rem;
+        }
+        .hg-entwurfsmappe .thumb-row button.is-on {
+          border-color: var(--hg-accent);
+        }
+        .hg-entwurfsmappe .thumb-row img {
+          width: 100%;
+          aspect-ratio: 3/4;
+          object-fit: cover;
+          display: block;
+        }
+        .hg-entwurfsmappe .thumb-row span {
+          display: block;
           font-family: system-ui, sans-serif;
-          font-size: 0.82rem;
-          margin-bottom: 0.65rem;
+          font-size: 0.65rem;
+          color: var(--hg-muted);
+          padding: 0.25rem;
+          text-align: center;
         }
         .hg-entwurfsmappe textarea {
           width: 100%;
@@ -302,24 +309,24 @@ export default function HundredGenerationEntwurfsmappePage() {
           <Link to={HUNDRED_GENERATION_FLAECHE_ROUTE}>🖼️ Fläche</Link>
         </div>
         <p className="lede">
-          Handskizzen von dir + KI-Umsetzung als Keramikfoto + drehbares 3D.
-          Notizen bleiben auf diesem Mac.
+          Brauchbare Arbeitsansichten: Vorne, Seite (bei Chaosgott auch Hinten).
+          Kein grobes Pseudo-3D mehr – das half nicht zum Formen.
         </p>
 
         <div className="gruppen" role="tablist" aria-label="Gruppen">
-          <button
-            type="button"
-            className={gruppe === 'handskizze' ? 'is-on' : undefined}
-            onClick={() => setGruppe('handskizze')}
-          >
-            Deine Handskizzen
-          </button>
           <button
             type="button"
             className={gruppe === 'serie' ? 'is-on' : undefined}
             onClick={() => setGruppe('serie')}
           >
             Serie Chaos &amp; Code
+          </button>
+          <button
+            type="button"
+            className={gruppe === 'handskizze' ? 'is-on' : undefined}
+            onClick={() => setGruppe('handskizze')}
+          >
+            Deine Handskizzen
           </button>
         </div>
 
@@ -338,7 +345,7 @@ export default function HundredGenerationEntwurfsmappePage() {
           ))}
         </div>
 
-        <div className={`work${active.sketchSrc ? ' has-skizze' : ''}`}>
+        <div className={`work${active.sketchSrc ? '' : ' solo'}`}>
           {active.sketchSrc ? (
             <div className="card">
               <h2>Deine Skizze</h2>
@@ -349,43 +356,47 @@ export default function HundredGenerationEntwurfsmappePage() {
           ) : null}
 
           <div className="card">
-            <h2>KI als Keramik</h2>
-            <a href={active.src} target="_blank" rel="noopener noreferrer">
-              <img src={active.src} alt={active.title} />
+            <h2>Keramik-Ansichten</h2>
+            <div className="ansicht-tabs" role="tablist" aria-label="Ansicht">
+              {active.ansichten.map((a, i) => (
+                <button
+                  key={a.id}
+                  type="button"
+                  className={i === ansichtIdx ? 'is-on' : undefined}
+                  onClick={() => setAnsichtIdx(i)}
+                >
+                  {a.label}
+                </button>
+              ))}
+            </div>
+            <a href={ansicht.src} target="_blank" rel="noopener noreferrer">
+              <img src={ansicht.src} alt={`${active.title} · ${ansicht.label}`} />
             </a>
+            <div className="thumb-row">
+              {active.ansichten.map((a, i) => (
+                <button
+                  key={a.id}
+                  type="button"
+                  className={i === ansichtIdx ? 'is-on' : undefined}
+                  onClick={() => setAnsichtIdx(i)}
+                  aria-label={a.label}
+                >
+                  <img src={a.src} alt="" />
+                  <span>{a.label}</span>
+                </button>
+              ))}
+            </div>
             <p className="hint">
               <strong style={{ color: 'var(--hg-ink)' }}>{active.title}</strong>
               {' · '}
               {active.note}. {active.formHint}
             </p>
           </div>
-
-          <div className="card">
-            <h2>3D drehbar</h2>
-            <button type="button" className="toggle3d" onClick={() => setShow3d((v) => !v)}>
-              {show3d ? '3D ausblenden' : '3D anzeigen'}
-            </button>
-            {show3d ? (
-              <Suspense
-                fallback={
-                  <p className="hint" style={{ minHeight: 280 }}>
-                    3D wird geladen …
-                  </p>
-                }
-              >
-                <KeramikModell3D key={activeId} modelId={activeId} />
-              </Suspense>
-            ) : (
-              <p className="hint">3D ausgeblendet – schont Rechner/Preview.</p>
-            )}
-          </div>
         </div>
 
         <div className="card">
           <h2>Notizen zu diesem Modell</h2>
-          <p className="hint">
-            Bleiben auf diesem Mac gespeichert (Arbeitsnotizen für dich und Bruder).
-          </p>
+          <p className="hint">Bleiben auf diesem Mac (für dich und Bruder).</p>
           <textarea
             value={notes[activeId] ?? ''}
             onChange={(e) =>
@@ -411,7 +422,7 @@ export default function HundredGenerationEntwurfsmappePage() {
         </div>
 
         <footer className="foot">
-          Entwurfsmappe · Handskizzen + KI + 3D-Konzept. Später echte Scans/GLB möglich.
+          Entwurfsmappe · Mehransichten statt Fake-3D. Echtes 3D erst mit Scan/GLB, wenn es so weit ist.
         </footer>
       </div>
     </div>

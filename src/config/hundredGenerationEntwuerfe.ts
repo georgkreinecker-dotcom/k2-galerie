@@ -1,6 +1,7 @@
 /**
- * 100 Generationen – gemeinsame Quelle für KI-Entwürfe (Bild + 3D-Skizze).
+ * 100 Generationen – gemeinsame Quelle für Entwürfe (Bild-Ansichten).
  * Eine Liste, viele Aufrufer (Konzeptseite, Entwurfsmappe).
+ * Kein Fake-3D: brauchbare Mehransichten (Vorne / Seite / ggf. Hinten).
  */
 
 export type HundredGenerationModellId =
@@ -17,15 +18,35 @@ export type HundredGenerationModellId =
 
 export type HundredGenerationEntwurfGruppe = 'serie' | 'handskizze'
 
+export type HundredGenerationAnsicht = {
+  id: 'vorne' | 'seite' | 'hinten'
+  label: string
+  src: string
+}
+
 export type HundredGenerationEntwurf = {
   id: HundredGenerationModellId
   title: string
   note: string
+  /** Hauptansicht (Vorne) – auch als src für Galerien */
   src: string
-  /** Original-Handskizze (optional) */
   sketchSrc?: string
   formHint: string
   gruppe: HundredGenerationEntwurfGruppe
+  ansichten: readonly HundredGenerationAnsicht[]
+}
+
+function views(
+  vorne: string,
+  seite: string,
+  hinten?: string
+): readonly HundredGenerationAnsicht[] {
+  const list: HundredGenerationAnsicht[] = [
+    { id: 'vorne', label: 'Vorne', src: vorne },
+    { id: 'seite', label: 'Seite', src: seite },
+  ]
+  if (hinten) list.push({ id: 'hinten', label: 'Hinten', src: hinten })
+  return list
 }
 
 export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
@@ -36,6 +57,11 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     src: '/100-generation/entwurf-01-chaosgott.png',
     formHint: 'Formlose Masse – Ur-Chaos',
     gruppe: 'serie',
+    ansichten: views(
+      '/100-generation/entwurf-01-chaosgott.png',
+      '/100-generation/entwurf-01-chaosgott-seite.png',
+      '/100-generation/entwurf-01-chaosgott-hinten.png'
+    ),
   },
   {
     id: 'axt-anker',
@@ -44,6 +70,10 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     src: '/100-generation/entwurf-02-axt-anker.png',
     formHint: 'Zeremonial-Silhouette, historischer Anker',
     gruppe: 'serie',
+    ansichten: views(
+      '/100-generation/entwurf-02-axt-anker.png',
+      '/100-generation/entwurf-02-axt-anker-seite.png'
+    ),
   },
   {
     id: 'metamorphose',
@@ -52,6 +82,10 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     src: '/100-generation/entwurf-03-metamorphose.png',
     formHint: 'Übergang: unten roh, oben geordnet',
     gruppe: 'serie',
+    ansichten: views(
+      '/100-generation/entwurf-03-metamorphose.png',
+      '/100-generation/entwurf-03-metamorphose-seite.png'
+    ),
   },
   {
     id: 'code-muster',
@@ -60,6 +94,10 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     src: '/100-generation/entwurf-04-code-muster.png',
     formHint: 'Geschlossenes Muster – Code',
     gruppe: 'serie',
+    ansichten: views(
+      '/100-generation/entwurf-04-code-muster.png',
+      '/100-generation/entwurf-04-code-muster-seite.png'
+    ),
   },
   {
     id: 'drei-elemente',
@@ -68,6 +106,10 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     src: '/100-generation/entwurf-05-drei-elemente.png',
     formHint: 'Drei plastische Teile als Baugruppe',
     gruppe: 'serie',
+    ansichten: views(
+      '/100-generation/entwurf-05-drei-elemente.png',
+      '/100-generation/entwurf-05-drei-elemente-seite.png'
+    ),
   },
   {
     id: 'skizze-zwei-tuerme',
@@ -77,6 +119,10 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     sketchSrc: '/100-generation/skizzen/skizze-01-zwei-tuerme.jpg',
     formHint: 'Schwerer Körper mit Schlaufen, zwei aufrechte Elemente',
     gruppe: 'handskizze',
+    ansichten: views(
+      '/100-generation/aus-skizze-01-zwei-tuerme.png',
+      '/100-generation/aus-skizze-01-zwei-tuerme-seite.png'
+    ),
   },
   {
     id: 'skizze-segel',
@@ -86,6 +132,10 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     sketchSrc: '/100-generation/skizzen/skizze-02-segel.jpg',
     formHint: 'Blubber-Basis, scharfe Segel-Flossen oben',
     gruppe: 'handskizze',
+    ansichten: views(
+      '/100-generation/aus-skizze-02-segel.png',
+      '/100-generation/aus-skizze-02-segel-seite.png'
+    ),
   },
   {
     id: 'skizze-kelch',
@@ -95,6 +145,10 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     sketchSrc: '/100-generation/skizzen/skizze-03-kelch.jpg',
     formHint: 'Bauchiger Fuß, schmaler Hals, V-Öffnung',
     gruppe: 'handskizze',
+    ansichten: views(
+      '/100-generation/aus-skizze-03-kelch.png',
+      '/100-generation/aus-skizze-03-kelch-seite.png'
+    ),
   },
   {
     id: 'skizze-astwerk',
@@ -104,6 +158,10 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     sketchSrc: '/100-generation/skizzen/skizze-04-astwerk.jpg',
     formHint: 'Stamm mit Ästen, Horn und Trompetenöffnung',
     gruppe: 'handskizze',
+    ansichten: views(
+      '/100-generation/aus-skizze-04-astwerk.png',
+      '/100-generation/aus-skizze-04-astwerk-seite.png'
+    ),
   },
   {
     id: 'skizze-zickzack',
@@ -113,6 +171,10 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     sketchSrc: '/100-generation/skizzen/skizze-05-zickzack.jpg',
     formHint: 'Geschachtelte V-/Chevron-Schalen, getürmt',
     gruppe: 'handskizze',
+    ansichten: views(
+      '/100-generation/aus-skizze-05-zickzack.png',
+      '/100-generation/aus-skizze-05-zickzack-seite.png'
+    ),
   },
 ] as const
 
