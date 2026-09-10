@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **100 Generationen – Entwurfsmappe** (3D drehbar + Notizen).
+**Was wir JETZT tun:** **100 Generationen – Entwurfsmappe** mit Handskizzen S1–S5.
 
-**Einordnung:** Eigene Arbeitsmappe in der APf; 3D = Konzeptvolumen (Orbit), kein Scan aus dem KI-PNG.
+**Einordnung:** Georgs Skizzen + KI-Keramikfotos + drehbares 3D in der APf.
 
-**Nächster Schritt:** Georg öffnet Smart Panel → **Entwurfsmappe (3D)**; Modelle drehen, Notizen; später echte GLB möglich.
+**Nächster Schritt:** Entwurfsmappe → Gruppe **Deine Handskizzen** öffnen und drehen/notieren.
 
-**Letzter Stand:** 10.09.26 – Entwurfsmappe mit three.js Orbit-Viewer. **Commit:** `2881bf10` ✅ **main**
+**Letzter Stand:** 10.09.26 – 5 Handskizzen + KI-Umsetzungen in Entwurfsmappe.
 
 ---
 

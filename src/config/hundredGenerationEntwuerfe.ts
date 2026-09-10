@@ -9,14 +9,23 @@ export type HundredGenerationModellId =
   | 'metamorphose'
   | 'code-muster'
   | 'drei-elemente'
+  | 'skizze-zwei-tuerme'
+  | 'skizze-segel'
+  | 'skizze-kelch'
+  | 'skizze-astwerk'
+  | 'skizze-zickzack'
+
+export type HundredGenerationEntwurfGruppe = 'serie' | 'handskizze'
 
 export type HundredGenerationEntwurf = {
   id: HundredGenerationModellId
   title: string
   note: string
   src: string
-  /** Kurz für 3D-Hinweis */
+  /** Original-Handskizze (optional) */
+  sketchSrc?: string
   formHint: string
+  gruppe: HundredGenerationEntwurfGruppe
 }
 
 export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
@@ -26,6 +35,7 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     note: 'Rohmasse, eruptiv',
     src: '/100-generation/entwurf-01-chaosgott.png',
     formHint: 'Formlose Masse – Ur-Chaos',
+    gruppe: 'serie',
   },
   {
     id: 'axt-anker',
@@ -33,6 +43,7 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     note: 'Di Kurugu, abstrahiert',
     src: '/100-generation/entwurf-02-axt-anker.png',
     formHint: 'Zeremonial-Silhouette, historischer Anker',
+    gruppe: 'serie',
   },
   {
     id: 'metamorphose',
@@ -40,6 +51,7 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     note: 'Chaos → Muster',
     src: '/100-generation/entwurf-03-metamorphose.png',
     formHint: 'Übergang: unten roh, oben geordnet',
+    gruppe: 'serie',
   },
   {
     id: 'code-muster',
@@ -47,6 +59,7 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     note: 'Flechtwerk / Ordnung',
     src: '/100-generation/entwurf-04-code-muster.png',
     formHint: 'Geschlossenes Muster – Code',
+    gruppe: 'serie',
   },
   {
     id: 'drei-elemente',
@@ -54,6 +67,52 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     note: 'modulares Volumen',
     src: '/100-generation/entwurf-05-drei-elemente.png',
     formHint: 'Drei plastische Teile als Baugruppe',
+    gruppe: 'serie',
+  },
+  {
+    id: 'skizze-zwei-tuerme',
+    title: 'S1 · Zwei Türme',
+    note: 'aus deiner Handskizze',
+    src: '/100-generation/aus-skizze-01-zwei-tuerme.png',
+    sketchSrc: '/100-generation/skizzen/skizze-01-zwei-tuerme.jpg',
+    formHint: 'Schwerer Körper mit Schlaufen, zwei aufrechte Elemente',
+    gruppe: 'handskizze',
+  },
+  {
+    id: 'skizze-segel',
+    title: 'S2 · Segel',
+    note: 'aus deiner Handskizze',
+    src: '/100-generation/aus-skizze-02-segel.png',
+    sketchSrc: '/100-generation/skizzen/skizze-02-segel.jpg',
+    formHint: 'Blubber-Basis, scharfe Segel-Flossen oben',
+    gruppe: 'handskizze',
+  },
+  {
+    id: 'skizze-kelch',
+    title: 'S3 · Kelch / Flügel',
+    note: 'aus deiner Handskizze',
+    src: '/100-generation/aus-skizze-03-kelch.png',
+    sketchSrc: '/100-generation/skizzen/skizze-03-kelch.jpg',
+    formHint: 'Bauchiger Fuß, schmaler Hals, V-Öffnung',
+    gruppe: 'handskizze',
+  },
+  {
+    id: 'skizze-astwerk',
+    title: 'S4 · Astwerk',
+    note: 'aus deiner Handskizze',
+    src: '/100-generation/aus-skizze-04-astwerk.png',
+    sketchSrc: '/100-generation/skizzen/skizze-04-astwerk.jpg',
+    formHint: 'Stamm mit Ästen, Horn und Trompetenöffnung',
+    gruppe: 'handskizze',
+  },
+  {
+    id: 'skizze-zickzack',
+    title: 'S5 · Zickzack',
+    note: 'aus deiner Handskizze',
+    src: '/100-generation/aus-skizze-05-zickzack.png',
+    sketchSrc: '/100-generation/skizzen/skizze-05-zickzack.jpg',
+    formHint: 'Geschachtelte V-/Chevron-Schalen, getürmt',
+    gruppe: 'handskizze',
   },
 ] as const
 

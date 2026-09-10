@@ -9,6 +9,7 @@ import {
   ENTWURFSMAPPE_NOTES_KEY,
   HUNDRED_GENERATION_MODELLE,
   HUNDRED_GENERATION_UEBERSICHTEN,
+  type HundredGenerationEntwurfGruppe,
   type HundredGenerationModellId,
 } from '../config/hundredGenerationEntwuerfe'
 import '../App.css'
@@ -35,12 +36,23 @@ function saveNotes(notes: Record<string, string>) {
 }
 
 /**
- * Arbeitsmappe: KI-Bild + drehbares 3D-Konzeptmodell + Notizen zum Weiterarbeiten.
+ * Arbeitsmappe: Handskizze / KI-Bild + drehbares 3D-Konzeptmodell + Notizen.
  */
 export default function HundredGenerationEntwurfsmappePage() {
-  const [activeId, setActiveId] = useState<HundredGenerationModellId>('chaosgott')
+  const [gruppe, setGruppe] = useState<HundredGenerationEntwurfGruppe>('handskizze')
+  const gefiltert = useMemo(
+    () => HUNDRED_GENERATION_MODELLE.filter((m) => m.gruppe === gruppe),
+    [gruppe]
+  )
+  const [activeId, setActiveId] = useState<HundredGenerationModellId>('skizze-zwei-tuerme')
   const [show3d, setShow3d] = useState(true)
   const [notes, setNotes] = useState<Record<string, string>>(() => loadNotes())
+
+  useEffect(() => {
+    if (!gefiltert.some((m) => m.id === activeId) && gefiltert[0]) {
+      setActiveId(gefiltert[0].id)
+    }
+  }, [gruppe, gefiltert, activeId])
 
   const active = useMemo(
     () => HUNDRED_GENERATION_MODELLE.find((m) => m.id === activeId) ?? HUNDRED_GENERATION_MODELLE[0],
@@ -70,7 +82,7 @@ export default function HundredGenerationEntwurfsmappePage() {
           font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
         }
         .hg-entwurfsmappe .shell {
-          max-width: 56rem;
+          max-width: 58rem;
           margin: 0 auto;
           padding: 1.15rem 1.15rem 3rem;
         }
@@ -127,6 +139,28 @@ export default function HundredGenerationEntwurfsmappePage() {
           margin: 0 0 1.25rem;
           font-size: 0.98rem;
         }
+        .hg-entwurfsmappe .gruppen {
+          display: flex;
+          gap: 0.5rem;
+          margin: 0 0 0.85rem;
+          font-family: system-ui, sans-serif;
+        }
+        .hg-entwurfsmappe .gruppen button {
+          appearance: none;
+          border: 1px solid var(--hg-line);
+          background: rgba(255,255,255,0.04);
+          color: var(--hg-muted);
+          padding: 0.5rem 0.9rem;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 0.85rem;
+        }
+        .hg-entwurfsmappe .gruppen button.is-on {
+          background: rgba(212, 160, 23, 0.22);
+          color: var(--hg-ink);
+          border-color: var(--hg-accent);
+          font-weight: 600;
+        }
         .hg-entwurfsmappe .model-tabs {
           display: flex;
           flex-wrap: wrap;
@@ -156,8 +190,12 @@ export default function HundredGenerationEntwurfsmappePage() {
           gap: 1rem;
           margin-bottom: 1.25rem;
         }
-        @media (max-width: 820px) {
-          .hg-entwurfsmappe .work { grid-template-columns: 1fr; }
+        .hg-entwurfsmappe .work.has-skizze {
+          grid-template-columns: 1fr 1fr 1.15fr;
+        }
+        @media (max-width: 980px) {
+          .hg-entwurfsmappe .work,
+          .hg-entwurfsmappe .work.has-skizze { grid-template-columns: 1fr; }
         }
         .hg-entwurfsmappe .card {
           background: var(--hg-panel);
@@ -264,14 +302,29 @@ export default function HundredGenerationEntwurfsmappePage() {
           <Link to={HUNDRED_GENERATION_FLAECHE_ROUTE}>🖼️ Fläche</Link>
         </div>
         <p className="lede">
-          Hier arbeiten wir an den Keramikmodellen weiter: KI-Bild links,
-          drehbares 3D-Konzept rechts, Notizen darunter. Das 3D ist eine
-          skulpturale Annäherung (noch kein Scan des KI-Bildes) – zum Prüfen
-          der Form von allen Seiten.
+          Handskizzen von dir + KI-Umsetzung als Keramikfoto + drehbares 3D.
+          Notizen bleiben auf diesem Mac.
         </p>
 
+        <div className="gruppen" role="tablist" aria-label="Gruppen">
+          <button
+            type="button"
+            className={gruppe === 'handskizze' ? 'is-on' : undefined}
+            onClick={() => setGruppe('handskizze')}
+          >
+            Deine Handskizzen
+          </button>
+          <button
+            type="button"
+            className={gruppe === 'serie' ? 'is-on' : undefined}
+            onClick={() => setGruppe('serie')}
+          >
+            Serie Chaos &amp; Code
+          </button>
+        </div>
+
         <div className="model-tabs" role="tablist" aria-label="Modelle">
-          {HUNDRED_GENERATION_MODELLE.map((m) => (
+          {gefiltert.map((m) => (
             <button
               key={m.id}
               type="button"
@@ -285,9 +338,18 @@ export default function HundredGenerationEntwurfsmappePage() {
           ))}
         </div>
 
-        <div className="work">
+        <div className={`work${active.sketchSrc ? ' has-skizze' : ''}`}>
+          {active.sketchSrc ? (
+            <div className="card">
+              <h2>Deine Skizze</h2>
+              <a href={active.sketchSrc} target="_blank" rel="noopener noreferrer">
+                <img src={active.sketchSrc} alt={`Skizze ${active.title}`} />
+              </a>
+            </div>
+          ) : null}
+
           <div className="card">
-            <h2>KI-Bild</h2>
+            <h2>KI als Keramik</h2>
             <a href={active.src} target="_blank" rel="noopener noreferrer">
               <img src={active.src} alt={active.title} />
             </a>
@@ -349,8 +411,7 @@ export default function HundredGenerationEntwurfsmappePage() {
         </div>
 
         <footer className="foot">
-          Entwurfsmappe · 100 Generationen · Chaos &amp; Code. 3D = Konzeptvolumen zum Drehen;
-          fertige GLB/Scans können später denselben Platz ersetzen.
+          Entwurfsmappe · Handskizzen + KI + 3D-Konzept. Später echte Scans/GLB möglich.
         </footer>
       </div>
     </div>
