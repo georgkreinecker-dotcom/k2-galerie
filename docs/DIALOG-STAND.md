@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Georg öffnet Smart Panel → Mappe **100 Generationen** → Keramik; optional weitere Entwürfe / Fläche / Materialliste.
 
-**Letzter Stand:** 10.09.26 – 5 Modell-Entwürfe + 2 Übersichten in APf (Keramik-Kapitel).
+**Letzter Stand:** 10.09.26 – 5 Modell-Entwürfe + 2 Übersichten in APf (Keramik-Kapitel). **Commit:** `34e99ef4` ✅ **main**
 
 ---
 
