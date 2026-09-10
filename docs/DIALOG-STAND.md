@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **100 Generationen – Entwurfsmappe** Drehen repariert + Drucken.
+**Was wir JETZT tun:** **100 Generationen – Entwurfsmappe** Axt-Anker Schräg korrigiert.
 
-**Einordnung:** Drehen hing (falsche Doppel-State); jetzt eine Index-Quelle + Buttons. Druckfassung für den Tisch.
+**Einordnung:** Schräg oben zeigte falsche Skulptur – durch passende Ansicht ersetzt (Referenz Vorne/Seite).
 
-**Nächster Schritt:** Georg: „weiter ›“ / Ziehen testen; „Drucken“ für PDF.
+**Nächster Schritt:** Georg Axt-Anker „Schräg oben“ prüfen; andere Modelle melden falls falsch.
 
-**Letzter Stand:** 10.09.26 – Drehen repariert, Schräg-Ansichten, Drucken. **Commit:** `e684059f` ✅ **main**
+**Letzter Stand:** 10.09.26 – Axt-Anker Schräg-Ansicht korrigiert.
 
 ---
 
