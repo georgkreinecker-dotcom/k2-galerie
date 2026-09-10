@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Am Bild ziehen / weiter-zurück testen; ggf. mehr Zwischenwinkel (45°) nachliefern.
 
-**Letzter Stand:** 10.09.26 – Drehscheibe Vorne/Seite/Hinten (Ziehen).
+**Letzter Stand:** 10.09.26 – Drehscheibe Vorne/Seite/Hinten (Ziehen). **qs:local** grün. **Commit:** `5fa76148` ✅ **main**
 
 ---
 
