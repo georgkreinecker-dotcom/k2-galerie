@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **100 Generationen – Entwurfsmappe** Drehscheibe (Fotos ziehen = alle Ansichten).
+**Was wir JETZT tun:** **100 Generationen – Entwurfsmappe** Drehen repariert + Drucken.
 
-**Einordnung:** Georg braucht Modell nur drehbar zum Sehen aller Ansichten – keine Fake-Mesh, echte Keramik-Fotos.
+**Einordnung:** Drehen hing (falsche Doppel-State); jetzt eine Index-Quelle + Buttons. Druckfassung für den Tisch.
 
-**Nächster Schritt:** Am Bild ziehen / weiter-zurück testen; ggf. mehr Zwischenwinkel (45°) nachliefern.
+**Nächster Schritt:** Georg: „weiter ›“ / Ziehen testen; „Drucken“ für PDF.
 
-**Letzter Stand:** 10.09.26 – Drehscheibe Vorne/Seite/Hinten (Ziehen). **qs:local** grün. **Commit:** `5fa76148` ✅ **main**
+**Letzter Stand:** 10.09.26 – Drehen repariert, Schräg-Ansichten, Drucken.
 
 ---
 
