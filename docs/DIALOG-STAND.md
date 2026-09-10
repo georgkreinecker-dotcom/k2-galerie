@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Georg öffnet Smart Panel → **Entwurfsmappe (3D)**; Modelle drehen, Notizen; später echte GLB möglich.
 
-**Letzter Stand:** 10.09.26 – Entwurfsmappe mit three.js Orbit-Viewer.
+**Letzter Stand:** 10.09.26 – Entwurfsmappe mit three.js Orbit-Viewer. **Commit:** `2881bf10` ✅ **main**
 
 ---
 
