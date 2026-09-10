@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Entwurfsmappe neu laden, jedes Modell „Schräg oben“ kurz prüfen.
 
-**Letzter Stand:** 10.09.26 – Alle Schräg-Ansichten korrigiert.
+**Letzter Stand:** 10.09.26 – Alle Schräg-Ansichten korrigiert. **Commit:** `6ef59a72` ✅ **main**
 
 ---
 
