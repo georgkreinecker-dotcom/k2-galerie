@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Session beendet (08.09.26 Abend). Nächster Einstieg: **100 Generationen** (Keramik + Fläche) – optional Vita Bruder / Materialliste.
+**Was wir JETZT tun:** **100 Generationen** – KI-Entwürfe Keramikmodelle in der APf-Mappe.
 
-**Einordnung:** Eigenständiges Kunstprojekt in der APf; zwei Kapitel fertig angebunden. Parallel lagen lokal noch Schreibtisch-/Plakat-/PDF-Export-Arbeiten – mit Session-Ende gesichert.
+**Einordnung:** Kunstprojekt; Entwürfe liegen unter `public/100-generation/` und auf der Keramik-Seite (`#entwuerfe`).
 
-**Nächster Schritt:** Von Georg – Mappe **100 Generationen** öffnen oder Vita Bruder / Materialliste.
+**Nächster Schritt:** Georg öffnet Smart Panel → Mappe **100 Generationen** → Keramik; optional weitere Entwürfe / Fläche / Materialliste.
 
-**Letzter Stand:** 08.09.26 (Abend) – **Schluss für heute:** Kapitel Fläche auf main (`f675c5e4`); restliche lokale Arbeit (Plakate A1, Schreibtisch, PDF-Export) mitcommittet. **Commit:** `b58c2861` ✅ **main** (Session-Ende-Doku folgt).
+**Letzter Stand:** 10.09.26 – 5 Modell-Entwürfe + 2 Übersichten in APf (Keramik-Kapitel).
 
 ---
 

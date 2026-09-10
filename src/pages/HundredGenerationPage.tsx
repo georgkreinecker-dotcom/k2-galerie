@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { PLATFORM_ROUTES, HUNDRED_GENERATION_FLAECHE_ROUTE } from '../config/navigation'
 import '../App.css'
@@ -6,7 +7,25 @@ import '../App.css'
  * Künstlerisches Projekt „100 Generationen“ – Ausstellungskonzept Chaos & Code.
  * Eigenständig von der K2-Galerie-Software; fertige Lese- und Druckfassung.
  */
+
+const KERAMIK_ENTWUERFE = [
+  { src: '/100-generation/entwurf-01-chaosgott.png', title: '1 · Chaosgott', note: 'Rohmasse, eruptiv' },
+  { src: '/100-generation/entwurf-02-axt-anker.png', title: '2 · Axt-Anker', note: 'Di Kurugu, abstrahiert' },
+  { src: '/100-generation/entwurf-03-metamorphose.png', title: '3 · Metamorphose', note: 'Chaos → Muster' },
+  { src: '/100-generation/entwurf-04-code-muster.png', title: '4 · Code-Muster', note: 'Flechtwerk / Ordnung' },
+  { src: '/100-generation/entwurf-05-drei-elemente.png', title: '5 · Drei Elemente', note: 'modulares Volumen' },
+  { src: '/100-generation/uebersicht-varianten-abc.png', title: 'Übersicht A / B / C', note: 'drei Varianten' },
+  { src: '/100-generation/uebersicht-ausstellungsraum.png', title: 'Ausstellungsraum', note: 'Serie im Raum' },
+] as const
+
 export default function HundredGenerationPage() {
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (window.location.hash !== '#entwuerfe') return
+    const el = document.getElementById('entwuerfe')
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [])
+
   return (
     <div className="hundert-generation-page">
       <style>{`
@@ -112,6 +131,49 @@ export default function HundredGenerationPage() {
           line-height: 1.55;
           color: var(--hg-muted);
           margin: 0 0 2rem;
+        }
+        .hundert-generation-page .hg-entwuerfe-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+          gap: 0.85rem;
+          margin: 0.75rem 0 0;
+        }
+        .hundert-generation-page .hg-entwurf {
+          margin: 0;
+          padding: 0;
+          background: rgba(0, 0, 0, 0.25);
+          border: 1px solid rgba(212, 160, 23, 0.25);
+          border-radius: 10px;
+          overflow: hidden;
+        }
+        .hundert-generation-page .hg-entwurf a {
+          display: block;
+          color: inherit;
+          text-decoration: none;
+        }
+        .hundert-generation-page .hg-entwurf img {
+          display: block;
+          width: 100%;
+          aspect-ratio: 3 / 4;
+          object-fit: cover;
+          background: #0a0c10;
+        }
+        .hundert-generation-page .hg-entwurf.hg-entwurf-wide img {
+          aspect-ratio: 16 / 9;
+        }
+        .hundert-generation-page .hg-entwurf figcaption {
+          padding: 0.55rem 0.65rem 0.7rem;
+          font-family: system-ui, sans-serif;
+        }
+        .hundert-generation-page .hg-entwurf figcaption strong {
+          display: block;
+          font-size: 0.82rem;
+          color: var(--hg-ink);
+          margin-bottom: 0.15rem;
+        }
+        .hundert-generation-page .hg-entwurf figcaption span {
+          font-size: 0.72rem;
+          color: var(--hg-muted);
         }
         .hundert-generation-page section {
           margin: 0 0 1.75rem;
@@ -233,6 +295,30 @@ export default function HundredGenerationPage() {
           (Chaosgötter und KI) und mit dem keramischen Prozess selbst: der
           Metamorphose des Materials von formlosem Ton zu dauerhaftem Stein.
         </p>
+
+        <section id="entwuerfe" className="no-print">
+          <h2>KI-Entwürfe – Keramikmodelle</h2>
+          <p>
+            Erste visuelle Entwürfe zum Formenbau. Keine fertigen Werke – Orientierung
+            für die Serie Chaos &amp; Code. Tippen öffnet das Bild groß.
+          </p>
+          <div className="hg-entwuerfe-grid">
+            {KERAMIK_ENTWUERFE.map((e) => (
+              <figure
+                key={e.src}
+                className={`hg-entwurf${e.src.includes('uebersicht') ? ' hg-entwurf-wide' : ''}`}
+              >
+                <a href={e.src} target="_blank" rel="noopener noreferrer">
+                  <img src={e.src} alt={e.title} loading="lazy" />
+                  <figcaption>
+                    <strong>{e.title}</strong>
+                    <span>{e.note}</span>
+                  </figcaption>
+                </a>
+              </figure>
+            ))}
+          </div>
+        </section>
 
         <section>
           <h2>1. Das metaphysische Manifest: Chaosgötter vs. Algorithmus</h2>
