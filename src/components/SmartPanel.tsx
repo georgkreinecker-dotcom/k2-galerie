@@ -1271,7 +1271,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                 {mappe.id === '100-generation' && (
                   <>
                     <p style={{ margin: '0 0 0.4rem 0', fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)', lineHeight: 1.45 }}>
-                      Chaos &amp; Code. <strong style={{ color: '#f0d78c' }}>Entwurfsmappe</strong> = Skizzen + Keramik-Ansichten (Vorne/Seite) + Notizen.
+                      Chaos &amp; Code. <strong style={{ color: '#f0d78c' }}>Entwurfsmappe</strong> = Skizzen + Modell drehen (Foto-Ansichten) + Notizen.
                     </p>
                     {items.map(item => (
                       <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>

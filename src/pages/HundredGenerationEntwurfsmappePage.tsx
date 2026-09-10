@@ -12,6 +12,7 @@ import {
   type HundredGenerationEntwurfGruppe,
   type HundredGenerationModellId,
 } from '../config/hundredGenerationEntwuerfe'
+import { KeramikDrehscheibe } from '../components/hundredGeneration/KeramikDrehscheibe'
 import '../App.css'
 
 function loadNotes(): Record<string, string> {
@@ -34,8 +35,8 @@ function saveNotes(notes: Record<string, string>) {
 }
 
 /**
- * Arbeitsmappe: Handskizze + Keramik-Ansichten (Vorne/Seite/Hinten) + Notizen.
- * Kein Fake-Lowpoly-3D – das war nicht brauchbar.
+ * Arbeitsmappe: Handskizze + drehbare Keramik-Ansichten (Fotos) + Notizen.
+ * Drehen = Ziehen durch echte Vorne/Seite/Hinten – kein Fake-Lowpoly.
  */
 export default function HundredGenerationEntwurfsmappePage() {
   const [gruppe, setGruppe] = useState<HundredGenerationEntwurfGruppe>('serie')
@@ -65,8 +66,6 @@ export default function HundredGenerationEntwurfsmappePage() {
   useEffect(() => {
     saveNotes(notes)
   }, [notes])
-
-  const ansicht = active.ansichten[Math.min(ansichtIdx, active.ansichten.length - 1)]
 
   return (
     <div className="hg-entwurfsmappe">
@@ -293,6 +292,58 @@ export default function HundredGenerationEntwurfsmappePage() {
           color: var(--hg-muted);
           line-height: 1.5;
         }
+        .hg-entwurfsmappe .hg-drehscheibe { margin: 0; }
+        .hg-entwurfsmappe .hg-drehscheibe-stage {
+          position: relative;
+          touch-action: pan-y;
+          cursor: grab;
+          user-select: none;
+          border-radius: 10px;
+          overflow: hidden;
+          background: #0e1118;
+        }
+        .hg-entwurfsmappe .hg-drehscheibe-stage.is-single { cursor: default; }
+        .hg-entwurfsmappe .hg-drehscheibe-stage.is-dragging { cursor: grabbing; }
+        .hg-entwurfsmappe .hg-drehscheibe-stage img {
+          display: block;
+          width: 100%;
+          height: auto;
+          pointer-events: none;
+        }
+        .hg-entwurfsmappe .hg-drehscheibe-hint {
+          position: absolute;
+          left: 0; right: 0; bottom: 0;
+          margin: 0;
+          padding: 0.55rem 0.75rem;
+          font-family: system-ui, sans-serif;
+          font-size: 0.78rem;
+          color: #f4f0e8;
+          background: linear-gradient(transparent, rgba(0,0,0,0.72));
+        }
+        .hg-entwurfsmappe .hg-drehscheibe-actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+          align-items: center;
+          margin-top: 0.65rem;
+          font-family: system-ui, sans-serif;
+          font-size: 0.85rem;
+        }
+        .hg-entwurfsmappe .hg-drehscheibe-actions button,
+        .hg-entwurfsmappe .hg-drehscheibe-actions a {
+          padding: 0.35rem 0.7rem;
+          border-radius: 8px;
+          border: 1px solid var(--hg-line);
+          background: transparent;
+          color: var(--hg-muted);
+          text-decoration: none;
+          cursor: pointer;
+        }
+        .hg-entwurfsmappe .hg-drehscheibe-actions button:hover,
+        .hg-entwurfsmappe .hg-drehscheibe-actions a:hover {
+          color: var(--hg-accent);
+          border-color: var(--hg-accent);
+        }
       `}</style>
 
       <div className="shell">
@@ -309,8 +360,8 @@ export default function HundredGenerationEntwurfsmappePage() {
           <Link to={HUNDRED_GENERATION_FLAECHE_ROUTE}>🖼️ Fläche</Link>
         </div>
         <p className="lede">
-          Brauchbare Arbeitsansichten: Vorne, Seite (bei Chaosgott auch Hinten).
-          Kein grobes Pseudo-3D mehr – das half nicht zum Formen.
+          Modell drehen: am Bild ziehen (oder Buttons) – du siehst Vorne, Seite, ggf. Hinten
+          als echte Keramik-Fotos. Genau das brauchst du zum Formen – ohne Fake-3D.
         </p>
 
         <div className="gruppen" role="tablist" aria-label="Gruppen">
@@ -356,7 +407,7 @@ export default function HundredGenerationEntwurfsmappePage() {
           ) : null}
 
           <div className="card">
-            <h2>Keramik-Ansichten</h2>
+            <h2>Modell drehen</h2>
             <div className="ansicht-tabs" role="tablist" aria-label="Ansicht">
               {active.ansichten.map((a, i) => (
                 <button
@@ -369,9 +420,12 @@ export default function HundredGenerationEntwurfsmappePage() {
                 </button>
               ))}
             </div>
-            <a href={ansicht.src} target="_blank" rel="noopener noreferrer">
-              <img src={ansicht.src} alt={`${active.title} · ${ansicht.label}`} />
-            </a>
+            <KeramikDrehscheibe
+              ansichten={active.ansichten}
+              index={ansichtIdx}
+              onIndexChange={setAnsichtIdx}
+              title={active.title}
+            />
             <div className="thumb-row">
               {active.ansichten.map((a, i) => (
                 <button
@@ -422,7 +476,7 @@ export default function HundredGenerationEntwurfsmappePage() {
         </div>
 
         <footer className="foot">
-          Entwurfsmappe · Mehransichten statt Fake-3D. Echtes 3D erst mit Scan/GLB, wenn es so weit ist.
+          Entwurfsmappe · Drehscheibe aus Foto-Ansichten. Echtes Mesh erst mit Scan/GLB, wenn es so weit ist.
         </footer>
       </div>
     </div>

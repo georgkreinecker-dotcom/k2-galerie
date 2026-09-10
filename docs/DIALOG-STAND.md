@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **100 Generationen – Entwurfsmappe** mit Mehransichten (kein Fake-3D).
+**Was wir JETZT tun:** **100 Generationen – Entwurfsmappe** Drehscheibe (Fotos ziehen = alle Ansichten).
 
-**Einordnung:** Grobes Lowpoly-3D entfernt (nicht brauchbar). Stattdessen Vorne/Seite/(Hinten) als echte Keramik-Fotos.
+**Einordnung:** Georg braucht Modell nur drehbar zum Sehen aller Ansichten – keine Fake-Mesh, echte Keramik-Fotos.
 
-**Nächster Schritt:** Entwurfsmappe öffnen – Ansichten tippen; später echtes 3D nur mit Scan/GLB.
+**Nächster Schritt:** Am Bild ziehen / weiter-zurück testen; ggf. mehr Zwischenwinkel (45°) nachliefern.
 
-**Letzter Stand:** 10.09.26 – Fake-3D raus, Mehransichten rein. **qs:local** grün. **Commit:** `b85b8ed5` ✅ **main**
+**Letzter Stand:** 10.09.26 – Drehscheibe Vorne/Seite/Hinten (Ziehen).
 
 ---
 

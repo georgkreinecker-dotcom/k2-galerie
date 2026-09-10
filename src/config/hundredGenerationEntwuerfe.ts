@@ -1,7 +1,7 @@
 /**
  * 100 Generationen – gemeinsame Quelle für Entwürfe (Bild-Ansichten).
  * Eine Liste, viele Aufrufer (Konzeptseite, Entwurfsmappe).
- * Kein Fake-3D: brauchbare Mehransichten (Vorne / Seite / ggf. Hinten).
+ * Kein Fake-3D: drehbare Mehransichten (Vorne / Seite / ggf. Hinten) als Fotos.
  */
 
 export type HundredGenerationModellId =
