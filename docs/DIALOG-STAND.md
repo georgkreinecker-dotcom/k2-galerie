@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Georg: „weiter ›“ / Ziehen testen; „Drucken“ für PDF.
 
-**Letzter Stand:** 10.09.26 – Drehen repariert, Schräg-Ansichten, Drucken.
+**Letzter Stand:** 10.09.26 – Drehen repariert, Schräg-Ansichten, Drucken. **Commit:** `e684059f` ✅ **main**
 
 ---
 
