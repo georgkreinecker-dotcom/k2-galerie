@@ -17,6 +17,9 @@ export const HUNDRED_GENERATION_ROUTE = '/projects/100-generation' as const
 /** Parallel-Konzept für bildnerische Künstler:innen – Fläche & Code */
 export const HUNDRED_GENERATION_FLAECHE_ROUTE = '/projects/100-generation/flaeche' as const
 
+/** Arbeitsmappe: KI-Bilder + drehbare 3D-Konzeptmodelle + Notizen */
+export const HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE = '/projects/100-generation/entwurfsmappe' as const
+
 /** Willkommensseite für Werbung/Flyer: Zugangsbereich (Anmelden / Zur Ansicht / Erster Entwurf) */
 export const WILLKOMMEN_ROUTE = '/willkommen'
 

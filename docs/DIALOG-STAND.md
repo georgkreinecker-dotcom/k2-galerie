@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **100 Generationen** – KI-Entwürfe Keramikmodelle in der APf-Mappe.
+**Was wir JETZT tun:** **100 Generationen – Entwurfsmappe** (3D drehbar + Notizen).
 
-**Einordnung:** Kunstprojekt; Entwürfe liegen unter `public/100-generation/` und auf der Keramik-Seite (`#entwuerfe`).
+**Einordnung:** Eigene Arbeitsmappe in der APf; 3D = Konzeptvolumen (Orbit), kein Scan aus dem KI-PNG.
 
-**Nächster Schritt:** Georg öffnet Smart Panel → Mappe **100 Generationen** → Keramik; optional weitere Entwürfe / Fläche / Materialliste.
+**Nächster Schritt:** Georg öffnet Smart Panel → **Entwurfsmappe (3D)**; Modelle drehen, Notizen; später echte GLB möglich.
 
-**Letzter Stand:** 10.09.26 – 5 Modell-Entwürfe + 2 Übersichten in APf (Keramik-Kapitel). **Commit:** `34e99ef4` ✅ **main**
+**Letzter Stand:** 10.09.26 – Entwurfsmappe mit three.js Orbit-Viewer.
 
 ---
 

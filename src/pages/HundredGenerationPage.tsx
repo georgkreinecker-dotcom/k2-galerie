@@ -1,6 +1,10 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { PLATFORM_ROUTES, HUNDRED_GENERATION_FLAECHE_ROUTE } from '../config/navigation'
+import { PLATFORM_ROUTES, HUNDRED_GENERATION_FLAECHE_ROUTE, HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE } from '../config/navigation'
+import {
+  HUNDRED_GENERATION_MODELLE,
+  HUNDRED_GENERATION_UEBERSICHTEN,
+} from '../config/hundredGenerationEntwuerfe'
 import '../App.css'
 
 /**
@@ -9,13 +13,8 @@ import '../App.css'
  */
 
 const KERAMIK_ENTWUERFE = [
-  { src: '/100-generation/entwurf-01-chaosgott.png', title: '1 · Chaosgott', note: 'Rohmasse, eruptiv' },
-  { src: '/100-generation/entwurf-02-axt-anker.png', title: '2 · Axt-Anker', note: 'Di Kurugu, abstrahiert' },
-  { src: '/100-generation/entwurf-03-metamorphose.png', title: '3 · Metamorphose', note: 'Chaos → Muster' },
-  { src: '/100-generation/entwurf-04-code-muster.png', title: '4 · Code-Muster', note: 'Flechtwerk / Ordnung' },
-  { src: '/100-generation/entwurf-05-drei-elemente.png', title: '5 · Drei Elemente', note: 'modulares Volumen' },
-  { src: '/100-generation/uebersicht-varianten-abc.png', title: 'Übersicht A / B / C', note: 'drei Varianten' },
-  { src: '/100-generation/uebersicht-ausstellungsraum.png', title: 'Ausstellungsraum', note: 'Serie im Raum' },
+  ...HUNDRED_GENERATION_MODELLE.map((m) => ({ src: m.src, title: m.title, note: m.note })),
+  ...HUNDRED_GENERATION_UEBERSICHTEN.map((u) => ({ src: u.src, title: u.title, note: u.note })),
 ] as const
 
 export default function HundredGenerationPage() {
@@ -286,7 +285,8 @@ export default function HundredGenerationPage() {
         <h1>100 Generationen</h1>
         <p className="hg-subtitle">Chaos &amp; Code: Die Evolution des Musters</p>
         <div className="hg-chapters no-print">
-          <span className="is-active">🏺 Keramik – Volumen</span>
+          <span className="is-active">🏺 Keramik – Konzept</span>
+          <Link to={HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE}>🗂️ Entwurfsmappe</Link>
           <Link to={HUNDRED_GENERATION_FLAECHE_ROUTE}>🖼️ Fläche – Bild</Link>
         </div>
         <p className="hg-lede">
@@ -299,8 +299,11 @@ export default function HundredGenerationPage() {
         <section id="entwuerfe" className="no-print">
           <h2>KI-Entwürfe – Keramikmodelle</h2>
           <p>
-            Erste visuelle Entwürfe zum Formenbau. Keine fertigen Werke – Orientierung
-            für die Serie Chaos &amp; Code. Tippen öffnet das Bild groß.
+            Erste visuelle Entwürfe. Zum Weiterarbeiten mit drehbarem 3D und Notizen:
+            {' '}
+            <Link to={HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE} style={{ color: 'var(--hg-accent)' }}>
+              Entwurfsmappe öffnen →
+            </Link>
           </p>
           <div className="hg-entwuerfe-grid">
             {KERAMIK_ENTWUERFE.map((e) => (
