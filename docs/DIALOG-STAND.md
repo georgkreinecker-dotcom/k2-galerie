@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Entwurfsmappe öffnen – Ansichten tippen; später echtes 3D nur mit Scan/GLB.
 
-**Letzter Stand:** 10.09.26 – Fake-3D raus, Mehransichten rein.
+**Letzter Stand:** 10.09.26 – Fake-3D raus, Mehransichten rein. **qs:local** grün. **Commit:** `b85b8ed5` ✅ **main**
 
 ---
 
