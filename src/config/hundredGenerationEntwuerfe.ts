@@ -1,7 +1,7 @@
 /**
  * 100 Generationen – gemeinsame Quelle für Entwürfe (Bild-Ansichten).
  * Eine Liste, viele Aufrufer (Konzeptseite, Entwurfsmappe).
- * Kein Fake-3D: drehbare Mehransichten (Vorne / Seite / ggf. Hinten) als Fotos.
+ * Drehen (Ring) + Schwenken (Schräg von oben) als echte Fotos.
  */
 
 export type HundredGenerationModellId =
@@ -18,10 +18,14 @@ export type HundredGenerationModellId =
 
 export type HundredGenerationEntwurfGruppe = 'serie' | 'handskizze'
 
+export type HundredGenerationAnsichtId = 'vorne' | 'seite' | 'hinten' | 'schraeg'
+
 export type HundredGenerationAnsicht = {
-  id: 'vorne' | 'seite' | 'hinten'
+  id: HundredGenerationAnsichtId
   label: string
   src: string
+  /** Ring = horizontal drehen; schwenk = nach oben schwenken */
+  achse: 'ring' | 'schwenk'
 }
 
 export type HundredGenerationEntwurf = {
@@ -39,14 +43,31 @@ export type HundredGenerationEntwurf = {
 function views(
   vorne: string,
   seite: string,
-  hinten?: string
+  opts?: { hinten?: string; schraeg?: string }
 ): readonly HundredGenerationAnsicht[] {
   const list: HundredGenerationAnsicht[] = [
-    { id: 'vorne', label: 'Vorne', src: vorne },
-    { id: 'seite', label: 'Seite', src: seite },
+    { id: 'vorne', label: 'Vorne', src: vorne, achse: 'ring' },
+    { id: 'seite', label: 'Seite', src: seite, achse: 'ring' },
   ]
-  if (hinten) list.push({ id: 'hinten', label: 'Hinten', src: hinten })
+  if (opts?.hinten) {
+    list.push({ id: 'hinten', label: 'Hinten', src: opts.hinten, achse: 'ring' })
+  }
+  if (opts?.schraeg) {
+    list.push({ id: 'schraeg', label: 'Schräg oben', src: opts.schraeg, achse: 'schwenk' })
+  }
   return list
+}
+
+export function ringAnsichten(
+  ansichten: readonly HundredGenerationAnsicht[]
+): readonly HundredGenerationAnsicht[] {
+  return ansichten.filter((a) => a.achse === 'ring')
+}
+
+export function schwenkAnsicht(
+  ansichten: readonly HundredGenerationAnsicht[]
+): HundredGenerationAnsicht | undefined {
+  return ansichten.find((a) => a.achse === 'schwenk')
 }
 
 export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
@@ -60,7 +81,10 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     ansichten: views(
       '/100-generation/entwurf-01-chaosgott.png',
       '/100-generation/entwurf-01-chaosgott-seite.png',
-      '/100-generation/entwurf-01-chaosgott-hinten.png'
+      {
+        hinten: '/100-generation/entwurf-01-chaosgott-hinten.png',
+        schraeg: '/100-generation/entwurf-01-chaosgott-schraeg.png',
+      }
     ),
   },
   {
@@ -72,7 +96,8 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     gruppe: 'serie',
     ansichten: views(
       '/100-generation/entwurf-02-axt-anker.png',
-      '/100-generation/entwurf-02-axt-anker-seite.png'
+      '/100-generation/entwurf-02-axt-anker-seite.png',
+      { schraeg: '/100-generation/entwurf-02-axt-anker-schraeg.png' }
     ),
   },
   {
@@ -84,7 +109,8 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     gruppe: 'serie',
     ansichten: views(
       '/100-generation/entwurf-03-metamorphose.png',
-      '/100-generation/entwurf-03-metamorphose-seite.png'
+      '/100-generation/entwurf-03-metamorphose-seite.png',
+      { schraeg: '/100-generation/entwurf-03-metamorphose-schraeg.png' }
     ),
   },
   {
@@ -96,7 +122,8 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     gruppe: 'serie',
     ansichten: views(
       '/100-generation/entwurf-04-code-muster.png',
-      '/100-generation/entwurf-04-code-muster-seite.png'
+      '/100-generation/entwurf-04-code-muster-seite.png',
+      { schraeg: '/100-generation/entwurf-04-code-muster-schraeg.png' }
     ),
   },
   {
@@ -108,7 +135,8 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     gruppe: 'serie',
     ansichten: views(
       '/100-generation/entwurf-05-drei-elemente.png',
-      '/100-generation/entwurf-05-drei-elemente-seite.png'
+      '/100-generation/entwurf-05-drei-elemente-seite.png',
+      { schraeg: '/100-generation/entwurf-05-drei-elemente-schraeg.png' }
     ),
   },
   {
@@ -121,7 +149,8 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     gruppe: 'handskizze',
     ansichten: views(
       '/100-generation/aus-skizze-01-zwei-tuerme.png',
-      '/100-generation/aus-skizze-01-zwei-tuerme-seite.png'
+      '/100-generation/aus-skizze-01-zwei-tuerme-seite.png',
+      { schraeg: '/100-generation/aus-skizze-01-zwei-tuerme-schraeg.png' }
     ),
   },
   {
@@ -134,7 +163,8 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     gruppe: 'handskizze',
     ansichten: views(
       '/100-generation/aus-skizze-02-segel.png',
-      '/100-generation/aus-skizze-02-segel-seite.png'
+      '/100-generation/aus-skizze-02-segel-seite.png',
+      { schraeg: '/100-generation/aus-skizze-02-segel-schraeg.png' }
     ),
   },
   {
@@ -147,7 +177,8 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     gruppe: 'handskizze',
     ansichten: views(
       '/100-generation/aus-skizze-03-kelch.png',
-      '/100-generation/aus-skizze-03-kelch-seite.png'
+      '/100-generation/aus-skizze-03-kelch-seite.png',
+      { schraeg: '/100-generation/aus-skizze-03-kelch-schraeg.png' }
     ),
   },
   {
@@ -160,7 +191,8 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     gruppe: 'handskizze',
     ansichten: views(
       '/100-generation/aus-skizze-04-astwerk.png',
-      '/100-generation/aus-skizze-04-astwerk-seite.png'
+      '/100-generation/aus-skizze-04-astwerk-seite.png',
+      { schraeg: '/100-generation/aus-skizze-04-astwerk-schraeg.png' }
     ),
   },
   {
@@ -173,7 +205,8 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     gruppe: 'handskizze',
     ansichten: views(
       '/100-generation/aus-skizze-05-zickzack.png',
-      '/100-generation/aus-skizze-05-zickzack-seite.png'
+      '/100-generation/aus-skizze-05-zickzack-seite.png',
+      { schraeg: '/100-generation/aus-skizze-05-zickzack-schraeg.png' }
     ),
   },
 ] as const

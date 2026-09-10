@@ -295,9 +295,10 @@ export default function HundredGenerationEntwurfsmappePage() {
         .hg-entwurfsmappe .hg-drehscheibe { margin: 0; }
         .hg-entwurfsmappe .hg-drehscheibe-stage {
           position: relative;
-          touch-action: pan-y;
+          touch-action: none;
           cursor: grab;
           user-select: none;
+          -webkit-user-select: none;
           border-radius: 10px;
           overflow: hidden;
           background: #0e1118;
@@ -309,6 +310,7 @@ export default function HundredGenerationEntwurfsmappePage() {
           width: 100%;
           height: auto;
           pointer-events: none;
+          -webkit-user-drag: none;
         }
         .hg-entwurfsmappe .hg-drehscheibe-hint {
           position: absolute;
@@ -344,14 +346,168 @@ export default function HundredGenerationEntwurfsmappePage() {
           color: var(--hg-accent);
           border-color: var(--hg-accent);
         }
+        .hg-entwurfsmappe .hg-drehscheibe-actions button.is-on {
+          background: rgba(212, 160, 23, 0.22);
+          color: var(--hg-ink);
+          border-color: var(--hg-accent);
+          font-weight: 600;
+        }
+        .hg-entwurfsmappe .btn-print {
+          appearance: none;
+          border: 1px solid var(--hg-accent);
+          background: rgba(212, 160, 23, 0.2);
+          color: var(--hg-ink);
+          padding: 0.45rem 0.9rem;
+          border-radius: 8px;
+          cursor: pointer;
+          font-family: system-ui, sans-serif;
+          font-size: 0.85rem;
+          font-weight: 600;
+        }
+        .hg-entwurfsmappe .print-only { display: none; }
+        .hg-entwurfsmappe .seitenfuss { display: none; }
+        @media print {
+          @page { margin: 12mm 14mm 14mm 14mm; }
+          body { background: #fff !important; }
+          .hg-entwurfsmappe {
+            background: #fff !important;
+            color: #1c1a18 !important;
+            font-size: 10.5pt;
+          }
+          .hg-entwurfsmappe .no-print { display: none !important; }
+          .hg-entwurfsmappe .print-only { display: block !important; }
+          .hg-entwurfsmappe .shell { max-width: none; padding: 0; }
+          .hg-entwurfsmappe h1 { color: #1c1a18; font-size: 16pt; margin: 0 0 0.4rem; }
+          .hg-entwurfsmappe .print-kicker {
+            font-family: system-ui, sans-serif;
+            font-size: 8pt;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #5c5650;
+            margin: 0 0 0.25rem;
+          }
+          .hg-entwurfsmappe .print-block {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            margin: 0 0 0.85rem;
+            padding-bottom: 0.55rem;
+            border-bottom: 1px solid #ccc;
+          }
+          .hg-entwurfsmappe .print-block h2 {
+            font-size: 11pt;
+            color: #1c1a18;
+            margin: 0 0 0.25rem;
+            text-transform: none;
+            letter-spacing: 0;
+          }
+          .hg-entwurfsmappe .print-meta {
+            font-family: system-ui, sans-serif;
+            font-size: 9pt;
+            color: #5c5650;
+            margin: 0 0 0.4rem;
+            line-height: 1.35;
+          }
+          .hg-entwurfsmappe .print-views {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+          }
+          .hg-entwurfsmappe .print-views figure {
+            margin: 0;
+            width: 28%;
+            min-width: 3.8cm;
+          }
+          .hg-entwurfsmappe .print-views img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border: 1px solid #ddd;
+            background: #f6f4f0;
+          }
+          .hg-entwurfsmappe .print-views figcaption {
+            font-family: system-ui, sans-serif;
+            font-size: 7.5pt;
+            color: #5c5650;
+            text-align: center;
+            margin-top: 0.15rem;
+          }
+          .hg-entwurfsmappe .print-note {
+            font-family: system-ui, sans-serif;
+            font-size: 9pt;
+            color: #1c1a18;
+            margin: 0.35rem 0 0;
+            white-space: pre-wrap;
+          }
+          .hg-entwurfsmappe .seitenfuss {
+            display: block !important;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 0.65rem;
+            color: #666;
+            padding: 0.2rem 0;
+            font-family: system-ui, sans-serif;
+          }
+          .hg-entwurfsmappe .seitenfuss::after {
+            content: "Seite " counter(page);
+          }
+        }
       `}</style>
 
       <div className="shell">
-        <nav className="nav">
+        <nav className="nav no-print">
           <Link to={PLATFORM_ROUTES.projects}>← Projekte</Link>
-          <Link to={HUNDRED_GENERATION_ROUTE}>Konzept Keramik</Link>
+          <div style={{ display: 'flex', gap: '0.65rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <button type="button" className="btn-print" onClick={() => window.print()}>
+              🖨️ Drucken
+            </button>
+            <Link to={HUNDRED_GENERATION_ROUTE}>Konzept Keramik</Link>
+          </div>
         </nav>
 
+        <div className="print-only">
+          <p className="print-kicker">100 Generationen · Chaos &amp; Code</p>
+          <h1>Entwurfsmappe – Druckfassung</h1>
+          <p className="print-meta">
+            Alle Modelle mit Ansichten (Vorne / Seite / Hinten / Schräg) und Notizen. Zum Arbeiten
+            am Tisch und mit dem Bruder.
+          </p>
+          {HUNDRED_GENERATION_MODELLE.map((m) => (
+            <section key={m.id} className="print-block">
+              <h2>
+                {m.title} · {m.note}
+              </h2>
+              <p className="print-meta">{m.formHint}</p>
+              {m.sketchSrc ? (
+                <div className="print-views" style={{ marginBottom: '0.35rem' }}>
+                  <figure>
+                    <img src={m.sketchSrc} alt={`Skizze ${m.title}`} />
+                    <figcaption>Handskizze</figcaption>
+                  </figure>
+                </div>
+              ) : null}
+              <div className="print-views">
+                {m.ansichten.map((a) => (
+                  <figure key={a.id}>
+                    <img src={a.src} alt={`${m.title} ${a.label}`} />
+                    <figcaption>{a.label}</figcaption>
+                  </figure>
+                ))}
+              </div>
+              {notes[m.id]?.trim() ? (
+                <p className="print-note">
+                  <strong>Notizen:</strong> {notes[m.id]}
+                </p>
+              ) : (
+                <p className="print-note">Notizen: —</p>
+              )}
+            </section>
+          ))}
+        </div>
+
+        <div className="no-print">
         <p className="kicker">100 Generationen · Arbeitsplatz</p>
         <h1>Entwurfsmappe</h1>
         <div className="chapters">
@@ -360,8 +516,8 @@ export default function HundredGenerationEntwurfsmappePage() {
           <Link to={HUNDRED_GENERATION_FLAECHE_ROUTE}>🖼️ Fläche</Link>
         </div>
         <p className="lede">
-          Modell drehen: am Bild ziehen (oder Buttons) – du siehst Vorne, Seite, ggf. Hinten
-          als echte Keramik-Fotos. Genau das brauchst du zum Formen – ohne Fake-3D.
+          Am Bild ziehen oder „weiter ›“ / „‹ zurück“: Vorne, Seite, Hinten, Schräg oben.
+          Echte Keramik-Fotos – so siehst du alle Ansichten zum Formen. Button „Drucken“ = ganze Mappe.
         </p>
 
         <div className="gruppen" role="tablist" aria-label="Gruppen">
@@ -476,8 +632,10 @@ export default function HundredGenerationEntwurfsmappePage() {
         </div>
 
         <footer className="foot">
-          Entwurfsmappe · Drehscheibe aus Foto-Ansichten. Echtes Mesh erst mit Scan/GLB, wenn es so weit ist.
+          Entwurfsmappe · Drehen über Foto-Ansichten · Drucken für den Tisch. Echtes Mesh erst mit Scan/GLB.
         </footer>
+        </div>
+        <div className="seitenfuss" aria-hidden />
       </div>
     </div>
   )
