@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Entwurfsmappe → Mythos → 4M → Formatblatt prüfen/drucken.
 
-**Letzter Stand:** 11.09.26 – **Geometrische Zeichnung Ahnenraster** + Formatblatt. **Commit:** (gleich nach Push)
+**Letzter Stand:** 11.09.26 – **Geometrische Zeichnung Ahnenraster** + Formatblatt. **Commit:** `9afbca43` ✅ **main**
 
 
 ---
