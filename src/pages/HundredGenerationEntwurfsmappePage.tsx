@@ -19,6 +19,8 @@ import {
 } from '../config/hundredGenerationMass'
 import { KeramikDrehscheibe } from '../components/hundredGeneration/KeramikDrehscheibe'
 import { HundredGenerationMassSkizze } from '../components/hundredGeneration/HundredGenerationMassSkizze'
+import { HundredGenerationAhnenrasterBlatt } from '../components/hundredGeneration/HundredGenerationAhnenrasterBlatt'
+import { AHNENRASTER_BLATT } from '../config/hundredGenerationAhnenraster'
 import '../App.css'
 
 type PrintSheet = {
@@ -59,8 +61,8 @@ export default function HundredGenerationEntwurfsmappePage() {
   const [activeId, setActiveId] = useState<HundredGenerationModellId>('chaosgott')
   const [ansichtIdx, setAnsichtIdx] = useState(0)
   const [notes, setNotes] = useState<Record<string, string>>(() => loadNotes())
-  /** mappe = Übersicht; vollformat = Bilder; mass = Maßskizze aktiv */
-  const [printMode, setPrintMode] = useState<'mappe' | 'vollformat' | 'mass'>('mappe')
+  /** mappe | vollformat | mass | ahnenraster */
+  const [printMode, setPrintMode] = useState<'mappe' | 'vollformat' | 'mass' | 'ahnenraster'>('mappe')
   const [printSheets, setPrintSheets] = useState<PrintSheet[]>([])
 
   useEffect(() => {
@@ -120,6 +122,16 @@ export default function HundredGenerationEntwurfsmappePage() {
     })
   }
 
+  const printAhnenrasterBlatt = () => {
+    setPrintMode('ahnenraster')
+    setPrintSheets([])
+    setActiveId(AHNENRASTER_BLATT.modellId)
+    setGruppe('mythos')
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => window.print())
+    })
+  }
+
   const massTrailing = {
     label: 'Maßskizze',
     render: () => (
@@ -139,7 +151,9 @@ export default function HundredGenerationEntwurfsmappePage() {
           ? ' is-print-vollformat'
           : printMode === 'mass'
             ? ' is-print-mass'
-            : ' is-print-mappe'
+            : printMode === 'ahnenraster'
+              ? ' is-print-ahnenraster'
+              : ' is-print-mappe'
       }`}
     >
       <style>{`
@@ -496,13 +510,23 @@ export default function HundredGenerationEntwurfsmappePage() {
           .hg-entwurfsmappe .shell { max-width: none; padding: 0; }
           .hg-entwurfsmappe.is-print-mappe .print-mappe { display: block !important; }
           .hg-entwurfsmappe.is-print-mappe .print-vollformat,
-          .hg-entwurfsmappe.is-print-mappe .print-mass { display: none !important; }
+          .hg-entwurfsmappe.is-print-mappe .print-mass,
+          .hg-entwurfsmappe.is-print-mappe .print-ahnenraster { display: none !important; }
           .hg-entwurfsmappe.is-print-vollformat .print-mappe,
-          .hg-entwurfsmappe.is-print-vollformat .print-mass { display: none !important; }
+          .hg-entwurfsmappe.is-print-vollformat .print-mass,
+          .hg-entwurfsmappe.is-print-vollformat .print-ahnenraster { display: none !important; }
           .hg-entwurfsmappe.is-print-vollformat .print-vollformat { display: block !important; }
           .hg-entwurfsmappe.is-print-mass .print-mappe,
-          .hg-entwurfsmappe.is-print-mass .print-vollformat { display: none !important; }
+          .hg-entwurfsmappe.is-print-mass .print-vollformat,
+          .hg-entwurfsmappe.is-print-mass .print-ahnenraster { display: none !important; }
           .hg-entwurfsmappe.is-print-mass .print-mass { display: block !important; }
+          .hg-entwurfsmappe.is-print-ahnenraster .print-mappe,
+          .hg-entwurfsmappe.is-print-ahnenraster .print-vollformat,
+          .hg-entwurfsmappe.is-print-ahnenraster .print-mass { display: none !important; }
+          .hg-entwurfsmappe.is-print-ahnenraster .print-ahnenraster { display: block !important; }
+          .hg-entwurfsmappe .print-ahnenraster-sheet {
+            min-height: 250mm;
+          }
           .hg-entwurfsmappe .print-mass-sheet {
             min-height: 240mm;
             display: flex;
@@ -689,6 +713,11 @@ export default function HundredGenerationEntwurfsmappePage() {
                   variant="print"
                 />
               </div>
+              {m.id === AHNENRASTER_BLATT.modellId ? (
+                <div style={{ marginTop: '0.5rem', breakInside: 'avoid' }}>
+                  <HundredGenerationAhnenrasterBlatt variant="print" />
+                </div>
+              ) : null}
               {notes[m.id]?.trim() ? (
                 <p className="print-note">
                   <strong>Notizen:</strong> {notes[m.id]}
@@ -733,6 +762,12 @@ export default function HundredGenerationEntwurfsmappePage() {
           </section>
         </div>
 
+        <div className="print-only print-ahnenraster">
+          <section className="print-ahnenraster-sheet">
+            <HundredGenerationAhnenrasterBlatt variant="print" />
+          </section>
+        </div>
+
         <div className="no-print">
         <p className="kicker">100 Generationen · Arbeitsplatz</p>
         <h1>Entwurfsmappe</h1>
@@ -747,6 +782,7 @@ export default function HundredGenerationEntwurfsmappePage() {
           Axt-Form, Flecht-Textur und mythologischem Aspekt.
           <strong> Maßskizze</strong> = echte Vorne-Ansicht mit H/B/T (4. Ansicht) – Serie max.{' '}
           {HUNDRED_GENERATION_MAX_HOEHE_CM} cm.
+          <strong> Formatblatt 4M</strong> = Ahnenraster / heiliges Muster (eigenes Blatt).
           <strong> Ganze Mappe</strong> = Übersicht inkl. Maß. <strong>Vollformat</strong> = ein Bild
           auf eine Seite.
         </p>
@@ -954,6 +990,41 @@ export default function HundredGenerationEntwurfsmappePage() {
             aria-label={`Notizen ${active.title}`}
           />
         </div>
+
+        {active.id === AHNENRASTER_BLATT.modellId ? (
+          <div className="card" style={{ marginTop: '1rem' }} id="formatblatt-ahnenraster">
+            <h2>Formatblatt · {AHNENRASTER_BLATT.title}</h2>
+            <p className="hint" style={{ marginBottom: '0.75rem' }}>
+              Eigenes Blatt für das heilige Muster – getrennt vom Objektkörper, zum Ritzen / Stempeln /
+              Übertragen.
+            </p>
+            <HundredGenerationAhnenrasterBlatt variant="screen" />
+            <div className="print-actions">
+              <button type="button" className="btn-print" onClick={printAhnenrasterBlatt}>
+                🖨️ Formatblatt drucken
+              </button>
+            </div>
+          </div>
+        ) : gruppe === 'mythos' ? (
+          <div className="card" style={{ marginTop: '1rem' }}>
+            <h2>Formatblatt · 4M Ahnenraster</h2>
+            <p className="hint">
+              Zum heiligen Muster gibt es ein eigenes Formatblatt (Werkstatt).
+            </p>
+            <div className="print-actions">
+              <button
+                type="button"
+                className="btn-print"
+                onClick={() => {
+                  setGruppe('mythos')
+                  setActiveId(AHNENRASTER_BLATT.modellId)
+                }}
+              >
+                4M · Formatblatt öffnen
+              </button>
+            </div>
+          </div>
+        ) : null}
 
         <div className="card" style={{ marginTop: '1rem' }}>
           <h2>Übersichten</h2>

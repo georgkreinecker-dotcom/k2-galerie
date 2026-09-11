@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Entwurfsmappe – Maßskizze = echte Vorne-Ansicht (alle Objekte).
+**Was wir JETZT tun:** Formatblatt 4M – exaktes Ahnenraster-Foto + Infos.
 
-**Einordnung:** Keine Schema-Silhouette mehr; Form 1:1 aus Objektfoto + H/B/T; Maßskizze als Ansicht im Dreh-Ring.
+**Einordnung:** Raster 1:1 aus Frontplatte abgelegt; Formatblatt zeigt Foto statt Schema; Di-Kurugu-Hintergrund ergänzt.
 
-**Nächster Schritt:** Entwurfsmappe → Maßskizze-Tab prüfen; ggf. Maße mit Bruder nachziehen.
+**Nächster Schritt:** Entwurfsmappe → Mythos → 4M → Formatblatt ansehen/drucken.
 
-**Letzter Stand:** 11.09.26 – **Maßskizze präzise:** echte Vorne-Ansicht statt Schema; 4. Ansicht im Ring. **Commit:** `a16f9519` ✅ **main**
+**Letzter Stand:** 11.09.26 – **Exaktes Ahnenraster** als Bild + Formatblatt mit Infos. (Commit folgt)
 
 
 ---
