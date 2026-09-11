@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Nach Deploy Smart-Panel-QR erneut scannen (Kamera/Safari, nicht Galerie-App-Icon).
 
-**Letzter Stand:** 11.09.26 – APf-Handy über `/apf.html`; Manifest-Scope `/galerie`.
+**Letzter Stand:** 11.09.26 – APf-Handy über `/apf.html`; Manifest-Scope `/galerie`. **Commit:** `3abe7fbd` ✅ **main**
 
 ---
 
