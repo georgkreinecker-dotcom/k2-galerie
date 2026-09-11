@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** SVG 1:1 drucken und mit Original vergleichen; bei Abweichung Zellenkarte nachziehen.
 
-**Letzter Stand:** 11.09.26 – **2‑mm‑Raster-Konstruktion** Ahnenraster + CNC. **Commit:** (nach Push)
+**Letzter Stand:** 11.09.26 – **2‑mm‑Raster-Konstruktion** Ahnenraster + CNC. **Commit:** `2db6630a` ✅ **main**
 
 
 ---
