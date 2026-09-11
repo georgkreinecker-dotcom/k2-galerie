@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Entwurfsmappe öffnen → Maßskizze prüfen / ggf. Maße mit Bruder nachziehen.
 
-**Letzter Stand:** 11.09.26 – **Maßskizze max. 50 cm:** Config + SVG-Aufriss; in Entwurfsmappe Screen/Druck. (Commit folgt)
+**Letzter Stand:** 11.09.26 – **Maßskizze max. 50 cm:** Config + SVG-Aufriss; in Entwurfsmappe Screen/Druck. **Commit:** `1bf11e29` ✅ **main**
 
 
 ---
