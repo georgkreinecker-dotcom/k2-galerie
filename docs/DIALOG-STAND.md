@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Entwurfsmappe → S7 prüfen (Seite/Schräg = Kopftiefe).
 
-**Letzter Stand:** 11.09.26 – S7 Kopf volumetrisch neu.
+**Letzter Stand:** 11.09.26 – S7 Kopf volumetrisch neu. **Commit:** `517a8cb5` ✅ **main**
 
 ---
 
