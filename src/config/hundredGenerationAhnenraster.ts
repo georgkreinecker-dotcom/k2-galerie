@@ -17,6 +17,14 @@ export const AHNENRASTER_GEOMETRIE_SVG_SRC =
 export const AHNENRASTER_LINIEN_VERGLEICH_SRC =
   '/100-generation/referenzen/ahnenraster-linien-vergleich.png' as const
 
+/** Druck-PDFs 1:1 (140 × 220 mm) – am Modell 4M zum Ausdrucken */
+export const AHNENRASTER_HAND_DRUCK_PDF =
+  '/100-generation/referenzen/ahnenraster-hand-druck-1zu1.pdf' as const
+export const AHNENRASTER_FOTO_DRUCK_PDF =
+  '/100-generation/referenzen/ahnenraster-foto-druck-1zu1.pdf' as const
+export const AHNENRASTER_HAND_DRUCK_HTML =
+  '/100-generation/referenzen/ahnenraster-hand-druck-1zu1.html' as const
+
 export const AHNENRASTER_BLATT = {
   id: 'ahnenraster-formatblatt',
   modellId: 'code-ahnen-mythos' as const,

@@ -20,7 +20,7 @@ import {
 import { KeramikDrehscheibe } from '../components/hundredGeneration/KeramikDrehscheibe'
 import { HundredGenerationMassSkizze } from '../components/hundredGeneration/HundredGenerationMassSkizze'
 import { HundredGenerationAhnenrasterBlatt } from '../components/hundredGeneration/HundredGenerationAhnenrasterBlatt'
-import { AHNENRASTER_BLATT } from '../config/hundredGenerationAhnenraster'
+import { AHNENRASTER_BLATT, AHNENRASTER_HAND_DRUCK_PDF, AHNENRASTER_FOTO_DRUCK_PDF, AHNENRASTER_HAND_DRUCK_HTML } from '../config/hundredGenerationAhnenraster'
 import '../App.css'
 
 type PrintSheet = {
@@ -930,6 +930,35 @@ export default function HundredGenerationEntwurfsmappePage() {
                 Alle Ansichten Vollformat
               </button>
             </div>
+            {active.id === AHNENRASTER_BLATT.modellId ? (
+              <div className="print-actions" style={{ marginTop: '0.65rem', flexWrap: 'wrap' }}>
+                <a
+                  className="btn-print"
+                  href={AHNENRASTER_HAND_DRUCK_PDF}
+                  download
+                  style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+                >
+                  📄 Ahnenraster PDF 1:1 (Hand + Raster)
+                </a>
+                <a
+                  className="btn-print-ghost"
+                  href={AHNENRASTER_FOTO_DRUCK_PDF}
+                  download
+                  style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+                >
+                  📄 Foto PDF 1:1
+                </a>
+                <a
+                  className="btn-print-ghost"
+                  href={AHNENRASTER_HAND_DRUCK_HTML}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+                >
+                  Im Browser drucken
+                </a>
+              </div>
+            ) : null}
             <div className="thumb-row">
               {active.ansichten.map((a, i) => (
                 <button
@@ -999,9 +1028,25 @@ export default function HundredGenerationEntwurfsmappePage() {
               Übertragen.
             </p>
             <HundredGenerationAhnenrasterBlatt variant="screen" />
-            <div className="print-actions">
-              <button type="button" className="btn-print" onClick={printAhnenrasterBlatt}>
-                🖨️ Formatblatt drucken
+            <div className="print-actions" style={{ flexWrap: 'wrap' }}>
+              <a
+                className="btn-print"
+                href={AHNENRASTER_HAND_DRUCK_PDF}
+                download
+                style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+              >
+                📄 PDF 1:1 Hand + Raster
+              </a>
+              <a
+                className="btn-print-ghost"
+                href={AHNENRASTER_FOTO_DRUCK_PDF}
+                download
+                style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+              >
+                📄 PDF 1:1 Foto
+              </a>
+              <button type="button" className="btn-print-ghost" onClick={printAhnenrasterBlatt}>
+                🖨️ Formatblatt (Infos) drucken
               </button>
             </div>
           </div>

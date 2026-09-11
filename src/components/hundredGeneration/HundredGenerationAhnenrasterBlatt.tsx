@@ -3,6 +3,9 @@ import {
   AHNENRASTER_BLATT,
   AHNENRASTER_GEOMETRIE_SRC,
   AHNENRASTER_MUSTER_SRC,
+  AHNENRASTER_HAND_DRUCK_PDF,
+  AHNENRASTER_FOTO_DRUCK_PDF,
+  AHNENRASTER_HAND_DRUCK_HTML,
 } from '../../config/hundredGenerationAhnenraster'
 
 type Props = {
@@ -181,7 +184,7 @@ export function HundredGenerationAhnenrasterBlatt({
             </p>
             <p style={pStyle(ink)}>
               <a
-                href="/100-generation/referenzen/ahnenraster-hand-druck-1zu1.pdf"
+                href={AHNENRASTER_HAND_DRUCK_PDF}
                 download
                 style={{ color: accent, fontWeight: 700 }}
               >
@@ -189,7 +192,7 @@ export function HundredGenerationAhnenrasterBlatt({
               </a>
               {' · '}
               <a
-                href="/100-generation/referenzen/ahnenraster-hand-druck-1zu1.html"
+                href={AHNENRASTER_HAND_DRUCK_HTML}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ color: accent }}
@@ -198,7 +201,7 @@ export function HundredGenerationAhnenrasterBlatt({
               </a>
               {' · '}
               <a
-                href="/100-generation/referenzen/ahnenraster-foto-druck-1zu1.pdf"
+                href={AHNENRASTER_FOTO_DRUCK_PDF}
                 download
                 style={{ color: accent }}
               >

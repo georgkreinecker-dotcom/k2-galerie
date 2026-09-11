@@ -1,11 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Ahnenraster Hand-Nachzeichnung auf 2-mm-Raster (Raster dahinter) – Georg prüft.
+**Was wir JETZT tun:** Ahnenraster-PDFs am Modell 4M zum Ausdrucken eingebunden.
 
-**Einordnung:** Nachziehen + Raster unter den weißen Stegen; PDF 1:1 drei Seiten (mit Raster / ohne / Foto).
+**Einordnung:** Bei 4M in der Entwurfsmappe: Buttons Hand+Raster-PDF und Foto-PDF direkt am Modell und am Formatblatt.
 
-**Nächster Schritt:** Georg `ahnenraster-hand-druck-1zu1.pdf` drucken und mit Foto vergleichen – Korrekturen nennen.
+**Nächster Schritt:** Georg öffnet 4M in der Mappe und tippt PDF – Druck 100 %.
 
-**Letzter Stand:** 11.09.26 – Hand + Raster PDF.
+**Letzter Stand:** 11.09.26 – PDFs am Modell 4M.
 
 ---
