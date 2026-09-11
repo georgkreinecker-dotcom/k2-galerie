@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Formatblatt 4M – exaktes Ahnenraster-Foto + Infos.
+**Was wir JETZT tun:** Formatblatt 4M – geometrische Zeichnung + Foto.
 
-**Einordnung:** Raster 1:1 aus Frontplatte abgelegt; Formatblatt zeigt Foto statt Schema; Di-Kurugu-Hintergrund ergänzt.
+**Einordnung:** Aus dem Raster-Foto orthogonal abgeleitete Werkstatt-Zeichnung (PNG/SVG); Formatblatt zeigt Geometrie + Foto nebeneinander.
 
-**Nächster Schritt:** Entwurfsmappe → Mythos → 4M → Formatblatt ansehen/drucken.
+**Nächster Schritt:** Entwurfsmappe → Mythos → 4M → Formatblatt prüfen/drucken.
 
-**Letzter Stand:** 11.09.26 – **Exaktes Ahnenraster** als Bild + Formatblatt mit Infos. **Commit:** `8f55faeb` ✅ **main**
+**Letzter Stand:** 11.09.26 – **Geometrische Zeichnung Ahnenraster** + Formatblatt. **Commit:** (gleich nach Push)
 
 
 ---
