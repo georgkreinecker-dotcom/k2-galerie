@@ -1,23 +1,45 @@
-import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import {
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from 'react'
 import type { HundredGenerationAnsicht } from '../../config/hundredGenerationEntwuerfe'
 
 const STEP_PX = 36
+
+export type KeramikDrehscheibeTrailing = {
+  label: string
+  render: () => ReactNode
+}
 
 type Props = {
   ansichten: readonly HundredGenerationAnsicht[]
   index: number
   onIndexChange: (next: number) => void
   title: string
+  /** Optional: z. B. Maßskizze als letzte Ansicht im Ring */
+  trailingSlot?: KeramikDrehscheibeTrailing
 }
 
 /**
  * Modell drehen/schwenken = durch echte Foto-Ansichten blättern.
+ * Optional trailingSlot (Maßskizze) als letzte Ansicht.
  * Eine Quelle: parent `index`. idxRef verhindert Stale-Index beim Ziehen.
  */
-export function KeramikDrehscheibe({ ansichten, index, onIndexChange, title }: Props) {
-  const n = ansichten.length
-  const safeIdx = n === 0 ? 0 : ((index % n) + n) % n
-  const ansicht = ansichten[safeIdx]
+export function KeramikDrehscheibe({
+  ansichten,
+  index,
+  onIndexChange,
+  title,
+  trailingSlot,
+}: Props) {
+  const fotoN = ansichten.length
+  const total = fotoN + (trailingSlot ? 1 : 0)
+  const safeIdx = total === 0 ? 0 : ((index % total) + total) % total
+  const isTrailing = Boolean(trailingSlot) && safeIdx === fotoN
+  const ansicht = isTrailing ? null : ansichten[safeIdx]
+  const label = isTrailing ? trailingSlot!.label : (ansicht?.label ?? '')
   const idxRef = useRef(safeIdx)
   idxRef.current = safeIdx
 
@@ -31,8 +53,8 @@ export function KeramikDrehscheibe({ ansichten, index, onIndexChange, title }: P
   const [dragging, setDragging] = useState(false)
 
   const go = (next: number) => {
-    if (n < 2) return
-    const wrapped = ((next % n) + n) % n
+    if (total < 2) return
+    const wrapped = ((next % total) + total) % total
     idxRef.current = wrapped
     onIndexChange(wrapped)
   }
@@ -43,7 +65,7 @@ export function KeramikDrehscheibe({ ansichten, index, onIndexChange, title }: P
   const ringIdx = ansichten.findIndex((a) => a.achse === 'ring')
 
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
-    if (n < 2 || e.button !== 0) return
+    if (total < 2 || e.button !== 0 || isTrailing) return
     e.preventDefault()
     e.currentTarget.setPointerCapture(e.pointerId)
     dragRef.current = {
@@ -70,7 +92,7 @@ export function KeramikDrehscheibe({ ansichten, index, onIndexChange, title }: P
       step(-delta)
     }
 
-    if (schwenkIdx >= 0) {
+    if (schwenkIdx >= 0 && !isTrailing) {
       const stepY = Math.trunc(-dy / (STEP_PX + 10))
       if (stepY !== d.lastStepY) {
         d.lastStepY = stepY
@@ -92,33 +114,43 @@ export function KeramikDrehscheibe({ ansichten, index, onIndexChange, title }: P
     setDragging(false)
   }
 
-  if (!ansicht) return null
+  if (total === 0) return null
+  if (!isTrailing && !ansicht) return null
 
   return (
     <div className="hg-drehscheibe">
       <div
-        className={`hg-drehscheibe-stage${dragging ? ' is-dragging' : ''}${n < 2 ? ' is-single' : ''}`}
+        className={`hg-drehscheibe-stage${dragging ? ' is-dragging' : ''}${total < 2 ? ' is-single' : ''}${isTrailing ? ' is-mass' : ''}`}
         role="group"
-        aria-label={`${title} · ${ansicht.label}. Ziehen zum Drehen.`}
+        aria-label={
+          isTrailing
+            ? `${title} · ${label}`
+            : `${title} · ${label}. Ziehen zum Drehen.`
+        }
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
       >
-        <img
-          key={ansicht.src}
-          src={ansicht.src}
-          alt={`${title} · ${ansicht.label}`}
-          draggable={false}
-        />
-        {n > 1 ? (
+        {isTrailing ? (
+          <div className="hg-drehscheibe-mass">{trailingSlot!.render()}</div>
+        ) : (
+          <img
+            key={ansicht!.src}
+            src={ansicht!.src}
+            alt={`${title} · ${label}`}
+            draggable={false}
+          />
+        )}
+        {total > 1 ? (
           <p className="hg-drehscheibe-hint">
-            Ziehen oder Buttons · {ansicht.label} ({safeIdx + 1}/{n})
+            {isTrailing ? 'Buttons · ' : 'Ziehen oder Buttons · '}
+            {label} ({safeIdx + 1}/{total})
           </p>
         ) : null}
       </div>
       <div className="hg-drehscheibe-actions">
-        {n > 1 ? (
+        {total > 1 ? (
           <>
             <button type="button" onClick={() => step(-1)} aria-label="Vorherige Ansicht">
               ‹ zurück
@@ -128,7 +160,7 @@ export function KeramikDrehscheibe({ ansichten, index, onIndexChange, title }: P
             </button>
           </>
         ) : null}
-        {schwenkIdx >= 0 ? (
+        {schwenkIdx >= 0 && !isTrailing ? (
           <button
             type="button"
             className={safeIdx === schwenkIdx ? 'is-on' : undefined}
@@ -137,9 +169,20 @@ export function KeramikDrehscheibe({ ansichten, index, onIndexChange, title }: P
             {safeIdx === schwenkIdx ? '↓ von vorn' : '↑ schräg oben'}
           </button>
         ) : null}
-        <a href={ansicht.src} target="_blank" rel="noopener noreferrer">
-          Groß öffnen
-        </a>
+        {trailingSlot ? (
+          <button
+            type="button"
+            className={isTrailing ? 'is-on' : undefined}
+            onClick={() => go(isTrailing ? (ringIdx >= 0 ? ringIdx : 0) : fotoN)}
+          >
+            {isTrailing ? '↓ Fotos' : `📐 ${trailingSlot.label}`}
+          </button>
+        ) : null}
+        {!isTrailing && ansicht ? (
+          <a href={ansicht.src} target="_blank" rel="noopener noreferrer">
+            Groß öffnen
+          </a>
+        ) : null}
       </div>
     </div>
   )

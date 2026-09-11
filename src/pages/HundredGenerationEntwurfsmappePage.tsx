@@ -108,6 +108,9 @@ export default function HundredGenerationEntwurfsmappePage() {
 
   const aktuelleAnsicht = active.ansichten[ansichtIdx] ?? active.ansichten[0]
   const activeMass = getMassForModell(active.id)
+  const massAnsichtIdx = active.ansichten.length
+  const isMassAnsicht = ansichtIdx === massAnsichtIdx
+  const ansichtTotal = massAnsichtIdx + 1
 
   const printMassSkizze = () => {
     setPrintMode('mass')
@@ -115,6 +118,18 @@ export default function HundredGenerationEntwurfsmappePage() {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => window.print())
     })
+  }
+
+  const massTrailing = {
+    label: 'Maßskizze',
+    render: () => (
+      <HundredGenerationMassSkizze
+        title={active.title}
+        mass={activeMass}
+        imageSrc={active.src}
+        variant="screen"
+      />
+    ),
   }
 
   return (
@@ -266,11 +281,29 @@ export default function HundredGenerationEntwurfsmappePage() {
           color: var(--hg-muted);
           line-height: 1.45;
         }
-        .hg-entwurfsmappe .thumb-row {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 0.5rem;
-          margin-top: 0.75rem;
+        .hg-entwurfsmappe .hg-drehscheibe-stage.is-mass {
+          cursor: default;
+          background: #0e1118;
+        }
+        .hg-entwurfsmappe .hg-drehscheibe-mass {
+          width: 100%;
+          padding: 0.5rem 0.35rem 1.75rem;
+          box-sizing: border-box;
+        }
+        .hg-entwurfsmappe .thumb-row button.thumb-mass {
+          position: relative;
+        }
+        .hg-entwurfsmappe .thumb-row button.thumb-mass span {
+          display: block;
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          padding: 0.15rem;
+          background: linear-gradient(transparent, rgba(0,0,0,0.75));
+          color: var(--hg-accent);
+          font-size: 0.58rem;
+          font-weight: 700;
         }
         .hg-entwurfsmappe .thumb-row button {
           appearance: none;
@@ -652,6 +685,7 @@ export default function HundredGenerationEntwurfsmappePage() {
                 <HundredGenerationMassSkizze
                   title={m.title}
                   mass={getMassForModell(m.id)}
+                  imageSrc={m.src}
                   variant="print"
                 />
               </div>
@@ -693,6 +727,7 @@ export default function HundredGenerationEntwurfsmappePage() {
             <HundredGenerationMassSkizze
               title={active.title}
               mass={activeMass}
+              imageSrc={active.src}
               variant="print"
             />
           </section>
@@ -710,7 +745,7 @@ export default function HundredGenerationEntwurfsmappePage() {
           Am Bild ziehen oder „weiter ›“ / „‹ zurück“: Vorne, Seite, Hinten, Schräg oben.
           Serie = Basisformen. <strong>Di Kurugu · Mythos</strong> = zu jedem Entwurf die Variante mit
           Axt-Form, Flecht-Textur und mythologischem Aspekt.
-          <strong> Maßskizze</strong> = Aufriss mit H/B/T – Serie max. Höhe{' '}
+          <strong> Maßskizze</strong> = echte Vorne-Ansicht mit H/B/T (4. Ansicht) – Serie max.{' '}
           {HUNDRED_GENERATION_MAX_HOEHE_CM} cm.
           <strong> Ganze Mappe</strong> = Übersicht inkl. Maß. <strong>Vollformat</strong> = ein Bild
           auf eine Seite.
@@ -795,31 +830,45 @@ export default function HundredGenerationEntwurfsmappePage() {
                   {a.label}
                 </button>
               ))}
+              <button
+                type="button"
+                className={isMassAnsicht ? 'is-on' : undefined}
+                onClick={() => setAnsichtIdx(massAnsichtIdx)}
+              >
+                Maßskizze
+              </button>
             </div>
             <KeramikDrehscheibe
               ansichten={active.ansichten}
               index={ansichtIdx}
               onIndexChange={setAnsichtIdx}
               title={active.title}
+              trailingSlot={massTrailing}
             />
             <div className="print-actions">
-              <button
-                type="button"
-                className="btn-print"
-                disabled={!aktuelleAnsicht}
-                onClick={() => {
-                  if (!aktuelleAnsicht) return
-                  printVollformat([
-                    {
-                      src: aktuelleAnsicht.src,
-                      caption: `${active.title} · ${aktuelleAnsicht.label}`,
-                      subtitle: `${active.note} · ${active.formHint}`,
-                    },
-                  ])
-                }}
-              >
-                🖨️ Diese Ansicht Vollformat
-              </button>
+              {isMassAnsicht ? (
+                <button type="button" className="btn-print" onClick={printMassSkizze}>
+                  🖨️ Maßskizze drucken
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="btn-print"
+                  disabled={!aktuelleAnsicht}
+                  onClick={() => {
+                    if (!aktuelleAnsicht) return
+                    printVollformat([
+                      {
+                        src: aktuelleAnsicht.src,
+                        caption: `${active.title} · ${aktuelleAnsicht.label}`,
+                        subtitle: `${active.note} · ${active.formHint}`,
+                      },
+                    ])
+                  }}
+                >
+                  🖨️ Diese Ansicht Vollformat
+                </button>
+              )}
               <button
                 type="button"
                 className="btn-print-ghost"
@@ -858,6 +907,17 @@ export default function HundredGenerationEntwurfsmappePage() {
                   <span>{a.label}</span>
                 </button>
               ))}
+              <button
+                type="button"
+                className={`thumb-mass${isMassAnsicht ? ' is-on' : ''}`}
+                onClick={() => setAnsichtIdx(massAnsichtIdx)}
+                aria-label="Maßskizze"
+              >
+                <img src={active.src} alt="" />
+                <span>
+                  Maß · {massAnsichtIdx + 1}/{ansichtTotal}
+                </span>
+              </button>
             </div>
             <p className="hint">
               <strong style={{ color: 'var(--hg-ink)' }}>{active.title}</strong>
@@ -872,31 +932,13 @@ export default function HundredGenerationEntwurfsmappePage() {
                   )
                 </>
               ) : null}
+              {isMassAnsicht ? (
+                <>
+                  {' '}
+                  · Geplante Endgröße {formatMassLabel(activeMass)} (ohne Sockel).
+                </>
+              ) : null}
             </p>
-          </div>
-        </div>
-
-        <div className="card" style={{ marginTop: '1rem' }}>
-          <h2>Maßskizze · max. {HUNDRED_GENERATION_MAX_HOEHE_CM} cm</h2>
-          <p className="hint" style={{ marginBottom: '0.65rem' }}>
-            Geplante Endgröße für die Werkstatt. Alle Objekte der Serie bleiben unter{' '}
-            {HUNDRED_GENERATION_MAX_HOEHE_CM} cm Höhe.
-          </p>
-          <HundredGenerationMassSkizze title={active.title} mass={activeMass} variant="screen" />
-          <p
-            style={{
-              margin: '0.55rem 0 0',
-              fontFamily: 'system-ui, sans-serif',
-              fontSize: '0.9rem',
-              color: 'var(--hg-accent)',
-            }}
-          >
-            {formatMassLabel(activeMass)}
-          </p>
-          <div className="print-actions">
-            <button type="button" className="btn-print" onClick={printMassSkizze}>
-              🖨️ Maßskizze drucken
-            </button>
           </div>
         </div>
 

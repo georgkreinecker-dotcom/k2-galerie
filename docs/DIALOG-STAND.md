@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Entwurfsmappe – Maßskizze pro Objekt (max. Höhe 50 cm).
+**Was wir JETZT tun:** Entwurfsmappe – Maßskizze = echte Vorne-Ansicht (alle Objekte).
 
-**Einordnung:** Werkstatt-Aufriss H/B/T zu jedem Modell; Serie-Grenze 50 cm; Druck in Mappe + Einzeldruck.
+**Einordnung:** Keine Schema-Silhouette mehr; Form 1:1 aus Objektfoto + H/B/T; Maßskizze als Ansicht im Dreh-Ring.
 
-**Nächster Schritt:** Entwurfsmappe öffnen → Maßskizze prüfen / ggf. Maße mit Bruder nachziehen.
+**Nächster Schritt:** Entwurfsmappe → Maßskizze-Tab prüfen; ggf. Maße mit Bruder nachziehen.
 
-**Letzter Stand:** 11.09.26 – **Maßskizze max. 50 cm:** Config + SVG-Aufriss; in Entwurfsmappe Screen/Druck. **Commit:** `1bf11e29` ✅ **main**
+**Letzter Stand:** 11.09.26 – **Maßskizze präzise:** echte Vorne-Ansicht statt Schema; 4. Ansicht im Ring. (Commit folgt)
 
 
 ---
