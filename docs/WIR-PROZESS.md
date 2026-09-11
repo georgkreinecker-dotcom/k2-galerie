@@ -123,6 +123,8 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 
 ## Session-Reflexion (wird ergänzt)
 
+**Session-Reflexion (11.09.26, Abend):** Ahnenraster: Auto-Zeichnung trifft Foto nicht – ehrlicher Foto-Druck + Hand+Raster-PDF; PDFs direkt am Modell 4M. CNC bleibt pausiert bis Georg die Zeichnung freigibt.
+
 **Session-Reflexion (11.09.26):** Grafiker-Tisch war nie wirklich nutzbar – entfernt statt weiter mitzuschleppen. Gestaltung = Admin Design.
 
 **Session-Reflexion (08.09.26, Abend):** **100 Generationen** = Kunstprojekt neben der Software – zwei Kapitel (Keramik Volumen / Fläche Bild) in einer Smart-Panel-Mappe. Session-Ende = offene lokale Dateien nicht liegen lassen.

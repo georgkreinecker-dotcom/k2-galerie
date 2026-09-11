@@ -1,11 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Ahnenraster-PDFs am Modell 4M zum Ausdrucken eingebunden.
+**Was wir JETZT tun:** Session beendet (11.09.26 Abend).
 
-**Einordnung:** Bei 4M in der Entwurfsmappe: Buttons Hand+Raster-PDF und Foto-PDF direkt am Modell und am Formatblatt.
+**Einordnung:** Ahnenraster 4M – Druck-PDFs (Hand+Raster + Foto 1:1) am Modell und Formatblatt. CNC pausiert, bis Zeichnung von Georg akzeptiert.
 
-**Nächster Schritt:** Georg öffnet 4M in der Mappe und tippt PDF – Druck 100 %.
+**Nächster Schritt:** Georg prüft Druck 100 %; erst dann Zeichnung freigeben oder Hand-Korrektur.
 
-**Letzter Stand:** 11.09.26 – PDFs am Modell 4M.
+**Letzter Stand:** 11.09.26 – PDFs am Modell 4M (`9c26beb2`). Schluss für heute.
 
 ---
