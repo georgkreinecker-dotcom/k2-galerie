@@ -10,6 +10,11 @@ export type HundredGenerationModellId =
   | 'metamorphose'
   | 'code-muster'
   | 'drei-elemente'
+  | 'chaosgott-mythos'
+  | 'axt-ritual-mythos'
+  | 'metamorphose-mythos'
+  | 'code-ahnen-mythos'
+  | 'drei-rituale-mythos'
   | 'skizze-zwei-tuerme'
   | 'skizze-segel'
   | 'skizze-kelch'
@@ -18,7 +23,7 @@ export type HundredGenerationModellId =
   | 'skizze-spirale'
   | 'skizze-spirale-kopf'
 
-export type HundredGenerationEntwurfGruppe = 'serie' | 'handskizze'
+export type HundredGenerationEntwurfGruppe = 'serie' | 'mythos' | 'handskizze'
 
 export type HundredGenerationAnsichtId = 'vorne' | 'seite' | 'hinten' | 'schraeg'
 
@@ -39,6 +44,8 @@ export type HundredGenerationEntwurf = {
   sketchSrc?: string
   formHint: string
   gruppe: HundredGenerationEntwurfGruppe
+  /** Bei Mythos-Varianten: zugehöriger Basis-Entwurf der Serie Chaos & Code */
+  baseId?: HundredGenerationModellId
   ansichten: readonly HundredGenerationAnsicht[]
 }
 
@@ -139,6 +146,76 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
       '/100-generation/entwurf-05-drei-elemente.png',
       '/100-generation/entwurf-05-drei-elemente-seite.png',
       { schraeg: '/100-generation/entwurf-05-drei-elemente-schraeg.png' }
+    ),
+  },
+  {
+    id: 'chaosgott-mythos',
+    title: '1M · Chaosgott · Ahnen-Axt',
+    note: 'Di Kurugu · Mythos',
+    src: '/100-generation/entwurf-01m-chaosgott-mythos.png',
+    formHint: 'Aus dem Ur-Chaos tritt die Zeremonialaxt – Ahnengeist des Hochlands',
+    gruppe: 'mythos',
+    baseId: 'chaosgott',
+    ansichten: views(
+      '/100-generation/entwurf-01m-chaosgott-mythos.png',
+      '/100-generation/entwurf-01m-chaosgott-mythos-seite.png',
+      { schraeg: '/100-generation/entwurf-01m-chaosgott-mythos-schraeg.png' }
+    ),
+  },
+  {
+    id: 'axt-ritual-mythos',
+    title: '2M · Axt · Ritual-Insignie',
+    note: 'Di Kurugu · Clan-Aufnahme',
+    src: '/100-generation/entwurf-02m-axt-ritual-mythos.png',
+    formHint: 'Zeremonialaxt als Zeichen der Aufnahme – Flechtwerk und Totem',
+    gruppe: 'mythos',
+    baseId: 'axt-anker',
+    ansichten: views(
+      '/100-generation/entwurf-02m-axt-ritual-mythos.png',
+      '/100-generation/entwurf-02m-axt-ritual-mythos-seite.png',
+      { schraeg: '/100-generation/entwurf-02m-axt-ritual-mythos-schraeg.png' }
+    ),
+  },
+  {
+    id: 'metamorphose-mythos',
+    title: '3M · Metamorphose · Wissen',
+    note: 'Di Kurugu · Wendepunkt',
+    src: '/100-generation/entwurf-03m-metamorphose-mythos.png',
+    formHint: 'Unten Chaos, oben Axtschaft mit Ahnen-Flechtcode – Wissen wächst aus Erde',
+    gruppe: 'mythos',
+    baseId: 'metamorphose',
+    ansichten: views(
+      '/100-generation/entwurf-03m-metamorphose-mythos.png',
+      '/100-generation/entwurf-03m-metamorphose-mythos-seite.png',
+      { schraeg: '/100-generation/entwurf-03m-metamorphose-mythos-schraeg.png' }
+    ),
+  },
+  {
+    id: 'code-ahnen-mythos',
+    title: '4M · Code · Ahnenraster',
+    note: 'Di Kurugu · heiliges Muster',
+    src: '/100-generation/entwurf-04m-code-ahnen-mythos.png',
+    formHint: 'Ganzes Volumen als Flechtwerk – Generationen-Wissen als heiliger Code',
+    gruppe: 'mythos',
+    baseId: 'code-muster',
+    ansichten: views(
+      '/100-generation/entwurf-04m-code-ahnen-mythos.png',
+      '/100-generation/entwurf-04m-code-ahnen-mythos-seite.png',
+      { schraeg: '/100-generation/entwurf-04m-code-ahnen-mythos-schraeg.png' }
+    ),
+  },
+  {
+    id: 'drei-rituale-mythos',
+    title: '5M · Drei Rituale',
+    note: 'Di Kurugu · Dreiklang',
+    src: '/100-generation/entwurf-05m-drei-rituale-mythos.png',
+    formHint: 'Klinge · Flecht-Schaft · Clan-Zeichen – Opfer, Wissen, Zugehörigkeit',
+    gruppe: 'mythos',
+    baseId: 'drei-elemente',
+    ansichten: views(
+      '/100-generation/entwurf-05m-drei-rituale-mythos.png',
+      '/100-generation/entwurf-05m-drei-rituale-mythos-seite.png',
+      { schraeg: '/100-generation/entwurf-05m-drei-rituale-mythos-schraeg.png' }
     ),
   },
   {

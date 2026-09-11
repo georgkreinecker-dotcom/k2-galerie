@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Grafiker-Tisch entfernt (hatte keine Funktion).
+**Was wir JETZT tun:** Serie Chaos & Code – Di-Kurugu-Mythos-Varianten.
 
-**Einordnung:** APf räumt auf – Smart Panel bleibt; Gestaltung läuft weiter über Admin → Design (pageContent), nicht über den alten Vorschau-Tisch.
+**Einordnung:** Zu jedem der 5 Basis-Entwürfe eine Variante mit Axt-Form, Flecht-Textur und mythologischem Aspekt; Entwurfsmappe-Gruppe „Di Kurugu · Mythos“.
 
-**Nächster Schritt:** APf kurz prüfen (kein Grafiker-Button mehr) – Seite neu laden.
+**Nächster Schritt:** Entwurfsmappe → Tab „Di Kurugu · Mythos“ ansehen / ggf. Feinschliff.
 
-**Letzter Stand:** 11.09.26 – **Grafiker-Tisch entfernt** (Commit `598aafd9` ✅ main). Admin → Design bleibt.
+**Letzter Stand:** 11.09.26 – **Di-Kurugu-Mythos:** 5 Varianten (1M–5M) mit Vorne/Seite/Schräg; Referenzen Flechtwerk; Vollformat-Druck in Mappe mit drin.
 
 ---
 

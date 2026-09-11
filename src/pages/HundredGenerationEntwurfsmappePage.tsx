@@ -15,6 +15,12 @@ import {
 import { KeramikDrehscheibe } from '../components/hundredGeneration/KeramikDrehscheibe'
 import '../App.css'
 
+type PrintSheet = {
+  src: string
+  caption: string
+  subtitle?: string
+}
+
 function loadNotes(): Record<string, string> {
   try {
     const raw = localStorage.getItem(ENTWURFSMAPPE_NOTES_KEY)
@@ -47,6 +53,9 @@ export default function HundredGenerationEntwurfsmappePage() {
   const [activeId, setActiveId] = useState<HundredGenerationModellId>('chaosgott')
   const [ansichtIdx, setAnsichtIdx] = useState(0)
   const [notes, setNotes] = useState<Record<string, string>>(() => loadNotes())
+  /** mappe = Übersicht; vollformat = einzelne Bilder je eine Seite */
+  const [printMode, setPrintMode] = useState<'mappe' | 'vollformat'>('mappe')
+  const [printSheets, setPrintSheets] = useState<PrintSheet[]>([])
 
   useEffect(() => {
     if (!gefiltert.some((m) => m.id === activeId) && gefiltert[0]) {
@@ -67,8 +76,36 @@ export default function HundredGenerationEntwurfsmappePage() {
     saveNotes(notes)
   }, [notes])
 
+  useEffect(() => {
+    const clear = () => {
+      setPrintMode('mappe')
+      setPrintSheets([])
+    }
+    window.addEventListener('afterprint', clear)
+    return () => window.removeEventListener('afterprint', clear)
+  }, [])
+
+  const printMappe = () => {
+    setPrintMode('mappe')
+    setPrintSheets([])
+    requestAnimationFrame(() => window.print())
+  }
+
+  const printVollformat = (sheets: PrintSheet[]) => {
+    if (sheets.length === 0) return
+    setPrintMode('vollformat')
+    setPrintSheets(sheets)
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => window.print())
+    })
+  }
+
+  const aktuelleAnsicht = active.ansichten[ansichtIdx] ?? active.ansichten[0]
+
   return (
-    <div className="hg-entwurfsmappe">
+    <div
+      className={`hg-entwurfsmappe${printMode === 'vollformat' ? ' is-print-vollformat' : ' is-print-mappe'}`}
+    >
       <style>{`
         .hg-entwurfsmappe {
           --hg-bg: #12151c;
@@ -261,14 +298,18 @@ export default function HundredGenerationEntwurfsmappePage() {
           gap: 0.75rem;
           margin-top: 0.75rem;
         }
-        .hg-entwurfsmappe .ueber-grid a {
-          display: block;
-          color: inherit;
-          text-decoration: none;
+        .hg-entwurfsmappe .ueber-grid > div {
+          display: flex;
+          flex-direction: column;
           border: 1px solid rgba(255,255,255,0.08);
           border-radius: 10px;
           overflow: hidden;
           background: rgba(0,0,0,0.2);
+        }
+        .hg-entwurfsmappe .ueber-grid a {
+          display: block;
+          color: inherit;
+          text-decoration: none;
         }
         .hg-entwurfsmappe .ueber-grid img {
           width: 100%;
@@ -364,10 +405,33 @@ export default function HundredGenerationEntwurfsmappePage() {
           font-size: 0.85rem;
           font-weight: 600;
         }
+        .hg-entwurfsmappe .btn-print-ghost {
+          appearance: none;
+          border: 1px solid var(--hg-line);
+          background: transparent;
+          color: var(--hg-muted);
+          padding: 0.4rem 0.75rem;
+          border-radius: 8px;
+          cursor: pointer;
+          font-family: system-ui, sans-serif;
+          font-size: 0.82rem;
+          font-weight: 600;
+        }
+        .hg-entwurfsmappe .btn-print-ghost:hover {
+          color: var(--hg-accent);
+          border-color: var(--hg-accent);
+        }
+        .hg-entwurfsmappe .print-actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.45rem;
+          margin-top: 0.65rem;
+          font-family: system-ui, sans-serif;
+        }
         .hg-entwurfsmappe .print-only { display: none; }
         .hg-entwurfsmappe .seitenfuss { display: none; }
         @media print {
-          @page { margin: 12mm 14mm 14mm 14mm; }
+          @page { margin: 10mm 12mm 14mm 12mm; }
           body { background: #fff !important; }
           .hg-entwurfsmappe {
             background: #fff !important;
@@ -375,9 +439,11 @@ export default function HundredGenerationEntwurfsmappePage() {
             font-size: 10.5pt;
           }
           .hg-entwurfsmappe .no-print { display: none !important; }
-          .hg-entwurfsmappe .print-only { display: block !important; }
           .hg-entwurfsmappe .shell { max-width: none; padding: 0; }
-          .hg-entwurfsmappe h1 { color: #1c1a18; font-size: 16pt; margin: 0 0 0.4rem; }
+          .hg-entwurfsmappe.is-print-mappe .print-mappe { display: block !important; }
+          .hg-entwurfsmappe.is-print-mappe .print-vollformat { display: none !important; }
+          .hg-entwurfsmappe.is-print-vollformat .print-mappe { display: none !important; }
+          .hg-entwurfsmappe.is-print-vollformat .print-vollformat { display: block !important; }
           .hg-entwurfsmappe .print-kicker {
             font-family: system-ui, sans-serif;
             font-size: 8pt;
@@ -438,6 +504,55 @@ export default function HundredGenerationEntwurfsmappePage() {
             margin: 0.35rem 0 0;
             white-space: pre-wrap;
           }
+          .hg-entwurfsmappe .print-sheet {
+            break-after: page;
+            page-break-after: always;
+            display: flex;
+            flex-direction: column;
+            min-height: 95vh;
+            box-sizing: border-box;
+            padding: 0;
+          }
+          .hg-entwurfsmappe .print-sheet:last-child {
+            break-after: auto;
+            page-break-after: auto;
+          }
+          .hg-entwurfsmappe .print-sheet-head {
+            font-family: system-ui, sans-serif;
+            margin: 0 0 0.5rem;
+          }
+          .hg-entwurfsmappe .print-sheet-head .print-kicker {
+            margin: 0 0 0.15rem;
+          }
+          .hg-entwurfsmappe .print-sheet-head h1 {
+            font-size: 14pt;
+            color: #1c1a18;
+            margin: 0;
+            line-height: 1.2;
+          }
+          .hg-entwurfsmappe .print-sheet-head p {
+            font-size: 9pt;
+            color: #5c5650;
+            margin: 0.2rem 0 0;
+          }
+          .hg-entwurfsmappe .print-sheet-figure {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            min-height: 0;
+          }
+          .hg-entwurfsmappe .print-sheet-figure img {
+            display: block;
+            max-width: 100%;
+            max-height: 88vh;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border: none;
+            background: #fff;
+          }
           .hg-entwurfsmappe .seitenfuss {
             display: block !important;
             position: fixed;
@@ -460,14 +575,14 @@ export default function HundredGenerationEntwurfsmappePage() {
         <nav className="nav no-print">
           <Link to={PLATFORM_ROUTES.projects}>← Projekte</Link>
           <div style={{ display: 'flex', gap: '0.65rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            <button type="button" className="btn-print" onClick={() => window.print()}>
-              🖨️ Drucken
+            <button type="button" className="btn-print" onClick={printMappe}>
+              🖨️ Ganze Mappe
             </button>
             <Link to={HUNDRED_GENERATION_ROUTE}>Konzept Keramik</Link>
           </div>
         </nav>
 
-        <div className="print-only">
+        <div className="print-only print-mappe">
           <p className="print-kicker">100 Generationen · Chaos &amp; Code</p>
           <h1>Entwurfsmappe – Druckfassung</h1>
           <p className="print-meta">
@@ -507,6 +622,21 @@ export default function HundredGenerationEntwurfsmappePage() {
           ))}
         </div>
 
+        <div className="print-only print-vollformat">
+          {printSheets.map((sheet, i) => (
+            <section key={`${sheet.src}-${i}`} className="print-sheet">
+              <div className="print-sheet-head">
+                <p className="print-kicker">100 Generationen · Vollformat</p>
+                <h1>{sheet.caption}</h1>
+                {sheet.subtitle ? <p>{sheet.subtitle}</p> : null}
+              </div>
+              <figure className="print-sheet-figure">
+                <img src={sheet.src} alt={sheet.caption} />
+              </figure>
+            </section>
+          ))}
+        </div>
+
         <div className="no-print">
         <p className="kicker">100 Generationen · Arbeitsplatz</p>
         <h1>Entwurfsmappe</h1>
@@ -517,7 +647,9 @@ export default function HundredGenerationEntwurfsmappePage() {
         </div>
         <p className="lede">
           Am Bild ziehen oder „weiter ›“ / „‹ zurück“: Vorne, Seite, Hinten, Schräg oben.
-          Echte Keramik-Fotos – so siehst du alle Ansichten zum Formen. Button „Drucken“ = ganze Mappe.
+          Serie = Basisformen. <strong>Di Kurugu · Mythos</strong> = zu jedem Entwurf die Variante mit
+          Axt-Form, Flecht-Textur und mythologischem Aspekt.
+          <strong> Ganze Mappe</strong> = Übersicht. <strong>Vollformat</strong> = ein Bild auf eine Seite.
         </p>
 
         <div className="gruppen" role="tablist" aria-label="Gruppen">
@@ -527,6 +659,13 @@ export default function HundredGenerationEntwurfsmappePage() {
             onClick={() => setGruppe('serie')}
           >
             Serie Chaos &amp; Code
+          </button>
+          <button
+            type="button"
+            className={gruppe === 'mythos' ? 'is-on' : undefined}
+            onClick={() => setGruppe('mythos')}
+          >
+            Di Kurugu · Mythos
           </button>
           <button
             type="button"
@@ -559,6 +698,23 @@ export default function HundredGenerationEntwurfsmappePage() {
               <a href={active.sketchSrc} target="_blank" rel="noopener noreferrer">
                 <img src={active.sketchSrc} alt={`Skizze ${active.title}`} />
               </a>
+              <div className="print-actions">
+                <button
+                  type="button"
+                  className="btn-print"
+                  onClick={() =>
+                    printVollformat([
+                      {
+                        src: active.sketchSrc!,
+                        caption: `${active.title} · Handskizze`,
+                        subtitle: active.note,
+                      },
+                    ])
+                  }
+                >
+                  🖨️ Vollformat
+                </button>
+              </div>
             </div>
           ) : null}
 
@@ -582,6 +738,49 @@ export default function HundredGenerationEntwurfsmappePage() {
               onIndexChange={setAnsichtIdx}
               title={active.title}
             />
+            <div className="print-actions">
+              <button
+                type="button"
+                className="btn-print"
+                disabled={!aktuelleAnsicht}
+                onClick={() => {
+                  if (!aktuelleAnsicht) return
+                  printVollformat([
+                    {
+                      src: aktuelleAnsicht.src,
+                      caption: `${active.title} · ${aktuelleAnsicht.label}`,
+                      subtitle: `${active.note} · ${active.formHint}`,
+                    },
+                  ])
+                }}
+              >
+                🖨️ Diese Ansicht Vollformat
+              </button>
+              <button
+                type="button"
+                className="btn-print-ghost"
+                onClick={() => {
+                  const sheets: PrintSheet[] = []
+                  if (active.sketchSrc) {
+                    sheets.push({
+                      src: active.sketchSrc,
+                      caption: `${active.title} · Handskizze`,
+                      subtitle: active.note,
+                    })
+                  }
+                  for (const a of active.ansichten) {
+                    sheets.push({
+                      src: a.src,
+                      caption: `${active.title} · ${a.label}`,
+                      subtitle: `${active.note} · ${active.formHint}`,
+                    })
+                  }
+                  printVollformat(sheets)
+                }}
+              >
+                Alle Ansichten Vollformat
+              </button>
+            </div>
             <div className="thumb-row">
               {active.ansichten.map((a, i) => (
                 <button
@@ -600,6 +799,14 @@ export default function HundredGenerationEntwurfsmappePage() {
               <strong style={{ color: 'var(--hg-ink)' }}>{active.title}</strong>
               {' · '}
               {active.note}. {active.formHint}
+              {active.baseId ? (
+                <>
+                  {' '}
+                  (Variante zu{' '}
+                  {HUNDRED_GENERATION_MODELLE.find((m) => m.id === active.baseId)?.title ?? active.baseId}
+                  )
+                </>
+              ) : null}
             </p>
           </div>
         </div>
@@ -621,18 +828,36 @@ export default function HundredGenerationEntwurfsmappePage() {
           <h2>Übersichten</h2>
           <div className="ueber-grid">
             {HUNDRED_GENERATION_UEBERSICHTEN.map((u) => (
-              <a key={u.id} href={u.src} target="_blank" rel="noopener noreferrer">
-                <img src={u.src} alt={u.title} loading="lazy" />
-                <span>
-                  {u.title} · {u.note}
-                </span>
-              </a>
+              <div key={u.id}>
+                <a href={u.src} target="_blank" rel="noopener noreferrer">
+                  <img src={u.src} alt={u.title} loading="lazy" />
+                  <span>
+                    {u.title} · {u.note}
+                  </span>
+                </a>
+                <button
+                  type="button"
+                  className="btn-print-ghost"
+                  style={{ alignSelf: 'flex-start', margin: '0 0.5rem 0.5rem' }}
+                  onClick={() =>
+                    printVollformat([
+                      {
+                        src: u.src,
+                        caption: u.title,
+                        subtitle: u.note,
+                      },
+                    ])
+                  }
+                >
+                  🖨️ Vollformat
+                </button>
+              </div>
             ))}
           </div>
         </div>
 
         <footer className="foot">
-          Entwurfsmappe · Drehen über Foto-Ansichten · Drucken für den Tisch. Echtes Mesh erst mit Scan/GLB.
+          Entwurfsmappe · Drehen über Foto-Ansichten · Ganze Mappe oder Einzelbild Vollformat. Echtes Mesh erst mit Scan/GLB.
         </footer>
         </div>
         <div className="seitenfuss" aria-hidden />

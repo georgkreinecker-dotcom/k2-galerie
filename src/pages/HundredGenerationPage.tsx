@@ -13,7 +13,9 @@ import '../App.css'
  */
 
 const KERAMIK_ENTWUERFE = [
-  ...HUNDRED_GENERATION_MODELLE.map((m) => ({ src: m.src, title: m.title, note: m.note })),
+  ...HUNDRED_GENERATION_MODELLE.filter((m) => m.gruppe === 'serie' || m.gruppe === 'mythos').map(
+    (m) => ({ src: m.src, title: m.title, note: m.note })
+  ),
   ...HUNDRED_GENERATION_UEBERSICHTEN.map((u) => ({ src: u.src, title: u.title, note: u.note })),
 ] as const
 
@@ -299,7 +301,8 @@ export default function HundredGenerationPage() {
         <section id="entwuerfe" className="no-print">
           <h2>KI-Entwürfe – Keramikmodelle</h2>
           <p>
-            Erste visuelle Entwürfe. Zum Weiterarbeiten mit drehbarem 3D und Notizen:
+            Serie Chaos &amp; Code und die Di-Kurugu-Mythos-Varianten (Form, Flecht-Textur, Ahnen-Aspekt).
+            Zum Weiterarbeiten mit drehbarem Blick und Notizen:
             {' '}
             <Link to={HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE} style={{ color: 'var(--hg-accent)' }}>
               Entwurfsmappe öffnen →
