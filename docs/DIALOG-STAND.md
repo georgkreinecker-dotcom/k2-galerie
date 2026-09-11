@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Am Mac Smart Panel öffnen → QR mit Handy scannen.
 
-**Letzter Stand:** 11.09.26 – APf-QR oben im Smart Panel (`?apf=1` + Cache-Bust).
+**Letzter Stand:** 11.09.26 – APf-QR oben im Smart Panel (`?apf=1` + Cache-Bust). **Commit:** `ce2e9050` ✅ **main**
 
 ---
 
