@@ -124,6 +124,12 @@ export const K2_GALERIE_APF_EINSTIEG = '/projects/k2-galerie?apf=1' as const
  */
 export const K2_GALERIE_APF_OHNE_MANDANT = '/projects/k2-galerie?apf=1&page=platform' as const
 
+/**
+ * Handy-QR / Smart Panel: eigener Einstieg – nicht `/galerie` und nicht die Galerie-PWA.
+ * Statische Datei `public/apf.html` (no-cache) → danach SPA mit `apf=1&page=platform`.
+ */
+export const K2_APF_HANDY_QR_PATH = '/apf.html' as const
+
 /** Galerie-Lizenz ohne Mandanten-ID (LK2 / ök2 auf der Plattform): Admin im Demo-Kontext – nie `/admin` ohne Query (K2), nie APf. */
 export function buildLk2GalerieLizenzAdminUrlOhneTenant(focusDirection?: string | null): string {
   const fd = String(focusDirection ?? 'kunst').trim() || 'kunst'
@@ -138,6 +144,9 @@ export const WILLKOMMEN_FROM_KEY = 'k2-from-willkommen'
 
 /** Basis-URL der App (für QR/Links auf Flyern – immer Produktion) */
 export const BASE_APP_URL = 'https://k2-galerie.vercel.app'
+
+/** Absolute URL für APf-Handy-QR (Smart Panel) */
+export const K2_APF_HANDY_QR_URL = `${BASE_APP_URL}${K2_APF_HANDY_QR_PATH}` as const
 
 /** Künstler-Einstieg: eigener Zugang zum Admin (Besucher sehen keinen Admin-Button). Optional Passwort. */
 export const MEIN_BEREICH_ROUTE = '/mein-bereich'

@@ -20,6 +20,29 @@ if (typeof window !== 'undefined' && window.location.pathname.startsWith('/r/'))
   window.history.replaceState(null, '', window.location.origin + '/' + (window.location.search || ''))
 }
 
+/**
+ * APf-Handy-Einstieg: Wenn alter Code / Galerie-PWA nach /galerie umgeleitet hat,
+ * aber apf.html den Marker gesetzt hat → sofort zurück in die APf (nicht Besucher-Galerie).
+ */
+if (typeof window !== 'undefined' && window.self === window.top) {
+  try {
+    const p = window.location.pathname || ''
+    const onK2Galerie =
+      p === '/galerie' ||
+      p === '/projects/k2-galerie/galerie'
+    if (onK2Galerie && sessionStorage.getItem('k2-apf-entry') === '1') {
+      sessionStorage.removeItem('k2-apf-entry')
+      sessionStorage.setItem('k2-apf-session', '1')
+      const t = Date.now()
+      window.location.replace(
+        `${window.location.origin}/projects/k2-galerie?apf=1&page=platform&v=${t}&_=${t}`
+      )
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
 // Cache-Busting: Versions-Info für Debugging
 const BUILD_VERSION = '1.0.0-' + Date.now()
 if (typeof window !== 'undefined') {

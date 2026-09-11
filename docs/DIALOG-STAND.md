@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** APf-QR im Smart Panel (Handy scannen).
+**Was wir JETZT tun:** APf-QR korrigiert – öffnet nicht mehr die Galerie-App.
 
-**Einordnung:** Georg will den APf-Code direkt im Panel sehen – nicht Galerie-QR.
+**Einordnung:** Scan landete in der installierten K2-Galerie-PWA (`start_url=/galerie`). Neuer Einstieg `/apf.html` + PWA-Scope nur `/galerie`.
 
-**Nächster Schritt:** Am Mac Smart Panel öffnen → QR mit Handy scannen.
+**Nächster Schritt:** Nach Deploy Smart-Panel-QR erneut scannen (Kamera/Safari, nicht Galerie-App-Icon).
 
-**Letzter Stand:** 11.09.26 – APf-QR oben im Smart Panel (`?apf=1` + Cache-Bust). **Commit:** `ce2e9050` ✅ **main**
+**Letzter Stand:** 11.09.26 – APf-Handy über `/apf.html`; Manifest-Scope `/galerie`.
 
 ---
 

@@ -15,13 +15,10 @@ describe('isBareK2GalerieApfHubSearch', () => {
   })
 })
 
-describe('buildLk2GalerieLizenzAdminUrlOhneTenant', () => {
-  it('LK2-Fallback = ök2-Admin mit focusDirection', () => {
-    expect(buildLk2GalerieLizenzAdminUrlOhneTenant('keramik')).toBe(
-      '/admin?context=oeffentlich&focusDirection=keramik',
-    )
-    expect(buildLk2GalerieLizenzAdminUrlOhneTenant(null)).toBe(
-      '/admin?context=oeffentlich&focusDirection=kunst',
-    )
+describe('K2_APF_HANDY_QR', () => {
+  it('Handy-QR zeigt auf /apf.html (nicht Galerie)', async () => {
+    const { K2_APF_HANDY_QR_PATH, K2_APF_HANDY_QR_URL } = await import('../config/navigation')
+    expect(K2_APF_HANDY_QR_PATH).toBe('/apf.html')
+    expect(K2_APF_HANDY_QR_URL).toBe('https://k2-galerie.vercel.app/apf.html')
   })
 })

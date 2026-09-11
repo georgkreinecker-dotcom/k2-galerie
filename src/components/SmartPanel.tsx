@@ -1,15 +1,14 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import QRCode from 'qrcode'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
-import { APP_BASE_URL } from '../config/externalUrls'
+import QRCode from 'qrcode'
 
 /** Team-Handbuch in der APf: gleicher Query-Parameter wie K2TeamHandbuchPage */
 const HANDBUCH_DOC_QUERY = 'doc' as const
 const HANDBUCH_DOC_KOMPASS = '24-TEXTE-BRIEFE-KOMPASS.md'
 const HANDBUCH_DOC_ZENTRALE_THEMEN = '16-ZENTRALE-THEMEN-FUER-NUTZER.md'
 const HANDBUCH_DOC_NOTFALL = '23-NOTFALL-CHECKLISTE.md'
-import { PROJECT_ROUTES, PLATFORM_ROUTES, MOK2_ROUTE, ENTDECKEN_ROUTE, HUNDRED_GENERATION_ROUTE, HUNDRED_GENERATION_FLAECHE_ROUTE, HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
+import { PROJECT_ROUTES, PLATFORM_ROUTES, MOK2_ROUTE, ENTDECKEN_ROUTE, HUNDRED_GENERATION_ROUTE, HUNDRED_GENERATION_FLAECHE_ROUTE, HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE, K2_APF_HANDY_QR_URL } from '../config/navigation'
 import { K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
 import { prepareFreshOek2VisitorSession } from '../utils/oek2FreshStart'
 import { openAppOrHttpUrlInNewTab } from '../utils/safeExternalUrl'
@@ -77,8 +76,8 @@ const DOC_VIDEO_PRAEMAPPE = 'VIDEO-PRODUKTION-PRAEMAPPE-ANALYSE.md'
 const DOC_VIDEO_MATRIX = 'VIDEO-PRODUKTION-MATRIX-UND-DREHBUCH-V1.md'
 const apfHandbuchDocUrl = (docFile: string) => `/projects/k2-galerie?page=handbuch&doc=${encodeURIComponent(docFile)}`
 
-/** APf-URL für Handy-QR – immer Produktion (nie localhost), mit ?apf=1 */
-const APF_HANDY_QR_BASE = `${APP_BASE_URL.replace(/\/$/, '')}${K2_GALERIE_APF_EINSTIEG}`
+/** Handy-QR: /apf.html (nicht Galerie-PWA, nicht /galerie) */
+const APF_HANDY_QR_BASE = K2_APF_HANDY_QR_URL
 
 const PANEL_ORDER_KEY = 'smartpanel-reihenfolge'
 
@@ -458,7 +457,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
             📱 APf am Handy
           </div>
           <p style={{ margin: '0 0 0.5rem', fontSize: '0.72rem', color: 'rgba(245,230,200,0.85)', lineHeight: 1.35 }}>
-            Scannen → Arbeitsplattform (nicht die Galerie)
+            Scannen → Arbeitsplattform (nicht die Galerie-App)
             {apfQrServerLabel ? ` · Stand ${apfQrServerLabel}` : ''}
           </p>
           {apfHandyQrUrl ? (

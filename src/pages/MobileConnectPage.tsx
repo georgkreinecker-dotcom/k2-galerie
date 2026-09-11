@@ -5,15 +5,15 @@ import { Link } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { getPublicGalerieUrl } from '../utils/publicLinks'
-import { K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
+import { K2_APF_HANDY_QR_PATH, K2_APF_HANDY_QR_URL } from '../config/navigation'
 
 const VERCEL_GALERIE_URL = getPublicGalerieUrl('k2', 'galerie')
-const VERCEL_APF_URL = `https://k2-galerie.vercel.app${K2_GALERIE_APF_EINSTIEG}`
+const VERCEL_APF_URL = K2_APF_HANDY_QR_URL
 
 const MobileConnectPage = () => {
   const [url, setUrl] = usePersistentString('k2-mobile-url')
   const [localGalerieUrl, setLocalGalerieUrl] = useState('')
-  const [apfUrl, setApfUrl] = useState(VERCEL_APF_URL)
+  const [apfUrl, setApfUrl] = useState<string>(VERCEL_APF_URL)
   const [qrUrl, setQrUrl] = useState('')
   const [localQrUrl, setLocalQrUrl] = useState('')
   const [apfQrUrl, setApfQrUrl] = useState('')
@@ -28,7 +28,7 @@ const MobileConnectPage = () => {
     const protocol = window.location.protocol
     if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
       setLocalGalerieUrl(`${protocol}//${hostname}:${port}/galerie`)
-      setApfUrl(`${protocol}//${hostname}:${port}${K2_GALERIE_APF_EINSTIEG}`)
+      setApfUrl(`${protocol}//${hostname}:${port}${K2_APF_HANDY_QR_PATH}`)
     } else {
       const lanIp = '192.168.0.31'
       setLocalGalerieUrl(`http://${lanIp}:${port}/galerie`)
@@ -123,7 +123,7 @@ const MobileConnectPage = () => {
         >
           <h2 style={{ color: '#b54a1e', marginBottom: '0.5rem' }}>🖥️ APf auf Handy / iPad</h2>
           <p style={{ margin: '0 0 1rem', fontSize: '0.95rem', color: '#5c5650' }}>
-            Arbeitsplattform (Smart Panel, 100 Generationen, …) – nicht die Besucher-Galerie.
+            Scannen → <strong>Arbeitsplattform</strong> (eigener Link, nicht die Galerie-App auf dem Home-Bildschirm).
             {serverLabel ? ` Stand: ${serverLabel}` : ''}
           </p>
           <div className="qr-area" style={{ marginTop: '0.5rem' }}>
@@ -139,7 +139,7 @@ const MobileConnectPage = () => {
             )}
           </div>
           <Link
-            to={K2_GALERIE_APF_EINSTIEG}
+            to={K2_APF_HANDY_QR_PATH}
             style={{ display: 'inline-block', marginTop: '0.75rem', color: '#b54a1e', fontSize: '0.95rem', fontWeight: 600 }}
           >
             → APf hier öffnen
