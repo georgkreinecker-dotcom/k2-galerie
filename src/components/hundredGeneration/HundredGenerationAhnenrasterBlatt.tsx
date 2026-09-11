@@ -117,7 +117,7 @@ export function HundredGenerationAhnenrasterBlatt({
               background: isPrint ? '#f7f4ef' : 'rgba(0,0,0,0.08)',
             }}
           >
-            Schwarz = Zwischenraum (vertieft) · Weiß = erhaben · 2‑/10‑mm‑Raster · Platte H{' '}
+            Weiß = erhaben · Schwarz = Zwischenraum · 2‑/10‑mm‑Raster · Platte H{' '}
             {b.panelHoeheCm} · B {b.panelBreiteCm} cm
           </figcaption>
         </figure>
