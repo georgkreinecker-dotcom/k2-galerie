@@ -6,6 +6,6 @@
 
 **Nächster Schritt:** Georg: Vergleich – Polarität und Linienbreite ok?
 
-**Letzter Stand:** 11.09.26 – Polarität korrigiert (Schwarz=Zwischenraum, Weiß=erhaben). **Commit:** (nach Push)
+**Letzter Stand:** 11.09.26 – Polarität korrigiert (Schwarz=Zwischenraum, Weiß=erhaben). **Commit:**  ✅ **main**
 
 ---
