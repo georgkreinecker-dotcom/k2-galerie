@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** DXF in CNC-Software laden; bei Bedarf Geometrie zum Original nachziehen und CNC neu erzeugen.
 
-**Letzter Stand:** 11.09.26 – **CNC-Matrize** unter `public/100-generation/cnc/`. **Commit:** (nach Push)
+**Letzter Stand:** 11.09.26 – **CNC-Matrize** unter `public/100-generation/cnc/`. **Commit:** `ef91a5bd` ✅ **main**
 
 
 ---
@@ -717,7 +717,7 @@
 
 ---
 
-**Letzter Stand:** 19.04.26 – **Teilen: Fußtext/Tooltip kontextrichtig (kein Presse-„Verteiler“)** – **`PublicTeilenFixed`:** `SHARE_FOOTER_HINT` für `oeffentlich` / `vk2` / `familie`. **`GaleriePage`:** `galerieShareHintTitle` + `galerieShareHintFooter` (K2 / ök2 / VK2). **Commit:** (nach Push)
+**Letzter Stand:** 19.04.26 – **Teilen: Fußtext/Tooltip kontextrichtig (kein Presse-„Verteiler“)** – **`PublicTeilenFixed`:** `SHARE_FOOTER_HINT` für `oeffentlich` / `vk2` / `familie`. **`GaleriePage`:** `galerieShareHintTitle` + `galerieShareHintFooter` (K2 / ök2 / VK2). **Commit:** `ef91a5bd` ✅ **main**
 
 ---
 
@@ -2548,7 +2548,7 @@
 
 ---
 
-**Letzter Stand:** 30.03.26 – **„Server nicht konfiguriert“ (Testpilot):** API braucht **`PILOT_INVITE_SECRET`** (Vercel Environment + ggf. lokal `.env`). **PilotEinladungPage:** Bei genau dieser Meldung jetzt **konkrete** Hinweise Vercel vs. localhost statt nur „Link abgelaufen“. **Commit:** (nach Push) ✅ auf GitHub
+**Letzter Stand:** 30.03.26 – **„Server nicht konfiguriert“ (Testpilot):** API braucht **`PILOT_INVITE_SECRET`** (Vercel Environment + ggf. lokal `.env`). **PilotEinladungPage:** Bei genau dieser Meldung jetzt **konkrete** Hinweise Vercel vs. localhost statt nur „Link abgelaufen“. **Commit:** `ef91a5bd` ✅ **main** ✅ auf GitHub
 
 ---
 
@@ -3057,7 +3057,7 @@ Datei: `src/pages/TexteSchreibtischPage.tsx`. Build ✅.
 
 **Was wir JETZT tun:** Georg: Vierer-Flyer im Browser **drucken/Vorschau** – ob die drei Spalten im Streifen gut wirken.
 
-**Letzter Stand:** 25.03.26 – **Vierer-Flyer K2/ök2 – Druck wie Sportwagenmodus:** Oben dieselbe Leiste wie Präsentationsmappe: **Zurück** (`returnTo` oder `navigate(-1)`), **QR aktualisieren** (`refetchQrStand`), **Als PDF drucken** (`window.print()`), **Benutzerhandbuch**; Leiste beim Druck ausgeblendet. **`FlyerK2Oek2TorViererPage.tsx`**. Tests + Build grün. **Commit:** (nach Push) ✅
+**Letzter Stand:** 25.03.26 – **Vierer-Flyer K2/ök2 – Druck wie Sportwagenmodus:** Oben dieselbe Leiste wie Präsentationsmappe: **Zurück** (`returnTo` oder `navigate(-1)`), **QR aktualisieren** (`refetchQrStand`), **Als PDF drucken** (`window.print()`), **Benutzerhandbuch**; Leiste beim Druck ausgeblendet. **`FlyerK2Oek2TorViererPage.tsx`**. Tests + Build grün. **Commit:** `ef91a5bd` ✅ **main** ✅
 
 **Letzter Stand:** 25.03.26 – **Vierer-Flyer K2/ök2:** Vorderseite Band **„Martina & Georg Kreinecker“** fest; Rückseite **Eingangstor** wie `/entdecken` (**getEntdeckenColorsFromK2Design** + **getEntdeckenHeroPathUrl**, Tablet-Rahmen, Verläufe); Zeile **„Demo · …“** entfernt. **`FlyerK2Oek2TorViererPage.tsx`**, **`FlyerK2GaleriePage.tsx`** (K2-Subtitle fest). Tests grün. **Commit:** `2509b91` ✅ auf GitHub
 
@@ -3065,7 +3065,7 @@ Datei: `src/pages/TexteSchreibtischPage.tsx`. Build ✅.
 
 **Letzter Stand:** 25.03.26 – **Vierer-Flyer Zuordnung:** Vorderseite **Galeriename + Kunst & Keramik** (keine kgm-Slogans); Rückseite **ök2** mit **Werbeslogans**, **Demo-Foto**, QR. **`FlyerK2Oek2TorViererPage.tsx`**. Tests + Build grün. **Commit:** `40583fe` ✅ auf GitHub
 
-**Letzter Stand:** 25.03.26 – **Vierer-Flyer A4:** Vorderseite nur **K2 Galerie Kunst & Keramik** (immer K2-Stammdaten), **ohne Termine**, mit **QR** zur Galerie-URL (`buildQrUrlWithBust`). Rückseite nur **ök2 Eingangstor** `/entdecken` mit QR. **`FlyerK2Oek2TorViererPage.tsx`**. Tests + Build grün. **Commit:** (nach Push) ✅
+**Letzter Stand:** 25.03.26 – **Vierer-Flyer A4:** Vorderseite nur **K2 Galerie Kunst & Keramik** (immer K2-Stammdaten), **ohne Termine**, mit **QR** zur Galerie-URL (`buildQrUrlWithBust`). Rückseite nur **ök2 Eingangstor** `/entdecken` mit QR. **`FlyerK2Oek2TorViererPage.tsx`**. Tests + Build grün. **Commit:** `ef91a5bd` ✅ **main** ✅
 
 **Letzter Stand:** 25.03.26 – **FEHLERANALYSEPROTOKOLL:** Fehlerklasse + Protokoll-Eintrag **Öffentlichkeitsarbeit Vollbild / gleicher Tab hängt** (Router vs. `replaceState`, Standard `navigateFromOeffentlichkeitsarbeitOverlay`; Commits `5baa9b1`, `94f80cd`). **Commit:** `3b2bdc9` ✅ auf GitHub
 
@@ -3075,7 +3075,7 @@ Datei: `src/pages/TexteSchreibtischPage.tsx`. Build ✅.
 
 **Was wir JETZT tun:** Georg: Vierer-Flyer-Seite – **Als PDF drucken** testen; bei Bedarf weiter verfeinern.
 
-**Letzter Stand:** 25.03.26 – **Letzter Hänger „Vierer-Flyer A4 (K2/ök2 Tor)“ gezielt gefixt:** Ursache war ein Race im Klickpfad: `closeOeffentlichkeitsarbeitFullscreenOverlay()` machte bei Link-Klicks ein Router-`navigate(..., replace)` und konnte dadurch die eigentliche Link-Navigation überlagern/abfangen. **Fix:** openModal-Bereinigung jetzt per `window.history.replaceState` (ohne Router-Navigation), sowohl im zentralen Close-Helper als auch im Force-Close-Pfad. Damit bleibt der Klick auf **Vierer-Flyer A4** stabil. **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** (nach Push) ✅
+**Letzter Stand:** 25.03.26 – **Letzter Hänger „Vierer-Flyer A4 (K2/ök2 Tor)“ gezielt gefixt:** Ursache war ein Race im Klickpfad: `closeOeffentlichkeitsarbeitFullscreenOverlay()` machte bei Link-Klicks ein Router-`navigate(..., replace)` und konnte dadurch die eigentliche Link-Navigation überlagern/abfangen. **Fix:** openModal-Bereinigung jetzt per `window.history.replaceState` (ohne Router-Navigation), sowohl im zentralen Close-Helper als auch im Force-Close-Pfad. Damit bleibt der Klick auf **Vierer-Flyer A4** stabil. **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** `ef91a5bd` ✅ **main** ✅
 
 **Was wir JETZT tun:** Georg: Event- und Medienplanung → **Vierer-Flyer A4 (K2/ök2 Tor)** direkt klicken (gleicher Tab) + danach zurück; es darf nichts mehr blockieren.
 
@@ -3083,11 +3083,11 @@ Datei: `src/pages/TexteSchreibtischPage.tsx`. Build ✅.
 
 **Was wir JETZT tun:** Georg: Öffentlichkeitsarbeit **im Vollbild** (`openModal=1`) → je Karte **„Neu erstellen“** und **„Ansehen“** – APf muss danach überall klickbar bleiben.
 
-**Letzter Stand:** 25.03.26 – **Rest-Sperre bei Flyer + Präsentationsmappen gefixt:** Diese zwei liefen in `handleViewEventDocument` über Sonderzweige (`event-flyer`, `praesentationsmappe-kurz`) ohne vorheriges Schließen des Öffentlichkeitsarbeit-Vollbilds. **Fix:** in beiden Zweigen jetzt zuerst `closeOeffentlichkeitsarbeitFullscreenOverlay()`, dann Öffnen/Generieren. **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** (nach Push) ✅
+**Letzter Stand:** 25.03.26 – **Rest-Sperre bei Flyer + Präsentationsmappen gefixt:** Diese zwei liefen in `handleViewEventDocument` über Sonderzweige (`event-flyer`, `praesentationsmappe-kurz`) ohne vorheriges Schließen des Öffentlichkeitsarbeit-Vollbilds. **Fix:** in beiden Zweigen jetzt zuerst `closeOeffentlichkeitsarbeitFullscreenOverlay()`, dann Öffnen/Generieren. **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** `ef91a5bd` ✅ **main** ✅
 
 **Was wir JETZT tun:** Georg: Öffentlichkeitsarbeit → **Flyer** + **Präsentationsmappen** je „Ansehen“, danach muss APf frei bedienbar bleiben.
 
-**Letzter Stand:** 25.03.26 – **Öffentlichkeitsarbeit weiter gesperrt (außer Plakat) behoben:** Gleiches Entsperr-Muster jetzt auch für **Presse, Social, Newsletter, Flyer**. Neuer Helper `closeOeffentlichkeitsarbeitFullscreenOverlay()` schließt Vollbild + entfernt `openModal`; wird bei **× OK** und nach **Speichern** aufgerufen. Zusätzlich Presse-Speichern wie die anderen auf `deferHeavyUiWork` umgestellt und auf `fileData` vereinheitlicht (kein doppeltes `data`). **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** (nach Push) ✅
+**Letzter Stand:** 25.03.26 – **Öffentlichkeitsarbeit weiter gesperrt (außer Plakat) behoben:** Gleiches Entsperr-Muster jetzt auch für **Presse, Social, Newsletter, Flyer**. Neuer Helper `closeOeffentlichkeitsarbeitFullscreenOverlay()` schließt Vollbild + entfernt `openModal`; wird bei **× OK** und nach **Speichern** aufgerufen. Zusätzlich Presse-Speichern wie die anderen auf `deferHeavyUiWork` umgestellt und auf `fileData` vereinheitlicht (kein doppeltes `data`). **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** `ef91a5bd` ✅ **main** ✅
 
 **Was wir JETZT tun:** Georg: In Öffentlichkeitsarbeit **Presse/Social/Newsletter/Flyer** je einmal öffnen/speichern/schließen; danach muss die APf frei klickbar bleiben.
 
@@ -3095,15 +3095,15 @@ Datei: `src/pages/TexteSchreibtischPage.tsx`. Build ✅.
 
 **Was wir JETZT tun:** Georg: **Plakat (oder Flyer) → Speichern** → kurz warten; Oberfläche muss wieder bedienbar sein. **🔓** nur falls noch ein Overlay hängen bleibt.
 
-**Letzter Stand:** 25.03.26 – **Medienplaner „keine Reaktion“ – Ursachenfix statt Versuch:** In-App-Viewer kann Dokumente jetzt **direkt per `src`** öffnen (`openDocumentUrlInApp`) statt riesige Wrapper-HTML-Strings zu bauen. Das gilt für `documentUrl` und große `data:text/html`-Dokumente. Dadurch entfällt die blockierende String-Erzeugung im Klickpfad. Viewer-State erweitert um `src`, Print/iframe darauf angepasst, Blob-Cleanup zentral über `clearInAppViewerBlob`. **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** (nach Push) ✅
+**Letzter Stand:** 25.03.26 – **Medienplaner „keine Reaktion“ – Ursachenfix statt Versuch:** In-App-Viewer kann Dokumente jetzt **direkt per `src`** öffnen (`openDocumentUrlInApp`) statt riesige Wrapper-HTML-Strings zu bauen. Das gilt für `documentUrl` und große `data:text/html`-Dokumente. Dadurch entfällt die blockierende String-Erzeugung im Klickpfad. Viewer-State erweitert um `src`, Print/iframe darauf angepasst, Blob-Cleanup zentral über `clearInAppViewerBlob`. **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** `ef91a5bd` ✅ **main** ✅
 
 **Was wir JETZT tun:** Georg: Öffentlichkeitsarbeit → **Ansehen** erneut prüfen (muss sofort reagieren, auch bei sehr großen gespeicherten HTML-Dokumenten).
 
-**Letzter Stand:** 25.03.26 – **Medienplaner „nach erstem Klick hängt“ weiter abgesichert:** In `handleViewEventDocument` bei großen HTML-`data:`-Dokumenten Performance-Schutz eingebaut. Nicht-editierbare, große Inhalte werden direkt als `iframe` im In-App-Viewer geöffnet statt vollständig zu decodieren/parsen (Hauptthread-Entlastung). Social/Newsletter-Redaktion bleibt unverändert. Tests + Build grün. **Commit:** (nach Push) ✅
+**Letzter Stand:** 25.03.26 – **Medienplaner „nach erstem Klick hängt“ weiter abgesichert:** In `handleViewEventDocument` bei großen HTML-`data:`-Dokumenten Performance-Schutz eingebaut. Nicht-editierbare, große Inhalte werden direkt als `iframe` im In-App-Viewer geöffnet statt vollständig zu decodieren/parsen (Hauptthread-Entlastung). Social/Newsletter-Redaktion bleibt unverändert. Tests + Build grün. **Commit:** `ef91a5bd` ✅ **main** ✅
 
 **Was wir JETZT tun:** Georg: Medienplaner erneut testen (erster Klick auf „Ansehen“ bei großem Dokument).
 
-**Letzter Stand:** 25.03.26 – **Medienplaner Freeze nach erstem Klick:** Beim ersten Fix wurden auch **nicht-betroffene Overlays** hochgezogen (Guide-Leiste, Publish-Modal, Fehler-Modal, Vergangenheit-Modal). Folge: Interaktionen konnten blockiert wirken. **Korrektur:** Nur echte Redaktions-Modals (Presse/Social/Newsletter/Plakat/Flyer) bleiben auf **100100**; andere Ebenen zurück auf vorherige Werte (**99998/99996**). Tests + Build grün. **Commit:** (nach Push) ✅
+**Letzter Stand:** 25.03.26 – **Medienplaner Freeze nach erstem Klick:** Beim ersten Fix wurden auch **nicht-betroffene Overlays** hochgezogen (Guide-Leiste, Publish-Modal, Fehler-Modal, Vergangenheit-Modal). Folge: Interaktionen konnten blockiert wirken. **Korrektur:** Nur echte Redaktions-Modals (Presse/Social/Newsletter/Plakat/Flyer) bleiben auf **100100**; andere Ebenen zurück auf vorherige Werte (**99998/99996**). Tests + Build grün. **Commit:** `ef91a5bd` ✅ **main** ✅
 
 **Was wir JETZT tun:** Georg: Medienplaner erneut testen (erster Klick, dann zweiter Klick auf weitere Aktion).
 
@@ -3119,7 +3119,7 @@ Datei: `src/pages/TexteSchreibtischPage.tsx`. Build ✅.
 
 **Was wir JETZT tun:** Georg: Admin → Event- und Medienplanung → Werbematerial: **Ansehen** testen.
 
-**Letzter Stand:** 25.03.26 – **Vierer-Flyer A4 (K2 vorn, ök2-Tor QR hinten):** Druckseite **`FlyerK2Oek2TorViererPage`** → **`/projects/k2-galerie/flyer-k2-oek2-tor-vierer`** – vier Streifen pro Seite (je ca. 21 × 74 mm), Rückseite QR mit **`buildQrUrlWithBust`** → **`/entdecken`**. **Admin → Eventplanung → Event-Flyer:** Vierer-Flyer-Links (K2/ök2, nicht VK2). **Werbeunterlagen** Flyer-A5-Abschnitt: Link dazu. **`navigation.ts`**, **`App.tsx`**, **`ScreenshotExportAdmin.tsx`**, **`WerbeunterlagenPage.tsx`**. Tests + Build grün. **Commit:** (nach Push) ✅ auf GitHub.
+**Letzter Stand:** 25.03.26 – **Vierer-Flyer A4 (K2 vorn, ök2-Tor QR hinten):** Druckseite **`FlyerK2Oek2TorViererPage`** → **`/projects/k2-galerie/flyer-k2-oek2-tor-vierer`** – vier Streifen pro Seite (je ca. 21 × 74 mm), Rückseite QR mit **`buildQrUrlWithBust`** → **`/entdecken`**. **Admin → Eventplanung → Event-Flyer:** Vierer-Flyer-Links (K2/ök2, nicht VK2). **Werbeunterlagen** Flyer-A5-Abschnitt: Link dazu. **`navigation.ts`**, **`App.tsx`**, **`ScreenshotExportAdmin.tsx`**, **`WerbeunterlagenPage.tsx`**. Tests + Build grün. **Commit:** `ef91a5bd` ✅ **main** ✅ auf GitHub.
 
 **Was wir JETZT tun:** Georg: Vierer-Flyer drucken/Duplex kurz prüfen; **Öffentlichkeitsarbeit Launch** weiter nach Bedarf.
 
