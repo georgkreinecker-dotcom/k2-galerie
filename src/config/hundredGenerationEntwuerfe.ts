@@ -16,6 +16,7 @@ export type HundredGenerationModellId =
   | 'skizze-astwerk'
   | 'skizze-zickzack'
   | 'skizze-spirale'
+  | 'skizze-spirale-kopf'
 
 export type HundredGenerationEntwurfGruppe = 'serie' | 'handskizze'
 
@@ -222,6 +223,20 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
       '/100-generation/aus-skizze-06-spirale.png',
       '/100-generation/aus-skizze-06-spirale-seite.png',
       { schraeg: '/100-generation/aus-skizze-06-spirale-schraeg.png' }
+    ),
+  },
+  {
+    id: 'skizze-spirale-kopf',
+    title: 'S7 · Kopf / Gitter-Gesicht',
+    note: 'zweiter Entwurf zur Spirale-Skizze',
+    src: '/100-generation/aus-skizze-06b-spirale-kopf.png',
+    sketchSrc: '/100-generation/skizzen/skizze-06-spirale.jpg',
+    formHint: 'Scheibe als Kopf – Gitter vorne ersetzt das Gesicht',
+    gruppe: 'handskizze',
+    ansichten: views(
+      '/100-generation/aus-skizze-06b-spirale-kopf.png',
+      '/100-generation/aus-skizze-06b-spirale-kopf-seite.png',
+      { schraeg: '/100-generation/aus-skizze-06b-spirale-kopf-schraeg.png' }
     ),
   },
 ] as const

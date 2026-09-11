@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **100 Generationen** – Handskizze S6 Spirale/Gitter in Entwurfsmappe.
+**Was wir JETZT tun:** **100 Generationen** – S7 Kopf/Gitter-Gesicht (zweiter Entwurf zur Spirale-Skizze).
 
-**Einordnung:** Georg lieferte neue Skizze (Stamm + Spiralscheibe + Gitteröffnung) → Keramik Vorne/Seite/Schräg.
+**Einordnung:** Scheibe = Kopf, Gitter vorne ersetzt das Gesicht. Neben S6 in der Entwurfsmappe.
 
-**Nächster Schritt:** Entwurfsmappe → Handskizzen → **S6 · Spirale / Gitter** ansehen.
+**Nächster Schritt:** Entwurfsmappe → Handskizzen → **S7 · Kopf / Gitter-Gesicht** prüfen.
 
-**Letzter Stand:** 11.09.26 – Handskizze S6 Spirale aufgenommen. **Commit:** `6c4d4bd1` ✅ **main**
+**Letzter Stand:** 11.09.26 – S7 Kopf/Gitter-Gesicht angelegt.
 
 ---
 
