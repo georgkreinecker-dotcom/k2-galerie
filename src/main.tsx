@@ -35,7 +35,7 @@ if (typeof window !== 'undefined' && window.self === window.top) {
       sessionStorage.setItem('k2-apf-session', '1')
       const t = Date.now()
       window.location.replace(
-        `${window.location.origin}/projects/k2-galerie?apf=1&page=platform&v=${t}&_=${t}`
+        `${window.location.origin}/dev-view?apf=1&v=${t}&_=${t}`
       )
     }
   } catch {

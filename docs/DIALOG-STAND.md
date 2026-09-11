@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** S7 Entwurfsmappe = Vollkopf mit Gittergesicht (Vorne/Seite/Schräg neu).
+**Was wir JETZT tun:** APf-Handy-Zugang komplett neu – QR → `/boot/apf-entry.html` → `/dev-view` (nicht Entdecken/Rundgang).
 
-**Einordnung:** Georg: S7 war noch Scheibe/kleines Gitter-Auge – jetzt volumetrischer Kopf, Gesichtsebene = Gitter.
+**Einordnung:** Altes `/apf.html` lieferte auf Vercel die SPA → Catch-all → Entdecken (Rundgang). Production war zudem auf Stand 10.09. stecken.
 
-**Nächster Schritt:** Nach Deploy S7 in Entwurfsmappe prüfen (Vorne/Seite/Schräg).
+**Nächster Schritt:** Nach Vercel Ready: Smart-Panel-QR neu scannen; prüfen dass APf (nicht Rundgang) öffnet.
 
-**Letzter Stand:** 11.09.26 – S7 `aus-skizze-06b-spirale-kopf*.png` neu (Vollkopf + Gittergesicht). **Commit:** `bac25a78` ✅ **main**
+**Letzter Stand:** 11.09.26 – APf-Einstieg neu unter `/boot/apf-entry.html`. **Commit:** (folgt mit Push)
 
 ---
 

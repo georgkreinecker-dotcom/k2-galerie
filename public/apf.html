@@ -3,41 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>APf – Arbeitsplattform</title>
+  <title>APf – Weiterleitung</title>
   <meta name="robots" content="noindex" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <style>
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: system-ui, -apple-system, sans-serif;
-      background: #1a0f0a;
-      color: #f5e6c8;
-      text-align: center;
-      padding: 1.5rem;
-    }
-    h1 { font-size: 1.25rem; margin: 0 0 0.5rem; }
-    p { margin: 0; font-size: 0.95rem; opacity: 0.9; line-height: 1.45; }
-  </style>
-</head>
-<body>
-  <div>
-    <h1>APf wird geöffnet …</h1>
-    <p>Arbeitsplattform – <strong>nicht</strong> die K2 Galerie.</p>
-  </div>
+  <meta http-equiv="refresh" content="0;url=/boot/apf-entry.html" />
   <script>
-    (function () {
-      try {
-        sessionStorage.setItem('k2-apf-session', '1')
-        sessionStorage.setItem('k2-apf-entry', '1')
-      } catch (e) { /* ignore */ }
-      var t = Date.now()
-      var url = '/projects/k2-galerie?apf=1&page=platform&v=' + t + '&_=' + t
-      location.replace(url)
-    })()
+    location.replace('/boot/apf-entry.html')
   </script>
+</head>
+<body style="margin:0;background:#1a0f0a;color:#f5e6c8;font-family:system-ui;text-align:center;padding:2rem;">
+  <p>Weiter zur APf … <a href="/boot/apf-entry.html" style="color:#d4a76a">Tipp hier</a></p>
 </body>
 </html>

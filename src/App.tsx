@@ -850,6 +850,12 @@ function App() {
           <DevViewMobileRedirect />
         </AppErrorBoundary>
       } />
+      {/* APf-Handy-Kurzroute (Fallback, falls Boot-HTML fehlt) */}
+      <Route path="/apf" element={
+        <AppErrorBoundary>
+          <DevViewMobileRedirect />
+        </AppErrorBoundary>
+      } />
       <Route path={PLATFORM_ROUTES.key} element={<KeyPage />} />
       <Route path={PLATFORM_ROUTES.kosten} element={<KostenPage />} />
       <Route path={PLATFORM_ROUTES.licences} element={<Navigate to={PROJECT_ROUTES['k2-galerie'].licences} replace />} />

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>APf – Arbeitsplattform</title>
+  <meta name="robots" content="noindex" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #1a0f0a;
+      color: #f5e6c8;
+      text-align: center;
+      padding: 1.5rem;
+    }
+    h1 { font-size: 1.25rem; margin: 0 0 0.5rem; }
+    p { margin: 0; font-size: 0.95rem; opacity: 0.9; line-height: 1.45; }
+    a { color: #d4a76a; }
+  </style>
+</head>
+<body>
+  <div>
+    <h1>APf wird geöffnet …</h1>
+    <p>Arbeitsplattform – <strong>nicht</strong> Galerie, <strong>nicht</strong> Entdecken/Rundgang.</p>
+    <p style="margin-top:1rem;font-size:0.85rem;">
+      <a id="fallback" href="/dev-view">Falls es hängt: hier tippen</a>
+    </p>
+  </div>
+  <script>
+    (function () {
+      try {
+        sessionStorage.setItem('k2-apf-session', '1')
+        sessionStorage.setItem('k2-apf-entry', '1')
+      } catch (e) { /* ignore */ }
+      var t = Date.now()
+      // /dev-view = APf-Route in der SPA (Smart Panel / Arbeitsplattform) – nie Entdecken/Rundgang
+      var url = '/dev-view?apf=1&v=' + t + '&_=' + t
+      try {
+        document.getElementById('fallback').setAttribute('href', url)
+      } catch (e2) { /* ignore */ }
+      location.replace(url)
+    })()
+  </script>
+</body>
+</html>
