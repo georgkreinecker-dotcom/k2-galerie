@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Nach Deploy S7 in Entwurfsmappe prüfen (Vorne/Seite/Schräg).
 
-**Letzter Stand:** 11.09.26 – S7 `aus-skizze-06b-spirale-kopf*.png` neu (Vollkopf + Gittergesicht). **Commit:** (folgt mit Push)
+**Letzter Stand:** 11.09.26 – S7 `aus-skizze-06b-spirale-kopf*.png` neu (Vollkopf + Gittergesicht). **Commit:** `bac25a78` ✅ **main**
 
 ---
 
