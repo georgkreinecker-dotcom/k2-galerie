@@ -1,11 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Ahnenraster – PDF Druck 1:1 (140 × 220 mm) bereit.
+**Was wir JETZT tun:** Ahnenraster – ehrlich: Auto-Zeichnung ≠ Foto. Brauchbar: Foto-Druck 1:1.
 
-**Einordnung:** Georg braucht ausdruckbare Vorlage im echten Maßstab. PDF mit MediaBox exakt 140×220 mm; HTML-Fallback zum Browser-Druck.
+**Einordnung:** Georg: Zeichnung muss gleich aussehen – Auto trifft Topologie/Dicke nicht. Foto-PDF 140×220 mm als Werkstatt-Vorlage.
 
-**Nächster Schritt:** Georg PDF öffnen/drucken (100 %, ohne Anpassen). Danach Dicke/Muster prüfen.
+**Nächster Schritt:** Georg Foto-PDF drucken (100 %). Exacte CNC-Geometrie nur mit Hand-Nachzeichnung (Zelle für Zelle) – nur wenn Georg das will.
 
-**Letzter Stand:** 11.09.26 – `ahnenraster-druck-1zu1.pdf` + HTML.
+**Letzter Stand:** 11.09.26 – `ahnenraster-foto-druck-1zu1.pdf`
 
 ---

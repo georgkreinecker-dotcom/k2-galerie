@@ -176,33 +176,31 @@ export function HundredGenerationAhnenrasterBlatt({
           <section>
             <h3 style={h3Style(accent)}>Druck 1:1</h3>
             <p style={pStyle(ink)}>
-              Platte <strong>140 × 220 mm</strong> – Maßstab 100 %, nicht an Seite anpassen.
-              Seite 1 = Muster, Seite 2 = Muster + Raster.
+              <strong>Brauchbar jetzt:</strong> das Foto selbst im Maß 140 × 220 mm (sieht aus wie das Original).
+              Die Auto-Linienzeichnung trifft das Muster noch nicht – deshalb vorerst Foto drucken.
             </p>
             <p style={pStyle(ink)}>
               <a
-                href="/100-generation/referenzen/ahnenraster-druck-1zu1.pdf"
+                href="/100-generation/referenzen/ahnenraster-foto-druck-1zu1.pdf"
                 download
                 style={{ color: accent, fontWeight: 700 }}
               >
-                📄 PDF 1:1 herunterladen
+                📄 Foto-PDF 1:1 (empfohlen)
               </a>
               {' · '}
               <a
-                href="/100-generation/referenzen/ahnenraster-druck-1zu1.html"
+                href="/100-generation/referenzen/ahnenraster-foto-druck-1zu1.html"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ color: accent }}
               >
                 Im Browser drucken
               </a>
-              {' · '}
-              <a
-                href="/100-generation/referenzen/ahnenraster-linien-vergleich.png"
-                download
-                style={{ color: accent }}
-              >
-                Vergleich Foto|Zeichnung
+            </p>
+            <p style={{ ...pStyle(ink), fontSize: '0.85rem', opacity: 0.9 }}>
+              Zusätzlich (noch nicht muster-treu):{' '}
+              <a href="/100-generation/referenzen/ahnenraster-druck-1zu1.pdf" download style={{ color: accent }}>
+                Geometrie-PDF Versuch
               </a>
             </p>
           </section>

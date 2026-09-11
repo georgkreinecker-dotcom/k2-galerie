@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="UTF-8"/>
+<title>Ahnenraster Foto Druck 1:1 – 140×220 mm</title>
+<style>
+@page { size: 140mm 220mm; margin: 0; }
+html,body { margin:0; background:#333; }
+.sheet { width:140mm; height:220mm; margin:0 auto; page-break-after:always; }
+.sheet img { width:140mm; height:220mm; display:block; object-fit:fill; }
+.hint { max-width:140mm; margin:12px auto; padding:10px; background:#fffefb; font-family:system-ui; font-size:14px; border-radius:8px; }
+.btn { margin-top:8px; padding:10px 16px; background:#b54a1e; color:#fff; border:none; border-radius:8px; font-weight:600; cursor:pointer; }
+@media print { .no-print { display:none!important; } body { background:#fff; } }
+</style></head><body>
+<div class="hint no-print">
+  <strong>Foto 1:1</strong> – sieht aus wie das Original. 140×220 mm.<br/>
+  Seite 1 = Foto · Seite 2 = Kontrast (hell=Steg).<br/>
+  Druck: <strong>100 %</strong>, nicht anpassen, Ränder 0.
+  <br/><button class="btn" onclick="window.print()">🖨️ Drucken / Als PDF</button>
+  · <a href="ahnenraster-foto-druck-1zu1.pdf">PDF</a>
+</div>
+<section class="sheet"><img src="ahnenraster-foto-druck-1zu1.png" alt="Foto 1:1"/></section>
+<section class="sheet"><img src="ahnenraster-foto-kontrast-1zu1.png" alt="Kontrast 1:1"/></section>
+</body></html>
