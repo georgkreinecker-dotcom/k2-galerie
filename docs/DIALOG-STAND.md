@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **100 Generationen – Entwurfsmappe** alle Schräg-Ansichten neu (passend zu Vorne/Seite).
+**Was wir JETZT tun:** **100 Generationen** – Handskizze S6 Spirale/Gitter in Entwurfsmappe.
 
-**Einordnung:** Georg: Schräg oben war bei allen Modellen eine andere Skulptur – alle 10 mit Referenz neu erzeugt.
+**Einordnung:** Georg lieferte neue Skizze (Stamm + Spiralscheibe + Gitteröffnung) → Keramik Vorne/Seite/Schräg.
 
-**Nächster Schritt:** Entwurfsmappe neu laden, jedes Modell „Schräg oben“ kurz prüfen.
+**Nächster Schritt:** Entwurfsmappe → Handskizzen → **S6 · Spirale / Gitter** ansehen.
 
-**Letzter Stand:** 10.09.26 – Alle Schräg-Ansichten korrigiert. **Commit:** `6ef59a72` ✅ **main**
+**Letzter Stand:** 11.09.26 – Handskizze S6 Spirale aufgenommen. **Commit:** `6c4d4bd1` ✅ **main**
 
 ---
 
