@@ -149,7 +149,7 @@ const K2_SOFTWAREENTWICKLUNG = PROJECT_ROUTES['k2-galerie'].softwareentwicklung
 const EINLADUNG_EROEFFNUNG_24 = PROJECT_ROUTES['k2-galerie'].notizenEinladungEroeffnung24
 const MARKETING_OEK2_PAGE = PROJECT_ROUTES['k2-galerie'].marketingOek2
 /** Arbeitsmappen – alles K2 in Ordner „K2“; VK2 und mök2 daneben (eigene Produkte) */
-const GALERIE_ITEM_IDS = ['uebersicht', 'lizenzen', 'k2', 'oek2', 'k2-agentur', 'kampagne', 'presse'] as const
+const GALERIE_ITEM_IDS = ['uebersicht', 'lizenzen', 'k2', 'oek2', 'kampagne', 'presse'] as const
 
 type SmartPanelMappe = {
   id: string
@@ -166,6 +166,7 @@ const MAPPEN: SmartPanelMappe[] = [
   { id: 'promo-video', label: 'Promo-Video-Produktion', icon: '🎬', itemIds: [], parent: 'k2-ordner' },
   { id: 'k2-welt-strategie-mappe', label: 'K2-Welt – Strategie & Portfolio', icon: '📐', itemIds: ['k2-welt-strategie'], parent: 'k2-ordner' },
   { id: 'galerie', label: 'K2 Galerie', icon: '🎨', itemIds: [...GALERIE_ITEM_IDS], parent: 'k2-ordner' },
+  { id: 'k2-agentur-mappe', label: 'K2 Agentur', icon: '📡', itemIds: ['k2-agentur'], parent: 'k2-ordner' },
   { id: 'k2-markt', label: 'K2 Markt', icon: '🏪', itemIds: ['k2-markt'], parent: 'k2-ordner' },
   { id: 'familie', label: 'K2 Familie', icon: '👨‍👩‍👧‍👦', itemIds: ['k2-familie'], parent: 'k2-ordner' },
   { id: 'vk2-mappe', label: 'VK2 Vereinsplattform', icon: '🏛️', itemIds: ['vk2'], parent: 'k2-ordner' },
@@ -186,6 +187,7 @@ function loadMappenOpen(): Record<string, boolean> {
     'promo-video': true,
     'k2-welt-strategie-mappe': true,
     galerie: true,
+    'k2-agentur-mappe': true,
     'k2-markt': true,
     '100-generation': true,
     familie: true,
@@ -416,9 +418,10 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
 
   const { versionTimestamp: apfQrVersionTs, serverLabel: apfQrServerLabel } = useQrVersionTimestamp()
   const [apfHandyQrUrl, setApfHandyQrUrl] = useState('')
+  const [apfQrOpen, setApfQrOpen] = useState(false)
   useEffect(() => {
     let cancelled = false
-    QRCode.toDataURL(buildQrUrlWithBust(APF_HANDY_QR_BASE, apfQrVersionTs), { width: 200, margin: 1 })
+    QRCode.toDataURL(buildQrUrlWithBust(APF_HANDY_QR_BASE, apfQrVersionTs), { width: 220, margin: 1 })
       .then((dataUrl) => {
         if (!cancelled) setApfHandyQrUrl(dataUrl)
       })
@@ -1346,7 +1349,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                     </div>
                   </>
                 )}
-                {(mappe.id === 'vk2-mappe' || mappe.id === 'mok2-mappe') && (
+                {(mappe.id === 'vk2-mappe' || mappe.id === 'mok2-mappe' || mappe.id === 'k2-agentur-mappe') && (
                   <>
                     {items.map((item) => (
                       <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -1362,7 +1365,12 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                               background: item.color,
                               border: `1px solid ${item.border}`,
                               borderRadius: '8px',
-                              color: mappe.id === 'mok2-mappe' ? '#fbbf24' : '#ff8c42',
+                              color:
+                                mappe.id === 'mok2-mappe'
+                                  ? '#fbbf24'
+                                  : mappe.id === 'k2-agentur-mappe'
+                                    ? '#5eead4'
+                                    : '#ff8c42',
                               fontWeight: 600,
                               fontSize: '0.88rem',
                               textAlign: 'center',
@@ -1382,7 +1390,12 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                               background: item.color,
                               border: `1px solid ${item.border}`,
                               borderRadius: '8px',
-                              color: mappe.id === 'mok2-mappe' ? '#fbbf24' : '#ff8c42',
+                              color:
+                                mappe.id === 'mok2-mappe'
+                                  ? '#fbbf24'
+                                  : mappe.id === 'k2-agentur-mappe'
+                                    ? '#5eead4'
+                                    : '#ff8c42',
                               fontWeight: 600,
                               fontSize: '0.88rem',
                               textAlign: 'center',
@@ -1488,61 +1501,131 @@ hr { border: none; border-top: 1px solid #ddd; margin: 1.25rem 0; }
           Schnellzugriff
         </p>
 
-        {/* APf am Handy – QR (Produktion + Cache-Bust) */}
+        {/* APf am Handy – QR nur als Icon; groß erst beim Öffnen */}
         <div
           style={{
-            marginTop: '0.75rem',
-            padding: '0.75rem',
-            borderRadius: '12px',
-            background: 'rgba(181, 74, 30, 0.14)',
-            border: '1px solid rgba(212, 167, 106, 0.45)',
-            textAlign: 'center',
+            marginTop: '0.65rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            flexWrap: 'wrap',
           }}
         >
-          <div style={{ fontSize: '0.88rem', fontWeight: 800, color: '#f5e6c8', marginBottom: '0.35rem' }}>
-            📱 APf am Handy
-          </div>
-          <p style={{ margin: '0 0 0.5rem', fontSize: '0.72rem', color: 'rgba(245,230,200,0.85)', lineHeight: 1.35 }}>
-            Scannen → Arbeitsplattform (nicht die Galerie-App)
-            {apfQrServerLabel ? ` · Stand ${apfQrServerLabel}` : ''}
-          </p>
-          {apfHandyQrUrl ? (
-            <img
-              src={apfHandyQrUrl}
-              alt="QR-Code APf Handy"
-              width={180}
-              height={180}
-              style={{
-                width: 180,
-                height: 180,
-                borderRadius: 8,
-                background: '#fff',
-                display: 'block',
-                margin: '0 auto',
-              }}
-            />
-          ) : (
-            <div style={{ fontSize: '0.75rem', color: 'rgba(245,230,200,0.7)', padding: '2rem 0' }}>QR wird geladen …</div>
-          )}
-          <div
+          <button
+            type="button"
+            onClick={() => setApfQrOpen(true)}
+            disabled={!apfHandyQrUrl}
+            title="QR für APf am Handy öffnen"
+            aria-label="QR für APf am Handy öffnen"
             style={{
-              marginTop: '0.65rem',
-              padding: '0.55rem 0.6rem',
+              width: 40,
+              height: 40,
+              padding: 4,
               borderRadius: 8,
-              background: 'rgba(95, 251, 241, 0.1)',
-              border: '1px solid rgba(95, 251, 241, 0.35)',
-              textAlign: 'left',
+              border: '1px solid rgba(212, 167, 106, 0.55)',
+              background: 'rgba(181, 74, 30, 0.18)',
+              cursor: apfHandyQrUrl ? 'pointer' : 'wait',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
             }}
           >
-            <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#5ffbf1', marginBottom: '0.25rem' }}>
-              📲 APf als eigene App
+            {apfHandyQrUrl ? (
+              <img
+                src={apfHandyQrUrl}
+                alt=""
+                width={28}
+                height={28}
+                style={{ width: 28, height: 28, borderRadius: 4, background: '#fff', display: 'block' }}
+              />
+            ) : (
+              <span style={{ fontSize: '0.85rem' }}>📱</span>
+            )}
+          </button>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#f5e6c8' }}>APf am Handy</div>
+            <div style={{ fontSize: '0.68rem', color: 'rgba(245,230,200,0.75)', lineHeight: 1.3 }}>
+              Icon tippen → QR · App: Teilen → Home-Bildschirm
+              {apfQrServerLabel ? ` · ${apfQrServerLabel}` : ''}
             </div>
-            <p style={{ margin: 0, fontSize: '0.7rem', color: 'rgba(245,230,200,0.9)', lineHeight: 1.4 }}>
-              Auf dem Handy <strong>/dev-view</strong> öffnen (QR) → Teilen → „Zum Home-Bildschirm“.
-              Icon heißt <strong>APf</strong> – getrennt von Galerie und Familie.
-            </p>
           </div>
         </div>
+
+        {apfQrOpen && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="QR-Code APf Handy"
+            onClick={() => setApfQrOpen(false)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 10050,
+              background: 'rgba(0,0,0,0.65)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '1.25rem',
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: '#1c1a18',
+                borderRadius: 14,
+                padding: '1rem 1.1rem',
+                border: '1px solid rgba(212, 167, 106, 0.5)',
+                maxWidth: 280,
+                width: '100%',
+                textAlign: 'center',
+              }}
+            >
+              <div style={{ fontWeight: 800, color: '#f5e6c8', marginBottom: '0.5rem', fontSize: '0.95rem' }}>
+                📱 APf am Handy
+              </div>
+              {apfHandyQrUrl ? (
+                <img
+                  src={apfHandyQrUrl}
+                  alt="QR-Code APf Handy"
+                  width={220}
+                  height={220}
+                  style={{
+                    width: '100%',
+                    maxWidth: 220,
+                    height: 'auto',
+                    borderRadius: 8,
+                    background: '#fff',
+                    display: 'block',
+                    margin: '0 auto',
+                  }}
+                />
+              ) : null}
+              <p style={{ margin: '0.65rem 0 0.75rem', fontSize: '0.72rem', color: 'rgba(245,230,200,0.85)', lineHeight: 1.35 }}>
+                Scannen → Arbeitsplattform (nicht Galerie)
+                {apfQrServerLabel ? ` · Stand ${apfQrServerLabel}` : ''}
+              </p>
+              <button
+                type="button"
+                onClick={() => setApfQrOpen(false)}
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  borderRadius: 8,
+                  border: 'none',
+                  background: '#b54a1e',
+                  color: '#fff',
+                  fontWeight: 700,
+                  fontSize: '0.88rem',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                }}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        )}
 
         {onNavigate ? (
           <button
@@ -1590,53 +1673,6 @@ hr { border: none; border-top: 1px solid #ddd; margin: 1.25rem 0; }
             title="Texte wie auf dem Schreibtisch: Bereiche und Zettel, keine Listen"
           >
             🪑 Texte-Schreibtisch
-          </Link>
-        )}
-        {onNavigate ? (
-          <button
-            type="button"
-            onClick={() => onNavigate('k2-agentur')}
-            style={{
-              width: '100%',
-              marginTop: '0.45rem',
-              padding: '0.65rem 0.85rem',
-              background: 'linear-gradient(135deg, rgba(13,148,136,0.35), rgba(20,184,166,0.18))',
-              border: activePage === 'k2-agentur' ? '2px solid rgba(45,212,191,0.9)' : '1px solid rgba(13,148,136,0.55)',
-              borderRadius: '10px',
-              color: '#5eead4',
-              fontWeight: 800,
-              fontSize: '0.9rem',
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              textAlign: 'center',
-              boxShadow: '0 2px 12px rgba(13,148,136,0.2)',
-            }}
-            title="P1/P2/P3 Marketing-Kanäle: Status, URLs, Budget"
-          >
-            📡 K2 Agentur
-          </button>
-        ) : (
-          <Link
-            to={PROJECT_ROUTES['k2-galerie'].k2Agentur}
-            style={{
-              display: 'block',
-              width: '100%',
-              marginTop: '0.45rem',
-              padding: '0.65rem 0.85rem',
-              background: 'linear-gradient(135deg, rgba(13,148,136,0.35), rgba(20,184,166,0.18))',
-              border: '1px solid rgba(13,148,136,0.55)',
-              borderRadius: '10px',
-              color: '#5eead4',
-              fontWeight: 800,
-              fontSize: '0.9rem',
-              textDecoration: 'none',
-              fontFamily: 'inherit',
-              textAlign: 'center',
-              boxShadow: '0 2px 12px rgba(13,148,136,0.2)',
-            }}
-            title="P1/P2/P3 Marketing-Kanäle: Status, URLs, Budget"
-          >
-            📡 K2 Agentur
           </Link>
         )}
         <button
