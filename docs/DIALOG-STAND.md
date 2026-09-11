@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Formatblatt 4M – geometrische Zeichnung + Foto.
+**Was wir JETZT tun:** CNC-Matrize Ahnenraster (Stempel).
 
-**Einordnung:** Aus dem Raster-Foto orthogonal abgeleitete Werkstatt-Zeichnung (PNG/SVG); Formatblatt zeigt Geometrie + Foto nebeneinander.
+**Einordnung:** DXF/SVG 140×220 mm – Schwarz = Stempel bleibt, Weiß = Frästasche. Geometrie noch nicht 1:1 zum Foto (nachziehen möglich).
 
-**Nächster Schritt:** Entwurfsmappe → Mythos → 4M → Formatblatt prüfen/drucken.
+**Nächster Schritt:** DXF in CNC-Software laden; bei Bedarf Geometrie zum Original nachziehen und CNC neu erzeugen.
 
-**Letzter Stand:** 11.09.26 – **Geometrische Zeichnung Ahnenraster** + Formatblatt. **Commit:** `9afbca43` ✅ **main**
+**Letzter Stand:** 11.09.26 – **CNC-Matrize** unter `public/100-generation/cnc/`. **Commit:** (nach Push)
 
 
 ---

@@ -1,0 +1,33 @@
+4M · Ahnenraster – CNC-Matrize (Stempel)
+========================================
+
+WAS
+- Matrize / Stempelplatte zum Einpressen ins Tonrelief.
+- SCHWARZ = Stempelstege: bleiben stehen (erhaben).
+- WEISS = wird weggefräst (Tasche).
+
+MASS
+- Platte: 140 × 220 mm (14 × 22 cm)
+- Empfohlene Frästiefe Weiß: 2.0 mm (an Material anpassen)
+- Einheiten in DXF: Millimeter
+
+DATEIEN
+- ahnenraster-matrize-140x220.dxf
+  Layer PLATTE   = Außenkontur
+  Layer STEMPEL  = schwarze Stege (stehen lassen)
+  Layer FRAESEN  = weiße Taschen (wegfräsen)
+- ahnenraster-matrize-140x220.svg  = gleiche Logik, schwarz/weiß
+- ahnenraster-matrize-vorschau.png = Kontrolle am Bildschirm
+
+CNC-ABLAUF (kurz)
+1. DXF in Estlcam / Fusion / VCarve / … öffnen
+2. Layer FRAESEN → Taschenfräsen (Tiefe ca. 2 mm)
+3. Layer STEMPEL → nicht fräsen (oder nur leicht plan)
+4. Optional Außenkontur PLATTE ausschneiden
+
+HINWEIS
+- Geometrie kommt aus der Werkstatt-Zeichnung Ahnenraster.
+- Wenn das Muster noch feiner zum Original soll: erst Zeichnung
+  nachziehen, dann diese Dateien neu erzeugen.
+
+Stand: 11.09.26

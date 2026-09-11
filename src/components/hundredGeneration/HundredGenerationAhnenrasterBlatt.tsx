@@ -174,6 +174,36 @@ export function HundredGenerationAhnenrasterBlatt({
             <p style={pStyle(ink)}>{b.anwendung}</p>
           </section>
           <section>
+            <h3 style={h3Style(accent)}>CNC-Matrize</h3>
+            <p style={pStyle(ink)}>
+              Stempelplatte 140×220 mm: schwarze Linien = Stege bleiben stehen, Weiß wird weggefräst.
+              Dateien:{' '}
+              <a
+                href="/100-generation/cnc/ahnenraster-matrize-140x220.dxf"
+                download
+                style={{ color: accent }}
+              >
+                DXF
+              </a>
+              {' · '}
+              <a
+                href="/100-generation/cnc/ahnenraster-matrize-140x220.svg"
+                download
+                style={{ color: accent }}
+              >
+                SVG
+              </a>
+              {' · '}
+              <a
+                href="/100-generation/cnc/CNC-MATRIZE-LESEN.txt"
+                download
+                style={{ color: accent }}
+              >
+                Kurzanleitung
+              </a>
+            </p>
+          </section>
+          <section>
             <h3 style={h3Style(accent)}>Di Kurugu · Hintergrund</h3>
             <p style={pStyle(ink)}>{b.bezugDiKurugu}</p>
           </section>
