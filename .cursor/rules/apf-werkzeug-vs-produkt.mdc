@@ -22,6 +22,7 @@ Alles was Georg **zum Arbeiten** braucht – primär am Mac; **bewusst** auch mo
 | Zugang | URL |
 |---|-----|
 | **APf mobil / Vercel (QR)** | `https://k2-galerie.vercel.app/dev-view` (Smart Panel) |
+| **APf als eigene App (PWA)** | Auf `/dev-view` → Teilen → „Zum Home-Bildschirm“; Manifest `manifest-apf.json` (id `k2-apf-pwa`), Icon **APf** |
 | **APf mobil / Query** | `https://k2-galerie.vercel.app/dev-view` oder `/projects/k2-galerie?apf=1` |
 | **APf lokal** | `http://localhost:5177/dev-view` bzw. `/projects/k2-galerie?apf=1` |
 

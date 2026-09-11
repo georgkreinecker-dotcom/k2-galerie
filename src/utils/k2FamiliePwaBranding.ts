@@ -1,17 +1,18 @@
 /**
  * PWA / „Zum Home-Bildschirm“: Manifest, Icon und Kurztitel je Kontext umschalten,
- * damit K2 Familie nicht dasselbe Symbol wie die K2-Galerie nutzt.
+ * damit K2 Familie und APf nicht dasselbe Symbol wie die K2-Galerie nutzen.
  *
- * Zusätzlich: `public/manifest.json` und `public/manifest-k2-familie.json` haben jeweils ein
- * eigenes Manifest-`id` (k2-galerie-pwa / k2-familie-pwa), damit Browser nicht beide
- * als dieselbe Installation mit Galerie-start_url behandeln.
+ * Manifest-`id`s:
+ * - Galerie: `k2-galerie-pwa` → `manifest.json` (start_url /galerie)
+ * - Familie: `k2-familie-pwa` → `manifest-k2-familie.json` (start_url /familie)
+ * - APf: `k2-apf-pwa` → `manifest-apf.json` (start_url /dev-view)
  *
- * Familie: `start_url` in `manifest-k2-familie.json` = volle Vercel-URL auf `/familie` (iOS-PWA zuverlässiger als reine Pfade). Kurz-URL, getrennt von Galerie `/galerie` und
- * von `/projects/k2-galerie/...`). Die SPA rendert dieselbe Startseite unter `/familie`
- * und unter `/projects/k2-familie/meine-familie` – ohne Redirect, damit Lesezeichen und
- * „Zum Home-Bildschirm“ die kurze Adresse behalten.
- * Letzte Unterroute beim Icon-Start: `familiePwaLastPath.ts` + `K2FamilieLayout` (nicht OS-seitig).
+ * Familie: `start_url` = volle Vercel-URL auf `/familie` (iOS zuverlässiger).
+ * APf: volle URL auf `/dev-view`. Install nur von diesen Pfaden (boot-manifest.js + hier).
+ * Letzte Unterroute Familie: `familiePwaLastPath.ts` + `K2FamilieLayout`.
  */
+
+import { isApfPwaPath } from './apfPwaBranding'
 
 /** Kurz-URL für K2 Familie (Manifest start_url, Nav „Meine Familie“). */
 export const K2_FAMILIE_APP_SHORT_PATH = '/familie'
@@ -33,13 +34,28 @@ export function isK2FamiliePublicPath(pathname: string): boolean {
   )
 }
 
+type PwaBrand = 'familie' | 'apf' | 'galerie'
+
+function resolvePwaBrand(pathname: string): PwaBrand {
+  if (isK2FamiliePublicPath(pathname)) return 'familie'
+  if (isApfPwaPath(pathname)) return 'apf'
+  return 'galerie'
+}
+
 export function applyK2FamiliePwaBranding(pathname: string): void {
   if (typeof document === 'undefined') return
-  const familie = isK2FamiliePublicPath(pathname)
+  const brand = resolvePwaBrand(pathname)
+
+  const manifestHref =
+    brand === 'familie'
+      ? '/manifest-k2-familie.json'
+      : brand === 'apf'
+        ? '/manifest-apf.json'
+        : '/manifest.json'
 
   const manifestLink = document.querySelector<HTMLLinkElement>('link[rel="manifest"]')
   if (manifestLink) {
-    manifestLink.setAttribute('href', familie ? '/manifest-k2-familie.json' : '/manifest.json')
+    manifestLink.setAttribute('href', manifestHref)
   }
 
   let apple = document.querySelector<HTMLLinkElement>('link[rel="apple-touch-icon"]')
@@ -48,7 +64,12 @@ export function applyK2FamiliePwaBranding(pathname: string): void {
     apple.rel = 'apple-touch-icon'
     document.head.appendChild(apple)
   }
-  apple.href = familie ? '/k2-familie-icon-192.png' : '/icon-192.png'
+  apple.href =
+    brand === 'familie'
+      ? '/k2-familie-icon-192.png'
+      : brand === 'apf'
+        ? '/apf-icon-192.png'
+        : '/icon-192.png'
 
   let appTitle = document.querySelector<HTMLMetaElement>('meta[name="apple-mobile-web-app-title"]')
   if (!appTitle) {
@@ -56,7 +77,7 @@ export function applyK2FamiliePwaBranding(pathname: string): void {
     appTitle.setAttribute('name', 'apple-mobile-web-app-title')
     document.head.appendChild(appTitle)
   }
-  appTitle.content = familie ? 'K2 Familie' : 'K2 Galerie'
+  appTitle.content = brand === 'familie' ? 'K2 Familie' : brand === 'apf' ? 'APf' : 'K2 Galerie'
 
   let theme = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
   if (!theme) {
@@ -64,10 +85,15 @@ export function applyK2FamiliePwaBranding(pathname: string): void {
     theme.setAttribute('name', 'theme-color')
     document.head.appendChild(theme)
   }
-  theme.content = familie ? '#b54a1e' : '#1a0f0a'
+  theme.content = brand === 'familie' ? '#b54a1e' : brand === 'apf' ? '#0d1b2a' : '#1a0f0a'
 
   const favicon = document.querySelector<HTMLLinkElement>('link[rel="icon"]')
   if (favicon) {
-    favicon.href = familie ? '/k2-familie-icon-192.png' : '/vite.svg'
+    favicon.href =
+      brand === 'familie'
+        ? '/k2-familie-icon-192.png'
+        : brand === 'apf'
+          ? '/apf-icon-192.png'
+          : '/vite.svg'
   }
 }

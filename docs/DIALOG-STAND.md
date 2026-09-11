@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Vercel wieder live – Stand 11.09.26 09:49 (Lockfile-Fix).
+**Was wir JETZT tun:** APf als eigene PWA (Home-Bildschirm-App) – Manifest + Icon + Install-Hinweis.
 
-**Einordnung:** Build hing an kaputtem package-lock (`npm ci Missing`). Repariert → Deploy Ready.
+**Einordnung:** Wie K2 Familie: eigenes `manifest-apf.json` (id `k2-apf-pwa`), Start `/dev-view`, getrennt von Galerie/Familie.
 
-**Nächster Schritt:** Handy Stand tippen / neu öffnen; APf: `/dev-view`; Entwurfsmappe S7 prüfen.
+**Nächster Schritt:** Nach Deploy: am Handy `/dev-view` öffnen → Teilen → Zum Home-Bildschirm; Icon „APf“ prüfen.
 
-**Letzter Stand:** 11.09.26 – Production Stand **11.09.26 09:49**, Deploy success. **Commit:** `d8bd7cb0` ✅ **main**
+**Letzter Stand:** 11.09.26 – APf-PWA in Arbeit (Manifest/Icons/boot-manifest/SmartPanel/DevView-Hinweis).
 
 ---
 

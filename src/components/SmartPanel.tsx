@@ -478,6 +478,24 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
           ) : (
             <div style={{ fontSize: '0.75rem', color: 'rgba(245,230,200,0.7)', padding: '2rem 0' }}>QR wird geladen …</div>
           )}
+          <div
+            style={{
+              marginTop: '0.65rem',
+              padding: '0.55rem 0.6rem',
+              borderRadius: 8,
+              background: 'rgba(95, 251, 241, 0.1)',
+              border: '1px solid rgba(95, 251, 241, 0.35)',
+              textAlign: 'left',
+            }}
+          >
+            <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#5ffbf1', marginBottom: '0.25rem' }}>
+              📲 APf als eigene App
+            </div>
+            <p style={{ margin: 0, fontSize: '0.7rem', color: 'rgba(245,230,200,0.9)', lineHeight: 1.4 }}>
+              Auf dem Handy <strong>/dev-view</strong> öffnen (QR) → Teilen → „Zum Home-Bildschirm“.
+              Icon heißt <strong>APf</strong> – getrennt von Galerie und Familie.
+            </p>
+          </div>
         </div>
 
         {onNavigate ? (

@@ -573,6 +573,25 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
     try { return localStorage.getItem('grafiker-notiz-entwurf') || '' } catch { return '' }
   })
   const [grafikerNotizGespeichert, setGrafikerNotizGespeichert] = useState(false)
+  const [apfInstallHintDismissed, setApfInstallHintDismissed] = useState(() => {
+    try {
+      return localStorage.getItem('k2-apf-pwa-install-hint-dismissed') === '1'
+    } catch {
+      return false
+    }
+  })
+  const showApfInstallHint = useMemo(() => {
+    if (typeof window === 'undefined' || apfInstallHintDismissed) return false
+    try {
+      const standalone =
+        (window.navigator as { standalone?: boolean }).standalone === true ||
+        (typeof window.matchMedia === 'function' && window.matchMedia('(display-mode: standalone)').matches)
+      if (standalone) return false
+      return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+    } catch {
+      return false
+    }
+  }, [apfInstallHintDismissed])
 
   /** Gleiche Entsperrung wie im Admin (🔓): Vollbild Öffentlichkeitsarbeit u. a. Overlays im iframe schließen */
   const postEntsperrenToProjectIframes = React.useCallback(() => {
@@ -1361,6 +1380,53 @@ end tell`
           </span>
         </div>
       </div>
+
+      {showApfInstallHint && (
+        <div
+          style={{
+            margin: '0 0 0.75rem',
+            padding: '0.75rem 0.85rem',
+            borderRadius: 12,
+            background: 'rgba(95, 251, 241, 0.1)',
+            border: '1px solid rgba(95, 251, 241, 0.4)',
+            display: 'flex',
+            gap: '0.65rem',
+            alignItems: 'flex-start',
+          }}
+        >
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 800, fontSize: '0.92rem', color: '#5ffbf1', marginBottom: '0.25rem' }}>
+              📲 APf als eigene App
+            </div>
+            <p style={{ margin: 0, fontSize: '0.8rem', lineHeight: 1.4, color: 'rgba(255,245,240,0.9)' }}>
+              Teilen → „Zum Home-Bildschirm“. Dann startet das Icon direkt in der APf – nicht in der Galerie.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              try {
+                localStorage.setItem('k2-apf-pwa-install-hint-dismissed', '1')
+              } catch {
+                /* ignore */
+              }
+              setApfInstallHintDismissed(true)
+            }}
+            style={{
+              flexShrink: 0,
+              border: 'none',
+              background: 'transparent',
+              color: 'rgba(255,245,240,0.7)',
+              fontSize: '1.1rem',
+              cursor: 'pointer',
+              padding: '0.15rem',
+            }}
+            aria-label="Hinweis schließen"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Projekt-Info ist jetzt im Smart Panel */}
       

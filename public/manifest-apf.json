@@ -1,0 +1,25 @@
+{
+  "id": "k2-apf-pwa",
+  "name": "APf",
+  "short_name": "APf",
+  "description": "K2 Arbeitsplattform – Smart Panel, Projekte, Admin am Handy.",
+  "start_url": "https://k2-galerie.vercel.app/dev-view",
+  "scope": "/dev-view",
+  "display": "standalone",
+  "background_color": "#0d1b2a",
+  "theme_color": "#0d1b2a",
+  "icons": [
+    {
+      "src": "/apf-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apf-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
