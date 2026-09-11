@@ -75,7 +75,7 @@ export function HundredGenerationAhnenrasterBlatt({
         {b.title} · {b.subtitle}
       </h2>
       <p style={{ margin: '0 0 0.85rem', color: muted, fontSize: '0.92rem', lineHeight: 1.45 }}>
-        Geometrische Zeichnung zum Ritzen/Übertragen – daneben das exakte Foto zur Kontrolle.
+        Linien + Stopps – daneben das Foto zur Kontrolle. CNC erst nach Freigabe.
       </p>
 
       <div
@@ -117,10 +117,8 @@ export function HundredGenerationAhnenrasterBlatt({
               background: isPrint ? '#f7f4ef' : 'rgba(0,0,0,0.08)',
             }}
           >
-            Geometrie · 2‑mm‑Raster · Schwarz = Stempel · Platte H {b.panelHoeheCm} · B{' '}
-            {b.panelBreiteCm} cm
-            {' · '}
-            Vorlage = Foto auf Raster (Auto-Vektor noch nicht final)
+            Linien + Stopps · Schwarz = durchgehende Linie · Orange = Stopp · Platte H{' '}
+            {b.panelHoeheCm} · B {b.panelBreiteCm} cm
           </figcaption>
         </figure>
         <figure
@@ -176,32 +174,31 @@ export function HundredGenerationAhnenrasterBlatt({
             <p style={pStyle(ink)}>{b.anwendung}</p>
           </section>
           <section>
-            <h3 style={h3Style(accent)}>CNC-Matrize</h3>
+            <h3 style={h3Style(accent)}>Zeichnung prüfen</h3>
             <p style={pStyle(ink)}>
-              Stempelplatte 140×220 mm: Schwarz = Stege bleiben. Zuerst Unterlage 1:1 (Foto auf
-              mm-Raster) – Auto-DXF noch nicht final.{' '}
+              CNC pausiert. Zuerst Zeichnung mit Foto abgleichen.{' '}
+              <a
+                href="/100-generation/referenzen/ahnenraster-geometrie-linien.svg"
+                download
+                style={{ color: accent }}
+              >
+                Linien-SVG
+              </a>
+              {' · '}
+              <a
+                href="/100-generation/referenzen/ahnenraster-linien-vergleich.png"
+                download
+                style={{ color: accent }}
+              >
+                Vergleich Foto|Zeichnung
+              </a>
+              {' · '}
               <a
                 href="/100-generation/referenzen/ahnenraster-unterlage-raster.svg"
                 download
                 style={{ color: accent }}
               >
-                Unterlage SVG
-              </a>
-              {' · '}
-              <a
-                href="/100-generation/cnc/ahnenraster-matrize-140x220.dxf"
-                download
-                style={{ color: accent }}
-              >
-                DXF (nur Außenkontur)
-              </a>
-              {' · '}
-              <a
-                href="/100-generation/cnc/CNC-MATRIZE-LESEN.txt"
-                download
-                style={{ color: accent }}
-              >
-                Kurzanleitung
+                Unterlage mm-Raster
               </a>
             </p>
           </section>
