@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Formatblatt/CNC-Vorschau prüfen; bei Bedarf Feinkorrektur.
 
-**Letzter Stand:** 11.09.26 – **Ahnenraster neu aus bearbeitetem Foto** (Geometrie + Matrize). **Commit:** (nach Push)
+**Letzter Stand:** 11.09.26 – **Ahnenraster neu aus bearbeitetem Foto** (Geometrie + Matrize). **Commit:** `e4552b9b` ✅ **main**
 
 
 ---
