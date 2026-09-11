@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ahnenraster Druck 1:1 – 140 × 220 mm</title>
+  <style>
+    @page {
+      size: 140mm 220mm;
+      margin: 0;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #333;
+    }
+    .sheet {
+      width: 140mm;
+      height: 220mm;
+      margin: 0 auto;
+      background: #000;
+      page-break-after: always;
+      overflow: hidden;
+      position: relative;
+    }
+    .sheet img {
+      width: 140mm;
+      height: 220mm;
+      display: block;
+      object-fit: fill;
+    }
+    .hint {
+      max-width: 140mm;
+      margin: 12px auto;
+      padding: 10px 12px;
+      background: #fffefb;
+      color: #1c1a18;
+      font-family: system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.45;
+      border-radius: 8px;
+    }
+    .hint strong { color: #b54a1e; }
+    .btn {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 10px 16px;
+      background: #b54a1e;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 15px;
+    }
+    @media print {
+      body { background: #fff; }
+      .no-print { display: none !important; }
+      .sheet { margin: 0; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="hint no-print">
+    <strong>Ahnenraster · Druck 1:1</strong><br />
+    Platte <strong>140 × 220 mm</strong>. Weiß = Steg, Schwarz = Rille.<br />
+    Seite 1 = Muster · Seite 2 = Muster + 2/10‑mm‑Raster.<br />
+    <strong>Drucken:</strong> Maßstab 100 %, kein „An Seite anpassen“, Ränder 0 / ohne.
+    <br />
+    <button type="button" class="btn" onclick="window.print()">🖨️ Drucken / Als PDF speichern</button>
+    · <a href="ahnenraster-druck-1zu1.pdf">fertiges PDF herunterladen</a>
+  </div>
+
+  <section class="sheet" aria-label="Muster 1:1">
+    <img src="ahnenraster-geometrie-linien-ohne-raster.png" alt="Ahnenraster Muster 140x220 mm" />
+  </section>
+  <section class="sheet" aria-label="Muster mit Raster 1:1">
+    <img src="ahnenraster-geometrie-linien.png" alt="Ahnenraster mit mm-Raster 140x220 mm" />
+  </section>
+</body>
+</html>

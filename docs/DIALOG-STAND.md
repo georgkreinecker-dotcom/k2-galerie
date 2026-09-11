@@ -1,11 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Ahnenraster – Stegdicke ~1:1 wie Foto (2-mm-Zellen aus Foto).
+**Was wir JETZT tun:** Ahnenraster – PDF Druck 1:1 (140 × 220 mm) bereit.
 
-**Einordnung:** Dünne Haarlinien = unbrauchbar (Georg). Neu: Foto → 70×110 Zellen, Weiß=Steg, Schwarz=Rille, Anteil ~1:1.
+**Einordnung:** Georg braucht ausdruckbare Vorlage im echten Maßstab. PDF mit MediaBox exakt 140×220 mm; HTML-Fallback zum Browser-Druck.
 
-**Nächster Schritt:** Georg Formatblatt neu laden – Dicke ok? Dann Freigabe oder Korrektur.
+**Nächster Schritt:** Georg PDF öffnen/drucken (100 %, ohne Anpassen). Danach Dicke/Muster prüfen.
 
-**Letzter Stand:** 11.09.26 – 1:1-Stegstärke aus Foto-Zellen.
+**Letzter Stand:** 11.09.26 – `ahnenraster-druck-1zu1.pdf` + HTML.
 
 ---

@@ -174,15 +174,27 @@ export function HundredGenerationAhnenrasterBlatt({
             <p style={pStyle(ink)}>{b.anwendung}</p>
           </section>
           <section>
-            <h3 style={h3Style(accent)}>Zeichnung prüfen</h3>
+            <h3 style={h3Style(accent)}>Druck 1:1</h3>
             <p style={pStyle(ink)}>
-              CNC pausiert. Zuerst Zeichnung mit Foto abgleichen.{' '}
+              Platte <strong>140 × 220 mm</strong> – Maßstab 100 %, nicht an Seite anpassen.
+              Seite 1 = Muster, Seite 2 = Muster + Raster.
+            </p>
+            <p style={pStyle(ink)}>
               <a
-                href="/100-generation/referenzen/ahnenraster-geometrie-linien.svg"
+                href="/100-generation/referenzen/ahnenraster-druck-1zu1.pdf"
                 download
+                style={{ color: accent, fontWeight: 700 }}
+              >
+                📄 PDF 1:1 herunterladen
+              </a>
+              {' · '}
+              <a
+                href="/100-generation/referenzen/ahnenraster-druck-1zu1.html"
+                target="_blank"
+                rel="noopener noreferrer"
                 style={{ color: accent }}
               >
-                Linien-SVG
+                Im Browser drucken
               </a>
               {' · '}
               <a
@@ -191,14 +203,6 @@ export function HundredGenerationAhnenrasterBlatt({
                 style={{ color: accent }}
               >
                 Vergleich Foto|Zeichnung
-              </a>
-              {' · '}
-              <a
-                href="/100-generation/referenzen/ahnenraster-unterlage-raster.svg"
-                download
-                style={{ color: accent }}
-              >
-                Unterlage mm-Raster
               </a>
             </p>
           </section>
