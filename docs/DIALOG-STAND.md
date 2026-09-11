@@ -1,12 +1,13 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Serie Chaos & Code – Di-Kurugu-Mythos-Varianten.
+**Was wir JETZT tun:** Entwurfsmappe – Maßskizze pro Objekt (max. Höhe 50 cm).
 
-**Einordnung:** Zu jedem der 5 Basis-Entwürfe eine Variante mit Axt-Form, Flecht-Textur und mythologischem Aspekt; Entwurfsmappe-Gruppe „Di Kurugu · Mythos“.
+**Einordnung:** Werkstatt-Aufriss H/B/T zu jedem Modell; Serie-Grenze 50 cm; Druck in Mappe + Einzeldruck.
 
-**Nächster Schritt:** Entwurfsmappe → Tab „Di Kurugu · Mythos“ ansehen / ggf. Feinschliff.
+**Nächster Schritt:** Entwurfsmappe öffnen → Maßskizze prüfen / ggf. Maße mit Bruder nachziehen.
 
-**Letzter Stand:** 11.09.26 – **Di-Kurugu-Mythos:** 5 Varianten (1M–5M) mit Vorne/Seite/Schräg; Referenzen Flechtwerk; Vollformat-Druck in Mappe mit drin. **Commit:** `97face24` ✅ **main**
+**Letzter Stand:** 11.09.26 – **Maßskizze max. 50 cm:** Config + SVG-Aufriss; in Entwurfsmappe Screen/Druck. (Commit folgt)
+
 
 ---
 

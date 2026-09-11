@@ -12,7 +12,13 @@ import {
   type HundredGenerationEntwurfGruppe,
   type HundredGenerationModellId,
 } from '../config/hundredGenerationEntwuerfe'
+import {
+  formatMassLabel,
+  getMassForModell,
+  HUNDRED_GENERATION_MAX_HOEHE_CM,
+} from '../config/hundredGenerationMass'
 import { KeramikDrehscheibe } from '../components/hundredGeneration/KeramikDrehscheibe'
+import { HundredGenerationMassSkizze } from '../components/hundredGeneration/HundredGenerationMassSkizze'
 import '../App.css'
 
 type PrintSheet = {
@@ -53,8 +59,8 @@ export default function HundredGenerationEntwurfsmappePage() {
   const [activeId, setActiveId] = useState<HundredGenerationModellId>('chaosgott')
   const [ansichtIdx, setAnsichtIdx] = useState(0)
   const [notes, setNotes] = useState<Record<string, string>>(() => loadNotes())
-  /** mappe = Übersicht; vollformat = einzelne Bilder je eine Seite */
-  const [printMode, setPrintMode] = useState<'mappe' | 'vollformat'>('mappe')
+  /** mappe = Übersicht; vollformat = Bilder; mass = Maßskizze aktiv */
+  const [printMode, setPrintMode] = useState<'mappe' | 'vollformat' | 'mass'>('mappe')
   const [printSheets, setPrintSheets] = useState<PrintSheet[]>([])
 
   useEffect(() => {
@@ -101,10 +107,25 @@ export default function HundredGenerationEntwurfsmappePage() {
   }
 
   const aktuelleAnsicht = active.ansichten[ansichtIdx] ?? active.ansichten[0]
+  const activeMass = getMassForModell(active.id)
+
+  const printMassSkizze = () => {
+    setPrintMode('mass')
+    setPrintSheets([])
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => window.print())
+    })
+  }
 
   return (
     <div
-      className={`hg-entwurfsmappe${printMode === 'vollformat' ? ' is-print-vollformat' : ' is-print-mappe'}`}
+      className={`hg-entwurfsmappe${
+        printMode === 'vollformat'
+          ? ' is-print-vollformat'
+          : printMode === 'mass'
+            ? ' is-print-mass'
+            : ' is-print-mappe'
+      }`}
     >
       <style>{`
         .hg-entwurfsmappe {
@@ -441,9 +462,25 @@ export default function HundredGenerationEntwurfsmappePage() {
           .hg-entwurfsmappe .no-print { display: none !important; }
           .hg-entwurfsmappe .shell { max-width: none; padding: 0; }
           .hg-entwurfsmappe.is-print-mappe .print-mappe { display: block !important; }
-          .hg-entwurfsmappe.is-print-mappe .print-vollformat { display: none !important; }
-          .hg-entwurfsmappe.is-print-vollformat .print-mappe { display: none !important; }
+          .hg-entwurfsmappe.is-print-mappe .print-vollformat,
+          .hg-entwurfsmappe.is-print-mappe .print-mass { display: none !important; }
+          .hg-entwurfsmappe.is-print-vollformat .print-mappe,
+          .hg-entwurfsmappe.is-print-vollformat .print-mass { display: none !important; }
           .hg-entwurfsmappe.is-print-vollformat .print-vollformat { display: block !important; }
+          .hg-entwurfsmappe.is-print-mass .print-mappe,
+          .hg-entwurfsmappe.is-print-mass .print-vollformat { display: none !important; }
+          .hg-entwurfsmappe.is-print-mass .print-mass { display: block !important; }
+          .hg-entwurfsmappe .print-mass-sheet {
+            min-height: 240mm;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+          }
+          .hg-entwurfsmappe .print-mass-inline {
+            max-width: 11cm;
+            margin: 0.4rem 0 0.2rem;
+            break-inside: avoid;
+          }
           .hg-entwurfsmappe .print-kicker {
             font-family: system-ui, sans-serif;
             font-size: 8pt;
@@ -586,13 +623,13 @@ export default function HundredGenerationEntwurfsmappePage() {
           <p className="print-kicker">100 Generationen · Chaos &amp; Code</p>
           <h1>Entwurfsmappe – Druckfassung</h1>
           <p className="print-meta">
-            Alle Modelle mit Ansichten (Vorne / Seite / Hinten / Schräg) und Notizen. Zum Arbeiten
-            am Tisch und mit dem Bruder.
+            Alle Modelle mit Ansichten, Maßskizze (max. Höhe {HUNDRED_GENERATION_MAX_HOEHE_CM} cm) und
+            Notizen. Zum Arbeiten am Tisch und mit dem Bruder.
           </p>
           {HUNDRED_GENERATION_MODELLE.map((m) => (
             <section key={m.id} className="print-block">
               <h2>
-                {m.title} · {m.note}
+                {m.title} · {m.note} · {formatMassLabel(getMassForModell(m.id))}
               </h2>
               <p className="print-meta">{m.formHint}</p>
               {m.sketchSrc ? (
@@ -610,6 +647,13 @@ export default function HundredGenerationEntwurfsmappePage() {
                     <figcaption>{a.label}</figcaption>
                   </figure>
                 ))}
+              </div>
+              <div className="print-mass-inline">
+                <HundredGenerationMassSkizze
+                  title={m.title}
+                  mass={getMassForModell(m.id)}
+                  variant="print"
+                />
               </div>
               {notes[m.id]?.trim() ? (
                 <p className="print-note">
@@ -637,6 +681,23 @@ export default function HundredGenerationEntwurfsmappePage() {
           ))}
         </div>
 
+        <div className="print-only print-mass">
+          <section className="print-mass-sheet">
+            <p className="print-kicker">100 Generationen · Maßskizze Werkstatt</p>
+            <h1>
+              {active.title} · max. Höhe {HUNDRED_GENERATION_MAX_HOEHE_CM} cm
+            </h1>
+            <p className="print-meta">
+              {formatMassLabel(activeMass)} · geplante Endgröße (Schätzung)
+            </p>
+            <HundredGenerationMassSkizze
+              title={active.title}
+              mass={activeMass}
+              variant="print"
+            />
+          </section>
+        </div>
+
         <div className="no-print">
         <p className="kicker">100 Generationen · Arbeitsplatz</p>
         <h1>Entwurfsmappe</h1>
@@ -649,7 +710,10 @@ export default function HundredGenerationEntwurfsmappePage() {
           Am Bild ziehen oder „weiter ›“ / „‹ zurück“: Vorne, Seite, Hinten, Schräg oben.
           Serie = Basisformen. <strong>Di Kurugu · Mythos</strong> = zu jedem Entwurf die Variante mit
           Axt-Form, Flecht-Textur und mythologischem Aspekt.
-          <strong> Ganze Mappe</strong> = Übersicht. <strong>Vollformat</strong> = ein Bild auf eine Seite.
+          <strong> Maßskizze</strong> = Aufriss mit H/B/T – Serie max. Höhe{' '}
+          {HUNDRED_GENERATION_MAX_HOEHE_CM} cm.
+          <strong> Ganze Mappe</strong> = Übersicht inkl. Maß. <strong>Vollformat</strong> = ein Bild
+          auf eine Seite.
         </p>
 
         <div className="gruppen" role="tablist" aria-label="Gruppen">
@@ -803,11 +867,36 @@ export default function HundredGenerationEntwurfsmappePage() {
                 <>
                   {' '}
                   (Variante zu{' '}
-                  {HUNDRED_GENERATION_MODELLE.find((m) => m.id === active.baseId)?.title ?? active.baseId}
+                  {HUNDRED_GENERATION_MODELLE.find((m) => m.id === active.baseId)?.title ??
+                    active.baseId}
                   )
                 </>
               ) : null}
             </p>
+          </div>
+        </div>
+
+        <div className="card" style={{ marginTop: '1rem' }}>
+          <h2>Maßskizze · max. {HUNDRED_GENERATION_MAX_HOEHE_CM} cm</h2>
+          <p className="hint" style={{ marginBottom: '0.65rem' }}>
+            Geplante Endgröße für die Werkstatt. Alle Objekte der Serie bleiben unter{' '}
+            {HUNDRED_GENERATION_MAX_HOEHE_CM} cm Höhe.
+          </p>
+          <HundredGenerationMassSkizze title={active.title} mass={activeMass} variant="screen" />
+          <p
+            style={{
+              margin: '0.55rem 0 0',
+              fontFamily: 'system-ui, sans-serif',
+              fontSize: '0.9rem',
+              color: 'var(--hg-accent)',
+            }}
+          >
+            {formatMassLabel(activeMass)}
+          </p>
+          <div className="print-actions">
+            <button type="button" className="btn-print" onClick={printMassSkizze}>
+              🖨️ Maßskizze drucken
+            </button>
           </div>
         </div>
 
@@ -857,7 +946,8 @@ export default function HundredGenerationEntwurfsmappePage() {
         </div>
 
         <footer className="foot">
-          Entwurfsmappe · Drehen über Foto-Ansichten · Ganze Mappe oder Einzelbild Vollformat. Echtes Mesh erst mit Scan/GLB.
+          Entwurfsmappe · Maßskizze max. {HUNDRED_GENERATION_MAX_HOEHE_CM} cm Höhe · Drehen über
+          Foto-Ansichten · Ganze Mappe oder Einzelbild Vollformat.
         </footer>
         </div>
         <div className="seitenfuss" aria-hidden />
