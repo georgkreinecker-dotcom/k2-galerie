@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Nach Deploy: am Handy APf-Link öffnen, Entwurfsmappe prüfen.
 
-**Letzter Stand:** 11.09.26 – APf mobil freigeschaltet (`?apf=1` / `/platform` / Session); Mobile-Connect QR „APf“; vercel Rewrite `100-generation/` + `img/`.
+**Letzter Stand:** 11.09.26 – APf mobil freigeschaltet (`?apf=1` / `/platform` / Session); Mobile-Connect QR „APf“; vercel Rewrite `100-generation/` + `img/`. **Commit:** `feace80e` ✅ **main**
 
 ---
 
