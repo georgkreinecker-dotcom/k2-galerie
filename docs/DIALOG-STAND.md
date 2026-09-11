@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Entwurfsmappe → Maßskizze-Tab prüfen; ggf. Maße mit Bruder nachziehen.
 
-**Letzter Stand:** 11.09.26 – **Maßskizze präzise:** echte Vorne-Ansicht statt Schema; 4. Ansicht im Ring. (Commit folgt)
+**Letzter Stand:** 11.09.26 – **Maßskizze präzise:** echte Vorne-Ansicht statt Schema; 4. Ansicht im Ring. **Commit:** `a16f9519` ✅ **main**
 
 
 ---
