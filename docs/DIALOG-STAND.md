@@ -6,6 +6,6 @@
 
 **Nächster Schritt:** Georg: Vergleich nochmal – unten und Raster ok? Dann feinjustieren oder freigeben.
 
-**Letzter Stand:** 11.09.26 – Unten geschlossen + Ausrichtungs-Raster. **Commit:** (nach Push)
+**Letzter Stand:** 11.09.26 – Unten geschlossen + Ausrichtungs-Raster. **Commit:** `4cd23029` ✅ **main**
 
 ---
