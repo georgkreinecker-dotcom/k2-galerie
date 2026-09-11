@@ -16,9 +16,9 @@ describe('isBareK2GalerieApfHubSearch', () => {
 })
 
 describe('K2_APF_HANDY_QR', () => {
-  it('Handy-QR zeigt auf /boot/apf-entry.html (nicht Galerie, nicht Entdecken)', async () => {
+  it('Handy-QR zeigt auf /dev-view (APf-SPA, kein 404 bei fehlender Boot-Datei)', async () => {
     const { K2_APF_HANDY_QR_PATH, K2_APF_HANDY_QR_URL } = await import('../config/navigation')
-    expect(K2_APF_HANDY_QR_PATH).toBe('/boot/apf-entry.html')
-    expect(K2_APF_HANDY_QR_URL).toBe('https://k2-galerie.vercel.app/boot/apf-entry.html')
+    expect(K2_APF_HANDY_QR_PATH).toBe('/dev-view')
+    expect(K2_APF_HANDY_QR_URL).toBe('https://k2-galerie.vercel.app/dev-view')
   })
 })

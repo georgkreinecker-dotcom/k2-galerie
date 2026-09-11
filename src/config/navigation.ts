@@ -125,10 +125,11 @@ export const K2_GALERIE_APF_EINSTIEG = '/projects/k2-galerie?apf=1' as const
 export const K2_GALERIE_APF_OHNE_MANDANT = '/projects/k2-galerie?apf=1&page=platform' as const
 
 /**
- * Handy-QR / Smart Panel: eigener Einstieg unter `/boot/` (SPA-Rewrite lässt `/boot/` durch).
- * Altes `/apf.html` war auf Vercel oft die SPA → Entdecken/Rundgang. Neu: `apf-entry.html` → `/dev-view`.
+ * Handy-QR / Smart Panel: **SPA-Route `/dev-view`** (APf).
+ * Nicht `/boot/apf-entry.html` als QR-Ziel – fehlt die Datei auf Vercel → 404 (Rewrite lässt `/boot/` durch).
+ * Boot-HTML bleibt optionaler Extra-Einstieg, sobald Deploy aktuell ist.
  */
-export const K2_APF_HANDY_QR_PATH = '/boot/apf-entry.html' as const
+export const K2_APF_HANDY_QR_PATH = '/dev-view' as const
 
 /** Galerie-Lizenz ohne Mandanten-ID (LK2 / ök2 auf der Plattform): Admin im Demo-Kontext – nie `/admin` ohne Query (K2), nie APf. */
 export function buildLk2GalerieLizenzAdminUrlOhneTenant(focusDirection?: string | null): string {

@@ -5,12 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>APf – Weiterleitung</title>
   <meta name="robots" content="noindex" />
-  <meta http-equiv="refresh" content="0;url=/boot/apf-entry.html" />
+  <meta http-equiv="refresh" content="0;url=/dev-view" />
   <script>
-    location.replace('/boot/apf-entry.html')
+    try {
+      sessionStorage.setItem('k2-apf-session', '1')
+      sessionStorage.setItem('k2-apf-entry', '1')
+    } catch (e) {}
+    location.replace('/dev-view')
   </script>
 </head>
 <body style="margin:0;background:#1a0f0a;color:#f5e6c8;font-family:system-ui;text-align:center;padding:2rem;">
-  <p>Weiter zur APf … <a href="/boot/apf-entry.html" style="color:#d4a76a">Tipp hier</a></p>
+  <p>Weiter zur APf … <a href="/dev-view" style="color:#d4a76a">Tipp hier</a></p>
 </body>
 </html>

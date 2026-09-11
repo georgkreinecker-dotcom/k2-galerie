@@ -64,13 +64,13 @@ describe('Vercel-Konfigurations-Schranken', () => {
     expect(spa?.source).toContain('(?!boot/)')
   })
 
-  it('APf-Handy-Einstieg: Redirect /apf.html → /boot/apf-entry.html', () => {
+  it('APf-Handy-Einstieg: Redirect /apf.html → /dev-view', () => {
     const raw = readFileSync(join(process.cwd(), 'vercel.json'), 'utf8')
     const cfg = JSON.parse(raw) as {
       redirects?: Array<{ source?: string; destination?: string }>
     }
     const apf = cfg.redirects?.find((r) => r.source === '/apf.html')
-    expect(apf?.destination).toBe('/boot/apf-entry.html')
+    expect(apf?.destination).toBe('/dev-view')
   })
 
   it('functions.*.includeFiles bleibt ein String (Schema-Schranke)', () => {

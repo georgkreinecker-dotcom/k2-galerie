@@ -21,12 +21,12 @@ Alles was Georg **zum Arbeiten** braucht – primär am Mac; **bewusst** auch mo
 
 | Zugang | URL |
 |---|-----|
-| **APf mobil / Vercel (QR)** | `https://k2-galerie.vercel.app/boot/apf-entry.html` (Smart Panel) → `/dev-view` |
+| **APf mobil / Vercel (QR)** | `https://k2-galerie.vercel.app/dev-view` (Smart Panel) |
 | **APf mobil / Query** | `https://k2-galerie.vercel.app/dev-view` oder `/projects/k2-galerie?apf=1` |
 | **APf lokal** | `http://localhost:5177/dev-view` bzw. `/projects/k2-galerie?apf=1` |
 
-**Nicht** für Besucher: ohne `?apf=1` / ohne `/boot/apf-entry.html` bleibt Handy bei Galerie/Entdecken.  
-**Wichtig:** Altes `/apf.html` lieferte auf Vercel oft die SPA → Entdecken/Rundgang. Neuer Einstieg nur unter **`/boot/`** (Rewrite-Ausnahme).
+**Nicht** für Besucher: ohne APf-Einstieg bleibt Handy bei Galerie/Entdecken.  
+**Wichtig:** QR zeigt auf **`/dev-view`** (SPA). Statische Boot-Dateien unter `/boot/` fehlen bei altem Deploy → **404** – deshalb nicht als QR-Hauptziel.
 
 | Bereich | Dateien / Routen |
 |---------|-----------------|

@@ -76,7 +76,7 @@ const DOC_VIDEO_PRAEMAPPE = 'VIDEO-PRODUKTION-PRAEMAPPE-ANALYSE.md'
 const DOC_VIDEO_MATRIX = 'VIDEO-PRODUKTION-MATRIX-UND-DREHBUCH-V1.md'
 const apfHandbuchDocUrl = (docFile: string) => `/projects/k2-galerie?page=handbuch&doc=${encodeURIComponent(docFile)}`
 
-/** Handy-QR: /boot/apf-entry.html → /dev-view (nicht Galerie-PWA, nicht Entdecken/Rundgang) */
+/** Handy-QR: /dev-view = APf (SPA – kein 404) */
 const APF_HANDY_QR_BASE = K2_APF_HANDY_QR_URL
 
 const PANEL_ORDER_KEY = 'smartpanel-reihenfolge'

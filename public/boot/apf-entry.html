@@ -6,6 +6,7 @@
   <title>APf – Arbeitsplattform</title>
   <meta name="robots" content="noindex" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="refresh" content="0;url=/dev-view" />
   <style>
     body {
       margin: 0;
@@ -39,7 +40,6 @@
         sessionStorage.setItem('k2-apf-entry', '1')
       } catch (e) { /* ignore */ }
       var t = Date.now()
-      // /dev-view = APf-Route in der SPA (Smart Panel / Arbeitsplattform) – nie Entdecken/Rundgang
       var url = '/dev-view?apf=1&v=' + t + '&_=' + t
       try {
         document.getElementById('fallback').setAttribute('href', url)

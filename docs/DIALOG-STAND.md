@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** APf-Handy-Zugang komplett neu – QR → `/boot/apf-entry.html` → `/dev-view` (nicht Entdecken/Rundgang).
+**Was wir JETZT tun:** APf-QR → `/dev-view` (kein 404). Vercel-Deployments schlagen fehl – Production noch 10.09.
 
-**Einordnung:** Altes `/apf.html` lieferte auf Vercel die SPA → Catch-all → Entdecken (Rundgang). Production war zudem auf Stand 10.09. stecken.
+**Einordnung:** `/boot/apf-entry.html` → 404 weil Datei auf altem Deploy fehlt. `/dev-view` ist SPA und läuft live.
 
-**Nächster Schritt:** Nach Vercel Ready: Smart-Panel-QR neu scannen; prüfen dass APf (nicht Rundgang) öffnet.
+**Nächster Schritt:** Handy: https://k2-galerie.vercel.app/dev-view öffnen; Vercel Build-Fehler beheben bis Stand neu.
 
-**Letzter Stand:** 11.09.26 – APf-Einstieg neu unter `/boot/apf-entry.html`. **Commit:** `a9dd00ba` ✅ **main**
+**Letzter Stand:** 11.09.26 – APf-QR auf `/dev-view`. **Commit:** (folgt mit Push)
 
 ---
 
