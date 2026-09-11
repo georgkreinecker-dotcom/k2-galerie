@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Handy: https://k2-galerie.vercel.app/dev-view öffnen; Vercel Build-Fehler beheben bis Stand neu.
 
-**Letzter Stand:** 11.09.26 – APf-QR auf `/dev-view`. **Commit:** (folgt mit Push)
+**Letzter Stand:** 11.09.26 – APf-QR auf `/dev-view`. **Commit:** `a45bbfb4` ✅ **main**
 
 ---
 
