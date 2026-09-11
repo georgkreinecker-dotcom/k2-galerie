@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **APf auch auf Handy/iPad** – Einstieg mit `?apf=1`.
+**Was wir JETZT tun:** APf-QR im Smart Panel (Handy scannen).
 
-**Einordnung:** Georg will die Arbeitsplattform mobil; bisher leiteten Mobile-Redirects immer zur Galerie. 100 Generationen / Entwurfsmappe waren deshalb „nicht am Bildschirm“.
+**Einordnung:** Georg will den APf-Code direkt im Panel sehen – nicht Galerie-QR.
 
-**Nächster Schritt:** Nach Deploy: am Handy APf-Link öffnen, Entwurfsmappe prüfen.
+**Nächster Schritt:** Am Mac Smart Panel öffnen → QR mit Handy scannen.
 
-**Letzter Stand:** 11.09.26 – APf mobil freigeschaltet (`?apf=1` / `/platform` / Session); Mobile-Connect QR „APf“; vercel Rewrite `100-generation/` + `img/`. **Commit:** `feace80e` ✅ **main**
+**Letzter Stand:** 11.09.26 – APf-QR oben im Smart Panel (`?apf=1` + Cache-Bust).
 
 ---
 

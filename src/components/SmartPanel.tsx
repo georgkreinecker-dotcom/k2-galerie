@@ -1,12 +1,15 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import QRCode from 'qrcode'
+import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import { APP_BASE_URL } from '../config/externalUrls'
 
 /** Team-Handbuch in der APf: gleicher Query-Parameter wie K2TeamHandbuchPage */
 const HANDBUCH_DOC_QUERY = 'doc' as const
 const HANDBUCH_DOC_KOMPASS = '24-TEXTE-BRIEFE-KOMPASS.md'
 const HANDBUCH_DOC_ZENTRALE_THEMEN = '16-ZENTRALE-THEMEN-FUER-NUTZER.md'
 const HANDBUCH_DOC_NOTFALL = '23-NOTFALL-CHECKLISTE.md'
-import { PROJECT_ROUTES, PLATFORM_ROUTES, MOK2_ROUTE, ENTDECKEN_ROUTE, HUNDRED_GENERATION_ROUTE, HUNDRED_GENERATION_FLAECHE_ROUTE, HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE } from '../config/navigation'
+import { PROJECT_ROUTES, PLATFORM_ROUTES, MOK2_ROUTE, ENTDECKEN_ROUTE, HUNDRED_GENERATION_ROUTE, HUNDRED_GENERATION_FLAECHE_ROUTE, HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 import { K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
 import { prepareFreshOek2VisitorSession } from '../utils/oek2FreshStart'
 import { openAppOrHttpUrlInNewTab } from '../utils/safeExternalUrl'
@@ -73,6 +76,9 @@ const ADMIN_OEK2_EINSTELLUNGEN = '/admin?context=oeffentlich&tab=einstellungen'
 const DOC_VIDEO_PRAEMAPPE = 'VIDEO-PRODUKTION-PRAEMAPPE-ANALYSE.md'
 const DOC_VIDEO_MATRIX = 'VIDEO-PRODUKTION-MATRIX-UND-DREHBUCH-V1.md'
 const apfHandbuchDocUrl = (docFile: string) => `/projects/k2-galerie?page=handbuch&doc=${encodeURIComponent(docFile)}`
+
+/** APf-URL für Handy-QR – immer Produktion (nie localhost), mit ?apf=1 */
+const APF_HANDY_QR_BASE = `${APP_BASE_URL.replace(/\/$/, '')}${K2_GALERIE_APF_EINSTIEG}`
 
 const PANEL_ORDER_KEY = 'smartpanel-reihenfolge'
 
@@ -392,6 +398,20 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
     }
   }
 
+  const { versionTimestamp: apfQrVersionTs, serverLabel: apfQrServerLabel } = useQrVersionTimestamp()
+  const [apfHandyQrUrl, setApfHandyQrUrl] = useState('')
+  useEffect(() => {
+    let cancelled = false
+    QRCode.toDataURL(buildQrUrlWithBust(APF_HANDY_QR_BASE, apfQrVersionTs), { width: 200, margin: 1 })
+      .then((dataUrl) => {
+        if (!cancelled) setApfHandyQrUrl(dataUrl)
+      })
+      .catch(() => {
+        if (!cancelled) setApfHandyQrUrl('')
+      })
+    return () => { cancelled = true }
+  }, [apfQrVersionTs])
+
   return (
     <div style={{
       width: '100%',
@@ -422,6 +442,45 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
         <p style={{ margin: 0, fontSize: '0.85rem', color: '#8fa0c9' }}>
           Schnellzugriff
         </p>
+
+        {/* APf am Handy – QR (Produktion + Cache-Bust) */}
+        <div
+          style={{
+            marginTop: '0.75rem',
+            padding: '0.75rem',
+            borderRadius: '12px',
+            background: 'rgba(181, 74, 30, 0.14)',
+            border: '1px solid rgba(212, 167, 106, 0.45)',
+            textAlign: 'center',
+          }}
+        >
+          <div style={{ fontSize: '0.88rem', fontWeight: 800, color: '#f5e6c8', marginBottom: '0.35rem' }}>
+            📱 APf am Handy
+          </div>
+          <p style={{ margin: '0 0 0.5rem', fontSize: '0.72rem', color: 'rgba(245,230,200,0.85)', lineHeight: 1.35 }}>
+            Scannen → Arbeitsplattform (nicht die Galerie)
+            {apfQrServerLabel ? ` · Stand ${apfQrServerLabel}` : ''}
+          </p>
+          {apfHandyQrUrl ? (
+            <img
+              src={apfHandyQrUrl}
+              alt="QR-Code APf Handy"
+              width={180}
+              height={180}
+              style={{
+                width: 180,
+                height: 180,
+                borderRadius: 8,
+                background: '#fff',
+                display: 'block',
+                margin: '0 auto',
+              }}
+            />
+          ) : (
+            <div style={{ fontSize: '0.75rem', color: 'rgba(245,230,200,0.7)', padding: '2rem 0' }}>QR wird geladen …</div>
+          )}
+        </div>
+
         {onNavigate ? (
           <button
             type="button"
