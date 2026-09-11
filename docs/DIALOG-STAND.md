@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Entwurfsmappe → Tab „Di Kurugu · Mythos“ ansehen / ggf. Feinschliff.
 
-**Letzter Stand:** 11.09.26 – **Di-Kurugu-Mythos:** 5 Varianten (1M–5M) mit Vorne/Seite/Schräg; Referenzen Flechtwerk; Vollformat-Druck in Mappe mit drin.
+**Letzter Stand:** 11.09.26 – **Di-Kurugu-Mythos:** 5 Varianten (1M–5M) mit Vorne/Seite/Schräg; Referenzen Flechtwerk; Vollformat-Druck in Mappe mit drin. **Commit:** `97face24` ✅ **main**
 
 ---
 
