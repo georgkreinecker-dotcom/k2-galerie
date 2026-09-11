@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** APf-QR → `/dev-view` (kein 404). Vercel-Deployments schlagen fehl – Production noch 10.09.
+**Was wir JETZT tun:** Vercel-Build-Fehler: kaputtes `package-lock.json` → `npm ci` failed.
 
-**Einordnung:** `/boot/apf-entry.html` → 404 weil Datei auf altem Deploy fehlt. `/dev-view` ist SPA und läuft live.
+**Einordnung:** Entwurfsmappe ok; Production hing weil Install auf Vercel scheiterte („Missing: … from lock file“).
 
-**Nächster Schritt:** Handy: https://k2-galerie.vercel.app/dev-view öffnen; Vercel Build-Fehler beheben bis Stand neu.
+**Nächster Schritt:** Nach Deploy Ready: Stand prüfen (`build-info.json`), APf `/dev-view` + Entwurfsmappe.
 
-**Letzter Stand:** 11.09.26 – APf-QR auf `/dev-view`. **Commit:** `a45bbfb4` ✅ **main**
+**Letzter Stand:** 11.09.26 – package-lock repariert. **Commit:** (folgt mit Push)
 
 ---
 

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { spawnSync } from 'node:child_process'
 
 describe('Vercel-Konfigurations-Schranken', () => {
   it('vercel.json ist valides JSON', () => {
@@ -43,6 +44,26 @@ describe('Vercel-Konfigurations-Schranken', () => {
       cmd.includes('NPM_CONFIG_omit=dev'),
       'NPM_CONFIG_omit=dev: selbst wenn Vercel npm ohne production-Modus startet, devDependencies weglassen'
     ).toBe(true)
+  })
+
+  it('package-lock.json: npm ci --omit=dev --dry-run muss grün sein (sonst Vercel Install Failed)', () => {
+    // Ursache 11.09.26: Lockfile unvollständig → „Missing: … from lock file“ → alle Deployments rot.
+    const r = spawnSync(
+      'npm',
+      ['ci', '--omit=dev', '--dry-run'],
+      {
+        cwd: process.cwd(),
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1',
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1',
+        },
+      }
+    )
+    const out = `${r.stdout || ''}\n${r.stderr || ''}`
+    expect(r.status, `npm ci --omit=dev --dry-run fehlgeschlagen:\n${out.slice(-800)}`).toBe(0)
+    expect(out.includes('Missing:'), 'Lockfile darf keine „Missing: … from lock file“-Fehler haben').toBe(false)
   })
 
   it('Catch-all-Headers enthalten Content-Security-Policy (Phishing/Schutzstandard)', () => {
