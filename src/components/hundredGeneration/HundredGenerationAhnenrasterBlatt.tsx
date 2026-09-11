@@ -117,7 +117,7 @@ export function HundredGenerationAhnenrasterBlatt({
               background: isPrint ? '#f7f4ef' : 'rgba(0,0,0,0.08)',
             }}
           >
-            Geometrie · Schwarz = Stempel bleibt · Platte ca. H {b.panelHoeheCm} · B{' '}
+            Geometrie · 2‑mm‑Raster · Schwarz = Stempel · Platte H {b.panelHoeheCm} · B{' '}
             {b.panelBreiteCm} cm
           </figcaption>
         </figure>

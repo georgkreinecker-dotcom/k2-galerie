@@ -1,0 +1,3 @@
+Exakte Konstruktion auf 2-mm-Rasterpapier.
+Platte 140×220 mm = 70×110 Zellen.
+Schwarz=Stempel. SVG mit sichtbarem mm-Raster 1:1 drucken.

@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Ahnenraster aus bearbeitetem Foto neu abgeleitet (Geometrie + CNC).
+**Was wir JETZT tun:** Ahnenraster exakt auf 2‑mm‑Raster konstruiert.
 
-**Einordnung:** Neues Kontrast-Foto → Polarität Dunkel=Stempel; Geometrie + DXF/SVG 140×220 neu erzeugt.
+**Einordnung:** 140×220 mm = 70×110 Zellen; alle Kanten ganze mm; SVG mit Rasterpapier + CNC/DXF neu.
 
-**Nächster Schritt:** Formatblatt/CNC-Vorschau prüfen; bei Bedarf Feinkorrektur.
+**Nächster Schritt:** SVG 1:1 drucken und mit Original vergleichen; bei Abweichung Zellenkarte nachziehen.
 
-**Letzter Stand:** 11.09.26 – **Ahnenraster neu aus bearbeitetem Foto** (Geometrie + Matrize). **Commit:** `e4552b9b` ✅ **main**
+**Letzter Stand:** 11.09.26 – **2‑mm‑Raster-Konstruktion** Ahnenraster + CNC. **Commit:** (nach Push)
 
 
 ---

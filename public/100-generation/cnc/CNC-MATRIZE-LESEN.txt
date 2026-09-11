@@ -1,8 +1,11 @@
-4M · Ahnenraster – CNC-Matrize
-Aktualisiert aus bearbeitetem Foto (11.09.26, Polarität: Dunkel=Stempel).
+4M Ahnenraster – Millimeter-Konstruktion
+=======================================
+Platte: 140 × 220 mm
+Raster: 2 mm (70 × 110 Zellen)
+Koordinaten: nur ganze Millimeter
+Schwarz / STEMPEL = bleibt stehen
+Weiß / FRAESEN = Tasche ~2 mm
 
-SCHWARZ = Stempelstege bleiben stehen
-WEISS   = Frästasche ca. 2 mm
-Maß: 140×220 mm · Gitter 122×215
-
-DXF-Layer: STEMPEL / FRAESEN / PLATTE
+Druck Geometrie: referenzen/ahnenraster-geometrie.svg auf 100 % (1:1)
+Zellenkarte: referenzen/ahnenraster-mm-raster.txt
+DXF: cnc/ahnenraster-matrize-140x220.dxf (Layer RASTER = 10-mm)
