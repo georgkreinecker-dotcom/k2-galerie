@@ -6,6 +6,6 @@
 
 **Nächster Schritt:** Georg: Vergleich – Weiß/Schwarz und unten jetzt ok?
 
-**Letzter Stand:** 11.09.26 – Weiß=erhaben (~1:1), unten geschlossen. **Commit:** (nach Push)
+**Letzter Stand:** 11.09.26 – Weiß=erhaben (~1:1), unten geschlossen. **Commit:**  ✅ **main**
 
 ---
