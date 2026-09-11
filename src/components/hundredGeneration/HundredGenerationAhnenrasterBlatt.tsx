@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 import {
   AHNENRASTER_BLATT,
+  AHNENRASTER_GEOMETRIE_SRC,
   AHNENRASTER_MUSTER_SRC,
 } from '../../config/hundredGenerationAhnenraster'
 
@@ -14,10 +15,12 @@ type Props = {
   objektSrc?: string
   /** Exakter Raster-Ausschnitt – Standard aus Config */
   musterSrc?: string
+  /** Orthogonale Geometrie-Zeichnung (Werkstatt) */
+  geometrieSrc?: string
 }
 
 /**
- * Fertiges Formatblatt: exaktes Ahnenraster-Foto groß + Infos + Bezüge.
+ * Fertiges Formatblatt: geometrische Zeichnung + Foto + Infos + Bezüge.
  */
 export function HundredGenerationAhnenrasterBlatt({
   variant = 'screen',
@@ -25,6 +28,7 @@ export function HundredGenerationAhnenrasterBlatt({
   referenzSrc = '/100-generation/referenzen/di-kurugu-flechtwerk.jpg',
   objektSrc = '/100-generation/entwurf-04m-code-ahnen-mythos.png',
   musterSrc = AHNENRASTER_MUSTER_SRC,
+  geometrieSrc = AHNENRASTER_GEOMETRIE_SRC,
 }: Props) {
   const isPrint = variant === 'print'
   const ink = isPrint ? '#1c1a18' : '#eef2f7'
@@ -71,44 +75,86 @@ export function HundredGenerationAhnenrasterBlatt({
         {b.title} · {b.subtitle}
       </h2>
       <p style={{ margin: '0 0 0.85rem', color: muted, fontSize: '0.92rem', lineHeight: 1.45 }}>
-        Exaktes Raster der Frontplatte – verbindliche Vorlage für die Werkstatt (kein Schema-Zeichnen).
+        Geometrische Zeichnung zum Ritzen/Übertragen – daneben das exakte Foto zur Kontrolle.
       </p>
 
-      {/* Hauptbild: exaktes Muster */}
-      <figure
+      <div
         style={{
-          margin: '0 0 1rem',
-          border: `1px solid ${frame}`,
-          borderRadius: 8,
-          overflow: 'hidden',
-          background: '#0a0c10',
+          display: 'grid',
+          gridTemplateColumns: isPrint ? '1.05fr 0.95fr' : '1fr',
+          gap: '0.75rem',
+          marginBottom: '1rem',
+          alignItems: 'stretch',
         }}
       >
-        <img
-          src={musterSrc}
-          alt="Ahnenraster heiliges Muster – exakter Ausschnitt der 4M-Frontplatte"
+        <figure
           style={{
-            display: 'block',
-            width: '100%',
-            maxHeight: isPrint ? '165mm' : '28rem',
-            objectFit: 'contain',
-            margin: '0 auto',
-            background: isPrint ? '#f4efe6' : '#0a0c10',
-          }}
-        />
-        <figcaption
-          style={{
-            padding: '0.45rem 0.65rem',
-            fontFamily: 'system-ui,sans-serif',
-            fontSize: '0.78rem',
-            color: muted,
-            background: isPrint ? '#f7f4ef' : 'rgba(0,0,0,0.35)',
+            margin: 0,
+            border: `1px solid ${frame}`,
+            borderRadius: 8,
+            overflow: 'hidden',
+            background: isPrint ? '#fffefb' : '#f4efe6',
           }}
         >
-          Exaktes Ahnenraster · Platte ca. H {b.panelHoeheCm} · B {b.panelBreiteCm} cm am Objekt · vier
-          Labyrinth-Felder + Rahmen + Fischgrät-Umgebung
-        </figcaption>
-      </figure>
+          <img
+            src={geometrieSrc}
+            alt="Ahnenraster – exakte geometrische Zeichnung (orthogonal)"
+            style={{
+              display: 'block',
+              width: '100%',
+              maxHeight: isPrint ? '155mm' : '26rem',
+              objectFit: 'contain',
+              margin: '0 auto',
+              background: '#fffefb',
+            }}
+          />
+          <figcaption
+            style={{
+              padding: '0.45rem 0.65rem',
+              fontFamily: 'system-ui,sans-serif',
+              fontSize: '0.78rem',
+              color: muted,
+              background: isPrint ? '#f7f4ef' : 'rgba(0,0,0,0.08)',
+            }}
+          >
+            Geometrie · Kanäle schwarz · Stege weiß · Platte ca. H {b.panelHoeheCm} · B {b.panelBreiteCm}{' '}
+            cm
+          </figcaption>
+        </figure>
+        <figure
+          style={{
+            margin: 0,
+            border: `1px solid ${frame}`,
+            borderRadius: 8,
+            overflow: 'hidden',
+            background: '#0a0c10',
+          }}
+        >
+          <img
+            src={musterSrc}
+            alt="Ahnenraster heiliges Muster – exakter Foto-Ausschnitt der 4M-Frontplatte"
+            style={{
+              display: 'block',
+              width: '100%',
+              maxHeight: isPrint ? '155mm' : '26rem',
+              objectFit: 'contain',
+              margin: '0 auto',
+              background: isPrint ? '#f4efe6' : '#0a0c10',
+            }}
+          />
+          <figcaption
+            style={{
+              padding: '0.45rem 0.65rem',
+              fontFamily: 'system-ui,sans-serif',
+              fontSize: '0.78rem',
+              color: muted,
+              background: isPrint ? '#f7f4ef' : 'rgba(0,0,0,0.35)',
+            }}
+          >
+            Foto · Kontrolle · vier Labyrinth-Felder + Rahmen + Fischgrät
+          </figcaption>
+        </figure>
+      </div>
 
       <div
         style={{
