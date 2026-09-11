@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Nach Vercel Ready: Smart-Panel-QR neu scannen; prüfen dass APf (nicht Rundgang) öffnet.
 
-**Letzter Stand:** 11.09.26 – APf-Einstieg neu unter `/boot/apf-entry.html`. **Commit:** (folgt mit Push)
+**Letzter Stand:** 11.09.26 – APf-Einstieg neu unter `/boot/apf-entry.html`. **Commit:** `a9dd00ba` ✅ **main**
 
 ---
 
