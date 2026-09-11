@@ -16,7 +16,7 @@ Georg hat sich an klare Regeln und Strukturen angepasst und erwartet, dass die A
 1. **Beim ersten Nutzer-Message in dieser Konversation:** Zuerst **Briefing auffrischen**, dann die zentralen Quellen lesen:
    - **Zuerst:** `npm run briefing` ausführen (Cursor-Terminal) – Ankes Briefing immer frisch.
    - **Dann lesen:** HAUS-INDEX.md, k2team-handbuch/00-INDEX.md, docs/STRUKTUR-HANDELN-QUELLEN.md, docs/DIALOG-STAND.md, docs/AGENTEN-BRIEFING.md (Ankes Briefing).
-   - **docs/GRAFIKER-TISCH-NOTIZEN.md** – nur optional, wenn Georg ihn nutzt.
+   - **docs/DIALOG-STAND.md** – aktueller Fokus; optional weitere Notizen in docs/, wenn Georg sie nutzt.
    - **docs/GELOESTE-BUGS.md** – **PFLICHT** vor Code-Änderungen; niemals gelöste Bugs wieder einbauen.
 
 2. **Regeln:** Alle Dateien unter **.cursor/rules/*.mdc** mit `alwaysApply: true` werden vom System geladen. Zusätzlich die obigen Projekt-Dateien einlesen, damit **Struktur** (AGB = mök2, Handbuch = wichtige Sachen, einheitlich für K2/ök2/VK2/Tom) und **Orientierung** (HAUS-INDEX, Handbuch-Index, docs) aktiv sind. **Bei neuer Aufgabe und bei Fehlermeldung:** Zuerst **funktionierende Muster** im Projekt suchen und 1:1 nutzen (funktionierende-muster-zuerst-nutzen.mdc); Mustererkennung anwenden (mustererkennung-kernstaerke.mdc, Pflicht-Checkliste „bei neuer Aufgabe“); ein-standard-problem.mdc (Tabelle vor Implementierung prüfen).

@@ -67,14 +67,6 @@ export function getProjectCards(): ProjectCard[] {
   // Zusatzeinträge
   const extraCards: ProjectCard[] = [
     {
-      id: 'k2-galerie-seitengestaltung',
-      title: '🎨 Seitengestaltung',
-      description: 'Live-Vorschau: Galerie-Seiten direkt ansehen und besprechen.',
-      to: PROJECT_ROUTES['k2-galerie'].seitengestaltung,
-      color: '#ff8c42',
-      status: 'in-progress',
-    },
-    {
       id: 'k2-galerie-oeffentlich',
       title: 'Öffentliche Galerie K2',
       description: 'Öffentliche Ansicht der K2 Galerie.',

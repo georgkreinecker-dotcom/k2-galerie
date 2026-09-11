@@ -113,7 +113,6 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 | Was | Wo |
 |---|---|
 | Letzter Dialog-Stand | `docs/DIALOG-STAND.md` |
-| Offene Wünsche vom Grafiker-Tisch | `docs/GRAFIKER-TISCH-NOTIZEN.md` |
 | Alle Regeln | `.cursor/rules/*.mdc` |
 | Unser Wachstums-Prozess | `docs/WIR-PROZESS.md` (diese Datei) |
 | Projekt-Übersicht | `HAUS-INDEX.md` |
@@ -124,12 +123,15 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 
 ## Session-Reflexion (wird ergänzt)
 
+**Session-Reflexion (11.09.26):** Grafiker-Tisch war nie wirklich nutzbar – entfernt statt weiter mitzuschleppen. Gestaltung = Admin Design.
+
 **Session-Reflexion (08.09.26, Abend):** **100 Generationen** = Kunstprojekt neben der Software – zwei Kapitel (Keramik Volumen / Fläche Bild) in einer Smart-Panel-Mappe. Session-Ende = offene lokale Dateien nicht liegen lassen.
 
 **Session-Reflexion (28.05.26):** Google Ads **Lokal Eferding** end-to-end: Repo-Quelle (Keywords, RSA, Sitelinks) + Georg hat Kampagne live (5 €/Tag, Suchnetzwerk). **P1:** fremde Sitelinks in Google erkannt – Aufräum-Checkliste im Schreibtisch statt raten. Nächstes Mal: P1 in Google bereinigen, Eferding-Suchbegriffe nach einer Woche lesen.
 
 | Datum | Was ich gelernt habe |
 |---|---|
+| 11.09.26 | **Grafiker-Tisch:** Unbenutzte APf-Vorschau komplett entfernen (Route, Overlay, Kachel, Briefing-Abhängigkeit) – Admin Design bleibt die echte Gestaltung. |
 | 08.09.26 (Abend) | **Schluss für heute:** Künstlerisches Projekt braucht dieselbe APf-Anbindung wie Software-Seiten (Route + Mappe + DevView + Kapitel-Wechsler) – dann ist es sofort nutz- und druckbar. Session-Ende: alles Offene committen/pushen. |
 | 09.05.26 | **Lizenz-Domains:** Auf dem **gleichen Vercel-Build** reicht Hostname-Tabelle allein nicht, wenn Kunden noch unter **`k2-galerie.vercel.app/g/…`** liegen – **`VITE_LICENSEE_PUBLIC_HOSTNAMES`** ist die harte Trennung pro eigener Domain (vor Plattform-Prefix-Regel), mit Tests und Doku nachziehen. |
 | 27.04.26 (Abend) | **Schluss für heute:** **Mission Control** = nur **operative** Oberfläche; **Systemgeschichten** (Projektkarten, Chat-Kontext-JSON) gehören auf **eine eigene Route** (`/mission-control/system`) – Georg sieht zuerst **Tun**, nicht Narrativ. **Besucher:** Kreinecker-Stammbaum **getrennt** zählen wie Huber-Muster; **Snapshots** für Matrix/Zeitschiene lokal + Tests. Alles auf **main** (`6d580f57`, DIALOG `b915956b`), danach Session-Ende-Doku; **`git` leer.** |

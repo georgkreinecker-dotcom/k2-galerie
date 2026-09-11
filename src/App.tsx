@@ -128,7 +128,6 @@ import WillkommenPage from './pages/WillkommenPage'
 import EntdeckenPage from './pages/EntdeckenPage'
 import LaunchPraesentationBoardPage from './pages/LaunchPraesentationBoardPage'
 import AGBPage from './pages/AGBPage'
-import SeitengestaltungPage from './pages/SeitengestaltungPage'
 import { BUILD_LABEL, BUILD_TIMESTAMP } from './buildInfo.generated'
 import { PRODUCT_BRAND_NAME } from './config/tenantConfig'
 import {
@@ -225,7 +224,6 @@ class AppErrorBoundary extends Component<{ children: ReactNode }, { hasError: bo
                     'k2-last-loaded-timestamp', 'k2-last-loaded-version',
                     'k2-last-build-id', 'k2-last-load-time', 'k2-artworks-hash',
                     'k2-guide-flow', 'k2-hub-from', 'k2-shop-from-oeffentlich',
-                    'grafiker-notiz-entwurf', 'grafiker-notizen-offen',
                     'devview-panel-minimized',
                   ]
                   SAFE_TO_DELETE.forEach(k => { try { localStorage.removeItem(k) } catch (_) {} })
@@ -948,7 +946,6 @@ function App() {
       <Route path={PROJECT_ROUTES['k2-galerie'].kassabuchAusgang} element={<KassausgangPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].buchhaltung} element={<BuchhaltungPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].virtuellerRundgang} element={<VirtuellerRundgangPage />} />
-      <Route path={PROJECT_ROUTES['k2-galerie'].seitengestaltung} element={<SeitengestaltungPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].controlStudio} element={<ControlStudioPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].kunden} element={<KundenPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].plan} element={<ProjectPlanPage />} />

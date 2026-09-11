@@ -69,7 +69,7 @@ export function shouldRedirectRootUrlToEntdecken(): boolean {
 
 /**
  * `/projects/k2-galerie` ohne Kennzeichen: auf Vercel/kgm **öffentlicher Einstieg** → nicht APf und nicht direkt K2-Galerie.
- * **APf** nur: localhost (ohne Query → Grafiker-Tisch), oder Query `apf=1` / `dev=1`, siehe ProjectStartPage.
+ * **APf** nur: localhost, oder Query `apf=1` / `dev=1`, siehe ProjectStartPage.
  * Nach einmaligem `?apf=1` bleibt die Session-APf in diesem Tab (Handy/iPad) über `k2-apf-session`.
  */
 export function shouldShowK2GalerieApfProjectHub(search?: string): boolean {
@@ -183,7 +183,6 @@ export const PROJECT_ROUTES = {
     id: 'k2-galerie',
     name: PRODUCT_BRAND_NAME,
     home: '/projects/k2-galerie',
-    seitengestaltung: '/projects/k2-galerie/seitengestaltung',
     galerie: '/projects/k2-galerie/galerie',
     galerieOeffentlich: '/projects/k2-galerie/galerie-oeffentlich',
     galerieOeffentlichVorschau: '/projects/k2-galerie/galerie-oeffentlich-vorschau',
@@ -417,7 +416,6 @@ export const PROJECT_ROUTES = {
     vitaMartina: '/projects/k2-galerie/vita/martina',
     vitaGeorg: '/projects/k2-galerie/vita/georg',
     notizen: '/projects/k2-galerie/notizen',
-    seitengestaltung: '/projects/k2-galerie/seitengestaltung',
     kunden: '/projects/k2-galerie/kunden',
     kampagneMarketingStrategie: '/projects/k2-galerie/kampagne-marketing-strategie',
     k2WeltStrategie: '/projects/k2-galerie/k2-welt-strategie',

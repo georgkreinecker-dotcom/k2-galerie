@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Smart Panel – Ordner K2 (ohne 100 Gen; inkl. VK2, mök2, Agentur).
+**Was wir JETZT tun:** Grafiker-Tisch entfernt (hatte keine Funktion).
 
-**Einordnung:** 100 Generationen = eigener Ordner oben. K2 Agentur bleibt in K2 Galerie-Mappe.
+**Einordnung:** APf räumt auf – Smart Panel bleibt; Gestaltung läuft weiter über Admin → Design (pageContent), nicht über den alten Vorschau-Tisch.
 
-**Nächster Schritt:** APf prüfen; Commit/Push.
+**Nächster Schritt:** APf kurz prüfen (kein Grafiker-Button mehr).
 
-**Letzter Stand:** 11.09.26 – Smart Panel Ordner K2 nachgezogen (Georg).
+**Letzter Stand:** 11.09.26 – **Grafiker-Tisch entfernt:** DevView-Overlay/Button, Route `SeitengestaltungPage`, Nav/Kachel, Briefing ohne GRAFIKER-Abhängigkeit. Admin-„Seitengestaltung“ (Design) bleibt.
 
 ---
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Anke – Briefing für Session-Start
- * Stand, Offen, Proaktiv aus DIALOG-STAND + Grafiker-Tisch.
+ * Stand, Offen, Proaktiv aus DIALOG-STAND.
  * Schreibt docs/AGENTEN-BRIEFING.md. Ausführung: npm run briefing
  */
 
@@ -10,7 +10,6 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const DIALOG = path.join(ROOT, 'docs', 'DIALOG-STAND.md');
-const GRAFIKER = path.join(ROOT, 'docs', 'GRAFIKER-TISCH-NOTIZEN.md');
 const OUT = path.join(ROOT, 'docs', 'AGENTEN-BRIEFING.md');
 
 function read(filePath) {
@@ -67,24 +66,8 @@ function extractStand(dialog) {
   return { block, nextStep: parts.nextStep };
 }
 
-/** Offene Wünsche aus Grafiker-Tisch (zwischen "Offene Wünsche" und "Bereits umgesetzt" oder "---") */
-function extractOffen(grafiker) {
-  const lines = grafiker.split('\n');
-  const out = [];
-  let inSection = false;
-  for (const line of lines) {
-    if (/^## Offene Wünsche/.test(line)) {
-      inSection = true;
-      continue;
-    }
-    if (inSection && (/^## /.test(line) || /^---\s*$/.test(line))) break;
-    if (inSection && line.trim()) out.push(line);
-  }
-  return out.join('\n').trim();
-}
-
 /** Proaktiv-Vorschläge aus Regeln */
-function buildProaktiv(standNextStep, offenText, hasUncommitted) {
+function buildProaktiv(standNextStep, hasUncommitted) {
   const tips = [];
   if (standNextStep && /commit|push|build|Build/i.test(standNextStep)) {
     tips.push('- **Build/Commit:** Nächster Schritt nennt Commit/Build – schon erledigt? Wenn nicht: `npm run test` → `npm run build` → Commit + Push.');
@@ -92,11 +75,8 @@ function buildProaktiv(standNextStep, offenText, hasUncommitted) {
   if (hasUncommitted) {
     tips.push('- **Uncommitted:** Es gibt noch nicht committete Änderungen – vor Session-Ende: Commit + Push?');
   }
-  if (offenText && /[Oo]ptional|[Ss]päter/.test(offenText)) {
-    tips.push('- **Optional:** Grafiker-Tisch hat optionale Punkte (z. B. Texte kürzen) – nur wenn du dran willst.');
-  }
   if (tips.length === 0) {
-    tips.push('- Beim Wiedereinstieg: DIALOG-STAND + Grafiker-Tisch lesen, dann einen klaren nächsten Schritt wählen.');
+    tips.push('- Beim Wiedereinstieg: DIALOG-STAND lesen, dann einen klaren nächsten Schritt wählen.');
   }
   return tips.join('\n');
 }
@@ -133,9 +113,7 @@ function main() {
       if (d2 && d2.includes('Letzter Stand')) dialog = d2;
     }
   }
-  const grafiker = read(GRAFIKER);
   const { block: standBlock, nextStep: standNextStep } = extractStand(dialog);
-  const offenBlock = extractOffen(grafiker);
 
   let hasUncommitted = false;
   try {
@@ -144,7 +122,7 @@ function main() {
     hasUncommitted = status.trim().length > 0;
   } catch (_) {}
 
-  const proaktiv = buildProaktiv(standNextStep, offenBlock, hasUncommitted);
+  const proaktiv = buildProaktiv(standNextStep, hasUncommitted);
   const datum = new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' });
 
   const md = `# Anke – Briefing – ${datum}
@@ -165,9 +143,9 @@ ${standBlock || '(DIALOG-STAND.md lesen)'}
 
 ---
 
-## Offen (vom Grafiker-Tisch / DIALOG)
+## Offen (aus DIALOG-STAND)
 
-${offenBlock || '(GRAFIKER-TISCH-NOTIZEN.md → Offene Wünsche lesen)'}
+${standNextStep ? '- ' + standNextStep : '- (In DIALOG-STAND unter **Nächster Schritt:** eintragen. Wenn „von Georg festlegen“: auf Georg warten.)'}
 
 ---
 
@@ -183,23 +161,19 @@ ${proaktiv}
 
 ---
 
-## Ankes Prinzipien (verbindlich)
+## Prinzipien (verbindlich)
 
 ${ankesPrinzipien()}
 
 ---
 
-## Georgs Präferenzen (Kurzreferenz)
+## Georg (Kurz)
 
 ${georgRef()}
-
----
-
-*Mehr: docs/AGENT-KONZEPT.md – Abschnitt „So arbeitest du mit Anke (für Georg)“.*
 `;
 
   fs.writeFileSync(OUT, md, 'utf8');
-  console.log('Ankes Briefing geschrieben: docs/AGENTEN-BRIEFING.md');
+  console.log('Anke Briefing geschrieben:', path.relative(ROOT, OUT));
 }
 
 main();

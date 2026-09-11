@@ -32,7 +32,6 @@ Alles was Georg **zum Arbeiten** braucht – primär am Mac; **bewusst** auch mo
 | Bereich | Dateien / Routen |
 |---------|-----------------|
 | **APf** (Arbeitsplattform) | DevViewPage, SmartPanel, DevView-Toolbar |
-| **Grafiker-Tisch** | SeitengestaltungPage, Grafiker-Tisch-Panel in DevView |
 | **Admin** | /admin, ScreenshotExportAdmin |
 | **mök2** (Vertrieb) | MarketingOek2Page, WerbeunterlagenPage, /mok2 |
 | **Handbuch** | K2TeamHandbuchPage, /k2team-handbuch |
@@ -40,7 +39,7 @@ Alles was Georg **zum Arbeiten** braucht – primär am Mac; **bewusst** auch mo
 | **Mission Control** | PlatformStartPage, /mission-control |
 | **Plan** | ProjectPlanPage |
 | **Mobile Connect** | MobileConnectPage |
-| **Notizen / Doku** | docs/GRAFIKER-TISCH-NOTIZEN.md, docs/*, k2team-handbuch/* |
+| **Notizen / Doku** | docs/*, k2team-handbuch/* |
 | **Einstellungen** | Backup, Drucker, Stammdaten-Admin |
 
 **Speicherort:** Mac (localStorage, Repo) + **backupmicro** (Spiegelung). Vercel baut es technisch mit – das ist unvermeidbar – aber der **Zugang** ist auf Mac beschränkt.

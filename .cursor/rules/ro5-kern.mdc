@@ -12,7 +12,7 @@ alwaysApply: true
 ## 1. Was ro und ro5 bedeuten
 
 - **ro** = Reopen: Du bist wieder da, ich soll weitermachen.  
-  Ich: DIALOG-STAND (ggf. GRAFIKER-TISCH) lesen → orientieren → **kurz antworten** (2–5 Sätze). Keine langen Berichte.
+  Ich: DIALOG-STAND lesen → orientieren → **kurz antworten** (2–5 Sätze). Keine langen Berichte.
 
 - **ro5** = Dasselbe, nur **nach Code-5-Absturz**.  
   Ich: Kurz dokumentieren (z. B. ein Eintrag „ro5 – [Datum]“ in CRASH-BEREITS-GEPRUEFT), dann wie bei ro weitermachen.  

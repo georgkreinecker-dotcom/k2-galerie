@@ -95,17 +95,6 @@ function normalizeApfPageId(page: string | null | undefined): string | null {
 }
 
 /** Wie TenantContext getDynamicTenantIdFromUrl: Lizenz-Mandant aus ?tenantId= (nicht k2/oeffentlich/vk2). */
-function getLicenseeTenantIdFromParams(params: URLSearchParams): string | null {
-  try {
-    const raw = params.get('tenantId')?.toLowerCase().trim() ?? ''
-    if (!raw || raw.length > 64) return null
-    if (!/^[a-z0-9-]{1,64}$/.test(raw)) return null
-    if (raw === 'k2' || raw === 'oeffentlich' || raw === 'vk2') return null
-    return raw
-  } catch {
-    return null
-  }
-}
 
 const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   const [searchParams] = useSearchParams()
@@ -474,23 +463,6 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   const [galerieFilter, setGalerieFilter] = useState<'alle' | 'malerei' | 'keramik'>('alle')
   const [galerieSection, setGalerieSection] = useState<string>('willkommen')
 
-  // Grafiker-Tisch: aktive Seite → iframe-URL (default = aktuelle Seite, nicht immer ök2)
-  const getGrafikerUrl = (): string => {
-    const licTid = getLicenseeTenantIdFromParams(searchParams)
-    switch (currentPage) {
-      case 'galerie':
-        return licTid ? `/g/${encodeURIComponent(licTid)}` : PROJECT_ROUTES['k2-galerie'].galerie
-      case 'galerie-vorschau':
-        return licTid
-          ? `/g/${encodeURIComponent(licTid)}?vorschau=1`
-          : PROJECT_ROUTES['k2-galerie'].galerieVorschau
-      case 'galerie-oeffentlich': return PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
-      case 'galerie-oeffentlich-vorschau': return PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau
-      case 'willkommen': return '/willkommen'
-      default: return getPathForPage(currentPage)
-    }
-  }
-
   /** URL-Pfad für eine Seite (Vollbild-Link + Mobile-iframe). Admin-Klick in der App bleibt dann im iframe (Galerie → Admin). */
   const getPathForPage = (pageId: string): string => {
     switch (pageId) {
@@ -548,31 +520,11 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
     if (!base.includes('galerie-oeffentlich')) return base
     return base.includes('?') ? `${base}&embedded=1` : `${base}?embedded=1`
   }
-  const getGrafikerLabel = (): string => {
-    const licTid = getLicenseeTenantIdFromParams(searchParams)
-    switch (currentPage) {
-      case 'galerie':
-        return licTid ? `🏷️ Lizenz-Galerie (${licTid})` : '🏛️ K2 Galerie (echt)'
-      case 'galerie-oeffentlich': return '🖼️ Galerie ök2'
-      case 'galerie-vorschau':
-        return licTid ? `🏷️ Lizenz Werke-Vorschau (${licTid})` : '🎨 Werke-Vorschau K2'
-      case 'galerie-oeffentlich-vorschau': return '🎨 Werke-Vorschau ök2'
-      case 'willkommen': return '👋 Willkommensseite'
-      default: return '🖼️ Galerie'
-    }
-  }
   const [gitPushing, setGitPushing] = useState(false)
   // Smart Panel ein-/ausblendbar; Zustand aus localStorage (beim Start)
   const [panelMinimized, setPanelMinimized] = useState(() => {
     try { return localStorage.getItem('devview-panel-minimized') === '1' } catch { return false }
   })
-  const [grafikerTischOpen, setGrafikerTischOpen] = useState(false)
-  const [grafikerReloadKey, setGrafikerReloadKey] = useState(0)
-  const [grafikerNotizOpen, setGrafikerNotizOpen] = useState(false)
-  const [grafikerNotizText, setGrafikerNotizText] = useState(() => {
-    try { return localStorage.getItem('grafiker-notiz-entwurf') || '' } catch { return '' }
-  })
-  const [grafikerNotizGespeichert, setGrafikerNotizGespeichert] = useState(false)
   const [apfInstallHintDismissed, setApfInstallHintDismissed] = useState(() => {
     try {
       return localStorage.getItem('k2-apf-pwa-install-hint-dismissed') === '1'
@@ -608,35 +560,16 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
     }
   }, [])
 
-  /** Escape: zuerst Grafiker-Tisch, sonst Admin-iframe entsperren (blockierende Overlays im eingebetteten Admin) */
+  /** Escape: Admin-iframe entsperren (blockierende Overlays im eingebetteten Admin) */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
-      if (grafikerTischOpen) {
-        e.preventDefault()
-        setGrafikerTischOpen(false)
-        return
-      }
       postEntsperrenToProjectIframes()
     }
     window.addEventListener('keydown', onKey, true)
     return () => window.removeEventListener('keydown', onKey, true)
-  }, [grafikerTischOpen, postEntsperrenToProjectIframes])
+  }, [postEntsperrenToProjectIframes])
 
-  const grafikerNotizSpeichern = () => {
-    if (!grafikerNotizText.trim()) return
-    const datum = new Date().toLocaleDateString('de-AT', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })
-    const eintrag = `- [${datum}] ${grafikerNotizText.trim()}`
-    // In localStorage für nächste Session merken
-    const bisherige = (() => { try { return localStorage.getItem('grafiker-notizen-offen') || '' } catch { return '' } })()
-    const neu = bisherige ? bisherige + '\n' + eintrag : eintrag
-    try { localStorage.setItem('grafiker-notizen-offen', neu) } catch { /* ignore */ }
-    try { localStorage.setItem('grafiker-notiz-entwurf', '') } catch { /* ignore */ }
-    setGrafikerNotizText('')
-    setGrafikerNotizGespeichert(true)
-    setTimeout(() => setGrafikerNotizGespeichert(false), 2500)
-  }
-  
   // Speichere Panel-Status in localStorage (optional)
   useEffect(() => {
     if (panelMinimized) {
@@ -2233,43 +2166,7 @@ end tell`
 
         {/* Smart Panel Content */}
         {!panelMinimized && (
-          <>
-            {/* Grafiker-Tisch Button – prominent im SmartPanel, kontextsensitiv */}
-            <div style={{ padding: '0.75rem 1rem 0', flexShrink: 0 }}>
-              <button
-                onClick={() => { setGrafikerTischOpen(o => !o); setGrafikerReloadKey(k => k + 1) }}
-                style={{
-                  width: '100%',
-                  padding: '0.8rem 1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem',
-                  background: grafikerTischOpen
-                    ? 'linear-gradient(135deg, rgba(95,251,241,0.25), rgba(60,200,190,0.18))'
-                    : 'linear-gradient(135deg, rgba(95,251,241,0.12), rgba(60,200,190,0.08))',
-                  border: grafikerTischOpen ? '2px solid #5ffbf1' : '2px solid rgba(95,251,241,0.45)',
-                  borderRadius: '10px',
-                  color: '#5ffbf1',
-                  fontWeight: 700,
-                  fontSize: '0.92rem',
-                  cursor: 'pointer',
-                  letterSpacing: '0.02em',
-                  boxShadow: grafikerTischOpen ? '0 0 16px rgba(95,251,241,0.2)' : 'none',
-                  transition: 'all 0.2s ease',
-                  fontFamily: 'inherit',
-                }}
-              >
-                🎨 Grafiker-Tisch
-                {grafikerTischOpen && (
-                  <span style={{ fontSize: '0.72rem', opacity: 0.7, fontWeight: 400 }}>
-                    → {getGrafikerLabel()}
-                  </span>
-                )}
-              </button>
-            </div>
-            <SmartPanel currentPage={currentPage} onNavigate={setCurrentPage} />
-          </>
+          <SmartPanel currentPage={currentPage} onNavigate={setCurrentPage} />
         )}
       </div>
 
@@ -2313,143 +2210,6 @@ end tell`
         </button>
       )}
 
-      {/* ── GRAFIKER-TISCH – rechtes Panel, kontextsensitiv ── */}
-      {grafikerTischOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          right: 0,
-          width: 'calc(100vw - 400px)',
-          height: '100vh',
-          background: '#0e0c0a',
-          zIndex: 10003,
-          display: 'flex',
-          flexDirection: 'column',
-          borderLeft: '2px solid rgba(95,251,241,0.3)',
-          boxShadow: '-8px 0 32px rgba(0,0,0,0.6)',
-        }}>
-          {/* Header */}
-          <div style={{
-            background: '#1a1410',
-            borderBottom: '1px solid rgba(95,251,241,0.2)',
-            padding: '0.6rem 1rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            flexShrink: 0,
-          }}>
-            <span style={{ fontWeight: 800, color: '#5ffbf1', fontSize: '0.9rem' }}>🎨 Grafiker-Tisch</span>
-            <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', flex: 1 }}>
-              {getGrafikerLabel()} – du siehst die Seite wie ein Besucher
-            </span>
-            <button
-              onClick={() => setGrafikerReloadKey(k => k + 1)}
-              style={{ padding: '0.3rem 0.5rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', fontSize: '0.78rem', fontFamily: 'inherit' }}
-            >🔄 Neu laden</button>
-            <button
-              onClick={() => setGrafikerNotizOpen(o => !o)}
-              style={{ padding: '0.3rem 0.6rem', borderRadius: '6px', border: `1px solid ${grafikerNotizOpen ? 'rgba(95,251,241,0.5)' : 'rgba(255,255,255,0.12)'}`, background: grafikerNotizOpen ? 'rgba(95,251,241,0.12)' : 'rgba(255,255,255,0.04)', color: grafikerNotizOpen ? '#5ffbf1' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontSize: '0.78rem', fontFamily: 'inherit', fontWeight: grafikerNotizOpen ? 700 : 400 }}
-            >📝 Notiz an KI</button>
-            <a
-              href={getGrafikerUrl()}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ padding: '0.3rem 0.5rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.5)', textDecoration: 'none', fontSize: '0.78rem' }}
-            >↗ Vollbild</a>
-            <button
-              onClick={() => setGrafikerTischOpen(false)}
-              style={{ padding: '0.3rem 0.65rem', borderRadius: '6px', border: '1px solid rgba(255,80,80,0.35)', background: 'rgba(255,80,80,0.08)', color: 'rgba(255,120,120,0.8)', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 700, fontFamily: 'inherit' }}
-            >✕ Schließen</button>
-          </div>
-
-          {/* Notiz-Dialogfeld – Kommunikation mit KI */}
-          {grafikerNotizOpen && (
-            <div style={{
-              background: '#1a1410',
-              borderBottom: '1px solid rgba(95,251,241,0.2)',
-              padding: '0.75rem 1rem',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.5rem',
-              flexShrink: 0,
-            }}>
-              <div style={{ fontSize: '0.78rem', color: 'rgba(95,251,241,0.7)', marginBottom: '0.1rem' }}>
-                📝 Schreib mir was du ändern möchtest – ich setze es beim nächsten Mal um:
-              </div>
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-                <textarea
-                  value={grafikerNotizText}
-                  onChange={(e) => {
-                    setGrafikerNotizText(e.target.value)
-                    try { localStorage.setItem('grafiker-notiz-entwurf', e.target.value) } catch { /* ignore */ }
-                  }}
-                  placeholder="z.B. 'Der Titel soll groesser sein' oder 'Die Farbe gefaellt mir nicht'"
-                  rows={3}
-                  style={{
-                    flex: 1,
-                    background: 'rgba(255,255,255,0.06)',
-                    border: '1px solid rgba(95,251,241,0.25)',
-                    borderRadius: '6px',
-                    color: '#fff5f0',
-                    padding: '0.5rem 0.75rem',
-                    fontSize: '0.82rem',
-                    fontFamily: 'inherit',
-                    resize: 'vertical',
-                    outline: 'none',
-                  }}
-                />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                  <button
-                    onClick={grafikerNotizSpeichern}
-                    disabled={!grafikerNotizText.trim()}
-                    style={{
-                      padding: '0.5rem 0.85rem',
-                      borderRadius: '6px',
-                      border: '1px solid rgba(95,251,241,0.4)',
-                      background: grafikerNotizText.trim() ? 'rgba(95,251,241,0.15)' : 'rgba(255,255,255,0.04)',
-                      color: grafikerNotizText.trim() ? '#5ffbf1' : 'rgba(255,255,255,0.3)',
-                      cursor: grafikerNotizText.trim() ? 'pointer' : 'default',
-                      fontSize: '0.82rem',
-                      fontFamily: 'inherit',
-                      fontWeight: 600,
-                      whiteSpace: 'nowrap',
-                    }}
-                  >{grafikerNotizGespeichert ? '✅ Gespeichert!' : '💾 Speichern'}</button>
-                </div>
-              </div>
-              {/* Gespeicherte Notizen anzeigen */}
-              {(() => {
-                const gespeichert = (() => { try { return localStorage.getItem('grafiker-notizen-offen') || '' } catch { return '' } })()
-                if (!gespeichert) return null
-                return (
-                  <div style={{ marginTop: '0.25rem' }}>
-                    <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', marginBottom: '0.3rem' }}>Bereits notiert (für KI beim nächsten Session-Start):</div>
-                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,200,100,0.7)', whiteSpace: 'pre-wrap', background: 'rgba(255,200,100,0.05)', padding: '0.4rem 0.6rem', borderRadius: '4px', border: '1px solid rgba(255,200,100,0.1)' }}>
-                      {gespeichert}
-                    </div>
-                    <button
-                      onClick={() => { try { localStorage.removeItem('grafiker-notizen-offen') } catch { /* ignore */ }; setGrafikerNotizGespeichert(o => !o) }}
-                      style={{ marginTop: '0.3rem', fontSize: '0.7rem', color: 'rgba(255,100,100,0.5)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                    >✕ Liste leeren</button>
-                  </div>
-                )
-              })()}
-            </div>
-          )}
-
-          {/* iframe – aktive Seite */}
-          <iframe
-            key={grafikerReloadKey}
-            src={getGrafikerUrl()}
-            style={{
-              flex: 1,
-              border: 'none',
-              background: '#fff',
-            }}
-            title={getGrafikerLabel()}
-          />
-        </div>
-      )}
     </div>
   )
 }
