@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Nach Deploy Ready: Stand prüfen (`build-info.json`), APf `/dev-view` + Entwurfsmappe.
 
-**Letzter Stand:** 11.09.26 – package-lock repariert. **Commit:** (folgt mit Push)
+**Letzter Stand:** 11.09.26 – package-lock repariert. **Commit:** `d8bd7cb0` ✅ **main**
 
 ---
 
