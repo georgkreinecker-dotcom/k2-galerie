@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Entwurfsmappe → Handskizzen → **S7 · Kopf / Gitter-Gesicht** prüfen.
 
-**Letzter Stand:** 11.09.26 – S7 Kopf/Gitter-Gesicht angelegt.
+**Letzter Stand:** 11.09.26 – S7 Kopf/Gitter-Gesicht angelegt. **Commit:** `664e1a62` ✅ **main**
 
 ---
 
