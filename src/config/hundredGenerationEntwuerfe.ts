@@ -15,6 +15,7 @@ export type HundredGenerationModellId =
   | 'skizze-kelch'
   | 'skizze-astwerk'
   | 'skizze-zickzack'
+  | 'skizze-spirale'
 
 export type HundredGenerationEntwurfGruppe = 'serie' | 'handskizze'
 
@@ -207,6 +208,20 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
       '/100-generation/aus-skizze-05-zickzack.png',
       '/100-generation/aus-skizze-05-zickzack-seite.png',
       { schraeg: '/100-generation/aus-skizze-05-zickzack-schraeg.png' }
+    ),
+  },
+  {
+    id: 'skizze-spirale',
+    title: 'S6 · Spirale / Gitter',
+    note: 'aus deiner Handskizze',
+    src: '/100-generation/aus-skizze-06-spirale.png',
+    sketchSrc: '/100-generation/skizzen/skizze-06-spirale.jpg',
+    formHint: 'Stamm-Fuß, Scheibe mit Spirale, mandelförmige Gitter-Öffnung',
+    gruppe: 'handskizze',
+    ansichten: views(
+      '/100-generation/aus-skizze-06-spirale.png',
+      '/100-generation/aus-skizze-06-spirale-seite.png',
+      { schraeg: '/100-generation/aus-skizze-06-spirale-schraeg.png' }
     ),
   },
 ] as const
