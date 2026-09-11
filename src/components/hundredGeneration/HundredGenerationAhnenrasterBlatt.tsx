@@ -119,6 +119,8 @@ export function HundredGenerationAhnenrasterBlatt({
           >
             Geometrie · 2‑mm‑Raster · Schwarz = Stempel · Platte H {b.panelHoeheCm} · B{' '}
             {b.panelBreiteCm} cm
+            {' · '}
+            Vorlage = Foto auf Raster (Auto-Vektor noch nicht final)
           </figcaption>
         </figure>
         <figure
@@ -176,22 +178,22 @@ export function HundredGenerationAhnenrasterBlatt({
           <section>
             <h3 style={h3Style(accent)}>CNC-Matrize</h3>
             <p style={pStyle(ink)}>
-              Stempelplatte 140×220 mm: schwarze Linien = Stege bleiben stehen, Weiß wird weggefräst.
-              Dateien:{' '}
+              Stempelplatte 140×220 mm: Schwarz = Stege bleiben. Zuerst Unterlage 1:1 (Foto auf
+              mm-Raster) – Auto-DXF noch nicht final.{' '}
+              <a
+                href="/100-generation/referenzen/ahnenraster-unterlage-raster.svg"
+                download
+                style={{ color: accent }}
+              >
+                Unterlage SVG
+              </a>
+              {' · '}
               <a
                 href="/100-generation/cnc/ahnenraster-matrize-140x220.dxf"
                 download
                 style={{ color: accent }}
               >
-                DXF
-              </a>
-              {' · '}
-              <a
-                href="/100-generation/cnc/ahnenraster-matrize-140x220.svg"
-                download
-                style={{ color: accent }}
-              >
-                SVG
+                DXF (nur Außenkontur)
               </a>
               {' · '}
               <a

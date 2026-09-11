@@ -27,7 +27,7 @@ export const AHNENRASTER_BLATT = {
   bedeutung:
     'Das Ahnenraster ist der sichtbare Code auf der Frontplatte von 4M: rechtwinkliges Labyrinth in vier Feldern, Rahmen, darum herum Fischgrät-/Flecht-Textur. Es ist kein Dekor – Zeichen für Ordnung, Zugehörigkeit und Erinnerung.',
   anwendung:
-    'Am Objekt sitzt das Muster als eigene Platte im Volumen. Konstruktion auf 2‑mm‑Raster (140×220 mm): Schwarz = Stempelstege, Weiß = Frästasche. SVG 1:1 drucken = Rasterpapier.',
+    'Am Objekt sitzt das Muster als eigene Platte. Echtes Muster = Foto. Konstruktion: Foto 1:1 auf 2‑mm‑Raster (Unterlage zum Nachzeichnen). Auto-Vektor trifft das Labyrinth noch nicht – Stege von Hand nachziehen, dann CNC final.',
   bezugDiKurugu:
     'Anker ist die originale Di-Kurugu-Zeremonialaxt (Mbowamb / Mount-Hagen-Hochland, Papua-Neuguinea): Prestige- und Tauschobjekt, oft mit Flechtwerk (2/2-Köper, Zickzack, Rauten). Unser keramisches Ahnenraster übersetzt diese Muster-Idee in vertieftes Labyrinth auf der Platte.',
   wasWirWissen: [

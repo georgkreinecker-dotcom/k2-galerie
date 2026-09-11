@@ -1,11 +1,9 @@
-4M Ahnenraster – Millimeter-Konstruktion
-=======================================
-Platte: 140 × 220 mm
-Raster: 2 mm (70 × 110 Zellen)
-Koordinaten: nur ganze Millimeter
-Schwarz / STEMPEL = bleibt stehen
-Weiß / FRAESEN = Tasche ~2 mm
+CNC-Matrize Ahnenraster
+======================
+STOP: Die bisherige Auto-DXF ist NICHT das echte Labyrinth.
 
-Druck Geometrie: referenzen/ahnenraster-geometrie.svg auf 100 % (1:1)
-Zellenkarte: referenzen/ahnenraster-mm-raster.txt
-DXF: cnc/ahnenraster-matrize-140x220.dxf (Layer RASTER = 10-mm)
+Vorlage zum Arbeiten:
+  public/100-generation/referenzen/ahnenraster-unterlage-raster.svg
+  → 1:1 drucken, Stege nachzeichnen.
+
+Erst nach korrekter Vektor-Konstruktion wieder DXF finalisieren.

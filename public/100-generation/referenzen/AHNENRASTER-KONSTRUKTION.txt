@@ -1,3 +1,14 @@
-Exakte Konstruktion auf 2-mm-Rasterpapier.
-Platte 140×220 mm = 70×110 Zellen.
-Schwarz=Stempel. SVG mit sichtbarem mm-Raster 1:1 drucken.
+Ahnenraster – Stand Konstruktion
+================================
+Das echte Muster ist das FOTO (heiliges Muster / Unterlage).
+
+Auto-Vektor (Pixel → Raster) hat das Labyrinth NICHT getroffen.
+Deshalb: Foto auf mm-Raster 1:1 als Vorlage.
+
+Dateien:
+- ahnenraster-heiliges-muster.png     Original
+- ahnenraster-unterlage.png          skaliert 140×220 mm
+- ahnenraster-unterlage-raster.svg   Foto + 2/10-mm-Raster (1:1 drucken)
+- ahnenraster-geometrie.png/.svg     aktuell = Foto auf Raster (keine falsche Auto-Zeichnung)
+
+Nächster Schritt: Stege von Hand auf dem Raster nachziehen (Vektor/DXF dann erst final).
