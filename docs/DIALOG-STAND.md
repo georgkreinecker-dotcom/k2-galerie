@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** APf als eigene PWA (Home-Bildschirm-App) – Manifest + Icon + Install-Hinweis.
+**Was wir JETZT tun:** APf als eigene PWA eingerichtet – warten auf Vercel Ready, dann am Handy installieren.
 
-**Einordnung:** Wie K2 Familie: eigenes `manifest-apf.json` (id `k2-apf-pwa`), Start `/dev-view`, getrennt von Galerie/Familie.
+**Einordnung:** Eigenes Manifest `manifest-apf.json` (id `k2-apf-pwa`), Start `/dev-view`, Icon „APf“ – wie Familie getrennt von der Galerie-App.
 
-**Nächster Schritt:** Nach Deploy: am Handy `/dev-view` öffnen → Teilen → Zum Home-Bildschirm; Icon „APf“ prüfen.
+**Nächster Schritt:** Nach Deploy Ready: Handy → `/dev-view` → Teilen → „Zum Home-Bildschirm“.
 
-**Letzter Stand:** 11.09.26 – APf-PWA in Arbeit (Manifest/Icons/boot-manifest/SmartPanel/DevView-Hinweis).
+**Letzter Stand:** 11.09.26 – **APf-PWA** – Commit: **`7efb1c33`** ✅ **main**. Stand kommt mit dem Build (Push).
 
 ---
 
