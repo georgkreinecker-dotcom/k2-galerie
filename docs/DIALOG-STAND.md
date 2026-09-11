@@ -4,9 +4,9 @@
 
 **Einordnung:** APf räumt auf – Smart Panel bleibt; Gestaltung läuft weiter über Admin → Design (pageContent), nicht über den alten Vorschau-Tisch.
 
-**Nächster Schritt:** APf kurz prüfen (kein Grafiker-Button mehr).
+**Nächster Schritt:** APf kurz prüfen (kein Grafiker-Button mehr) – Seite neu laden.
 
-**Letzter Stand:** 11.09.26 – **Grafiker-Tisch entfernt:** DevView-Overlay/Button, Route `SeitengestaltungPage`, Nav/Kachel, Briefing ohne GRAFIKER-Abhängigkeit. Admin-„Seitengestaltung“ (Design) bleibt.
+**Letzter Stand:** 11.09.26 – **Grafiker-Tisch entfernt** (Commit `598aafd9` ✅ main). Admin → Design bleibt.
 
 ---
 
