@@ -1,11 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Ahnenraster – Linienzeichnung (durchgehende Linien + Stopps) prüfen.
+**Was wir JETZT tun:** Ahnenraster – Linien + Stopps + mm-Raster (unten geschlossen) prüfen.
 
-**Einordnung:** CNC pausiert. Erst Zeichnung mit Foto abgleichen; bei Abweichung korrigieren.
+**Einordnung:** CNC pausiert. Struktur freigegeben; unten ergänzt; 2-/10-mm-Raster sichtbar.
 
-**Nächster Schritt:** Georg: Vergleich Foto|Zeichnung anschauen – stimmen Linien und Stopps? Ja → weiter; Nein → sagen was falsch ist.
+**Nächster Schritt:** Georg: Vergleich nochmal – unten und Raster ok? Dann feinjustieren oder freigeben.
 
-**Letzter Stand:** 11.09.26 – Linien + Stopps Zeichnung + Vergleich; CNC pausiert. **Commit:** `d08039f8` ✅ **main**
+**Letzter Stand:** 11.09.26 – Unten geschlossen + Ausrichtungs-Raster. **Commit:** (nach Push)
 
 ---
