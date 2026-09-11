@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **100 Generationen** – S7 Kopf/Gitter-Gesicht (zweiter Entwurf zur Spirale-Skizze).
+**Was wir JETZT tun:** **100 Generationen** – S7 Kopf volumetrisch (alle Dimensionen).
 
-**Einordnung:** Scheibe = Kopf, Gitter vorne ersetzt das Gesicht. Neben S6 in der Entwurfsmappe.
+**Einordnung:** Georg: nicht flache Scheibe – echter Kopf-Körper; Gitter = Gesicht. Vorne/Seite/Schräg neu.
 
-**Nächster Schritt:** Entwurfsmappe → Handskizzen → **S7 · Kopf / Gitter-Gesicht** prüfen.
+**Nächster Schritt:** Entwurfsmappe → S7 prüfen (Seite/Schräg = Kopftiefe).
 
-**Letzter Stand:** 11.09.26 – S7 Kopf/Gitter-Gesicht angelegt. **Commit:** `664e1a62` ✅ **main**
+**Letzter Stand:** 11.09.26 – S7 Kopf volumetrisch neu.
 
 ---
 

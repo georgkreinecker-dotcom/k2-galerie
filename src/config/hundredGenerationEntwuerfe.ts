@@ -231,7 +231,7 @@ export const HUNDRED_GENERATION_MODELLE: readonly HundredGenerationEntwurf[] = [
     note: 'zweiter Entwurf zur Spirale-Skizze',
     src: '/100-generation/aus-skizze-06b-spirale-kopf.png',
     sketchSrc: '/100-generation/skizzen/skizze-06-spirale.jpg',
-    formHint: 'Scheibe als Kopf – Gitter vorne ersetzt das Gesicht',
+    formHint: 'Kopf in allen Dimensionen – Gitter vorne ersetzt das Gesicht',
     gruppe: 'handskizze',
     ansichten: views(
       '/100-generation/aus-skizze-06b-spirale-kopf.png',
