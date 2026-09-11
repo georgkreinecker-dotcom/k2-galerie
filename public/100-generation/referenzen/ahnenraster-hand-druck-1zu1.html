@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="UTF-8"/>
+<title>Ahnenraster Hand + Raster – Druck 1:1</title>
+<style>
+@page { size: 140mm 220mm; margin: 0; }
+html,body { margin:0; background:#222; }
+.sheet { width:140mm; height:220mm; margin:0 auto; page-break-after:always; background:#000; }
+.sheet img { width:140mm; height:220mm; display:block; object-fit:fill; }
+.hint { max-width:140mm; margin:12px auto; padding:10px; background:#fffefb; font-family:system-ui; font-size:14px; border-radius:8px; }
+.btn { margin-top:8px; padding:10px 16px; background:#b54a1e; color:#fff; border:none; border-radius:8px; font-weight:600; }
+@media print { .no-print { display:none!important; } body { background:#fff; } }
+</style></head><body>
+<div class="hint no-print">
+  <strong>Hand-Nachzeichnung + Raster dahinter</strong> · 140×220 mm<br/>
+  Seite 1 = Zeichnung mit Raster · Seite 2 = nur Muster · Seite 3 = Foto<br/>
+  Druck: <strong>100 %</strong>, nicht anpassen.
+  <br/><button class="btn" onclick="window.print()">🖨️ Drucken</button>
+  · <a href="ahnenraster-hand-druck-1zu1.pdf">PDF</a>
+</div>
+<section class="sheet"><img src="ahnenraster-hand-mit-raster.png" alt="Hand mit Raster"/></section>
+<section class="sheet"><img src="ahnenraster-hand-ohne-raster.png" alt="Hand ohne Raster"/></section>
+<section class="sheet"><img src="ahnenraster-heiliges-muster.png" alt="Foto"/></section>
+</body></html>

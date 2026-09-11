@@ -1,11 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Ahnenraster – ehrlich: Auto-Zeichnung ≠ Foto. Brauchbar: Foto-Druck 1:1.
+**Was wir JETZT tun:** Ahnenraster Hand-Nachzeichnung auf 2-mm-Raster (Raster dahinter) – Georg prüft.
 
-**Einordnung:** Georg: Zeichnung muss gleich aussehen – Auto trifft Topologie/Dicke nicht. Foto-PDF 140×220 mm als Werkstatt-Vorlage.
+**Einordnung:** Nachziehen + Raster unter den weißen Stegen; PDF 1:1 drei Seiten (mit Raster / ohne / Foto).
 
-**Nächster Schritt:** Georg Foto-PDF drucken (100 %). Exacte CNC-Geometrie nur mit Hand-Nachzeichnung (Zelle für Zelle) – nur wenn Georg das will.
+**Nächster Schritt:** Georg `ahnenraster-hand-druck-1zu1.pdf` drucken und mit Foto vergleichen – Korrekturen nennen.
 
-**Letzter Stand:** 11.09.26 – `ahnenraster-foto-druck-1zu1.pdf`
+**Letzter Stand:** 11.09.26 – Hand + Raster PDF.
 
 ---

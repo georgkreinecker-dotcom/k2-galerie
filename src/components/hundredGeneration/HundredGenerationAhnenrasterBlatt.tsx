@@ -97,8 +97,8 @@ export function HundredGenerationAhnenrasterBlatt({
           }}
         >
           <img
-            src={`${geometrieSrc}?v=steg1zu1`}
-            alt="Ahnenraster – Weiß=Steg ~1:1 wie Foto, Schwarz=Zwischenraum"
+            src={`${geometrieSrc}?v=hand-raster`}
+            alt="Ahnenraster Hand – Weiß=Steg, Raster dahinter"
             style={{
               display: 'block',
               width: '100%',
@@ -176,31 +176,33 @@ export function HundredGenerationAhnenrasterBlatt({
           <section>
             <h3 style={h3Style(accent)}>Druck 1:1</h3>
             <p style={pStyle(ink)}>
-              <strong>Brauchbar jetzt:</strong> das Foto selbst im Maß 140 × 220 mm (sieht aus wie das Original).
-              Die Auto-Linienzeichnung trifft das Muster noch nicht – deshalb vorerst Foto drucken.
+              <strong>Hand-Nachzeichnung</strong> auf 2‑mm‑Raster (Raster dahinter). Weiß = Steg.
+              140 × 220 mm · Maßstab 100 %.
             </p>
             <p style={pStyle(ink)}>
               <a
-                href="/100-generation/referenzen/ahnenraster-foto-druck-1zu1.pdf"
+                href="/100-generation/referenzen/ahnenraster-hand-druck-1zu1.pdf"
                 download
                 style={{ color: accent, fontWeight: 700 }}
               >
-                📄 Foto-PDF 1:1 (empfohlen)
+                📄 Hand + Raster PDF 1:1
               </a>
               {' · '}
               <a
-                href="/100-generation/referenzen/ahnenraster-foto-druck-1zu1.html"
+                href="/100-generation/referenzen/ahnenraster-hand-druck-1zu1.html"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ color: accent }}
               >
                 Im Browser drucken
               </a>
-            </p>
-            <p style={{ ...pStyle(ink), fontSize: '0.85rem', opacity: 0.9 }}>
-              Zusätzlich (noch nicht muster-treu):{' '}
-              <a href="/100-generation/referenzen/ahnenraster-druck-1zu1.pdf" download style={{ color: accent }}>
-                Geometrie-PDF Versuch
+              {' · '}
+              <a
+                href="/100-generation/referenzen/ahnenraster-foto-druck-1zu1.pdf"
+                download
+                style={{ color: accent }}
+              >
+                Foto 1:1
               </a>
             </p>
           </section>

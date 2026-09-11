@@ -6,12 +6,12 @@
 export const AHNENRASTER_MUSTER_SRC =
   '/100-generation/referenzen/ahnenraster-heiliges-muster.png' as const
 
-/** Zeichnung: Schwarz = Zwischenraum (vertieft), Weiß = erhaben · CNC erst nach Freigabe */
+/** Hand-Nachzeichnung: Weiß = Steg, Schwarz = Rille, Raster dahinter · CNC erst nach Freigabe */
 export const AHNENRASTER_GEOMETRIE_SRC =
-  '/100-generation/referenzen/ahnenraster-geometrie-linien.png' as const
+  '/100-generation/referenzen/ahnenraster-hand-mit-raster.png' as const
 
 export const AHNENRASTER_GEOMETRIE_SVG_SRC =
-  '/100-generation/referenzen/ahnenraster-geometrie-linien.svg' as const
+  '/100-generation/referenzen/ahnenraster-hand-mit-raster.svg' as const
 
 /** Foto | Zeichnung nebeneinander zur Kontrolle */
 export const AHNENRASTER_LINIEN_VERGLEICH_SRC =
