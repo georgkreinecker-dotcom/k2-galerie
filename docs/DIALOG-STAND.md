@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Vercel-Build-Fehler: kaputtes `package-lock.json` → `npm ci` failed.
+**Was wir JETZT tun:** Vercel wieder live – Stand 11.09.26 09:49 (Lockfile-Fix).
 
-**Einordnung:** Entwurfsmappe ok; Production hing weil Install auf Vercel scheiterte („Missing: … from lock file“).
+**Einordnung:** Build hing an kaputtem package-lock (`npm ci Missing`). Repariert → Deploy Ready.
 
-**Nächster Schritt:** Nach Deploy Ready: Stand prüfen (`build-info.json`), APf `/dev-view` + Entwurfsmappe.
+**Nächster Schritt:** Handy Stand tippen / neu öffnen; APf: `/dev-view`; Entwurfsmappe S7 prüfen.
 
-**Letzter Stand:** 11.09.26 – package-lock repariert. **Commit:** `d8bd7cb0` ✅ **main**
+**Letzter Stand:** 11.09.26 – Production Stand **11.09.26 09:49**, Deploy success. **Commit:** `d8bd7cb0` ✅ **main**
 
 ---
 
