@@ -75,7 +75,7 @@ export function HundredGenerationAhnenrasterBlatt({
         {b.title} · {b.subtitle}
       </h2>
       <p style={{ margin: '0 0 0.85rem', color: muted, fontSize: '0.92rem', lineHeight: 1.45 }}>
-        Linien + Stopps – daneben das Foto zur Kontrolle. CNC erst nach Freigabe.
+        Stegdicke wie Foto (~1:1). Weiß = erhaben, Schwarz = Rille. CNC erst nach Freigabe.
       </p>
 
       <div
@@ -93,19 +93,19 @@ export function HundredGenerationAhnenrasterBlatt({
             border: `1px solid ${frame}`,
             borderRadius: 8,
             overflow: 'hidden',
-            background: isPrint ? '#fffefb' : '#f4efe6',
+            background: '#0a0a0a',
           }}
         >
           <img
-            src={geometrieSrc}
-            alt="Ahnenraster – exakte geometrische Zeichnung (orthogonal)"
+            src={`${geometrieSrc}?v=steg1zu1`}
+            alt="Ahnenraster – Weiß=Steg ~1:1 wie Foto, Schwarz=Zwischenraum"
             style={{
               display: 'block',
               width: '100%',
               maxHeight: isPrint ? '155mm' : '26rem',
               objectFit: 'contain',
               margin: '0 auto',
-              background: '#fffefb',
+              background: '#000',
             }}
           />
           <figcaption
@@ -117,7 +117,7 @@ export function HundredGenerationAhnenrasterBlatt({
               background: isPrint ? '#f7f4ef' : 'rgba(0,0,0,0.08)',
             }}
           >
-            Weiß = erhaben · Schwarz = Zwischenraum · 2‑/10‑mm‑Raster · Platte H{' '}
+            Weiß = Steg (~1:1 wie Foto) · Schwarz = Zwischenraum · 2‑mm‑Zellen · Platte H{' '}
             {b.panelHoeheCm} · B {b.panelBreiteCm} cm
           </figcaption>
         </figure>

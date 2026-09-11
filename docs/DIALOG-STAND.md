@@ -1,11 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Ahnenraster-Zeichnung – Polarität Weiß=Steg prüfen; Herkunft des Musters erklärt.
+**Was wir JETZT tun:** Ahnenraster – Stegdicke ~1:1 wie Foto (2-mm-Zellen aus Foto).
 
-**Einordnung:** 4M-Labyrinth kam aus KI-Modellbild (kein CAD). Zeichnung neu: weiß=erhaben, schwarz=Zwischenraum, unten geschlossen. CNC weiter pausiert.
+**Einordnung:** Dünne Haarlinien = unbrauchbar (Georg). Neu: Foto → 70×110 Zellen, Weiß=Steg, Schwarz=Rille, Anteil ~1:1.
 
-**Nächster Schritt:** Georg: Vergleich neu laden – Stege weiß? Unten zu? Dann Freigabe oder Korrekturpunkte.
+**Nächster Schritt:** Georg Formatblatt neu laden – Dicke ok? Dann Freigabe oder Korrektur.
 
-**Letzter Stand:** 11.09.26 – Polarität neu + Herkunft dokumentiert (`AHNENRASTER-HERKUNFT.txt`).
+**Letzter Stand:** 11.09.26 – 1:1-Stegstärke aus Foto-Zellen.
 
 ---

@@ -1,14 +1,8 @@
-Ahnenraster – Stand Konstruktion
-================================
-Das echte Muster ist das FOTO (heiliges Muster / Unterlage).
+Ahnenraster – Konstruktion (verbindlich)
+========================================
+Polarität: WEISS = erhabener Steg · SCHWARZ = Zwischenraum (Rille)
+Dicke: wie Foto ~1:1 (gemessen ~4 mm Steg / ~4 mm Rille)
+Methode: Foto → 70×110 Zellen à 2 mm → Mehrheit hell = Steg
+Platte: 140 × 220 mm
 
-Auto-Vektor (Pixel → Raster) hat das Labyrinth NICHT getroffen.
-Deshalb: Foto auf mm-Raster 1:1 als Vorlage.
-
-Dateien:
-- ahnenraster-heiliges-muster.png     Original
-- ahnenraster-unterlage.png          skaliert 140×220 mm
-- ahnenraster-unterlage-raster.svg   Foto + 2/10-mm-Raster (1:1 drucken)
-- ahnenraster-geometrie.png/.svg     aktuell = Foto auf Raster (keine falsche Auto-Zeichnung)
-
-Nächster Schritt: Stege von Hand auf dem Raster nachziehen (Vektor/DXF dann erst final).
+CNC pausiert bis Georg die Zeichnung freigibt.

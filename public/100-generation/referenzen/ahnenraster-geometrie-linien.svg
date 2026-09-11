@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
   width="140mm" height="220mm" viewBox="0 0 140 220">
-  <title>Ahnenraster – weiss Steg, schwarz Zwischenraum</title>
+  <title>Ahnenraster – weiss Steg 1:1, schwarz Zwischenraum</title>
+  <rect width="140" height="220" fill="#000"/>
   <image xlink:href="ahnenraster-geometrie-linien-ohne-raster.png" x="0" y="0" width="140" height="220" preserveAspectRatio="none"/>
 </svg>
