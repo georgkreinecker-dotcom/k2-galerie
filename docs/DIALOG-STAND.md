@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** APf-QR korrigiert – öffnet nicht mehr die Galerie-App.
+**Was wir JETZT tun:** S7 Entwurfsmappe = Vollkopf mit Gittergesicht (Vorne/Seite/Schräg neu).
 
-**Einordnung:** Scan landete in der installierten K2-Galerie-PWA (`start_url=/galerie`). Neuer Einstieg `/apf.html` + PWA-Scope nur `/galerie`.
+**Einordnung:** Georg: S7 war noch Scheibe/kleines Gitter-Auge – jetzt volumetrischer Kopf, Gesichtsebene = Gitter.
 
-**Nächster Schritt:** Nach Deploy Smart-Panel-QR erneut scannen (Kamera/Safari, nicht Galerie-App-Icon).
+**Nächster Schritt:** Nach Deploy S7 in Entwurfsmappe prüfen (Vorne/Seite/Schräg).
 
-**Letzter Stand:** 11.09.26 – APf-Handy über `/apf.html`; Manifest-Scope `/galerie`. **Commit:** `3abe7fbd` ✅ **main**
+**Letzter Stand:** 11.09.26 – S7 `aus-skizze-06b-spirale-kopf*.png` neu (Vollkopf + Gittergesicht). **Commit:** (folgt mit Push)
 
 ---
 
