@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** CNC-Matrize Ahnenraster (Stempel).
+**Was wir JETZT tun:** Ahnenraster aus bearbeitetem Foto neu abgeleitet (Geometrie + CNC).
 
-**Einordnung:** DXF/SVG 140×220 mm – Schwarz = Stempel bleibt, Weiß = Frästasche. Geometrie noch nicht 1:1 zum Foto (nachziehen möglich).
+**Einordnung:** Neues Kontrast-Foto → Polarität Dunkel=Stempel; Geometrie + DXF/SVG 140×220 neu erzeugt.
 
-**Nächster Schritt:** DXF in CNC-Software laden; bei Bedarf Geometrie zum Original nachziehen und CNC neu erzeugen.
+**Nächster Schritt:** Formatblatt/CNC-Vorschau prüfen; bei Bedarf Feinkorrektur.
 
-**Letzter Stand:** 11.09.26 – **CNC-Matrize** unter `public/100-generation/cnc/`. **Commit:** `ef91a5bd` ✅ **main**
+**Letzter Stand:** 11.09.26 – **Ahnenraster neu aus bearbeitetem Foto** (Geometrie + Matrize). **Commit:** (nach Push)
 
 
 ---

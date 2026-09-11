@@ -1,13 +1,1 @@
-{
-  "id": "ahnenraster-matrize",
-  "widthMm": 140,
-  "heightMm": 220,
-  "depthMm": 2,
-  "blackMeans": "stamp_remain",
-  "whiteMeans": "mill_pocket",
-  "files": {
-    "dxf": "ahnenraster-matrize-140x220.dxf",
-    "svg": "ahnenraster-matrize-140x220.svg",
-    "preview": "ahnenraster-matrize-vorschau.png"
-  }
-}
+{"widthMm":140,"heightMm":220,"depthMm":2,"grid":[122,215],"polarity":"dark_is_stamp","blackMeans":"stamp_remain"}
