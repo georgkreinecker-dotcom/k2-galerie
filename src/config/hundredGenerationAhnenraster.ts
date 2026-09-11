@@ -39,6 +39,7 @@ export const AHNENRASTER_BLATT = {
     'Historisch: Status, Brautpreis/Tausch, Clan – nicht Alltagswerkzeug zum Holzhacken.',
     'Im Projekt: Axt als realer Anker (Bruder des Künstlers, 1960er, Clan-Aufnahme); Flechtwerk = Generationen-Wissen / „Code“.',
     'Name „Ahnenraster“ = unsere Bezeichnung für die Labyrinth-Platte an 4M (künstlerische Form, angelehnt an Di-Kurugu-Musterdenken).',
-    'Linienzeichnung (durchgehende Linien + Stopps) + Foto-Vergleich = Vorlage zur Prüfung; CNC erst nach Freigabe.',
+    'Herkunft der Platte auf 4M: KI-Bild (Cursor GenerateImage) mit Di-Kurugu-Fotos als Stimmung – es gab kein fertiges CAD. Foto = Ausschnitt aus dem Modellbild.',
+    'Zeichnung jetzt: Weiß = erhabener Steg, Schwarz = Zwischenraum; unten geschlossen. CNC erst nach Freigabe.',
   ],
 } as const

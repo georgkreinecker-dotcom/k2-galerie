@@ -1,0 +1,24 @@
+Ahnenraster – woher kommt das Muster im Modell?
+================================================
+
+Kurzantwort:
+  Es gab KEINE fertige CAD-/Vektor-Vorlage für das Labyrinth auf 4M.
+  Das Muster entstand als Teil eines KI-Bildes (Cursor GenerateImage)
+  für das Modell „4M · Code · Ahnenraster“ (code-ahnen-mythos).
+
+Ablauf:
+  1. Konzept „100 Generationen / Chaos & Code“ + echte Di-Kurugu-Fotos
+     (Flechtwerk / Detail) als Referenz-Stimmung.
+  2. KI erzeugt Skulpturen-Bilder – dabei malt sie das rechteckige
+     „heilige“ Labyrinth-Feld auf die Front mit.
+  3. Ausschnitt/Screenshot dieses Feldes = ahnenraster-heiliges-muster.png
+     (das ist unsere Foto-Vorlage zum Nachzeichnen).
+  4. Linien-Vorlage (ahnenraster-linien-vorlage.png) = nachgezogene/
+     bereinigte Linien aus dem Foto – noch nicht CNC-fertig.
+
+Wichtig:
+  - Di Kurugu liefert das Flechtwerk (Herringbone) und den kulturellen Anker.
+  - Das spezielle Rechteck-Labyrinth auf 4M ist KI-Interpretation, kein
+    historisches Original-CAD.
+  - Deshalb müssen wir die Geometrie jetzt exakt aus dem Foto nachbauen
+    (weiss = erhaben, schwarz = Zwischenraum), bevor CNC weitergeht.
