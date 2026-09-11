@@ -15,9 +15,16 @@ alwaysApply: true
 
 ## Was ist was
 
-### 🖥️ APf = Werkzeug (nur Mac + backupmicro)
+### 🖥️ APf = Werkzeug (Mac + backupmicro; **auch Handy/iPad mit `?apf=1`**)
 
-Alles was Georg **zum Arbeiten** braucht – nur am Mac, nie auf dem Handy eines Besuchers:
+Alles was Georg **zum Arbeiten** braucht – primär am Mac; **bewusst** auch mobil über denselben Einstieg:
+
+| Zugang | URL |
+|---|-----|
+| **APf mobil / Vercel** | `https://k2-galerie.vercel.app/projects/k2-galerie?apf=1` |
+| **APf lokal** | `http://localhost:5177/projects/k2-galerie?apf=1` (oder ohne Query auf localhost) |
+
+**Nicht** für Besucher: ohne `?apf=1` bleibt Handy bei Galerie/Entdecken.
 
 | Bereich | Dateien / Routen |
 |---------|-----------------|

@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** **100 Generationen** – S7 Kopf volumetrisch (alle Dimensionen).
+**Was wir JETZT tun:** **APf auch auf Handy/iPad** – Einstieg mit `?apf=1`.
 
-**Einordnung:** Georg: nicht flache Scheibe – echter Kopf-Körper; Gitter = Gesicht. Vorne/Seite/Schräg neu.
+**Einordnung:** Georg will die Arbeitsplattform mobil; bisher leiteten Mobile-Redirects immer zur Galerie. 100 Generationen / Entwurfsmappe waren deshalb „nicht am Bildschirm“.
 
-**Nächster Schritt:** Entwurfsmappe → S7 prüfen (Seite/Schräg = Kopftiefe).
+**Nächster Schritt:** Nach Deploy: am Handy APf-Link öffnen, Entwurfsmappe prüfen.
 
-**Letzter Stand:** 11.09.26 – S7 Kopf volumetrisch neu. **Commit:** `517a8cb5` ✅ **main**
+**Letzter Stand:** 11.09.26 – APf mobil freigeschaltet (`?apf=1` / `/platform` / Session); Mobile-Connect QR „APf“; vercel Rewrite `100-generation/` + `img/`.
 
 ---
 

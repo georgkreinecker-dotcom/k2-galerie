@@ -118,7 +118,7 @@ import ProspektK2GaleriePage from './pages/ProspektK2GaleriePage'
 import PresseEinladungK2GaleriePage from './pages/PresseEinladungK2GaleriePage'
 import MeinBereichPage from './pages/MeinBereichPage'
 import KundenPage from './pages/KundenPage'
-import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_ROUTE, AGB_ROUTE, ENTDECKEN_ROUTE, shouldRedirectRootUrlToEntdecken, PILOT_SCHREIBEN_ROUTE, MEIN_BEREICH_ROUTE, KREATIVWERKSTATT_ROUTE, K2_GALERIE_APF_EINSTIEG, HUNDRED_GENERATION_ROUTE, HUNDRED_GENERATION_FLAECHE_ROUTE, HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE } from './config/navigation'
+import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_ROUTE, AGB_ROUTE, ENTDECKEN_ROUTE, shouldRedirectRootUrlToEntdecken, PILOT_SCHREIBEN_ROUTE, MEIN_BEREICH_ROUTE, KREATIVWERKSTATT_ROUTE, K2_GALERIE_APF_EINSTIEG, HUNDRED_GENERATION_ROUTE, HUNDRED_GENERATION_FLAECHE_ROUTE, HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE, wantsApfAccess } from './config/navigation'
 import { getPageMeta, applyPageMeta } from './config/seoPageMeta'
 import { applyK2FamiliePwaBranding } from './utils/k2FamiliePwaBranding'
 import { TenantProvider } from './context/TenantContext'
@@ -687,17 +687,20 @@ function MobileRootRedirect() {
     return <Navigate to={target} replace />
   }
 
-  if (isMobileView()) {
+  // Besucher-Handy → Galerie; Georgs APf am Handy (localhost / ?apf=1 / Session) → APf
+  if (isMobileView() && !wantsApfAccess()) {
     return <Navigate to={PROJECT_ROUTES['k2-galerie'].galerie} replace />
   }
 
   return <DevViewPage />
 }
 
-/** Auf Mobile: /dev-view → sofort Galerie (niemals 4 Seiten/Smart Panel). */
+/** /dev-view = APf – auch Handy/iPad (Georg arbeitet mobil). */
 function DevViewMobileRedirect() {
-  if (isMobileView()) {
-    return <Navigate to={PROJECT_ROUTES['k2-galerie'].galerie} replace />
+  try {
+    if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('k2-apf-session', '1')
+  } catch {
+    /* ignore */
   }
   return <DevViewPage />
 }
@@ -841,10 +844,10 @@ function App() {
           )
         })()}
       />
-      {/* Plattform-Routen – auf Mobile sofort Galerie (kein Smart Panel) */}
+      {/* Plattform = APf – auch Handy/iPad */}
       <Route path="/platform" element={
         <AppErrorBoundary>
-          {isMobileView() ? <Navigate to={PROJECT_ROUTES['k2-galerie'].galerie} replace /> : <DevViewPage />}
+          <DevViewMobileRedirect />
         </AppErrorBoundary>
       } />
       <Route path={PLATFORM_ROUTES.key} element={<KeyPage />} />

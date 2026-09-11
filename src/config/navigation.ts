@@ -70,6 +70,7 @@ export function shouldRedirectRootUrlToEntdecken(): boolean {
 /**
  * `/projects/k2-galerie` ohne Kennzeichen: auf Vercel/kgm **öffentlicher Einstieg** → nicht APf und nicht direkt K2-Galerie.
  * **APf** nur: localhost (ohne Query → Grafiker-Tisch), oder Query `apf=1` / `dev=1`, siehe ProjectStartPage.
+ * Nach einmaligem `?apf=1` bleibt die Session-APf in diesem Tab (Handy/iPad) über `k2-apf-session`.
  */
 export function shouldShowK2GalerieApfProjectHub(search?: string): boolean {
   try {
@@ -77,11 +78,28 @@ export function shouldShowK2GalerieApfProjectHub(search?: string): boolean {
     const h = window.location.hostname.toLowerCase()
     if (h === 'localhost' || h === '127.0.0.1') return true
     const sp = new URLSearchParams(search ?? window.location.search)
-    if (sp.get('apf') === '1' || sp.get('dev') === '1') return true
+    if (sp.get('apf') === '1' || sp.get('dev') === '1') {
+      try {
+        sessionStorage.setItem('k2-apf-session', '1')
+      } catch {
+        /* ignore */
+      }
+      return true
+    }
+    try {
+      if (sessionStorage.getItem('k2-apf-session') === '1') return true
+    } catch {
+      /* ignore */
+    }
     return false
   } catch {
     return false
   }
+}
+
+/** APf bewusst gewollt (Query oder Session) – auch auf Handy/iPad, nicht nur Mac. */
+export function wantsApfAccess(search?: string): boolean {
+  return shouldShowK2GalerieApfProjectHub(search)
 }
 
 /**

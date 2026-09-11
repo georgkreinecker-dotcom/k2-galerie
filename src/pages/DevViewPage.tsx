@@ -447,19 +447,6 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
     navigate({ pathname: location.pathname, search: sp.toString() }, { replace: true })
   }, [pageFromUrl, searchParams, navigate, location.pathname])
 
-  // Auf Mobile: "platform" Tab automatisch zu "galerie" umleiten
-  useEffect(() => {
-    const isMobileDevice = typeof window !== 'undefined' && (
-      window.innerWidth <= 768 || 
-      /iPad|iPhone|iPod/.test(navigator.userAgent)
-    )
-    
-    if (isMobileDevice && currentPage === 'platform') {
-      console.log('📱 Mobile erkannt - leite von "platform" zu "galerie" um...')
-      setCurrentPage('galerie')
-    }
-  }, [currentPage])
-
   // Bereiche der aktuellen Seite für untere Navigationsleiste (Willkommen/Galerie/Künstler bewusst nicht mehr angezeigt)
   const getPageSections = (): PageSection[] => {
     if (currentPage === 'galerie' || currentPage === 'galerie-oeffentlich') {
@@ -1112,12 +1099,6 @@ end tell`
     return () => window.removeEventListener('k2-auto-git-push', onAutoGitPush)
   }, [])
 
-  // Mobile-Erkennung für Tab-Filterung
-  const isMobileDevice = typeof window !== 'undefined' && (
-    window.innerWidth <= 768 || 
-    /iPad|iPhone|iPod/.test(navigator.userAgent)
-  )
-
   const allPages = [
     { id: 'galerie', name: 'Galerie', component: GaleriePage },
     { id: 'galerie-oeffentlich', name: 'Öffentliche Galerie K2', component: GaleriePage },
@@ -1164,18 +1145,12 @@ end tell`
     { id: 'k2-familie', name: 'K2 Familie', component: () => <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--k2-muted)' }}>K2 Familie – im APf-Desktop im Browser</div> },
   ]
 
-  // Auf Mobile: "Plattform Start" Tab ausblenden (nur für Mac)
-  // Bei context=vk2: Shop-Tab ausblenden (Vereinsplattform hat keine Kasse)
+  // Auf Mobile: Plattform-Tab behalten (APf am Handy); nur VK2 ohne Shop
   const contextVk2 = searchParams.get('context') === 'vk2'
-  const pages = isMobileDevice 
-    ? allPages.filter(p => p.id !== 'platform')
-    : allPages
+  const pages = allPages
   const pagesFiltered = contextVk2 ? pages.filter(p => p.id !== 'shop') : pages
 
-  // Wenn aktueller Tab "platform" auf Mobile ist → automatisch zu "galerie" wechseln
-  const effectiveCurrentPage = isMobileDevice && currentPage === 'platform' 
-    ? 'galerie' 
-    : currentPage
+  const effectiveCurrentPage = currentPage
 
   const currentPageData = effectiveCurrentPage === 'desktop-leer'
     ? { id: 'desktop-leer', name: 'Desktop', component: () => null }

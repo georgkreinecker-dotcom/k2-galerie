@@ -12,11 +12,6 @@ import {
 import { getPageTexts, defaultPageTexts } from '../config/pageTexts'
 import DevViewPage from './DevViewPage'
 
-function isMobileDevice(): boolean {
-  if (typeof window === 'undefined') return false
-  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (window.innerWidth <= 768 && (('ontouchstart' in window) || (navigator.maxTouchPoints ?? 0) > 0))
-}
-
 const ROUTE_KEYS: (keyof typeof PROJECT_ROUTES['k2-galerie'])[] = ['galerie', 'controlStudio', 'plan', 'mobileConnect']
 
 function getProjectCards(projectId: ProjectId): Array<{ title: string; description: string; routeKey: keyof typeof PROJECT_ROUTES['k2-galerie']; cta: string }> | null {
@@ -53,9 +48,9 @@ export default function ProjectStartPage() {
     return <Navigate to={ENTDECKEN_ROUTE} replace />
   }
 
-  // Auf Handy/Tablet: Sofort zur Galerie (niemals Dev-Ansicht/Smart Panel, auch beim Wiederöffnen)
-  if (projectId === 'k2-galerie' && routes && 'galerie' in routes && isMobileDevice()) {
-    return <Navigate to={routes.galerie} replace />
+  // APf bewusst (localhost / ?apf=1 / Session): auch Handy/iPad – volle Arbeitsplattform
+  if (projectId === 'k2-galerie' && shouldShowK2GalerieApfProjectHub()) {
+    return <DevViewPage defaultPage="platform" />
   }
 
   if (!routes || !cards) {
@@ -71,12 +66,9 @@ export default function ProjectStartPage() {
     )
   }
 
-  // Auf Mobile: nichts rendern (Redirect läuft); auf Desktop: Dev-View
-  if (showDevView && !isMobileDevice()) {
+  // Desktop-Fallback (sollte mit APf-Hub oben selten greifen)
+  if (showDevView) {
     return <DevViewPage defaultPage="platform" />
-  }
-  if (showDevView && isMobileDevice()) {
-    return null
   }
 
   // Fallback: Alte Ansicht (nur k2-galerie hat cards; routes hat hier plan/controlStudio)

@@ -1,20 +1,22 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { usePersistentString } from '../hooks/usePersistentState'
 import { ProjectNavButton } from '../components/Navigation'
 import { Link } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { getPublicGalerieUrl } from '../utils/publicLinks'
+import { K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 
 const VERCEL_GALERIE_URL = getPublicGalerieUrl('k2', 'galerie')
+const VERCEL_APF_URL = `https://k2-galerie.vercel.app${K2_GALERIE_APF_EINSTIEG}`
 
 const MobileConnectPage = () => {
   const [url, setUrl] = usePersistentString('k2-mobile-url')
   const [localGalerieUrl, setLocalGalerieUrl] = useState('')
-  const [devViewUrl, setDevViewUrl] = useState('')
+  const [apfUrl, setApfUrl] = useState(VERCEL_APF_URL)
   const [qrUrl, setQrUrl] = useState('')
   const [localQrUrl, setLocalQrUrl] = useState('')
-  const [devViewQrUrl, setDevViewQrUrl] = useState('')
+  const [apfQrUrl, setApfQrUrl] = useState('')
 
   useEffect(() => {
     if (!url || url === '') setUrl(VERCEL_GALERIE_URL)
@@ -26,17 +28,15 @@ const MobileConnectPage = () => {
     const protocol = window.location.protocol
     if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
       setLocalGalerieUrl(`${protocol}//${hostname}:${port}/galerie`)
-      setDevViewUrl(`${protocol}//${hostname}:${port}/#/dev-view`)
+      setApfUrl(`${protocol}//${hostname}:${port}${K2_GALERIE_APF_EINSTIEG}`)
     } else {
-      // Am Mac mit localhost: QR muss LAN-IP zeigen (z. B. 192.168.0.31), sonst kann das Handy nicht verbinden
       const lanIp = '192.168.0.31'
       setLocalGalerieUrl(`http://${lanIp}:${port}/galerie`)
-      setDevViewUrl(`http://${lanIp}:${port}/#/dev-view`)
+      setApfUrl(VERCEL_APF_URL)
     }
   }, [])
 
   const { versionTimestamp: qrVersionTs, serverLabel } = useQrVersionTimestamp()
-  // QR mit Server-Stand + Cache-Bust – Scan lädt immer aktuelle Version (auch im fremden WLAN)
   useEffect(() => {
     if (!url) { setQrUrl(''); return }
     QRCode.toDataURL(buildQrUrlWithBust(url, qrVersionTs), { width: 280, margin: 1 }).then(setQrUrl).catch(() => setQrUrl(''))
@@ -46,9 +46,9 @@ const MobileConnectPage = () => {
     QRCode.toDataURL(buildQrUrlWithBust(localGalerieUrl, qrVersionTs), { width: 200, margin: 1 }).then(setLocalQrUrl).catch(() => setLocalQrUrl(''))
   }, [localGalerieUrl, qrVersionTs])
   useEffect(() => {
-    if (!devViewUrl) { setDevViewQrUrl(''); return }
-    QRCode.toDataURL(devViewUrl, { width: 200, margin: 1 }).then(setDevViewQrUrl).catch(() => setDevViewQrUrl(''))
-  }, [devViewUrl])
+    if (!apfUrl) { setApfQrUrl(''); return }
+    QRCode.toDataURL(buildQrUrlWithBust(apfUrl, qrVersionTs), { width: 240, margin: 1 }).then(setApfQrUrl).catch(() => setApfQrUrl(''))
+  }, [apfUrl, qrVersionTs])
 
   return (
     <main className="mission-wrapper">
@@ -61,7 +61,6 @@ const MobileConnectPage = () => {
           <ProjectNavButton projectId="k2-galerie" />
         </header>
 
-        {/* Hauptbereich: der eine QR für normale Nutzung */}
         <div
           className="card mobile-card"
           style={{
@@ -114,7 +113,39 @@ const MobileConnectPage = () => {
           </div>
         </div>
 
-        {/* Kurz: 3 Schritte */}
+        <div
+          className="card mobile-card"
+          style={{
+            marginTop: '1rem',
+            border: '2px solid rgba(181, 74, 30, 0.45)',
+            background: 'linear-gradient(180deg, rgba(181, 74, 30, 0.08) 0%, transparent 50%)'
+          }}
+        >
+          <h2 style={{ color: '#b54a1e', marginBottom: '0.5rem' }}>🖥️ APf auf Handy / iPad</h2>
+          <p style={{ margin: '0 0 1rem', fontSize: '0.95rem', color: '#5c5650' }}>
+            Arbeitsplattform (Smart Panel, 100 Generationen, …) – nicht die Besucher-Galerie.
+            {serverLabel ? ` Stand: ${serverLabel}` : ''}
+          </p>
+          <div className="qr-area" style={{ marginTop: '0.5rem' }}>
+            {apfQrUrl ? (
+              <>
+                <img src={apfQrUrl} alt="QR Code APf" />
+                <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#5c5650', wordBreak: 'break-all', textAlign: 'center' }}>
+                  {apfUrl}
+                </div>
+              </>
+            ) : (
+              <div className="meta">QR wird geladen …</div>
+            )}
+          </div>
+          <Link
+            to={K2_GALERIE_APF_EINSTIEG}
+            style={{ display: 'inline-block', marginTop: '0.75rem', color: '#b54a1e', fontSize: '0.95rem', fontWeight: 600 }}
+          >
+            → APf hier öffnen
+          </Link>
+        </div>
+
         <div className="card" style={{ marginTop: '1rem' }}>
           <h3 style={{ marginBottom: '0.5rem' }}>So geht’s</h3>
           <ol className="steps" style={{ margin: 0, paddingLeft: '1.25rem' }}>
@@ -124,7 +155,6 @@ const MobileConnectPage = () => {
           </ol>
         </div>
 
-        {/* Optional: nur gleiches WLAN */}
         {localGalerieUrl && (
           <details style={{ marginTop: '1rem' }} className="card mobile-card">
             <summary style={{ cursor: 'pointer', color: '#eab308', fontWeight: '600' }}>
@@ -138,25 +168,6 @@ const MobileConnectPage = () => {
             </div>
             <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#854d0e', wordBreak: 'break-all' }}>
               {localGalerieUrl}
-            </div>
-          </details>
-        )}
-
-        {/* Dev-View nur auf Klappbereich */}
-        {devViewUrl && (
-          <details style={{ marginTop: '1rem' }}
-            className="card mobile-card"
-          >
-            <summary style={{ cursor: 'pointer', fontSize: '0.9rem', color: '#888' }}>
-              🔧 Für Entwickler: Dev-View auf Handy öffnen
-            </summary>
-            <div style={{ marginTop: '0.75rem' }}>
-              <div className="qr-area">
-                {devViewQrUrl && <img src={devViewQrUrl} alt="Dev-View QR" />}
-              </div>
-              <Link to="/dev-view" style={{ display: 'inline-block', marginTop: '0.75rem', color: '#5ffbf1', fontSize: '0.9rem' }}>
-                → Dev-View am Mac
-              </Link>
             </div>
           </details>
         )}
