@@ -6,7 +6,7 @@
 export const AHNENRASTER_MUSTER_SRC =
   '/100-generation/referenzen/ahnenraster-heiliges-muster.png' as const
 
-/** Linienzeichnung: durchgehende Stege + Stopps (orange) · CNC erst nach Freigabe */
+/** Zeichnung: Schwarz = Zwischenraum (vertieft), Weiß = erhaben · CNC erst nach Freigabe */
 export const AHNENRASTER_GEOMETRIE_SRC =
   '/100-generation/referenzen/ahnenraster-geometrie-linien.png' as const
 

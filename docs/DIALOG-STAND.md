@@ -1,11 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Ahnenraster – Linien + Stopps + mm-Raster (unten geschlossen) prüfen.
+**Was wir JETZT tun:** Ahnenraster-Zeichnung prüfen (richtige Polarität).
 
-**Einordnung:** CNC pausiert. Struktur freigegeben; unten ergänzt; 2-/10-mm-Raster sichtbar.
+**Einordnung:** Schwarz = Zwischenraum (vertieft), Weiß = erhaben – wie im Foto. CNC pausiert.
 
-**Nächster Schritt:** Georg: Vergleich nochmal – unten und Raster ok? Dann feinjustieren oder freigeben.
+**Nächster Schritt:** Georg: Vergleich – Polarität und Linienbreite ok?
 
-**Letzter Stand:** 11.09.26 – Unten geschlossen + Ausrichtungs-Raster. **Commit:** `4cd23029` ✅ **main**
+**Letzter Stand:** 11.09.26 – Polarität korrigiert (Schwarz=Zwischenraum, Weiß=erhaben). **Commit:** (nach Push)
 
 ---
