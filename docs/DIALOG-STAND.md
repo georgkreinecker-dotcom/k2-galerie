@@ -6,7 +6,7 @@
 
 **Nächster Schritt:** Entwurfsmappe → Mythos → 4M → Formatblatt ansehen/drucken.
 
-**Letzter Stand:** 11.09.26 – **Exaktes Ahnenraster** als Bild + Formatblatt mit Infos. (Commit folgt)
+**Letzter Stand:** 11.09.26 – **Exaktes Ahnenraster** als Bild + Formatblatt mit Infos. **Commit:** `8f55faeb` ✅ **main**
 
 
 ---
