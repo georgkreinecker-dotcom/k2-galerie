@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** APf als eigene PWA eingerichtet – warten auf Vercel Ready, dann am Handy installieren.
+**Was wir JETZT tun:** Smart Panel – Ordner K2 (ohne 100 Gen; inkl. VK2, mök2, Agentur).
 
-**Einordnung:** Eigenes Manifest `manifest-apf.json` (id `k2-apf-pwa`), Start `/dev-view`, Icon „APf“ – wie Familie getrennt von der Galerie-App.
+**Einordnung:** 100 Generationen = eigener Ordner oben. K2 Agentur bleibt in K2 Galerie-Mappe.
 
-**Nächster Schritt:** Nach Deploy Ready: Handy → `/dev-view` → Teilen → „Zum Home-Bildschirm“.
+**Nächster Schritt:** APf prüfen; Commit/Push.
 
-**Letzter Stand:** 11.09.26 – **APf-PWA** – Commit: **`7efb1c33`** ✅ **main**. Stand kommt mit dem Build (Push).
+**Letzter Stand:** 11.09.26 – Smart Panel Ordner K2 nachgezogen (Georg).
 
 ---
 

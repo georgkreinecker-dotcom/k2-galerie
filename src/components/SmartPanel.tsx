@@ -148,37 +148,54 @@ const MAPPEN_OPEN_KEY = 'smartpanel-mappen-open'
 const K2_SOFTWAREENTWICKLUNG = PROJECT_ROUTES['k2-galerie'].softwareentwicklung
 const EINLADUNG_EROEFFNUNG_24 = PROJECT_ROUTES['k2-galerie'].notizenEinladungEroeffnung24
 const MARKETING_OEK2_PAGE = PROJECT_ROUTES['k2-galerie'].marketingOek2
-/** Arbeitsmappen – Hall of Fame: K2 Galerie, K2 Markt, K2 Familie, Notizen, Vermächtnis (jeweils eigenes Produkt) */
-const GALERIE_ITEM_IDS = ['uebersicht', 'lizenzen', 'k2', 'oek2', 'vk2', 'mok2', 'k2-agentur', 'kampagne', 'presse'] as const
-const MAPPEN = [
-  { id: 'ready-to-go', label: 'K2 Ready to go', icon: '🎯', itemIds: [] as const },
-  {
-    id: 'promo-video',
-    label: 'Promo-Video-Produktion',
-    icon: '🎬',
-    itemIds: [] as const,
-  },
-  {
-    id: 'k2-welt-strategie-mappe',
-    label: 'K2-Welt – Strategie & Portfolio',
-    icon: '📐',
-    itemIds: ['k2-welt-strategie'] as const,
-  },
-  { id: 'galerie', label: 'K2 Galerie', icon: '🎨', itemIds: [...GALERIE_ITEM_IDS] },
-  { id: 'k2-markt', label: 'K2 Markt', icon: '🏪', itemIds: ['k2-markt'] },
+/** Arbeitsmappen – alles K2 in Ordner „K2“; VK2 und mök2 daneben (eigene Produkte) */
+const GALERIE_ITEM_IDS = ['uebersicht', 'lizenzen', 'k2', 'oek2', 'k2-agentur', 'kampagne', 'presse'] as const
+
+type SmartPanelMappe = {
+  id: string
+  label: string
+  icon: string
+  itemIds: readonly string[]
+  /** Unterordner von „K2“ */
+  parent?: 'k2-ordner'
+}
+
+const MAPPEN: SmartPanelMappe[] = [
+  { id: 'k2-ordner', label: 'K2', icon: '🎨', itemIds: [] },
+  { id: 'ready-to-go', label: 'K2 Ready to go', icon: '🎯', itemIds: [], parent: 'k2-ordner' },
+  { id: 'promo-video', label: 'Promo-Video-Produktion', icon: '🎬', itemIds: [], parent: 'k2-ordner' },
+  { id: 'k2-welt-strategie-mappe', label: 'K2-Welt – Strategie & Portfolio', icon: '📐', itemIds: ['k2-welt-strategie'], parent: 'k2-ordner' },
+  { id: 'galerie', label: 'K2 Galerie', icon: '🎨', itemIds: [...GALERIE_ITEM_IDS], parent: 'k2-ordner' },
+  { id: 'k2-markt', label: 'K2 Markt', icon: '🏪', itemIds: ['k2-markt'], parent: 'k2-ordner' },
+  { id: 'familie', label: 'K2 Familie', icon: '👨‍👩‍👧‍👦', itemIds: ['k2-familie'], parent: 'k2-ordner' },
+  { id: 'vk2-mappe', label: 'VK2 Vereinsplattform', icon: '🏛️', itemIds: ['vk2'], parent: 'k2-ordner' },
+  { id: 'mok2-mappe', label: 'mök2 – Vertrieb & Promotion', icon: '📋', itemIds: ['mok2'], parent: 'k2-ordner' },
   { id: '100-generation', label: '100 Generationen', icon: '🏺', itemIds: ['100-generation', '100-generation-entwurfsmappe', '100-generation-flaeche'] },
-  { id: 'familie', label: 'K2 Familie', icon: '👨‍👩‍👧‍👦', itemIds: ['k2-familie'] },
   { id: 'notizen', label: 'Notizen', icon: '📝', itemIds: ['notizen'] },
   { id: 'vermaechtnis', label: 'Vermächtnis', icon: '🏛️', itemIds: ['handbuch'] },
-] as const
+]
 
 function loadMappenOpen(): Record<string, boolean> {
   try {
     const v = localStorage.getItem(MAPPEN_OPEN_KEY)
     if (v) return JSON.parse(v)
   } catch { /* ignore */ }
-  return { 'ready-to-go': true, 'promo-video': true, 'k2-welt-strategie-mappe': true, galerie: true, 'k2-markt': true, '100-generation': true, familie: true, notizen: true, vermaechtnis: true }
+  return {
+    'k2-ordner': true,
+    'ready-to-go': true,
+    'promo-video': true,
+    'k2-welt-strategie-mappe': true,
+    galerie: true,
+    'k2-markt': true,
+    '100-generation': true,
+    familie: true,
+    'vk2-mappe': true,
+    'mok2-mappe': true,
+    notizen: true,
+    vermaechtnis: true,
+  }
 }
+
 
 function saveMappenOpen(open: Record<string, boolean>) {
   try { localStorage.setItem(MAPPEN_OPEN_KEY, JSON.stringify(open)) } catch { /* ignore */ }
@@ -411,218 +428,17 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
     return () => { cancelled = true }
   }, [apfQrVersionTs])
 
-  return (
-    <div style={{
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      padding: '1rem',
-      gap: '1rem',
-      overflowY: 'auto',
-      overflowX: 'hidden'
-    }}>
-      {/* Header */}
-      <div style={{
-        borderBottom: '1px solid rgba(95, 251, 241, 0.2)',
-        paddingBottom: '1rem'
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          marginBottom: '0.5rem'
-        }}>
-          <span style={{ fontSize: '1.5rem' }}>⚡</span>
-          <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600, color: '#5ffbf1' }}>
-            Smart Panel
-          </h3>
-        </div>
-        <p style={{ margin: 0, fontSize: '0.85rem', color: '#8fa0c9' }}>
-          Schnellzugriff
-        </p>
-
-        {/* APf am Handy – QR (Produktion + Cache-Bust) */}
-        <div
-          style={{
-            marginTop: '0.75rem',
-            padding: '0.75rem',
-            borderRadius: '12px',
-            background: 'rgba(181, 74, 30, 0.14)',
-            border: '1px solid rgba(212, 167, 106, 0.45)',
-            textAlign: 'center',
-          }}
-        >
-          <div style={{ fontSize: '0.88rem', fontWeight: 800, color: '#f5e6c8', marginBottom: '0.35rem' }}>
-            📱 APf am Handy
-          </div>
-          <p style={{ margin: '0 0 0.5rem', fontSize: '0.72rem', color: 'rgba(245,230,200,0.85)', lineHeight: 1.35 }}>
-            Scannen → Arbeitsplattform (nicht die Galerie-App)
-            {apfQrServerLabel ? ` · Stand ${apfQrServerLabel}` : ''}
-          </p>
-          {apfHandyQrUrl ? (
-            <img
-              src={apfHandyQrUrl}
-              alt="QR-Code APf Handy"
-              width={180}
-              height={180}
-              style={{
-                width: 180,
-                height: 180,
-                borderRadius: 8,
-                background: '#fff',
-                display: 'block',
-                margin: '0 auto',
-              }}
-            />
-          ) : (
-            <div style={{ fontSize: '0.75rem', color: 'rgba(245,230,200,0.7)', padding: '2rem 0' }}>QR wird geladen …</div>
-          )}
-          <div
-            style={{
-              marginTop: '0.65rem',
-              padding: '0.55rem 0.6rem',
-              borderRadius: 8,
-              background: 'rgba(95, 251, 241, 0.1)',
-              border: '1px solid rgba(95, 251, 241, 0.35)',
-              textAlign: 'left',
-            }}
-          >
-            <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#5ffbf1', marginBottom: '0.25rem' }}>
-              📲 APf als eigene App
-            </div>
-            <p style={{ margin: 0, fontSize: '0.7rem', color: 'rgba(245,230,200,0.9)', lineHeight: 1.4 }}>
-              Auf dem Handy <strong>/dev-view</strong> öffnen (QR) → Teilen → „Zum Home-Bildschirm“.
-              Icon heißt <strong>APf</strong> – getrennt von Galerie und Familie.
-            </p>
-          </div>
-        </div>
-
-        {onNavigate ? (
-          <button
-            type="button"
-            onClick={() => onNavigate('texte-schreibtisch')}
-            style={{
-              width: '100%',
-              marginTop: '0.65rem',
-              padding: '0.65rem 0.85rem',
-              background: 'linear-gradient(135deg, rgba(180,120,60,0.35), rgba(138,90,43,0.2))',
-              border: '1px solid rgba(212,167,106,0.65)',
-              borderRadius: '10px',
-              color: '#f5e6c8',
-              fontWeight: 800,
-              fontSize: '0.9rem',
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              textAlign: 'center',
-              boxShadow: '0 2px 12px rgba(40,26,12,0.25)',
-            }}
-            title="Texte wie auf dem Schreibtisch: Bereiche und Zettel, keine Listen"
-          >
-            🪑 Texte-Schreibtisch
-          </button>
-        ) : (
-          <Link
-            to={PROJECT_ROUTES['k2-galerie'].texteSchreibtisch}
-            style={{
-              display: 'block',
-              width: '100%',
-              marginTop: '0.65rem',
-              padding: '0.65rem 0.85rem',
-              background: 'linear-gradient(135deg, rgba(180,120,60,0.35), rgba(138,90,43,0.2))',
-              border: '1px solid rgba(212,167,106,0.65)',
-              borderRadius: '10px',
-              color: '#f5e6c8',
-              fontWeight: 800,
-              fontSize: '0.9rem',
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              textAlign: 'center',
-              boxShadow: '0 2px 12px rgba(40,26,12,0.25)',
-              textDecoration: 'none',
-            }}
-            title="Texte wie auf dem Schreibtisch: Bereiche und Zettel, keine Listen"
-          >
-            🪑 Texte-Schreibtisch
-          </Link>
-        )}
-        {onNavigate ? (
-          <button
-            type="button"
-            onClick={() => onNavigate('k2-agentur')}
-            style={{
-              width: '100%',
-              marginTop: '0.45rem',
-              padding: '0.65rem 0.85rem',
-              background: 'linear-gradient(135deg, rgba(13,148,136,0.35), rgba(20,184,166,0.18))',
-              border: activePage === 'k2-agentur' ? '2px solid rgba(45,212,191,0.9)' : '1px solid rgba(13,148,136,0.55)',
-              borderRadius: '10px',
-              color: '#5eead4',
-              fontWeight: 800,
-              fontSize: '0.9rem',
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              textAlign: 'center',
-              boxShadow: '0 2px 12px rgba(13,148,136,0.2)',
-            }}
-            title="P1/P2/P3 Marketing-Kanäle: Status, URLs, Budget"
-          >
-            📡 K2 Agentur
-          </button>
-        ) : (
-          <Link
-            to={PROJECT_ROUTES['k2-galerie'].k2Agentur}
-            style={{
-              display: 'block',
-              width: '100%',
-              marginTop: '0.45rem',
-              padding: '0.65rem 0.85rem',
-              background: 'linear-gradient(135deg, rgba(13,148,136,0.35), rgba(20,184,166,0.18))',
-              border: '1px solid rgba(13,148,136,0.55)',
-              borderRadius: '10px',
-              color: '#5eead4',
-              fontWeight: 800,
-              fontSize: '0.9rem',
-              textDecoration: 'none',
-              fontFamily: 'inherit',
-              textAlign: 'center',
-              boxShadow: '0 2px 12px rgba(13,148,136,0.2)',
-            }}
-            title="P1/P2/P3 Marketing-Kanäle: Status, URLs, Budget"
-          >
-            📡 K2 Agentur
-          </Link>
-        )}
-        <button
-          type="button"
-          onClick={() => openTeamHandbuchDoc(HANDBUCH_DOC_KOMPASS)}
-          style={{
-            width: '100%',
-            marginTop: '0.45rem',
-            padding: '0.45rem 0.65rem',
-            background: 'transparent',
-            border: '1px solid rgba(96,165,250,0.35)',
-            borderRadius: '8px',
-            color: '#93c5fd',
-            fontWeight: 600,
-            fontSize: '0.75rem',
-            cursor: 'pointer',
-            fontFamily: 'inherit',
-            textAlign: 'center',
-            opacity: 0.92,
-          }}
-          title="Klassische Tabellenübersicht im Team-Handbuch"
-        >
-          📋 Kompass als Tabelle
-        </button>
-      </div>
-
-      {/* ── Arbeitsmappen (Themen gebündelt) – Promo-Video: eigene Mappe, nicht nur ein Button ── */}
-      {MAPPEN.map(mappe => {
+  const renderSmartPanelMappe = (mappe: SmartPanelMappe, nested = false) => {
         const isOpen = mappenOpen[mappe.id] !== false
         const items = mappe.itemIds.map(id => DEFAULT_ITEMS.find(i => i.id === id)).filter(Boolean) as PanelItem[]
         return (
-          <div key={mappe.id} style={{ borderBottom: '1px solid rgba(95,251,241,0.12)', paddingBottom: '0.75rem' }}>
+          <div
+            key={mappe.id}
+            style={{
+              borderBottom: nested ? 'none' : '1px solid rgba(95,251,241,0.12)',
+              paddingBottom: nested ? '0.35rem' : '0.75rem',
+            }}
+          >
             <button
               type="button"
               onClick={() => toggleMappe(mappe.id)}
@@ -1530,6 +1346,58 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                     </div>
                   </>
                 )}
+                {(mappe.id === 'vk2-mappe' || mappe.id === 'mok2-mappe') && (
+                  <>
+                    {items.map((item) => (
+                      <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        {onNavigate ? (
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => onNavigate(item.page)}
+                            onKeyDown={(e) => e.key === 'Enter' && onNavigate(item.page)}
+                            style={{
+                              flex: 1,
+                              padding: '0.65rem 0.85rem',
+                              background: item.color,
+                              border: `1px solid ${item.border}`,
+                              borderRadius: '8px',
+                              color: mappe.id === 'mok2-mappe' ? '#fbbf24' : '#ff8c42',
+                              fontWeight: 600,
+                              fontSize: '0.88rem',
+                              textAlign: 'center',
+                              cursor: 'pointer',
+                              fontFamily: 'inherit',
+                              display: 'block',
+                            }}
+                          >
+                            {item.label}
+                          </span>
+                        ) : (
+                          <Link
+                            to={item.url}
+                            style={{
+                              flex: 1,
+                              padding: '0.65rem 0.85rem',
+                              background: item.color,
+                              border: `1px solid ${item.border}`,
+                              borderRadius: '8px',
+                              color: mappe.id === 'mok2-mappe' ? '#fbbf24' : '#ff8c42',
+                              fontWeight: 600,
+                              fontSize: '0.88rem',
+                              textAlign: 'center',
+                              textDecoration: 'none',
+                              fontFamily: 'inherit',
+                              display: 'block',
+                            }}
+                          >
+                            {item.label}
+                          </Link>
+                        )}
+                      </div>
+                    ))}
+                  </>
+                )}
                 {mappe.id === 'vermaechtnis' && (
                   <>
                     <p style={{ margin: '0 0 0.35rem 0', fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.4 }}>Dieser digitale Raum ist Georgs bleibendes Werk – für Kinder, Enkel und alle die nach ihm kommen.</p>
@@ -1587,6 +1455,263 @@ hr { border: none; border-top: 1px solid #ddd; margin: 1.25rem 0; }
             )}
           </div>
         )
+  }
+
+  return (
+    <div style={{
+      width: '100%',
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      padding: '1rem',
+      gap: '1rem',
+      overflowY: 'auto',
+      overflowX: 'hidden'
+    }}>
+      {/* Header */}
+      <div style={{
+        borderBottom: '1px solid rgba(95, 251, 241, 0.2)',
+        paddingBottom: '1rem'
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          marginBottom: '0.5rem'
+        }}>
+          <span style={{ fontSize: '1.5rem' }}>⚡</span>
+          <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600, color: '#5ffbf1' }}>
+            Smart Panel
+          </h3>
+        </div>
+        <p style={{ margin: 0, fontSize: '0.85rem', color: '#8fa0c9' }}>
+          Schnellzugriff
+        </p>
+
+        {/* APf am Handy – QR (Produktion + Cache-Bust) */}
+        <div
+          style={{
+            marginTop: '0.75rem',
+            padding: '0.75rem',
+            borderRadius: '12px',
+            background: 'rgba(181, 74, 30, 0.14)',
+            border: '1px solid rgba(212, 167, 106, 0.45)',
+            textAlign: 'center',
+          }}
+        >
+          <div style={{ fontSize: '0.88rem', fontWeight: 800, color: '#f5e6c8', marginBottom: '0.35rem' }}>
+            📱 APf am Handy
+          </div>
+          <p style={{ margin: '0 0 0.5rem', fontSize: '0.72rem', color: 'rgba(245,230,200,0.85)', lineHeight: 1.35 }}>
+            Scannen → Arbeitsplattform (nicht die Galerie-App)
+            {apfQrServerLabel ? ` · Stand ${apfQrServerLabel}` : ''}
+          </p>
+          {apfHandyQrUrl ? (
+            <img
+              src={apfHandyQrUrl}
+              alt="QR-Code APf Handy"
+              width={180}
+              height={180}
+              style={{
+                width: 180,
+                height: 180,
+                borderRadius: 8,
+                background: '#fff',
+                display: 'block',
+                margin: '0 auto',
+              }}
+            />
+          ) : (
+            <div style={{ fontSize: '0.75rem', color: 'rgba(245,230,200,0.7)', padding: '2rem 0' }}>QR wird geladen …</div>
+          )}
+          <div
+            style={{
+              marginTop: '0.65rem',
+              padding: '0.55rem 0.6rem',
+              borderRadius: 8,
+              background: 'rgba(95, 251, 241, 0.1)',
+              border: '1px solid rgba(95, 251, 241, 0.35)',
+              textAlign: 'left',
+            }}
+          >
+            <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#5ffbf1', marginBottom: '0.25rem' }}>
+              📲 APf als eigene App
+            </div>
+            <p style={{ margin: 0, fontSize: '0.7rem', color: 'rgba(245,230,200,0.9)', lineHeight: 1.4 }}>
+              Auf dem Handy <strong>/dev-view</strong> öffnen (QR) → Teilen → „Zum Home-Bildschirm“.
+              Icon heißt <strong>APf</strong> – getrennt von Galerie und Familie.
+            </p>
+          </div>
+        </div>
+
+        {onNavigate ? (
+          <button
+            type="button"
+            onClick={() => onNavigate('texte-schreibtisch')}
+            style={{
+              width: '100%',
+              marginTop: '0.65rem',
+              padding: '0.65rem 0.85rem',
+              background: 'linear-gradient(135deg, rgba(180,120,60,0.35), rgba(138,90,43,0.2))',
+              border: '1px solid rgba(212,167,106,0.65)',
+              borderRadius: '10px',
+              color: '#f5e6c8',
+              fontWeight: 800,
+              fontSize: '0.9rem',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              textAlign: 'center',
+              boxShadow: '0 2px 12px rgba(40,26,12,0.25)',
+            }}
+            title="Texte wie auf dem Schreibtisch: Bereiche und Zettel, keine Listen"
+          >
+            🪑 Texte-Schreibtisch
+          </button>
+        ) : (
+          <Link
+            to={PROJECT_ROUTES['k2-galerie'].texteSchreibtisch}
+            style={{
+              display: 'block',
+              width: '100%',
+              marginTop: '0.65rem',
+              padding: '0.65rem 0.85rem',
+              background: 'linear-gradient(135deg, rgba(180,120,60,0.35), rgba(138,90,43,0.2))',
+              border: '1px solid rgba(212,167,106,0.65)',
+              borderRadius: '10px',
+              color: '#f5e6c8',
+              fontWeight: 800,
+              fontSize: '0.9rem',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              textAlign: 'center',
+              boxShadow: '0 2px 12px rgba(40,26,12,0.25)',
+              textDecoration: 'none',
+            }}
+            title="Texte wie auf dem Schreibtisch: Bereiche und Zettel, keine Listen"
+          >
+            🪑 Texte-Schreibtisch
+          </Link>
+        )}
+        {onNavigate ? (
+          <button
+            type="button"
+            onClick={() => onNavigate('k2-agentur')}
+            style={{
+              width: '100%',
+              marginTop: '0.45rem',
+              padding: '0.65rem 0.85rem',
+              background: 'linear-gradient(135deg, rgba(13,148,136,0.35), rgba(20,184,166,0.18))',
+              border: activePage === 'k2-agentur' ? '2px solid rgba(45,212,191,0.9)' : '1px solid rgba(13,148,136,0.55)',
+              borderRadius: '10px',
+              color: '#5eead4',
+              fontWeight: 800,
+              fontSize: '0.9rem',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              textAlign: 'center',
+              boxShadow: '0 2px 12px rgba(13,148,136,0.2)',
+            }}
+            title="P1/P2/P3 Marketing-Kanäle: Status, URLs, Budget"
+          >
+            📡 K2 Agentur
+          </button>
+        ) : (
+          <Link
+            to={PROJECT_ROUTES['k2-galerie'].k2Agentur}
+            style={{
+              display: 'block',
+              width: '100%',
+              marginTop: '0.45rem',
+              padding: '0.65rem 0.85rem',
+              background: 'linear-gradient(135deg, rgba(13,148,136,0.35), rgba(20,184,166,0.18))',
+              border: '1px solid rgba(13,148,136,0.55)',
+              borderRadius: '10px',
+              color: '#5eead4',
+              fontWeight: 800,
+              fontSize: '0.9rem',
+              textDecoration: 'none',
+              fontFamily: 'inherit',
+              textAlign: 'center',
+              boxShadow: '0 2px 12px rgba(13,148,136,0.2)',
+            }}
+            title="P1/P2/P3 Marketing-Kanäle: Status, URLs, Budget"
+          >
+            📡 K2 Agentur
+          </Link>
+        )}
+        <button
+          type="button"
+          onClick={() => openTeamHandbuchDoc(HANDBUCH_DOC_KOMPASS)}
+          style={{
+            width: '100%',
+            marginTop: '0.45rem',
+            padding: '0.45rem 0.65rem',
+            background: 'transparent',
+            border: '1px solid rgba(96,165,250,0.35)',
+            borderRadius: '8px',
+            color: '#93c5fd',
+            fontWeight: 600,
+            fontSize: '0.75rem',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            textAlign: 'center',
+            opacity: 0.92,
+          }}
+          title="Klassische Tabellenübersicht im Team-Handbuch"
+        >
+          📋 Kompass als Tabelle
+        </button>
+      </div>
+
+      {/* ── Arbeitsmappen: Ordner K2 · VK2 · mök2 · Notizen · Vermächtnis ── */}
+      {MAPPEN.filter((m) => !m.parent).map((mappe) => {
+        if (mappe.id === 'k2-ordner') {
+          const k2Open = mappenOpen['k2-ordner'] !== false
+          const k2Children = MAPPEN.filter((c) => c.parent === 'k2-ordner')
+          return (
+            <div key="k2-ordner" style={{ borderBottom: '1px solid rgba(95,251,241,0.12)', paddingBottom: '0.75rem' }}>
+              <button
+                type="button"
+                onClick={() => toggleMappe('k2-ordner')}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.65rem 0.75rem',
+                  background: 'linear-gradient(135deg, rgba(255,140,66,0.22), rgba(181,74,30,0.12))',
+                  border: '1px solid rgba(255,140,66,0.5)',
+                  borderRadius: '8px',
+                  color: '#ffb088',
+                  fontWeight: 700,
+                  fontSize: '0.95rem',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  textAlign: 'left',
+                }}
+              >
+                <span style={{ fontSize: '1.15rem' }}>🎨</span>
+                <span style={{ flex: 1 }}>📁 K2</span>
+                <span style={{ fontSize: '0.8rem', opacity: 0.85 }}>{k2Open ? '▼' : '▶'}</span>
+              </button>
+              {k2Open && (
+                <div
+                  style={{
+                    marginTop: '0.5rem',
+                    paddingLeft: '0.45rem',
+                    borderLeft: '2px solid rgba(255,140,66,0.4)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.45rem',
+                  }}
+                >
+                  {k2Children.map((child) => renderSmartPanelMappe(child, true))}
+                </div>
+              )}
+            </div>
+          )
+        }
+        return renderSmartPanelMappe(mappe, false)
       })}
 
       {/* Rückmeldungen: Ideen/Wünsche + Probleme (API /admin „Idee? Wunsch?“ / „Probleme“) */}
