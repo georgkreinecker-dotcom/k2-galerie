@@ -1,1 +1,23 @@
-{"widthMm":140,"heightMm":220,"unitMm":2,"grid":[70,110],"fill":0.423,"construction":"2mm-grid"}
+{
+  "source": "public/100-generation/referenzen/ahnenraster-hand-ohne-raster.png",
+  "widthMm": 140.0,
+  "heightMm": 220.0,
+  "cellMm": 2.0,
+  "grid": [
+    70,
+    110
+  ],
+  "cellsWhite": 4668,
+  "cellsBlackRille": 2893,
+  "cellsStopp": 139,
+  "rillePolylines": 68,
+  "edgeSegments": 5200,
+  "layers": {
+    "PLATTE": "Außenkontur 140x220",
+    "RILLE": "geschlossene Konturen der schwarzen Zwischenräume (fräsen)",
+    "STOPP": "1 mm Quadrate an orangen Marken",
+    "INFO": "Hinweistext"
+  },
+  "polarity": "weiss+orange=Steg erhaben · schwarz=Rille",
+  "units": "mm, origin bottom-left, Y up"
+}

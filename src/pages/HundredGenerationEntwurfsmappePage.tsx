@@ -20,7 +20,7 @@ import {
 import { KeramikDrehscheibe } from '../components/hundredGeneration/KeramikDrehscheibe'
 import { HundredGenerationMassSkizze } from '../components/hundredGeneration/HundredGenerationMassSkizze'
 import { HundredGenerationAhnenrasterBlatt } from '../components/hundredGeneration/HundredGenerationAhnenrasterBlatt'
-import { AHNENRASTER_BLATT, AHNENRASTER_HAND_DRUCK_PDF, AHNENRASTER_FOTO_DRUCK_PDF, AHNENRASTER_HAND_DRUCK_HTML } from '../config/hundredGenerationAhnenraster'
+import { AHNENRASTER_BLATT, AHNENRASTER_HAND_DRUCK_PDF, AHNENRASTER_FOTO_DRUCK_PDF, AHNENRASTER_HAND_DRUCK_HTML, AHNENRASTER_CNC_DXF } from '../config/hundredGenerationAhnenraster'
 import '../App.css'
 
 type PrintSheet = {
@@ -957,6 +957,14 @@ export default function HundredGenerationEntwurfsmappePage() {
                 >
                   Im Browser drucken
                 </a>
+                <a
+                  className="btn-print"
+                  href={AHNENRASTER_CNC_DXF}
+                  download
+                  style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+                >
+                  ⚙️ CNC DXF 140×220
+                </a>
               </div>
             ) : null}
             <div className="thumb-row">
@@ -1044,6 +1052,14 @@ export default function HundredGenerationEntwurfsmappePage() {
                 style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
               >
                 📄 PDF 1:1 Foto
+              </a>
+              <a
+                className="btn-print"
+                href={AHNENRASTER_CNC_DXF}
+                download
+                style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+              >
+                ⚙️ CNC DXF 140×220
               </a>
               <button type="button" className="btn-print-ghost" onClick={printAhnenrasterBlatt}>
                 🖨️ Formatblatt (Infos) drucken

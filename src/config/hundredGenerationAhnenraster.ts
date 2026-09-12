@@ -25,6 +25,10 @@ export const AHNENRASTER_FOTO_DRUCK_PDF =
 export const AHNENRASTER_HAND_DRUCK_HTML =
   '/100-generation/referenzen/ahnenraster-hand-druck-1zu1.html' as const
 
+/** CNC-DXF aus letztem Hand-Bild (140 × 220 mm) */
+export const AHNENRASTER_CNC_DXF =
+  '/100-generation/cnc/ahnenraster-matrize-140x220.dxf' as const
+
 export const AHNENRASTER_BLATT = {
   id: 'ahnenraster-formatblatt',
   modellId: 'code-ahnen-mythos' as const,

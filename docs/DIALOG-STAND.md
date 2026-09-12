@@ -1,11 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Session beendet (11.09.26 Abend).
+**Was wir JETZT tun:** CNC-DXF aus letztem Ahnenraster-Hand-Bild erzeugt.
 
-**Einordnung:** Ahnenraster 4M – Druck-PDFs (Hand+Raster + Foto 1:1) am Modell und Formatblatt. CNC pausiert, bis Zeichnung von Georg akzeptiert.
+**Einordnung:** Quelle `ahnenraster-hand-ohne-raster.png` → DXF 140×220 mm (Layer PLATTE / RILLE / STOPP). Am Modell 4M zum Download.
 
-**Nächster Schritt:** Georg prüft Druck 100 %; erst dann Zeichnung freigeben oder Hand-Korrektur.
+**Nächster Schritt:** Georg öffnet DXF in CAM, Maßstab mm prüfen; Fräsen erst nach seiner Freigabe.
 
-**Letzter Stand:** 11.09.26 – PDFs am Modell 4M (`9c26beb2`). Schluss für heute.
+**Letzter Stand:** 12.09.26 – CNC-DXF aus Hand-Bild.
 
 ---

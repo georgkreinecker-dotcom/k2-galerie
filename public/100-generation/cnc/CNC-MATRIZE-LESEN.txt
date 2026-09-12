@@ -1,9 +1,20 @@
 CNC-Matrize Ahnenraster
 ======================
-STOP: Die bisherige Auto-DXF ist NICHT das echte Labyrinth.
 
-Vorlage zum Arbeiten:
-  public/100-generation/referenzen/ahnenraster-unterlage-raster.svg
-  → 1:1 drucken, Stege nachzeichnen.
+Datei: ahnenraster-matrize-140x220.dxf
+Quelle: referenzen/ahnenraster-hand-ohne-raster.png (letztes Hand-Bild vom Code)
+Maß: 140 × 220 mm · Zelle 2 mm · 70 × 110
 
-Erst nach korrekter Vektor-Konstruktion wieder DXF finalisieren.
+Layer:
+  PLATTE – Außenkontur
+  RILLE  – Konturen der schwarzen Zwischenräume → ausfräsen
+  STOPP  – orange Marken (1 mm Quadrate)
+  INFO   – Text
+
+Polarität: Weiß/Orange = erhabener Steg · Schwarz = Rille
+
+Vor dem Fräsen: in CAM öffnen, Maßstab mm prüfen, Probe.
+Georg entscheidet Freigabe – Zeichnung = Näherung aus Hand-Raster.
+
+Neu erzeugen:
+  python3 scripts/ahnenraster-hand-to-cnc-dxf.py

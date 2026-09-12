@@ -6,6 +6,7 @@ import {
   AHNENRASTER_HAND_DRUCK_PDF,
   AHNENRASTER_FOTO_DRUCK_PDF,
   AHNENRASTER_HAND_DRUCK_HTML,
+  AHNENRASTER_CNC_DXF,
 } from '../../config/hundredGenerationAhnenraster'
 
 type Props = {
@@ -206,6 +207,14 @@ export function HundredGenerationAhnenrasterBlatt({
                 style={{ color: accent }}
               >
                 Foto 1:1
+              </a>
+              {' · '}
+              <a
+                href={AHNENRASTER_CNC_DXF}
+                download
+                style={{ color: accent, fontWeight: 700 }}
+              >
+                CNC DXF 140×220
               </a>
             </p>
           </section>
