@@ -1,11 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** CNC-DXF aus letztem Ahnenraster-Hand-Bild erzeugt.
+**Was wir JETZT tun:** Textschreibtisch – Flyer Öffnungszeiten Drucken (fehlende Aktionsleiste).
 
-**Einordnung:** Quelle `ahnenraster-hand-ohne-raster.png` → DXF 140×220 mm (Layer PLATTE / RILLE / STOPP). Am Modell 4M zum Download.
+**Einordnung:** Karte hatte kein `showDruckWeiterleiten` → keine Buttons Drucken/PDF (Agentur hatte sie).
 
-**Nächster Schritt:** Georg öffnet DXF in CAM, Maßstab mm prüfen; Fräsen erst nach seiner Freigabe.
+**Nächster Schritt:** Georg im Textschreibtisch tippt Drucken am Flyer Öffnungszeiten.
 
-**Letzter Stand:** 12.09.26 – CNC-DXF aus Hand-Bild.
+**Letzter Stand:** 02.10.26 – Druck-Buttons für Flyer Öffnungszeiten.
 
 ---

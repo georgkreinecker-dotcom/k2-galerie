@@ -96,8 +96,9 @@ const SCHNELLZUGRIFF: Zettel[] = [
   {
     id: 'sq-oeffnungszeiten',
     titel: 'Flyer Öffnungszeiten',
-    zweck: 'A5 · QR · Besuch vereinbaren',
+    zweck: 'A5 · QR · Besuch vereinbaren · Drucken',
     to: '/plakate-druckformate-k2/oeffnungszeiten-flyer-a5-k2.html',
+    showDruckWeiterleiten: true,
   },
   {
     id: 'sq-agentur',
@@ -271,8 +272,9 @@ const BEREICHE: Bereich[] = [
       {
         id: 'druck-oeffnungszeiten-flyer-a5-k2',
         titel: 'Flyer Öffnungszeiten A5',
-        zweck: 'QR · Besuch vereinbaren',
+        zweck: 'QR · Besuch vereinbaren · Drucken',
         to: '/plakate-druckformate-k2/oeffnungszeiten-flyer-a5-k2.html',
+        showDruckWeiterleiten: true,
       },
       {
         id: 'druck-inserat-lokalzeitung-a4',
