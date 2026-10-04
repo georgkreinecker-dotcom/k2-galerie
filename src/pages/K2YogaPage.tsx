@@ -210,6 +210,90 @@ export default function K2YogaPage() {
             Das Büro macht sowieso Liste und Termine. Der Auftritt danach ist kein Extra-Projekt –
             er ist dasselbe Haus, nur mit eigenem Namen. Deshalb ist es für alle lebbar.
           </p>
+
+          <h2>7. Konkrete Umsetzung – mit dem, was schon da ist</h2>
+          <p>
+            Kein neues Produkt bauen. Jede Galerie im Netz ist bei uns schon ein Mandant:
+            Adresse <strong>/g/…</strong>, Bearbeiten <strong>/admin?tenantId=…</strong>,
+            Daten im eigenen Speicher, nicht in der K2-Galerie von Martina und Georg.
+            Genau so entsteht der Yoga-Auftritt.
+          </p>
+
+          <h2>Zwei Häuser, eine Form</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Was</th>
+                <th>Entspricht</th>
+                <th>Im Netz</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Lehrgang</td>
+                <td>eine Galerie für die Gruppe</td>
+                <td>eine Adresse, ein QR für alle Teilnehmer</td>
+              </tr>
+              <tr>
+                <td>Absolvent</td>
+                <td>dieselbe Galerie, eigener Name</td>
+                <td>eigene Adresse, eigener QR, eigener Admin</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>
+            Inhalt der Absolventen-Galerie: Willkommen, Bild, nächste Stunden (Termine), Kontakt.
+            „Werke“ müssen nicht Kunst sein – später Angebote oder nichts. Zuerst Termine und Gesicht.
+          </p>
+
+          <h2>Was das Büro wirklich klickt</h2>
+          <ol>
+            <li>
+              <strong>Lehrgang anlegen</strong> – Name, Ort, Leiter:in, Zeitraum. Einmal.
+              Es entsteht die Lehrgang-Galerie (wie nach einem Lizenzkauf, nur ohne Zahlung).
+            </li>
+            <li>
+              <strong>Liste</strong> – Namen wie immer (6–14). Das ist die Teilnehmerliste, kein zweites Formular.
+            </li>
+            <li>
+              <strong>QR Lehrgang</strong> – ein Blatt für Infoabend und WhatsApp. Alle leben in derselben Galerie.
+            </li>
+            <li>
+              <strong>Am Ende: Galerien anlegen</strong> – ein Klick. Für jede Person auf der Liste wird
+              automatisch ein Mandant erzeugt: Name und Bild rüber, Willkommen mit ihrem Namen.
+            </li>
+            <li>
+              <strong>Blatt drucken</strong> – pro Person: öffentlicher Link + QR zum Bearbeiten.
+              Mitgeben am Abschlusstag. Fertig.
+            </li>
+          </ol>
+
+          <h2>Was die Absolventin dann tut</h2>
+          <p>
+            QR scannen → ihre Galerie. Zweiten QR (oder denselben Admin-Link) → Willkommen, Termine, Telefon ändern.
+            Eine Tür, wie im Galerie-Admin. Kein Passwort-Urwald. Kein Moodle.
+          </p>
+
+          <h2>Reihenfolge, damit es lebbar bleibt</h2>
+          <ol>
+            <li>
+              <strong>Pilot ein Lehrgang</strong> – nur Anlegen, Liste, eine Lehrgang-Galerie, QR. Noch keine 14 Einzelgalerien.
+            </li>
+            <li>
+              <strong>Dann der Abschluss-Klick</strong> – Galerien aus der Liste, Druckblatt. Prüfen: Name stimmt, Link geht, nichts aus K2 drin.
+            </li>
+            <li>
+              <strong>Erst danach</strong> – Stunden als Termine pflegen, optional Kasse. Zahlung/Lizenz nur, wenn die Akademie das später will.
+            </li>
+          </ol>
+
+          <h2>Was wir bewusst nicht tun</h2>
+          <p>
+            Keine zweite Website-Baukasten-App. Keine Vermischung mit echten K2-Werken.
+            Kein automatisches Anlegen ohne Klick des Büros. Keine zehn Felder, die niemand füllt.
+            Stripe und neue Yogasparte im System erst, wenn der Pilot im Alltag trägt.
+          </p>
+
           <p className="fuss">
             {PRODUCT_COPYRIGHT_BRAND_ONLY}
             <br />
