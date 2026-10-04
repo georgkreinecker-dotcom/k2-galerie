@@ -1,9 +1,9 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** K2 YOGA – Willkommen-Seite zur Ansicht.
+**Was wir JETZT tun:** Yoga – kleine Präsentationsmappe für Kundinnen, ohne K2.
 
-**Einordnung:** Dieselbe Galerie-Form (TenantHomepageTemplate). Muster „Yoga bei Anna“, keine K2-Daten.
+**Einordnung:** Kurzmappe Teal/Weiß wie die anderen Mappen. Akademie-Sprache, Beispiel-Auftritt per QR.
 
-**Nächster Schritt:** Georg schaut die Ansicht an.
+**Nächster Schritt:** Georg druckt oder zeigt die Mappe.
 
-**Letzter Stand:** 04.10.26 – Willkommen-Ansicht `/projects/k2-yoga/willkommen`.
+**Letzter Stand:** 04.10.26 – Mappe `/projects/k2-yoga/praesentationsmappe`.

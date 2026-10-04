@@ -105,6 +105,8 @@ const DEFAULT_ITEMS: PanelItem[] = [
   { id: 'k2-markt', label: '🎯 K2 Markt', page: 'k2-markt', url: PROJECT_ROUTES['k2-markt'].home, color: 'linear-gradient(135deg, rgba(34,197,94,0.15), rgba(22,163,74,0.08))', border: 'rgba(34,197,94,0.35)' },
   { id: 'k2-yoga', label: '🧘 K2 YOGA', page: 'k2-yoga', url: K2_YOGA_ROUTE, color: 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(91,33,182,0.12))', border: 'rgba(167,139,250,0.5)' },
   { id: 'k2-yoga-willkommen', label: '👋 Willkommen ansehen', page: 'k2-yoga-willkommen', url: PROJECT_ROUTES['k2-yoga'].willkommen, color: 'linear-gradient(135deg, rgba(15,118,110,0.22), rgba(13,148,136,0.12))', border: 'rgba(45,212,191,0.45)' },
+  { id: 'k2-yoga-admin', label: '🛠️ Yoga-Admin', page: 'k2-yoga-admin', url: PROJECT_ROUTES['k2-yoga'].admin, color: 'linear-gradient(135deg, rgba(181,74,30,0.2), rgba(212,98,42,0.12))', border: 'rgba(181,74,30,0.45)' },
+  { id: 'k2-yoga-mappe', label: '📘 Präsentationsmappe', page: 'k2-yoga-mappe', url: PROJECT_ROUTES['k2-yoga'].praesentationsmappe, color: 'linear-gradient(135deg, rgba(13,148,136,0.22), rgba(15,118,110,0.12))', border: 'rgba(45,212,191,0.45)' },
   { id: '100-generation', label: '🏺 Keramik – Konzept', page: '100-generation', url: HUNDRED_GENERATION_ROUTE, color: 'linear-gradient(135deg, rgba(161,98,7,0.22), rgba(120,53,15,0.12))', border: 'rgba(212,160,23,0.45)' },
   { id: '100-generation-entwurfsmappe', label: '🗂️ Entwurfsmappe', page: '100-generation-entwurfsmappe', url: HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE, color: 'linear-gradient(135deg, rgba(212,160,23,0.25), rgba(120,53,15,0.14))', border: 'rgba(212,160,23,0.55)' },
   { id: '100-generation-flaeche', label: '🖼️ Fläche – Bild', page: '100-generation-flaeche', url: HUNDRED_GENERATION_FLAECHE_ROUTE, color: 'linear-gradient(135deg, rgba(143,168,200,0.2), rgba(71,85,105,0.12))', border: 'rgba(143,168,200,0.45)' },
@@ -139,7 +141,7 @@ function loadOrder(): string[] {
       return mergePanelOrderWithDefaults(base)
     }
   } catch { /* ignore */ }
-  return ['k2', 'oek2', 'k2-familie', 'vk2', 'mok2', 'k2-agentur', 'kampagne', 'k2-welt-strategie', 'k2-markt', 'k2-yoga', 'k2-yoga-willkommen', '100-generation', '100-generation-entwurfsmappe', '100-generation-flaeche', 'presse', 'notizen', 'handbuch']
+  return ['k2', 'oek2', 'k2-familie', 'vk2', 'mok2', 'k2-agentur', 'kampagne', 'k2-welt-strategie', 'k2-markt', 'k2-yoga', 'k2-yoga-willkommen', 'k2-yoga-admin', 'k2-yoga-mappe', '100-generation', '100-generation-entwurfsmappe', '100-generation-flaeche', 'presse', 'notizen', 'handbuch']
 }
 
 function saveOrder(order: string[]) {
@@ -170,7 +172,7 @@ const MAPPEN: SmartPanelMappe[] = [
   { id: 'galerie', label: 'K2 Galerie', icon: '🎨', itemIds: [...GALERIE_ITEM_IDS], parent: 'k2-ordner' },
   { id: 'k2-agentur-mappe', label: 'K2 Agentur', icon: '📡', itemIds: ['k2-agentur'], parent: 'k2-ordner' },
   { id: 'k2-markt', label: 'K2 Markt', icon: '🏪', itemIds: ['k2-markt'], parent: 'k2-ordner' },
-  { id: 'k2-yoga', label: 'K2 YOGA', icon: '🧘', itemIds: ['k2-yoga', 'k2-yoga-willkommen'], parent: 'k2-ordner' },
+  { id: 'k2-yoga', label: 'K2 YOGA', icon: '🧘', itemIds: ['k2-yoga', 'k2-yoga-willkommen', 'k2-yoga-admin', 'k2-yoga-mappe'], parent: 'k2-ordner' },
   { id: 'familie', label: 'K2 Familie', icon: '👨‍👩‍👧‍👦', itemIds: ['k2-familie'], parent: 'k2-ordner' },
   { id: 'vk2-mappe', label: 'VK2 Vereinsplattform', icon: '🏛️', itemIds: ['vk2'], parent: 'k2-ordner' },
   { id: 'mok2-mappe', label: 'mök2 – Vertrieb & Promotion', icon: '📋', itemIds: ['mok2'], parent: 'k2-ordner' },

@@ -40,6 +40,8 @@ import HundredGenerationFlaechePage from './HundredGenerationFlaechePage'
 import HundredGenerationEntwurfsmappePage from './HundredGenerationEntwurfsmappePage'
 import K2YogaPage from './K2YogaPage'
 import K2YogaWillkommenPage from './K2YogaWillkommenPage'
+import K2YogaAdminPage from './K2YogaAdminPage'
+import YogaPraesentationsmappePage from './YogaPraesentationsmappePage'
 import K2SoftwareentwicklungPage from './K2SoftwareentwicklungPage'
 import PromoVideoProduktionPage from './PromoVideoProduktionPage'
 import PromoRunwayPackPage from './PromoRunwayPackPage'
@@ -502,6 +504,8 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       case 'k2-markt': return PROJECT_ROUTES['k2-markt'].home
       case 'k2-yoga': return K2_YOGA_ROUTE
       case 'k2-yoga-willkommen': return PROJECT_ROUTES['k2-yoga'].willkommen
+      case 'k2-yoga-admin': return PROJECT_ROUTES['k2-yoga'].admin
+      case 'k2-yoga-mappe': return PROJECT_ROUTES['k2-yoga'].praesentationsmappe
       case '100-generation': return HUNDRED_GENERATION_ROUTE
       case '100-generation-flaeche': return HUNDRED_GENERATION_FLAECHE_ROUTE
       case '100-generation-entwurfsmappe': return HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE
@@ -1090,6 +1094,8 @@ end tell`
     { id: 'k2-markt', name: 'K2 Markt', component: K2MarktOberflaechePage },
     { id: 'k2-yoga', name: 'K2 YOGA', component: K2YogaPage },
     { id: 'k2-yoga-willkommen', name: 'K2 YOGA – Willkommen', component: K2YogaWillkommenPage },
+    { id: 'k2-yoga-admin', name: 'K2 YOGA – Admin', component: K2YogaAdminPage },
+    { id: 'k2-yoga-mappe', name: 'Yoga – Präsentationsmappe', component: YogaPraesentationsmappePage },
     { id: '100-generation', name: '100 Generationen – Keramik', component: HundredGenerationPage },
     { id: '100-generation-entwurfsmappe', name: '100 Generationen – Entwurfsmappe', component: HundredGenerationEntwurfsmappePage },
     { id: '100-generation-flaeche', name: '100 Generationen – Fläche', component: HundredGenerationFlaechePage },

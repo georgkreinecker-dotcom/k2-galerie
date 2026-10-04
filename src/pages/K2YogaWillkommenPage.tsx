@@ -53,6 +53,9 @@ export default function K2YogaWillkommenPage() {
         <Link to={K2_YOGA_ROUTE} style={{ color: '#5b21b6', fontWeight: 700, textDecoration: 'none' }}>
           ← K2 YOGA
         </Link>
+        <Link to={PROJECT_ROUTES['k2-yoga'].admin} style={{ color: '#5b21b6', fontWeight: 700, textDecoration: 'none' }}>
+          Admin
+        </Link>
         <span>Ansicht · so sähe ein Auftritt aus (Muster, nicht echte Person)</span>
       </div>
       <TenantHomepageTemplate
@@ -60,7 +63,7 @@ export default function K2YogaWillkommenPage() {
         title="Yoga bei Anna"
         subtext="Absolventin · Yoga-Akademie Austria"
         intro="Willkommen. Hier findest du nächste Stunden, Ort und Kontakt – derselbe Auftritt wie eine Galerie, mit meinem Namen."
-        adminUrl={K2_YOGA_ROUTE}
+        adminUrl={PROJECT_ROUTES['k2-yoga'].admin}
         shareUrl={willkommenPath}
         artworks={[]}
         isMusterStart={false}
