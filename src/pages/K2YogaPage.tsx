@@ -168,19 +168,34 @@ export default function K2YogaPage() {
             </tbody>
           </table>
 
-          <h2>2. Was man sieht</h2>
+          <h2>2. Was die angehenden Lehrer davon haben</h2>
+          <p>
+            In der Ausbildung: eine Adresse für die eigene Gruppe. Nächster Block, Ort, wer dabei ist –
+            ohne in Chat-Verläufen zu suchen. Man gehört zu einem Lehrgang, der ein Gesicht hat.
+          </p>
+          <p>
+            Nach dem Diplom: das, was sonst fehlt. Der Schein liegt in der Schublade, und niemand weiß,
+            dass man unterrichtet. Hier bleibt eine kleine Karte stehen: wer ich bin, wo ich bin,
+            wann die nächste Stunde ist. Keine eigene Website. Kein zweites Leben in einer App.
+          </p>
+          <p>
+            Was sie nicht bekommen: extra Lernstoff, Hausaufgaben am Bildschirm, eine Plattform zum Pflegen.
+            Nur einen Ort, den man nach der Ausbildung noch braucht.
+          </p>
+
+          <h2>3. Was man sieht</h2>
           <p>
             Nicht „noch ein Zertifikat“. Ein Haus: die Akademie. Darin Zimmer: jeder Lehrgang.
             Nach dem Abschluss bleibt das Zimmer stehen – mit Gesicht, Ort, nächsten Stunden.
           </p>
 
-          <h2>3. Was man nicht tut</h2>
+          <h2>4. Was man nicht tut</h2>
           <p>
             Keine Skripte ins Netz. Keine tägliche Betreuung. Keine zehn Apps.
             Was schon auf der Liste steht, wird einmal übernommen.
           </p>
 
-          <h2>4. Pilot</h2>
+          <h2>5. Pilot</h2>
           <ol>
             <li>Ein Lehrgang, ein Ort (z. B. 300 Stunden Oberösterreich).</li>
             <li>Kleingruppe wie immer (6–14).</li>
@@ -189,7 +204,7 @@ export default function K2YogaPage() {
           </ol>
           <p>Wenn es sich im Alltag trägt, dieselbe Form für den nächsten Lehrgang. Wenn nicht: abschalten.</p>
 
-          <h2>5. Warum das halten kann</h2>
+          <h2>6. Warum das halten kann</h2>
           <p>
             Es hängt nicht an Sonderaktionen. Es hängt an einem Ablauf, den das Büro sowieso macht –
             nur an einem Ort, den Menschen danach noch brauchen.
