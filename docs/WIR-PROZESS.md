@@ -123,6 +123,8 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 
 ## Session-Reflexion (wird ergänzt)
 
+**Session-Reflexion (04.10.26, Abend):** K2 YOGA als APf-Projekt: gleiche Galerie-Form für Absolventinnen, Kundinnen-Mappe ohne K2, Beispiel-Auftritt druckbar – Akademie-Website bleibt, keine LMS.
+
 **Session-Reflexion (11.09.26, Abend):** Ahnenraster: Auto-Zeichnung trifft Foto nicht – ehrlicher Foto-Druck + Hand+Raster-PDF; PDFs direkt am Modell 4M. CNC bleibt pausiert bis Georg die Zeichnung freigibt.
 
 **Session-Reflexion (11.09.26):** Grafiker-Tisch war nie wirklich nutzbar – entfernt statt weiter mitzuschleppen. Gestaltung = Admin Design.

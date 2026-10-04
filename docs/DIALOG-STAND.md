@@ -1,9 +1,9 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Yoga – Beispiel-Auftritt druckbar.
+**Was wir JETZT tun:** Session zu – Yoga-Projekt liegt bereit.
 
-**Einordnung:** Willkommen wie Mappe: Button „Als PDF drucken“, Leisten weg, Muster Anna.
+**Einordnung:** K2 YOGA im Smart Panel: Skizze, Willkommen (druckbar), Admin-Hub, Kundinnen-Mappe ohne K2.
 
-**Nächster Schritt:** Georg druckt Auftritt und Mappe.
+**Nächster Schritt:** Georg druckt Mappe und Beispiel-Auftritt, oder nächstes Mal weiter an der Akademie-Idee.
 
-**Letzter Stand:** 04.10.26 – Druck auf `/projects/k2-yoga/willkommen`.
+**Letzter Stand:** 04.10.26 Abend – Druck-Auftritt gepusht (`756d7809`).
