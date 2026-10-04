@@ -235,15 +235,55 @@ export default function K2YogaPage() {
                 <td>eine Adresse, ein QR für alle Teilnehmer</td>
               </tr>
               <tr>
-                <td>Absolvent</td>
+                <td>Absolvent jetzt</td>
                 <td>dieselbe Galerie, eigener Name</td>
                 <td>eigene Adresse, eigener QR, eigener Admin</td>
+              </tr>
+              <tr>
+                <td>Lehrerinnen und Lehrer, die schon fertig sind</td>
+                <td>dieselbe Galerie, gleicher Weg</td>
+                <td>nicht 400 leere Häuser auf einmal – wer will, bekommt eins</td>
               </tr>
             </tbody>
           </table>
           <p>
             Inhalt der Absolventen-Galerie: Willkommen, Bild, nächste Stunden (Termine), Kontakt.
             „Werke“ müssen nicht Kunst sein – später Angebote oder nichts. Zuerst Termine und Gesicht.
+          </p>
+
+          <h2>Die, die schon fertig sind – Hunderte, derselbe Weg</h2>
+          <p>
+            Die Akademie hat nicht nur den nächsten Lehrgang. Es gibt schon viele Lehrerinnen und Lehrer.
+            Die gehören dazu – sonst wäre der Auftritt nur für den Jahrgang, der gerade sitzt.
+          </p>
+          <p>
+            <strong>Nicht:</strong> für alle auf der alten Liste automatisch eine Galerie anlegen.
+            Dann stehen Hunderte leere Häuser im Netz, und niemand pflegt sie. Das ist nicht lebbar.
+          </p>
+          <p>
+            <strong>Sondern:</strong> ein Einladungs-Weg. Dieselbe Form wie nach dem Lehrgang.
+          </p>
+          <ol>
+            <li>
+              Die Akademie hat <strong>einen</strong> Link oder QR: „Absolvent:in – eigene Galerie“.
+              Den kennen alle, die schon fertig sind (Rundmail, die sie sowieso schicken, Aushang, Website der Akademie).
+            </li>
+            <li>
+              Wer will, öffnet: Name, Ort, optional Foto – fertig. Es entsteht <strong>ihr</strong> Haus,
+              wie beim Abschluss-Klick. Kein Webdesigner.
+            </li>
+            <li>
+              Wer nicht will, bleibt unberührt. Kein Zwang, kein leeres Profil mit ihrem Namen.
+            </li>
+            <li>
+              Wer auf einer Excel-Liste der Akademie steht: die Akademie kann die Liste einspielen
+              und <strong>persönliche Einladungs-Links</strong> schicken – die Galerie entsteht erst,
+              wenn die Person den Link öffnet (oder ausdrücklich „Ja“ sagt).
+            </li>
+          </ol>
+          <p>
+            Die Akademie-Galerie kann später die zeigen, die schon ein Haus haben – wie Mitglieder,
+            die sichtbar sein wollen. Nicht die ganze historische Liste als Pflicht-Katalog.
           </p>
 
           <h2>Was das Büro wirklich klickt</h2>
@@ -280,7 +320,11 @@ export default function K2YogaPage() {
               <strong>Pilot ein Lehrgang</strong> – nur Anlegen, Liste, eine Lehrgang-Galerie, QR. Noch keine 14 Einzelgalerien.
             </li>
             <li>
-              <strong>Dann der Abschluss-Klick</strong> – Galerien aus der Liste, Druckblatt. Prüfen: Name stimmt, Link geht, nichts aus K2 drin.
+              <strong>Einladungs-QR für die, die schon fertig sind</strong> – derselbe Auftritt, ohne 400 Häuser auf Vorrat.
+              Ein paar Freiwillige testen. Dann die Runde öffnen.
+            </li>
+            <li>
+              <strong>Dann der Abschluss-Klick</strong> – Galerien aus der aktuellen Liste, Druckblatt. Prüfen: Name stimmt, Link geht, nichts aus K2 drin.
             </li>
             <li>
               <strong>Erst danach</strong> – Stunden als Termine pflegen, optional Kasse. Zahlung/Lizenz nur, wenn die Akademie das später will.
