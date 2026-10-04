@@ -42,6 +42,9 @@ export default function ProjectStartPage() {
   if (projectId === 'k2-markt') {
     return <Navigate to={PROJECT_ROUTES['k2-markt'].home} replace />
   }
+  if (projectId === 'k2-yoga') {
+    return <Navigate to={PROJECT_ROUTES['k2-yoga'].home} replace />
+  }
 
   // Öffentlicher Einstieg (Mail, Lesezeichen): /projects/k2-galerie ohne ?apf=1 → Entdecken (nicht APf, nicht direkt K2-Galerie)
   if (projectId === 'k2-galerie' && !shouldShowK2GalerieApfProjectHub()) {

@@ -20,6 +20,9 @@ export const HUNDRED_GENERATION_FLAECHE_ROUTE = '/projects/100-generation/flaech
 /** Arbeitsmappe: KI-Bilder + drehbare 3D-Konzeptmodelle + Notizen */
 export const HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE = '/projects/100-generation/entwurfsmappe' as const
 
+/** APf-Projekt: Yoga-Lehrgänge sichtbar (Akademie, Pilot) – Werkzeug, nicht Galerie-Kern */
+export const K2_YOGA_ROUTE = '/projects/k2-yoga' as const
+
 /** Willkommensseite für Werbung/Flyer: Zugangsbereich (Anmelden / Zur Ansicht / Erster Entwurf) */
 export const WILLKOMMEN_ROUTE = '/willkommen'
 
@@ -279,6 +282,12 @@ export const PROJECT_ROUTES = {
     k2Markt: '/projects/k2-markt/mappe',
     k2MarktOberflaeche: '/projects/k2-markt',
     k2MarktTor: '/projects/k2-markt/tor',
+  },
+  /** K2 YOGA – eigenes APf-Projekt (Lehrgang bleibt sichtbar). Nicht K2-Galerie-Kern. */
+  'k2-yoga': {
+    id: 'k2-yoga',
+    name: 'K2 YOGA',
+    home: K2_YOGA_ROUTE,
   },
   /** K2 Markt – von Beginn an eigenständiges Projekt definiert (wie K2 Familie), nicht Teil von K2 Galerie. Datenquelle: ök2 (mök2, Muster). Homepage = Arbeitsoberfläche; netzfähig wie ök2 und K2 Familie. */
   'k2-markt': {

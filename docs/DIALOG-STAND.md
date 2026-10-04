@@ -1,11 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Gesprächsblatt Yoga-Akademie Austria (Georg: Ausbildung + Unterricht dort).
+**Was wir JETZT tun:** K2 YOGA als eigenes Projekt im Smart Panel.
 
-**Einordnung:** K2 nicht als Galerie-Verkauf, sondern als Arbeitsfläche pro Lehrgang – eine Struktur wie VK2.
+**Einordnung:** APf-Werkzeug. Konzeptskizze „Lehrgang bleibt sichtbar“. Nicht K2-Galerie-Kern.
 
-**Nächster Schritt:** Georg liest das Blatt, korrigiert Ton, dann Drucken / mitnehmen.
+**Nächster Schritt:** Georg öffnet APf → Ordner K2 → K2 YOGA.
 
-**Letzter Stand:** 04.10.26 – Blatt im Textschreibtisch.
+**Letzter Stand:** 04.10.26 – Projekt K2 YOGA im Smart Panel.
 
 ---

@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Yoga-Akademie Austria · ein Gesprächsblatt</title>
+  <title>Konzeptskizze · Lehrgang bleibt sichtbar</title>
   <style>
-    @page { size: A4; margin: 14mm 16mm 16mm 16mm; }
+    @page { size: A4; margin: 12mm 14mm 14mm 14mm; }
     * { box-sizing: border-box; }
     html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     body {
       margin: 0 auto;
-      padding: 1.5rem 1.2rem 2.6rem;
-      max-width: 42rem;
+      padding: 1.25rem 1.1rem 2.4rem;
+      max-width: 44rem;
       font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
-      font-size: 11pt;
-      line-height: 1.58;
+      font-size: 10.5pt;
+      line-height: 1.5;
       color: #1c1a18;
       background: #f6f2eb;
     }
@@ -23,10 +23,25 @@
       font-size: 8.5pt;
       color: #5c5650;
       text-align: center;
-      margin: 0 0 1.1rem;
-      padding: 0.45rem 0.7rem;
+      margin: 0 0 0.9rem;
+      padding: 0.4rem 0.65rem;
       background: #e8e4dc;
       border-radius: 6px;
+    }
+    .no-print {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      margin: 0 0 0.85rem;
+    }
+    .no-print button {
+      font: 700 0.88rem ui-sans-serif, system-ui, sans-serif;
+      background: #b54a1e;
+      color: #fff;
+      border: 0;
+      border-radius: 10px;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
     }
     @media print {
       .hinweis-screen, .no-print { display: none !important; }
@@ -35,53 +50,59 @@
     }
     .blatt {
       background: #fffefb;
-      padding: 1.35rem 1.45rem 1.5rem;
+      padding: 1.15rem 1.3rem 1.25rem;
       border-radius: 10px;
       box-shadow: 0 8px 28px rgba(40, 30, 20, 0.08);
     }
     .kicker {
       font-family: ui-sans-serif, system-ui, sans-serif;
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: #0f766e;
       font-weight: 700;
-      margin: 0 0 0.35rem;
+      margin: 0 0 0.25rem;
     }
     h1 {
-      font-size: 1.28rem;
-      margin: 0 0 0.85rem;
-      font-weight: 700;
-      color: #1c1a18;
+      font-size: 1.22rem;
+      margin: 0 0 0.55rem;
+      line-height: 1.25;
     }
     h2 {
       font-family: ui-sans-serif, system-ui, sans-serif;
-      font-size: 0.95rem;
-      margin: 1.15rem 0 0.4rem;
+      font-size: 0.88rem;
+      margin: 0.95rem 0 0.32rem;
       color: #0c5c55;
     }
-    p { margin: 0 0 0.7rem; }
-    ul { margin: 0 0 0.75rem; padding-left: 1.15rem; }
-    li { margin: 0 0 0.28rem; }
+    p { margin: 0 0 0.55rem; }
+    .satz {
+      background: #f3faf8;
+      border-left: 4px solid #0f766e;
+      padding: 0.55rem 0.75rem;
+      margin: 0.5rem 0 0.8rem;
+      font-weight: 600;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
       font-family: ui-sans-serif, system-ui, sans-serif;
-      font-size: 0.86rem;
-      margin: 0.4rem 0 0.9rem;
+      font-size: 0.8rem;
+      margin: 0.2rem 0 0.7rem;
     }
     th, td {
       text-align: left;
-      padding: 0.38rem 0.45rem;
+      padding: 0.32rem 0.4rem;
       border-bottom: 1px solid #e8e4dc;
       vertical-align: top;
     }
-    th { color: #5c5650; font-weight: 600; width: 42%; }
+    th { color: #5c5650; font-weight: 600; }
+    ol { margin: 0 0 0.65rem; padding-left: 1.2rem; }
+    li { margin: 0 0 0.22rem; }
     .fuss {
       font-family: ui-sans-serif, system-ui, sans-serif;
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       color: #5c5650;
-      margin-top: 1.1rem;
+      margin-top: 0.7rem;
     }
     .seitenfuss { display: none; }
     @media print {
@@ -98,80 +119,92 @@
       }
       .seitenfuss::after { content: "Seite " counter(page); }
     }
-    .no-print {
-      display: flex;
-      gap: 0.5rem;
-      justify-content: center;
-      margin: 0 0 1rem;
-    }
-    .no-print button {
-      font: 700 0.9rem ui-sans-serif, system-ui, sans-serif;
-      background: #b54a1e;
-      color: #fff;
-      border: 0;
-      border-radius: 10px;
-      padding: 0.55rem 1.1rem;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
-  <p class="hinweis-screen">Zum Gespräch und Ausdrucken – nicht öffentlich als Werbung gedacht.</p>
+  <p class="hinweis-screen">Konzeptskizze zum Lesen und Drucken · wenig Aufwand, für alle lebbar.</p>
   <div class="no-print">
     <button type="button" onclick="window.print()">Drucken</button>
   </div>
   <article class="blatt">
-    <p class="kicker">Ein Blatt zum Gespräch</p>
-    <h1>Yoga-Akademie Austria und K2</h1>
+    <p class="kicker">Yoga-Akademie Austria · Skizze</p>
+    <h1>Der Lehrgang bleibt sichtbar</h1>
+    <p class="satz">
+      Die anderen verkaufen den Kurs. Wir machen sichtbar, was danach bleibt.
+    </p>
     <p>
-      Ich habe bei euch die Ausbildung gemacht und unterrichtet.
-      Deshalb geht es hier nicht um „Software von draußen“, sondern um etwas,
-      das ich aus eurem Alltag kenne: viele Lehrgänge, viele Orte, kleine Gruppen.
+      Yogalehrer-Ausbildungen klingen überall gleich: Stunden, Alliance, Wochenenden.
+      Abheben geht nicht über noch mehr Text auf der Website – sondern über einen Ort,
+      den Teilnehmer und Absolventen wirklich benutzen, ohne Extra-Arbeit.
     </p>
 
-    <h2>Was ihr schon sehr gut habt</h2>
+    <h2>1. Eine Form für alle</h2>
     <p>
-      Die Website, Ö-CERT, Cert NÖ, Yoga Alliance, 300- und 500-Stunden-Wege,
-      Spezialausbildungen, Präsenz und Online – das bleibt euer Gesicht nach außen.
-      Daran soll niemand rütteln.
-    </p>
-
-    <h2>Wo eine ruhige Arbeitsfläche helfen kann</h2>
-    <p>
-      Pro Lehrgang (zum Beispiel Wels 300 Stunden, Kleingruppe 6–14):
-      ein klarer Ort für die Gruppe, die Termine, die Unterlagen und die Anmeldung –
-      ohne dass Teilnehmer in zehn Links verloren gehen.
+      Ein Lehrgang = eine kleine Fläche. Dieselbe Form in Wels, Graz, Innsbruck, online.
+      Kein neues System pro Ort. Kein Lernportal. Keine zweite Website.
     </p>
     <table>
       <thead>
-        <tr><th>Euer Lehrgang</th><th>Einfach so nutzen</th></tr>
+        <tr><th>Wer</th><th>Was sie tun</th><th>Aufwand</th></tr>
       </thead>
       <tbody>
-        <tr><td>Willkommen zur Gruppe</td><td>Eingangsseite mit Bild und einem Satz</td></tr>
-        <tr><td>Wochenenden / Blöcke</td><td>Termine wie bei einer Veranstaltungsreihe</td></tr>
-        <tr><td>Teilnehmer und Lehrende</td><td>Karten der Gruppe (wie Mitglieder)</td></tr>
-        <tr><td>Infoabend, Skript-Hinweis, QR</td><td>Einladung und Druckblatt</td></tr>
-        <tr><td>Anmeldung / Anzahlung</td><td>eine Kasse, klar und sachlich</td></tr>
-        <tr><td>Abschluss</td><td>Teilnahmebestätigung / Zertifikat zum Ausdrucken</td></tr>
+        <tr>
+          <td>Büro</td>
+          <td>Lehrgang anlegen: Name, Ort, Bild, Leiter:in, nächste Termine, Teilnehmerliste</td>
+          <td>einmal, ca. 20 Minuten – die Liste gibt es ohnehin</td>
+        </tr>
+        <tr>
+          <td>Lehrende</td>
+          <td>Termine so lassen, wie sie schon geplant sind</td>
+          <td>kein Extra-Schreiben</td>
+        </tr>
+        <tr>
+          <td>Teilnehmer</td>
+          <td>einen QR scannen: Gruppe, nächster Block, Unterlagen</td>
+          <td>ein Scan</td>
+        </tr>
+        <tr>
+          <td>Danach</td>
+          <td>dieselbe Fläche bleibt – wird zur Praxis-Karte der Absolventin</td>
+          <td>kein zweites Anlegen</td>
+        </tr>
       </tbody>
     </table>
 
-    <h2>Was es nicht ist</h2>
-    <ul>
-      <li>Kein Ersatz für eure Website und eure Lehre.</li>
-      <li>Kein Lernportal und keine 1200 Seiten Skript im Netz.</li>
-      <li>Keine ständige Betreuung von außen – das System soll von selbst stehen.</li>
-    </ul>
-
-    <h2>Vorschlag zum Ausprobieren</h2>
+    <h2>2. Was man sieht (und sonst niemand hat)</h2>
     <p>
-      Ein Lehrgang, ein Ort, eine Gruppe – zum Anschauen.
-      Wenn es sich für euch richtig anfühlt, können weitere Lehrgänge dieselbe Form nutzen.
-      Eine Struktur, viele Gruppen. Nicht zehn verschiedene Wege.
+      Nicht „noch ein Zertifikat“. Ein Haus: die Akademie. Darin Zimmer: jeder Lehrgang.
+      Nach dem Abschluss bleibt das Zimmer stehen – mit Gesicht, Ort, nächsten Stunden.
+      Die 200-Stunden-Konkurrenz kann das nicht in der Broschüre nachdrucken.
+    </p>
+
+    <h2>3. Was man nicht tut</h2>
+    <p>
+      Keine Skripte ins Netz. Keine tägliche Betreuung. Keine zehn Apps.
+      Was schon in Excel oder am Zettel steht, wird einmal übernommen – nicht zweimal erfunden.
+    </p>
+
+    <h2>4. Pilot, der lebbar ist</h2>
+    <ol>
+      <li>Ein Lehrgang, ein Ort (z. B. 300 Stunden Oberösterreich).</li>
+      <li>Kleingruppe wie immer (6–14).</li>
+      <li>Drei Dinge im Alltag: QR am Infoabend, Termine, Namen der Gruppe.</li>
+      <li>Am Ende: Fläche bleibt für die, die unterrichten wollen.</li>
+    </ol>
+    <p>
+      Wenn es sich im Alltag trägt, dieselbe Form für den nächsten Lehrgang.
+      Wenn nicht: abschalten. Kein Ballast.
+    </p>
+
+    <h2>5. Warum das halten kann</h2>
+    <p>
+      Es hängt nicht an Motivation und Sonderaktionen. Es hängt an einem Ablauf,
+      den das Büro sowieso macht (Liste, Termine, Einladung) – nur an einem Ort,
+      den Menschen danach noch brauchen.
     </p>
     <p class="fuss">
-      Georg Kreinecker · kgm solution / K2<br />
-      Zum Weitergeben an Martina, Doris oder die Institutsleitung – wenn der Zeitpunkt passt.
+      Georg Kreinecker · selbst ausgebildet und unterrichtet in der Akademie.<br />
+      Technik: vorhandene K2-Form (Willkommen, Karten, Termine, QR, Druck, Kasse) – eine Struktur, viele Lehrgänge.
     </p>
   </article>
   <div class="seitenfuss"></div>

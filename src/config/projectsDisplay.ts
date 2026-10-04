@@ -18,6 +18,7 @@ export const PROJECT_COLORS: Record<string, string> = {
   vk2: '#e67a2a', // K2-Familie: Orange (Hausherr) – VK2 = Mieter nutzt K2-Design
   'k2-familie': '#0d9488', // Türkis/Grün – Familie, Wachstum, Verbindung
   'k2-markt': '#22c55e', // Grün – K2 Markt (eigenständig, Datenquelle ök2)
+  'k2-yoga': '#7c3aed', // Violett – Yoga-Lehrgänge / Akademie
   '100-generation': '#a16207', // Ocker / Ton – künstlerische Keramikserie
 }
 
@@ -109,6 +110,7 @@ function getDefaultDescription(projectId: ProjectId): string {
     vk2: 'Vereinsplattform – Künstler:innen, Mitglieder, Admin.',
     'k2-familie': 'Familienstammbaum modern – jeder sichtbar, vernetzt, mit eigener Seite. Raumschiff.',
     'k2-markt': 'Eigenständiges Projekt. Datenquelle: ök2. Homepage = Arbeitsoberfläche (Leitvision, Ablauf, Studio, Tor) – manuell arbeiten; netzfähig.',
+    'k2-yoga': 'Lehrgang bleibt sichtbar – Konzept und Pilot für Yoga-Akademie, wenig Aufwand.',
   }
   return descriptions[projectId] ?? 'Projekt öffnen.'
 }

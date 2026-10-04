@@ -8,7 +8,7 @@ const HANDBUCH_DOC_QUERY = 'doc' as const
 const HANDBUCH_DOC_KOMPASS = '24-TEXTE-BRIEFE-KOMPASS.md'
 const HANDBUCH_DOC_ZENTRALE_THEMEN = '16-ZENTRALE-THEMEN-FUER-NUTZER.md'
 const HANDBUCH_DOC_NOTFALL = '23-NOTFALL-CHECKLISTE.md'
-import { PROJECT_ROUTES, PLATFORM_ROUTES, MOK2_ROUTE, ENTDECKEN_ROUTE, HUNDRED_GENERATION_ROUTE, HUNDRED_GENERATION_FLAECHE_ROUTE, HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE, K2_APF_HANDY_QR_URL } from '../config/navigation'
+import { PROJECT_ROUTES, PLATFORM_ROUTES, MOK2_ROUTE, ENTDECKEN_ROUTE, HUNDRED_GENERATION_ROUTE, HUNDRED_GENERATION_FLAECHE_ROUTE, HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE, K2_YOGA_ROUTE, K2_APF_HANDY_QR_URL } from '../config/navigation'
 import { K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
 import { prepareFreshOek2VisitorSession } from '../utils/oek2FreshStart'
 import { openAppOrHttpUrlInNewTab } from '../utils/safeExternalUrl'
@@ -103,6 +103,7 @@ const DEFAULT_ITEMS: PanelItem[] = [
   { id: 'kampagne', label: '📁 Kampagne Marketing-Strategie', page: 'kampagne', url: PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie, color: 'linear-gradient(135deg, rgba(95,251,241,0.15), rgba(60,200,190,0.08))', border: 'rgba(95,251,241,0.35)' },
   { id: 'k2-welt-strategie', label: '📐 K2-Welt – Strategie & Portfolio', page: 'k2-welt-strategie', url: PROJECT_ROUTES['k2-galerie'].k2WeltStrategie, color: 'linear-gradient(135deg, rgba(129,140,248,0.2), rgba(99,102,241,0.12))', border: 'rgba(129,140,248,0.45)' },
   { id: 'k2-markt', label: '🎯 K2 Markt', page: 'k2-markt', url: PROJECT_ROUTES['k2-markt'].home, color: 'linear-gradient(135deg, rgba(34,197,94,0.15), rgba(22,163,74,0.08))', border: 'rgba(34,197,94,0.35)' },
+  { id: 'k2-yoga', label: '🧘 K2 YOGA', page: 'k2-yoga', url: K2_YOGA_ROUTE, color: 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(91,33,182,0.12))', border: 'rgba(167,139,250,0.5)' },
   { id: '100-generation', label: '🏺 Keramik – Konzept', page: '100-generation', url: HUNDRED_GENERATION_ROUTE, color: 'linear-gradient(135deg, rgba(161,98,7,0.22), rgba(120,53,15,0.12))', border: 'rgba(212,160,23,0.45)' },
   { id: '100-generation-entwurfsmappe', label: '🗂️ Entwurfsmappe', page: '100-generation-entwurfsmappe', url: HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE, color: 'linear-gradient(135deg, rgba(212,160,23,0.25), rgba(120,53,15,0.14))', border: 'rgba(212,160,23,0.55)' },
   { id: '100-generation-flaeche', label: '🖼️ Fläche – Bild', page: '100-generation-flaeche', url: HUNDRED_GENERATION_FLAECHE_ROUTE, color: 'linear-gradient(135deg, rgba(143,168,200,0.2), rgba(71,85,105,0.12))', border: 'rgba(143,168,200,0.45)' },
@@ -137,7 +138,7 @@ function loadOrder(): string[] {
       return mergePanelOrderWithDefaults(base)
     }
   } catch { /* ignore */ }
-  return ['k2', 'oek2', 'k2-familie', 'vk2', 'mok2', 'k2-agentur', 'kampagne', 'k2-welt-strategie', 'k2-markt', '100-generation', '100-generation-entwurfsmappe', '100-generation-flaeche', 'presse', 'notizen', 'handbuch']
+  return ['k2', 'oek2', 'k2-familie', 'vk2', 'mok2', 'k2-agentur', 'kampagne', 'k2-welt-strategie', 'k2-markt', 'k2-yoga', '100-generation', '100-generation-entwurfsmappe', '100-generation-flaeche', 'presse', 'notizen', 'handbuch']
 }
 
 function saveOrder(order: string[]) {
@@ -168,6 +169,7 @@ const MAPPEN: SmartPanelMappe[] = [
   { id: 'galerie', label: 'K2 Galerie', icon: '🎨', itemIds: [...GALERIE_ITEM_IDS], parent: 'k2-ordner' },
   { id: 'k2-agentur-mappe', label: 'K2 Agentur', icon: '📡', itemIds: ['k2-agentur'], parent: 'k2-ordner' },
   { id: 'k2-markt', label: 'K2 Markt', icon: '🏪', itemIds: ['k2-markt'], parent: 'k2-ordner' },
+  { id: 'k2-yoga', label: 'K2 YOGA', icon: '🧘', itemIds: ['k2-yoga'], parent: 'k2-ordner' },
   { id: 'familie', label: 'K2 Familie', icon: '👨‍👩‍👧‍👦', itemIds: ['k2-familie'], parent: 'k2-ordner' },
   { id: 'vk2-mappe', label: 'VK2 Vereinsplattform', icon: '🏛️', itemIds: ['vk2'], parent: 'k2-ordner' },
   { id: 'mok2-mappe', label: 'mök2 – Vertrieb & Promotion', icon: '📋', itemIds: ['mok2'], parent: 'k2-ordner' },
@@ -189,6 +191,7 @@ function loadMappenOpen(): Record<string, boolean> {
     galerie: true,
     'k2-agentur-mappe': true,
     'k2-markt': true,
+    'k2-yoga': true,
     '100-generation': true,
     familie: true,
     'vk2-mappe': true,
@@ -462,6 +465,12 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                         background: 'linear-gradient(135deg, rgba(129,140,248,0.22), rgba(99,102,241,0.12))',
                         border: '1px solid rgba(165,180,252,0.45)',
                         color: '#c7d2fe',
+                      }
+                  : mappe.id === 'k2-yoga'
+                    ? {
+                        background: 'linear-gradient(135deg, rgba(124,58,237,0.22), rgba(91,33,182,0.12))',
+                        border: '1px solid rgba(196,181,253,0.5)',
+                        color: '#ddd6fe',
                       }
                     : {
                         background: 'rgba(95,251,241,0.06)',
@@ -1148,6 +1157,61 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                               border: `1px solid ${item.border}`,
                               borderRadius: '8px',
                               color: '#22c55e',
+                              fontWeight: 600,
+                              fontSize: '0.88rem',
+                              textAlign: 'center',
+                              textDecoration: 'none',
+                              fontFamily: 'inherit',
+                              display: 'block',
+                            }}
+                          >
+                            {item.label}
+                          </Link>
+                        )}
+                      </div>
+                    ))}
+                  </>
+                )}
+                {mappe.id === 'k2-yoga' && (
+                  <>
+                    <p style={{ margin: '0 0 0.4rem 0', fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)', lineHeight: 1.45 }}>
+                      Lehrgang bleibt sichtbar – Konzeptskizze, wenig Aufwand.
+                    </p>
+                    {items.map(item => (
+                      <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        {onNavigate ? (
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => onNavigate(item.page)}
+                            onKeyDown={e => e.key === 'Enter' && onNavigate(item.page)}
+                            style={{
+                              flex: 1,
+                              padding: '0.65rem 0.85rem',
+                              background: item.color,
+                              border: `1px solid ${item.border}`,
+                              borderRadius: '8px',
+                              color: '#ddd6fe',
+                              fontWeight: 600,
+                              fontSize: '0.88rem',
+                              textAlign: 'center',
+                              cursor: 'pointer',
+                              fontFamily: 'inherit',
+                              display: 'block',
+                            }}
+                          >
+                            {item.label}
+                          </span>
+                        ) : (
+                          <Link
+                            to={item.url}
+                            style={{
+                              flex: 1,
+                              padding: '0.65rem 0.85rem',
+                              background: item.color,
+                              border: `1px solid ${item.border}`,
+                              borderRadius: '8px',
+                              color: '#ddd6fe',
                               fontWeight: 600,
                               fontSize: '0.88rem',
                               textAlign: 'center',

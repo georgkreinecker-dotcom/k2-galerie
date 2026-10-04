@@ -75,6 +75,17 @@ export default function MissionControlSystemPage() {
           roadmapHint: null,
         }
       }
+      if (id === 'k2-yoga') {
+        return {
+          id,
+          name: project.name,
+          description: 'Lehrgang bleibt sichtbar – Yoga-Akademie, wenig Aufwand',
+          color: '#7c3aed',
+          tags: [{ label: 'Intern', style: 'intern' }, { label: 'Konzept', style: 'intern' }],
+          routes: project,
+          roadmapHint: null,
+        }
+      }
       if (id === 'vk2') {
         return {
           id,

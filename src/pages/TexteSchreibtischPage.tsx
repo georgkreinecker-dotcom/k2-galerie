@@ -95,8 +95,8 @@ const SCHNELLZUGRIFF: Zettel[] = [
   },
   {
     id: 'sq-yoga-akademie-austria',
-    titel: 'Yoga-Akademie Austria',
-    zweck: 'Gesprächsblatt · eine Seite · Drucken',
+    titel: 'Yoga-Akademie: Lehrgang sichtbar',
+    zweck: 'Konzeptskizze · eine Seite · Drucken',
     to: '/texte-schreibtisch/yoga-akademie-austria-k2-gespraech.html',
     showDruckWeiterleiten: true,
   },
@@ -465,8 +465,8 @@ const BEREICHE: Bereich[] = [
     zettel: [
       {
         id: 'yoga-akademie-austria-k2',
-        titel: 'Yoga-Akademie Austria',
-        zweck: 'Gesprächsblatt · eine Seite',
+        titel: 'Yoga-Akademie: Lehrgang sichtbar',
+        zweck: 'Konzeptskizze · eine Seite',
         to: '/texte-schreibtisch/yoga-akademie-austria-k2-gespraech.html',
         showDruckWeiterleiten: true,
       },
