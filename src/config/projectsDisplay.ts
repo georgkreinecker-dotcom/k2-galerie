@@ -110,7 +110,7 @@ function getDefaultDescription(projectId: ProjectId): string {
     vk2: 'Vereinsplattform – Künstler:innen, Mitglieder, Admin.',
     'k2-familie': 'Familienstammbaum modern – jeder sichtbar, vernetzt, mit eigener Seite. Raumschiff.',
     'k2-markt': 'Eigenständiges Projekt. Datenquelle: ök2. Homepage = Arbeitsoberfläche (Leitvision, Ablauf, Studio, Tor) – manuell arbeiten; netzfähig.',
-    'k2-yoga': 'Lehrgang bleibt sichtbar – Konzept und Pilot für Yoga-Akademie, wenig Aufwand.',
+    'k2-yoga': 'Nach dem Lehrgang eigene Galerie im Netz – dieselbe Form wie K2, wenig Aufwand.',
   }
   return descriptions[projectId] ?? 'Projekt öffnen.'
 }
