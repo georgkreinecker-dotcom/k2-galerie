@@ -1,11 +1,11 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Textschreibtisch – Flyer Öffnungszeiten Drucken (fehlende Aktionsleiste).
+**Was wir JETZT tun:** Gesprächsblatt Yoga-Akademie Austria (Georg: Ausbildung + Unterricht dort).
 
-**Einordnung:** Karte hatte kein `showDruckWeiterleiten` → keine Buttons Drucken/PDF (Agentur hatte sie).
+**Einordnung:** K2 nicht als Galerie-Verkauf, sondern als Arbeitsfläche pro Lehrgang – eine Struktur wie VK2.
 
-**Nächster Schritt:** Georg im Textschreibtisch tippt Drucken am Flyer Öffnungszeiten.
+**Nächster Schritt:** Georg liest das Blatt, korrigiert Ton, dann Drucken / mitnehmen.
 
-**Letzter Stand:** 02.10.26 – Druck-Buttons für Flyer Öffnungszeiten.
+**Letzter Stand:** 04.10.26 – Blatt im Textschreibtisch.
 
 ---

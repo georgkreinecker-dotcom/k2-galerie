@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Yoga-Akademie Austria · ein Gesprächsblatt</title>
+  <style>
+    @page { size: A4; margin: 14mm 16mm 16mm 16mm; }
+    * { box-sizing: border-box; }
+    html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body {
+      margin: 0 auto;
+      padding: 1.5rem 1.2rem 2.6rem;
+      max-width: 42rem;
+      font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+      font-size: 11pt;
+      line-height: 1.58;
+      color: #1c1a18;
+      background: #f6f2eb;
+    }
+    .hinweis-screen {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 8.5pt;
+      color: #5c5650;
+      text-align: center;
+      margin: 0 0 1.1rem;
+      padding: 0.45rem 0.7rem;
+      background: #e8e4dc;
+      border-radius: 6px;
+    }
+    @media print {
+      .hinweis-screen, .no-print { display: none !important; }
+      body { background: #fff; padding: 0; max-width: none; }
+      .blatt { box-shadow: none; }
+    }
+    .blatt {
+      background: #fffefb;
+      padding: 1.35rem 1.45rem 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 8px 28px rgba(40, 30, 20, 0.08);
+    }
+    .kicker {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #0f766e;
+      font-weight: 700;
+      margin: 0 0 0.35rem;
+    }
+    h1 {
+      font-size: 1.28rem;
+      margin: 0 0 0.85rem;
+      font-weight: 700;
+      color: #1c1a18;
+    }
+    h2 {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.95rem;
+      margin: 1.15rem 0 0.4rem;
+      color: #0c5c55;
+    }
+    p { margin: 0 0 0.7rem; }
+    ul { margin: 0 0 0.75rem; padding-left: 1.15rem; }
+    li { margin: 0 0 0.28rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.86rem;
+      margin: 0.4rem 0 0.9rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.38rem 0.45rem;
+      border-bottom: 1px solid #e8e4dc;
+      vertical-align: top;
+    }
+    th { color: #5c5650; font-weight: 600; width: 42%; }
+    .fuss {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.78rem;
+      color: #5c5650;
+      margin-top: 1.1rem;
+    }
+    .seitenfuss { display: none; }
+    @media print {
+      .seitenfuss {
+        display: block;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 8pt;
+        color: #5c5650;
+      }
+      .seitenfuss::after { content: "Seite " counter(page); }
+    }
+    .no-print {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      margin: 0 0 1rem;
+    }
+    .no-print button {
+      font: 700 0.9rem ui-sans-serif, system-ui, sans-serif;
+      background: #b54a1e;
+      color: #fff;
+      border: 0;
+      border-radius: 10px;
+      padding: 0.55rem 1.1rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <p class="hinweis-screen">Zum Gespräch und Ausdrucken – nicht öffentlich als Werbung gedacht.</p>
+  <div class="no-print">
+    <button type="button" onclick="window.print()">Drucken</button>
+  </div>
+  <article class="blatt">
+    <p class="kicker">Ein Blatt zum Gespräch</p>
+    <h1>Yoga-Akademie Austria und K2</h1>
+    <p>
+      Ich habe bei euch die Ausbildung gemacht und unterrichtet.
+      Deshalb geht es hier nicht um „Software von draußen“, sondern um etwas,
+      das ich aus eurem Alltag kenne: viele Lehrgänge, viele Orte, kleine Gruppen.
+    </p>
+
+    <h2>Was ihr schon sehr gut habt</h2>
+    <p>
+      Die Website, Ö-CERT, Cert NÖ, Yoga Alliance, 300- und 500-Stunden-Wege,
+      Spezialausbildungen, Präsenz und Online – das bleibt euer Gesicht nach außen.
+      Daran soll niemand rütteln.
+    </p>
+
+    <h2>Wo eine ruhige Arbeitsfläche helfen kann</h2>
+    <p>
+      Pro Lehrgang (zum Beispiel Wels 300 Stunden, Kleingruppe 6–14):
+      ein klarer Ort für die Gruppe, die Termine, die Unterlagen und die Anmeldung –
+      ohne dass Teilnehmer in zehn Links verloren gehen.
+    </p>
+    <table>
+      <thead>
+        <tr><th>Euer Lehrgang</th><th>Einfach so nutzen</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Willkommen zur Gruppe</td><td>Eingangsseite mit Bild und einem Satz</td></tr>
+        <tr><td>Wochenenden / Blöcke</td><td>Termine wie bei einer Veranstaltungsreihe</td></tr>
+        <tr><td>Teilnehmer und Lehrende</td><td>Karten der Gruppe (wie Mitglieder)</td></tr>
+        <tr><td>Infoabend, Skript-Hinweis, QR</td><td>Einladung und Druckblatt</td></tr>
+        <tr><td>Anmeldung / Anzahlung</td><td>eine Kasse, klar und sachlich</td></tr>
+        <tr><td>Abschluss</td><td>Teilnahmebestätigung / Zertifikat zum Ausdrucken</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Was es nicht ist</h2>
+    <ul>
+      <li>Kein Ersatz für eure Website und eure Lehre.</li>
+      <li>Kein Lernportal und keine 1200 Seiten Skript im Netz.</li>
+      <li>Keine ständige Betreuung von außen – das System soll von selbst stehen.</li>
+    </ul>
+
+    <h2>Vorschlag zum Ausprobieren</h2>
+    <p>
+      Ein Lehrgang, ein Ort, eine Gruppe – zum Anschauen.
+      Wenn es sich für euch richtig anfühlt, können weitere Lehrgänge dieselbe Form nutzen.
+      Eine Struktur, viele Gruppen. Nicht zehn verschiedene Wege.
+    </p>
+    <p class="fuss">
+      Georg Kreinecker · kgm solution / K2<br />
+      Zum Weitergeben an Martina, Doris oder die Institutsleitung – wenn der Zeitpunkt passt.
+    </p>
+  </article>
+  <div class="seitenfuss"></div>
+</body>
+</html>

@@ -94,6 +94,13 @@ const SCHNELLZUGRIFF: Zettel[] = [
     to: '/k2-eroeffnung/besucherliste-vorname-name-interesse-a4.html',
   },
   {
+    id: 'sq-yoga-akademie-austria',
+    titel: 'Yoga-Akademie Austria',
+    zweck: 'Gesprächsblatt · eine Seite · Drucken',
+    to: '/texte-schreibtisch/yoga-akademie-austria-k2-gespraech.html',
+    showDruckWeiterleiten: true,
+  },
+  {
     id: 'sq-oeffnungszeiten',
     titel: 'Flyer Öffnungszeiten',
     zweck: 'A5 · QR · Besuch vereinbaren · Drucken',
@@ -456,6 +463,13 @@ const BEREICHE: Bereich[] = [
     akzent: '#6d28d9',
     zoneBg: 'linear-gradient(145deg, rgba(124,58,237,0.08), rgba(245,243,255,0.98))',
     zettel: [
+      {
+        id: 'yoga-akademie-austria-k2',
+        titel: 'Yoga-Akademie Austria',
+        zweck: 'Gesprächsblatt · eine Seite',
+        to: '/texte-schreibtisch/yoga-akademie-austria-k2-gespraech.html',
+        showDruckWeiterleiten: true,
+      },
       {
         id: 'texts-pm-kurz',
         titel: 'Präsentationsmappe Kurz',
