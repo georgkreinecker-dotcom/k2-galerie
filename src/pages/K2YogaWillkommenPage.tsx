@@ -9,8 +9,40 @@ import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBui
 const MUSTER_BILD =
   'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1400&q=80'
 
+const TEAL = '#0f766e'
+
+const printStyles = `
+  @media print {
+    .yoga-auftritt-no-print { display: none !important; }
+    .yoga-auftritt .galerie-tenant-page > div:first-of-type { display: none !important; }
+    .yoga-auftritt .galerie-tenant-page {
+      min-height: auto !important;
+      max-width: none !important;
+      padding: 0 !important;
+      background: #fff !important;
+      color: #1c1a18 !important;
+    }
+    .yoga-auftritt header {
+      min-height: 52mm !important;
+      page-break-inside: avoid;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .yoga-auftritt img {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .yoga-auftritt a[href^="#"],
+    .yoga-auftritt a[href*="#willkommen"],
+    .yoga-auftritt button { display: none !important; }
+    .yoga-auftritt a { color: #0f766e !important; }
+    .seitenfuss { display: none; }
+    @page { margin: 10mm 12mm 12mm 12mm; size: A4; }
+  }
+`
+
 /**
- * Willkommen zur Ansicht: so sähe der Internetauftritt einer Absolventin aus (gleiche Form wie Galerie).
+ * Willkommen zur Ansicht: so sähe der Internetauftritt einer Absolventin aus.
  */
 export default function K2YogaWillkommenPage() {
   const willkommenPath = PROJECT_ROUTES['k2-yoga'].willkommen
@@ -18,6 +50,14 @@ export default function K2YogaWillkommenPage() {
   const [qrDataUrl, setQrDataUrl] = useState('')
   const shareUrl =
     typeof window !== 'undefined' ? `${window.location.origin}${willkommenPath}` : willkommenPath
+
+  useEffect(() => {
+    const prev = document.title
+    document.title = 'Yoga bei Anna – Beispiel-Auftritt'
+    return () => {
+      document.title = prev
+    }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -35,34 +75,52 @@ export default function K2YogaWillkommenPage() {
   }, [shareUrl, qrVersionTs])
 
   return (
-    <div>
+    <div className="yoga-auftritt">
+      <style>{printStyles}</style>
       <div
+        className="yoga-auftritt-no-print"
         style={{
           fontFamily: 'ui-sans-serif, system-ui, sans-serif',
           fontSize: '0.82rem',
           padding: '0.55rem 1rem',
-          background: '#f5f3ff',
-          color: '#5b21b6',
+          background: '#f0fdfa',
+          color: '#0f766e',
           display: 'flex',
           flexWrap: 'wrap',
           gap: '0.65rem 1rem',
           alignItems: 'center',
-          borderBottom: '1px solid #ddd6fe',
+          borderBottom: '1px solid #99f6e4',
         }}
       >
-        <Link to={K2_YOGA_ROUTE} style={{ color: '#5b21b6', fontWeight: 700, textDecoration: 'none' }}>
-          ← K2 YOGA
+        <Link to={PROJECT_ROUTES['k2-yoga'].praesentationsmappe} style={{ color: TEAL, fontWeight: 700, textDecoration: 'none' }}>
+          ← Mappe
         </Link>
-        <Link to={PROJECT_ROUTES['k2-yoga'].admin} style={{ color: '#5b21b6', fontWeight: 700, textDecoration: 'none' }}>
-          Admin
+        <Link to={K2_YOGA_ROUTE} style={{ color: TEAL, fontWeight: 700, textDecoration: 'none' }}>
+          Skizze
         </Link>
-        <span>Ansicht · so sähe ein Auftritt aus (Muster, nicht echte Person)</span>
+        <button
+          type="button"
+          onClick={() => window.print()}
+          style={{
+            padding: '0.4rem 0.75rem',
+            background: TEAL,
+            color: '#fff',
+            border: 'none',
+            borderRadius: 6,
+            fontWeight: 700,
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+          }}
+        >
+          Als PDF drucken
+        </button>
+        <span>Muster-Auftritt · nicht eine echte Person</span>
       </div>
       <TenantHomepageTemplate
         tenantId="yoga-ansicht"
         title="Yoga bei Anna"
         subtext="Absolventin · Yoga-Akademie Austria"
-        intro="Willkommen. Hier findest du nächste Stunden, Ort und Kontakt – derselbe Auftritt wie eine Galerie, mit meinem Namen."
+        intro="Willkommen. Hier findest du nächste Stunden, Ort und Kontakt – mein Auftritt im Netz."
         adminUrl={PROJECT_ROUTES['k2-yoga'].admin}
         shareUrl={willkommenPath}
         artworks={[]}
@@ -85,6 +143,9 @@ export default function K2YogaWillkommenPage() {
         shopUrl="#shop-bereich"
         galleryEnterUrl={`${willkommenPath}#willkommen`}
         galleryHintText="Termine und Kontakt – Angebote kommen dazu, wenn du sie einträgst."
+        galleryEnterTitle="Stunden & Angebote"
+        galleryEnterButtonLabel="Zur Übersicht →"
+        artistSectionTitle="Lehrerin"
         galleryPageTitle="Stunden & Angebote"
         galleryCloseUrl={willkommenPath}
         impressumName="Yoga bei Anna"

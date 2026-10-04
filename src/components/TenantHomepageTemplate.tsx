@@ -103,6 +103,11 @@ type TenantHomepageTemplateProps = {
   qrDataUrl?: string
   impressumName?: string
   hideAdminEntry?: boolean
+  /** Überschrift der Spotlight-Sektion. Standard: Künstler:in. */
+  artistSectionTitle?: string
+  /** Karten-Überschrift neben dem Rundgang. Standard: In die Galerie. */
+  galleryEnterTitle?: string
+  galleryEnterButtonLabel?: string
   /** Sektion „Künstler:in“ mit Vita-Link (Mandanten-Homepage / LK2-Parität). */
   artistSpotlight?: TenantArtistSpotlight | null
 }
@@ -389,7 +394,7 @@ export function TenantHomepageTemplate(props: TenantHomepageTemplateProps) {
               letterSpacing: '-0.02em',
             }}
           >
-            Künstler:in
+            {props.artistSectionTitle || 'Künstler:in'}
           </h2>
           <div
             style={{
@@ -483,7 +488,7 @@ export function TenantHomepageTemplate(props: TenantHomepageTemplateProps) {
       <section id="willkommen" style={{ marginBottom: '1.5rem' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem', alignItems: 'stretch' }}>
           <div style={{ background: TEMPLATE.sectionBg, border: TEMPLATE.sectionBorder, borderRadius: TEMPLATE.sectionRadius, padding: '1rem', textAlign: 'center' }}>
-            <h3 style={{ margin: '0 0 0.55rem', fontSize: '1.05rem', color: props.liveText }}>In die Galerie</h3>
+            <h3 style={{ margin: '0 0 0.55rem', fontSize: '1.05rem', color: props.liveText }}>{props.galleryEnterTitle || 'In die Galerie'}</h3>
             <div style={{ width: '100%', height: welcomeImageHeightPx, borderRadius: 10, overflow: 'hidden', marginBottom: '0.8rem', border: `1px solid ${props.liveAccent}33`, background: `linear-gradient(135deg, ${props.liveBg2}, ${props.liveBg1})` }}>
               {entranceImage ? (
                 <img src={entranceImage} alt="Galerie" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
@@ -494,10 +499,10 @@ export function TenantHomepageTemplate(props: TenantHomepageTemplateProps) {
               )}
             </div>
             <Link to={props.galleryEnterUrl || '#werke'} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0.65rem 1.1rem', borderRadius: 10, textDecoration: 'none', background: `linear-gradient(135deg, ${props.liveAccent} 0%, ${props.liveAccent}cc 100%)`, color: '#fff', fontWeight: 700 }}>
-              Herzlich willkommen - Galerie betreten →
+              {props.galleryEnterButtonLabel || 'Herzlich willkommen - Galerie betreten →'}
             </Link>
             <p style={{ margin: '0.6rem 0 0', fontSize: '0.82rem', color: props.liveMuted }}>
-              In der Galerie findest du auch unseren Shop.
+              {galleryHintText}
             </p>
           </div>
 

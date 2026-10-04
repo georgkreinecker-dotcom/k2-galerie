@@ -1,9 +1,9 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Yoga – kleine Präsentationsmappe für Kundinnen, ohne K2.
+**Was wir JETZT tun:** Yoga – Beispiel-Auftritt druckbar.
 
-**Einordnung:** Kurzmappe Teal/Weiß wie die anderen Mappen. Akademie-Sprache, Beispiel-Auftritt per QR.
+**Einordnung:** Willkommen wie Mappe: Button „Als PDF drucken“, Leisten weg, Muster Anna.
 
-**Nächster Schritt:** Georg druckt oder zeigt die Mappe.
+**Nächster Schritt:** Georg druckt Auftritt und Mappe.
 
-**Letzter Stand:** 04.10.26 – Mappe `/projects/k2-yoga/praesentationsmappe`.
+**Letzter Stand:** 04.10.26 – Druck auf `/projects/k2-yoga/willkommen`.
