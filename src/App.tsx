@@ -34,6 +34,7 @@ import HundredGenerationPage from './pages/HundredGenerationPage'
 import HundredGenerationFlaechePage from './pages/HundredGenerationFlaechePage'
 import HundredGenerationEntwurfsmappePage from './pages/HundredGenerationEntwurfsmappePage'
 import K2YogaPage from './pages/K2YogaPage'
+import K2YogaWillkommenPage from './pages/K2YogaWillkommenPage'
 import BenutzerHandbuchPage from './pages/BenutzerHandbuchPage'
 import Vk2HandbuchPage from './pages/Vk2HandbuchPage'
 import MobileConnectPage from './pages/MobileConnectPage'
@@ -878,6 +879,7 @@ function App() {
       <Route path={HUNDRED_GENERATION_ROUTE} element={<HundredGenerationPage />} />
       <Route path={HUNDRED_GENERATION_FLAECHE_ROUTE} element={<HundredGenerationFlaechePage />} />
       <Route path={HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE} element={<HundredGenerationEntwurfsmappePage />} />
+      <Route path={PROJECT_ROUTES['k2-yoga'].willkommen} element={<K2YogaWillkommenPage />} />
       <Route path={K2_YOGA_ROUTE} element={<K2YogaPage />} />
       {/* K2 Markt – eigenständiges Projekt (Datenquelle ök2). Homepage = Arbeitsoberfläche = manuell arbeiten; netzfähig wie ök2 und K2 Familie */}
       <Route path={PROJECT_ROUTES['k2-markt'].home} element={<K2MarktSchichtPage />} />

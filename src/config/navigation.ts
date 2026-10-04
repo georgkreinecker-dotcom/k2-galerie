@@ -288,6 +288,7 @@ export const PROJECT_ROUTES = {
     id: 'k2-yoga',
     name: 'K2 YOGA',
     home: K2_YOGA_ROUTE,
+    willkommen: `${K2_YOGA_ROUTE}/willkommen`,
   },
   /** K2 Markt – von Beginn an eigenständiges Projekt definiert (wie K2 Familie), nicht Teil von K2 Galerie. Datenquelle: ök2 (mök2, Muster). Homepage = Arbeitsoberfläche; netzfähig wie ök2 und K2 Familie. */
   'k2-markt': {

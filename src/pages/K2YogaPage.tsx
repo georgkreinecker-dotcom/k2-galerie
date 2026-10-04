@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
+import { K2_GALERIE_APF_EINSTIEG, PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 
 /**
@@ -35,7 +35,8 @@ export default function K2YogaPage() {
           flex-wrap: wrap;
           margin: 0 0 0.85rem;
         }
-        .k2-yoga-page .yoga-actions button {
+        .k2-yoga-page .yoga-actions button,
+        .k2-yoga-page .yoga-actions a {
           font: 700 0.88rem ui-sans-serif, system-ui, sans-serif;
           background: #b54a1e;
           color: #fff;
@@ -43,7 +44,10 @@ export default function K2YogaPage() {
           border-radius: 10px;
           padding: 0.5rem 1rem;
           cursor: pointer;
+          text-decoration: none;
+          display: inline-block;
         }
+        .k2-yoga-page .yoga-actions a { background: #0f766e; }
         .k2-yoga-page .yoga-blatt {
           background: #fffefb;
           padding: 1.15rem 1.3rem 1.2rem;
@@ -118,8 +122,10 @@ export default function K2YogaPage() {
       <div className="yoga-shell">
         <nav className="yoga-nav" aria-label="APf">
           <Link to={K2_GALERIE_APF_EINSTIEG}>← APf</Link>
+          <Link to={PROJECT_ROUTES['k2-yoga'].willkommen}>Willkommen ansehen</Link>
         </nav>
         <div className="yoga-actions">
+          <Link to={PROJECT_ROUTES['k2-yoga'].willkommen}>Willkommen ansehen</Link>
           <button type="button" onClick={() => window.print()}>Drucken</button>
         </div>
         <article className="yoga-blatt">

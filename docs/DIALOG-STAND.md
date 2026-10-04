@@ -1,11 +1,9 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** K2 YOGA – auch die schon fertigen Lehrer (Hunderte) per Einladung.
+**Was wir JETZT tun:** K2 YOGA – Willkommen-Seite zur Ansicht.
 
-**Einordnung:** Dieselbe Galerie-Form. Nicht 400 leere Häuser. Opt-in / persönlicher Link.
+**Einordnung:** Dieselbe Galerie-Form (TenantHomepageTemplate). Muster „Yoga bei Anna“, keine K2-Daten.
 
-**Nächster Schritt:** Georg sagt, ob Einladung für Bestand der nächste Bau-Schritt nach dem Lehrgang-Pilot ist.
+**Nächster Schritt:** Georg schaut die Ansicht an.
 
-**Letzter Stand:** 04.10.26 – Bestand-Absolventen in der Skizze.
-
----
+**Letzter Stand:** 04.10.26 – Willkommen-Ansicht `/projects/k2-yoga/willkommen`.
