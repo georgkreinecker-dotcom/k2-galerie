@@ -16,11 +16,13 @@ import {
   YOGA_DETAIL_PILOT,
 } from '../config/yogaDetailplan'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
+import { YOGA_FONT_HREF, YOGA_MARKE } from '../config/yogaAkademieMarke'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
-const TEAL = '#0f766e'
-const TEAL_DARK = '#0c5c55'
-const TEAL_LIGHT = '#0d9488'
+const GOLD = YOGA_MARKE.gold
+const GOLD_DARK = YOGA_MARKE.goldDark
+const GOLD_SOFT = YOGA_MARKE.goldSoft
+const VIOLETT = YOGA_MARKE.violett
 
 const printStyles = `
   @media print {
@@ -28,13 +30,13 @@ const printStyles = `
     body { background: #fff !important; }
     .pm-wrap { background: #fff !important; color: #1c1a18 !important; padding: 0 !important; margin: 0 !important; max-width: none !important; }
     .pm-wrap > div { max-width: none !important; padding: 8mm 12mm !important; box-shadow: none !important; }
-    .pm-teal-cover { background: #0c5c55 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color: #fff !important; padding: 5mm 9mm !important; border-radius: 0 !important; margin-bottom: 4mm !important; }
+    .pm-teal-cover { background: ${GOLD_DARK} !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color: #fff !important; padding: 5mm 9mm !important; border-radius: 0 !important; margin-bottom: 4mm !important; }
     .pm-teal-cover h1 { font-size: 16pt !important; margin: 0 !important; color: #fff !important; }
     .pm-teal-cover .pm-slogan { font-size: 9.5pt !important; margin: 2mm 0 0 !important; color: #fff !important; }
     .pm-teal-cover .pm-tagline { font-size: 8.5pt !important; margin: 1mm 0 0 !important; color: #fff !important; }
     .pm-body { font-size: 8.5pt !important; line-height: 1.32 !important; }
     .pm-body p, .pm-body h2, .pm-body li { margin: 0 0 1.8mm !important; }
-    .pm-body h2 { color: ${TEAL} !important; font-size: 9.5pt !important; }
+    .pm-body h2 { color: ${GOLD} !important; font-size: 9.5pt !important; }
     .pm-body ul { margin: 0 0 2mm !important; padding-left: 4mm !important; }
     table { font-size: 7.5pt !important; }
     .pm-qr-block { margin-top: 3mm !important; padding-top: 3mm !important; }
@@ -53,6 +55,7 @@ const printStyles = `
 export default function YogaDetailplanPage() {
   const willkommenPath = PROJECT_ROUTES['k2-yoga'].willkommen
   const adminPath = PROJECT_ROUTES['k2-yoga'].admin
+  const akademiePath = PROJECT_ROUTES['k2-yoga'].akademie
   const mappePath = PROJECT_ROUTES['k2-yoga'].praesentationsmappe
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
   const [qrDataUrl, setQrDataUrl] = useState('')
@@ -82,15 +85,16 @@ export default function YogaDetailplanPage() {
   }, [shareUrl, qrVersionTs])
 
   return (
-    <div className="pm-wrap" style={{ minHeight: '100vh', background: '#faf8f5', color: '#1c1a18' }}>
+    <div className="pm-wrap" style={{ minHeight: '100vh', background: YOGA_MARKE.bg, color: YOGA_MARKE.text, fontFamily: YOGA_MARKE.font }}>
+      <link rel="stylesheet" href={YOGA_FONT_HREF} />
       <style>{printStyles}</style>
-      <div style={{ maxWidth: 640, margin: '0 auto', padding: '2rem 1.5rem', background: '#fffefb', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+      <div style={{ maxWidth: 640, margin: '0 auto', padding: '2rem 1.5rem', background: YOGA_MARKE.bgCard, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
         <div
           className="pm-no-print"
           style={{
             marginBottom: '1rem',
             padding: '0.75rem 0',
-            borderBottom: `1px solid ${TEAL_LIGHT}40`,
+            borderBottom: `1px solid ${GOLD_SOFT}`,
             display: 'flex',
             gap: '0.75rem',
             flexWrap: 'wrap',
@@ -103,23 +107,27 @@ export default function YogaDetailplanPage() {
             onClick={() => window.print()}
             style={{
               padding: '0.4rem 0.75rem',
-              background: TEAL,
-              color: '#fff',
+              background: GOLD_SOFT,
+              color: VIOLETT,
               border: 'none',
-              borderRadius: 6,
-              fontWeight: 600,
+              borderRadius: 10,
+              fontWeight: 700,
               cursor: 'pointer',
+              fontFamily: 'inherit',
             }}
           >
             Als PDF drucken
           </button>
-          <Link to={adminPath} style={{ color: TEAL_LIGHT, fontWeight: 600, textDecoration: 'none' }}>
-            Arbeitsoberfläche →
+          <Link to={akademiePath} style={{ color: VIOLETT, fontWeight: 600, textDecoration: 'none' }}>
+            Fläche Akademie →
           </Link>
-          <Link to={willkommenPath} style={{ color: TEAL_LIGHT, fontWeight: 600, textDecoration: 'none' }}>
+          <Link to={adminPath} style={{ color: VIOLETT, fontWeight: 600, textDecoration: 'none' }}>
+            Fläche Absolvent:in →
+          </Link>
+          <Link to={willkommenPath} style={{ color: VIOLETT, fontWeight: 600, textDecoration: 'none' }}>
             Beispiel-Auftritt →
           </Link>
-          <Link to={mappePath} style={{ color: TEAL_LIGHT, fontWeight: 600, textDecoration: 'none' }}>
+          <Link to={mappePath} style={{ color: VIOLETT, fontWeight: 600, textDecoration: 'none' }}>
             Kurzmappe →
           </Link>
         </div>
@@ -127,7 +135,7 @@ export default function YogaDetailplanPage() {
         <div
           className="pm-teal-cover"
           style={{
-            background: TEAL_DARK,
+            background: GOLD_DARK,
             color: '#fff',
             padding: 'clamp(1.75rem, 4vw, 2.6rem) 1.4rem',
             borderRadius: 12,
@@ -135,6 +143,7 @@ export default function YogaDetailplanPage() {
             textAlign: 'center',
           }}
         >
+          <img src={YOGA_MARKE.logo} alt="" width={88} height={58} style={{ display: 'block', margin: '0 auto 0.65rem', objectFit: 'contain' }} />
           <span
             style={{
               padding: '0.25rem 0.55rem',
@@ -159,6 +168,7 @@ export default function YogaDetailplanPage() {
           >
             Yoga-Akademie Austria
           </p>
+          <p style={{ margin: '0.35rem 0 0', fontSize: '0.9rem', fontWeight: 600, color: GOLD_SOFT }}>{YOGA_MARKE.slogan}</p>
           <h1
             style={{
               fontSize: 'clamp(1.45rem, 3.8vw, 2rem)',
@@ -183,7 +193,7 @@ export default function YogaDetailplanPage() {
 
           {YOGA_DETAIL_ABSchnitte.map((a) => (
             <div key={a.nr}>
-              <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.1rem 0 0.35rem' }}>
+              <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: GOLD, margin: '1.1rem 0 0.35rem' }}>
                 {a.nr}. {a.titel}
               </h2>
               <p style={{ fontSize: '0.95rem', lineHeight: 1.5, margin: '0 0 0.35rem' }}>{a.absatz}</p>
@@ -199,7 +209,7 @@ export default function YogaDetailplanPage() {
             </div>
           ))}
 
-          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.1rem 0 0.35rem' }}>8. Pilotplan</h2>
+          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: GOLD, margin: '1.1rem 0 0.35rem' }}>8. Pilotplan</h2>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', margin: '0 0 0.85rem' }}>
             <thead>
               <tr>
@@ -219,7 +229,7 @@ export default function YogaDetailplanPage() {
             </tbody>
           </table>
 
-          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.1rem 0 0.35rem' }}>9. Aufwand</h2>
+          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: GOLD, margin: '1.1rem 0 0.35rem' }}>9. Aufwand</h2>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', margin: '0 0 0.85rem' }}>
             <thead>
               <tr>
@@ -239,7 +249,7 @@ export default function YogaDetailplanPage() {
             </tbody>
           </table>
 
-          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.1rem 0 0.35rem' }}>10. Was bewusst nicht gebaut wird</h2>
+          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: GOLD, margin: '1.1rem 0 0.35rem' }}>10. Was bewusst nicht gebaut wird</h2>
           <ul style={{ margin: '0 0 0.4rem', paddingLeft: '1.15rem', lineHeight: 1.45 }}>
             {YOGA_DETAIL_NICHT.map((p) => (
               <li key={p} style={{ marginBottom: '0.2rem' }}>
@@ -248,7 +258,7 @@ export default function YogaDetailplanPage() {
             ))}
           </ul>
 
-          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.1rem 0 0.35rem' }}>11. Was wir zum Gespräch mitbringen</h2>
+          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: GOLD, margin: '1.1rem 0 0.35rem' }}>11. Was wir zum Gespräch mitbringen</h2>
           <ul style={{ margin: '0 0 0.4rem', paddingLeft: '1.15rem', lineHeight: 1.45 }}>
             {YOGA_DETAIL_MITBRINGEN.map((p) => (
               <li key={p} style={{ marginBottom: '0.2rem' }}>
@@ -257,7 +267,7 @@ export default function YogaDetailplanPage() {
             ))}
           </ul>
 
-          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.1rem 0 0.35rem' }}>12. Nächste Schritte gemeinsam</h2>
+          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: GOLD, margin: '1.1rem 0 0.35rem' }}>12. Nächste Schritte gemeinsam</h2>
           <ol style={{ margin: '0 0 0.4rem', paddingLeft: '1.2rem', lineHeight: 1.45 }}>
             {YOGA_DETAIL_NAECHSTE.map((p) => (
               <li key={p} style={{ marginBottom: '0.2rem' }}>
@@ -272,7 +282,7 @@ export default function YogaDetailplanPage() {
           style={{
             marginTop: '0.5rem',
             paddingTop: '1rem',
-            borderTop: `1px solid ${TEAL_LIGHT}40`,
+            borderTop: `1px solid ${GOLD_SOFT}`,
             display: 'flex',
             gap: '0.9rem',
             alignItems: 'center',
@@ -280,14 +290,17 @@ export default function YogaDetailplanPage() {
         >
           {qrDataUrl ? <img src={qrDataUrl} alt="" width={110} height={110} style={{ display: 'block', flexShrink: 0 }} /> : null}
           <div style={{ fontSize: '0.88rem', lineHeight: 1.45, color: '#5c5650' }}>
-            <strong style={{ color: '#1c1a18' }}>Beispiel-Auftritt + Arbeitsoberfläche</strong>
-            <p style={{ margin: '0.25rem 0 0' }}>QR = so sieht das Haus aus. Daneben: so pflegen Absolvent:innen Stunden und Texte.</p>
+            <strong style={{ color: '#1c1a18' }}>Beispiel-Auftritt + beide Arbeitsflächen</strong>
+            <p style={{ margin: '0.25rem 0 0' }}>QR = so sieht das Haus aus. Daneben: Büro der Akademie und Fläche der Absolventin.</p>
             <div className="pm-no-print" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.35rem' }}>
-              <Link to={willkommenPath} style={{ color: TEAL, fontWeight: 700, textDecoration: 'none' }}>
+              <Link to={willkommenPath} style={{ color: VIOLETT, fontWeight: 700, textDecoration: 'none' }}>
                 Auftritt →
               </Link>
-              <Link to={adminPath} style={{ color: TEAL, fontWeight: 700, textDecoration: 'none' }}>
-                Arbeitsoberfläche →
+              <Link to={akademiePath} style={{ color: VIOLETT, fontWeight: 700, textDecoration: 'none' }}>
+                Fläche Akademie →
+              </Link>
+              <Link to={adminPath} style={{ color: VIOLETT, fontWeight: 700, textDecoration: 'none' }}>
+                Fläche Absolvent:in →
               </Link>
             </div>
           </div>
@@ -298,7 +311,7 @@ export default function YogaDetailplanPage() {
           style={{
             marginTop: '1.25rem',
             paddingTop: '0.85rem',
-            borderTop: `1px solid ${TEAL_LIGHT}28`,
+            borderTop: `1px solid ${GOLD_SOFT}`,
             fontSize: '0.75rem',
             color: '#5c5650',
             lineHeight: 1.45,

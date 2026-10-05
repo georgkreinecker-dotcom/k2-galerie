@@ -1,9 +1,9 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** K2 YOGA – Akademie-Unterlagen liegen bereit.
+**Was wir JETZT tun:** K2 YOGA – Kurs-Oberfläche pro Lehrgang.
 
-**Einordnung:** Detailplan (druckbar) + Arbeitsoberfläche + Beispiel-Auftritt + Kurzmappe.
+**Einordnung:** Fläche Akademie + Marke + jetzt einzelne Kurse (Teilnehmer, Module, Gruppen-Auftritt, Abschluss).
 
-**Nächster Schritt:** Georg zeigt / druckt für die Akademie.
+**Nächster Schritt:** Georg öffnet Fläche Akademie → Kurs öffnen (z. B. Wels).
 
-**Letzter Stand:** 05.10.26 – Commit `4e7a7db6` auf GitHub.
+**Letzter Stand:** 05.10.26 – Kurs-Oberfläche eingebaut (Wels + Graz).

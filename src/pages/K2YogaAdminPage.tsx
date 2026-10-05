@@ -165,7 +165,10 @@ export default function K2YogaAdminPage() {
         <Link to={PROJECT_ROUTES['k2-yoga'].praesentationsmappe} style={{ color: '#5b21b6', fontWeight: 700, textDecoration: 'none' }}>
           Kurzmappe
         </Link>
-        <span>Arbeitsoberfläche · so arbeiten Absolvent:innen (Muster „Yoga bei Anna“)</span>
+        <Link to={PROJECT_ROUTES['k2-yoga'].akademie} style={{ color: '#5b21b6', fontWeight: 700, textDecoration: 'none' }}>
+          Fläche Akademie
+        </Link>
+        <span>Arbeitsfläche Absolvent:in · so pflegt Anna Stunden (Muster)</span>
       </div>
 
       <div
@@ -182,6 +185,7 @@ export default function K2YogaAdminPage() {
           <AdminBrandLogo title="Yoga bei Anna" />
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
             {chip('🖼️ Auftritt ansehen', willkommen)}
+            {chip('🏫 Fläche Akademie', PROJECT_ROUTES['k2-yoga'].akademie)}
             {chip('💰 Kasse', `${adminBase}?tab=kassa`, true)}
             {chip('📒 Buchhaltung', `${adminBase}?tab=buchhaltung`)}
           </div>

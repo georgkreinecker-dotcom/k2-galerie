@@ -38,6 +38,8 @@ import K2YogaWillkommenPage from './pages/K2YogaWillkommenPage'
 import K2YogaAdminPage from './pages/K2YogaAdminPage'
 import YogaPraesentationsmappePage from './pages/YogaPraesentationsmappePage'
 import YogaDetailplanPage from './pages/YogaDetailplanPage'
+import K2YogaAkademiePage from './pages/K2YogaAkademiePage'
+import K2YogaKursPage from './pages/K2YogaKursPage'
 import BenutzerHandbuchPage from './pages/BenutzerHandbuchPage'
 import Vk2HandbuchPage from './pages/Vk2HandbuchPage'
 import MobileConnectPage from './pages/MobileConnectPage'
@@ -886,6 +888,8 @@ function App() {
       <Route path={PROJECT_ROUTES['k2-yoga'].admin} element={<K2YogaAdminPage />} />
       <Route path={PROJECT_ROUTES['k2-yoga'].praesentationsmappe} element={<YogaPraesentationsmappePage />} />
       <Route path={PROJECT_ROUTES['k2-yoga'].detailplan} element={<YogaDetailplanPage />} />
+      <Route path={PROJECT_ROUTES['k2-yoga'].akademie} element={<K2YogaAkademiePage />} />
+      <Route path={PROJECT_ROUTES['k2-yoga'].kurs} element={<K2YogaKursPage />} />
       <Route path={K2_YOGA_ROUTE} element={<K2YogaPage />} />
       {/* K2 Markt – eigenständiges Projekt (Datenquelle ök2). Homepage = Arbeitsoberfläche = manuell arbeiten; netzfähig wie ök2 und K2 Familie */}
       <Route path={PROJECT_ROUTES['k2-markt'].home} element={<K2MarktSchichtPage />} />

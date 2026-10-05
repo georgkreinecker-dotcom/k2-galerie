@@ -86,15 +86,12 @@ export const YOGA_DETAIL_ABSchnitte: YogaDetailAbschnitt[] = [
   },
   {
     nr: '7',
-    titel: 'Die Arbeitszentrale – Bereiche',
-    absatz: 'Dieselbe Übersicht wie ein professioneller kleiner Betrieb – mit Yoga-Wörtern:',
+    titel: 'Zwei Arbeitsflächen',
+    absatz: 'Dieselbe Übersicht, zwei Rollen – nichts vermischt:',
     punkte: [
-      'Stunden & Angebote – Foto, Titel, Preis; ein Klick, und es steht im Auftritt.',
-      'Auftritt gestalten und texten – Farben, Willkommen, Texte.',
-      'Einstellungen – Name, Ort, Kontakt, Sicherung.',
-      'Listen & Übersicht – druckbare Listen, Belegung.',
-      'Termine & Medienplanung – Kurse, Einladung, QR.',
-      'Optional: Kasse und Buchhaltung, wenn der Betrieb wächst.',
+      'Fläche Akademie: Lehrgänge anlegen, Teilnehmerliste, Auftritt öffnen, Alumni-Einladung.',
+      'Fläche Absolvent:in: Stunden und Angebote, Texte, Termine, optional Kasse.',
+      'Akademie-Website bleibt das große Haus – diese Flächen ersetzen sie nicht.',
     ],
   },
 ]
@@ -136,7 +133,8 @@ export const YOGA_DETAIL_MITBRINGEN: string[] = [
   'Kurzmappe – der kurze Pitch auf einer Seite.',
   'Dieser Detailplan – Ablauf, Pilot, Aufwand.',
   'Beispiel-Auftritt „Yoga bei Anna“ – so sieht es aus (Muster).',
-  'Ansicht der Arbeitszentrale – was Absolvent:innen später selbst bedienen.',
+  'Arbeitsfläche Akademie – so arbeitet das Büro (Lehrgänge, Listen, Öffnen).',
+  'Arbeitsfläche Absolvent:in – so pflegt Anna Stunden und Texte.',
 ]
 
 export const YOGA_DETAIL_NAECHSTE: string[] = [
