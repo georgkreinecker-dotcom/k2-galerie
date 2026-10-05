@@ -7,4 +7,5 @@
 **Nächster Schritt:** Georg öffnet Gesprächsmappe → Link kopieren → nach Telefonat senden.
 
 **Was zuletzt gemacht:**
-- Gesprächsmappe `/projects/k2-yoga/gespraechsmappe` – in Arbeit (Commit folgt)
+- Gesprächsmappe – Commit: `65cc0047` ✅ auf GitHub
+- Stand kommt mit dem Build (Push).
