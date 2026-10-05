@@ -7,4 +7,5 @@
 **Nächster Schritt:** Georg vergleicht Akademie vs. Absolvent/Auftritt optisch.
 
 **Was zuletzt gemacht:**
-- Absolvent-Farblinie – Commit folgt
+- Absolvent-Farblinie Petrol – Commit: `a3dc3a21` ✅ auf GitHub
+- Stand kommt mit dem Build (Push).
