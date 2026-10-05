@@ -1,9 +1,9 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Session zu – Yoga-Projekt liegt bereit.
+**Was wir JETZT tun:** K2 YOGA – Detailplan + Arbeitsoberfläche für Akademie-Vorstellung.
 
-**Einordnung:** K2 YOGA im Smart Panel: Skizze, Willkommen (druckbar), Admin-Hub, Kundinnen-Mappe ohne K2.
+**Einordnung:** Kurzmappe allein reicht nicht; Akademie braucht Plan + sichtbare UI „so arbeiten sie“.
 
-**Nächster Schritt:** Georg druckt Mappe und Beispiel-Auftritt, oder nächstes Mal weiter an der Akademie-Idee.
+**Nächster Schritt:** Georg druckt Detailplan und zeigt Arbeitsoberfläche / Auftritt.
 
-**Letzter Stand:** 04.10.26 Abend – Druck-Auftritt gepusht (`756d7809`).
+**Letzter Stand:** 05.10.26 – Detailplan + Admin-UI für Vorzeigen.

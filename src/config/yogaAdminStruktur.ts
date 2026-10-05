@@ -36,7 +36,7 @@ export const YOGA_ADMIN_HUB_LINKS: YogaHubKachel[] = [
   {
     emoji: '⚙️',
     name: 'Einstellungen',
-    beschreibung: 'Name, Ort, Kontakt, Backup – wie bei der Galerie.',
+    beschreibung: 'Name, Ort, Kontakt, Sicherung – einmal pflegen, überall richtig.',
     tab: 'einstellungen',
   },
 ]
@@ -52,7 +52,7 @@ export const YOGA_ADMIN_HUB_RECHTS: YogaHubKachel[] = [
   {
     emoji: '🎟️',
     name: 'Termine & Medienplanung',
-    beschreibung: 'Kurse planen, Einladung und QR – derselbe Ablauf wie Events.',
+    beschreibung: 'Kurse planen, Einladung und QR – aus einer Quelle.',
     tab: 'eventplan',
   },
 ]

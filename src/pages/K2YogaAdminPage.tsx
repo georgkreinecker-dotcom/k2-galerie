@@ -157,9 +157,15 @@ export default function K2YogaAdminPage() {
         }}
       >
         <Link to={K2_YOGA_ROUTE} style={{ color: '#5b21b6', fontWeight: 700, textDecoration: 'none' }}>
-          ← K2 YOGA
+          ← Skizze
         </Link>
-        <span>Ansicht · Admin für einen Yogabetrieb (Muster, nicht K2)</span>
+        <Link to={PROJECT_ROUTES['k2-yoga'].detailplan} style={{ color: '#5b21b6', fontWeight: 700, textDecoration: 'none' }}>
+          Detailplan
+        </Link>
+        <Link to={PROJECT_ROUTES['k2-yoga'].praesentationsmappe} style={{ color: '#5b21b6', fontWeight: 700, textDecoration: 'none' }}>
+          Kurzmappe
+        </Link>
+        <span>Arbeitsoberfläche · so arbeiten Absolvent:innen (Muster „Yoga bei Anna“)</span>
       </div>
 
       <div
@@ -213,7 +219,7 @@ export default function K2YogaAdminPage() {
               <div style={{ flex: 1, height: 1, background: `${s.accent}22` }} />
             </div>
             <p style={{ color: s.muted, fontSize: '0.9rem', marginTop: 0 }}>
-              Wie Werke in der Galerie: jedes Angebot hat Bild, Titel, Preis – und kann im Auftritt sichtbar sein.
+              Jedes Angebot hat Bild, Titel, Preis – und kann im Auftritt sichtbar sein. Ein Klick genügt.
             </p>
             <div style={{ display: 'grid', gap: '0.65rem' }}>
               {YOGA_MUSTER_ANGEBOTE.map((a) => (
@@ -245,7 +251,7 @@ export default function K2YogaAdminPage() {
               ))}
             </div>
             <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: s.muted }}>
-              Muster – Speichern geht später über denselben Admin-Weg wie bei der Galerie (eigener Mandant, keine K2-Daten).
+              Muster-Ansicht zum Vorzeigen – so sieht die Tagesarbeit aus. Speichern und echter Betrieb folgen mit eigenem Auftritt.
             </p>
           </>
         )}
@@ -253,10 +259,10 @@ export default function K2YogaAdminPage() {
         {activeTab === 'design' && (
           <section>
             <h2 style={{ fontFamily: s.fontHeading, margin: '0 0 0.4rem' }}>✨ Auftritt gestalten und texten</h2>
-            <p style={{ color: s.muted }}>Wie Galerie gestalten: Willkommen, Karte, optional Rundgang – getrennt bearbeitbar.</p>
+            <p style={{ color: s.muted }}>Willkommen, Stunden-Bereich und optional Rundgang – getrennt bearbeitbar.</p>
             <ul style={{ lineHeight: 1.7 }}>
               <li>Willkommen – Bild und Begrüßung</li>
-              <li>Galerie – hier: Stunden & Angebote</li>
+              <li>Stunden & Angebote – was Besucher sehen</li>
               <li>Virtueller Rundgang – Raum oder Film</li>
             </ul>
             <Link to={willkommen} style={{ color: s.accent, fontWeight: 700 }}>Vorschau öffnen →</Link>
@@ -273,14 +279,14 @@ export default function K2YogaAdminPage() {
               <p style={{ margin: '0 0 0.35rem' }}><strong>Ort:</strong> {YOGA_MUSTER_STAMMDATEN.ort}</p>
               <p style={{ margin: 0 }}><strong>Zeiten:</strong> {YOGA_MUSTER_STAMMDATEN.oeffnung}</p>
             </div>
-            <p style={{ fontSize: '0.85rem', color: s.muted, marginTop: '0.85rem' }}>Backup & Wiederherstellung bleibt im echten Admin derselbe Hauptweg wie bei K2.</p>
+            <p style={{ fontSize: '0.85rem', color: s.muted, marginTop: '0.85rem' }}>Sicherung herunterladen und wiederherstellen – ein fester Ort in den Einstellungen.</p>
           </section>
         )}
 
         {activeTab === 'statistik' && (
           <section>
             <h2 style={{ fontFamily: s.fontHeading, margin: '0 0 0.4rem' }}>📋📊 Listen & Übersicht</h2>
-            <p style={{ color: s.muted }}>Wie Statistik/Werkkatalog: alles auf einen Blick, druckbar.</p>
+            <p style={{ color: s.muted }}>Alles auf einen Blick – druckbar für den Unterricht und die Übersicht.</p>
             <table style={{ width: '100%', borderCollapse: 'collapse', background: s.bgCard, borderRadius: 12, overflow: 'hidden' }}>
               <thead>
                 <tr style={{ textAlign: 'left', color: s.muted, fontSize: '0.8rem' }}>
@@ -305,7 +311,7 @@ export default function K2YogaAdminPage() {
         {activeTab === 'eventplan' && (
           <section>
             <h2 style={{ fontFamily: s.fontHeading, margin: '0 0 0.4rem' }}>🎟️ Termine & Medienplanung</h2>
-            <p style={{ color: s.muted }}>Wie Eventplanung: Termin anlegen, Einladung und QR aus derselben Quelle.</p>
+            <p style={{ color: s.muted }}>Termin anlegen, Einladung und QR – aus derselben Quelle.</p>
             <div style={{ display: 'grid', gap: '0.5rem' }}>
               {YOGA_MUSTER_TERMINE.map((t) => (
                 <div key={t.id} style={{ background: s.bgCard, padding: '0.75rem 1rem', borderRadius: 10, border: `1px solid ${s.accent}22` }}>
@@ -320,10 +326,10 @@ export default function K2YogaAdminPage() {
         {activeTab === 'kassa' && (
           <section>
             <h2 style={{ fontFamily: s.fontHeading, margin: '0 0 0.4rem' }}>💰 Kasse</h2>
-            <p style={{ color: s.muted }}>Ein Klick Kasse – wie im Galerie-Admin. Hier Muster, kein K2-Shop.</p>
+            <p style={{ color: s.muted }}>Ein Klick Kasse – Zahlung erfassen. Hier Muster zum Vorzeigen.</p>
             <div style={{ background: s.bgCard, padding: '1rem', borderRadius: 12, border: `1px solid ${s.accent}22` }}>
               <p style={{ margin: '0 0 0.4rem' }}>Heute: Hatha · Abend · 18 €</p>
-              <p style={{ margin: 0, color: s.muted, fontSize: '0.88rem' }}>Bon und Rechnung kommen aus diesem Kontext – nie aus der K2-Galerie.</p>
+              <p style={{ margin: 0, color: s.muted, fontSize: '0.88rem' }}>Bon und Rechnung gehören zu diesem Auftritt – nicht vermischt mit anderen.</p>
             </div>
           </section>
         )}
@@ -331,7 +337,7 @@ export default function K2YogaAdminPage() {
         {activeTab === 'buchhaltung' && (
           <section>
             <h2 style={{ fontFamily: s.fontHeading, margin: '0 0 0.4rem' }}>📒 Buchhaltung</h2>
-            <p style={{ color: s.muted }}>Verkäufe, Belege, Listen – derselbe Ort wie bei K2, eigene Daten.</p>
+            <p style={{ color: s.muted }}>Verkäufe, Belege, Listen – ein Ort, eigene Zahlen.</p>
             <p>Oktober: 2 Kurse gebucht (Muster).</p>
           </section>
         )}

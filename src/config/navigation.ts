@@ -291,6 +291,7 @@ export const PROJECT_ROUTES = {
     willkommen: `${K2_YOGA_ROUTE}/willkommen`,
     admin: `${K2_YOGA_ROUTE}/admin`,
     praesentationsmappe: `${K2_YOGA_ROUTE}/praesentationsmappe`,
+    detailplan: `${K2_YOGA_ROUTE}/detailplan`,
   },
   /** K2 Markt – von Beginn an eigenständiges Projekt definiert (wie K2 Familie), nicht Teil von K2 Galerie. Datenquelle: ök2 (mök2, Muster). Homepage = Arbeitsoberfläche; netzfähig wie ök2 und K2 Familie. */
   'k2-markt': {
