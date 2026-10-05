@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import QRCode from 'qrcode'
 import YogaDemoNav from '../components/YogaDemoNav'
 import { PROJECT_ROUTES } from '../config/navigation'
+import { getShareableAppUrl } from '../utils/publicShare'
 import {
   getYogaGespraechAnschau,
   YOGA_GESPRAECH_AKADEMIE,
@@ -58,8 +59,8 @@ export default function YogaGespraechsmappePage() {
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
   const [qrDataUrl, setQrDataUrl] = useState('')
   const [copyOk, setCopyOk] = useState(false)
-  const shareUrl =
-    typeof window !== 'undefined' ? `${window.location.origin}${mappePath}` : mappePath
+  /** WhatsApp/Mail: immer Vercel – nie localhost (sonst öffnet der Empfänger nichts). */
+  const shareUrl = getShareableAppUrl(mappePath)
 
   useEffect(() => {
     const prev = document.title
@@ -148,7 +149,7 @@ export default function YogaGespraechsmappePage() {
               fontFamily: 'inherit',
             }}
           >
-            {copyOk ? '✅ Link kopiert' : '📎 Link zum Versenden kopieren'}
+            {copyOk ? '✅ Öffentlicher Link kopiert' : '📎 Link für WhatsApp kopieren'}
           </button>
           <button
             type="button"
@@ -289,7 +290,9 @@ export default function YogaGespraechsmappePage() {
           {qrDataUrl ? <img src={qrDataUrl} alt="" width={120} height={120} style={{ display: 'block', flexShrink: 0 }} /> : null}
           <div style={{ fontSize: '0.88rem', lineHeight: 1.45, color: '#5c5650' }}>
             <strong style={{ color: '#1c1a18' }}>Diese Mappe teilen</strong>
-            <p style={{ margin: '0.25rem 0 0' }}>QR oder Link – nach dem Telefonat weitergeben. Immer der aktuelle Stand.</p>
+            <p style={{ margin: '0.25rem 0 0' }}>
+              QR oder Link – nach dem Telefonat weitergeben. Öffentliche Adresse (funktioniert per WhatsApp).
+            </p>
             <p className="gm-no-print" style={{ margin: '0.35rem 0 0', wordBreak: 'break-all', fontSize: '0.78rem' }}>
               {shareUrl}
             </p>

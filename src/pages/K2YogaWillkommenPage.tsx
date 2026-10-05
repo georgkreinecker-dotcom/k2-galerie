@@ -5,6 +5,7 @@ import { TenantHomepageTemplate } from '../components/TenantHomepageTemplate'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { YOGA_ABSOLVENT_FONT_HREF, YOGA_ABSOLVENT_MARKE } from '../config/yogaAbsolventMarke'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import { getShareableAppUrl } from '../utils/publicShare'
 
 /** Stabile Ansicht – kein K2-Bild, kein Martina/Georg. */
 const MUSTER_BILD =
@@ -51,8 +52,7 @@ export default function K2YogaWillkommenPage() {
   const willkommenPath = PROJECT_ROUTES['k2-yoga'].willkommen
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
   const [qrDataUrl, setQrDataUrl] = useState('')
-  const shareUrl =
-    typeof window !== 'undefined' ? `${window.location.origin}${willkommenPath}` : willkommenPath
+  const shareUrl = getShareableAppUrl(willkommenPath)
 
   useEffect(() => {
     const prev = document.title

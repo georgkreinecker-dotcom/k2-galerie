@@ -8,6 +8,7 @@ import {
   YOGA_GESPRAECH_SYSTEM,
 } from '../config/yogaGespraechsmappe'
 import { PROJECT_ROUTES } from '../config/navigation'
+import { getShareableAppUrl } from '../utils/publicShare'
 
 describe('Yoga-Gesprächsmappe – Versand nach Telefonat', () => {
   it('stellt K2 als System vor und nennt die Akademie', () => {
@@ -25,6 +26,12 @@ describe('Yoga-Gesprächsmappe – Versand nach Telefonat', () => {
 
   it('hat eine klare Versand-URL unter k2-yoga', () => {
     expect(PROJECT_ROUTES['k2-yoga'].gespraechsmappe).toBe('/projects/k2-yoga/gespraechsmappe')
+  })
+
+  it('Versand-Link ist öffentlich (Vercel), nie localhost', () => {
+    const url = getShareableAppUrl(PROJECT_ROUTES['k2-yoga'].gespraechsmappe)
+    expect(url).toBe('https://k2-galerie.vercel.app/projects/k2-yoga/gespraechsmappe')
+    expect(url).not.toMatch(/localhost/)
   })
 })
 

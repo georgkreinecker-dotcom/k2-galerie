@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES } from '../config/navigation'
+import { getShareableAppUrl } from '../utils/publicShare'
 import {
   YOGA_DETAIL_ABSchnitte,
   YOGA_DETAIL_AUFWAND,
@@ -59,8 +60,7 @@ export default function YogaDetailplanPage() {
   const mappePath = PROJECT_ROUTES['k2-yoga'].praesentationsmappe
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
   const [qrDataUrl, setQrDataUrl] = useState('')
-  const shareUrl =
-    typeof window !== 'undefined' ? `${window.location.origin}${willkommenPath}` : willkommenPath
+  const shareUrl = getShareableAppUrl(willkommenPath)
 
   useEffect(() => {
     const prev = document.title
