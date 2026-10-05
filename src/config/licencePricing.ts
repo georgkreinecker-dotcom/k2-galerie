@@ -123,3 +123,18 @@ export const K2_FAMILIE_LIZENZPREISE = {
     priceEur: 100,
   },
 } as const
+
+/**
+ * Yoga-Akademie – Orientierung für Pitch/APf (noch kein öffentlicher Stripe-Checkout).
+ * Eine Quelle für Smart Panel + Lizenzen-Seite.
+ */
+export const YOGA_AKADEMIE_LIZENZ = {
+  id: 'yoga-akademie' as const,
+  name: 'Yoga-Akademie',
+  price: '79 €/Monat',
+  priceEur: 79,
+  icon: '🧘',
+  summary:
+    'Akademie-Fläche, Lehrgänge, Gruppen-Auftritt, Abschluss → Absolventen-Häuser. Zahlung nur Akademie – nicht pro Absolvent:in.',
+  note: 'Nur APf / Gespräch – noch kein Online-Kauf.',
+} as const

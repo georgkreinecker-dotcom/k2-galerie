@@ -9,6 +9,7 @@ const HANDBUCH_DOC_KOMPASS = '24-TEXTE-BRIEFE-KOMPASS.md'
 const HANDBUCH_DOC_ZENTRALE_THEMEN = '16-ZENTRALE-THEMEN-FUER-NUTZER.md'
 const HANDBUCH_DOC_NOTFALL = '23-NOTFALL-CHECKLISTE.md'
 import { PROJECT_ROUTES, PLATFORM_ROUTES, MOK2_ROUTE, ENTDECKEN_ROUTE, HUNDRED_GENERATION_ROUTE, HUNDRED_GENERATION_FLAECHE_ROUTE, HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE, K2_YOGA_ROUTE, K2_APF_HANDY_QR_URL } from '../config/navigation'
+import { YOGA_AKADEMIE_LIZENZ } from '../config/licencePricing'
 import { K2_FAMILIE_APP_SHORT_PATH } from '../utils/k2FamiliePwaBranding'
 import { prepareFreshOek2VisitorSession } from '../utils/oek2FreshStart'
 import { openAppOrHttpUrlInNewTab } from '../utils/safeExternalUrl'
@@ -1186,6 +1187,30 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                     <p style={{ margin: '0 0 0.4rem 0', fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)', lineHeight: 1.45 }}>
                       Akademie vorstellen: Gesprächsmappe (nach Telefonat versenden), Detailplan, Kurzmappe, Auftritt, Flächen.
                     </p>
+                    <div
+                      style={{
+                        padding: '0.7rem 0.85rem',
+                        background: 'linear-gradient(135deg, rgba(124,58,237,0.28), rgba(128,96,0,0.16))',
+                        border: '1px solid rgba(196,181,253,0.5)',
+                        borderRadius: '8px',
+                        marginBottom: '0.15rem',
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem' }}>
+                        <strong style={{ fontSize: '0.88rem', color: '#ddd6fe' }}>
+                          {YOGA_AKADEMIE_LIZENZ.icon} Lizenz {YOGA_AKADEMIE_LIZENZ.name}
+                        </strong>
+                        <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#fde68a', whiteSpace: 'nowrap' }}>
+                          {YOGA_AKADEMIE_LIZENZ.price}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: 'rgba(221,214,254,0.85)', lineHeight: 1.4 }}>
+                        {YOGA_AKADEMIE_LIZENZ.summary}
+                      </div>
+                      <div style={{ fontSize: '0.68rem', color: 'rgba(253,224,71,0.9)', marginTop: '0.3rem', fontWeight: 600 }}>
+                        {YOGA_AKADEMIE_LIZENZ.note}
+                      </div>
+                    </div>
                     {items.map(item => (
                       <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                         {onNavigate ? (

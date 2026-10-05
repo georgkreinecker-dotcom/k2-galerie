@@ -1,11 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** APf Handy – Smart Panel Untermenüs nutzbar machen.
+**Was wir JETZT tun:** Yoga-Akademie – kleine Lizenzkarte (79 €/Monat) in APf.
 
-**Einordnung:** Panel war am Handy 400px + 420px Versatz → Menü/Seiten nicht erreichbar. Jetzt Vollbild-Overlay + Scroll + nach Tippen zu.
+**Einordnung:** APf-only Orientierung, kein Stripe. Smart Panel K2 YOGA + Lizenzen-Seite.
 
-**Nächster Schritt:** Georg am Handy testen: Panel → K2 → K2 YOGA → Seite öffnet sich.
+**Nächster Schritt:** Georg Preis/Text prüfen; bei Bedarf anpassen.
 
 **Was zuletzt gemacht:**
-- APf Smart Panel mobil: Vollbild, scrollbar, nach Navigation zu – Commit: `c752e80b` ✅ auf GitHub
-- Stand kommt mit dem Build (Push).
+- Lizenzkarte Yoga-Akademie – Push folgt.

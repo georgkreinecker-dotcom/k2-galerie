@@ -4,7 +4,7 @@ import '../App.css'
 import { BASE_APP_URL, PLATFORM_ROUTES, PROJECT_ROUTES } from '../config/navigation'
 import { getSendPilotInviteApiUrl, getPilotInviteMailStatusUrl, isPilotInviteLocalDevHostname } from '../utils/pilotInviteClient'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
-import { LIZENZPREISE, getPublicLicenceTierCards, LIZENZ_TESTPHASE_LABEL } from '../config/licencePricing'
+import { LIZENZPREISE, getPublicLicenceTierCards, LIZENZ_TESTPHASE_LABEL, YOGA_AKADEMIE_LIZENZ } from '../config/licencePricing'
 import TermWithExplanation from '../components/TermWithExplanation'
 import { PilotInviteEmailPreview } from '../components/PilotInviteEmailPreview'
 import { downloadPilotInviteEml } from '../utils/pilotInviteEmlDownload'
@@ -458,6 +458,59 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
                 </div>
               )
             })}
+            {/* Yoga-Akademie – APf-Orientierung, kein Stripe */}
+            <div
+              style={{
+                background: 'linear-gradient(135deg, rgba(124,58,237,0.16) 0%, rgba(128,96,0,0.1) 100%)',
+                border: '1.5px solid rgba(196,181,253,0.45)',
+                borderRadius: '10px',
+                padding: '1rem',
+                position: 'relative',
+              }}
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  top: -10,
+                  right: 12,
+                  background: 'linear-gradient(90deg, #7c3aed, #a78bfa)',
+                  color: '#fff',
+                  fontSize: '0.7rem',
+                  fontWeight: 800,
+                  padding: '2px 10px',
+                  borderRadius: 20,
+                  letterSpacing: '0.5px',
+                }}
+              >
+                APf
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                <strong style={{ color: '#ddd6fe', fontSize: '1rem' }}>
+                  {YOGA_AKADEMIE_LIZENZ.icon} {YOGA_AKADEMIE_LIZENZ.name}
+                </strong>
+                <span
+                  style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    padding: '0.15rem 0.5rem',
+                    borderRadius: 20,
+                    background: 'rgba(196,181,253,0.15)',
+                    color: '#c4b5fd',
+                  }}
+                >
+                  Orientierung
+                </span>
+              </div>
+              <div style={{ fontSize: '0.85rem', color: '#c4b5fd', fontWeight: 600, marginBottom: '0.3rem' }}>
+                {YOGA_AKADEMIE_LIZENZ.price}
+              </div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', lineHeight: 1.4 }}>
+                {YOGA_AKADEMIE_LIZENZ.summary}
+              </div>
+              <div style={{ fontSize: '0.72rem', color: 'rgba(196,181,253,0.85)', marginTop: '0.45rem', lineHeight: 1.35 }}>
+                {YOGA_AKADEMIE_LIZENZ.note}
+              </div>
+            </div>
           </div>
         </section>
 
