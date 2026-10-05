@@ -52,6 +52,7 @@ import PromoRunwayPackPage from './PromoRunwayPackPage'
 import MobileConnectPage from './MobileConnectPage'
 import LicencesPage from './LicencesPage'
 import SmartPanel from '../components/SmartPanel'
+import { useK2WorldMobileCompact } from '../hooks/useK2WorldMobileCompact'
 import { BUILD_TIMESTAMP } from '../buildInfo.generated'
 import { getPageContentGalerie } from '../config/pageContentGalerie'
 import { loadEvents } from '../utils/eventsStorage'
@@ -541,6 +542,12 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   const [panelMinimized, setPanelMinimized] = useState(() => {
     try { return localStorage.getItem('devview-panel-minimized') === '1' } catch { return false }
   })
+  /** Handy/Tablet: Panel als Vollbild-Overlay, kein 420px-Seitenversatz (sonst keine Untermenüs nutzbar) */
+  const apfMobileCompact = useK2WorldMobileCompact()
+  const handleSmartPanelNavigate = React.useCallback((page: string) => {
+    setCurrentPage(page)
+    if (apfMobileCompact) setPanelMinimized(true)
+  }, [apfMobileCompact])
   const [apfInstallHintDismissed, setApfInstallHintDismissed] = useState(() => {
     try {
       return localStorage.getItem('k2-apf-pwa-install-hint-dismissed') === '1'
@@ -1306,6 +1313,11 @@ end tell`
     return <CurrentComponent key={componentKey} />
   }
 
+  const panelSidePadding = apfMobileCompact || panelMinimized ? '1rem' : '420px'
+  const panelBottomLeft = apfMobileCompact || panelMinimized ? 0 : 400
+  const panelWidth = apfMobileCompact ? '100%' : '400px'
+  const panelLeftHidden = apfMobileCompact ? '-105%' : '-420px'
+
   return (
     <div style={{ 
       minHeight: '100vh', 
@@ -1313,7 +1325,7 @@ end tell`
       color: 'var(--k2-text, #fff5f0)',
       padding: '1rem',
       paddingBottom: '80px', // Platz für untere Navigationsleiste
-      paddingLeft: !panelMinimized ? '420px' : '1rem', // Platz für Smart Panel
+      paddingLeft: panelSidePadding, // Desktop: Platz für Smart Panel; Handy: Overlay ohne Versatz
       fontFamily: 'system-ui, sans-serif',
       transition: 'padding-left 0.3s ease',
       position: 'relative'
@@ -2031,7 +2043,7 @@ end tell`
         <div style={{
           position: 'fixed',
           bottom: 0,
-          left: !panelMinimized ? '400px' : 0, // Platz für Smart Panel
+          left: panelBottomLeft,
           right: 0,
           background: '#2a2a2a',
           borderTop: '1px solid #444',
@@ -2094,7 +2106,7 @@ end tell`
         <div style={{
           position: 'fixed',
           bottom: 0,
-          left: !panelMinimized ? '400px' : 0, // Platz für Smart Panel
+          left: panelBottomLeft,
           right: 0,
           background: '#2a2a2a',
           borderTop: '1px solid #444',
@@ -2136,34 +2148,38 @@ end tell`
         </div>
       )}
       
-        {/* Smart Panel - Projekt-Status & Schnellzugriff */}
+        {/* Smart Panel - Projekt-Status & Schnellzugriff (Handy = Vollbild-Overlay) */}
         <div style={{
           position: 'fixed',
           top: 0,
-          left: panelMinimized ? '-420px' : '0', // Vollständig ausblenden – 400px Breite + 20px Puffer, sonst überlappt rechter Rand (z. B. „Öffentlichkeitsarbeit (K2)“) den Content
-          width: '400px',
-          height: '100vh',
+          left: panelMinimized ? panelLeftHidden : '0',
+          width: panelWidth,
+          maxWidth: apfMobileCompact ? '100vw' : '400px',
+          height: '100dvh',
           background: 'linear-gradient(180deg, #2d1a14, #1a0f0a)',
           backdropFilter: 'blur(20px)',
-          borderRight: '1px solid rgba(255, 140, 66, 0.2)',
+          borderRight: apfMobileCompact ? 'none' : '1px solid rgba(255, 140, 66, 0.2)',
           boxShadow: '8px 0 32px rgba(0, 0, 0, 0.5)',
           zIndex: 10002, // Höher als Status-Banner (10001)
           display: 'flex',
           flexDirection: 'column',
           transition: 'left 0.3s ease',
           overflow: 'hidden',
-          pointerEvents: 'auto', // Sicherstellen dass Klicks funktionieren
-          visibility: 'visible' // Explizit sichtbar machen
+          pointerEvents: panelMinimized ? 'none' : 'auto',
+          visibility: 'visible',
         }}>
         {/* Minimize/Expand Button - IMMER sichtbar */}
         <button
+          type="button"
           onClick={() => setPanelMinimized(!panelMinimized)}
           style={{
             position: 'absolute',
-            top: '1rem',
-            right: '1rem', // Immer rechts im Panel
-            width: '2.5rem',
-            height: '2.5rem',
+            top: 'max(0.75rem, env(safe-area-inset-top))',
+            right: '1rem',
+            width: '2.75rem',
+            height: '2.75rem',
+            minWidth: '44px',
+            minHeight: '44px',
             background: 'rgba(255, 140, 66, 0.15)',
             border: '1px solid rgba(255, 140, 66, 0.3)',
             borderRadius: '8px',
@@ -2175,7 +2191,8 @@ end tell`
             fontSize: '1.3rem',
             zIndex: 10001,
             transition: 'background 0.2s ease',
-            backdropFilter: 'blur(10px)'
+            backdropFilter: 'blur(10px)',
+            touchAction: 'manipulation',
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = 'rgba(255, 140, 66, 0.25)'
@@ -2184,13 +2201,16 @@ end tell`
             e.currentTarget.style.background = 'rgba(255, 140, 66, 0.15)'
           }}
           title={panelMinimized ? 'Smart Panel einblenden' : 'Smart Panel ausblenden'}
+          aria-label={panelMinimized ? 'Smart Panel einblenden' : 'Smart Panel ausblenden'}
         >
-          {panelMinimized ? '▶' : '◀'}
+          {panelMinimized ? '▶' : (apfMobileCompact ? '✕' : '◀')}
         </button>
 
-        {/* Smart Panel Content */}
+        {/* Smart Panel Content – flex/minHeight damit Untermenüs am Handy scrollbar sind */}
         {!panelMinimized && (
-          <SmartPanel currentPage={currentPage} onNavigate={setCurrentPage} />
+          <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <SmartPanel currentPage={currentPage} onNavigate={handleSmartPanelNavigate} />
+          </div>
         )}
       </div>
 

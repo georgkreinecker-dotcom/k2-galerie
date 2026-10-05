@@ -10,7 +10,14 @@ export const K2_WORLD_MOBILE_MAX_WIDTH_PX = 768
 export const K2_WORLD_MOBILE_COMPACT_MQ = `(max-width: ${K2_WORLD_MOBILE_MAX_WIDTH_PX}px)`
 
 export function useK2WorldMobileCompact(): boolean {
-  const [compact, setCompact] = useState(false)
+  const [compact, setCompact] = useState(() => {
+    if (typeof window === 'undefined') return false
+    try {
+      return window.matchMedia(K2_WORLD_MOBILE_COMPACT_MQ).matches
+    } catch {
+      return false
+    }
+  })
   useEffect(() => {
     if (typeof window === 'undefined') return
     const mq = window.matchMedia(K2_WORLD_MOBILE_COMPACT_MQ)

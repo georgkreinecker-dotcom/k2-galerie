@@ -1,11 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** K2 YOGA – Absolvent Farblinie Petrol.
+**Was wir JETZT tun:** APf Handy – Smart Panel Untermenüs nutzbar machen.
 
-**Einordnung:** Akademie Gold/Violett · Absolvent Petrol – Auftritt + Arbeitsfläche.
+**Einordnung:** Panel war am Handy 400px + 420px Versatz → Menü/Seiten nicht erreichbar. Jetzt Vollbild-Overlay + Scroll + nach Tippen zu.
 
-**Nächster Schritt:** Georg vergleicht Akademie vs. Absolvent/Auftritt optisch.
+**Nächster Schritt:** Georg am Handy testen: Panel → K2 → K2 YOGA → Seite öffnet sich.
 
 **Was zuletzt gemacht:**
-- Absolvent-Farblinie Petrol – Commit: `a3dc3a21` ✅ auf GitHub
-- Stand kommt mit dem Build (Push).
+- APf Smart Panel mobil: Vollbild, scrollbar, nach Navigation zu – lokal, Push folgt.

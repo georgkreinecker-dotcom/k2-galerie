@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect, useMemo, type CSSProperties } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import QRCode from 'qrcode'
@@ -460,7 +460,9 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.5rem',
-                padding: '0.6rem 0.75rem',
+                padding: '0.7rem 0.75rem',
+                minHeight: 44,
+                touchAction: 'manipulation',
                 ...(mappe.id === 'promo-video'
                   ? {
                       background: 'linear-gradient(135deg, rgba(124,58,237,0.22), rgba(91,33,182,0.12))',
@@ -1545,13 +1547,19 @@ hr { border: none; border-top: 1px solid #ddd; margin: 1.25rem 0; }
     <div style={{
       width: '100%',
       height: '100%',
+      flex: 1,
+      minHeight: 0,
       display: 'flex',
       flexDirection: 'column',
       padding: '1rem',
+      paddingTop: '3.25rem', // Platz für Schließen-Button (Handy)
       gap: '1rem',
       overflowY: 'auto',
-      overflowX: 'hidden'
-    }}>
+      overflowX: 'hidden',
+      WebkitOverflowScrolling: 'touch',
+      touchAction: 'pan-y',
+      overscrollBehavior: 'contain',
+    } as CSSProperties}>
       {/* Header */}
       <div style={{
         borderBottom: '1px solid rgba(95, 251, 241, 0.2)',
@@ -1785,7 +1793,9 @@ hr { border: none; border-top: 1px solid #ddd; margin: 1.25rem 0; }
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.5rem',
-                  padding: '0.65rem 0.75rem',
+                  padding: '0.7rem 0.75rem',
+                  minHeight: 44,
+                  touchAction: 'manipulation',
                   background: 'linear-gradient(135deg, rgba(255,140,66,0.22), rgba(181,74,30,0.12))',
                   border: '1px solid rgba(255,140,66,0.5)',
                   borderRadius: '8px',
