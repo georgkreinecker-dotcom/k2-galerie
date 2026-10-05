@@ -7,4 +7,5 @@
 **Nächster Schritt:** Georg Preis/Text prüfen; bei Bedarf anpassen.
 
 **Was zuletzt gemacht:**
-- Lizenzkarte Yoga-Akademie – Push folgt.
+- Lizenzkarte Yoga-Akademie 79 €/Monat (APf) – Commit: `ac3e2466` ✅ auf GitHub
+- Stand kommt mit dem Build (Push).
