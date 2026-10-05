@@ -96,7 +96,7 @@ export const YOGA_GESPRAECH_AUFWAND: { wer: string; was: string; aufwand: string
 export { getYogaDemoAnschauBeispiele as getYogaGespraechAnschau } from './yogaDemoBeispiele'
 
 export const YOGA_GESPRAECH_ANSCHAU_HINWEIS =
-  'Alle Beispiele bleiben oben in der Leiste erreichbar – auch nachdem du eines geöffnet hast. So gehst du von Auftritt zu Akademie, Kurs und Absolvent:in und wieder zurück zur Mappe.'
+  'Alle Beispiele bleiben oben in der Leiste erreichbar – auch nachdem du eines geöffnet hast. Farblinien: Akademie = Gold/Violett, Absolvent:in = Petrol (Auftritt und Arbeitsfläche).'
 
 export const YOGA_GESPRAECH_SCHLUSS =
   'Wenn etwas unklar bleibt: kurz melden – wir klären es in einem zweiten Gespräch oder zeigen es live. Diese Mappe ist zum ruhigen Nachlesen gedacht.'

@@ -1,11 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** K2 YOGA – Gesprächsmappe Struktur + Absolvent-Stil.
+**Was wir JETZT tun:** K2 YOGA – Absolvent Farblinie Petrol.
 
-**Einordnung:** Beispiel-Leiste bleibt auf allen Demo-Seiten; Absolvent-Fläche im Akademie-Stil und in der Mappe.
+**Einordnung:** Akademie Gold/Violett · Absolvent Petrol – Auftritt + Arbeitsfläche.
 
-**Nächster Schritt:** Georg öffnet Gesprächsmappe → Beispiel tippen → Leiste oben prüfen.
+**Nächster Schritt:** Georg vergleicht Akademie vs. Absolvent/Auftritt optisch.
 
 **Was zuletzt gemacht:**
-- Demo-Leiste + Absolvent-Stil – Commit: `e8095f40` ✅ auf GitHub
-- Stand kommt mit dem Build (Push).
+- Absolvent-Farblinie – Commit folgt

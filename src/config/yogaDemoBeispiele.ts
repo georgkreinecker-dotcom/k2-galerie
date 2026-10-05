@@ -37,7 +37,7 @@ export function getYogaDemoBeispiele(): YogaDemoBeispiel[] {
       id: 'auftritt',
       label: '👋 Auftritt',
       titel: 'Beispiel-Auftritt',
-      text: 'So sieht ein persönliches Haus im Netz aus (Muster).',
+      text: 'Persönliches Haus im Netz – Farblinie Absolvent:in (Petrol).',
       path: r.willkommen,
     },
     {
@@ -58,7 +58,7 @@ export function getYogaDemoBeispiele(): YogaDemoBeispiel[] {
       id: 'absolvent',
       label: '🛠️ Absolvent:in',
       titel: 'Fläche Absolvent:in',
-      text: 'Stunden und Angebote bearbeiten – die Arbeitsfläche nach dem Öffnen.',
+      text: 'Stunden und Angebote bearbeiten – eigene Farblinie Petrol, getrennt von der Akademie.',
       path: r.admin,
     },
   ]

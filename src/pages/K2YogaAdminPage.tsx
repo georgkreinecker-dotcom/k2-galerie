@@ -2,7 +2,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import YogaDemoNav from '../components/YogaDemoNav'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
-import { YOGA_FONT_HREF, YOGA_MARKE } from '../config/yogaAkademieMarke'
+import { YOGA_ABSOLVENT_FONT_HREF, YOGA_ABSOLVENT_MARKE } from '../config/yogaAbsolventMarke'
 import {
   YOGA_ADMIN_HUB_LINKS,
   YOGA_ADMIN_HUB_RECHTS,
@@ -23,7 +23,7 @@ function isYogaTab(v: string): v is YogaAdminTab {
  * Fläche Absolvent:in – selber Stil wie Akademie (Gold/Violett), Muster zum Vorzeigen.
  */
 export default function K2YogaAdminPage() {
-  const m = YOGA_MARKE
+  const m = YOGA_ABSOLVENT_MARKE
   const [params, setParams] = useSearchParams()
   const rawTab = String(params.get('tab') || 'werke')
   const activeTab: YogaAdminTab = isYogaTab(rawTab) ? rawTab : 'werke'
@@ -106,15 +106,15 @@ export default function K2YogaAdminPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: m.bg, color: m.text, fontFamily: m.font }}>
-      <link rel="stylesheet" href={YOGA_FONT_HREF} />
+      <link rel="stylesheet" href={YOGA_ABSOLVENT_FONT_HREF} />
       <style>{`
         .yoga-admin-hub-karte { transition: transform 0.2s ease, box-shadow 0.2s ease; }
-        .yoga-admin-hub-karte:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(128,96,0,0.12); }
+        .yoga-admin-hub-karte:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(13,110,110,0.14); }
         @media print { .yoga-demo-nav { display: none !important; } }
       `}</style>
       <YogaDemoNav
         active="absolvent"
-        hint="Fläche Absolvent:in · Stunden und Angebote bearbeiten (Muster)"
+        hint="Fläche Absolvent:in · eigene Farblinie Petrol – Stunden und Angebote (Muster)"
       />
 
       <div
@@ -129,10 +129,25 @@ export default function K2YogaAdminPage() {
       >
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem 1rem', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <img src={m.logo} alt="" width={64} height={42} style={{ objectFit: 'contain' }} />
+            <span
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 12,
+                background: m.tealSoft,
+                border: `1px solid ${m.teal}`,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1.4rem',
+              }}
+              aria-hidden
+            >
+              🧘
+            </span>
             <div>
-              <div style={{ fontWeight: 700, color: m.gold, fontSize: '1.1rem', lineHeight: 1.2 }}>Yoga bei Anna</div>
-              <div style={{ fontSize: '0.78rem', color: m.violett, fontWeight: 600 }}>Fläche Absolvent:in · Muster</div>
+              <div style={{ fontWeight: 700, color: m.teal, fontSize: '1.1rem', lineHeight: 1.2 }}>Yoga bei Anna</div>
+              <div style={{ fontSize: '0.78rem', color: m.ink, fontWeight: 600 }}>Fläche Absolvent:in · Farblinie Petrol</div>
             </div>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>

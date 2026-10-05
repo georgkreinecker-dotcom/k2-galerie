@@ -3,16 +3,16 @@ import QRCode from 'qrcode'
 import YogaDemoNav from '../components/YogaDemoNav'
 import { TenantHomepageTemplate } from '../components/TenantHomepageTemplate'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { YOGA_FONT_HREF, YOGA_MARKE } from '../config/yogaAkademieMarke'
+import { YOGA_ABSOLVENT_FONT_HREF, YOGA_ABSOLVENT_MARKE } from '../config/yogaAbsolventMarke'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
 /** Stabile Ansicht – kein K2-Bild, kein Martina/Georg. */
 const MUSTER_BILD =
   'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1400&q=80'
 
-const TEAL = YOGA_MARKE.gold
-const VIOLETT = YOGA_MARKE.violett
-const GOLD_SOFT = YOGA_MARKE.goldSoft
+const TEAL = YOGA_ABSOLVENT_MARKE.teal
+const INK = YOGA_ABSOLVENT_MARKE.ink
+const TEAL_SOFT = YOGA_ABSOLVENT_MARKE.tealSoft
 
 const printStyles = `
   @media print {
@@ -23,7 +23,7 @@ const printStyles = `
       max-width: none !important;
       padding: 0 !important;
       background: #fff !important;
-      color: #1c1a18 !important;
+      color: #1a2221 !important;
     }
     .yoga-auftritt header {
       min-height: 52mm !important;
@@ -38,7 +38,7 @@ const printStyles = `
     .yoga-auftritt a[href^="#"],
     .yoga-auftritt a[href*="#willkommen"],
     .yoga-auftritt button { display: none !important; }
-    .yoga-auftritt a { color: #351777 !important; }
+    .yoga-auftritt a { color: ${INK} !important; }
     .seitenfuss { display: none; }
     @page { margin: 10mm 12mm 12mm 12mm; size: A4; }
   }
@@ -78,21 +78,21 @@ export default function K2YogaWillkommenPage() {
   }, [shareUrl, qrVersionTs])
 
   return (
-    <div className="yoga-auftritt" style={{ fontFamily: YOGA_MARKE.font }}>
-      <link rel="stylesheet" href={YOGA_FONT_HREF} />
+    <div className="yoga-auftritt" style={{ fontFamily: YOGA_ABSOLVENT_MARKE.font }}>
+      <link rel="stylesheet" href={YOGA_ABSOLVENT_FONT_HREF} />
       <style>{printStyles}</style>
       <div className="yoga-auftritt-no-print">
         <YogaDemoNav
           active="auftritt"
-          hint="Beispiel-Auftritt · alle anderen Beispiele bleiben in der Leiste oben"
+          hint="Beispiel-Auftritt · Farblinie Absolvent:in (Petrol)"
         />
         <div
           style={{
-            fontFamily: YOGA_MARKE.font,
+            fontFamily: YOGA_ABSOLVENT_MARKE.font,
             fontSize: '0.82rem',
             padding: '0.45rem 1rem',
-            background: GOLD_SOFT,
-            color: VIOLETT,
+            background: TEAL_SOFT,
+            color: INK,
             display: 'flex',
             flexWrap: 'wrap',
             gap: '0.65rem 1rem',
@@ -106,7 +106,7 @@ export default function K2YogaWillkommenPage() {
             style={{
               padding: '0.4rem 0.75rem',
               background: '#fff',
-              color: VIOLETT,
+              color: INK,
               border: `1px solid ${TEAL}`,
               borderRadius: 10,
               fontWeight: 700,
@@ -116,7 +116,7 @@ export default function K2YogaWillkommenPage() {
           >
             Als PDF drucken
           </button>
-          <span>Muster-Auftritt · nicht eine echte Person</span>
+          <span>Muster-Auftritt · eigene Farblinie · nicht eine echte Person</span>
         </div>
       </div>
       <TenantHomepageTemplate
@@ -136,12 +136,12 @@ export default function K2YogaWillkommenPage() {
         impressumPhone=""
         impressumEmail=""
         mapsUrl=""
-        liveAccent={YOGA_MARKE.gold}
-        liveBg1={YOGA_MARKE.bg}
-        liveBg2="#efe9d8"
-        liveText="#1c1a18"
-        liveMuted="#5c5650"
-        liveSectionBg="#fffefb"
+        liveAccent={TEAL}
+        liveBg1={YOGA_ABSOLVENT_MARKE.bg}
+        liveBg2="#e4f0ee"
+        liveText={YOGA_ABSOLVENT_MARKE.text}
+        liveMuted={YOGA_ABSOLVENT_MARKE.muted}
+        liveSectionBg={YOGA_ABSOLVENT_MARKE.bgCard}
         hideAdminEntry
         shopUrl="#shop-bereich"
         galleryEnterUrl={`${willkommenPath}#willkommen`}
