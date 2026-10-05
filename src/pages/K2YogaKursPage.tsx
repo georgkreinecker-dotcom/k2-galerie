@@ -1,5 +1,6 @@
 import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { K2_YOGA_ROUTE, PROJECT_ROUTES } from '../config/navigation'
+import YogaDemoNav from '../components/YogaDemoNav'
+import { PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { YOGA_FONT_HREF, YOGA_MARKE } from '../config/yogaAkademieMarke'
 import { getYogaKurs, yogaKursPath, YOGA_KURSE } from '../config/yogaKursStruktur'
@@ -94,32 +95,15 @@ export default function K2YogaKursPage() {
   return (
     <div style={{ minHeight: '100vh', background: m.bg, color: m.text, fontFamily: m.font }}>
       <link rel="stylesheet" href={YOGA_FONT_HREF} />
-      <div
-        style={{
-          fontSize: '0.82rem',
-          padding: '0.55rem 1rem',
-          background: m.goldSoft,
-          color: m.violett,
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '0.65rem 1rem',
-          alignItems: 'center',
-          borderBottom: `1px solid ${m.gold}55`,
-        }}
-      >
-        <Link to={PROJECT_ROUTES['k2-yoga'].akademie} style={{ color: m.violett, fontWeight: 700, textDecoration: 'none' }}>
-          ← Fläche Akademie
-        </Link>
-        <Link to={K2_YOGA_ROUTE} style={{ color: m.violett, fontWeight: 700, textDecoration: 'none' }}>
-          Skizze
-        </Link>
-        <span>Kurs-Oberfläche · ein Lehrgang, alles an einem Ort</span>
-      </div>
+      <YogaDemoNav
+        active="kurs"
+        hint="Kurs-Oberfläche · ein Lehrgang – Mappe und andere Beispiele bleiben oben erreichbar"
+      />
 
       <div
         style={{
           position: 'sticky',
-          top: 0,
+          top: 52,
           zIndex: 20,
           background: '#fff',
           borderBottom: `2px solid ${m.goldSoft}`,

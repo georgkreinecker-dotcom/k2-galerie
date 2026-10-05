@@ -92,20 +92,11 @@ export const YOGA_GESPRAECH_AUFWAND: { wer: string; was: string; aufwand: string
   { wer: 'Absolvent:in', was: 'Stunden pflegen', aufwand: 'wenige Minuten bei Bedarf' },
 ]
 
-export const YOGA_GESPRAECH_NAECHSTE: { titel: string; text: string }[] = [
-  {
-    titel: 'Beispiel-Auftritt ansehen',
-    text: 'So sieht ein persönliches Haus im Netz aus (Muster).',
-  },
-  {
-    titel: 'Fläche Akademie ansehen',
-    text: 'So arbeitet das Büro: Lehrgänge, Listen, Kurs öffnen.',
-  },
-  {
-    titel: 'Ein Kurs öffnen',
-    text: 'Ein Lehrgang im Detail: Teilnehmer, Module, Abschluss.',
-  },
-]
+/** Anschau-Links: eine Quelle in yogaDemoBeispiele.ts (Leiste + Mappe). */
+export { getYogaDemoAnschauBeispiele as getYogaGespraechAnschau } from './yogaDemoBeispiele'
+
+export const YOGA_GESPRAECH_ANSCHAU_HINWEIS =
+  'Alle Beispiele bleiben oben in der Leiste erreichbar – auch nachdem du eines geöffnet hast. So gehst du von Auftritt zu Akademie, Kurs und Absolvent:in und wieder zurück zur Mappe.'
 
 export const YOGA_GESPRAECH_SCHLUSS =
   'Wenn etwas unklar bleibt: kurz melden – wir klären es in einem zweiten Gespräch oder zeigen es live. Diese Mappe ist zum ruhigen Nachlesen gedacht.'

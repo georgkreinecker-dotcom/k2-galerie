@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import QRCode from 'qrcode'
+import YogaDemoNav from '../components/YogaDemoNav'
 import { TenantHomepageTemplate } from '../components/TenantHomepageTemplate'
-import { K2_YOGA_ROUTE, PROJECT_ROUTES } from '../config/navigation'
+import { PROJECT_ROUTES } from '../config/navigation'
 import { YOGA_FONT_HREF, YOGA_MARKE } from '../config/yogaAkademieMarke'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
@@ -16,7 +16,7 @@ const GOLD_SOFT = YOGA_MARKE.goldSoft
 
 const printStyles = `
   @media print {
-    .yoga-auftritt-no-print { display: none !important; }
+    .yoga-auftritt-no-print, .yoga-demo-nav { display: none !important; }
     .yoga-auftritt .galerie-tenant-page > div:first-of-type { display: none !important; }
     .yoga-auftritt .galerie-tenant-page {
       min-height: auto !important;
@@ -81,48 +81,43 @@ export default function K2YogaWillkommenPage() {
     <div className="yoga-auftritt" style={{ fontFamily: YOGA_MARKE.font }}>
       <link rel="stylesheet" href={YOGA_FONT_HREF} />
       <style>{printStyles}</style>
-      <div
-        className="yoga-auftritt-no-print"
-        style={{
-          fontFamily: YOGA_MARKE.font,
-          fontSize: '0.82rem',
-          padding: '0.55rem 1rem',
-          background: GOLD_SOFT,
-          color: VIOLETT,
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '0.65rem 1rem',
-          alignItems: 'center',
-          borderBottom: `1px solid ${TEAL}55`,
-        }}
-      >
-        <img src={YOGA_MARKE.logo} alt="" width={48} height={32} style={{ display: 'block', objectFit: 'contain' }} />
-        <Link to={PROJECT_ROUTES['k2-yoga'].praesentationsmappe} style={{ color: VIOLETT, fontWeight: 700, textDecoration: 'none' }}>
-          ← Mappe
-        </Link>
-        <Link to={K2_YOGA_ROUTE} style={{ color: VIOLETT, fontWeight: 700, textDecoration: 'none' }}>
-          Skizze
-        </Link>
-        <Link to={PROJECT_ROUTES['k2-yoga'].akademie} style={{ color: VIOLETT, fontWeight: 700, textDecoration: 'none' }}>
-          Fläche Akademie
-        </Link>
-        <button
-          type="button"
-          onClick={() => window.print()}
+      <div className="yoga-auftritt-no-print">
+        <YogaDemoNav
+          active="auftritt"
+          hint="Beispiel-Auftritt · alle anderen Beispiele bleiben in der Leiste oben"
+        />
+        <div
           style={{
-            padding: '0.4rem 0.75rem',
+            fontFamily: YOGA_MARKE.font,
+            fontSize: '0.82rem',
+            padding: '0.45rem 1rem',
             background: GOLD_SOFT,
             color: VIOLETT,
-            border: `1px solid ${TEAL}`,
-            borderRadius: 10,
-            fontWeight: 700,
-            cursor: 'pointer',
-            fontFamily: 'inherit',
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '0.65rem 1rem',
+            alignItems: 'center',
+            borderBottom: `1px solid ${TEAL}55`,
           }}
         >
-          Als PDF drucken
-        </button>
-        <span>Muster-Auftritt · nicht eine echte Person</span>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            style={{
+              padding: '0.4rem 0.75rem',
+              background: '#fff',
+              color: VIOLETT,
+              border: `1px solid ${TEAL}`,
+              borderRadius: 10,
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+            }}
+          >
+            Als PDF drucken
+          </button>
+          <span>Muster-Auftritt · nicht eine echte Person</span>
+        </div>
       </div>
       <TenantHomepageTemplate
         tenantId="yoga-ansicht"

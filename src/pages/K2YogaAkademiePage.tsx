@@ -1,5 +1,6 @@
 import { Link, useSearchParams } from 'react-router-dom'
-import { K2_YOGA_ROUTE, PROJECT_ROUTES } from '../config/navigation'
+import YogaDemoNav from '../components/YogaDemoNav'
+import { PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import {
   YOGA_AKADEMIE_EINLADUNGEN,
@@ -138,37 +139,15 @@ export default function K2YogaAkademiePage() {
         .admin-hub-karte { transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .admin-hub-karte:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(128,96,0,0.12); }
       `}</style>
-      <div
-        style={{
-          fontSize: '0.82rem',
-          padding: '0.55rem 1rem',
-          background: m.goldSoft,
-          color: m.violett,
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '0.65rem 1rem',
-          alignItems: 'center',
-          borderBottom: `1px solid ${m.gold}55`,
-          position: 'relative',
-          zIndex: 2,
-        }}
-      >
-        <Link to={K2_YOGA_ROUTE} style={{ color: m.violett, fontWeight: 700, textDecoration: 'none' }}>
-          ← Skizze
-        </Link>
-        <Link to={PROJECT_ROUTES['k2-yoga'].detailplan} style={{ color: m.violett, fontWeight: 700, textDecoration: 'none' }}>
-          Detailplan
-        </Link>
-        <Link to={absolventAdmin} style={{ color: m.violett, fontWeight: 700, textDecoration: 'none' }}>
-          Fläche Absolvent:in
-        </Link>
-        <span>Arbeitsfläche Akademie · Farben wie auf yogaakademieaustria.com</span>
-      </div>
+      <YogaDemoNav
+        active="akademie"
+        hint="Fläche Akademie · Lehrgänge, Listen, Kurs öffnen – alle Beispiele bleiben oben erreichbar"
+      />
 
       <div
         style={{
           position: 'sticky',
-          top: 0,
+          top: 52,
           zIndex: 20,
           background: '#fff',
           borderBottom: `2px solid ${m.goldSoft}`,

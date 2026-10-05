@@ -1,11 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** K2 YOGA – Gesprächsmappe zum Versenden.
+**Was wir JETZT tun:** K2 YOGA – Gesprächsmappe Struktur + Absolvent-Stil.
 
-**Einordnung:** Fertige Mappe nach dem Telefonat: zuerst K2 als System, dann Akademie-Anwendung + Links zum Anschauen.
+**Einordnung:** Beispiel-Leiste bleibt auf allen Demo-Seiten; Absolvent-Fläche im Akademie-Stil und in der Mappe.
 
-**Nächster Schritt:** Georg öffnet Gesprächsmappe → Link kopieren → nach Telefonat senden.
+**Nächster Schritt:** Georg öffnet Gesprächsmappe → Beispiel tippen → Leiste oben prüfen.
 
 **Was zuletzt gemacht:**
-- Gesprächsmappe – Commit: `65cc0047` ✅ auf GitHub
-- Stand kommt mit dem Build (Push).
+- Demo-Leiste + Absolvent-Stil – Commit folgt

@@ -1,22 +1,23 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import QRCode from 'qrcode'
+import YogaDemoNav from '../components/YogaDemoNav'
 import { PROJECT_ROUTES } from '../config/navigation'
 import {
+  getYogaGespraechAnschau,
   YOGA_GESPRAECH_AKADEMIE,
+  YOGA_GESPRAECH_ANSCHAU_HINWEIS,
   YOGA_GESPRAECH_AUFWAND,
   YOGA_GESPRAECH_BADGE,
   YOGA_GESPRAECH_COVER_SLOGAN,
   YOGA_GESPRAECH_COVER_TAGLINE,
   YOGA_GESPRAECH_COVER_TITLE,
   YOGA_GESPRAECH_LEAD,
-  YOGA_GESPRAECH_NAECHSTE,
   YOGA_GESPRAECH_SCHLUSS,
   YOGA_GESPRAECH_SYSTEM,
 } from '../config/yogaGespraechsmappe'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { YOGA_FONT_HREF, YOGA_MARKE } from '../config/yogaAkademieMarke'
-import { yogaKursPath } from '../config/yogaKursStruktur'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
 const GOLD = YOGA_MARKE.gold
@@ -26,7 +27,7 @@ const GOLD_SOFT = YOGA_MARKE.goldSoft
 
 const printStyles = `
   @media print {
-    .gm-no-print { display: none !important; }
+    .gm-no-print, .yoga-demo-nav { display: none !important; }
     body { background: #fff !important; }
     .gm-wrap { background: #fff !important; color: #1c1a18 !important; padding: 0 !important; margin: 0 !important; max-width: none !important; }
     .gm-wrap > div { max-width: none !important; padding: 8mm 12mm !important; box-shadow: none !important; }
@@ -52,10 +53,8 @@ const printStyles = `
  * Stellt K2 als System vor, dann die Akademie-Anwendung.
  */
 export default function YogaGespraechsmappePage() {
-  const willkommen = PROJECT_ROUTES['k2-yoga'].willkommen
-  const akademie = PROJECT_ROUTES['k2-yoga'].akademie
-  const kursWels = yogaKursPath('lg-wels-2026')
   const mappePath = PROJECT_ROUTES['k2-yoga'].gespraechsmappe
+  const anschau = getYogaGespraechAnschau()
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
   const [qrDataUrl, setQrDataUrl] = useState('')
   const [copyOk, setCopyOk] = useState(false)
@@ -116,6 +115,11 @@ export default function YogaGespraechsmappePage() {
     <div className="gm-wrap" style={{ minHeight: '100vh', background: YOGA_MARKE.bg, color: YOGA_MARKE.text, fontFamily: YOGA_MARKE.font }}>
       <link rel="stylesheet" href={YOGA_FONT_HREF} />
       <style>{printStyles}</style>
+      <YogaDemoNav
+        active="gespraechsmappe"
+        hint="Anschauen: Auftritt · Akademie · Kurs · Absolvent:in – die Leiste bleibt auf jeder Seite."
+        className="yoga-demo-nav gm-no-print"
+      />
       <div style={{ maxWidth: 640, margin: '0 auto', padding: '2rem 1.5rem', background: YOGA_MARKE.bgCard, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
         <div
           className="gm-no-print"
@@ -242,15 +246,14 @@ export default function YogaGespraechsmappePage() {
           </table>
 
           <h2 style={{ fontSize: '1.12rem', fontWeight: 700, color: GOLD, margin: '1.25rem 0 0.4rem' }}>Zum Anschauen</h2>
+          <p style={{ fontSize: '0.9rem', color: YOGA_MARKE.muted, margin: '0 0 0.65rem', lineHeight: 1.5 }}>
+            {YOGA_GESPRAECH_ANSCHAU_HINWEIS}
+          </p>
           <div style={{ display: 'grid', gap: '0.55rem', marginBottom: '1rem' }}>
-            {[
-              { ...YOGA_GESPRAECH_NAECHSTE[0], to: willkommen },
-              { ...YOGA_GESPRAECH_NAECHSTE[1], to: akademie },
-              { ...YOGA_GESPRAECH_NAECHSTE[2], to: kursWels },
-            ].map((n) => (
+            {anschau.map((n) => (
               <Link
-                key={n.titel}
-                to={n.to}
+                key={n.id}
+                to={n.path}
                 style={{
                   display: 'block',
                   textDecoration: 'none',
