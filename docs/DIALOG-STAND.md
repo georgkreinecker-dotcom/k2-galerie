@@ -1,9 +1,9 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** K2 YOGA – Detailplan + Arbeitsoberfläche für Akademie-Vorstellung.
+**Was wir JETZT tun:** K2 YOGA – Akademie-Unterlagen liegen bereit.
 
-**Einordnung:** Kurzmappe allein reicht nicht; Akademie braucht Plan + sichtbare UI „so arbeiten sie“.
+**Einordnung:** Detailplan (druckbar) + Arbeitsoberfläche + Beispiel-Auftritt + Kurzmappe.
 
-**Nächster Schritt:** Georg druckt Detailplan und zeigt Arbeitsoberfläche / Auftritt.
+**Nächster Schritt:** Georg zeigt / druckt für die Akademie.
 
-**Letzter Stand:** 05.10.26 – Detailplan + Admin-UI für Vorzeigen.
+**Letzter Stand:** 05.10.26 – Commit `4e7a7db6` auf GitHub.
