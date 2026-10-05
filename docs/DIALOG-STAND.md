@@ -1,13 +1,16 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Boot-Fix für WhatsApp/In-App – öffentlicher Yoga-Gesprächsmappe-Link muss beim Empfänger laden (nicht „Laden… Nach QR-Scan“).
+**Was wir JETZT tun:** Lokal arbeiten / öffentlich versenden – ein Standard auch für PDF-Versand (`getShareableAppUrl`).
 
-**Einordnung:** Adresse war schon richtig (Vercel). Production hatte noch altes `boot-build-info.js` (Reload bei Fetch-Fehler → Hänger). Lokal Fix vorhanden, muss live.
+**Einordnung:** Druck/PDF speichern = same-origin OK; Link und PDF versenden = immer öffentlich (Vercel). Boot: kein Auto-Reload in WhatsApp.
 
-**Nächster Schritt:** Nach Vercel Ready: Boot-Datei prüfen (WhatsApp-Guard), Link in normalem Browser + ggf. WA testen; PDF als Fallback.
+**Nächster Schritt:** Nach Deploy Gesprächsmappe in WhatsApp öffnen – Link + Mappe lesbar.
 
 **Ausgangspunkt Yoga** bleibt: [docs/K2-YOGA-AUSGANGSPUNKT.md](K2-YOGA-AUSGANGSPUNKT.md)
 
 **Was zuletzt gemacht:**
-- UX: nur Link kopieren + Als PDF (kein WhatsApp-Button-Chaos).
-- Boot: WhatsApp kein Auto-Reload; Fetch-Fehler kein Reload; root-interaction In-App ohne Reload-Loop; Lade-Text entschärft; `/boot/` no-cache.
+- `getShareableAppUrl` / `buildShareTextWithPublicLink` für Galerie, Yoga, mök2, Zettel, Pilot, PDF-Versand.
+- PDF: Speichern/Druck lokal; Versand inkl. öffentlichem Link-Text.
+- Yoga-Gesprächsmappe: WhatsApp-Button + Link kopieren.
+- Boot: kein Auto-Reload in WhatsApp; kein Reload bei Fetch-Fehler.
+- Commit: **30c5a944** ✅ auf GitHub
