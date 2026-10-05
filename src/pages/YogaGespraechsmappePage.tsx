@@ -59,7 +59,7 @@ export default function YogaGespraechsmappePage() {
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
   const [qrDataUrl, setQrDataUrl] = useState('')
   const [copyOk, setCopyOk] = useState(false)
-  /** WhatsApp/Mail: immer Vercel – nie localhost (sonst öffnet der Empfänger nichts). */
+  /** Kopieren/QR: immer öffentliche URL – nie localhost. */
   const shareUrl = getShareableAppUrl(mappePath)
 
   useEffect(() => {
@@ -148,8 +148,9 @@ export default function YogaGespraechsmappePage() {
               cursor: 'pointer',
               fontFamily: 'inherit',
             }}
+            title="Öffentlichen Link in die Zwischenablage – funktioniert überall"
           >
-            {copyOk ? '✅ Öffentlicher Link kopiert' : '📎 Link für WhatsApp kopieren'}
+            {copyOk ? '✅ Link kopiert' : '📎 Link kopieren'}
           </button>
           <button
             type="button"
@@ -164,8 +165,9 @@ export default function YogaGespraechsmappePage() {
               cursor: 'pointer',
               fontFamily: 'inherit',
             }}
+            title="Auf diesem Gerät drucken oder als PDF speichern"
           >
-            Als PDF drucken
+            Als PDF
           </button>
           <Link to={PROJECT_ROUTES['k2-yoga'].praesentationsmappe} style={{ color: VIOLETT, fontWeight: 600, textDecoration: 'none' }}>
             Kurzmappe (ohne System) →
@@ -291,7 +293,7 @@ export default function YogaGespraechsmappePage() {
           <div style={{ fontSize: '0.88rem', lineHeight: 1.45, color: '#5c5650' }}>
             <strong style={{ color: '#1c1a18' }}>Diese Mappe teilen</strong>
             <p style={{ margin: '0.25rem 0 0' }}>
-              QR oder Link – nach dem Telefonat weitergeben. Öffentliche Adresse (funktioniert per WhatsApp).
+              QR scannen oder Link kopieren – nach dem Telefonat weitergeben. Der Link funktioniert überall.
             </p>
             <p className="gm-no-print" style={{ margin: '0.35rem 0 0', wordBreak: 'break-all', fontSize: '0.78rem' }}>
               {shareUrl}

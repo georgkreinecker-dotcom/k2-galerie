@@ -13,6 +13,8 @@ import {
   K2_GALERIE_APF_EINSTIEG,
 } from '../config/navigation'
 import { mok2Groups } from '../config/mok2Structure'
+import { getShareableAppUrl } from '../utils/publicShare'
+import { kopiereUrl } from '../utils/staticPageDruckWeiterleiten'
 
 const PANEL_WIDTH = 380
 const TOP_BAR_HEIGHT = 56
@@ -28,6 +30,7 @@ const printStyles = `
 
 export default function Mok2Layout({ children }: { children: React.ReactNode }) {
   const [panelMinimized, setPanelMinimized] = useState(false)
+  const [linkKopiert, setLinkKopiert] = useState(false)
   /** Eine Mappe aufgeklappt; null = alle zu (ruhige Übersicht). */
   const [openGroupIdx, setOpenGroupIdx] = useState<number | null>(0)
   const location = useLocation()
@@ -293,8 +296,36 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
             cursor: 'pointer',
             fontWeight: 500,
           }}
+          title="Auf diesem Gerät drucken oder als PDF speichern"
         >
           📄 Als PDF drucken
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            const path = `${location.pathname}${location.search}${location.hash || ''}`
+            void (async () => {
+              const ok = await kopiereUrl(getShareableAppUrl(path))
+              if (ok) {
+                setLinkKopiert(true)
+                window.setTimeout(() => setLinkKopiert(false), 2500)
+              }
+            })()
+          }}
+          style={{
+            padding: '0.4rem 0.9rem',
+            marginLeft: '0.4rem',
+            background: 'rgba(95,251,241,0.18)',
+            color: '#5ffbf1',
+            border: '1px solid rgba(95,251,241,0.45)',
+            borderRadius: '6px',
+            fontSize: '0.9rem',
+            cursor: 'pointer',
+            fontWeight: 600,
+          }}
+          title="Öffentlichen Link kopieren – funktioniert überall"
+        >
+          {linkKopiert ? '✅ Link kopiert' : '📎 Link kopieren'}
         </button>
       </header>
 

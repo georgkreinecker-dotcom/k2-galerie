@@ -11,6 +11,7 @@ import {
   oeffneDruckdialogFuerUrl,
   weiterleitenTitelUrl,
 } from '../utils/staticPageDruckWeiterleiten'
+import { getShareableAppUrl } from '../utils/publicShare'
 
 const HANDBUCH_SW_NACHWEIS_PATH = '/texte-schreibtisch/handbuch-softwareentwicklung-standards-nachweis.html' as const
 const HANDBUCH_SW_TITEL = 'Handbuch Softwareentwicklung – Standards & Nachweis'
@@ -101,7 +102,7 @@ export default function K2SoftwareentwicklungPage() {
           <button
             type="button"
             onClick={async () => {
-              const u = absoluteUrlVonPath(HANDBUCH_SW_NACHWEIS_PATH)
+              const u = getShareableAppUrl(HANDBUCH_SW_NACHWEIS_PATH)
               const r = await weiterleitenTitelUrl(HANDBUCH_SW_TITEL, u)
               if (r === 'geteilt') setHandbuchHinweis('Teilen war möglich.')
               else if (r === 'kopiert') setHandbuchHinweis('Link in die Zwischenablage kopiert.')

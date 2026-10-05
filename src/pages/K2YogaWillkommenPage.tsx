@@ -125,7 +125,7 @@ export default function K2YogaWillkommenPage() {
         subtext="Absolventin · Yoga-Akademie Austria"
         intro="Willkommen. Hier findest du nächste Stunden, Ort und Kontakt – mein Auftritt im Netz."
         adminUrl={PROJECT_ROUTES['k2-yoga'].admin}
-        shareUrl={willkommenPath}
+        shareUrl={shareUrl}
         artworks={[]}
         isMusterStart={false}
         welcomeImage={MUSTER_BILD}

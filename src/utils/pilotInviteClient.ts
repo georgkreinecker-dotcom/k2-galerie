@@ -2,9 +2,11 @@
  * Testpilot-Einladung: Auf der **Plattform** (APf localhost) → POST an Live-API,
  * damit Signatur = Vercel-Production (kein Mac-.env vs. Vercel-Mix).
  * Lizenznehmer-Clone auf eigenem Host: weiter same-origin.
+ * Versand-Links an Empfänger: getShareableAppUrl (ein Standard, kein Parallelweg).
  */
 import { isPlatformHostname } from '../config/tenantConfig'
 import { BASE_APP_URL } from '../config/navigation'
+import { getShareableAppUrl } from './publicShare'
 
 function trimBase(url: string): string {
   return url.replace(/\/$/, '')
@@ -39,33 +41,12 @@ export function getPilotInviteMailStatusUrl(): string {
  * APf auf localhost → immer Production-URL, damit Empfänger nicht localhost im Link haben.
  */
 export function getPilotShareLinkBaseUrl(): string {
-  if (typeof window === 'undefined') return trimBase(BASE_APP_URL)
-  const host = window.location.hostname
-  if (isPilotInviteLocalDevHostname(host) && isPlatformHostname(host)) {
-    return trimBase(BASE_APP_URL)
-  }
-  return trimBase(window.location.origin)
+  return getShareableAppUrl('/').replace(/\/$/, '')
 }
 
-/** Relativer Pfad oder absolute URL → absolute URL für externe Empfänger (localhost in gespeicherten Links → Vercel). */
+/** Relativer Pfad oder absolute URL → absolute URL für externe Empfänger (localhost → Vercel). */
 export function toAbsolutePilotShareUrl(relativeOrAbsolute: string): string {
   const u = relativeOrAbsolute.trim()
   if (!u) return ''
-  if (u.startsWith('http://') || u.startsWith('https://')) {
-    try {
-      const parsed = new URL(u)
-      if (
-        isPilotInviteLocalDevHostname(parsed.hostname) &&
-        typeof window !== 'undefined' &&
-        isPlatformHostname(window.location.hostname)
-      ) {
-        return `${trimBase(BASE_APP_URL)}${parsed.pathname}${parsed.search}${parsed.hash}`
-      }
-    } catch {
-      /* unverändert */
-    }
-    return u
-  }
-  const path = u.startsWith('/') ? u : `/${u}`
-  return `${getPilotShareLinkBaseUrl()}${path}`
+  return getShareableAppUrl(u)
 }

@@ -1,4 +1,4 @@
-import { APP_BASE_URL, APP_BASE_URL_SHAREABLE } from '../config/externalUrls'
+import { APP_BASE_URL_SHAREABLE } from '../config/externalUrls'
 
 /** Production-Host auf Vercel – Vorschau-Deployments (*-*.vercel.app) sind oft passwortgeschützt. */
 const VERCEL_K2_GALERIE_PRODUCTION_HOST = 'k2-galerie.vercel.app'
@@ -22,7 +22,7 @@ export function getPublicGaleriePath(tenant: PublicTenant, mode: PublicViewMode)
 
 /** Absolute Produktions-URL (für Teilen/QR) – nie localhost. */
 export function getPublicGalerieUrl(tenant: PublicTenant, mode: PublicViewMode): string {
-  return `${APP_BASE_URL}${getPublicGaleriePath(tenant, mode)}`
+  return `${shareableOrigin()}${getPublicGaleriePath(tenant, mode)}`
 }
 
 /**
@@ -36,7 +36,7 @@ export function getPublicGalerieUrlWithBust(tenant: PublicTenant, mode: PublicVi
 
 /** Öffentlicher Einstieg K2 Familie (Flyer/QR) – für Teilen nie localhost. */
 export function getPublicK2FamilieMusterEntryUrl(): string {
-  return `${APP_BASE_URL}${K2_FAMILIE_WILLKOMMEN_ROUTE}`
+  return `${shareableOrigin()}${K2_FAMILIE_WILLKOMMEN_ROUTE}`
 }
 
 /** Meine-Familie-Start (kanonisch, für canonicalPublicUrl bei Teilen) – Handy-tauglich, kein reiner Localhost. */

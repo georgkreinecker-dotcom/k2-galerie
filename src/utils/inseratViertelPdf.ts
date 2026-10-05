@@ -3,9 +3,13 @@
  * Nutzt dieselbe sichtbare Karte wie im Browser (html2canvas + jsPDF).
  */
 
+import { buildShareTextWithPublicLink } from './publicShare'
 import { shareBlobAsFile, type SharePrintFileResult } from './sharePrintFile'
 
 export const INSERAT_VIERTEL_MM = { w: 96, h: 129 } as const
+
+/** Öffentliche Seite zum Inserat (Empfänger öffnet Vorschau / kann selbst drucken). */
+export const INSERAT_VIERTEL_SHARE_PATH = '/mok2#mok2-inserat-lokalzeitung'
 
 export async function exportInseratViertelToPdfBlob(el: HTMLElement | null): Promise<Blob | null> {
   if (!el || typeof el.getBoundingClientRect !== 'function') return null
@@ -73,7 +77,10 @@ export async function shareInseratViertelPdf(el: HTMLElement | null): Promise<Sh
   if (!blob) return 'failed'
   return shareBlobAsFile(blob, PDF_FILENAME, {
     title: 'Inserat Lokalzeitung',
-    text: 'Viertelseite 96 × 129 mm – K2 / kgm solution',
+    text: buildShareTextWithPublicLink(
+      'Viertelseite 96 × 129 mm – K2 / kgm solution',
+      INSERAT_VIERTEL_SHARE_PATH,
+    ),
     mimeType: 'application/pdf',
   })
 }

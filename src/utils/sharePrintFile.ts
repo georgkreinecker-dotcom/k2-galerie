@@ -1,6 +1,9 @@
 /**
  * Eine Hilfsfunktion für **Druck-Dateien** (PDF, PNG-Etikett): Web Share API mit Datei,
  * sonst Download – Sportwagenmodus: ein Standard, mehrere Aufrufer (Kasse, Etikett, …).
+ *
+ * Versenden mit Link-Bezug: `text` über `buildShareTextWithPublicLink` (publicShare) setzen.
+ * Nur Speichern/Download auf dem Gerät: kein öffentlicher Link nötig.
  */
 
 export type SharePrintFileResult = 'shared' | 'downloaded' | 'cancelled' | 'failed'

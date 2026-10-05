@@ -26,9 +26,10 @@ alwaysApply: true
 - **`scripts/write-build-info.js`** schreibt **`public/boot/boot-build-info.js`** (beim Build / wenn sich die Build-**minute** ändert – weniger Reopen). Dieselbe Logik wie früher Inline in `index.html`:
   - Prüft, ob die geladene Seite älter als 2 Minuten ist → einmal Reload mit Cache-Bust.
   - Holt `/api/build-info`; wenn Server neuer → Reload mit frischer URL.
-  - Bei Fetch-Fehler (z.B. fremdes WLAN): einmal Reload mit Cache-Bust (mit sessionStorage gegen Schleifen).
+  - **Kein** Auto-Reload bei Fetch-Fehler (WhatsApp/In-App-Browser: sonst Lade-Schleife, nur „Laden … Nach QR-Scan“).
+  - **Schleifen-Schutz:** kein Auto-Reload in WhatsApp/Facebook/Instagram; wenn die URL schon `v=` oder `_=` hat; wenn sessionStorage nicht schreibbar ist.
 - **`index.html`** bindet das Script nur noch per **`<script src="/boot/boot-build-info.js"></script>`** ein (**kein** Inline-Script für diese Logik – CSP-kompatibel).
-- **NIEMALS** diese drei Verhaltensweisen entfernen oder „vereinfachen“.
+- **NIEMALS** Stale-Check und Server-neuer-Reload entfernen oder „vereinfachen“.
 - **`vercel.json`:** SPA-Rewrite muss **`/boot/`** ausnehmen `(?!boot/)`, sonst liefert die SPA falsche Antworten für die Boot-Dateien.
 
 ### 3. Vercel: no-cache für HTML und build-info
@@ -53,7 +54,7 @@ alwaysApply: true
 **Dann prüfen:**
 
 - [ ] QR für Vercel-Galerie nutzt weiterhin Server-Timestamp + `buildQrUrlWithBust` (kein reines `urlWithBuildVersion`).
-- [ ] `write-build-info.js` schreibt weiterhin **`public/boot/boot-build-info.js`** vollständig (Stale-Check, build-info-Fetch, Fehler-Reload) mit aktuellem **`b=<timestamp>`** wenn sich die Build-Minute ändert.
+- [ ] `write-build-info.js` schreibt weiterhin **`public/boot/boot-build-info.js`** (Stale-Check, build-info-Fetch wenn Server neuer) mit aktuellem **`b=<timestamp>`** wenn sich die Build-Minute ändert. **Kein** Fetch-Fehler-Reload. WhatsApp/In-App: kein Auto-Reload.
 - [ ] `index.html` lädt weiterhin **`/boot/boot-build-info.js`**; Rewrite lässt **`/boot/`** durch.
 - [ ] vercel.json behält no-cache für index.html und build-info.json.
 - [ ] Hook `useServerBuildTimestamp` / `buildQrUrlWithBust` bleibt in Verwendung für alle relevanten QRs.
@@ -61,6 +62,6 @@ alwaysApply: true
 ## Kurzfassung
 
 - **QR:** Immer Server-Stand + `&_=Date.now()` (buildQrUrlWithBust + useQrVersionTimestamp). Nie nur lokaler BUILD_TIMESTAMP für QR.
-- **Stand-Script:** `boot-build-info.js` bleibt (Stale + build-info + Fehler-Reload). Jeder Build (neue Minute) liefert aktuelles `b=<timestamp>` über `write-build-info.js`.
+- **Stand-Script:** `boot-build-info.js` bleibt (Stale + build-info wenn Server neuer). **Kein** Reload bei Fetch-Fehler. WhatsApp/In-App und URL mit `v=`/`_=` = kein Auto-Reload (sonst hängt der Empfänger bei „Laden …“). Jeder Build (neue Minute) liefert aktuelles `b=<timestamp>` über `write-build-info.js`.
 - **Vercel:** no-cache für index.html und build-info.json bleibt.
 - **Nicht:** Diese Logik „vereinfachen“, „aufräumen“ oder durch „nur lokalen Stand“ ersetzen – sonst ist das Problem sofort wieder da.

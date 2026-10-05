@@ -1,9 +1,13 @@
 /**
  * Texte-Schreibtisch: statische HTML- oder PDF-Seiten als PDF speichern / versenden.
  * Eine Quelle für alle Zettel mit showDruckWeiterleiten (Sportwagenmodus).
+ *
+ * PDF speichern / Rendern: absoluteUrlVonPath (localhost OK – gleiches Gerät).
+ * PDF versenden: Datei teilen + Text mit getShareableAppUrl (Empfänger braucht öffentliche URL).
  */
 
 import { getWerbemittelHtml2canvasCaptureCss } from '../config/marketingWerbelinie'
+import { buildShareTextWithPublicLink } from './publicShare'
 import { absoluteUrlVonPath } from './staticPageDruckWeiterleiten'
 import {
   downloadBlobAsFile,
@@ -310,7 +314,7 @@ export async function shareStaticPagePdf(url: string, title: string): Promise<Sh
   if (!blob) return 'failed'
   return shareBlobAsFile(blob, safeStaticPagePdfFileName(title), {
     title,
-    text: title,
+    text: buildShareTextWithPublicLink(title, url),
     mimeType: 'application/pdf',
   })
 }

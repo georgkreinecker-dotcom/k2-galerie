@@ -30,8 +30,9 @@ import {
 import ProductCopyright from '../components/ProductCopyright'
 import { compressImageForStorage } from '../utils/compressImageForStorage'
 import { useGamificationChecklistsUi } from '../hooks/useGamificationChecklistsUi'
-import { shareInseratViertelPdf } from '../utils/inseratViertelPdf'
+import { INSERAT_VIERTEL_SHARE_PATH, shareInseratViertelPdf } from '../utils/inseratViertelPdf'
 import { shareBlobAsFile } from '../utils/sharePrintFile'
+import { buildShareTextWithPublicLink, getShareableAppUrl } from '../utils/publicShare'
 import Mok2WerbefahrplanTeaser from '../components/mok2/Mok2WerbefahrplanTeaser'
 
 /** Einheitliche Eröffnungs-URLs (wie in docs/MARKETING-EROEFFNUNG-K2-OEK2.md Abschnitt Links & QR) */
@@ -471,7 +472,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
   }, [blinkInseratHinweis])
 
   const handleCopyInseratLink = useCallback(async () => {
-    const url = `${window.location.origin}${window.location.pathname}#mok2-inserat-lokalzeitung`
+    const url = getShareableAppUrl(INSERAT_VIERTEL_SHARE_PATH)
     try {
       await navigator.clipboard.writeText(url)
       blinkInseratHinweis('Link kopiert.')
@@ -481,7 +482,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
   }, [blinkInseratHinweis])
 
   const handleMailtoInserat = useCallback(() => {
-    const url = `${window.location.origin}${window.location.pathname}#mok2-inserat-lokalzeitung`
+    const url = getShareableAppUrl(INSERAT_VIERTEL_SHARE_PATH)
     const subject = 'Anzeige K2 / kgm solution – Viertelseite'
     const body = `Guten Tag,\n\nVorschau-Link zum Inserat (96 × 129 mm):\n${url}\n\nQR-Ziel Eingangstor (Demo):\n${urlMusterEingangstorLive}\n\nMit freundlichen Grüßen`
     window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
@@ -536,7 +537,10 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
       }
       const r = await shareBlobAsFile(blob, 'K2-Visitenkarte-Logo-85x55mm.pdf', {
         title: 'K2 Logo Master A5',
-        text: 'K2 Galerie Kunst&Keramik – Logo mit Master-A5-Bild',
+        text: buildShareTextWithPublicLink(
+          'K2 Galerie Kunst&Keramik – Logo mit Master-A5-Bild',
+          `${window.location.pathname}${window.location.search}${window.location.hash || ''}`,
+        ),
         mimeType: 'application/pdf',
       })
       if (r === 'shared') blinkInseratHinweis('PDF geteilt (System-Dialog).')

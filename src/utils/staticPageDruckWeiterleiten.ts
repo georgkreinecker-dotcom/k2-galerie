@@ -1,7 +1,12 @@
 /**
  * Drucken / Weiterleiten für statische Seiten unter /public (gleiche Origin).
  * Druck: neuer Tab + Druckdialog (expliziter Klick, kein Auto-Reload).
+ *
+ * Druck / PDF speichern auf dem Gerät → absoluteUrlVonPath (same-origin OK).
+ * Link versenden (WhatsApp, Mail, Teilen, kopieren) → immer getShareableAppUrl.
  */
+
+import { getShareableAppUrl } from './publicShare'
 
 export function absoluteUrlVonPath(path: string): string {
   if (typeof window === 'undefined') {
@@ -41,15 +46,16 @@ export function oeffneDruckdialogFuerUrl(url: string): boolean {
 }
 
 export async function weiterleitenTitelUrl(title: string, url: string): Promise<'geteilt' | 'kopiert' | 'abgebrochen'> {
+  const shareUrl = getShareableAppUrl(url)
   if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
     try {
-      await navigator.share({ title, text: title, url })
+      await navigator.share({ title, text: title, url: shareUrl })
       return 'geteilt'
     } catch {
       /* Abbruch oder Fehler — Clipboard versuchen */
     }
   }
-  const ok = await kopiereUrl(url)
+  const ok = await kopiereUrl(shareUrl)
   return ok ? 'kopiert' : 'abgebrochen'
 }
 
@@ -64,11 +70,11 @@ export async function kopiereUrl(url: string): Promise<boolean> {
   }
 }
 
-/** System-Teilen-Dialog (nur wenn vom Browser angeboten). */
+/** System-Teilen-Dialog (nur wenn vom Browser angeboten) – URL immer öffentlich. */
 export async function teileTitelUrl(title: string, url: string): Promise<boolean> {
   if (typeof navigator === 'undefined' || typeof navigator.share !== 'function') return false
   try {
-    await navigator.share({ title, text: title, url })
+    await navigator.share({ title, text: title, url: getShareableAppUrl(url) })
     return true
   } catch {
     return false

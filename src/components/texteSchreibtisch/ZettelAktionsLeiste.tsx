@@ -1,5 +1,6 @@
 /**
- * Texte-Schreibtisch: eine Aktionsleiste pro Zettel (Blättern, Öffnen, Drucken, Link kopieren).
+ * Texte-Schreibtisch: eine Aktionsleiste pro Zettel (Blättern, Öffnen, Link kopieren, Als PDF).
+ * Nur zwei klare Aktionen zum Weitergeben: Link kopieren (öffentlich) + Als PDF (dieses Gerät).
  */
 
 import { useState, type CSSProperties, type ReactNode } from 'react'
@@ -8,13 +9,8 @@ import {
   absoluteUrlVonPath,
   kopiereUrl,
   oeffneDruckdialogFuerUrl,
-  teileTitelUrl,
 } from '../../utils/staticPageDruckWeiterleiten'
-import {
-  downloadStaticPagePdf,
-  kannAlsPdfExportieren,
-  shareStaticPagePdf,
-} from '../../utils/staticPagePdfExport'
+import { getShareableAppUrl } from '../../utils/publicShare'
 
 export type ZettelBlaetternNav = {
   index: number
@@ -101,10 +97,8 @@ export function ZettelAktionsLeiste({
   blaettern,
 }: ZettelAktionsProps) {
   const [hinweis, setHinweis] = useState<string | null>(null)
-  const [pdfBusy, setPdfBusy] = useState(false)
   const abs = absoluteUrlVonPath(href)
-  const kannTeilen = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
-  const kannPdf = showDruckWeiterleiten && kannAlsPdfExportieren(href)
+  const shareAbs = getShareableAppUrl(href)
 
   const melde = (text: string) => {
     setHinweis(text)
@@ -214,80 +208,27 @@ export function ZettelAktionsLeiste({
         <div style={aktionenZeile}>
           <button
             type="button"
+            onClick={async () => {
+              if (await kopiereUrl(shareAbs)) melde('Link kopiert.')
+              else melde('Kopieren nicht möglich – Link unten in der Adresszeile.')
+            }}
+            style={{ ...btnBase, background: '#1c1917', color: '#fff', border: '1px solid #292524' }}
+            title="Öffentlichen Link kopieren – funktioniert überall"
+          >
+            📋 Link kopieren
+          </button>
+          <button
+            type="button"
             onClick={() => {
               if (!oeffneDruckdialogFuerUrl(abs)) {
                 melde('Pop-up blockiert – „Öffnen“, dann Drucken auf der Seite.')
               }
             }}
             style={btnBase}
-            title="In neuem Tab öffnen und Druckdialog"
+            title="Drucken oder als PDF speichern (dieses Gerät)"
           >
-            🖨️ Drucken
+            🖨️ Als PDF
           </button>
-          {kannPdf && (
-            <>
-              <button
-                type="button"
-                disabled={pdfBusy}
-                onClick={async () => {
-                  setPdfBusy(true)
-                  try {
-                    const ok = await downloadStaticPagePdf(href, titel)
-                    melde(ok ? 'PDF gespeichert (Download-Ordner).' : 'PDF gerade nicht möglich – „Öffnen“, dann Drucken → Als PDF.')
-                  } finally {
-                    setPdfBusy(false)
-                  }
-                }}
-                style={{ ...btnBase, background: '#1a6b3c', color: '#fff', border: '1px solid #145a32' }}
-                title="PDF-Datei auf diesen Rechner speichern"
-              >
-                {pdfBusy ? '⏳ PDF…' : '📄 PDF speichern'}
-              </button>
-              <button
-                type="button"
-                disabled={pdfBusy}
-                onClick={async () => {
-                  setPdfBusy(true)
-                  try {
-                    const r = await shareStaticPagePdf(href, titel)
-                    if (r === 'shared') melde('PDF geteilt (Mail, AirDrop, …).')
-                    else if (r === 'downloaded') melde('PDF gespeichert (Teilen nicht möglich).')
-                    else if (r === 'cancelled') melde('Abgebrochen.')
-                    else melde('PDF gerade nicht möglich – „Öffnen“, dann Drucken → Als PDF.')
-                  } finally {
-                    setPdfBusy(false)
-                  }
-                }}
-                style={{ ...btnBase, background: '#1c4a7a', color: '#fff', border: '1px solid #153e6a' }}
-                title="PDF per Mail, AirDrop oder anderem Kanal versenden"
-              >
-                {pdfBusy ? '⏳ PDF…' : '📤 PDF versenden'}
-              </button>
-            </>
-          )}
-          <button
-            type="button"
-            onClick={async () => {
-              if (await kopiereUrl(abs)) melde('Link kopiert.')
-              else melde('Kopieren nicht möglich – Link unten in der Adresszeile.')
-            }}
-            style={{ ...btnBase, background: '#1c1917', color: '#fff', border: '1px solid #292524' }}
-            title="Link in die Zwischenablage"
-          >
-            📋 Link kopieren
-          </button>
-          {kannTeilen && (
-            <button
-              type="button"
-              onClick={async () => {
-                if (await teileTitelUrl(titel, abs)) melde('Teilen-Dialog geöffnet.')
-              }}
-              style={btnBase}
-              title="Seiten-Link per Mail, AirDrop, … teilen"
-            >
-              🔗 Link teilen
-            </button>
-          )}
         </div>
       )}
 

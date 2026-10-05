@@ -67,14 +67,15 @@ try {
 }
 
 // public/boot/boot-build-info.js: gleiche Logik wie früher Inline-Script in index.html (Stand / QR / Cache-Bust).
+// WhatsApp/In-App: kein Auto-Reload. Fetch-Fehler: kein Reload (sonst Lade-Schleife). Loop-Schutz: v=/_= in URL, sessionStorage schreibbar.
 // Nur schreiben wenn sich die Build-MINUTE geändert hat → weniger Reopen / weniger Git-Churn.
 let bootBuildInfoChanged = false
 {
   const ts = now.getTime()
   const bootBody =
-    '(function(){if(window.self!==window.top)return;var o=location.origin;if(o.indexOf("localhost")!==-1)return;var b=' +
+    '(function(){if(window.self!==window.top)return;var o=location.origin;if(o.indexOf("localhost")!==-1)return;var ua=navigator.userAgent||"";if(/WhatsApp|FBAN|FBAV|Instagram|Line\\//i.test(ua))return;var params=new URLSearchParams(location.search?location.search.slice(1):"");if(params.get("v")||params.get("_"))return;var b=' +
     ts +
-    ';var p=location.pathname;var bust=function(){var q=location.search?location.search.slice(1):"";var params=new URLSearchParams(q);params.set("v",Date.now());params.set("_",Date.now());location.replace(o+p+"?"+params.toString());};var mark=function(k){try{sessionStorage.setItem(k,String(b));}catch(e){}};var can=function(k){try{return sessionStorage.getItem(k)!==String(b);}catch(e){return true;}};if(Date.now()-b>120000){if(can("k2_stale_reload_ts")){mark("k2_stale_reload_ts");bust();}return;}var url=o+"/api/build-info?t="+Date.now()+"&r="+Math.random();fetch(url,{cache:"no-store",headers:{"Pragma":"no-cache","Cache-Control":"no-cache"}}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.timestamp>b){if(can("k2_updated_ts")){mark("k2_updated_ts");bust();}}}).catch(function(){if(can("k2_updated_ts")){mark("k2_updated_ts");bust();}});})();\n'
+    ';var p=location.pathname;var storeOk=true;var mark=function(k){try{sessionStorage.setItem(k,String(b));}catch(e){storeOk=false;}};var can=function(k){try{return sessionStorage.getItem(k)!==String(b);}catch(e){return false;}};var bust=function(){if(!storeOk)return;params.set("v",String(Date.now()));params.set("_",String(Date.now()));location.replace(o+p+"?"+params.toString());};if(Date.now()-b>120000){if(can("k2_stale_reload_ts")){mark("k2_stale_reload_ts");if(storeOk)bust();}return;}var url=o+"/api/build-info?t="+Date.now()+"&r="+Math.random();fetch(url,{cache:"no-store",headers:{"Pragma":"no-cache","Cache-Control":"no-cache"}}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.timestamp>b){if(can("k2_updated_ts")){mark("k2_updated_ts");if(storeOk)bust();}}}).catch(function(){});})();\n'
   const bootDir = path.join(__dirname, '..', 'public', 'boot')
   const bootPath = path.join(bootDir, 'boot-build-info.js')
   let sameMinute = false

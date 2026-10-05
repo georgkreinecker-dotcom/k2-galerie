@@ -1,6 +1,10 @@
 ;(function () {
+  var ua = navigator.userAgent || ''
+  var isInApp = /WhatsApp|FBAN|FBAV|Instagram|Line\//i.test(ua)
+
   function safeReload() {
     if (window.self !== window.top) return
+    if (isInApp) return
     var q = location.search ? location.search.slice(1) : ''
     var p = new URLSearchParams(q)
     p.set('v', Date.now())
@@ -9,7 +13,7 @@
   window.safeReload = safeReload
 
   var root = document.getElementById('root')
-  if (root) {
+  if (root && !isInApp) {
     root.addEventListener('click', function () {
       setTimeout(function () {
         if (window.self !== window.top) return
@@ -19,14 +23,23 @@
     })
   }
 
-  var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
-  var timeoutMs = isMobile ? 8000 : 15000
+  var isMobile = /iPhone|iPad|iPod|Android/i.test(ua) || window.innerWidth <= 768
+  var timeoutMs = isInApp ? 20000 : isMobile ? 8000 : 15000
   var t = setTimeout(function () {
     var rootEl = document.getElementById('root')
     var loading = document.getElementById('root-loading')
     if (rootEl && loading && rootEl.contains(loading)) {
+      var tip = isInApp
+        ? 'In dieser App manchmal langsam. Am besten im normalen Browser öffnen (Teilen → Browser), oder PDF nutzen.'
+        : 'Bitte prüfe die Verbindung (WLAN/Mobilfunk).'
       rootEl.innerHTML =
-        '<div style="text-align:center;color:rgba(255,255,255,0.9);font-family:system-ui;padding:2rem;max-width:90vw;"><p style="margin-bottom:1rem;font-size:1.1rem;">Galerie lädt nicht.</p><p style="font-size:0.9rem;margin-bottom:1rem;">Bitte prüfe die Verbindung (WLAN/Mobilfunk).</p><p style="font-size:0.85rem;margin-bottom:1.5rem;color:rgba(255,255,255,0.7);">Tippe unten um neu zu laden.</p><button id="boot-reload-btn" type="button" style="padding:0.75rem 1.5rem;background:#667eea;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:1rem;touch-action:manipulation;">Seite neu laden</button></div>'
+        '<div style="text-align:center;color:rgba(255,255,255,0.9);font-family:system-ui;padding:2rem;max-width:90vw;"><p style="margin-bottom:1rem;font-size:1.1rem;">Seite lädt nicht.</p><p style="font-size:0.9rem;margin-bottom:1rem;">' +
+        tip +
+        '</p>' +
+        (isInApp
+          ? ''
+          : '<p style="font-size:0.85rem;margin-bottom:1.5rem;color:rgba(255,255,255,0.7);">Tippe unten um neu zu laden.</p><button id="boot-reload-btn" type="button" style="padding:0.75rem 1.5rem;background:#667eea;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:1rem;touch-action:manipulation;">Seite neu laden</button>') +
+        '</div>'
       var btn = document.getElementById('boot-reload-btn')
       if (btn) btn.addEventListener('click', safeReload)
     }

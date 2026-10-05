@@ -44,7 +44,7 @@ import { isOek2PilotEntwurfQuery } from '../utils/pilotOek2GalerieUrl'
 import { setAdminUnlock, clearAdminUnlock } from '../utils/adminUnlockStorage'
 import { OK2_THEME } from '../config/ok2Theme'
 import { getPublicGalerieUrl } from '../utils/publicLinks'
-import { isLocalOrPrivateOrigin } from '../utils/publicShare'
+import { getShareableAppUrl, isLocalOrPrivateOrigin } from '../utils/publicShare'
 import { reportPublicGalleryVisit } from '../utils/reportPublicGalleryVisit'
 import { reportMarketingAttributionLanding } from '../utils/marketingAttribution'
 import {
@@ -2526,12 +2526,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
   /** Wie QR: Server-Stand + Cache-Bust – reiner Link ohne v/_ lädt oft gecachte alte App (Handy). */
   const getShareUrl = () => {
     if (typeof window === 'undefined') return ''
-    // Teilen muss auch aus lokalen/privaten Origins (localhost/LAN) funktionieren:
-    // Dann immer den öffentlichen Vercel-Link teilen – nie localhost.
-    const base = isLocalOrPrivateOrigin()
+    const path = isLocalOrPrivateOrigin()
       ? getPublicPageUrl(vk2, musterOnly)
-      : `${window.location.origin}${window.location.pathname}`
-    return buildQrUrlWithBust(base, qrVersionTs)
+      : `${window.location.pathname}${window.location.search || ''}`
+    return buildQrUrlWithBust(getShareableAppUrl(path), qrVersionTs)
   }
   const getShareText = () => (displayGalleryName || 'Galerie') + ' – Schau dir die Werke an'
 

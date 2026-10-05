@@ -5,6 +5,7 @@ import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWEN
 import { parseArtworkPriceEurFromWork } from '../utils/parseArtworkPriceEur'
 import { getShopOrdersKey, getShopSoldArtworksKey } from '../utils/shopContextKeys'
 import { isArtworkAusverkauftForShop } from '../utils/artworkLagerStatus'
+import { getShareableAppUrl } from '../utils/publicShare'
 
 type TenantGalleryArtwork = {
   number?: string
@@ -292,20 +293,21 @@ export function TenantHomepageTemplate(props: TenantHomepageTemplateProps) {
 
   const handleShare = async () => {
     const shareText = `${props.title} – ${props.subtext}`
+    const url = getShareableAppUrl(props.shareUrl)
     try {
       if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
-        await navigator.share({ title: props.title, text: shareText, url: props.shareUrl })
+        await navigator.share({ title: props.title, text: shareText, url })
         return
       }
       if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(props.shareUrl)
+        await navigator.clipboard.writeText(url)
         alert('Link kopiert.')
         return
       }
     } catch {
       // Fallback unten
     }
-    if (typeof window !== 'undefined') window.prompt('Link kopieren:', props.shareUrl)
+    if (typeof window !== 'undefined') window.prompt('Link kopieren:', url)
   }
 
   return (

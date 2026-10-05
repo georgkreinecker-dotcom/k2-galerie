@@ -4,9 +4,8 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react'
-import { APP_BASE_URL_SHAREABLE } from '../config/externalUrls'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
-import { isLocalOrPrivateOrigin } from '../utils/publicShare'
+import { getShareableAppUrl } from '../utils/publicShare'
 
 export type PublicTeilenVariant = 'oeffentlich' | 'vk2' | 'familie'
 
@@ -81,15 +80,10 @@ export function PublicTeilenFixed(props: PublicTeilenFixedProps) {
 
   const getShareUrl = () => {
     if (typeof window === 'undefined') return ''
-    if (includeSearchInShare) {
-      const pathWithSearch = `${window.location.pathname}${window.location.search || ''}`
-      const base = isLocalOrPrivateOrigin() ? `${APP_BASE_URL_SHAREABLE}${pathWithSearch}` : `${window.location.origin}${pathWithSearch}`
-      return buildQrUrlWithBust(base, qrVersionTs)
-    }
-    const base = isLocalOrPrivateOrigin()
-      ? canonicalPublicUrl
-      : `${window.location.origin}${window.location.pathname}`
-    return buildQrUrlWithBust(base, qrVersionTs)
+    const pathOrUrl = includeSearchInShare
+      ? `${window.location.pathname}${window.location.search || ''}`
+      : canonicalPublicUrl || window.location.pathname
+    return buildQrUrlWithBust(getShareableAppUrl(pathOrUrl), qrVersionTs)
   }
 
   const defaultShareText = () => (displayName || 'Galerie') + ' – Schau dir die Werke an'
