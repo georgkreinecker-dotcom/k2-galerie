@@ -1,11 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** K2 YOGA – Kurs-Oberfläche pro Lehrgang.
+**Was wir JETZT tun:** K2 YOGA – Gesprächsmappe zum Versenden.
 
-**Einordnung:** Fläche Akademie + Marke + einzelne Kurse (Teilnehmer, Module, Gruppen-Auftritt, Abschluss).
+**Einordnung:** Fertige Mappe nach dem Telefonat: zuerst K2 als System, dann Akademie-Anwendung + Links zum Anschauen.
 
-**Nächster Schritt:** Georg öffnet Fläche Akademie → Kurs öffnen (z. B. Wels).
+**Nächster Schritt:** Georg öffnet Gesprächsmappe → Link kopieren → nach Telefonat senden.
 
 **Was zuletzt gemacht:**
-- Kurs-Oberfläche Wels/Graz – Commit: `5673c473` ✅ auf GitHub
-- Stand kommt mit dem Build (Push).
+- Gesprächsmappe `/projects/k2-yoga/gespraechsmappe` – in Arbeit (Commit folgt)

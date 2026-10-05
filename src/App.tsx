@@ -37,6 +37,7 @@ import K2YogaPage from './pages/K2YogaPage'
 import K2YogaWillkommenPage from './pages/K2YogaWillkommenPage'
 import K2YogaAdminPage from './pages/K2YogaAdminPage'
 import YogaPraesentationsmappePage from './pages/YogaPraesentationsmappePage'
+import YogaGespraechsmappePage from './pages/YogaGespraechsmappePage'
 import YogaDetailplanPage from './pages/YogaDetailplanPage'
 import K2YogaAkademiePage from './pages/K2YogaAkademiePage'
 import K2YogaKursPage from './pages/K2YogaKursPage'
@@ -887,6 +888,7 @@ function App() {
       <Route path={PROJECT_ROUTES['k2-yoga'].willkommen} element={<K2YogaWillkommenPage />} />
       <Route path={PROJECT_ROUTES['k2-yoga'].admin} element={<K2YogaAdminPage />} />
       <Route path={PROJECT_ROUTES['k2-yoga'].praesentationsmappe} element={<YogaPraesentationsmappePage />} />
+      <Route path={PROJECT_ROUTES['k2-yoga'].gespraechsmappe} element={<YogaGespraechsmappePage />} />
       <Route path={PROJECT_ROUTES['k2-yoga'].detailplan} element={<YogaDetailplanPage />} />
       <Route path={PROJECT_ROUTES['k2-yoga'].akademie} element={<K2YogaAkademiePage />} />
       <Route path={PROJECT_ROUTES['k2-yoga'].kurs} element={<K2YogaKursPage />} />

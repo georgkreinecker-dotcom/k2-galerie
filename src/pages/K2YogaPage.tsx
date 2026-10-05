@@ -126,11 +126,13 @@ export default function K2YogaPage() {
           <Link to={PROJECT_ROUTES['k2-yoga'].admin}>Fläche Absolvent:in</Link>
           <Link to={PROJECT_ROUTES['k2-yoga'].akademie}>Fläche Akademie</Link>
           <Link to={PROJECT_ROUTES['k2-yoga'].praesentationsmappe}>Kurzmappe</Link>
+          <Link to={PROJECT_ROUTES['k2-yoga'].gespraechsmappe}>Gesprächsmappe</Link>
           <Link to={PROJECT_ROUTES['k2-yoga'].detailplan}>Detailplan</Link>
         </nav>
         <div className="yoga-actions">
           <Link to={PROJECT_ROUTES['k2-yoga'].willkommen}>Beispiel-Auftritt</Link>
           <Link to={PROJECT_ROUTES['k2-yoga'].akademie}>Fläche Akademie</Link>
+          <Link to={PROJECT_ROUTES['k2-yoga'].gespraechsmappe}>Gesprächsmappe versenden</Link>
           <Link to={PROJECT_ROUTES['k2-yoga'].detailplan}>Detailplan</Link>
           <button type="button" onClick={() => window.print()}>Drucken</button>
         </div>

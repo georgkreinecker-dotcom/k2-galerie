@@ -109,6 +109,7 @@ const DEFAULT_ITEMS: PanelItem[] = [
   { id: 'k2-yoga-akademie', label: '🏫 Fläche Akademie', page: 'k2-yoga-akademie', url: PROJECT_ROUTES['k2-yoga'].akademie, color: 'linear-gradient(135deg, rgba(15,118,110,0.24), rgba(13,148,136,0.14))', border: 'rgba(45,212,191,0.5)' },
   { id: 'k2-yoga-kurs', label: '📖 Kurs (Wels)', page: 'k2-yoga-kurs', url: '/projects/k2-yoga/kurs/lg-wels-2026', color: 'linear-gradient(135deg, rgba(128,96,0,0.22), rgba(53,23,119,0.12))', border: 'rgba(128,96,0,0.45)' },
   { id: 'k2-yoga-mappe', label: '📘 Kurzmappe', page: 'k2-yoga-mappe', url: PROJECT_ROUTES['k2-yoga'].praesentationsmappe, color: 'linear-gradient(135deg, rgba(13,148,136,0.22), rgba(15,118,110,0.12))', border: 'rgba(45,212,191,0.45)' },
+  { id: 'k2-yoga-gespraechsmappe', label: '📩 Gesprächsmappe', page: 'k2-yoga-gespraechsmappe', url: PROJECT_ROUTES['k2-yoga'].gespraechsmappe, color: 'linear-gradient(135deg, rgba(128,96,0,0.26), rgba(53,23,119,0.14))', border: 'rgba(128,96,0,0.5)' },
   { id: 'k2-yoga-detailplan', label: '📋 Detailplan Akademie', page: 'k2-yoga-detailplan', url: PROJECT_ROUTES['k2-yoga'].detailplan, color: 'linear-gradient(135deg, rgba(13,148,136,0.28), rgba(15,118,110,0.14))', border: 'rgba(45,212,191,0.55)' },
   { id: '100-generation', label: '🏺 Keramik – Konzept', page: '100-generation', url: HUNDRED_GENERATION_ROUTE, color: 'linear-gradient(135deg, rgba(161,98,7,0.22), rgba(120,53,15,0.12))', border: 'rgba(212,160,23,0.45)' },
   { id: '100-generation-entwurfsmappe', label: '🗂️ Entwurfsmappe', page: '100-generation-entwurfsmappe', url: HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE, color: 'linear-gradient(135deg, rgba(212,160,23,0.25), rgba(120,53,15,0.14))', border: 'rgba(212,160,23,0.55)' },
@@ -144,7 +145,7 @@ function loadOrder(): string[] {
       return mergePanelOrderWithDefaults(base)
     }
   } catch { /* ignore */ }
-  return ['k2', 'oek2', 'k2-familie', 'vk2', 'mok2', 'k2-agentur', 'kampagne', 'k2-welt-strategie', 'k2-markt', 'k2-yoga', 'k2-yoga-willkommen', 'k2-yoga-admin', 'k2-yoga-akademie', 'k2-yoga-kurs', 'k2-yoga-mappe', 'k2-yoga-detailplan', '100-generation', '100-generation-entwurfsmappe', '100-generation-flaeche', 'presse', 'notizen', 'handbuch']
+  return ['k2', 'oek2', 'k2-familie', 'vk2', 'mok2', 'k2-agentur', 'kampagne', 'k2-welt-strategie', 'k2-markt', 'k2-yoga', 'k2-yoga-willkommen', 'k2-yoga-admin', 'k2-yoga-akademie', 'k2-yoga-kurs', 'k2-yoga-mappe', 'k2-yoga-gespraechsmappe', 'k2-yoga-detailplan', '100-generation', '100-generation-entwurfsmappe', '100-generation-flaeche', 'presse', 'notizen', 'handbuch']
 }
 
 function saveOrder(order: string[]) {
@@ -175,7 +176,7 @@ const MAPPEN: SmartPanelMappe[] = [
   { id: 'galerie', label: 'K2 Galerie', icon: '🎨', itemIds: [...GALERIE_ITEM_IDS], parent: 'k2-ordner' },
   { id: 'k2-agentur-mappe', label: 'K2 Agentur', icon: '📡', itemIds: ['k2-agentur'], parent: 'k2-ordner' },
   { id: 'k2-markt', label: 'K2 Markt', icon: '🏪', itemIds: ['k2-markt'], parent: 'k2-ordner' },
-  { id: 'k2-yoga', label: 'K2 YOGA', icon: '🧘', itemIds: ['k2-yoga', 'k2-yoga-willkommen', 'k2-yoga-admin', 'k2-yoga-akademie', 'k2-yoga-kurs', 'k2-yoga-mappe', 'k2-yoga-detailplan'], parent: 'k2-ordner' },
+  { id: 'k2-yoga', label: 'K2 YOGA', icon: '🧘', itemIds: ['k2-yoga', 'k2-yoga-willkommen', 'k2-yoga-admin', 'k2-yoga-akademie', 'k2-yoga-kurs', 'k2-yoga-mappe', 'k2-yoga-gespraechsmappe', 'k2-yoga-detailplan'], parent: 'k2-ordner' },
   { id: 'familie', label: 'K2 Familie', icon: '👨‍👩‍👧‍👦', itemIds: ['k2-familie'], parent: 'k2-ordner' },
   { id: 'vk2-mappe', label: 'VK2 Vereinsplattform', icon: '🏛️', itemIds: ['vk2'], parent: 'k2-ordner' },
   { id: 'mok2-mappe', label: 'mök2 – Vertrieb & Promotion', icon: '📋', itemIds: ['mok2'], parent: 'k2-ordner' },
@@ -1181,7 +1182,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                 {mappe.id === 'k2-yoga' && (
                   <>
                     <p style={{ margin: '0 0 0.4rem 0', fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)', lineHeight: 1.45 }}>
-                      Akademie vorstellen: Detailplan, Kurzmappe, Auftritt, Fläche Akademie und Absolvent:in.
+                      Akademie vorstellen: Gesprächsmappe (nach Telefonat versenden), Detailplan, Kurzmappe, Auftritt, Flächen.
                     </p>
                     {items.map(item => (
                       <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>

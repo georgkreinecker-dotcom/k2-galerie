@@ -42,6 +42,7 @@ import K2YogaPage from './K2YogaPage'
 import K2YogaWillkommenPage from './K2YogaWillkommenPage'
 import K2YogaAdminPage from './K2YogaAdminPage'
 import YogaPraesentationsmappePage from './YogaPraesentationsmappePage'
+import YogaGespraechsmappePage from './YogaGespraechsmappePage'
 import YogaDetailplanPage from './YogaDetailplanPage'
 import K2YogaAkademiePage from './K2YogaAkademiePage'
 import K2YogaKursPage from './K2YogaKursPage'
@@ -509,6 +510,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       case 'k2-yoga-willkommen': return PROJECT_ROUTES['k2-yoga'].willkommen
       case 'k2-yoga-admin': return PROJECT_ROUTES['k2-yoga'].admin
       case 'k2-yoga-mappe': return PROJECT_ROUTES['k2-yoga'].praesentationsmappe
+      case 'k2-yoga-gespraechsmappe': return PROJECT_ROUTES['k2-yoga'].gespraechsmappe
       case 'k2-yoga-detailplan': return PROJECT_ROUTES['k2-yoga'].detailplan
       case 'k2-yoga-akademie': return PROJECT_ROUTES['k2-yoga'].akademie
       case 'k2-yoga-kurs': return '/projects/k2-yoga/kurs/lg-wels-2026'
@@ -1102,6 +1104,7 @@ end tell`
     { id: 'k2-yoga-willkommen', name: 'K2 YOGA – Willkommen', component: K2YogaWillkommenPage },
     { id: 'k2-yoga-admin', name: 'K2 YOGA – Admin', component: K2YogaAdminPage },
     { id: 'k2-yoga-mappe', name: 'Yoga – Präsentationsmappe', component: YogaPraesentationsmappePage },
+    { id: 'k2-yoga-gespraechsmappe', name: 'Yoga – Gesprächsmappe', component: YogaGespraechsmappePage },
     { id: 'k2-yoga-detailplan', name: 'Yoga – Detailplan Akademie', component: YogaDetailplanPage },
     { id: 'k2-yoga-akademie', name: 'Yoga – Arbeitsfläche Akademie', component: K2YogaAkademiePage },
     { id: 'k2-yoga-kurs', name: 'Yoga – Kurs-Oberfläche', component: K2YogaKursPage },

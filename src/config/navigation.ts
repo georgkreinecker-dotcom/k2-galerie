@@ -291,6 +291,8 @@ export const PROJECT_ROUTES = {
     willkommen: `${K2_YOGA_ROUTE}/willkommen`,
     admin: `${K2_YOGA_ROUTE}/admin`,
     praesentationsmappe: `${K2_YOGA_ROUTE}/praesentationsmappe`,
+    /** Nach Telefonat versenden: System K2 + Akademie – fertige Mappe mit Link */
+    gespraechsmappe: `${K2_YOGA_ROUTE}/gespraechsmappe`,
     detailplan: `${K2_YOGA_ROUTE}/detailplan`,
     akademie: `${K2_YOGA_ROUTE}/akademie`,
     /** Einzelner Lehrgang/Kurs – :kursId z. B. lg-wels-2026 */
