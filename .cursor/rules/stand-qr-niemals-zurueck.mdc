@@ -26,7 +26,7 @@ alwaysApply: true
 - **`scripts/write-build-info.js`** schreibt **`public/boot/boot-build-info.js`** (beim Build / wenn sich die Build-**minute** ändert – weniger Reopen). Dieselbe Logik wie früher Inline in `index.html`:
   - Prüft, ob die geladene Seite älter als 2 Minuten ist → einmal Reload mit Cache-Bust.
   - Holt `/api/build-info`; wenn Server neuer → Reload mit frischer URL.
-  - **Kein** Auto-Reload bei Fetch-Fehler (WhatsApp/In-App-Browser: sonst Lade-Schleife, nur „Laden … Nach QR-Scan“).
+  - **Kein** Auto-Reload bei Fetch-Fehler (WhatsApp/In-App-Browser: sonst Lade-Schleife bei „Laden …“).
   - **Schleifen-Schutz:** kein Auto-Reload in WhatsApp/Facebook/Instagram; wenn die URL schon `v=` oder `_=` hat; wenn sessionStorage nicht schreibbar ist.
 - **`index.html`** bindet das Script nur noch per **`<script src="/boot/boot-build-info.js"></script>`** ein (**kein** Inline-Script für diese Logik – CSP-kompatibel).
 - **NIEMALS** Stale-Check und Server-neuer-Reload entfernen oder „vereinfachen“.

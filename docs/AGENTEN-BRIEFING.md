@@ -1,4 +1,4 @@
-# Anke – Briefing – 05.10.26
+# Anke – Briefing – 06.10.26
 
 > Ankes Briefing für Session-Start. Generiert von `npm run briefing`. Stand, Offen, Proaktiv.
 
@@ -37,7 +37,7 @@
 
 ## Proaktiv (Vorschläge)
 
-- **Uncommitted:** Es gibt noch nicht committete Änderungen – vor Session-Ende: Commit + Push?
+- Beim Wiedereinstieg: DIALOG-STAND lesen, dann einen klaren nächsten Schritt wählen.
 
 ---
 
