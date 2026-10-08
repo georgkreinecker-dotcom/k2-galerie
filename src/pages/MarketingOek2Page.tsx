@@ -34,6 +34,7 @@ import { INSERAT_VIERTEL_SHARE_PATH, shareInseratViertelPdf } from '../utils/ins
 import { shareBlobAsFile } from '../utils/sharePrintFile'
 import { buildShareTextWithPublicLink, getShareableAppUrl } from '../utils/publicShare'
 import Mok2WerbefahrplanTeaser from '../components/mok2/Mok2WerbefahrplanTeaser'
+import { YOGA_AKADEMIE_LIZENZ } from '../config/licencePricing'
 
 /** Einheitliche Eröffnungs-URLs (wie in docs/MARKETING-EROEFFNUNG-K2-OEK2.md Abschnitt Links & QR) */
 const URL_K2_GALERIE = `${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].galerie}`
@@ -657,6 +658,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             <li><a href="#mok2-4" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Fazit & nächste Schritte</strong></a></li>
             <li><a href="#mok2-maerkte-kunst-fokus" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Märkte Kunst-Fokus</strong> (Feature-Kombination)</a></li>
             <li><a href="#mok2-maerkte-ohne-kunst" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Chancen ohne Kunst</strong> (dieselbe Technik)</a></li>
+            <li><a href="#mok2-yoga-at-de" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Yoga-Variante</strong> (Markt Österreich &amp; Deutschland)</a></li>
             <li><a href="#mok2-sweet-spot" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Positionierung Sweet-Spot</strong> (Öffentlichkeitsarbeit)</a></li>
             <li><a href="#mok2-5" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Weitere Ideen & Konzepte</strong></a></li>
             <li><a href="#mok2-6" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Empfehlungs-Programm</strong> (Vertrieb durch Nutzer:innen)</a></li>
@@ -1205,6 +1207,113 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </p>
         <p style={{ marginTop: '0.75rem', fontSize: '0.88rem', color: 'rgba(255,255,255,0.75)' }}>
           <strong>Marktgröße DACH (Schätzung):</strong> <code style={{ color: '#5ffbf1' }}>docs/MARKTGROESSE-DACH-SCHAETZUNG.md</code>
+        </p>
+      </section>
+
+      {/* Yoga-Variante AT/DE – Vermarktungsfähigkeit (Stand Okt. 2026) */}
+      <section id="mok2-yoga-at-de" style={{ marginBottom: '2rem' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Yoga-Variante – Vermarktung Österreich &amp; Deutschland
+        </h2>
+        <p style={{ marginBottom: '0.75rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.6 }}>
+          <strong>Was gemeint ist:</strong> dieselbe K2-Technik (Haus im Netz + Arbeitsfläche + QR), zugeschnitten auf
+          Yoga-Akademien: Lehrgang, Gruppen-Auftritt, Abschluss → eigenes Haus für Absolvent:innen.
+          Preis-Orientierung: <strong>{YOGA_AKADEMIE_LIZENZ.price}</strong> an die Akademie – nicht pro Lehrer:in.
+          Stand: Ausgangspunkt nach dem Gespräch, noch kein öffentlicher Online-Kauf.
+        </p>
+        <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: '#5ffbf1', lineHeight: 1.55, fontWeight: 600 }}>
+          Urteil in einem Satz: In Österreich gut vermarktbar als erste Referenz; in Deutschland deutlich größerer Markt, aber nur mit einer klaren Akademie-Story – nicht als Massen-App für jedes Studio.
+        </p>
+
+        <h3 style={{ fontSize: '1.05rem', color: '#5ffbf1', margin: '1.25rem 0 0.5rem' }}>1. Was der Markt kauft</h3>
+        <p style={{ marginBottom: '0.6rem', fontSize: '0.92rem', color: 'rgba(255,255,255,0.88)', lineHeight: 1.6 }}>
+          Akademien und seriöse Schulen haben ein wiederkehrendes Problem: Nach dem Lehrgang verschwinden Absolvent:innen
+          aus der Sichtbarkeit. Die Website der Schule bleibt das große Haus – die einzelne Lehrerin hat oft nur Instagram
+          oder eine veraltete Seite. Genau dort sitzt diese Variante: <strong>sichtbar bleiben, ohne Webmasterin zu werden</strong>.
+        </p>
+        <ul style={{ lineHeight: 1.65, paddingLeft: '1.2em', margin: '0 0 1rem', fontSize: '0.92rem', color: 'rgba(255,255,255,0.88)' }}>
+          <li><strong>Käuferin:</strong> die Akademie / der Lehrgangsträger (B2B).</li>
+          <li><strong>Nutzerin:</strong> Absolvent:in (Stunden, Kontakt, QR) – zahlt nicht extra.</li>
+          <li><strong>Nicht der Einstieg:</strong> jedes kleine Yogastudio als Einzellizenz (das wäre Wix/Instagram, Preiskampf).</li>
+        </ul>
+
+        <h3 style={{ fontSize: '1.05rem', color: '#5ffbf1', margin: '1.25rem 0 0.5rem' }}>2. Österreich</h3>
+        <p style={{ marginBottom: '0.6rem', fontSize: '0.92rem', color: 'rgba(255,255,255,0.88)', lineHeight: 1.6 }}>
+          Kleiner, überschaubarer Markt – das ist hier ein Vorteil. Fitness/Gesundheit: rund <strong>1.350 Anlagen</strong> (WKO 2024),
+          davon gut <strong>42&nbsp;%</strong> mit Yoga/Pilates. Dazu eigenständige Yogaschulen und Lehrgangs-Anbieter
+          (BYO, YVO, einzelne Akademien). Die Zahl echter <strong>Lehrgangsträger</strong> liegt im niedrigen zweistelligen
+          bis unteren dreistelligen Bereich – nicht Tausende.
+        </p>
+        <ul style={{ lineHeight: 1.65, paddingLeft: '1.2em', margin: '0 0 1rem', fontSize: '0.92rem', color: 'rgba(255,255,255,0.88)' }}>
+          <li><strong>Stärke:</strong> persönliche Gespräche reichen. Eine überzeugte Akademie (wie der aktuelle Ausgangspunkt) wirkt als Referenz im ganzen Land.</li>
+          <li><strong>Preis {YOGA_AKADEMIE_LIZENZ.price}:</strong> für ein Büro mit laufenden Lehrgängen tragbar (ca. 950&nbsp;€/Jahr) – wenn der Nutzen „Alumni sichtbar, weniger Nachfragen“ klar ist.</li>
+          <li><strong>Risiko:</strong> wenige Entscheiderinnen. Ein Nein bei der ersten Adresse verzögert das ganze Bild. Deshalb: zuerst eine lebende Referenz, dann Nachbarschulen.</li>
+          <li><strong>Vermarktungsfähigkeit AT:</strong> <strong>hoch für 1–8 Akademien in 12–24 Monaten</strong>, nicht für Massenvertrieb.</li>
+        </ul>
+
+        <h3 style={{ fontSize: '1.05rem', color: '#5ffbf1', margin: '1.25rem 0 0.5rem' }}>3. Deutschland</h3>
+        <p style={{ marginBottom: '0.6rem', fontSize: '0.92rem', color: 'rgba(255,255,255,0.88)', lineHeight: 1.6 }}>
+          Deutlich größer und unübersichtlicher. Yoga-Markt laut Branchenschätzung im Milliardenbereich (Kurse, Ausbildung, Zubehör).
+          Studios: je nach Zählweise grob <strong>8.000 bis 14.000</strong> Einträge. BDY: größter Berufsverband (mehrere Tausend Mitglieder),
+          anerkannte Ausbildung an rund <strong>35–40 Schulen</strong>. Yoga Vidya bildet in großem Stil aus (eigene Zentren + Kooperationen).
+          Daneben viele 200-Stunden-Anbieter.
+        </p>
+        <ul style={{ lineHeight: 1.65, paddingLeft: '1.2em', margin: '0 0 1rem', fontSize: '0.92rem', color: 'rgba(255,255,255,0.88)' }}>
+          <li><strong>Richtige Zielscheibe DE:</strong> Lehrgangsschulen und Akademien (BDY-Schulen, vergleichbare Träger, Verbund-Modelle) – Dutzende bis niedrige Hunderte Adressen, nicht jedes Studio.</li>
+          <li><strong>Falsche Zielscheibe:</strong> 10.000 Studios kalt anschreiben. Das skaliert nicht zu unserem Gesetz „kein direkter Kundenkontakt als Kanal“ und zersplittert die Geschichte.</li>
+          <li><strong>Wettbewerb:</strong> Website-Baukästen, Instagram, Vereinssoftware, Kursbuchung (Eversports, Wellhub/Partner). K2 gewinnt nicht bei Stundenplan-Buchung – K2 gewinnt bei <strong>Abschluss → eigenes Haus</strong>.</li>
+          <li><strong>Vermarktungsfähigkeit DE:</strong> <strong>mittel bis hoch, aber später</strong>: erst AT-Referenz + eine deutsche Schule, dann Verbände/Netzwerke – nicht umgekehrt.</li>
+        </ul>
+
+        <h3 style={{ fontSize: '1.05rem', color: '#5ffbf1', margin: '1.25rem 0 0.5rem' }}>4. Rechnung (Orientierung, kein Versprechen)</h3>
+        <p style={{ marginBottom: '0.6rem', fontSize: '0.92rem', color: 'rgba(255,255,255,0.88)', lineHeight: 1.6 }}>
+          {YOGA_AKADEMIE_LIZENZ.price} × 12 ≈ <strong>950&nbsp;€ pro Akademie und Jahr</strong>.
+        </p>
+        <ul style={{ lineHeight: 1.65, paddingLeft: '1.2em', margin: '0 0 1rem', fontSize: '0.92rem', color: 'rgba(255,255,255,0.88)' }}>
+          <li>3 Akademien (realistisch nach erstem Ja): ca. 2.800&nbsp;€/Jahr – Beweis, kein Geschäft.</li>
+          <li>10 Akademien: ca. 9.500&nbsp;€/Jahr – tragfähige Nische neben Galerie/VK2.</li>
+          <li>40 Akademien (AT+DE, mehrjährig): ca. 38.000&nbsp;€/Jahr – spürbarer zweiter Strang, ohne Massenvertrieb.</li>
+        </ul>
+        <p style={{ marginBottom: '1rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)', lineHeight: 1.55 }}>
+          Die Hebelwirkung sitzt nicht in 40 Abos allein, sondern darin, dass jede Akademie Dutzende Absolventen-Häuser
+          öffnet – Sichtbarkeit, Empfehlung, später optionale Lehrer-Lizenz. Das darf man erst verkaufen, wenn die Akademie-Fläche wirklich läuft.
+        </p>
+
+        <h3 style={{ fontSize: '1.05rem', color: '#5ffbf1', margin: '1.25rem 0 0.5rem' }}>5. Was den Verkauf trägt – und was ihn tötet</h3>
+        <ul style={{ lineHeight: 1.65, paddingLeft: '1.2em', margin: '0 0 1rem', fontSize: '0.92rem', color: 'rgba(255,255,255,0.88)' }}>
+          <li><strong>Trägt:</strong> fertige Gesprächsmappe, Demo (Akademie / Absolvent / Kurs), ein Preis, kein Tool-Salat, Daten getrennt, QR mit aktuellem Stand.</li>
+          <li><strong>Tötet:</strong> „Wir ersetzen eure Website.“ (tun wir nicht.) „WhatsApp-Button-Chaos.“ (Link kopieren + PDF reicht.) Meta-AI in WhatsApp, die die Seite nicht laden kann – das ist kein Marktbeweis.</li>
+          <li><strong>Datenschutz / Haltung:</strong> Absolventen-Häuser nur auf Einladung, keine Massenanlage – das ist in DACH ein Verkaufsargument, kein Nachteil.</li>
+          <li><strong>Noch nicht verkaufbar als fertiges Produkt:</strong> Lehrgang speichern, echte Mandanten, Stripe – bewusst außerhalb des Ausgangspunkts. Für AT-Pilot reicht Vorzeigen; für DE-Skalierung muss das nachgezogen werden.</li>
+        </ul>
+
+        <h3 style={{ fontSize: '1.05rem', color: '#5ffbf1', margin: '1.25rem 0 0.5rem' }}>6. Wie vermarkten (zu uns passend)</h3>
+        <p style={{ marginBottom: '0.6rem', fontSize: '0.92rem', color: 'rgba(255,255,255,0.88)', lineHeight: 1.6 }}>
+          Kein Kaltakquise-Trommelfeuer, kein direkter Kundenkontakt als Standard. Reihenfolge:
+        </p>
+        <ol style={{ lineHeight: 1.65, paddingLeft: '1.2em', margin: '0 0 1rem', fontSize: '0.92rem', color: 'rgba(255,255,255,0.88)' }}>
+          <li><strong>Ein Ja in Österreich</strong> – lebende Lehrgänge, Mappe + PDF, Referenz zum Zeigen.</li>
+          <li><strong>Zwei bis drei ähnliche Akademien AT</strong> (gleiche Sprache, gleiches Problem) – nur auf Empfehlung / Nachlesen der Mappe.</li>
+          <li><strong>Deutschland:</strong> eine BDY-nahe oder vergleichbare Schule als zweite Referenz – dann Verbände nur als Information, nicht als Massenmail.</li>
+          <li>Öffentlicher Kauf (Stripe) erst, wenn der Ablauf Akademie→Absolvent ohne Vorführen klappt.</li>
+        </ol>
+
+        <h3 style={{ fontSize: '1.05rem', color: '#5ffbf1', margin: '1.25rem 0 0.5rem' }}>7. Fazit</h3>
+        <p style={{ marginBottom: '0.6rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.6 }}>
+          Die Yoga-Variante ist <strong>in Österreich vermarktungsfähig</strong> als Nischen-B2B (Akademie-Lizenz),
+          <strong>in Deutschland vermarktungsfähig in der zweiten Welle</strong> – gleicher Satz, größerer Teich, höhere Ansprüche an Fertigprodukt und Referenz.
+          Sie ist <strong>nicht</strong> die bessere Massen-Galerie und <strong>nicht</strong> ein Instagram-Ersatz für jedes Studio.
+        </p>
+        <p style={{ margin: 0, fontSize: '0.9rem', color: 'rgba(255,255,255,0.82)', lineHeight: 1.55 }}>
+          Nächster sinnvoller Schritt bleibt der Gesprächsverlauf mit der ersten Akademie – nicht eine DE-Kampagne.
+          Gesprächsmappe:{' '}
+          <Link to={PROJECT_ROUTES['k2-yoga'].gespraechsmappe} style={{ color: '#5ffbf1' }}>K2 YOGA Gesprächsmappe</Link>
+          {' '}· Lizenzkarte APf: {YOGA_AKADEMIE_LIZENZ.name}, {YOGA_AKADEMIE_LIZENZ.price}.
+        </p>
+        <p style={{ marginTop: '0.75rem', fontSize: '0.82rem', color: 'rgba(255,255,255,0.65)', lineHeight: 1.5 }}>
+          Quellen (Orientierung, Stand 2025/26): WKO Eckdaten Fitnesswirtschaft Österreich 2025; Listflix/BodyMedia Studiozählung DE;
+          POI-Verzeichnisse Yoga-Studios DE; Grand View Research Yoga-Markt DE; BDY yoga.de (Ausbildungsschulen);
+          Verbände BYO/YVO AT. Zahlen sind Größenordnungen, keine Buchhaltung.
         </p>
       </section>
 

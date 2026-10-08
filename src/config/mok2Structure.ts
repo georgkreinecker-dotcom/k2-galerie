@@ -41,6 +41,7 @@ export const mok2Groups: Mok2Group[] = [
       { id: 'mok2-4', label: '4. Fazit & nächste Schritte' },
       { id: 'mok2-maerkte-kunst-fokus', label: 'Märkte Kunst-Fokus (Feature-Kombination)' },
       { id: 'mok2-maerkte-ohne-kunst', label: 'Chancen ohne Kunst (dieselbe Technik)' },
+      { id: 'mok2-yoga-at-de', label: 'Yoga-Variante – Markt AT & DE' },
       { id: 'mok2-sweet-spot', label: 'Positionierung Sweet-Spot (Öffentlichkeitsarbeit)' },
     ],
   },

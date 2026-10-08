@@ -7,10 +7,11 @@ Alle persönlichen Notizen, Briefe und Gedanken liegen hier in **verschiedenen O
 | Ordner | Inhalt |
 |--------|--------|
 | **diverses/** | Briefe an Freunde, Gedanken über Gott und die Welt, persönliche Texte die ins Vermächtnis fließen |
-| *(weitere nach Bedarf)* | z.B. projekte/, ideen/, vermaechtnis-texte/ |
+| **projekte/** | Technische / handwerkliche Entwürfe (z. B. Meisterstück) |
 
 ## Aktuell
 
+- **projekte/TOEPFERSCHEIBE-MEISTERSTUECK-MASCHINENBAUPLAN.md** – Maschinenbau-Entwurf Töpferscheibe als Meisterprüfungsstück (Lastenheft, Konzept, Auslegung, Stückliste, Fertigung, Sicherheit).
 - **diverses/einladung-freunde-eroeffnung-k2-24-04-2026.md** – Einladung Freunde: Eröffnung 24.04., Mail-Text, **WhatsApp-Kurzversion** (zum Kopieren), Homepage-Links, ök2/VK2 & Präsentationsmappe, Test-Pilot 25 Gratislizenzen (Mail georg.kreinecker@kgm.at). Spiegel: `public/notizen-georg/diverses/` (App-URL `/notizen-georg/diverses/einladung-freunde-eroeffnung-k2-24-04-2026.md`).
 - **diverses/schreiben-an-august-softwarestand-k2.md** – Schreiben an August (Systemprogrammierer): Bitte um Profi-Blick auf den technischen Stand der letzten 2 Monate, inkl. Link auf Softwarestand und Informatiker-Doku. Spiegel: `public/notizen-georg/diverses/` (App-Route: `PROJECT_ROUTES['k2-galerie'].notizenAugustSoftwarestand`).
 - **diverses/brief-an-august.md** – Editerter Brief an August (Muße, Müßiggang, Beziehung zu Gott, Stille und Askese). Daraus abgeleitete Regeln: `.cursor/rules/vermaechtnis-intimitaet-wirken.mdc`

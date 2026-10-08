@@ -1,0 +1,33 @@
+---
+description: System-/Mac-Admin-Kram erledigt Joe – Georg tippt keine Terminal-Anleitungen
+alwaysApply: true
+---
+
+# Systemzeug = Joe erledigt (Georg hat keine Nerven dafür)
+
+## Regel (unveränderlich)
+
+**Mac-Systemkram, Backup-Platten, Time Machine, Festplattenplatz, „geht nicht löschen“, Terminal-Pfade – erledigt die KI selbst.** Georg bekommt **keine** langen Copy-Paste-Anleitungen und **kein** Abtippen von Chat-Text im Terminal.
+
+## Was Joe immer zuerst selbst tut
+
+1. Prüfen (Status, `df`, gemountete Volumes, laufende Prozesse).
+2. Was ohne Extra-Rechte geht: sofort ausführen (Cursor-Terminal, Skripte unter `scripts/mac-admin/` und `scripts/`).
+3. Georg nur kurz informieren: **läuft / fertig / blockiert**.
+4. **Nur wenn der Mac ein Admin-Passwort verlangt:** Eine **einzige** klare Aufforderung – Passwort **nur im Mac-Terminal-Dialog tippen**, **niemals** ins Chat schreiben.
+
+## Verboten
+
+- Chat-Antworten so formulieren, dass Georg ganze Absätze ins Terminal klebt.
+- Georgs Passwort im Chat annehmen oder speichern.
+- Georg durch 5 Spotlight-/Finder-Umwege schicken, wenn Joe den Status selbst lesen kann.
+
+## Erlaubt / gewollt
+
+- Skripte in `scripts/mac-admin/` pflegen und selbst starten.
+- Nach Setup (einmalig, siehe `scripts/mac-admin/00-EINMAL-SUDOERS.md`): passende Admin-Skripte **ohne** erneutes Passwort laufen lassen.
+- backupmicro / Time Machine / Platz-Probleme als **eine** Aufgabe behandeln bis fertig oder klar blockiert.
+
+## Kurzfassung
+
+**Systemzeug = Joe. Georg sagt Bescheid oder schickt einen Screenshot – Joe handelt. Passwort nur lokal tippen, nie im Chat.**

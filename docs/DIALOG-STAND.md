@@ -1,18 +1,18 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Link/PDF-Standard fertig – lokal arbeiten, öffentlich versenden.
+**Was wir JETZT tun:** Session-Ende 08.10.2026. Nächster Einstieg von Georg.
 
-**Einordnung:** Druck/PDF speichern = same-origin OK; Link kopieren / PDF-Versand-Text = immer `getShareableAppUrl` (Vercel). Kein WhatsApp-Sonderbutton in Gesprächsmappe/Zettel. Boot: kein Auto-Reload in WhatsApp/In-App.
+**Einordnung:** Heute: Meisterstück-Arbeitsmappe Töpferscheibe (Desktop) + Time-Machine-Klarheit (nicht mehr mit rm auf TM-Ordnern).
 
-**Nächster Schritt:** Georg testet Gesprächsmappe am Handy: Link kopieren → in WhatsApp einfügen – Mappe lesbar, kein Hängen bei „Laden …“.
+**Nächster Schritt:** von Georg festlegen. Optional: Time Machine einmal „Backup Now“ oder auf automatischen Wochenlauf warten (Ziel = Partition **Backup**).
 
 **Ausgangspunkt Yoga** bleibt: [docs/K2-YOGA-AUSGANGSPUNKT.md](K2-YOGA-AUSGANGSPUNKT.md)
 
 **Was zuletzt gemacht:**
-- `getShareableAppUrl` / `buildShareTextWithPublicLink` – ein Standard für Galerie, Yoga, mök2, Zettel, Pilot, PDF-Versand.
-- **Gesprächsmappe:** nur **Link kopieren** + **Als PDF** (kein WhatsApp-Button).
-- **ZettelAktionsLeiste:** nur **Link kopieren** (öffentlich) + **Als PDF** (dieses Gerät).
-- **Boot:** In-App (WhatsApp etc.) kein Auto-Reload; Fetch-Fehler kein Reload; Loading-Text nur „Laden …“.
-- Tests: `publicShare`, `yogaGespraechsmappe`, `staticPagePdfExport` grün; `qs:local` / Build grün.
-- Feature-Commit: **30c5a944** ✅ (Code: Zettel, Gesprächsmappe, publicShare, Boot)
-- Abschluss: **ba0356d5** – Doku/Briefing; QS: publicShare + yogaGespraechsmappe + staticPagePdfExport grün, build:vercel grün
+- **Arbeitsmappe Töpferscheibe** (Desktop, nicht im Repo): Deckblatt, Maschinenbauplan, Maßskizze, Schnitt, Werkstattzeichnungen WZ-01…07 inkl. Motor/Flansch + Auffangwanne + Stücklisten. Ordner: `~/Desktop/Arbeitsmappe-Toepferscheibe-Meisterstueck/`
+- **Time Machine:** Ziel auf Partition **Backup** (~572 GB frei). Auto-Backup an, Intervall wöchentlich. **Nicht** mit `rm -rf` auf TM-Hardlinks löschen (war die Ursache „zwei Tage löschen“). Skript `--tm-fix` angepasst.
+- **mac-admin:** `scripts/mac-admin/` + Regel `systemzeug-joe-erledigt.mdc`
+- Plan-Quelle im Repo: `docs/notizen-georg/projekte/`
+- Yoga/Link-PDF-Standard zuvor: Commits bis **ba0356d5** / **3ca7540a**
+
+**Backup-Stand (kurz):** Destination = `/Volumes/Backup`. Running = 0. Latest auf Backup noch alt bis nächster Lauf. BACKUPMICRO eng – nicht weiter mit rm aufräumen.
