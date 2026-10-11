@@ -15,6 +15,9 @@ Alle persönlichen Notizen, Briefe und Gedanken liegen hier in **verschiedenen O
 - **diverses/einladung-freunde-eroeffnung-k2-24-04-2026.md** – Einladung Freunde: Eröffnung 24.04., Mail-Text, **WhatsApp-Kurzversion** (zum Kopieren), Homepage-Links, ök2/VK2 & Präsentationsmappe, Test-Pilot 25 Gratislizenzen (Mail georg.kreinecker@kgm.at). Spiegel: `public/notizen-georg/diverses/` (App-URL `/notizen-georg/diverses/einladung-freunde-eroeffnung-k2-24-04-2026.md`).
 - **diverses/schreiben-an-august-softwarestand-k2.md** – Schreiben an August (Systemprogrammierer): Bitte um Profi-Blick auf den technischen Stand der letzten 2 Monate, inkl. Link auf Softwarestand und Informatiker-Doku. Spiegel: `public/notizen-georg/diverses/` (App-Route: `PROJECT_ROUTES['k2-galerie'].notizenAugustSoftwarestand`).
 - **diverses/brief-an-august.md** – Editerter Brief an August (Muße, Müßiggang, Beziehung zu Gott, Stille und Askese). Daraus abgeleitete Regeln: `.cursor/rules/vermaechtnis-intimitaet-wirken.mdc`
+- **diverses/thesenpapier-ki-betriebssystem-weltfrieden.md** – Thesenpapier: Die KI als unbestechliches Betriebssystem des Weltfriedens (11.10.2026).
+- **diverses/umsetzungspapier-ki-betriebssystem-weltfrieden.md** – Technisches Umsetzungspapier dazu: Was fehlt noch zur Umsetzung? (11.10.2026).
+- **diverses/essay-bessere-welt-durch-ki.md** – Essay: Eine mögliche bessere Welt durch KI. Illusion der einen Weltmaschine, Brandmauer, was verspielt wird und was bleibt (11.10.2026).
 
 ## Schnell orientieren (empfohlen)
 

@@ -247,6 +247,11 @@ export default function HundredGenerationFlaechePage() {
             <strong> Schnittfigur in der Fläche</strong>: Silhouette, Spalt, diagonale
             Kante – nicht Volumen, sondern Zeichnung und Freiraum.
           </p>
+          <p>
+            Heute wird diese Axt durch den Code der KI ersetzt. Die Insignie von damals
+            liegt jetzt in der Architektur der Systeme. Die schriftliche Schicht dazu steht
+            im Keramik-Konzept: Essay, Thesenpapier, Umsetzungspapier.
+          </p>
         </section>
 
         <section>

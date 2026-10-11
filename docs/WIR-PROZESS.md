@@ -123,6 +123,8 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 
 ## Session-Reflexion (wird ergänzt)
 
+**Session-Reflexion (11.10.26):** Die eine Weltmaschine bleibt Illusion. Die Brandmauer (Norm, Recht, offene Netze) ist die Form, die sich in Ton sagen lässt – Schnitt, Leere, Kugel, ohne die alten Muster.
+
 **Session-Reflexion (08.10.26):** Time-Machine-Ordner nie mit `rm -rf` (Hardlinks = Tage); bei vollem BACKUPMICRO Ziel auf Partition Backup. Meisterstück-Mappe = fertige Form auf dem Schreibtisch.
 
 **Session-Reflexion (06.10.26):** Link/PDF: ein Standard (öffentlich kopieren vs. lokal drucken); WhatsApp-Sonderbutton weg; Boot hängt in In-App nicht mehr durch Auto-Reload.

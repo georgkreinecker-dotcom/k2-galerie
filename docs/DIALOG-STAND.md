@@ -1,10 +1,12 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Session-Ende 08.10.2026. Nächster Einstieg von Georg.
+**Was wir JETZT tun:** Sechs Keramik-Entwürfe zur bestimmenden Kraft des Codes. Die letzten drei ohne alte Muster: Fuge, Leere, Kugel.
 
-**Einordnung:** Heute: Meisterstück-Arbeitsmappe Töpferscheibe (Desktop) + Time-Machine-Klarheit (nicht mehr mit rm auf TM-Ordnern).
+**Einordnung:** Bilder in `public/100-generation/entwuerfe-code/`. Konzept: `HundredGenerationPage.tsx` Abschnitt „Entwürfe“. Essay hat den kurzen Verweis.
 
-**Nächster Schritt:** von Georg festlegen. Optional: Time Machine einmal „Backup Now“ oder auf automatischen Wochenlauf warten (Ziel = Partition **Backup**).
+**Nächster Schritt:** Georg sagt, welcher der sechs Entwürfe gebaut werden soll oder was an Fuge, Leere oder Kugel anders muss.
+
+**Session-Ende 11.10.26:** Essay, Thesenpapier, Umsetzungspapier, drei gebaute Werke, sechs Code-Entwürfe. Hash steht nach dem Push in „Was zuletzt“.
 
 **Ausgangspunkt Yoga** bleibt: [docs/K2-YOGA-AUSGANGSPUNKT.md](K2-YOGA-AUSGANGSPUNKT.md)
 
@@ -14,5 +16,6 @@
 - **mac-admin:** `scripts/mac-admin/` + Regel `systemzeug-joe-erledigt.mdc`
 - Plan-Quelle im Repo: `docs/notizen-georg/projekte/`
 - Yoga/Link-PDF-Standard zuvor: Commits bis **ba0356d5** / **3ca7540a**
+- Session-Ende-Commit: **799ecef1** ✅ auf GitHub
 
 **Backup-Stand (kurz):** Destination = `/Volumes/Backup`. Running = 0. Latest auf Backup noch alt bis nächster Lauf. BACKUPMICRO eng – nicht weiter mit rm aufräumen.

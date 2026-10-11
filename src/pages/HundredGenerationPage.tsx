@@ -19,6 +19,60 @@ const KERAMIK_ENTWUERFE = [
   ...HUNDRED_GENERATION_UEBERSICHTEN.map((u) => ({ src: u.src, title: u.title, note: u.note })),
 ] as const
 
+const UMGESETZTE_WERKE = [
+  {
+    src: '/100-generation/umgesetzt/werk-01-axtblatt-ahnenraster.jpg',
+    title: 'Werk 1 · Axtblatt',
+    note: 'Köper über die ganze Fläche. In der Mitte das Ahnenraster, rosa eingelegt. Die Axt trägt den Code schon auf sich.',
+  },
+  {
+    src: '/100-generation/umgesetzt/werk-02-stele.jpg',
+    title: 'Werk 2 · Stele',
+    note: 'Rauer Fuß, darüber der Stamm. Links geprägtes Muster, rechts Punktfeld. Chaos steigt in Ordnung auf.',
+  },
+  {
+    src: '/100-generation/umgesetzt/werk-03-bogen.jpg',
+    title: 'Werk 3 · Bogen',
+    note: 'Grober Ring, im Durchbruch das helle Pyramidenraster, unten ein feines Linienband. Der Code sitzt im Spalt.',
+  },
+] as const
+
+const CODE_ENTWUERFE = [
+  {
+    src: '/100-generation/entwuerfe-code/entwurf-code-01-brandmauer.jpg',
+    title: 'Entwurf 1 · Brandmauer',
+    note: 'Die raue Masse läuft gegen eine Naht und kommt nicht weiter. Dahinter Köper und Ahnenraster. Der Code bestimmt die Grenze.',
+  },
+  {
+    src: '/100-generation/entwuerfe-code/entwurf-code-02-weg-endet.jpg',
+    title: 'Entwurf 2 · Der Weg endet',
+    note: 'Ein rissiger Fluss aus Ton stirbt an der Musterplatte. Wer die Bauart bricht, verliert den Weg. Kein Schlag, ein Ende.',
+  },
+  {
+    src: '/100-generation/entwuerfe-code/entwurf-code-03-norm-im-kern.jpg',
+    title: 'Entwurf 3 · Norm im Kern',
+    note: 'Die schwere Masse hängt an einer Säule aus Code. Ohne dieses Rückgrat sackt die Form zusammen. Die Norm trägt.',
+  },
+] as const
+
+const CODE_ENTWUERFE_OHNE_MUSTER = [
+  {
+    src: '/100-generation/entwuerfe-code/entwurf-code-04-horizont.jpg',
+    title: 'Entwurf 4 · Die Fuge',
+    note: 'Kein Muster. Eine gemessene waagrechte Lücke schneidet die raue Säule. Der Code ist der Schnitt.',
+  },
+  {
+    src: '/100-generation/entwuerfe-code/entwurf-code-05-leere.jpg',
+    title: 'Entwurf 5 · Die Leere',
+    note: 'Kein Flechtwerk. Ein genauer Kreis aus Nichts durch die grobe Platte. Was fehlt, bestimmt das Stück.',
+  },
+  {
+    src: '/100-generation/entwuerfe-code/entwurf-code-06-kugel.jpg',
+    title: 'Entwurf 6 · Die Kugel',
+    note: 'Keine Raster. Eine genaue Kugel trägt die wirre Masse. Die ideale Form ist das Gesetz.',
+  },
+] as const
+
 export default function HundredGenerationPage() {
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -133,6 +187,14 @@ export default function HundredGenerationPage() {
           color: var(--hg-muted);
           margin: 0 0 2rem;
         }
+        .hundert-generation-page .hg-schriften {
+          margin: 0.4rem 0 0;
+          padding-left: 1.15rem;
+          color: var(--hg-ink);
+        }
+        .hundert-generation-page .hg-schriften a {
+          color: var(--hg-accent);
+        }
         .hundert-generation-page .hg-entwuerfe-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
@@ -175,6 +237,45 @@ export default function HundredGenerationPage() {
         .hundert-generation-page .hg-entwurf figcaption span {
           font-size: 0.72rem;
           color: var(--hg-muted);
+        }
+        .hundert-generation-page .hg-werke-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 0.85rem;
+          margin: 0.75rem 0 0;
+        }
+        .hundert-generation-page .hg-werk {
+          margin: 0;
+          background: rgba(0, 0, 0, 0.25);
+          border: 1px solid rgba(212, 160, 23, 0.35);
+          border-radius: 10px;
+          overflow: hidden;
+        }
+        .hundert-generation-page .hg-werk img {
+          display: block;
+          width: 100%;
+          height: auto;
+          background: #f4efe8;
+        }
+        .hundert-generation-page .hg-werk figcaption {
+          padding: 0.65rem 0.75rem 0.8rem;
+          font-family: system-ui, sans-serif;
+        }
+        .hundert-generation-page .hg-werk figcaption strong {
+          display: block;
+          font-size: 0.95rem;
+          color: var(--hg-ink);
+          margin-bottom: 0.25rem;
+        }
+        .hundert-generation-page .hg-werk figcaption span {
+          font-size: 0.82rem;
+          line-height: 1.4;
+          color: var(--hg-muted);
+        }
+        @media (max-width: 800px) {
+          .hundert-generation-page .hg-werke-grid {
+            grid-template-columns: 1fr;
+          }
         }
         .hundert-generation-page section {
           margin: 0 0 1.75rem;
@@ -250,8 +351,12 @@ export default function HundredGenerationPage() {
           }
           .hundert-generation-page .hg-subtitle,
           .hundert-generation-page .hg-lede,
-          .hundert-generation-page footer.hg-foot {
+          .hundert-generation-page footer.hg-foot,
+          .hundert-generation-page .hg-werk figcaption span {
             color: #5c5650;
+          }
+          .hundert-generation-page .hg-werk figcaption strong {
+            color: #1c1a18;
           }
           .hundert-generation-page .seitenfuss {
             display: block;
@@ -297,6 +402,60 @@ export default function HundredGenerationPage() {
           (Chaosgötter und KI) und mit dem keramischen Prozess selbst: der
           Metamorphose des Materials von formlosem Ton zu dauerhaftem Stein.
         </p>
+
+        <section id="umgesetzt">
+          <h2>Schon gebaut</h2>
+          <p>
+            Drei Werke stehen bereits in Ton. Sie sind der Anfang der Serie:
+            die Axt trägt das Raster, die Stele steigt aus dem Chaos, der Bogen
+            hält den Code im Spalt.
+          </p>
+          <div className="hg-werke-grid">
+            {UMGESETZTE_WERKE.map((werk) => (
+              <figure key={werk.src} className="hg-werk">
+                <img src={werk.src} alt={werk.title} />
+                <figcaption>
+                  <strong>{werk.title}</strong>
+                  <span>{werk.note}</span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+
+        <section id="code-entwuerfe">
+          <h2>Entwürfe – die bestimmende Kraft des Codes</h2>
+          <p>
+            Zum Essay der Weltordnung. Drei Formen, noch nicht gebaut. Der Code
+            bestimmt, wo die Masse aufhört, wo ein Weg endet und was die Form trägt.
+          </p>
+          <div className="hg-werke-grid">
+            {CODE_ENTWUERFE.map((werk) => (
+              <figure key={werk.src} className="hg-werk">
+                <img src={werk.src} alt={werk.title} />
+                <figcaption>
+                  <strong>{werk.title}</strong>
+                  <span>{werk.note}</span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+          <p>
+            Drei weitere Entwürfe, abseits von Köper, Ahnenraster und Pyramiden.
+            Hier bestimmen Schnitt, Leere und Kugel.
+          </p>
+          <div className="hg-werke-grid">
+            {CODE_ENTWUERFE_OHNE_MUSTER.map((werk) => (
+              <figure key={werk.src} className="hg-werk">
+                <img src={werk.src} alt={werk.title} />
+                <figcaption>
+                  <strong>{werk.title}</strong>
+                  <span>{werk.note}</span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
 
         <section id="entwuerfe" className="no-print">
           <h2>KI-Entwürfe – Keramikmodelle</h2>
@@ -372,7 +531,55 @@ export default function HundredGenerationPage() {
         </section>
 
         <section>
-          <h2>3. Der keramische Prozess – Metamorphose des Materials</h2>
+          <h2>3. Heute – die Axt wird durch den Code der KI ersetzt</h2>
+          <p>
+            Die Zeremonialaxt war die Insignie des Wendepunkts: Respekt, Wissen, die Macht,
+            Chaos zu ordnen. Heute wird diese Axt durch den Code der Künstlichen Intelligenz
+            ersetzt. Was damals in der Hand lag, liegt jetzt in der Architektur der Systeme.
+            Der Code speichert, ordnet und entscheidet mit, wer handeln kann.
+          </p>
+          <p>
+            Das Flechtmuster der Axt war bereits Code: ein über Generationen perfektioniertes
+            Datenraster. Der Schritt von heute ist schärfer. Nicht nur das Muster steht für
+            Wissen. Der Code selbst ist die neue Insignie. Er tritt an die Stelle der Axt.
+          </p>
+          <p>
+            <span className="hg-label">Schriften dieses Schritts</span>
+            Drei Texte gehören zum Konzept. Sie sind die schriftliche Schicht der Ausstellung,
+            kein Beiwerk. Der Essay trägt die Linie. Thesenpapier und Umsetzungspapier tragen
+            den Anspruch und die Grenze.
+          </p>
+          <p>
+            Die eine unbestechliche Weltmaschine, die den Frieden erzwingt, ist eine Illusion.
+            Was bleibt, ist die Brandmauer: Norm im Kern, Recht und Beleg, offene Netze. Gebaut
+            wird sie im gewöhnlichen Leben. Der Krieg bleibt ausgespart. Ein Stück der Chance
+            wird verspielt. Die ganze Chance nicht. Die Maschine ersetzt den Menschen nicht.
+            Sie kann zur digitalen Brandmauer werden, wenn die Norm öffentlich, prüfbar und für
+            viele gültig ist. Wer die Spielregeln bricht, soll es schwerer haben, weil die
+            gemeinsame Bauart den Bruch teuer macht. So hat die Axt das Chaos nicht abgeschafft.
+            Sie hat es gezeichnet. Der Code zeichnet es heute.
+          </p>
+          <ul className="hg-schriften">
+            <li>
+              <a href="/notizen-georg/diverses/essay-bessere-welt-durch-ki.md">
+                Essay · Eine mögliche bessere Welt durch KI
+              </a>
+            </li>
+            <li>
+              <a href="/notizen-georg/diverses/thesenpapier-ki-betriebssystem-weltfrieden.md">
+                Thesenpapier · Die KI als unbestechliches Betriebssystem des Weltfriedens
+              </a>
+            </li>
+            <li>
+              <a href="/notizen-georg/diverses/umsetzungspapier-ki-betriebssystem-weltfrieden.md">
+                Umsetzungspapier · Was fehlt noch zur Umsetzung
+              </a>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>4. Der keramische Prozess – Metamorphose des Materials</h2>
           <p>
             Parallel zur Geschichte von Chaos und Code steht der keramische Prozess selbst im
             Zentrum der Ausstellung. Keramik ist keine bloße Technik, mit der Motive auf Ton
@@ -411,7 +618,7 @@ export default function HundredGenerationPage() {
         </section>
 
         <section>
-          <h2>4. Die drei plastischen Elemente – auf jedem Objekt</h2>
+          <h2>5. Die drei plastischen Elemente – auf jedem Objekt</h2>
           <p>
             Jedes Werk der Serie ist ein autonomes Einzelstück: Es komprimiert die gesamte
             Evolutionstheorie und bildet alle drei Elemente gleichzeitig ab – zugleich die Stufen
@@ -440,7 +647,7 @@ export default function HundredGenerationPage() {
         </section>
 
         <section>
-          <h2>5. Die Ausstellungsserie – drei autonome Einzelvarianten</h2>
+          <h2>6. Die Ausstellungsserie – drei autonome Einzelvarianten</h2>
           <p>
             Mehrere Einzelobjekte variieren das Thema aus unterschiedlichen bildhauerischen
             Blickwinkeln – jeweils so, dass auch der Prozess der Materie ablesbar bleibt.
@@ -477,7 +684,7 @@ export default function HundredGenerationPage() {
         </section>
 
         <section>
-          <h2>6. Materialästhetik und Ausführung</h2>
+          <h2>7. Materialästhetik und Ausführung</h2>
           <p>
             <span className="hg-label">Scherben</span>
             Kontrast zwischen grobem, eisenhaltigem Steinzeugton (Chaos, erdige Masse) und feinem,

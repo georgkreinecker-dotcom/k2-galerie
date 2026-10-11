@@ -49,7 +49,7 @@ export const AHNENRASTER_BLATT = {
   wasWirWissen: [
     'Di Kurugu = Zeremonialaxt aus dem Mount-Hagen-Gebiet (u. a. Jimi-/Wahgi-Tal); Steinblatt, Holzschaft, Pflanzenfaser-Flechtung.',
     'Historisch: Status, Brautpreis/Tausch, Clan – nicht Alltagswerkzeug zum Holzhacken.',
-    'Im Projekt: Axt als realer Anker (Bruder des Künstlers, 1960er, Clan-Aufnahme); Flechtwerk = Generationen-Wissen / „Code“.',
+    'Im Projekt: Axt als realer Anker (Bruder des Künstlers, 1960er, Clan-Aufnahme); Flechtwerk = Generationen-Wissen / „Code“. Heute wird die Axt durch den Code der KI ersetzt.',
     'Name „Ahnenraster“ = unsere Bezeichnung für die Labyrinth-Platte an 4M (künstlerische Form, angelehnt an Di-Kurugu-Musterdenken).',
     'Herkunft der Platte auf 4M: KI-Bild (Cursor GenerateImage) mit Di-Kurugu-Fotos als Stimmung – es gab kein fertiges CAD. Foto = Ausschnitt aus dem Modellbild.',
     'Zeichnung jetzt: Weiß = erhabener Steg, Schwarz = Zwischenraum; unten geschlossen. CNC erst nach Freigabe.',

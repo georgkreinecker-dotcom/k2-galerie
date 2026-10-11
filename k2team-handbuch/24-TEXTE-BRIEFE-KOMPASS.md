@@ -29,6 +29,9 @@ Regel: **Ein Zweck = ein Hauptdokument**.
 | Andreas den aktuellen Stand zeigen willst | `brief-an-andreas.md` | `docs/notizen-georg/diverses/` |
 | August persoenlich schreiben willst (Vermachtnis-Ton) | `brief-an-august.md` | `docs/notizen-georg/diverses/` |
 | August den technischen Stand schicken willst | `schreiben-an-august-softwarestand-k2.md` | `docs/notizen-georg/diverses/` |
+| das Thesenpapier zur KI als Friedens-Betriebssystem lesen willst | `thesenpapier-ki-betriebssystem-weltfrieden.md` | `docs/notizen-georg/diverses/` |
+| das technische Umsetzungspapier dazu lesen willst | `umsetzungspapier-ki-betriebssystem-weltfrieden.md` | `docs/notizen-georg/diverses/` |
+| den Essay zur möglichen besseren Welt durch KI lesen willst | `essay-bessere-welt-durch-ki.md` | `docs/notizen-georg/diverses/` |
 | eine fertige Ansprache an Kuenstler:in/Verein brauchst | `KOMMUNIKATION-VORLAGE-ANSPRACHE-KUENSTLER-VEREIN.md` | `docs/` |
 | eine fertige E-Mail-Vorlage brauchst | `KOMMUNIKATION-EMAIL-VORLAGEN.md` | `docs/` |
 | einen Flyer-/Handout-Text brauchst | `KOMMUNIKATION-FLYER-HANDOUT.md` | `docs/` |
@@ -45,6 +48,9 @@ In den Notizen sind aktuell diese Briefe/Schreiben enthalten (vollstaendig):
 - `brief-an-august.md`
 - `schreiben-an-august-softwarestand-k2.md`
 - `einladung-freunde-eroeffnung-k2-24-04-2026.md`
+- `thesenpapier-ki-betriebssystem-weltfrieden.md`
+- `umsetzungspapier-ki-betriebssystem-weltfrieden.md`
+- `essay-bessere-welt-durch-ki.md`
 
 ---
 
