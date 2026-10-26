@@ -8,6 +8,8 @@ Im Netz ist viel Lärm. Hass, Lüge, Menschen, die einander herunterziehen, weil
 
 Ich will nicht kämpfen.
 
+Ich bin nicht der einzige mit diesem Traum. Es sind viele. Sie sehen einander kaum, weil der Lärm lauter ist als sie. Dieses Blatt ist eine Lampe, keine Hauptstadt. Wer denselben Traum hat, erkennt sich hier und muss dafür keinen Streit gewinnen.
+
 Das Gute verbreitet sich nicht als Feldzug. Es verbreitet sich, indem es da ist und eine Tür offen lässt. Ein Werk, das man ansehen kann. Ein Satz, der gerade ist. Ein Haus, in das jemand gehen kann, der aus dem Lärm herauswill. Wer Hass sucht, findet ihn überall. Wer eine gerade Stelle sucht, soll sie finden, ohne erst einen Streit gewinnen zu müssen.
 
 Meine Botschaft ist schlicht.
