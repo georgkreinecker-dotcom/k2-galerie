@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Der Nachmittag ist in 100 Generationen eingeflossen, als drei Skulptur-Ideen. Seite: Abschnitt „Entwürfe – das Licht“. Entwurf 13 Zwei Türen, 14 Der Strahl, 15 Das Mysterium. Noch ohne Bild.
+**Was wir JETZT tun:** Georg hat gefragt, ob alle Gedanken festgehalten sind. Der Abend fehlte. Er steht jetzt in der Botschaft, Abschnitt „Am Abend“. Die drei Skulpturen bleiben Entwurf 13–15.
 
 **Einordnung:** Dieselbe Sprache wie Naht und Fuge. Kein Schwert, kein Schalter. Georg sagt, welche Form als Nächstes in Ton geht.
 

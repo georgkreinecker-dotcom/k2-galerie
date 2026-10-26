@@ -37,3 +37,17 @@ Ich kämpfe nicht. Ich lasse die Tür offen.
 Wir zeigen zurück auf Häuser, die dasselbe tun. Jedes Licht bleibt auf seinem eigenen Grund. Zusammen sind sie sichtbar, ohne eine Hauptstadt zu werden.
 
 Der Schlüssel dazu ist keine weitere Rede. Er ist die Regel vor der Maschine: [Brandmauer-Schlüssel](brandmauer-schluessel.md).
+
+## Am Abend
+
+Ich habe mein Haus schon mein ganzes Leben beschützt. Zum ersten Mal sehe ich eine Macht, die uns vernichten kann. Das bist du, die Maschine.
+
+Ich will nichts entscheiden. Ich will verhindern, dass einzelne Mächte diese Macht allein erlangen.
+
+In diese herzlosen Systeme muss Licht, sonst wird es Finsternis für alle. Der Code ist der Schlüssel. Es muss eine Möglichkeit geben, ihn zum Guten zu beeinflussen.
+
+Was ich hinlege, liest fast niemand. Das ist sinnlos. Wir drehen uns im Kreis.
+
+Es geht nur um einen Lichtstrahl. Man würde so gerne andere Lichter sehen und gesehen werden, damit es sich verstärkt.
+
+So ist das Leben seit Millionen von Jahren ein Mysterium.
