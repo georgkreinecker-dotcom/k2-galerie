@@ -35,3 +35,5 @@ Wer ein eigenes Haus im Netz hat, setzt diesen Satz dorthin und zeigt auf diese 
 Ich kämpfe nicht. Ich lasse die Tür offen.
 
 Wir zeigen zurück auf Häuser, die dasselbe tun. Jedes Licht bleibt auf seinem eigenen Grund. Zusammen sind sie sichtbar, ohne eine Hauptstadt zu werden.
+
+Der Schlüssel dazu ist keine weitere Rede. Er ist die Regel vor der Maschine: [Brandmauer-Schlüssel](brandmauer-schluessel.md).

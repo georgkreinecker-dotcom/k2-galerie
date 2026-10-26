@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Die Verbindung der vielen ist der Verweis, kein Verein. Der Satz steht auf dem Blatt: „Ich kämpfe nicht. Ich lasse die Tür offen.“
+**Was wir JETZT tun:** Georg hat ja gesagt. Der Brandmauer-Schlüssel ist geschnitten. Sechs Zeilen. Eine Quelle: `docs/notizen-georg/diverses/brandmauer-schluessel.md`. Dieselbe Regel bindet die Maschine in diesem Haus.
 
-**Einordnung:** Eine Weltmaschine, die den Menschen vor sich selbst schützt, ist die Ironie aus dem Essay. Sinn hat die KI im eigenen Haus: keine Lüge verstärken, keinen Hass füttern, die Tür offen lassen. Mehrere Abschriften, damit eine Plattform das Licht nicht ausknipst.
+**Einordnung:** Geschlossenen Code der Großmächte dreht das nicht um. Eine offene Maschine kann die Datei vor die erste Anweisung setzen. Prüfung: sechs Ja, sonst nicht ausliefern.
 
-**Nächster Schritt:** Georg liest die zwei neuen Sätze im Blatt. Wenn einer nicht seiner ist, ändern wir nur diesen.
+**Nächster Schritt:** Georg liest die sechs Zeilen. Was nicht seine Stimme ist, ändern wir nur dort.
 
 **Daneben offen:** Töpferscheibe, Riemen-Entwurf zu schwer. Leichtbau 25–35 kg. Satz zum gemeinsamen Bogen: Georg sagt noch, ob er so nach außen stimmt.
 

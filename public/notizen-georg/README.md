@@ -19,6 +19,7 @@ Alle persönlichen Notizen, Briefe und Gedanken liegen hier in **verschiedenen O
 - **diverses/umsetzungspapier-ki-betriebssystem-weltfrieden.md** – Technisches Umsetzungspapier dazu: Was fehlt noch zur Umsetzung? (11.10.2026).
 - **diverses/essay-bessere-welt-durch-ki.md** – Essay: Eine mögliche bessere Welt durch KI. Illusion der einen Weltmaschine, Brandmauer, was verspielt wird und was bleibt (11.10.2026).
 - **diverses/botschaft-des-guten-im-netz.md** – Kein Kampf. Die Botschaft des Guten im Netz: eine offene Tür statt einer Gegenrede (26.10.2026). Liegt neben dem Essay.
+- **diverses/brandmauer-schluessel.md** – Der Schlüssel. Sechs Zeilen, die vor eine offene Maschine gesetzt werden. Dieselbe Regel bindet die Maschine in diesem Haus (26.10.2026).
 
 ## Schnell orientieren (empfohlen)
 

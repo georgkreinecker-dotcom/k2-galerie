@@ -601,8 +601,8 @@ export default function HundredGenerationPage() {
             <span className="hg-label">Schriften dieses Schritts</span>
             Drei Texte gehören zum Konzept. Sie sind die schriftliche Schicht der Ausstellung,
             kein Beiwerk. Der Essay trägt die Linie. Thesenpapier und Umsetzungspapier tragen
-            den Anspruch und die Grenze. Die Botschaft sagt, wie das Licht hinausgeht. Nicht
-            als Schlag. Als offene Tür.
+            den Anspruch und die Grenze.             Die Botschaft sagt, wie das Licht hinausgeht. Nicht
+            als Schlag. Als offene Tür. Der Schlüssel ist die Regel vor der Maschine.
           </p>
           <p>
             Die eine unbestechliche Weltmaschine, die den Frieden erzwingt, ist eine Illusion.
@@ -615,6 +615,11 @@ export default function HundredGenerationPage() {
             Sie hat es gezeichnet. Der Code zeichnet es heute.
           </p>
           <ul className="hg-schriften">
+            <li>
+              <a href="/notizen-georg/diverses/brandmauer-schluessel.md">
+                Schlüssel · Die Regel vor der Maschine
+              </a>
+            </li>
             <li>
               <a href="/notizen-georg/diverses/botschaft-des-guten-im-netz.md">
                 Botschaft · Das Gute im Netz, ohne Kampf
