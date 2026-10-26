@@ -790,7 +790,7 @@ export default function HundredGenerationEntwurfsmappePage() {
         <p className="kicker">100 Generationen · Arbeitsplatz</p>
         <h1>Entwurfsmappe</h1>
         <div className="chapters">
-          <Link to={HUNDRED_GENERATION_ROUTE}>🏺 Keramik – Konzept</Link>
+          <Link to={HUNDRED_GENERATION_ROUTE}>🏺 Rundgang</Link>
           <span className="is-active">🗂️ Entwurfsmappe</span>
           <Link to={HUNDRED_GENERATION_FLAECHE_ROUTE}>🖼️ Fläche</Link>
         </div>
@@ -816,10 +816,10 @@ export default function HundredGenerationEntwurfsmappePage() {
             </div>
           ))}
           <p className="hint">
-            Die Stimme dazu steht im Werk:{' '}
-            <Link to={`${HUNDRED_GENERATION_ROUTE}#botschaft`}>Botschaft des Guten</Link>
-            . Der Essay steht im selben Werk unter{' '}
-            <Link to={`${HUNDRED_GENERATION_ROUTE}#essay`}>Essay</Link>.
+            Die Stimme dazu steht im fünften Schritt des Rundgangs:{' '}
+            <Link to={`${HUNDRED_GENERATION_ROUTE}#licht`}>Das Licht</Link>
+            . Der Essay steht im dritten Schritt:{' '}
+            <Link to={`${HUNDRED_GENERATION_ROUTE}#code`}>Der Code</Link>.
           </p>
         </div>
 

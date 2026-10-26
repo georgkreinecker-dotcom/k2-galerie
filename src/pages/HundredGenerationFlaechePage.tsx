@@ -204,7 +204,7 @@ export default function HundredGenerationFlaechePage() {
         <h1>100 Generationen</h1>
         <p className="hg-subtitle">Fläche &amp; Code: Die Evolution des Bildes</p>
         <div className="hg-chapters no-print">
-          <Link to={HUNDRED_GENERATION_ROUTE}>🏺 Keramik – Konzept</Link>
+          <Link to={HUNDRED_GENERATION_ROUTE}>🏺 Rundgang</Link>
           <Link to={HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE}>🗂️ Entwurfsmappe</Link>
           <span className="is-active">🖼️ Fläche – Bild</span>
         </div>

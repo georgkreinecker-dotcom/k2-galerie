@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Essay und Botschaft sind Teil von 100 Generationen. Essay steht in Kapitel 3, lesbar auf hellem Blatt. Botschaft steht bei den Licht-Körpern. Oben in der Leiste: Essay und Botschaft.
+**Was wir JETZT tun:** 100 Generationen ist ein Rundgang. Fünf Schritte, zu jedem das Objekt. Die Schrift führt durch den Gedanken. Essay = Schritt 3 (Code). Botschaft = Schritt 5 (Licht).
 
-**Einordnung:** Dieselbe Sprache wie Naht und Fuge. Kein Schwert, kein Schalter. Georg sagt, welche Form als Nächstes in Ton geht.
+**Einordnung:** Georg: noch etwas durcheinander, aber guter Anfang. Ziel = Ausstellung mit Objekten zu den Entwicklungen plus eine Ausstellungsschrift. Kein zweites Blatt, kein Schalter.
 
-**Nächster Schritt:** Georg wählt eine der drei Formen, oder ändert eine, die nicht seine ist. Nichts anderes anlegen.
+**Nächster Schritt:** Georg geht den Rundgang durch und sagt, welcher Schritt noch nicht seiner ist. Nichts Neues anlegen, bis er das sagt.
 
 **Daneben offen:** Töpferscheibe, Riemen-Entwurf zu schwer. Leichtbau 25–35 kg. Satz zum gemeinsamen Bogen: Georg sagt noch, ob er so nach außen stimmt.
 

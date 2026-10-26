@@ -5,7 +5,6 @@ import {
   HUNDRED_GENERATION_LICHT,
   HUNDRED_GENERATION_LICHT_FOTO,
   HUNDRED_GENERATION_MODELLE,
-  HUNDRED_GENERATION_UEBERSICHTEN,
 } from '../config/hundredGenerationEntwuerfe'
 import { HundredGenerationSchrift } from '../components/hundredGeneration/HundredGenerationSchrift'
 import '../App.css'
@@ -15,27 +14,20 @@ import '../App.css'
  * Eigenständig von der K2-Galerie-Software; fertige Lese- und Druckfassung.
  */
 
-const KERAMIK_ENTWUERFE = [
-  ...HUNDRED_GENERATION_MODELLE.filter((m) => m.gruppe === 'serie' || m.gruppe === 'mythos').map(
-    (m) => ({ src: m.src, title: m.title, note: m.note })
-  ),
-  ...HUNDRED_GENERATION_UEBERSICHTEN.map((u) => ({ src: u.src, title: u.title, note: u.note })),
-] as const
-
 const UMGESETZTE_WERKE = [
   {
     src: '/100-generation/umgesetzt/werk-01-axtblatt-ahnenraster.jpg',
-    title: 'Werk 1 · Axtblatt',
+    title: 'Axtblatt',
     note: 'Köper über die ganze Fläche. In der Mitte das Ahnenraster, rosa eingelegt. Die Axt trägt den Code schon auf sich.',
   },
   {
     src: '/100-generation/umgesetzt/werk-02-stele.jpg',
-    title: 'Werk 2 · Stele',
+    title: 'Stele',
     note: 'Rauer Fuß, darüber der Stamm. Links geprägtes Muster, rechts Punktfeld. Chaos steigt in Ordnung auf.',
   },
   {
     src: '/100-generation/umgesetzt/werk-03-bogen.jpg',
-    title: 'Werk 3 · Bogen',
+    title: 'Bogen',
     note: 'Grober Ring, im Durchbruch das helle Pyramidenraster, unten ein feines Linienband. Der Code sitzt im Spalt.',
   },
 ] as const
@@ -76,6 +68,28 @@ const CODE_ENTWUERFE_OHNE_MUSTER = [
   },
 ] as const
 
+const CHAOSGOTT = HUNDRED_GENERATION_MODELLE.find((m) => m.id === 'chaosgott')
+
+function WerkRaster({
+  werke,
+}: {
+  werke: readonly { src: string; title: string; note: string }[]
+}) {
+  return (
+    <div className="hg-werke-grid">
+      {werke.map((werk) => (
+        <figure key={werk.src} className="hg-werk">
+          <img src={werk.src} alt={werk.title} />
+          <figcaption>
+            <strong>{werk.title}</strong>
+            <span>{werk.note}</span>
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+  )
+}
+
 const FUGEN_ENTWUERFE = [
   {
     src: '/100-generation/entwuerfe-code/entwurf-fuge-01-polygon-frei.jpg',
@@ -112,8 +126,9 @@ const FUGEN_ENTWUERFE = [
 export default function HundredGenerationPage() {
   useEffect(() => {
     if (typeof window === 'undefined') return
-    if (window.location.hash !== '#entwuerfe') return
-    const el = document.getElementById('entwuerfe')
+    const id = window.location.hash.replace('#', '')
+    if (!id) return
+    const el = document.getElementById(id)
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [])
 
@@ -295,7 +310,7 @@ export default function HundredGenerationPage() {
         }
         .hundert-generation-page .hg-werke-grid {
           display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
           gap: 0.85rem;
           margin: 0.75rem 0 0;
         }
@@ -327,12 +342,8 @@ export default function HundredGenerationPage() {
           line-height: 1.4;
           color: var(--hg-muted);
         }
-        @media (max-width: 800px) {
-          .hundert-generation-page .hg-werke-grid {
-            grid-template-columns: 1fr;
-          }
-        }
         .hundert-generation-page section {
+          scroll-margin-top: 0.75rem;
           margin: 0 0 1.75rem;
           padding: 1.15rem 1.2rem;
           background: var(--hg-panel);
@@ -443,13 +454,15 @@ export default function HundredGenerationPage() {
           </div>
         </nav>
 
-        <p className="hg-kicker">Künstlerisches Projekt · Kapitel Keramik</p>
+        <p className="hg-kicker">Ausstellung · Objekte und Schrift</p>
         <h1>100 Generationen</h1>
         <p className="hg-subtitle">Chaos &amp; Code: Die Evolution des Musters</p>
         <div className="hg-chapters no-print">
-          <span className="is-active">🏺 Keramik – Konzept</span>
-          <a href="#essay">Essay</a>
-          <a href="#botschaft">Botschaft</a>
+          <a href="#chaos">1 · Chaos</a>
+          <a href="#axt">2 · Axt</a>
+          <a href="#code">3 · Code</a>
+          <a href="#stein">4 · Stein</a>
+          <a href="#licht">5 · Licht</a>
           <Link to={HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE}>🗂️ Entwurfsmappe</Link>
           <Link to={HUNDRED_GENERATION_FLAECHE_ROUTE}>🖼️ Fläche – Bild</Link>
         </div>
@@ -461,171 +474,52 @@ export default function HundredGenerationPage() {
           ist das Wissen von heute. Öffentlich bleibt er ein Rezept. Verschlossen
           wird er der nächste Stein.
         </p>
+        <p className="hg-lede">
+          Der Rundgang hat fünf Schritte. Zu jedem Schritt steht ein Objekt,
+          gebaut oder als Entwurf. Die Schrift führt durch den Gedanken dahinter.
+          Essay und Botschaft sind keine eigenen Räume. Sie sind die Schrift des
+          dritten und des fünften Schritts. Die Entwurfsmappe ist die Werkstatt,
+          nicht der Gang.
+        </p>
 
-        <section id="umgesetzt">
-          <h2>Schon gebaut</h2>
-          <p>
-            Drei Werke stehen bereits in Ton. Sie sind der Anfang der Serie:
-            die Axt trägt das Raster, die Stele steigt aus dem Chaos, der Bogen
-            hält den Code im Spalt.
-          </p>
-          <div className="hg-werke-grid">
-            {UMGESETZTE_WERKE.map((werk) => (
-              <figure key={werk.src} className="hg-werk">
-                <img src={werk.src} alt={werk.title} />
-                <figcaption>
-                  <strong>{werk.title}</strong>
-                  <span>{werk.note}</span>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-        </section>
-
-        <section id="code-entwuerfe">
-          <h2>Entwürfe – die bestimmende Kraft des Codes</h2>
-          <p>
-            Zum Essay der Weltordnung. Drei Formen, noch nicht gebaut. Der Code
-            bestimmt, wo die Masse aufhört, wo ein Weg endet und was die Form trägt.
-          </p>
-          <div className="hg-werke-grid">
-            {CODE_ENTWUERFE.map((werk) => (
-              <figure key={werk.src} className="hg-werk">
-                <img src={werk.src} alt={werk.title} />
-                <figcaption>
-                  <strong>{werk.title}</strong>
-                  <span>{werk.note}</span>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-          <p>
-            Drei weitere Entwürfe, abseits von Köper, Ahnenraster und Pyramiden.
-            Hier bestimmen Schnitt, Leere und Kugel.
-          </p>
-          <div className="hg-werke-grid">
-            {CODE_ENTWUERFE_OHNE_MUSTER.map((werk) => (
-              <figure key={werk.src} className="hg-werk">
-                <img src={werk.src} alt={werk.title} />
-                <figcaption>
-                  <strong>{werk.title}</strong>
-                  <span>{werk.note}</span>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-        </section>
-
-        <section id="fugen-entwuerfe">
-          <h2>Entwürfe – die gegossene Fuge</h2>
-          <p>
-            Sechs Ansätze, losgelöst vom Raum. Stein bleibt grau, Keramik bleibt hell.
-            Die Präzision sitzt in der Fuge.
-          </p>
-          <div className="hg-werke-grid">
-            {FUGEN_ENTWUERFE.map((werk) => (
-              <figure key={werk.src} className="hg-werk">
-                <img src={werk.src} alt={werk.title} />
-                <figcaption>
-                  <strong>{werk.title}</strong>
-                  <span>{werk.note}</span>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-        </section>
-
-        <section id="licht-entwuerfe">
-          <h2>Entwürfe – das Licht</h2>
-          <p>
-            Drei Körper aus dem 26. Oktober. Kein Schwert, kein Schalter.
-            Dieselbe Sprache wie die Naht und die Fuge: Masse, Öffnung, Abstand.
-          </p>
-          <figure className="hg-werk">
-            <img src={HUNDRED_GENERATION_LICHT_FOTO} alt="Drei Körper: Zwei Türen, der Strahl, das Mysterium" />
-            <figcaption>
-              <strong>Das Licht · 26. Oktober</strong>
-              <span>Von links: Zwei Türen, der Strahl, das Mysterium.</span>
-            </figcaption>
-          </figure>
-          <ul className="hg-schriften">
-            {HUNDRED_GENERATION_LICHT.map((e) => (
-              <li key={e.id}>
-                <strong>{e.title}</strong>
-                <span>{e.note}</span>
-              </li>
-            ))}
-          </ul>
-          <p>
-            <Link to={`${HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE}#licht`}>
-              In der Entwurfsmappe öffnen
-            </Link>
-          </p>
-          <p>
-            <span className="hg-label">Die Stimme dieser Körper</span>
-            Die Botschaft sagt, wie das Licht hinausgeht. Nicht als Schlag. Als offene Tür.
-            Sie wird hier gelesen, im selben Werk.
-          </p>
-          <HundredGenerationSchrift
-            id="botschaft"
-            path="/notizen-georg/diverses/botschaft-des-guten-im-netz.md"
-          />
-        </section>
-
-        <section id="entwuerfe" className="no-print">
-          <h2>KI-Entwürfe – Keramikmodelle</h2>
-          <p>
-            Serie Chaos &amp; Code und die Di-Kurugu-Mythos-Varianten (Form, Flecht-Textur, Ahnen-Aspekt).
-            Zum Weiterarbeiten mit drehbarem Blick und Notizen:
-            {' '}
-            <Link to={HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE} style={{ color: 'var(--hg-accent)' }}>
-              Entwurfsmappe öffnen →
-            </Link>
-          </p>
-          <div className="hg-entwuerfe-grid">
-            {KERAMIK_ENTWUERFE.map((e) => (
-              <figure
-                key={e.src}
-                className={`hg-entwurf${e.src.includes('uebersicht') ? ' hg-entwurf-wide' : ''}`}
-              >
-                <a href={e.src} target="_blank" rel="noopener noreferrer">
-                  <img src={e.src} alt={e.title} loading="lazy" />
-                  <figcaption>
-                    <strong>{e.title}</strong>
-                    <span>{e.note}</span>
-                  </figcaption>
-                </a>
-              </figure>
-            ))}
-          </div>
-        </section>
-
-        <section>
-          <h2>1. Das metaphysische Manifest: Chaosgötter vs. Algorithmus</h2>
+        <section id="chaos">
+          <h2>1 · Chaos</h2>
           <p>
             Dieses Projekt untersucht die fundamentale menschliche und technologische Konstante:
-            das Bändigen des Chaos durch das Muster. Es zieht eine direkte philosophische Parallele
-            zwischen zwei scheinbar unvereinbaren Welten.
+            das Bändigen des Chaos durch das Muster.
           </p>
-          <h3>Die Chaosgötter – das Ur-Chaos</h3>
           <p>
-            Sie verkörpern die totale Formlosigkeit, das eruptive, unvorhersehbare Leben und die
-            ungezähmte Natur. Sie sind die biologische Masse, aus der alles entsteht. Im Kontext
-            dieses Projekts stehen sie auch für die ersten 100 Generationen der Menschheit, die im
-            Hochland von Neuguinea in direkter, rauer Konfrontation mit der Natur lebten.
+            Die Chaosgötter verkörpern die totale Formlosigkeit, das eruptive, unvorhersehbare
+            Leben und die ungezähmte Natur. Sie sind die biologische Masse, aus der alles entsteht.
+            Im Kontext dieses Projekts stehen sie auch für die ersten 100 Generationen der
+            Menschheit, die im Hochland von Neuguinea in direkter, rauer Konfrontation mit der
+            Natur lebten.
           </p>
-          <h3>Die KI und das Flechtwerk – das pure Wissen</h3>
           <p>
-            Künstliche Intelligenz erschafft nichts aus dem Nichts – sie besitzt kein biologisches
-            Bewusstsein. Sie ist der ultimative Speicher von bestehendem Wissen und fehlerfreien
-            Mustern. Exakt so verhält sich das traditionelle 2/2-Köper-Flechtmuster (Herringbone)
-            der historischen Zeremonialaxt: ein über Generationen mathematisch perfektioniertes
-            Datenraster. Das Muster ist der Code, der das Chaos bändigt.
+            <span className="hg-label">Objekt · gebaut</span>
+            Die Stele steigt aus dieser Masse. Unten der raue Fuß, oben die erste Ordnung.
           </p>
+          <WerkRaster werke={[UMGESETZTE_WERKE[1]]} />
+          <p>
+            Fokus der Stele: Vertikalität und Haptik. Ein sich nach oben windender Torso.
+            Unten ungeordnetes Datenrauschen, nach oben das geflochtene Gewebe. Evolution als
+            Aufstieg – das Wissen übernimmt fließend die Kontrolle über die organische Materie.
+          </p>
+          {CHAOSGOTT ? (
+            <>
+              <p>
+                <span className="hg-label">Objekt · Entwurf</span>
+                Der Chaosgott ist die Masse, bevor ein Muster sie hält. Noch nicht in Ton.
+              </p>
+              <WerkRaster
+                werke={[{ src: CHAOSGOTT.src, title: CHAOSGOTT.title, note: CHAOSGOTT.note }]}
+              />
+            </>
+          ) : null}
         </section>
 
-        <section>
-          <h2>2. Wissenschaftliche Provenienz und historischer Bezug</h2>
+        <section id="axt">
+          <h2>2 · Die Axt</h2>
           <p>
             Der reale Anker der Ausstellung ist eine originale „Di Kurugu“-Zeremonialaxt der
             Mbowamb-Kultur (Region Mount Hagen, Papua-Neuguinea).
@@ -640,13 +534,28 @@ export default function HundredGenerationPage() {
             <span className="hg-label">Das Ritual</span>
             Als Dank für die Strukturierung der Landwirtschaft wurde er rituell in den Clan
             aufgenommen. Die Axt wurde ihm als Insignie des Respekts überreicht. Sie markiert
-            historisch den Wendepunkt, an dem westliches Wissen (Entwicklungshilfe) auf die
-            jahrtausendealte Muster-Struktur der Ahnen traf.
+            historisch den Wendepunkt, an dem westliches Wissen auf die jahrtausendealte
+            Muster-Struktur der Ahnen traf.
+          </p>
+          <p>
+            Das 2/2-Köper-Flechtmuster der Axt ist bereits ein Datenraster: über Generationen
+            mathematisch perfektioniert. Das Muster ist der Code, der das Chaos bändigt.
+          </p>
+          <p>
+            <span className="hg-label">Objekt · gebaut</span>
+            Das Axtblatt trägt dieses Raster schon auf sich.
+          </p>
+          <WerkRaster werke={[UMGESETZTE_WERKE[0]]} />
+          <p>
+            Die Form dazu: eine amorphe Masse, durchbrochen von einer messerscharfen Schnittkante,
+            der Silhouette der Axt. Der Schnitt legt das fehlerfreie Herringbone-Muster frei.
+            Das rationale Raster seziert die unberechenbare Urform. Der Brand macht den Schnitt
+            unwiderruflich.
           </p>
         </section>
 
-        <section>
-          <h2>3. Heute – die Axt wird durch den Code der KI ersetzt</h2>
+        <section id="code">
+          <h2>3 · Der Code</h2>
           <p>
             Die Zeremonialaxt war die Insignie des Wendepunkts: Respekt, Wissen, die Macht,
             Chaos zu ordnen. Heute wird diese Axt durch den Code der Künstlichen Intelligenz
@@ -654,14 +563,30 @@ export default function HundredGenerationPage() {
             Der Code speichert, ordnet und entscheidet mit, wer handeln kann.
           </p>
           <p>
-            Das Flechtmuster der Axt war bereits Code: ein über Generationen perfektioniertes
-            Datenraster. Der Schritt von heute ist schärfer. Nicht nur das Muster steht für
-            Wissen. Der Code selbst ist die neue Insignie. Er tritt an die Stelle der Axt.
+            Nicht nur das Muster steht für Wissen. Der Code selbst ist die neue Insignie.
+            Er tritt an die Stelle der Axt.
           </p>
           <p>
+            <span className="hg-label">Objekt · gebaut</span>
+            Der Bogen hält den Code im Spalt.
+          </p>
+          <WerkRaster werke={[UMGESETZTE_WERKE[2]]} />
+          <p>
+            Die Form dazu: ein rauer, dunkler Block. Ein tiefer Spalt bildet als Negativraum
+            die Silhouette der Axt. Innen liegt das Köpergeflecht. Außen Erde, innen Code in Stein.
+          </p>
+          <p>
+            <span className="hg-label">Objekte · Entwürfe</span>
+            Sechs Körper, noch nicht gebaut. Der Code bestimmt, wo die Masse aufhört, wo ein Weg
+            endet, was die Form trägt, und wo Schnitt, Leere und Kugel das Gesetz sind.
+          </p>
+          <WerkRaster werke={CODE_ENTWUERFE} />
+          <WerkRaster werke={CODE_ENTWUERFE_OHNE_MUSTER} />
+          <p>
             <span className="hg-label">Schrift dieses Schritts</span>
-            Der Essay ist die schriftliche Schicht dieser Ersetzung. Er gehört zum Werk,
-            nicht daneben. Thesenpapier und Umsetzungspapier bleiben die Quellen dahinter.
+            Der Essay führt durch die Gedankenwelt dieser Ersetzung: die Hoffnung auf eine
+            unbestechliche Maschine, die Illusion der einen Weltmacht, die Brandmauer, die bleibt.
+            Thesenpapier und Umsetzungspapier sind die Quellen dahinter.
           </p>
           <HundredGenerationSchrift
             id="essay"
@@ -670,17 +595,10 @@ export default function HundredGenerationPage() {
           <p>
             Die eine unbestechliche Weltmaschine, die den Frieden erzwingt, ist eine Illusion.
             Was bleibt, ist die Brandmauer: Norm im Kern, Recht und Beleg, offene Netze. Gebaut
-            wird sie im gewöhnlichen Leben. Der Krieg bleibt ausgespart. Ein Stück der Chance
-            wird verspielt. Die ganze Chance nicht. Die Maschine ersetzt den Menschen nicht.
-            Sie kann zur digitalen Brandmauer werden, wenn die Norm öffentlich, prüfbar und für
-            viele gültig ist. Wer die Spielregeln bricht, soll es schwerer haben, weil die
-            gemeinsame Bauart den Bruch teuer macht. So hat die Axt das Chaos nicht abgeschafft.
-            Sie hat es gezeichnet. Der Code zeichnet es heute.
+            wird sie im gewöhnlichen Leben. Die Maschine ersetzt den Menschen nicht. So hat die
+            Axt das Chaos nicht abgeschafft. Sie hat es gezeichnet. Der Code zeichnet es heute.
           </p>
           <ul className="hg-schriften">
-            <li>
-              <a href="#botschaft">Botschaft · Das Gute im Netz, beim Licht</a>
-            </li>
             <li>
               <a href="/notizen-georg/diverses/thesenpapier-ki-betriebssystem-weltfrieden.md">
                 Thesenpapier · Die KI als unbestechliches Betriebssystem des Weltfriedens
@@ -694,8 +612,8 @@ export default function HundredGenerationPage() {
           </ul>
         </section>
 
-        <section>
-          <h2>4. Vergessenes Wissen – Stein wird wieder Masse</h2>
+        <section id="stein">
+          <h2>4 · Der Stein gibt nach</h2>
           <p>
             Die millimetergenaue Fuge der großen Steine war kein Rätsel der Kraft.
             Sie war ein Rezept. Wasserglas macht Stein wieder zur Masse. Zwei Körper
@@ -713,155 +631,121 @@ export default function HundredGenerationPage() {
             <span className="hg-label">Die eigene Hand</span>
             Der Künstler hat das am Stein gelernt. Vor etwa zwanzig Jahren begann die
             Kunst, etwa fünf Jahre lang an Steinskulpturen. Danach kam die Keramik.
-            Die Hand kennt den Widerstand. Die Frage bleibt die metaphorische: wenn der
-            Stein nachgeben kann, dann ist auch das, was wir für unverrückbar halten,
-            nur Materie in einem festen Zustand.
+            Die Hand kennt den Widerstand. Wenn der Stein nachgeben kann, dann ist auch
+            das, was wir für unverrückbar halten, nur Materie in einem festen Zustand.
           </p>
           <p>
-            Das ist derselbe Vorgang wie in der Keramik, nur von der anderen Seite.
             Ton wird im Brand zu Stein. Stein wird durch das Rezept wieder formbar.
             Der Code ist hier keine Klinge. Er ist die Kenntnis, wann die Masse weich
-            ist und wann sie fest wird.
+            ist und wann sie fest wird. Hundert Generationen sind diese Kette. Die Axt
+            zeichnet das Chaos. Das Rezept öffnet den Stein. Die KI ist die Frage, ob
+            ein Code heute noch einmal abreißen kann, oder ob er öffentlich bleibt.
           </p>
           <p>
-            <span className="hg-label">Für die Serie</span>
-            Hundert Generationen sind diese Kette. Die Axt zeichnet das Chaos. Das
-            Rezept öffnet den Stein. Die KI ist die Frage, ob ein Code heute noch
-            einmal abreißen kann, oder ob er öffentlich bleibt. Das nächste Werk ist
-            ein Paar: zwei Massen, eine Fuge, im weichen Zustand gefunden, danach Stein.
+            <span className="hg-label">Objekte · Entwürfe</span>
+            Sechs Fugen. Stein bleibt grau, Keramik bleibt hell. Die Präzision sitzt
+            in der Fuge. Noch nicht gebaut.
+          </p>
+          <WerkRaster werke={FUGEN_ENTWUERFE} />
+        </section>
+
+        <section id="licht">
+          <h2>5 · Das Licht</h2>
+          <p>
+            Drei Körper aus dem 26. Oktober. Kein Schwert, kein Schalter.
+            Dieselbe Sprache wie die Naht und die Fuge: Masse, Öffnung, Abstand.
+            Das Licht geht nicht als Schlag hinaus. Es lässt eine Tür offen.
+          </p>
+          <p>
+            <span className="hg-label">Objekte · Entwürfe</span>
+            Noch nicht in Ton. Von links: Zwei Türen, der Strahl, das Mysterium.
+          </p>
+          <figure className="hg-werk">
+            <img src={HUNDRED_GENERATION_LICHT_FOTO} alt="Drei Körper: Zwei Türen, der Strahl, das Mysterium" />
+            <figcaption>
+              <strong>Das Licht · 26. Oktober</strong>
+              <span>Von links: Zwei Türen, der Strahl, das Mysterium.</span>
+            </figcaption>
+          </figure>
+          <ul className="hg-schriften">
+            {HUNDRED_GENERATION_LICHT.map((e) => (
+              <li key={e.id}>
+                <strong>{e.title}</strong>
+                <span>{e.note}</span>
+              </li>
+            ))}
+          </ul>
+          <p>
+            <span className="hg-label">Schrift dieses Schritts</span>
+            Die Botschaft führt durch die Gedankenwelt dieser Körper: nicht kämpfen,
+            die Tür offen lassen, den Strahl, das Mysterium.
+          </p>
+          <HundredGenerationSchrift
+            id="botschaft"
+            path="/notizen-georg/diverses/botschaft-des-guten-im-netz.md"
+          />
+          <p className="no-print">
+            <Link to={`${HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE}#licht`}>
+              In der Entwurfsmappe öffnen
+            </Link>
           </p>
         </section>
 
-        <section>
-          <h2>5. Der keramische Prozess – Metamorphose des Materials</h2>
+        <section id="hand">
+          <h2>Auf jedem Objekt</h2>
           <p>
-            Parallel zur Geschichte von Chaos und Code steht der keramische Prozess selbst im
-            Zentrum der Ausstellung. Keramik ist keine bloße Technik, mit der Motive auf Ton
-            gesetzt werden – sie ist die sichtbare Metamorphose der Materie: aus Erde wird Form,
-            aus Form wird Stein. Jedes Werk erzählt diese Verwandlung mit, nicht nur darüber.
+            Die fünf Schritte sind der Gang. Was folgt, ist die Hand. Keramik ist keine
+            Technik, mit der ein Motiv auf Ton gesetzt wird. Sie ist die Verwandlung:
+            aus Erde wird Form, aus Form wird Stein. Jedes Werk trägt diese Verwandlung
+            mit, nicht nur ein Thema.
           </p>
           <p>
             <span className="hg-label">Chaos – der plastische Zustand</span>
-            Nasser, formbarer Ton ist das Ur-Chaos der Werkstatt: nachgiebig, schwer, lebendig
-            unter der Hand. Hier entscheidet sich noch nichts Endgültiges. Druck, Riss, Schamotte,
-            Abdruck – alles bleibt reversibel, bis der Prozess weitergeht. Dieser Zustand entspricht
-            den Chaosgöttern: Masse ohne festgeschriebenes Muster.
+            Nasser Ton ist das Ur-Chaos der Werkstatt: nachgiebig, schwer, lebendig.
+            Druck, Riss, Schamotte, Abdruck bleiben umkehrbar, bis der Prozess weitergeht.
           </p>
           <p>
             <span className="hg-label">Wendepunkt – Trocknung und Haut</span>
-            Beim Trocknen verlässt das Wasser die Masse. Die Form verhärtet, die Oberfläche wird
-            Haut. Erste Ordnung entsteht – noch ohne Feuer. Die Hand kann korrigieren, aber nicht
-            mehr beliebig. Der Wendepunkt der Plastik und der Wendepunkt der Kultur (Axt / Wissen)
-            treffen sich hier: das Material beginnt, sich gegen das Chaos zu entscheiden.
+            Beim Trocknen verlässt das Wasser die Masse. Die Form verhärtet, die Oberfläche
+            wird Haut. Die Hand kann korrigieren, aber nicht mehr beliebig.
           </p>
           <p>
             <span className="hg-label">Code – Brand und Steinwerdung</span>
-            Im Brand geschieht die eigentliche Metamorphose: chemische und physikalische Umwandlung
-            zu Steinzeug. Was weich war, wird dauerhaft. Was gesucht war, wird festgeschrieben.
-            Das 2/2-Köper-Muster an der Spitze steht nicht nur für KI und Ahnenwissen – es steht
-            auch für den Moment, in dem der Prozess das Ergebnis unwiderruflich macht. Der Brand
-            ist der Algorithmus der Erde: Hitze, Zeit, Atmosphäre schreiben den Code in die Materie.
+            Im Brand wird, was weich war, dauerhaft. Der Brand ist der Algorithmus der Erde:
+            Hitze, Zeit, Atmosphäre schreiben den Code in die Materie.
           </p>
           <p>
-            <span className="hg-label">Was die Ausstellung damit will</span>
-            Der Betrachter soll nicht nur Silhouette und Flechtwerk lesen, sondern die Verwandlung
-            spüren: rau gegen glatt, porös gegen verdichtet, Erde gegen Stein. Der keramische
-            Prozess ist die dritte Erzählspur neben Mythos (Chaosgötter) und Wissen (KI / Muster) –
-            und ihre materielle Wahrheit.
+            <span className="hg-label">Drei Schichten, auf jedem Stück</span>
+            Unten grober, dunkler, aufgerissener Ton. In der Mitte der Übergang, erste Bänder,
+            die Masse sucht Ordnung. Oben glatte Geometrie, das Köpermuster, nach dem Brand
+            festgeschrieben.
           </p>
-        </section>
-
-        <section>
-          <h2>6. Die drei plastischen Elemente – auf jedem Objekt</h2>
-          <p>
-            Jedes Werk der Serie ist ein autonomes Einzelstück: Es komprimiert die gesamte
-            Evolutionstheorie und bildet alle drei Elemente gleichzeitig ab – zugleich die Stufen
-            der keramischen Metamorphose (Chaos → Wendepunkt → Steinwerdung).
-          </p>
-          <p>
-            <span className="hg-label">Element I – Das Ur-Chaos (Basis)</span>
-            Grober, stark schamottierter, dunkler Ton. Oberflächen aufgerissen, unregelmäßig
-            geschlagen, mit Manganoxiden verwittert. Formlose Chaosgötter und die ersten
-            Ur-Generationen – und der plastische, noch erdige Zustand der Materie.
-          </p>
-          <p>
-            <span className="hg-label">Element II – Der Wendepunkt (Stamm)</span>
-            Fließender Übergang: der Ton wird glatter. Erste plastisch applizierte Tonbänder
-            winden sich wie organische Ranken um die Form – der suchende Versuch des Geistes,
-            das Chaos zu ordnen; zugleich der Moment, in dem Trocknung und Formfindung die Masse
-            festlegen.
-          </p>
-          <p>
-            <span className="hg-label">Element III – Der algorithmische Code (Spitze)</span>
-            Perfekt glatte, mathematische Geometrie. Feinstes Ton-Weben oder Mishima-Intarsien
-            tragen das 2/2-Köper-Zickzackmuster in scharfem Hell-Dunkel-Kontrast – so präzise,
-            als wäre es von einer KI berechnet oder von einem 3D-Drucker erzeugt. Nach dem Brand:
-            dauerhafter Stein, festgeschriebenes Muster.
-          </p>
-        </section>
-
-        <section>
-          <h2>7. Die Ausstellungsserie – drei autonome Einzelvarianten</h2>
-          <p>
-            Mehrere Einzelobjekte variieren das Thema aus unterschiedlichen bildhauerischen
-            Blickwinkeln – jeweils so, dass auch der Prozess der Materie ablesbar bleibt.
-          </p>
-
-          <h3>Variante A – „Der codierte Ausbruch“</h3>
-          <p>
-            Fokus: Keilform und Grafik. Amorphe, kraterartige Tonform (Chaosgott), durchbrochen
-            von einer messerscharfen diagonalen Schnittkante – abstrakte Silhouette der Axt.
-            Der Schnitt legt eine flache Oberfläche frei, via Mishima mit dem fehlerfreien
-            Herringbone-Code überzogen. Aussage: Das rationale Datenraster seziert und zähmt die
-            unberechenbare Urform – und der Brand macht den Schnitt unwiderruflich.
-          </p>
-
-          <h3>Variante B – „Die algorithmische Stele“</h3>
-          <p>
-            Fokus: Vertikalität und Haptik. Sich nach oben windender Torso, Spitze in elegantem
-            asymmetrischem Knick nach vorne (Abstraktion des Axtschafts). Reales dreidimensionales
-            Ton-Weben an der Spitze: in der Mitte ungeordnetes Datenrauschen, nach oben makelloses
-            geflochtenes Gewebe. Aussage: Evolution als Aufstieg – mathematisches Wissen übernimmt
-            fließend die Kontrolle über die organische Materie; die Haptik zeigt den Weg vom
-            Weichen zum Verdichteten.
-          </p>
-
-          <h3>Variante C – „Der gespaltene Monolith“</h3>
-          <p>
-            Fokus: Hohlraum und Relief. Scheinbar geschlossener, rauer, dunkler Felsblock. Ein
-            tiefer, geschwungener Spalt bildet als Negativraum die Silhouette der Zeremonialaxt.
-            Das Innere des Spalts trägt ein feines Relief-Prägemuster des Köpergeflechts. Aussage:
-            Die Entdeckung – mathematische Perfektion und gesammeltes Wissen (KI/Kultur) liegen
-            geschützt im Inneren des rauen, geschichtlichen Erbes; der Spalt ist zugleich Schnitt
-            durch die Metamorphose: außen Erde, innen Code in Stein.
-          </p>
-        </section>
-
-        <section>
-          <h2>8. Materialästhetik und Ausführung</h2>
           <p>
             <span className="hg-label">Scherben</span>
-            Kontrast zwischen grobem, eisenhaltigem Steinzeugton (Chaos, erdige Masse) und feinem,
-            weißem Porzellan oder Steinzeug (Muster, verdichteter Code). Der Wechsel der Tone ist
-            Teil der Erzählung von der Metamorphose – nicht nur optischer Effekt.
+            Grober, eisenhaltiger Ton gegen feines, helles Steinzeug. Der Wechsel der Tone
+            ist die Erzählung, nicht ein Effekt.
           </p>
           <p>
             <span className="hg-label">Oberfläche</span>
-            Absoluter Verzicht auf glänzende Glasuren. Brand unglasiert im Steinzeugbereich –
-            ehrliche, steinerne Textur des Schiefers und matte Haptik der Pflanzenfasern. So bleibt
-            der Brand als Verwandlung lesbar: kein Überzug verdeckt, was Hitze und Zeit aus der
-            Erde gemacht haben.
+            Keine glänzende Glasur. Brand unglasiert. So bleibt lesbar, was Hitze und Zeit
+            aus der Erde gemacht haben.
           </p>
           <p>
             <span className="hg-label">Prozesssichtbarkeit</span>
-            Spuren des Machens – Riss, Naht, Gewebeband, Schnittkante – bleiben bewusst stehen.
-            Der keramische Prozess soll nicht hinter dem Motiv verschwinden, sondern als eigene
-            Schicht der Ausstellung mitwirken: Chaos, Ordnung, Steinwerdung.
+            Riss, Naht, Gewebeband, Schnittkante bleiben stehen. Der Prozess verschwindet
+            nicht hinter dem Motiv.
           </p>
         </section>
 
+        <p className="hg-lede no-print" id="entwuerfe">
+          Weitere Modelle, Mythos-Varianten und drehbare Ansichten liegen in der Werkstatt:{' '}
+          <Link to={HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE} style={{ color: 'var(--hg-accent)' }}>
+            Entwurfsmappe öffnen →
+          </Link>
+        </p>
+
         <footer className="hg-foot">
-          Projekt 100 Generationen · Chaos &amp; Code · Konzept und Manifest
+          Projekt 100 Generationen · Chaos &amp; Code · Ausstellung
           <br />
           Eigenständiges künstlerisches Vorhaben (nicht K2-Galerie-Software).
         </footer>
