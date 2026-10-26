@@ -8,6 +8,7 @@ import {
 import {
   ENTWURFSMAPPE_NOTES_KEY,
   HUNDRED_GENERATION_LICHT,
+  HUNDRED_GENERATION_LICHT_FOTO,
   HUNDRED_GENERATION_MODELLE,
   HUNDRED_GENERATION_UEBERSICHTEN,
   type HundredGenerationEntwurfGruppe,
@@ -806,7 +807,8 @@ export default function HundredGenerationEntwurfsmappePage() {
 
         <div className="card" id="licht" style={{ marginBottom: '1rem' }}>
           <h2>Das Licht · 26. Oktober</h2>
-          <p className="hint">Noch ohne Foto. Drei Körper.</p>
+          <img src={HUNDRED_GENERATION_LICHT_FOTO} alt="Drei Körper: Zwei Türen, der Strahl, das Mysterium" />
+          <p className="hint">Von links: Zwei Türen, der Strahl, das Mysterium.</p>
           {HUNDRED_GENERATION_LICHT.map((e) => (
             <div key={e.id} className="licht-stueck">
               <strong>{e.title}</strong>

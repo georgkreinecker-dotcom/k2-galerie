@@ -333,7 +333,10 @@ export const HUNDRED_GENERATION_UEBERSICHTEN = [
   },
 ] as const
 
-/** 26. Oktober – noch ohne Foto. Eine Quelle für Konzeptseite und Entwurfsmappe. */
+/** 26. Oktober. Eine Quelle für Konzeptseite und Entwurfsmappe. */
+export const HUNDRED_GENERATION_LICHT_FOTO =
+  '/100-generation/entwuerfe-code/entwurf-licht-26-oktober.jpg' as const
+
 export const HUNDRED_GENERATION_LICHT = [
   {
     id: 'zwei-tueren',

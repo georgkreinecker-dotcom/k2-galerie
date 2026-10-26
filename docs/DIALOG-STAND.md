@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Die drei Licht-Formen liegen jetzt oben in der Entwurfsmappe, Karte „Das Licht · 26. Oktober“. Vorher nur auf der Konzeptseite, deshalb hat Georg sie nicht gefunden.
+**Was wir JETZT tun:** Zur Karte „Das Licht“ gibt es ein Foto: zwei Türen, der Strahl, das Mysterium auf der Fensterbank. Datei `public/100-generation/entwuerfe-code/entwurf-licht-26-oktober.jpg`.
 
 **Einordnung:** Dieselbe Sprache wie Naht und Fuge. Kein Schwert, kein Schalter. Georg sagt, welche Form als Nächstes in Ton geht.
 

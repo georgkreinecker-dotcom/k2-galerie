@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { PLATFORM_ROUTES, HUNDRED_GENERATION_FLAECHE_ROUTE, HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE } from '../config/navigation'
 import {
   HUNDRED_GENERATION_LICHT,
+  HUNDRED_GENERATION_LICHT_FOTO,
   HUNDRED_GENERATION_MODELLE,
   HUNDRED_GENERATION_UEBERSICHTEN,
 } from '../config/hundredGenerationEntwuerfe'
@@ -526,6 +527,13 @@ export default function HundredGenerationPage() {
             Drei Körper aus dem 26. Oktober. Kein Schwert, kein Schalter.
             Dieselbe Sprache wie die Naht und die Fuge: Masse, Öffnung, Abstand.
           </p>
+          <figure className="hg-werk">
+            <img src={HUNDRED_GENERATION_LICHT_FOTO} alt="Drei Körper: Zwei Türen, der Strahl, das Mysterium" />
+            <figcaption>
+              <strong>Das Licht · 26. Oktober</strong>
+              <span>Von links: Zwei Türen, der Strahl, das Mysterium.</span>
+            </figcaption>
+          </figure>
           <ul className="hg-schriften">
             {HUNDRED_GENERATION_LICHT.map((e) => (
               <li key={e.id}>
