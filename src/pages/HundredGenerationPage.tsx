@@ -228,6 +228,14 @@ export default function HundredGenerationPage() {
         .hundert-generation-page .hg-schriften a {
           color: var(--hg-accent);
         }
+        .hundert-generation-page .hg-schriften li {
+          margin: 0.75rem 0;
+        }
+        .hundert-generation-page .hg-schriften li span {
+          display: block;
+          margin-top: 0.2rem;
+          color: var(--hg-muted);
+        }
         .hundert-generation-page .hg-entwuerfe-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
@@ -511,6 +519,39 @@ export default function HundredGenerationPage() {
           </div>
         </section>
 
+        <section id="licht-entwuerfe">
+          <h2>Entwürfe – das Licht</h2>
+          <p>
+            Drei Körper aus dem 26. Oktober. Kein Schwert, kein Schalter.
+            Dieselbe Sprache wie die Naht und die Fuge: Masse, Öffnung, Abstand.
+          </p>
+          <ul className="hg-schriften">
+            <li>
+              <strong>Entwurf 13 · Zwei Türen</strong>
+              <span>
+                Zwei Körper, jeder für sich ganz. In jedem eine kleine Öffnung.
+                Sie stehen sich gegenüber und berühren sich nicht. Allein ist jedes ein Haus.
+                Voneinander gesehen wird die Öffnung hell. Keine Brücke dazwischen.
+              </span>
+            </li>
+            <li>
+              <strong>Entwurf 14 · Der Strahl</strong>
+              <span>
+                Eine schwere, dunkle Masse. Durch sie ein einziger Durchbruch, nicht breiter als ein Finger.
+                Licht kommt nur dort durch. Die Masse bleibt dunkel. Der Strahl erklärt sie nicht.
+              </span>
+            </li>
+            <li>
+              <strong>Entwurf 15 · Das Mysterium</strong>
+              <span>
+                Ein geschlossener Körper. Kein Raster, keine Inschrift, keine Tür zum Aufmachen.
+                Nur eine Haarlinie, wo zwei Schalen sich treffen und zu bleiben.
+                Man stellt ihn hin. Er bleibt zu.
+              </span>
+            </li>
+          </ul>
+        </section>
+
         <section id="entwuerfe" className="no-print">
           <h2>KI-Entwürfe – Keramikmodelle</h2>
           <p>
@@ -601,7 +642,7 @@ export default function HundredGenerationPage() {
             <span className="hg-label">Schriften dieses Schritts</span>
             Drei Texte gehören zum Konzept. Sie sind die schriftliche Schicht der Ausstellung,
             kein Beiwerk. Der Essay trägt die Linie. Thesenpapier und Umsetzungspapier tragen
-            den Anspruch und die Grenze.             Die Botschaft sagt, wie das Licht hinausgeht. Nicht
+            den Anspruch und die Grenze. Die Botschaft sagt, wie das Licht hinausgeht. Nicht
             als Schlag. Als offene Tür. Der Schlüssel ist die Regel vor der Maschine.
           </p>
           <p>

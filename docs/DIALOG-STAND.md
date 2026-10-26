@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Georg hat ja gesagt. Der Brandmauer-Schlüssel ist geschnitten. Sechs Zeilen. Eine Quelle: `docs/notizen-georg/diverses/brandmauer-schluessel.md`. Dieselbe Regel bindet die Maschine in diesem Haus.
+**Was wir JETZT tun:** Der Nachmittag ist in 100 Generationen eingeflossen, als drei Skulptur-Ideen. Seite: Abschnitt „Entwürfe – das Licht“. Entwurf 13 Zwei Türen, 14 Der Strahl, 15 Das Mysterium. Noch ohne Bild.
 
-**Einordnung:** Geschlossenen Code der Großmächte dreht das nicht um. Eine offene Maschine kann die Datei vor die erste Anweisung setzen. Prüfung: sechs Ja, sonst nicht ausliefern.
+**Einordnung:** Dieselbe Sprache wie Naht und Fuge. Kein Schwert, kein Schalter. Georg sagt, welche Form als Nächstes in Ton geht.
 
-**Nächster Schritt:** Georg liest die sechs Zeilen. Was nicht seine Stimme ist, ändern wir nur dort.
+**Nächster Schritt:** Georg wählt eine der drei Formen, oder ändert eine, die nicht seine ist. Nichts anderes anlegen.
 
 **Daneben offen:** Töpferscheibe, Riemen-Entwurf zu schwer. Leichtbau 25–35 kg. Satz zum gemeinsamen Bogen: Georg sagt noch, ob er so nach außen stimmt.
 
