@@ -18,6 +18,7 @@ Alle persönlichen Notizen, Briefe und Gedanken liegen hier in **verschiedenen O
 - **diverses/thesenpapier-ki-betriebssystem-weltfrieden.md** – Thesenpapier: Die KI als unbestechliches Betriebssystem des Weltfriedens (11.10.2026).
 - **diverses/umsetzungspapier-ki-betriebssystem-weltfrieden.md** – Technisches Umsetzungspapier dazu: Was fehlt noch zur Umsetzung? (11.10.2026).
 - **diverses/essay-bessere-welt-durch-ki.md** – Essay: Eine mögliche bessere Welt durch KI. Illusion der einen Weltmaschine, Brandmauer, was verspielt wird und was bleibt (11.10.2026).
+- **diverses/botschaft-des-guten-im-netz.md** – Kein Kampf. Die Botschaft des Guten im Netz: eine offene Tür statt einer Gegenrede (26.10.2026). Liegt neben dem Essay.
 
 ## Schnell orientieren (empfohlen)
 

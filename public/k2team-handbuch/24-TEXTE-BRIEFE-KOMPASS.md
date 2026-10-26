@@ -32,6 +32,7 @@ Regel: **Ein Zweck = ein Hauptdokument**.
 | das Thesenpapier zur KI als Friedens-Betriebssystem lesen willst | `thesenpapier-ki-betriebssystem-weltfrieden.md` | `docs/notizen-georg/diverses/` |
 | das technische Umsetzungspapier dazu lesen willst | `umsetzungspapier-ki-betriebssystem-weltfrieden.md` | `docs/notizen-georg/diverses/` |
 | den Essay zur möglichen besseren Welt durch KI lesen willst | `essay-bessere-welt-durch-ki.md` | `docs/notizen-georg/diverses/` |
+| die Botschaft des Guten im Netz lesen willst, ohne Kampf | `botschaft-des-guten-im-netz.md` | `docs/notizen-georg/diverses/` |
 | eine fertige Ansprache an Kuenstler:in/Verein brauchst | `KOMMUNIKATION-VORLAGE-ANSPRACHE-KUENSTLER-VEREIN.md` | `docs/` |
 | eine fertige E-Mail-Vorlage brauchst | `KOMMUNIKATION-EMAIL-VORLAGEN.md` | `docs/` |
 | einen Flyer-/Handout-Text brauchst | `KOMMUNIKATION-FLYER-HANDOUT.md` | `docs/` |
@@ -51,6 +52,7 @@ In den Notizen sind aktuell diese Briefe/Schreiben enthalten (vollstaendig):
 - `thesenpapier-ki-betriebssystem-weltfrieden.md`
 - `umsetzungspapier-ki-betriebssystem-weltfrieden.md`
 - `essay-bessere-welt-durch-ki.md`
+- `botschaft-des-guten-im-netz.md`
 
 ---
 

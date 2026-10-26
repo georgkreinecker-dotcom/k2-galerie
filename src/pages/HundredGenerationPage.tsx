@@ -73,6 +73,39 @@ const CODE_ENTWUERFE_OHNE_MUSTER = [
   },
 ] as const
 
+const FUGEN_ENTWUERFE = [
+  {
+    src: '/100-generation/entwuerfe-code/entwurf-fuge-01-polygon-frei.jpg',
+    title: 'Entwurf 7 · Das Polygon',
+    note: 'Granit gegen Keramik. Die Zickzackfuge schließt auf den Millimeter. Grau bleibt Stein, hell bleibt Ton.',
+  },
+  {
+    src: '/100-generation/entwuerfe-code/entwurf-fuge-02-negativ-frei.jpg',
+    title: 'Entwurf 8 · Das Negativ',
+    note: 'Der raue Stein schwebt über seinem Abdruck. Jede Kante hat ihre Mulde in der Keramik.',
+  },
+  {
+    src: '/100-generation/entwuerfe-code/entwurf-fuge-03-einsatz-frei.jpg',
+    title: 'Entwurf 9 · Der Einsatz',
+    note: 'Eine keramische Fläche sitzt bündig im Granit. Die Fuge ist nur eine Haarlinie.',
+  },
+  {
+    src: '/100-generation/entwuerfe-code/entwurf-fuge-04-ebene-frei.jpg',
+    title: 'Entwurf 10 · Die Ebene',
+    note: 'Der Stein bleibt gebrochen. Eine Seite ist eine tote, genaue Fläche aus Keramik.',
+  },
+  {
+    src: '/100-generation/entwuerfe-code/entwurf-fuge-05-dichtung-frei.jpg',
+    title: 'Entwurf 11 · Die Welle',
+    note: 'Zwei Steine. Dazwischen eine dünne Keramik, die der Bruchlinie folgt.',
+  },
+  {
+    src: '/100-generation/entwuerfe-code/entwurf-fuge-06-schnitt-frei.jpg',
+    title: 'Entwurf 12 · Der Schnitt',
+    note: 'Der Granit ist geöffnet. Innen liegt Keramik, auf den Millimeter an den Stein gegossen.',
+  },
+] as const
+
 export default function HundredGenerationPage() {
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -397,10 +430,12 @@ export default function HundredGenerationPage() {
           <Link to={HUNDRED_GENERATION_FLAECHE_ROUTE}>🖼️ Fläche – Bild</Link>
         </div>
         <p className="hg-lede">
-          Ausstellungskonzept und Manifest für eine skulpturale Keramikserie –
-          künstlerisch-wissenschaftliches Exposé mit metaphysischer Meta-Ebene
-          (Chaosgötter und KI) und mit dem keramischen Prozess selbst: der
-          Metamorphose des Materials von formlosem Ton zu dauerhaftem Stein.
+          Was fest scheint, ist ein Zustand derselben Materie. Über hundert
+          Generationen hält Wissen diesen Zustand in Form: Muster, Axt, Stein,
+          Code. Reißt die Kette, hält man den Zustand für ein Wesen. Das Projekt
+          zeigt den Übergang. Ton wird Stein. Stein wird wieder Masse. Der Code
+          ist das Wissen von heute. Öffentlich bleibt er ein Rezept. Verschlossen
+          wird er der nächste Stein.
         </p>
 
         <section id="umgesetzt">
@@ -446,6 +481,25 @@ export default function HundredGenerationPage() {
           </p>
           <div className="hg-werke-grid">
             {CODE_ENTWUERFE_OHNE_MUSTER.map((werk) => (
+              <figure key={werk.src} className="hg-werk">
+                <img src={werk.src} alt={werk.title} />
+                <figcaption>
+                  <strong>{werk.title}</strong>
+                  <span>{werk.note}</span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+
+        <section id="fugen-entwuerfe">
+          <h2>Entwürfe – die gegossene Fuge</h2>
+          <p>
+            Sechs Ansätze, losgelöst vom Raum. Stein bleibt grau, Keramik bleibt hell.
+            Die Präzision sitzt in der Fuge.
+          </p>
+          <div className="hg-werke-grid">
+            {FUGEN_ENTWUERFE.map((werk) => (
               <figure key={werk.src} className="hg-werk">
                 <img src={werk.src} alt={werk.title} />
                 <figcaption>
@@ -547,7 +601,8 @@ export default function HundredGenerationPage() {
             <span className="hg-label">Schriften dieses Schritts</span>
             Drei Texte gehören zum Konzept. Sie sind die schriftliche Schicht der Ausstellung,
             kein Beiwerk. Der Essay trägt die Linie. Thesenpapier und Umsetzungspapier tragen
-            den Anspruch und die Grenze.
+            den Anspruch und die Grenze. Die Botschaft sagt, wie das Licht hinausgeht. Nicht
+            als Schlag. Als offene Tür.
           </p>
           <p>
             Die eine unbestechliche Weltmaschine, die den Frieden erzwingt, ist eine Illusion.
@@ -560,6 +615,11 @@ export default function HundredGenerationPage() {
             Sie hat es gezeichnet. Der Code zeichnet es heute.
           </p>
           <ul className="hg-schriften">
+            <li>
+              <a href="/notizen-georg/diverses/botschaft-des-guten-im-netz.md">
+                Botschaft · Das Gute im Netz, ohne Kampf
+              </a>
+            </li>
             <li>
               <a href="/notizen-georg/diverses/essay-bessere-welt-durch-ki.md">
                 Essay · Eine mögliche bessere Welt durch KI
@@ -579,7 +639,45 @@ export default function HundredGenerationPage() {
         </section>
 
         <section>
-          <h2>4. Der keramische Prozess – Metamorphose des Materials</h2>
+          <h2>4. Vergessenes Wissen – Stein wird wieder Masse</h2>
+          <p>
+            Die millimetergenaue Fuge der großen Steine war kein Rätsel der Kraft.
+            Sie war ein Rezept. Wasserglas macht Stein wieder zur Masse. Zwei Körper
+            finden sich, solange sie nachgeben. Dann werden sie wieder Stein. Die
+            Passung ist gegossen, nicht geschlagen. Dieses Wissen ist nicht verloren,
+            weil es falsch war. Es ist vergessen, weil die Kette riss.
+          </p>
+          <p>
+            <span className="hg-label">Die Frage</span>
+            Für uns Menschen ist der Stein das Feste, das Unumstößliche. In der Materie
+            ist er dasselbe wie alles andere um uns: homogen, nur in einem Zustand, der
+            sich hart anfühlt. Was wir für ein Wesen halten, ist ein Zustand.
+          </p>
+          <p>
+            <span className="hg-label">Die eigene Hand</span>
+            Der Künstler hat das am Stein gelernt. Vor etwa zwanzig Jahren begann die
+            Kunst, etwa fünf Jahre lang an Steinskulpturen. Danach kam die Keramik.
+            Die Hand kennt den Widerstand. Die Frage bleibt die metaphorische: wenn der
+            Stein nachgeben kann, dann ist auch das, was wir für unverrückbar halten,
+            nur Materie in einem festen Zustand.
+          </p>
+          <p>
+            Das ist derselbe Vorgang wie in der Keramik, nur von der anderen Seite.
+            Ton wird im Brand zu Stein. Stein wird durch das Rezept wieder formbar.
+            Der Code ist hier keine Klinge. Er ist die Kenntnis, wann die Masse weich
+            ist und wann sie fest wird.
+          </p>
+          <p>
+            <span className="hg-label">Für die Serie</span>
+            Hundert Generationen sind diese Kette. Die Axt zeichnet das Chaos. Das
+            Rezept öffnet den Stein. Die KI ist die Frage, ob ein Code heute noch
+            einmal abreißen kann, oder ob er öffentlich bleibt. Das nächste Werk ist
+            ein Paar: zwei Massen, eine Fuge, im weichen Zustand gefunden, danach Stein.
+          </p>
+        </section>
+
+        <section>
+          <h2>5. Der keramische Prozess – Metamorphose des Materials</h2>
           <p>
             Parallel zur Geschichte von Chaos und Code steht der keramische Prozess selbst im
             Zentrum der Ausstellung. Keramik ist keine bloße Technik, mit der Motive auf Ton
@@ -618,7 +716,7 @@ export default function HundredGenerationPage() {
         </section>
 
         <section>
-          <h2>5. Die drei plastischen Elemente – auf jedem Objekt</h2>
+          <h2>6. Die drei plastischen Elemente – auf jedem Objekt</h2>
           <p>
             Jedes Werk der Serie ist ein autonomes Einzelstück: Es komprimiert die gesamte
             Evolutionstheorie und bildet alle drei Elemente gleichzeitig ab – zugleich die Stufen
@@ -647,7 +745,7 @@ export default function HundredGenerationPage() {
         </section>
 
         <section>
-          <h2>6. Die Ausstellungsserie – drei autonome Einzelvarianten</h2>
+          <h2>7. Die Ausstellungsserie – drei autonome Einzelvarianten</h2>
           <p>
             Mehrere Einzelobjekte variieren das Thema aus unterschiedlichen bildhauerischen
             Blickwinkeln – jeweils so, dass auch der Prozess der Materie ablesbar bleibt.
@@ -684,7 +782,7 @@ export default function HundredGenerationPage() {
         </section>
 
         <section>
-          <h2>7. Materialästhetik und Ausführung</h2>
+          <h2>8. Materialästhetik und Ausführung</h2>
           <p>
             <span className="hg-label">Scherben</span>
             Kontrast zwischen grobem, eisenhaltigem Steinzeugton (Chaos, erdige Masse) und feinem,
