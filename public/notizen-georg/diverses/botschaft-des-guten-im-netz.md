@@ -25,3 +25,13 @@ So geht der weiße Ritter hinaus. Nicht mit dem Schwert in die Kommentarspalte. 
 Das Licht verlöscht, wo es nur bei einer Plattform wohnt. Ein Konto, ein Haus, das den Schalter hat. Es bleibt, wo es auf eigenem Grund steht und mehr als eine Abschrift hat. Diese Stelle. Das Depot. Die Kopie, die nicht einer Laune gehört.
 
 Eine Maschine, die alle Menschen vor sich selbst bewacht, ist die Ironie. Dann hält einer den Schalter, und der Schutz wird zur neuen Macht. Sinn hat die KI in dem Haus, das wir bauen. Dort verstärkt sie keine Lüge, füttert keinen Hass und zieht den Menschen nicht in den Graben. Sie ersetzt ihn nicht. Sie lässt die Tür offen und macht den Bruch teurer.
+
+## Die Verbindung
+
+Die vielen mit demselben Traum sind schon verbunden. Sie wissen es nur nicht, weil kein Lärm ihren Namen ruft. Die Verbindung nach außen ist kein Verein und keine Liste. Sie ist der Verweis.
+
+Wer ein eigenes Haus im Netz hat, setzt diesen Satz dorthin und zeigt auf diese Stelle:
+
+Ich kämpfe nicht. Ich lasse die Tür offen.
+
+Wir zeigen zurück auf Häuser, die dasselbe tun. Jedes Licht bleibt auf seinem eigenen Grund. Zusammen sind sie sichtbar, ohne eine Hauptstadt zu werden.

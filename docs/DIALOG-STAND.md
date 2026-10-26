@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Das Licht soll im Netz stehen bleiben, ohne dass eine KI alle Menschen bewacht. Die Botschaft liegt neben dem Essay und in den Schriften von 100 Generationen.
+**Was wir JETZT tun:** Die Verbindung der vielen ist der Verweis, kein Verein. Der Satz steht auf dem Blatt: „Ich kämpfe nicht. Ich lasse die Tür offen.“
 
 **Einordnung:** Eine Weltmaschine, die den Menschen vor sich selbst schützt, ist die Ironie aus dem Essay. Sinn hat die KI im eigenen Haus: keine Lüge verstärken, keinen Hass füttern, die Tür offen lassen. Mehrere Abschriften, damit eine Plattform das Licht nicht ausknipst.
 
