@@ -7,6 +7,7 @@ import {
   HUNDRED_GENERATION_MODELLE,
   HUNDRED_GENERATION_UEBERSICHTEN,
 } from '../config/hundredGenerationEntwuerfe'
+import { HundredGenerationSchrift } from '../components/hundredGeneration/HundredGenerationSchrift'
 import '../App.css'
 
 /**
@@ -230,6 +231,17 @@ export default function HundredGenerationPage() {
         .hundert-generation-page .hg-schriften a {
           color: var(--hg-accent);
         }
+        .hundert-generation-page .hg-schrift {
+          background: #fffefb;
+          color: #1c1a18;
+          border-radius: 12px;
+          padding: 1.15rem 1.15rem 0.35rem;
+          margin: 1.1rem 0 0.4rem;
+        }
+        .hundert-generation-page .hg-schrift p,
+        .hundert-generation-page .hg-schrift li {
+          line-height: 1.55;
+        }
         .hundert-generation-page .hg-schriften li {
           margin: 0.75rem 0;
         }
@@ -436,6 +448,8 @@ export default function HundredGenerationPage() {
         <p className="hg-subtitle">Chaos &amp; Code: Die Evolution des Musters</p>
         <div className="hg-chapters no-print">
           <span className="is-active">🏺 Keramik – Konzept</span>
+          <a href="#essay">Essay</a>
+          <a href="#botschaft">Botschaft</a>
           <Link to={HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE}>🗂️ Entwurfsmappe</Link>
           <Link to={HUNDRED_GENERATION_FLAECHE_ROUTE}>🖼️ Fläche – Bild</Link>
         </div>
@@ -547,6 +561,15 @@ export default function HundredGenerationPage() {
               In der Entwurfsmappe öffnen
             </Link>
           </p>
+          <p>
+            <span className="hg-label">Die Stimme dieser Körper</span>
+            Die Botschaft sagt, wie das Licht hinausgeht. Nicht als Schlag. Als offene Tür.
+            Sie wird hier gelesen, im selben Werk.
+          </p>
+          <HundredGenerationSchrift
+            id="botschaft"
+            path="/notizen-georg/diverses/botschaft-des-guten-im-netz.md"
+          />
         </section>
 
         <section id="entwuerfe" className="no-print">
@@ -636,12 +659,14 @@ export default function HundredGenerationPage() {
             Wissen. Der Code selbst ist die neue Insignie. Er tritt an die Stelle der Axt.
           </p>
           <p>
-            <span className="hg-label">Schriften dieses Schritts</span>
-            Drei Texte gehören zum Konzept. Sie sind die schriftliche Schicht der Ausstellung,
-            kein Beiwerk. Der Essay trägt die Linie. Thesenpapier und Umsetzungspapier tragen
-            den Anspruch und die Grenze. Die Botschaft sagt, wie das Licht hinausgeht. Nicht
-            als Schlag. Als offene Tür. Der Schlüssel ist die Regel vor der Maschine.
+            <span className="hg-label">Schrift dieses Schritts</span>
+            Der Essay ist die schriftliche Schicht dieser Ersetzung. Er gehört zum Werk,
+            nicht daneben. Thesenpapier und Umsetzungspapier bleiben die Quellen dahinter.
           </p>
+          <HundredGenerationSchrift
+            id="essay"
+            path="/notizen-georg/diverses/essay-bessere-welt-durch-ki.md"
+          />
           <p>
             Die eine unbestechliche Weltmaschine, die den Frieden erzwingt, ist eine Illusion.
             Was bleibt, ist die Brandmauer: Norm im Kern, Recht und Beleg, offene Netze. Gebaut
@@ -654,19 +679,7 @@ export default function HundredGenerationPage() {
           </p>
           <ul className="hg-schriften">
             <li>
-              <a href="/notizen-georg/diverses/brandmauer-schluessel.md">
-                Schlüssel · Die Regel vor der Maschine
-              </a>
-            </li>
-            <li>
-              <a href="/notizen-georg/diverses/botschaft-des-guten-im-netz.md">
-                Botschaft · Das Gute im Netz, ohne Kampf
-              </a>
-            </li>
-            <li>
-              <a href="/notizen-georg/diverses/essay-bessere-welt-durch-ki.md">
-                Essay · Eine mögliche bessere Welt durch KI
-              </a>
+              <a href="#botschaft">Botschaft · Das Gute im Netz, beim Licht</a>
             </li>
             <li>
               <a href="/notizen-georg/diverses/thesenpapier-ki-betriebssystem-weltfrieden.md">

@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Zur Karte „Das Licht“ gibt es ein Foto: zwei Türen, der Strahl, das Mysterium auf der Fensterbank. Datei `public/100-generation/entwuerfe-code/entwurf-licht-26-oktober.jpg`.
+**Was wir JETZT tun:** Essay und Botschaft sind Teil von 100 Generationen. Essay steht in Kapitel 3, lesbar auf hellem Blatt. Botschaft steht bei den Licht-Körpern. Oben in der Leiste: Essay und Botschaft.
 
 **Einordnung:** Dieselbe Sprache wie Naht und Fuge. Kein Schwert, kein Schalter. Georg sagt, welche Form als Nächstes in Ton geht.
 

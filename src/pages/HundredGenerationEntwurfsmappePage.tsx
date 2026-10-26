@@ -816,8 +816,10 @@ export default function HundredGenerationEntwurfsmappePage() {
             </div>
           ))}
           <p className="hint">
-            Die Sätze vom Abend stehen im Blatt{' '}
-            <a href="/notizen-georg/diverses/botschaft-des-guten-im-netz.md">Botschaft des Guten</a>.
+            Die Stimme dazu steht im Werk:{' '}
+            <Link to={`${HUNDRED_GENERATION_ROUTE}#botschaft`}>Botschaft des Guten</Link>
+            . Der Essay steht im selben Werk unter{' '}
+            <Link to={`${HUNDRED_GENERATION_ROUTE}#essay`}>Essay</Link>.
           </p>
         </div>
 

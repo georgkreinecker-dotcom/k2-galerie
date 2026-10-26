@@ -1,6 +1,6 @@
 # Die Botschaft des Guten im Netz
 
-*Festgehalten am 26. Oktober 2026. Georg will nicht kämpfen. Er will die Botschaft des Guten im Netz verbreiten. Liegt neben dem Essay zur besseren Welt.*
+*Festgehalten am 26. Oktober 2026. Teil des Kunstprojekts 100 Generationen, neben dem Essay. Georg will nicht kämpfen. Er will die Botschaft des Guten im Netz verbreiten.*
 
 ---
 
@@ -36,7 +36,7 @@ Ich kämpfe nicht. Ich lasse die Tür offen.
 
 Wir zeigen zurück auf Häuser, die dasselbe tun. Jedes Licht bleibt auf seinem eigenen Grund. Zusammen sind sie sichtbar, ohne eine Hauptstadt zu werden.
 
-Der Schlüssel dazu ist keine weitere Rede. Er ist die Regel vor der Maschine: [Brandmauer-Schlüssel](brandmauer-schluessel.md).
+Der Schlüssel dazu ist keine weitere Rede. Er ist die Regel vor der Maschine.
 
 ## Am Abend
 
