@@ -333,4 +333,23 @@ export const HUNDRED_GENERATION_UEBERSICHTEN = [
   },
 ] as const
 
+/** 26. Oktober – noch ohne Foto. Eine Quelle für Konzeptseite und Entwurfsmappe. */
+export const HUNDRED_GENERATION_LICHT = [
+  {
+    id: 'zwei-tueren',
+    title: '13 · Zwei Türen',
+    note: 'Zwei Körper, jeder für sich ganz. In jedem eine kleine Öffnung. Sie stehen sich gegenüber und berühren sich nicht. Allein ist jedes ein Haus. Voneinander gesehen wird die Öffnung hell. Keine Brücke dazwischen.',
+  },
+  {
+    id: 'strahl',
+    title: '14 · Der Strahl',
+    note: 'Eine schwere, dunkle Masse. Durch sie ein einziger Durchbruch, nicht breiter als ein Finger. Licht kommt nur dort durch. Die Masse bleibt dunkel. Der Strahl erklärt sie nicht.',
+  },
+  {
+    id: 'mysterium',
+    title: '15 · Das Mysterium',
+    note: 'Ein geschlossener Körper. Kein Raster, keine Inschrift, keine Tür zum Aufmachen. Nur eine Haarlinie, wo zwei Schalen sich treffen und zu bleiben. Man stellt ihn hin. Er bleibt zu.',
+  },
+] as const
+
 export const ENTWURFSMAPPE_NOTES_KEY = 'k2-100g-entwurfsmappe-notes'

@@ -7,6 +7,7 @@ import {
 } from '../config/navigation'
 import {
   ENTWURFSMAPPE_NOTES_KEY,
+  HUNDRED_GENERATION_LICHT,
   HUNDRED_GENERATION_MODELLE,
   HUNDRED_GENERATION_UEBERSICHTEN,
   type HundredGenerationEntwurfGruppe,
@@ -282,6 +283,22 @@ export default function HundredGenerationEntwurfsmappePage() {
           text-transform: uppercase;
           color: var(--hg-accent);
           margin: 0 0 0.65rem;
+        }
+        .hg-entwurfsmappe .licht-stueck {
+          margin: 0 0 0.85rem;
+        }
+        .hg-entwurfsmappe .licht-stueck strong {
+          display: block;
+          color: var(--hg-ink);
+          margin-bottom: 0.2rem;
+        }
+        .hg-entwurfsmappe .licht-stueck p {
+          margin: 0;
+          color: var(--hg-muted);
+          line-height: 1.45;
+        }
+        .hg-entwurfsmappe .card a {
+          color: var(--hg-accent);
         }
         .hg-entwurfsmappe .card img {
           display: block;
@@ -786,6 +803,21 @@ export default function HundredGenerationEntwurfsmappePage() {
           <strong> Ganze Mappe</strong> = Übersicht inkl. Maß. <strong>Vollformat</strong> = ein Bild
           auf eine Seite.
         </p>
+
+        <div className="card" id="licht" style={{ marginBottom: '1rem' }}>
+          <h2>Das Licht · 26. Oktober</h2>
+          <p className="hint">Noch ohne Foto. Drei Körper.</p>
+          {HUNDRED_GENERATION_LICHT.map((e) => (
+            <div key={e.id} className="licht-stueck">
+              <strong>{e.title}</strong>
+              <p>{e.note}</p>
+            </div>
+          ))}
+          <p className="hint">
+            Die Sätze vom Abend stehen im Blatt{' '}
+            <a href="/notizen-georg/diverses/botschaft-des-guten-im-netz.md">Botschaft des Guten</a>.
+          </p>
+        </div>
 
         <div className="gruppen" role="tablist" aria-label="Gruppen">
           <button

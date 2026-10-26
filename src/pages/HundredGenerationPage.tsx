@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { PLATFORM_ROUTES, HUNDRED_GENERATION_FLAECHE_ROUTE, HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE } from '../config/navigation'
 import {
+  HUNDRED_GENERATION_LICHT,
   HUNDRED_GENERATION_MODELLE,
   HUNDRED_GENERATION_UEBERSICHTEN,
 } from '../config/hundredGenerationEntwuerfe'
@@ -526,30 +527,18 @@ export default function HundredGenerationPage() {
             Dieselbe Sprache wie die Naht und die Fuge: Masse, Öffnung, Abstand.
           </p>
           <ul className="hg-schriften">
-            <li>
-              <strong>Entwurf 13 · Zwei Türen</strong>
-              <span>
-                Zwei Körper, jeder für sich ganz. In jedem eine kleine Öffnung.
-                Sie stehen sich gegenüber und berühren sich nicht. Allein ist jedes ein Haus.
-                Voneinander gesehen wird die Öffnung hell. Keine Brücke dazwischen.
-              </span>
-            </li>
-            <li>
-              <strong>Entwurf 14 · Der Strahl</strong>
-              <span>
-                Eine schwere, dunkle Masse. Durch sie ein einziger Durchbruch, nicht breiter als ein Finger.
-                Licht kommt nur dort durch. Die Masse bleibt dunkel. Der Strahl erklärt sie nicht.
-              </span>
-            </li>
-            <li>
-              <strong>Entwurf 15 · Das Mysterium</strong>
-              <span>
-                Ein geschlossener Körper. Kein Raster, keine Inschrift, keine Tür zum Aufmachen.
-                Nur eine Haarlinie, wo zwei Schalen sich treffen und zu bleiben.
-                Man stellt ihn hin. Er bleibt zu.
-              </span>
-            </li>
+            {HUNDRED_GENERATION_LICHT.map((e) => (
+              <li key={e.id}>
+                <strong>{e.title}</strong>
+                <span>{e.note}</span>
+              </li>
+            ))}
           </ul>
+          <p>
+            <Link to={`${HUNDRED_GENERATION_ENTWURFSMAPPE_ROUTE}#licht`}>
+              In der Entwurfsmappe öffnen
+            </Link>
+          </p>
         </section>
 
         <section id="entwuerfe" className="no-print">

@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Was wir JETZT tun:** Georg hat gefragt, ob alle Gedanken festgehalten sind. Der Abend fehlte. Er steht jetzt in der Botschaft, Abschnitt „Am Abend“. Die drei Skulpturen bleiben Entwurf 13–15.
+**Was wir JETZT tun:** Die drei Licht-Formen liegen jetzt oben in der Entwurfsmappe, Karte „Das Licht · 26. Oktober“. Vorher nur auf der Konzeptseite, deshalb hat Georg sie nicht gefunden.
 
 **Einordnung:** Dieselbe Sprache wie Naht und Fuge. Kein Schwert, kein Schalter. Georg sagt, welche Form als Nächstes in Ton geht.
 
